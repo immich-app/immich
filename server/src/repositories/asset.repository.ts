@@ -6,6 +6,7 @@ import {
   NotNull,
   Selectable,
   SelectQueryBuilder,
+  ShallowDehydrateObject,
   sql,
   Updateable,
   UpdateResult,
@@ -554,7 +555,11 @@ export class AssetRepository {
                   eb
                     .selectFrom('asset as stacked')
                     .selectAll('stack')
-                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+                    .select((eb) =>
+                      eb
+                        .fn<ShallowDehydrateObject<Selectable<AssetTable>>>('array_agg', [eb.table('stacked')])
+                        .as('assets'),
+                    )
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
@@ -563,7 +568,7 @@ export class AssetRepository {
                     .as('stacked_assets'),
                 (join) => join.on('stack.id', 'is not', null),
               )
-              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack')),
+              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
           ),
       )
       .$if(!!files, (qb) => qb.select(withFiles))
@@ -744,6 +749,7 @@ export class AssetRepository {
     params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
+    const order = options.order ?? 'desc';
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -841,7 +847,8 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('asset.fileCreatedAt', options.order ?? 'desc'),
+          .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
+          .orderBy('asset.fileCreatedAt', order),
       )
       .with('agg', (qb) =>
         qb

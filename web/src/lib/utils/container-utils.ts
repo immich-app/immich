@@ -5,6 +5,19 @@ export interface ContentMetrics {
   offsetY: number;
 }
 
+export const scaleToCover = (
+  dimensions: { width: number; height: number },
+  container: { width: number; height: number },
+): { width: number; height: number } => {
+  const scaleX = container.width / dimensions.width;
+  const scaleY = container.height / dimensions.height;
+  const scale = Math.max(scaleX, scaleY);
+  return {
+    width: dimensions.width * scale,
+    height: dimensions.height * scale,
+  };
+};
+
 export const scaleToFit = (
   dimensions: { width: number; height: number },
   container: { width: number; height: number },

@@ -491,7 +491,7 @@ export class PersonService extends BaseService {
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
-      minBirthDate: face.asset.fileCreatedAt ?? undefined,
+      minBirthDate: new Date(face.asset.fileCreatedAt),
     });
 
     // `matches` also includes the face itself
@@ -519,7 +519,7 @@ export class PersonService extends BaseService {
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
-        minBirthDate: face.asset.fileCreatedAt ?? undefined,
+        minBirthDate: new Date(face.asset.fileCreatedAt),
       });
 
       if (matchWithPerson.length > 0) {

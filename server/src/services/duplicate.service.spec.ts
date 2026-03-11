@@ -3,6 +3,7 @@ import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
+import { getForDuplicate } from 'test/mappers';
 import { newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
@@ -39,11 +40,11 @@ describe(SearchService.name, () => {
 
   describe('getDuplicates', () => {
     it('should get duplicates', async () => {
-      const asset = AssetFactory.create();
+      const asset = AssetFactory.from().exif().build();
       mocks.duplicateRepository.getAll.mockResolvedValue([
         {
           duplicateId: 'duplicate-id',
-          assets: [asset, asset],
+          assets: [getForDuplicate(asset), getForDuplicate(asset)],
         },
       ]);
       await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([

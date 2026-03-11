@@ -438,6 +438,7 @@ with
           and "stack"."primaryAssetId" != "asset"."id"
       )
     order by
+      (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
       "asset"."fileCreatedAt" desc
   ),
   "agg" as (

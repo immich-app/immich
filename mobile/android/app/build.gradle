@@ -3,6 +3,7 @@ plugins {
   id "kotlin-android"
   id "dev.flutter.flutter-gradle-plugin"
   id 'com.google.devtools.ksp'
+  id 'org.jetbrains.kotlin.plugin.serialization'
   id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
 
 }

@@ -2,21 +2,26 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { createZoomImageWheel } from '@zoom-image/core';
 
 export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolean }) => {
-  const zoomInstance = createZoomImageWheel(node, { maxZoom: 10, initialState: assetViewerManager.zoomState });
+  const zoomInstance = createZoomImageWheel(node, {
+    maxZoom: 10,
+    initialState: assetViewerManager.zoomState,
+    zoomTarget: null,
+  });
 
   const unsubscribes = [
     assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
     zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
   ];
 
-  const stopIfDisabled = (event: Event) => {
+  const onInteractionStart = (event: Event) => {
     if (options?.disabled) {
       event.stopImmediatePropagation();
     }
+    assetViewerManager.cancelZoomAnimation();
   };
 
-  node.addEventListener('wheel', stopIfDisabled, { capture: true });
-  node.addEventListener('pointerdown', stopIfDisabled, { capture: true });
+  node.addEventListener('wheel', onInteractionStart, { capture: true });
+  node.addEventListener('pointerdown', onInteractionStart, { capture: true });
 
   node.style.overflow = 'visible';
   return {
@@ -27,8 +32,8 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }
-      node.removeEventListener('wheel', stopIfDisabled, { capture: true });
-      node.removeEventListener('pointerdown', stopIfDisabled, { capture: true });
+      node.removeEventListener('wheel', onInteractionStart, { capture: true });
+      node.removeEventListener('pointerdown', onInteractionStart, { capture: true });
       zoomInstance.cleanup();
     },
   };
