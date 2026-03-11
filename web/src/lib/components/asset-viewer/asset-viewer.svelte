@@ -6,6 +6,7 @@
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import { preloadManager } from '$lib/components/asset-viewer/PreloadManager.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -138,6 +139,12 @@
       await activityManager.toggleLike();
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_favorite'));
+    }
+  };
+
+  const onAssetUpdate = (updatedAsset: AssetResponseDto) => {
+    if (asset.id === updatedAsset.id) {
+      cursor = { ...cursor, current: updatedAsset };
     }
   };
 
@@ -447,6 +454,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
+<OnEvents {onAssetUpdate} />
 
 <svelte:document bind:fullscreenElement />
 

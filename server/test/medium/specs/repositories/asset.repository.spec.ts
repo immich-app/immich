@@ -1,9 +1,11 @@
 import { Kysely } from 'kysely';
+import { AssetOrder, AssetVisibility } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { BaseService } from 'src/services/base.service';
 import { newMediumService } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
@@ -22,6 +24,61 @@ beforeAll(async () => {
 });
 
 describe(AssetRepository.name, () => {
+  describe('getTimeBucket', () => {
+    it('should order assets by local day first and fileCreatedAt within each day', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const [{ asset: previousLocalDayAsset }, { asset: nextLocalDayEarlierAsset }, { asset: nextLocalDayLaterAsset }] =
+        await Promise.all([
+          ctx.newAsset({
+            ownerId: user.id,
+            fileCreatedAt: new Date('2026-03-09T00:30:00.000Z'),
+            localDateTime: new Date('2026-03-08T22:30:00.000Z'),
+          }),
+          ctx.newAsset({
+            ownerId: user.id,
+            fileCreatedAt: new Date('2026-03-08T23:30:00.000Z'),
+            localDateTime: new Date('2026-03-09T01:30:00.000Z'),
+          }),
+          ctx.newAsset({
+            ownerId: user.id,
+            fileCreatedAt: new Date('2026-03-08T23:45:00.000Z'),
+            localDateTime: new Date('2026-03-09T01:45:00.000Z'),
+          }),
+        ]);
+
+      await Promise.all([
+        ctx.newExif({ assetId: previousLocalDayAsset.id, timeZone: 'UTC-2' }),
+        ctx.newExif({ assetId: nextLocalDayEarlierAsset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: nextLocalDayLaterAsset.id, timeZone: 'UTC+2' }),
+      ]);
+
+      const descendingBucket = await sut.getTimeBucket(
+        '2026-03-01',
+        { order: AssetOrder.Desc, userIds: [user.id], visibility: AssetVisibility.Timeline },
+        auth,
+      );
+      expect(JSON.parse(descendingBucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [nextLocalDayLaterAsset.id, nextLocalDayEarlierAsset.id, previousLocalDayAsset.id],
+        }),
+      );
+
+      const ascendingBucket = await sut.getTimeBucket(
+        '2026-03-01',
+        { order: AssetOrder.Asc, userIds: [user.id], visibility: AssetVisibility.Timeline },
+        auth,
+      );
+      expect(JSON.parse(ascendingBucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [previousLocalDayAsset.id, nextLocalDayEarlierAsset.id, nextLocalDayLaterAsset.id],
+        }),
+      );
+    });
+  });
+
   describe('upsertExif', () => {
     it('should append to locked columns', async () => {
       const { ctx, sut } = setup();
