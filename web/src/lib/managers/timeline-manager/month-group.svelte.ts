@@ -156,16 +156,25 @@ export class MonthGroup {
       changedGeometry: combinedChangedGeometry,
     };
   }
-
+  fnv1a(str: string, seed = 0) {
+    let hash = 0x811c9dc5 ^ seed;
+    const len = Math.min(str.length, 16);
+    for (let i = 0; i < len; i++) {
+      hash ^= str.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    return hash >>> 0;
+  }
   addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const timesCache = new Map<string, ReturnType<typeof getTimes>>();
 
+    const OFFSET_PRIME = 73856093;
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const offset = bucketAssets.localOffsetHours[i];
       const createdAt = bucketAssets.fileCreatedAt[i];
-      const cacheKey = `${createdAt}:${offset}`;
+      const cacheKey = fnv1a(createdAt, offset * OFFSET_PRIME);
       let cached = timesCache.get(cacheKey);
 
       if (!cached) {
