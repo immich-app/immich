@@ -9,7 +9,6 @@ import { DB } from 'src/schema';
 import {
   anyUuid,
   asUuid,
-  toJson,
   withDefaultVisibility,
   withEdits,
   withExif,
@@ -296,7 +295,12 @@ export class AssetJobRepository {
             .as('stack_result'),
         (join) => join.onTrue(),
       )
-      .select((eb) => toJson(eb, 'stack_result').as('stack'))
+      .select((eb) =>
+        eb.fn
+          .toJson(eb.table('stack_result'))
+          .$castTo<{ id: string; primaryAssetId: string; assets: { id: string }[] } | null>()
+          .as('stack'),
+      )
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

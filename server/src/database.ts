@@ -1,4 +1,4 @@
-import { Selectable } from 'kysely';
+import { Selectable, ShallowDehydrateObject } from 'kysely';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
@@ -16,6 +16,7 @@ import {
 } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
 import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
@@ -31,7 +32,7 @@ export type AuthUser = {
 };
 
 export type AlbumUser = {
-  user: User;
+  user: ShallowDehydrateObject<User>;
   role: AlbumUserRole;
 };
 
@@ -67,7 +68,7 @@ export type Activity = {
   updatedAt: Date;
   albumId: string;
   userId: string;
-  user: User;
+  user: ShallowDehydrateObject<User>;
   assetId: string | null;
   comment: string | null;
   isLiked: boolean;
@@ -105,7 +106,7 @@ export type Memory = {
   data: object;
   ownerId: string;
   isSaved: boolean;
-  assets: MapAsset[];
+  assets: ShallowDehydrateObject<MapAsset>[];
 };
 
 export type Asset = {
@@ -159,9 +160,9 @@ export type StorageAsset = {
 export type Stack = {
   id: string;
   primaryAssetId: string;
-  owner?: User;
+  owner?: ShallowDehydrateObject<User>;
   ownerId: string;
-  assets: MapAsset[];
+  assets: ShallowDehydrateObject<MapAsset>[];
   assetCount?: number;
 };
 
@@ -177,11 +178,11 @@ export type AuthSharedLink = {
 
 export type SharedLink = {
   id: string;
-  album?: Album | null;
+  album?: ShallowDehydrateObject<Album> | null;
   albumId: string | null;
   allowDownload: boolean;
   allowUpload: boolean;
-  assets: MapAsset[];
+  assets: ShallowDehydrateObject<MapAsset>[];
   createdAt: Date;
   description: string | null;
   expiresAt: Date | null;
@@ -194,8 +195,8 @@ export type SharedLink = {
 };
 
 export type Album = Selectable<AlbumTable> & {
-  owner: User;
-  assets: MapAsset[];
+  owner: ShallowDehydrateObject<User>;
+  assets: ShallowDehydrateObject<Selectable<AssetTable>>[];
 };
 
 export type AuthSession = {
@@ -205,9 +206,9 @@ export type AuthSession = {
 
 export type Partner = {
   sharedById: string;
-  sharedBy: User;
+  sharedBy: ShallowDehydrateObject<User>;
   sharedWithId: string;
-  sharedWith: User;
+  sharedWith: ShallowDehydrateObject<User>;
   createdAt: Date;
   createId: string;
   updatedAt: Date;
@@ -270,7 +271,7 @@ export type AssetFace = {
   imageWidth: number;
   personId: string | null;
   sourceType: SourceType;
-  person?: Person | null;
+  person?: ShallowDehydrateObject<Person> | null;
   updatedAt: Date;
   updateId: string;
   isVisible: boolean;

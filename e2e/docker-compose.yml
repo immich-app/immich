@@ -44,7 +44,7 @@ services:
 
   redis:
     container_name: immich-e2e-redis
-    image: docker.io/valkey/valkey:9@sha256:2bce660b767cb62c8c0ea020e94a230093be63dbd6af4f21b044960517a5842d
+    image: docker.io/valkey/valkey:9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6
     healthcheck:
       test: redis-cli ping || exit 1
 

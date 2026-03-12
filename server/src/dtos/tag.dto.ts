@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
 import { Tag } from 'src/database';
+import { MaybeDehydrated } from 'src/types';
+import { asDateString } from 'src/utils/date';
 import { Optional, ValidateHexColor, ValidateUUID } from 'src/validation';
 
 export class TagCreateDto {
@@ -54,22 +56,22 @@ export class TagResponseDto {
   name!: string;
   @ApiProperty({ description: 'Tag value (full path)' })
   value!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: Date;
+  @ApiProperty({ description: 'Creation date', format: 'date-time' })
+  createdAt!: string;
+  @ApiProperty({ description: 'Last update date', format: 'date-time' })
+  updatedAt!: string;
   @ApiPropertyOptional({ description: 'Tag color (hex)' })
   color?: string;
 }
 
-export function mapTag(entity: Tag): TagResponseDto {
+export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
   return {
     id: entity.id,
     parentId: entity.parentId ?? undefined,
     name: entity.value.split('/').at(-1) as string,
     value: entity.value,
-    createdAt: entity.createdAt,
-    updatedAt: entity.updatedAt,
+    createdAt: asDateString(entity.createdAt),
+    updatedAt: asDateString(entity.updatedAt),
     color: entity.color ?? undefined,
   };
 }

@@ -186,6 +186,14 @@ export const getAssetUrl = ({
   return getAssetMediaUrl({ id, size, cacheKey });
 };
 
+export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
+  return {
+    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    preview: getAssetUrl({ asset, sharedLink })!,
+    original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
+  };
+}
+
 const forceUseOriginal = (asset: AssetResponseDto) => {
   return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
 };

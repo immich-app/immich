@@ -3,6 +3,7 @@ import { MemoryService } from 'src/services/memory.service';
 import { OnThisDayData } from 'src/types';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { MemoryFactory } from 'test/factories/memory.factory';
+import { getForMemory } from 'test/mappers';
 import { factory, newUuid, newUuids } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -33,7 +34,7 @@ describe(MemoryService.name, () => {
       const memory1 = MemoryFactory.from({ ownerId: userId }).asset(asset).build();
       const memory2 = MemoryFactory.create({ ownerId: userId });
 
-      mocks.memory.search.mockResolvedValue([memory1, memory2]);
+      mocks.memory.search.mockResolvedValue([getForMemory(memory1), getForMemory(memory2)]);
 
       await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toEqual(
         expect.arrayContaining([
@@ -68,7 +69,7 @@ describe(MemoryService.name, () => {
       const userId = newUuid();
       const memory = MemoryFactory.create({ ownerId: userId });
 
-      mocks.memory.get.mockResolvedValue(memory);
+      mocks.memory.get.mockResolvedValue(getForMemory(memory));
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
 
       await expect(sut.get(factory.auth({ user: { id: userId } }), memory.id)).resolves.toMatchObject({
@@ -85,7 +86,7 @@ describe(MemoryService.name, () => {
       const [assetId, userId] = newUuids();
       const memory = MemoryFactory.create({ ownerId: userId });
 
-      mocks.memory.create.mockResolvedValue(memory);
+      mocks.memory.create.mockResolvedValue(getForMemory(memory));
 
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
@@ -115,7 +116,7 @@ describe(MemoryService.name, () => {
       const memory = MemoryFactory.from().asset(asset).build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.memory.create.mockResolvedValue(memory);
+      mocks.memory.create.mockResolvedValue(getForMemory(memory));
 
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
@@ -135,7 +136,7 @@ describe(MemoryService.name, () => {
     it('should create a memory without assets', async () => {
       const memory = MemoryFactory.create();
 
-      mocks.memory.create.mockResolvedValue(memory);
+      mocks.memory.create.mockResolvedValue(getForMemory(memory));
 
       await expect(
         sut.create(factory.auth(), {
@@ -160,7 +161,7 @@ describe(MemoryService.name, () => {
       const memory = MemoryFactory.create();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
-      mocks.memory.update.mockResolvedValue(memory);
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
 
       await expect(sut.update(factory.auth(), memory.id, { isSaved: true })).resolves.toBeDefined();
 
@@ -203,7 +204,7 @@ describe(MemoryService.name, () => {
       const memory = MemoryFactory.create();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
-      mocks.memory.get.mockResolvedValue(memory);
+      mocks.memory.get.mockResolvedValue(getForMemory(memory));
       mocks.memory.getAssetIds.mockResolvedValue(new Set());
 
       await expect(sut.addAssets(factory.auth(), memory.id, { ids: [assetId] })).resolves.toEqual([
@@ -218,7 +219,7 @@ describe(MemoryService.name, () => {
       const memory = MemoryFactory.from().asset(asset).build();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
-      mocks.memory.get.mockResolvedValue(memory);
+      mocks.memory.get.mockResolvedValue(getForMemory(memory));
       mocks.memory.getAssetIds.mockResolvedValue(new Set([asset.id]));
 
       await expect(sut.addAssets(factory.auth(), memory.id, { ids: [asset.id] })).resolves.toEqual([
@@ -234,8 +235,8 @@ describe(MemoryService.name, () => {
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
-      mocks.memory.get.mockResolvedValue(memory);
-      mocks.memory.update.mockResolvedValue(memory);
+      mocks.memory.get.mockResolvedValue(getForMemory(memory));
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
       mocks.memory.getAssetIds.mockResolvedValue(new Set());
       mocks.memory.addAssetIds.mockResolvedValue();
 
@@ -275,7 +276,7 @@ describe(MemoryService.name, () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.memory.getAssetIds.mockResolvedValue(new Set([asset.id]));
       mocks.memory.removeAssetIds.mockResolvedValue();
-      mocks.memory.update.mockResolvedValue(memory);
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
 
       await expect(sut.removeAssets(factory.auth(), memory.id, { ids: [asset.id] })).resolves.toEqual([
         { id: asset.id, success: true },

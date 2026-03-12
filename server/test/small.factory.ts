@@ -1,3 +1,4 @@
+import { ShallowDehydrateObject } from 'kysely';
 import {
   Activity,
   Album,
@@ -113,8 +114,12 @@ const partnerFactory = ({
   sharedWith: sharedWithProvided,
   ...partner
 }: Partial<Partner> = {}) => {
-  const sharedBy = UserFactory.create(sharedByProvided ?? {});
-  const sharedWith = UserFactory.create(sharedWithProvided ?? {});
+  const hydrateUser = (user: Partial<ShallowDehydrateObject<User>>) => ({
+    ...user,
+    profileChangedAt: user.profileChangedAt ? new Date(user.profileChangedAt) : undefined,
+  });
+  const sharedBy = UserFactory.create(sharedByProvided ? hydrateUser(sharedByProvided) : {});
+  const sharedWith = UserFactory.create(sharedWithProvided ? hydrateUser(sharedWithProvided) : {});
 
   return {
     sharedById: sharedBy.id,
@@ -214,7 +219,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
   };
 };
 
-const activityFactory = (activity: Partial<Activity> = {}) => {
+const activityFactory = (activity: Omit<Partial<Activity>, 'user'> = {}) => {
   const userId = activity.userId || newUuid();
   return {
     id: newUuid(),

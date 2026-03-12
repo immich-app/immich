@@ -64,7 +64,9 @@ test.describe('broken-asset responsiveness', () => {
 
   test('broken asset in main viewer shows icon and uses text-base', async ({ context, page }) => {
     await context.route(
-      (url) => url.pathname.includes(`/api/assets/${fixture.primaryAsset.id}/thumbnail`),
+      (url) =>
+        url.pathname.includes(`/api/assets/${fixture.primaryAsset.id}/thumbnail`) ||
+        url.pathname.includes(`/api/assets/${fixture.primaryAsset.id}/original`),
       async (route) => {
         return route.fulfill({ status: 404 });
       },
@@ -73,7 +75,7 @@ test.describe('broken-asset responsiveness', () => {
     await page.goto(`/photos/${fixture.primaryAsset.id}`);
     await page.waitForSelector('#immich-asset-viewer');
 
-    const viewerBrokenAsset = page.locator('#immich-asset-viewer #broken-asset [data-broken-asset]');
+    const viewerBrokenAsset = page.locator('[data-viewer-content] [data-broken-asset]').first();
     await expect(viewerBrokenAsset).toBeVisible();
 
     await expect(viewerBrokenAsset.locator('svg')).toBeVisible();

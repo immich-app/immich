@@ -192,6 +192,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     val callback = FetchCallback(onSuccess, onFailure, ::onComplete)
     val requestBuilder = engine.newUrlRequestBuilder(url, callback, executor)
     HttpClientManager.headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
+    HttpClientManager.loadCookieHeader(url)?.let { requestBuilder.addHeader("Cookie", it) }
     url.toHttpUrlOrNull()?.let { httpUrl ->
       if (httpUrl.username.isNotEmpty()) {
         requestBuilder.addHeader("Authorization", Credentials.basic(httpUrl.username, httpUrl.password))
