@@ -338,17 +338,16 @@
       overallScrollPercent: toTimelineY(hoverY),
       scrubberMonthScrollPercent: monthGroupPercentY,
     };
-    let skip = false;
     if (wasDragging === false && isDragging) {
       void startScrub?.(scrubData);
       void onScrub?.(scrubData);
-      skip = true;
+      return;
     }
     if (wasDragging && !isDragging) {
       void stopScrub?.(scrubData);
       return;
     }
-    if (!isDragging || skip) {
+    if (!isDragging) {
       return;
     }
     void onScrub?.(scrubData);
