@@ -12,7 +12,7 @@
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { user } from '$lib/stores/user.store';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import { Heading, LoadingSpinner, Text } from '@immich/ui';
+  import { Heading, Link, LoadingSpinner, Text } from '@immich/ui';
   import handlebar from 'handlebars';
   import * as luxon from 'luxon';
   import { onDestroy } from 'svelte';
@@ -112,23 +112,11 @@
       <FormatMessage key="admin.storage_template_more_details">
         {#snippet children({ tag, message })}
           {#if tag === 'template-link'}
-            <a
-              href="https://docs.immich.app/administration/storage-template"
-              class="underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {message}
-            </a>
+            <Link href="https://docs.immich.app/administration/storage-template">{message}</Link>
           {:else if tag === 'implications-link'}
-            <a
-              href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations"
-              class="underline"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <Link href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations">
               {message}
-            </a>
+            </Link>
           {/if}
         {/snippet}
       </FormatMessage>
