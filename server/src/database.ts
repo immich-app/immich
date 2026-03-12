@@ -154,7 +154,6 @@ export type StorageAsset = {
   id: string;
   ownerId: string;
   files: AssetFile[];
-  encodedVideoPath: string | null;
 };
 
 export type Stack = {

@@ -16,7 +16,7 @@
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -48,21 +48,11 @@
 
   const handleUploadAssets = async (files: File[] = []) => {
     try {
-      let results: (string | undefined)[] = [];
-      results = await (!files || files.length === 0 || !Array.isArray(files)
+      await (!files || files.length === 0 || !Array.isArray(files)
         ? openFileUploadDialog()
         : fileUploadHandler({ files }));
-      const data = await addSharedLinkAssets({
-        ...authManager.params,
-        id: sharedLink.id,
-        assetIdsDto: {
-          assetIds: results.filter((id) => !!id) as string[],
-        },
-      });
 
-      const added = data.filter((item) => item.success).length;
-
-      toastManager.success($t('assets_added_count', { values: { count: added } }));
+      toastManager.success();
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }

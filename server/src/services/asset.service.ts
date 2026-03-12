@@ -370,7 +370,7 @@ export class AssetService extends BaseService {
       assetFiles.editedFullsizeFile?.path,
       assetFiles.editedPreviewFile?.path,
       assetFiles.editedThumbnailFile?.path,
-      asset.encodedVideoPath,
+      assetFiles.encodedVideoFile?.path,
     ];
 
     if (deleteOnDisk && !asset.isOffline) {

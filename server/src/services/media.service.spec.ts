@@ -2254,7 +2254,9 @@ describe(MediaService.name, () => {
     });
 
     it('should delete existing transcode if current policy does not require transcoding', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, encodedVideoPath: '/encoded/video/path.mp4' });
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .file({ type: AssetFileType.EncodedVideo, path: '/encoded/video/path.mp4' })
+        .build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Disabled } });
       mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
@@ -2264,7 +2266,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
-        data: { files: [asset.encodedVideoPath] },
+        data: { files: ['/encoded/video/path.mp4'] },
       });
     });
 

@@ -1,6 +1,7 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SyncService } from 'src/services/sync.service';
 import { AssetFactory } from 'test/factories/asset.factory';
+import { PartnerFactory } from 'test/factories/partner.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { getForAsset, getForPartner } from 'test/mappers';
 import { factory } from 'test/small.factory';
@@ -42,7 +43,7 @@ describe(SyncService.name, () => {
 
   describe('getChangesForDeltaSync', () => {
     it('should return a response requiring a full sync when partners are out of sync', async () => {
-      const partner = factory.partner();
+      const partner = PartnerFactory.create();
       const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
       mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
