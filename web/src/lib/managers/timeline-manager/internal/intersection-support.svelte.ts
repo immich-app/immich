@@ -21,6 +21,7 @@ export function updateIntersectionMonthGroup(timelineManager: TimelineManager, m
   month.actuallyIntersecting = actuallyIntersecting;
   if (preIntersecting || actuallyIntersecting) {
     timelineManager.clearDeferredLayout(month);
+    month.updateAllViewerAssetIntersections();
   }
 }
 
