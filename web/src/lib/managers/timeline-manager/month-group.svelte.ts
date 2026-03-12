@@ -377,4 +377,11 @@ export class MonthGroup {
   cancel() {
     this.loader?.cancel();
   }
+  updateAllViewerAssetIntersections() {
+    for (const dayGroup of this.dayGroups) {
+      for (const viewerAsset of dayGroup.viewerAssets) {
+        viewerAsset.updateIntersecting();
+      }
+    }
+  }
 }
