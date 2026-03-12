@@ -104,7 +104,7 @@ export class AssetJobRepository {
   getForMigrationJob(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.ownerId', 'asset.encodedVideoPath'])
+      .select(['asset.id', 'asset.ownerId'])
       .select(withFiles)
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -268,7 +268,6 @@ export class AssetJobRepository {
         'asset.libraryId',
         'asset.ownerId',
         'asset.livePhotoVideoId',
-        'asset.encodedVideoPath',
         'asset.originalPath',
         'asset.isOffline',
       ])
@@ -310,11 +309,21 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
-      .where('asset.type', '=', AssetType.Video)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .$if(!force, (qb) =>
         qb
-          .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
-          .where('asset.visibility', '!=', AssetVisibility.Hidden),
+          .where((eb) =>
+            eb.not(
+              eb.exists(
+                eb
+                  .selectFrom('asset_file')
+                  .select('asset_file.id')
+                  .whereRef('asset_file.assetId', '=', 'asset.id')
+                  .where('asset_file.type', '=', sql.lit(AssetFileType.EncodedVideo)),
+              ),
+            ),
+          )
+          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
@@ -324,9 +333,10 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
+      .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
+      .select(withFiles)
       .where('asset.id', '=', id)
-      .where('asset.type', '=', AssetType.Video)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .executeTakeFirst();
   }
 
