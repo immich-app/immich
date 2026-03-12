@@ -31,6 +31,8 @@ export class MonthGroup {
   dayGroups: DayGroup[] = $state([]);
   readonly timelineManager: TimelineManager;
 
+  #dayGroupsByDay: Map<number, DayGroup> = new Map();
+
   #height: number = $state(0);
   #top: number = $state(0);
 
@@ -69,6 +71,7 @@ export class MonthGroup {
       },
       () => {
         this.dayGroups = [];
+        this.#dayGroupsByDay.clear();
         this.isLoaded = false;
       },
       this.#handleLoadError,
@@ -145,6 +148,7 @@ export class MonthGroup {
         combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
         if (group.viewerAssets.length === 0) {
           dayGroups.splice(index, 1);
+          this.#dayGroupsByDay.delete(group.day);
           combinedChangedGeometry = true;
         }
       }
@@ -158,12 +162,20 @@ export class MonthGroup {
   }
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const timesCache = new Map<number, ReturnType<typeof getTimes>>();
+
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
-      const { localDateTime, fileCreatedAt } = getTimes(
-        bucketAssets.fileCreatedAt[i],
-        bucketAssets.localOffsetHours[i],
-      );
+      const offset = bucketAssets.localOffsetHours[i];
+      let cached = timesCache.get(offset);
+
+      if (!cached) {
+        cached = getTimes(bucketAssets.fileCreatedAt[i], offset);
+        timesCache.set(offset, cached);
+      }
+
+      const { localDateTime, fileCreatedAt } = cached;
 
       const timelineAsset: TimelineAsset = {
         city: bucketAssets.city[i],
@@ -229,13 +241,14 @@ export class MonthGroup {
       return;
     }
 
-    let dayGroup = addContext.getDayGroup(localDateTime) || this.findDayGroupByDay(localDateTime.day);
+    let dayGroup = addContext.getDayGroup(localDateTime) || this.#dayGroupsByDay.get(localDateTime.day);
     if (dayGroup) {
       addContext.setDayGroup(dayGroup, localDateTime);
     } else {
       const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
       dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle);
       this.dayGroups.push(dayGroup);
+      this.#dayGroupsByDay.set(localDateTime.day, dayGroup);
       addContext.setDayGroup(dayGroup, localDateTime);
       addContext.newDayGroups.add(dayGroup);
     }
