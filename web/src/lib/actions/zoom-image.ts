@@ -23,7 +23,25 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
   node.addEventListener('wheel', onInteractionStart, { capture: true });
   node.addEventListener('pointerdown', onInteractionStart, { capture: true });
 
+  // Suppress Safari's synthetic dblclick on double-tap. Without this, zoom-image's touchstart
+  // handler zooms to maxZoom (10x), then Safari's synthetic dblclick triggers photo-viewer's
+  // handler which conflicts. Chrome does not fire synthetic dblclick on touch.
+  let lastPointerWasTouch = false;
+  const trackPointerType = (event: PointerEvent) => {
+    lastPointerWasTouch = event.pointerType === 'touch';
+  };
+  const suppressTouchDblClick = (event: MouseEvent) => {
+    if (lastPointerWasTouch) {
+      event.stopImmediatePropagation();
+    }
+  };
+  node.addEventListener('pointerdown', trackPointerType, { capture: true });
+  node.addEventListener('dblclick', suppressTouchDblClick, { capture: true });
+
+  // Allow zoomed content to render outside the container bounds
   node.style.overflow = 'visible';
+  // Prevent browser handling of touch gestures so zoom-image can manage them
+  node.style.touchAction = 'none';
   return {
     update(newOptions?: { disabled?: boolean }) {
       options = newOptions;
@@ -34,6 +52,8 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
       }
       node.removeEventListener('wheel', onInteractionStart, { capture: true });
       node.removeEventListener('pointerdown', onInteractionStart, { capture: true });
+      node.removeEventListener('pointerdown', trackPointerType, { capture: true });
+      node.removeEventListener('dblclick', suppressTouchDblClick, { capture: true });
       zoomInstance.cleanup();
     },
   };
