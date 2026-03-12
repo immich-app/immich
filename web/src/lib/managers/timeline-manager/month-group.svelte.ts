@@ -31,9 +31,6 @@ export class MonthGroup {
   dayGroups: DayGroup[] = $state([]);
   readonly timelineManager: TimelineManager;
 
-  // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  #dayGroupsByDay: Map<number, DayGroup> = new Map();
-
   #height: number = $state(0);
   #top: number = $state(0);
 
@@ -72,7 +69,6 @@ export class MonthGroup {
       },
       () => {
         this.dayGroups = [];
-        this.#dayGroupsByDay.clear();
         this.isLoaded = false;
       },
       this.#handleLoadError,
@@ -149,7 +145,6 @@ export class MonthGroup {
         combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
         if (group.viewerAssets.length === 0) {
           dayGroups.splice(index, 1);
-          this.#dayGroupsByDay.delete(group.day);
           combinedChangedGeometry = true;
         }
       }
@@ -242,14 +237,13 @@ export class MonthGroup {
       return;
     }
 
-    let dayGroup = addContext.getDayGroup(localDateTime) || this.#dayGroupsByDay.get(localDateTime.day);
+    let dayGroup = addContext.getDayGroup(localDateTime) || this.findDayGroupByDay(localDateTime.day);
     if (dayGroup) {
       addContext.setDayGroup(dayGroup, localDateTime);
     } else {
       const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
       dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle);
       this.dayGroups.push(dayGroup);
-      this.#dayGroupsByDay.set(localDateTime.day, dayGroup);
       addContext.setDayGroup(dayGroup, localDateTime);
       addContext.newDayGroups.add(dayGroup);
     }
