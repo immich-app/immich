@@ -1,4 +1,3 @@
-import { PluginContext } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +8,8 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { PluginContext } from 'src/enum';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 
 @Table('plugin')

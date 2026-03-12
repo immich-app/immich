@@ -155,6 +155,7 @@ abstract final class TestUtils {
       width: width,
       height: height,
       orientation: orientation,
+      playbackStyle: domain.AssetPlaybackStyle.image,
       isEdited: false,
     );
   }

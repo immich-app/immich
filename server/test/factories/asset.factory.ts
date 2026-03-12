@@ -55,7 +55,6 @@ export class AssetFactory {
       deviceId: '',
       duplicateId: null,
       duration: null,
-      encodedVideoPath: null,
       fileCreatedAt: newDate(),
       fileModifiedAt: newDate(),
       isExternal: false,
@@ -96,7 +95,7 @@ export class AssetFactory {
   }
 
   face(dto: AssetFaceLike = {}, builder?: FactoryBuilder<AssetFaceFactory>) {
-    this.#faces.push(build(AssetFaceFactory.from(dto), builder));
+    this.#faces.push(build(AssetFaceFactory.from({ assetId: this.value?.id, ...dto }), builder));
     return this;
   }
 

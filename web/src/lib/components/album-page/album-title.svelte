@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -21,12 +22,14 @@
     }
 
     try {
-      ({ albumName } = await updateAlbumInfo({
+      const response = await updateAlbumInfo({
         id,
         updateAlbumDto: {
           albumName: newAlbumName,
         },
-      }));
+      });
+      ({ albumName } = response);
+      eventManager.emit('AlbumUpdate', response);
       onUpdate(albumName);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));

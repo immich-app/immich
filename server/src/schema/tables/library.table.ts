@@ -1,5 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +8,9 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('library')
 @UpdatedAtTrigger('library_updatedAt')

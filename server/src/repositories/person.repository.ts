@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
@@ -485,12 +485,6 @@ export class PersonRepository {
     return this.db
       .selectFrom('asset_face')
       .selectAll('asset_face')
-      .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('asset').selectAll('asset').whereRef('asset.id', '=', 'asset_face.assetId')).as(
-          'asset',
-        ),
-      )
-      .$narrowType<{ asset: NotNull }>()
       .select(withPerson)
       .where('asset_face.assetId', 'in', assetIds)
       .where('asset_face.personId', 'in', personIds)
@@ -582,5 +576,16 @@ export class PersonRepository {
           .execute();
       }
     });
+  }
+
+  @GenerateSql({ params: [{ personId: DummyValue.UUID, assetId: DummyValue.UUID }] })
+  getForFeatureFaceUpdate({ personId, assetId }: { personId: string; assetId: string }) {
+    return this.db
+      .selectFrom('asset_face')
+      .select('asset_face.id')
+      .where('asset_face.assetId', '=', assetId)
+      .where('asset_face.personId', '=', personId)
+      .innerJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.isOffline', '=', false))
+      .executeTakeFirst();
   }
 }

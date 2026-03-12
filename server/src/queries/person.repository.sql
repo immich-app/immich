@@ -292,19 +292,6 @@ select
     from
       (
         select
-          "asset".*
-        from
-          "asset"
-        where
-          "asset"."id" = "asset_face"."assetId"
-      ) as obj
-  ) as "asset",
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
           "person".*
         from
           "person"
@@ -355,3 +342,14 @@ from
   "person"
 where
   "id" in ($1)
+
+-- PersonRepository.getForFeatureFaceUpdate
+select
+  "asset_face"."id"
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  and "asset"."isOffline" = $1
+where
+  "asset_face"."assetId" = $2
+  and "asset_face"."personId" = $3

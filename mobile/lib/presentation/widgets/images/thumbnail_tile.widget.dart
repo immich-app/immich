@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
@@ -305,6 +305,8 @@ class _AssetTypeIcons extends StatelessWidget {
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
             child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
+        if (asset.isAnimatedImage)
+          const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
       ],
     );
   }

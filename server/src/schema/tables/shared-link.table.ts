@@ -1,6 +1,3 @@
-import { SharedLinkType } from 'src/enum';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +6,10 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { SharedLinkType } from 'src/enum';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('shared_link')
 export class SharedLinkTable {

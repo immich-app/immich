@@ -166,7 +166,7 @@ class DuplicatesApi {
 
   /// Resolve duplicate groups
   ///
-  /// Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.
+  /// Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -200,7 +200,7 @@ class DuplicatesApi {
 
   /// Resolve duplicate groups
   ///
-  /// Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.
+  /// Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.
   ///
   /// Parameters:
   ///

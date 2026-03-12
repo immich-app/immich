@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
-import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { Insertable, Kysely, Selectable, ShallowDehydrateObject, sql, Updateable } from 'kysely';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Album, columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
+import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { SharedLinkType } from 'src/enum';
 import { DB } from 'src/schema';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 
 export type SharedLinkSearchOptions = {
@@ -106,11 +107,15 @@ export class SharedLinkRepository {
       .select((eb) =>
         eb.fn
           .coalesce(eb.fn.jsonAgg('a').filterWhere('a.id', 'is not', null), sql`'[]'`)
-          .$castTo<MapAsset[]>()
+          .$castTo<
+            (ShallowDehydrateObject<Selectable<AssetTable>> & {
+              exifInfo: ShallowDehydrateObject<Selectable<AssetExifTable>>;
+            })[]
+          >()
           .as('assets'),
       )
       .groupBy(['shared_link.id', sql`"album".*`])
-      .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
+      .select((eb) => eb.fn.toJson(eb.table('album')).$castTo<ShallowDehydrateObject<Album> | null>().as('album'))
       .where('shared_link.id', '=', id)
       .where('shared_link.userId', '=', userId)
       .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
@@ -124,19 +129,18 @@ export class SharedLinkRepository {
       .selectFrom('shared_link')
       .selectAll('shared_link')
       .where('shared_link.userId', '=', userId)
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
-      .leftJoinLateral(
-        (eb) =>
+      .select((eb) =>
+        jsonArrayFrom(
           eb
-            .selectFrom('asset')
-            .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-            .whereRef('asset.id', '=', 'shared_link_asset.assetId')
+            .selectFrom('shared_link_asset')
+            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
+            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
             .where('asset.deletedAt', 'is', null)
-            .as('assets'),
-        (join) => join.onTrue(),
+            .selectAll('asset')
+            .orderBy('asset.fileCreatedAt', 'asc')
+            .limit(1),
+        ).as('assets'),
       )
-      .select('assets.assets')
-      .$narrowType<{ assets: NotNull }>()
       .leftJoinLateral(
         (eb) =>
           eb
@@ -174,12 +178,11 @@ export class SharedLinkRepository {
             .as('album'),
         (join) => join.onTrue(),
       )
-      .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
+      .select((eb) => eb.fn.toJson('album').$castTo<ShallowDehydrateObject<Album> | null>().as('album'))
       .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
       .$if(!!id, (eb) => eb.where('shared_link.id', '=', id!))
       .orderBy('shared_link.createdAt', 'desc')
-      .distinctOn(['shared_link.createdAt'])
       .execute();
   }
 
@@ -246,6 +249,21 @@ export class SharedLinkRepository {
     await this.db.deleteFrom('shared_link').where('shared_link.id', '=', id).execute();
   }
 
+  @ChunkedArray({ paramIndex: 1 })
+  async addAssets(id: string, assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return [];
+    }
+
+    return await this.db
+      .insertInto('shared_link_asset')
+      .values(assetIds.map((assetId) => ({ assetId, sharedLinkId: id })))
+      .onConflict((oc) => oc.doNothing())
+      .returning(['shared_link_asset.assetId'])
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   private getSharedLinks(id: string) {
     return this.db
       .selectFrom('shared_link')
@@ -269,7 +287,11 @@ export class SharedLinkRepository {
       .select((eb) =>
         eb.fn
           .coalesce(eb.fn.jsonAgg('assets').filterWhere('assets.id', 'is not', null), sql`'[]'`)
-          .$castTo<MapAsset[]>()
+          .$castTo<
+            (ShallowDehydrateObject<Selectable<AssetTable>> & {
+              exifInfo: ShallowDehydrateObject<Selectable<AssetExifTable>>;
+            })[]
+          >()
           .as('assets'),
       )
       .groupBy('shared_link.id')

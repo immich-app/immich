@@ -177,40 +177,51 @@ export const utils = {
   },
 
   resetDatabase: async (tables?: string[]) => {
-    try {
-      client = await utils.connectDatabase();
+    client = await utils.connectDatabase();
 
-      tables = tables || [
-        // TODO e2e test for deleting a stack, since it is quite complex
-        'stack',
-        'library',
-        'shared_link',
-        'person',
-        'album',
-        'asset',
-        'asset_face',
-        'activity',
-        'api_key',
-        'session',
-        'user',
-        'system_metadata',
-        'tag',
-      ];
+    tables = tables || [
+      // TODO e2e test for deleting a stack, since it is quite complex
+      'stack',
+      'library',
+      'shared_link',
+      'person',
+      'album',
+      'asset',
+      'asset_face',
+      'activity',
+      'api_key',
+      'session',
+      'user',
+      'system_metadata',
+      'tag',
+    ];
 
-      const sql: string[] = [];
+    const truncateTables = tables.filter((table) => table !== 'system_metadata');
+    const sql: string[] = [];
 
-      for (const table of tables) {
-        if (table === 'system_metadata') {
-          sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
-        } else {
-          sql.push(`DELETE FROM "${table}" CASCADE;`);
+    if (truncateTables.length > 0) {
+      sql.push(`TRUNCATE "${truncateTables.join('", "')}" CASCADE;`);
+    }
+
+    if (tables.includes('system_metadata')) {
+      sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
+    }
+
+    const query = sql.join('\n');
+    const maxRetries = 3;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await client.query(query);
+        return;
+      } catch (error: any) {
+        if (error?.code === '40P01' && attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+          continue;
         }
+        console.error('Failed to reset database', error);
+        throw error;
       }
-
-      await client.query(sql.join('\n'));
-    } catch (error) {
-      console.error('Failed to reset database', error);
-      throw error;
     }
   },
 

@@ -14,43 +14,26 @@ class DuplicateResolveDto {
   /// Returns a new [DuplicateResolveDto] instance.
   DuplicateResolveDto({
     this.groups = const [],
-    this.settings,
   });
 
   /// List of duplicate groups to resolve
   List<DuplicateResolveGroupDto> groups;
 
-  /// Settings for synchronization behavior
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DuplicateSyncSettingsDto? settings;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is DuplicateResolveDto &&
-    _deepEquality.equals(other.groups, groups) &&
-    other.settings == settings;
+    _deepEquality.equals(other.groups, groups);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (groups.hashCode) +
-    (settings == null ? 0 : settings!.hashCode);
+    (groups.hashCode);
 
   @override
-  String toString() => 'DuplicateResolveDto[groups=$groups, settings=$settings]';
+  String toString() => 'DuplicateResolveDto[groups=$groups]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'groups'] = this.groups;
-    if (this.settings != null) {
-      json[r'settings'] = this.settings;
-    } else {
-    //  json[r'settings'] = null;
-    }
     return json;
   }
 
@@ -64,7 +47,6 @@ class DuplicateResolveDto {
 
       return DuplicateResolveDto(
         groups: DuplicateResolveGroupDto.listFromJson(json[r'groups']),
-        settings: DuplicateSyncSettingsDto.fromJson(json[r'settings']),
       );
     }
     return null;

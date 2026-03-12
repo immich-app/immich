@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
-import { AssetFile, Exif } from 'src/database';
+import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -39,7 +39,7 @@ import {
   VideoInterfaces,
   VideoStreamInfo,
 } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
+import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -52,6 +52,7 @@ interface UpsertFileOptions {
   path: string;
   isEdited: boolean;
   isProgressive: boolean;
+  isTransparent: boolean;
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
@@ -257,7 +258,7 @@ export class MediaService extends BaseService {
     return extracted;
   }
 
-  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
+  private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
     const { image } = await this.getConfig({ withCache: true });
     const colorspace = this.isSRGB(exifInfo) ? Colorspace.Srgb : image.colorspace;
     const decodeOptions: DecodeToBufferOptions = {
@@ -280,13 +281,19 @@ export class MediaService extends BaseService {
       useEdits;
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
+    const thumbSource = extracted ? extracted.buffer : asset.originalPath;
     const { data, info, colorspace } = await this.decodeImage(
-      extracted ? extracted.buffer : asset.originalPath,
+      thumbSource,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
       convertFullsize ? undefined : image.preview.size,
     );
+
+    let isTransparent = false;
+    if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
+      ({ isTransparent } = await this.mediaRepository.getImageMetadata(asset.originalPath));
+    }
 
     return {
       extracted,
@@ -295,50 +302,64 @@ export class MediaService extends BaseService {
       colorspace,
       convertFullsize,
       generateFullsize,
+      isTransparent,
     };
   }
 
   private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
+    // Handle embedded preview extraction for RAW files
+    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
+    const { info, data, colorspace, generateFullsize, convertFullsize, extracted, isTransparent } = extractedImage;
+
+    const previewFormat = image.preview.format;
+    this.warnOnTransparencyLoss(isTransparent, previewFormat, asset.id);
+
+    const thumbnailFormat = image.thumbnail.format;
+    this.warnOnTransparencyLoss(isTransparent, thumbnailFormat, asset.id);
+
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
-      format: image.preview.format,
+      format: previewFormat,
       isEdited: useEdits,
-      isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
+      isProgressive: !!image.preview.progressive && previewFormat !== ImageFormat.Webp,
+      isTransparent,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
-      format: image.thumbnail.format,
+      format: thumbnailFormat,
       isEdited: useEdits,
-      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format !== ImageFormat.Webp,
+      isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
+      isTransparent,
     });
     this.storageCore.ensureFolders(previewFile.path);
 
-    // Handle embedded preview extraction for RAW files
-    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
-    const { info, data, colorspace, generateFullsize, convertFullsize, extracted } = extractedImage;
-
     // generate final images
-    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const baseOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
+    const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
     const promises = [
-      this.mediaRepository.generateThumbhash(data, thumbnailOptions),
-      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewFile.path),
+      this.mediaRepository.generateThumbhash(data, baseOptions),
+      this.mediaRepository.generateThumbnail(data, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(data, previewOptions, previewFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
     if (convertFullsize) {
+      const fullsizeFormat = image.fullsize.format;
+      this.warnOnTransparencyLoss(isTransparent, fullsizeFormat, asset.id);
       // convert a new fullsize image from the same source as the thumbnail
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
-        format: image.fullsize.format,
+        format: fullsizeFormat,
         isEdited: useEdits,
-        isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isProgressive: !!image.fullsize.progressive && fullsizeFormat !== ImageFormat.Webp,
+        isTransparent,
       });
       const fullsizeOptions = {
-        format: image.fullsize.format,
+        ...baseOptions,
+        format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
-        ...thumbnailOptions,
       };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
@@ -347,6 +368,7 @@ export class MediaService extends BaseService {
         format: extracted.format,
         isEdited: false,
         isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isTransparent,
       });
       this.storageCore.ensureFolders(fullsizeFile.path);
 
@@ -493,12 +515,14 @@ export class MediaService extends BaseService {
       format: image.preview.format,
       isEdited: false,
       isProgressive: false,
+      isTransparent: false,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
       format: image.thumbnail.format,
       isEdited: false,
       isProgressive: false,
+      isTransparent: false,
     });
     this.storageCore.ensureFolders(previewFile.path);
 
@@ -581,10 +605,11 @@ export class MediaService extends BaseService {
     let { ffmpeg } = await this.getConfig({ withCache: true });
     const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
     if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
-      if (asset.encodedVideoPath) {
+      const encodedVideo = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
+      if (encodedVideo) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
-        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [asset.encodedVideoPath] } });
-        await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [encodedVideo.path] } });
+        await this.assetRepository.deleteFiles([encodedVideo]);
       } else {
         this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
       }
@@ -632,7 +657,12 @@ export class MediaService extends BaseService {
 
     this.logger.log(`Successfully encoded ${asset.id}`);
 
-    await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
+    await this.assetRepository.upsertFile({
+      assetId: asset.id,
+      type: AssetFileType.EncodedVideo,
+      path: output,
+      isEdited: false,
+    });
 
     return JobStatus.Success;
   }
@@ -693,7 +723,8 @@ export class MediaService extends BaseService {
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
-    const isLargerThanTargetBitrate = stream.bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
+    const maxBitrate = this.parseBitrateToBps(ffmpegConfig.maxBitrate);
+    const isLargerThanTargetBitrate = maxBitrate > 0 && stream.bitrate > maxBitrate;
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
     const isRequired = !isTargetVideoCodec || !stream.pixelFormat.endsWith('420p');
@@ -729,7 +760,15 @@ export class MediaService extends BaseService {
     return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB({ colorspace, profileDescription, bitsPerSample }: Exif): boolean {
+  isSRGB({
+    colorspace,
+    profileDescription,
+    bitsPerSample,
+  }: {
+    colorspace: string | null;
+    profileDescription: string | null;
+    bitsPerSample: number | null;
+  }): boolean {
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     } else if (bitsPerSample) {
@@ -745,6 +784,7 @@ export class MediaService extends BaseService {
     const bitrateValue = Number.parseInt(bitrateString);
 
     if (Number.isNaN(bitrateValue)) {
+      this.logger.log(`Maximum bitrate '${bitrateString} is not a number and will be ignored.`);
       return 0;
     }
 
@@ -758,7 +798,7 @@ export class MediaService extends BaseService {
   }
 
   private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
+    const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
   }
@@ -785,7 +825,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async syncFiles(oldFiles: (AssetFile & { isProgressive: boolean })[], newFiles: UpsertFileOptions[]) {
+  private async syncFiles(
+    oldFiles: (AssetFile & { isProgressive: boolean; isTransparent: boolean })[],
+    newFiles: UpsertFileOptions[],
+  ) {
     const toUpsert: UpsertFileOptions[] = [];
     const pathsToDelete: string[] = [];
     const toDelete = new Set(oldFiles);
@@ -797,7 +840,11 @@ export class MediaService extends BaseService {
       }
 
       // upsert new file path
-      if (existingFile?.path !== newFile.path || existingFile.isProgressive !== newFile.isProgressive) {
+      if (
+        existingFile?.path !== newFile.path ||
+        existingFile.isProgressive !== newFile.isProgressive ||
+        existingFile.isTransparent !== newFile.isTransparent
+      ) {
         toUpsert.push(newFile);
 
         // delete old file from disk
@@ -857,7 +904,18 @@ export class MediaService extends BaseService {
     return generated;
   }
 
-  private getImageFile(asset: ThumbnailPathEntity, options: ImagePathOptions & { isProgressive: boolean }) {
+  private warnOnTransparencyLoss(isTransparent: boolean, format: ImageFormat, assetId: string) {
+    if (isTransparent && format === ImageFormat.Jpeg) {
+      this.logger.warn(
+        `Asset ${assetId} has transparency but the configured format is ${format} which does not support it, consider using a format that does, such as ${ImageFormat.Webp}`,
+      );
+    }
+  }
+
+  private getImageFile(
+    asset: ThumbnailPathEntity,
+    options: ImagePathOptions & { isProgressive: boolean; isTransparent: boolean },
+  ) {
     const path = StorageCore.getImagePath(asset, options);
     return {
       assetId: asset.id,
@@ -865,6 +923,7 @@ export class MediaService extends BaseService {
       path,
       isEdited: options.isEdited,
       isProgressive: options.isProgressive,
+      isTransparent: options.isTransparent,
     };
   }
 }

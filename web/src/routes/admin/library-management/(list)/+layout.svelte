@@ -58,7 +58,7 @@
     delete owners[id];
   };
 
-  const { Create, ScanAll } = $derived(getLibrariesActions($t, libraries));
+  const { Create, ScanAll } = $derived(getLibrariesActions($t));
 
   const getActionsForLibrary = (library: LibraryResponseDto) => {
     const { Detail, Scan, Edit, Delete } = getLibraryActions($t, library);
