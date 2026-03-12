@@ -1,3 +1,4 @@
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const skipDockerSetup = process.env.VITEST_DISABLE_DOCKER_SETUP === 'true';
@@ -14,15 +15,14 @@ if (!skipDockerSetup) {
 
 export default defineConfig({
   test: {
+    name: 'e2e:server',
     retry: process.env.CI ? 4 : 0,
     include: ['src/specs/server/**/*.e2e-spec.ts'],
     globalSetup,
     testTimeout: 15_000,
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
   },
+  plugins: [tsconfigPaths()],
 });

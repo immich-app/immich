@@ -102,22 +102,30 @@ order by
   "shared_link"."createdAt" desc
 
 -- SharedLinkRepository.getAll
-select distinct
-  on ("shared_link"."createdAt") "shared_link".*,
-  "assets"."assets",
+select
+  "shared_link".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset".*
+        from
+          "shared_link_asset"
+          inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+        where
+          "shared_link"."id" = "shared_link_asset"."sharedLinkId"
+          and "asset"."deletedAt" is null
+        order by
+          "asset"."fileCreatedAt" asc
+        limit
+          $1
+      ) as agg
+  ) as "assets",
   to_json("album") as "album"
 from
   "shared_link"
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
-  left join lateral (
-    select
-      json_agg("asset") as "assets"
-    from
-      "asset"
-    where
-      "asset"."id" = "shared_link_asset"."assetId"
-      and "asset"."deletedAt" is null
-  ) as "assets" on true
   left join lateral (
     select
       "album".*,
@@ -152,12 +160,12 @@ from
       and "album"."deletedAt" is null
   ) as "album" on true
 where
-  "shared_link"."userId" = $1
+  "shared_link"."userId" = $2
   and (
-    "shared_link"."type" = $2
+    "shared_link"."type" = $3
     or "album"."id" is not null
   )
-  and "shared_link"."albumId" = $3
+  and "shared_link"."albumId" = $4
 order by
   "shared_link"."createdAt" desc
 
@@ -236,3 +244,37 @@ where
     or "album"."id" is not null
   )
   and "shared_link"."slug" = $2
+
+-- SharedLinkRepository.getSharedLinks
+select
+  "shared_link".*,
+  coalesce(
+    json_agg("assets") filter (
+      where
+        "assets"."id" is not null
+    ),
+    '[]'
+  ) as "assets"
+from
+  "shared_link"
+  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
+  left join lateral (
+    select
+      "asset".*
+    from
+      "asset"
+      inner join lateral (
+        select
+          *
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as "exifInfo" on true
+    where
+      "asset"."id" = "shared_link_asset"."assetId"
+  ) as "assets" on true
+where
+  "shared_link"."id" = $1
+group by
+  "shared_link"."id"

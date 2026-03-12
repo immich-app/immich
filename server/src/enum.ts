@@ -409,7 +409,9 @@ export enum VideoCodec {
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  LibOpus = 'libopus',
+  /** @deprecated Use `Opus` instead */
+  Libopus = 'libopus',
+  Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
 
@@ -720,6 +722,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AssetEditsV1 = 'AssetEditsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
@@ -745,6 +748,8 @@ export enum SyncEntityType {
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+  AssetEditV1 = 'AssetEditV1',
+  AssetEditDeleteV1 = 'AssetEditDeleteV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
 

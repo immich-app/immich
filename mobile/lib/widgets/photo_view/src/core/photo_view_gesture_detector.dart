@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
-
-import 'photo_view_hit_corners.dart';
+import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_hit_corners.dart';
 
 /// Credit to [eduribas](https://github.com/eduribas/photo_view/commit/508d9b77dafbcf88045b4a7fee737eed4064ea2c)
 /// for the gist

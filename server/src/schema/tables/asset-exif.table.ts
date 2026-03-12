@@ -1,9 +1,23 @@
-import { Column, ForeignKeyColumn, Generated, Int8, Table, Timestamp, UpdateDateColumn } from '@immich/sql-tools';
+import {
+  Column,
+  ForeignKeyColumn,
+  Generated,
+  Index,
+  Int8,
+  Table,
+  Timestamp,
+  UpdateDateColumn,
+} from '@immich/sql-tools';
 import { LockableProperty } from 'src/database';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_exif')
+@Index({
+  name: 'IDX_asset_exif_gist_earthcoord',
+  using: 'gist',
+  expression: 'll_to_earth_public(latitude, longitude)',
+})
 @UpdatedAtTrigger('asset_exif_updatedAt')
 export class AssetExifTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', primary: true })

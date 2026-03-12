@@ -3,27 +3,28 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
   import { Icon } from '@immich/ui';
+  import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+
+  export type Rating = 1 | 2 | 3 | 4 | 5 | null;
 
   interface Props {
     count?: number;
-    rating: number;
+    rating: Rating;
     readOnly?: boolean;
-    onRating: (rating: number) => void | undefined;
+    onRating: (rating: Rating) => void | undefined;
   }
 
   let { count = 5, rating, readOnly = false, onRating }: Props = $props();
 
   let ratingSelection = $derived(rating);
-  let hoverRating = $state(0);
-  let focusRating = $state(0);
+  let hoverRating: Rating = $state(null);
+  let focusRating: Rating = $state(null);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  const starIcon =
-    'M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z';
   const id = generateId();
 
-  const handleSelect = (newRating: number) => {
+  const handleSelect = (newRating: Rating) => {
     if (readOnly) {
       return;
     }
@@ -35,7 +36,7 @@
     onRating(newRating);
   };
 
-  const setHoverRating = (value: number) => {
+  const setHoverRating = (value: Rating) => {
     if (readOnly) {
       return;
     }
@@ -43,11 +44,11 @@
   };
 
   const reset = () => {
-    setHoverRating(0);
-    focusRating = 0;
+    setHoverRating(null);
+    focusRating = null;
   };
 
-  const handleSelectDebounced = (value: number) => {
+  const handleSelectDebounced = (value: Rating) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       handleSelect(value);
@@ -58,7 +59,7 @@
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <fieldset
   class="text-primary w-fit cursor-default"
-  onmouseleave={() => setHoverRating(0)}
+  onmouseleave={() => setHoverRating(null)}
   use:focusOutside={{ onFocusOut: reset }}
   use:shortcuts={[
     { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
@@ -69,7 +70,7 @@
   <div class="flex flex-row" data-testid="star-container">
     {#each { length: count } as _, index (index)}
       {@const value = index + 1}
-      {@const filled = hoverRating >= value || (hoverRating === 0 && ratingSelection >= value)}
+      {@const filled = hoverRating === null ? (ratingSelection || 0) >= value : hoverRating >= value}
       {@const starId = `${id}-${value}`}
       <!-- svelte-ignore a11y_mouse_events_have_key_events -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -77,19 +78,12 @@
         for={starId}
         class:cursor-pointer={!readOnly}
         class:ring-2={focusRating === value}
-        onmouseover={() => setHoverRating(value)}
+        onmouseover={() => setHoverRating(value as Rating)}
         tabindex={-1}
         data-testid="star"
       >
         <span class="sr-only">{$t('rating_count', { values: { count: value } })}</span>
-        <Icon
-          icon={starIcon}
-          size="1.5em"
-          strokeWidth={1}
-          color={filled ? 'currentcolor' : 'transparent'}
-          strokeColor={filled ? 'currentcolor' : '#c1cce8'}
-          aria-hidden
-        />
+        <Icon icon={filled ? mdiStar : mdiStarOutline} size="1.5em" aria-hidden />
       </label>
       <input
         type="radio"
@@ -99,19 +93,19 @@
         bind:group={ratingSelection}
         disabled={readOnly}
         onfocus={() => {
-          focusRating = value;
+          focusRating = value as Rating;
         }}
-        onchange={() => handleSelectDebounced(value)}
+        onchange={() => handleSelectDebounced(value as Rating)}
         class="sr-only"
       />
     {/each}
   </div>
 </fieldset>
-{#if ratingSelection > 0 && !readOnly}
+{#if ratingSelection !== null && !readOnly}
   <button
     type="button"
     onclick={() => {
-      ratingSelection = 0;
+      ratingSelection = null;
       handleSelect(ratingSelection);
     }}
     class="cursor-pointer text-xs text-primary"

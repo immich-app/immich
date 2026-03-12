@@ -9,8 +9,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_act
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -21,7 +20,7 @@ class ViewerBottomBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetNotifier);
+    final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     if (asset == null) {
       return const SizedBox.shrink();
     }
@@ -62,15 +61,27 @@ class ViewerBottomBar extends ConsumerWidget {
                 ),
               ),
               child: Container(
-                color: Colors.black.withAlpha(125),
-                padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (asset.isVideo) const VideoControls(),
-                    if (!isReadonlyModeEnabled)
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
-                  ],
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Colors.black45, Colors.black12, Colors.transparent],
+                    stops: [0.0, 0.7, 1.0],
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
+                        if (!isReadonlyModeEnabled)
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

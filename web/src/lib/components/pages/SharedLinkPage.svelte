@@ -10,7 +10,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Logo, PasswordInput } from '@immich/ui';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -60,6 +60,10 @@
     event.preventDefault();
     await handlePasswordSubmit();
   };
+
+  onDestroy(() => {
+    setSharedLink(undefined);
+  });
 </script>
 
 <svelte:head>

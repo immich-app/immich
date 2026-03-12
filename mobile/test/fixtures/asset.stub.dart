@@ -64,6 +64,7 @@ abstract final class LocalAssetStub {
     type: AssetType.image,
     createdAt: DateTime(2025),
     updatedAt: DateTime(2025, 2),
+    playbackStyle: AssetPlaybackStyle.image,
     isEdited: false,
   );
 
@@ -73,6 +74,7 @@ abstract final class LocalAssetStub {
     type: AssetType.image,
     createdAt: DateTime(2000),
     updatedAt: DateTime(20021),
+    playbackStyle: AssetPlaybackStyle.image,
     isEdited: false,
   );
 }

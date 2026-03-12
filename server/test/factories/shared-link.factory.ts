@@ -51,12 +51,14 @@ export class SharedLinkFactory {
 
   album(dto: AlbumLike = {}, builder?: FactoryBuilder<AlbumFactory>) {
     this.#album = build(AlbumFactory.from(dto), builder);
+    this.value.type = SharedLinkType.Album;
     return this;
   }
 
   asset(dto: AssetLike = {}, builder?: FactoryBuilder<AssetFactory>) {
     const asset = build(AssetFactory.from(dto), builder);
     this.#assets.push(asset);
+    this.value.type = SharedLinkType.Individual;
     return this;
   }
 

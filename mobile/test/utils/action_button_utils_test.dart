@@ -23,6 +23,7 @@ LocalAsset createLocalAsset({
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
     isFavorite: isFavorite,
+    playbackStyle: AssetPlaybackStyle.image,
     isEdited: false,
   );
 }
