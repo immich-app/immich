@@ -162,8 +162,9 @@
 <div class="relative h-full w-full overflow-hidden will-change-transform" bind:this={ref}>
   {@render backdrop?.()}
 
+  <!-- pointer-events-none so events pass through to the container where zoom-image listens -->
   <div
-    class="absolute inset-0"
+    class="absolute inset-0 pointer-events-none"
     style:transform={zoomTransform}
     style:transform-origin={zoomTransform ? '0 0' : undefined}
   >
