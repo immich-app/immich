@@ -65,7 +65,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     let cacheKey = "random_none_\(context.family.rawValue)"
 
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry.handleError(for: cacheKey, error: .noLogin).entries
+      return await ImageEntry.handleError(for: cacheKey, error: .noLogin).entries
         .first!
     }
 
@@ -79,7 +79,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
         dateOffset: 0
       )
     else {
-      return ImageEntry.handleError(for: cacheKey).entries.first!
+      return await ImageEntry.handleError(for: cacheKey, api: api).entries.first!
     }
 
     return entry
@@ -102,7 +102,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
 
     // If we don't have a server config, return an entry with an error
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry.handleError(for: cacheKey, error: .noLogin)
+      return await ImageEntry.handleError(for: cacheKey, error: .noLogin)
     }
 
     // build entries
@@ -119,16 +119,16 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
 
       // Load or save a cached asset for when network conditions are bad
       if search.count == 0 {
-        return ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
+        return await ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
       }
 
       entries.append(contentsOf: search)
     } catch {
-      return ImageEntry.handleError(for: cacheKey)
+      return await ImageEntry.handleError(for: cacheKey, api: api)
     }
 
-    // cache the last image
-    try? entries.last!.cache(for: cacheKey)
+    // save the last asset for fallback
+    ImageEntry.saveLast(for: cacheKey, metadata: entries.last!.metadata)
 
     return Timeline(entries: entries, policy: .atEnd)
   }

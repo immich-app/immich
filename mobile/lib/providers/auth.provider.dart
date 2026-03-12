@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -87,9 +89,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     try {
       await _secureStorageService.delete(kSecuredPinCode);
-      await _widgetService.clearCredentials();
-
       await _authService.logout();
+      unawaited(_widgetService.refreshWidgets());
       await _ref.read(backgroundUploadServiceProvider).cancel();
       _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {
@@ -126,9 +127,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await Store.put(StoreKey.accessToken, accessToken);
     await _apiService.updateHeaders();
 
-    final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final customHeaders = Store.tryGet(StoreKey.customHeaders);
-    await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
+    unawaited(_widgetService.refreshWidgets());
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;

@@ -9,6 +9,7 @@ struct ImageEntry: TimelineEntry {
   var metadata: Metadata = Metadata()
 
   struct Metadata: Codable {
+    var assetId: String? = nil
     var subtitle: String? = nil
     var error: WidgetError? = nil
     var deepLink: URL? = nil
@@ -33,80 +34,39 @@ struct ImageEntry: TimelineEntry {
       date: entryDate,
       image: image,
       metadata: EntryMetadata(
+        assetId: asset.id,
         subtitle: subtitle,
         deepLink: asset.deepLink
       )
     )
   }
 
-  func cache(for key: String) throws {
-    if let containerURL = FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: IMMICH_SHARE_GROUP
-    ) {
-      let imageURL = containerURL.appendingPathComponent("\(key)_image.png")
-      let metadataURL = containerURL.appendingPathComponent(
-        "\(key)_metadata.json"
-      )
-
-      // build metadata JSON
-      let entryMetadata = try JSONEncoder().encode(self.metadata)
-
-      // write to disk
-      try self.image?.pngData()?.write(to: imageURL, options: .atomic)
-      try entryMetadata.write(to: metadataURL, options: .atomic)
+  static func saveLast(for key: String, metadata: Metadata) {
+    if let data = try? JSONEncoder().encode(metadata) {
+      UserDefaults.group.set(data, forKey: "widget_last_\(key)")
     }
-  }
-
-  static func loadCached(for key: String, at date: Date = Date.now)
-    -> ImageEntry?
-  {
-    if let containerURL = FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: IMMICH_SHARE_GROUP
-    ) {
-      let imageURL = containerURL.appendingPathComponent("\(key)_image.png")
-      let metadataURL = containerURL.appendingPathComponent(
-        "\(key)_metadata.json"
-      )
-
-      guard let imageData = try? Data(contentsOf: imageURL),
-        let metadataJSON = try? Data(contentsOf: metadataURL),
-        let decodedMetadata = try? JSONDecoder().decode(
-          Metadata.self,
-          from: metadataJSON
-        )
-      else {
-        return nil
-      }
-
-      return ImageEntry(
-        date: date,
-        image: UIImage(data: imageData),
-        metadata: decodedMetadata
-      )
-    }
-
-    return nil
   }
 
   static func handleError(
     for key: String,
+    api: ImmichAPI? = nil,
     error: WidgetError = .fetchFailed
-  ) -> Timeline<ImageEntry> {
-    var timelineEntry = ImageEntry(
-      date: Date.now,
-      image: nil,
-      metadata: EntryMetadata(error: error)
-    )
-
-    // use cache if generic failed error
-    // we want to show the other errors to the user since without intervention,
-    // it will never succeed
-    if error == .fetchFailed, let cachedEntry = ImageEntry.loadCached(for: key)
+  ) async -> Timeline<ImageEntry> {
+    // Try to show the last image from the URL cache for transient failures
+    if error == .fetchFailed, let api = api,
+       let data = UserDefaults.group.data(forKey: "widget_last_\(key)"),
+       let cached = try? JSONDecoder().decode(Metadata.self, from: data),
+       let assetId = cached.assetId,
+       let image = try? await api.fetchImage(asset: Asset(id: assetId, type: .image))
     {
-      timelineEntry = cachedEntry
+      let entry = ImageEntry(date: Date.now, image: image, metadata: cached)
+      return Timeline(entries: [entry], policy: .atEnd)
     }
 
-    return Timeline(entries: [timelineEntry], policy: .atEnd)
+    return Timeline(
+      entries: [ImageEntry(date: Date.now, metadata: Metadata(error: error))],
+      policy: .atEnd
+    )
   }
 
 }

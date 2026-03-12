@@ -1,6 +1,10 @@
 package app.alextran.immich.images
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import app.alextran.immich.INITIAL_BUFFER_SIZE
@@ -12,11 +16,11 @@ import kotlinx.coroutines.*
 import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.Credentials
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.Credentials
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
@@ -33,6 +37,21 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
+fun NativeByteBuffer.decodeBitmap(target: android.util.Size = android.util.Size(0, 0)): Bitmap {
+  try {
+    val byteBuffer = NativeBuffer.wrap(pointer, offset)
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      ImageDecoder.createSource(byteBuffer).decodeBitmap(target = target)
+    } else {
+      val bytes = ByteArray(offset)
+      byteBuffer.get(bytes)
+      BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        ?: throw IOException("Failed to decode image")
+    }
+  } finally {
+    free()
+  }
+}
 
 private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
 
@@ -52,7 +71,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   override fun requestImage(
     url: String,
     requestId: Long,
-    @Suppress("UNUSED_PARAMETER") preferEncoded: Boolean, // always returns encoded; setting has no effect on Android
+    preferEncoded: Boolean, // always returns encoded; setting has no effect on Android
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -100,7 +119,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   }
 }
 
-private object ImageFetcherManager {
+object ImageFetcherManager {
   private lateinit var appContext: Context
   private lateinit var cacheDir: File
   private lateinit var fetcher: ImageFetcher
@@ -148,7 +167,7 @@ private object ImageFetcherManager {
   }
 }
 
-private sealed interface ImageFetcher {
+internal sealed interface ImageFetcher {
   fun fetch(
     url: String,
     signal: CancellationSignal,
@@ -161,7 +180,7 @@ private sealed interface ImageFetcher {
   fun clearCache(onCleared: (Result<Long>) -> Unit)
 }
 
-private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
+internal class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
   private val ctx = context
   private var engine: CronetEngine
   private val executor = Executors.newFixedThreadPool(4)
@@ -341,7 +360,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     }
   }
 
-  suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
+  private suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
     var totalSize = 0L
 
     Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
@@ -363,7 +382,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
   }
 }
 
-private class OkHttpImageFetcher private constructor(
+internal class OkHttpImageFetcher private constructor(
   private val client: OkHttpClient,
 ) : ImageFetcher {
   private val stateLock = Any()
@@ -374,7 +393,7 @@ private class OkHttpImageFetcher private constructor(
     fun create(cacheDir: File): OkHttpImageFetcher {
       val dir = File(cacheDir, "okhttp")
 
-      val client = HttpClientManager.getClient().newBuilder()
+      val client = HttpClientManager.client.newBuilder()
         .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
         .build()
 

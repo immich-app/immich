@@ -7,11 +7,8 @@ import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import app.alextran.immich.widget.model.*
 import es.antonborri.home_widget.HomeWidgetPlugin
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
-class MemoryReceiver : GlanceAppWidgetReceiver() {
+abstract class WidgetReceiver(private val widgetType: WidgetType) : GlanceAppWidgetReceiver() {
   override val glanceAppWidget = PhotoWidget()
 
   override fun onUpdate(
@@ -22,25 +19,25 @@ class MemoryReceiver : GlanceAppWidgetReceiver() {
     super.onUpdate(context, appWidgetManager, appWidgetIds)
 
     appWidgetIds.forEach { widgetID ->
-      ImageDownloadWorker.enqueuePeriodic(context, widgetID, WidgetType.MEMORIES)
+      ImageDownloadWorker.enqueuePeriodic(context, widgetID, widgetType)
     }
   }
 
   override fun onReceive(context: Context, intent: Intent) {
     val fromMainApp = intent.getBooleanExtra(HomeWidgetPlugin.TRIGGERED_FROM_HOME_WIDGET, false)
-    val provider = ComponentName(context, MemoryReceiver::class.java)
+    val provider = ComponentName(context, this::class.java)
     val glanceIds = AppWidgetManager.getInstance(context).getAppWidgetIds(provider)
 
     // Launch coroutine to setup a single shot if the app requested the update
     if (fromMainApp) {
       glanceIds.forEach { widgetID ->
-        ImageDownloadWorker.singleShot(context, widgetID, WidgetType.MEMORIES)
+        ImageDownloadWorker.singleShot(context, widgetID, widgetType)
       }
     }
 
     // make sure the periodic jobs are running
     glanceIds.forEach { widgetID ->
-      ImageDownloadWorker.enqueuePeriodic(context, widgetID, WidgetType.MEMORIES)
+      ImageDownloadWorker.enqueuePeriodic(context, widgetID, widgetType)
     }
 
     super.onReceive(context, intent)
@@ -48,11 +45,12 @@ class MemoryReceiver : GlanceAppWidgetReceiver() {
 
   override fun onDeleted(context: Context, appWidgetIds: IntArray) {
     super.onDeleted(context, appWidgetIds)
-    CoroutineScope(Dispatchers.Default).launch {
-      appWidgetIds.forEach { id ->
-        ImageDownloadWorker.cancel(context, id)
-      }
+    appWidgetIds.forEach { id ->
+      ImageDownloadWorker.cancel(context, id)
     }
   }
 }
 
+class MemoryReceiver : WidgetReceiver(WidgetType.MEMORIES)
+
+class RandomReceiver : WidgetReceiver(WidgetType.RANDOM)

@@ -1,6 +1,5 @@
 package app.alextran.immich.widget.model
 
-import android.graphics.Bitmap
 import androidx.datastore.preferences.core.*
 
 // MARK: Immich Entities
@@ -50,19 +49,13 @@ enum class WidgetConfigState {
 }
 
 data class WidgetEntry (
-  val image: Bitmap,
+  val assetId: String,
   val subtitle: String?,
   val deeplink: String?
 )
 
-data class ServerConfig(
-  val serverEndpoint: String,
-  val sessionKey: String,
-  val customHeaders: Map<String, String>
-)
-
 // MARK: Widget State Keys
-val kImageUUID = stringPreferencesKey("uuid")
+val kAssetId = stringPreferencesKey("assetId")
 val kSubtitleText = stringPreferencesKey("subtitle")
 val kNow = longPreferencesKey("now")
 val kWidgetState = stringPreferencesKey("state")
@@ -74,10 +67,6 @@ val kDeeplinkURL = stringPreferencesKey("deeplink")
 const val kWorkerWidgetType = "widgetType"
 const val kWorkerWidgetID = "widgetId"
 const val kTriggeredFromApp = "triggeredFromApp"
-
-fun imageFilename(id: String): String {
-  return "widget_image_$id.jpg"
-}
 
 fun assetDeeplink(asset: Asset): String {
   return "immich://asset?id=${asset.id}"

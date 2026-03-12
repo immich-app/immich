@@ -140,6 +140,13 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A872EC0CA71550E4AB04E049 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		B231F52D2E93A44A00BC45D1 /* Core */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -257,6 +264,7 @@
 				97C146EF1CF9000F007C117D /* Products */,
 				0FB772A5B9601143383626CA /* Pods */,
 				1754452DD81DA6620E279E51 /* Frameworks */,
+				A872EC0CA71550E4AB04E049 /* Shared */,
 			);
 			sourceTree = "<group>";
 		};
@@ -362,6 +370,7 @@
 				F0B57D482DF764BE00DC5BCC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				A872EC0CA71550E4AB04E049 /* Shared */,
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
 				FEE084F22EC172080045228E /* Schemas */,
@@ -384,6 +393,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				A872EC0CA71550E4AB04E049 /* Shared */,
 				F0B57D3D2DF764BD00DC5BCC /* WidgetExtension */,
 			);
 			name = WidgetExtension;

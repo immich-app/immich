@@ -24,14 +24,14 @@ struct ImmichMemoryProvider: TimelineProvider {
     Task {
       guard let api = try? await ImmichAPI() else {
         completion(
-          ImageEntry.handleError(for: cacheKey, error: .noLogin).entries.first!
+          await ImageEntry.handleError(for: cacheKey, error: .noLogin).entries.first!
         )
         return
       }
 
       guard let memories = try? await api.fetchMemory(for: Date.now)
       else {
-        completion(ImageEntry.handleError(for: cacheKey).entries.first!)
+        completion(await ImageEntry.handleError(for: cacheKey, api: api).entries.first!)
         return
       }
 
@@ -58,7 +58,7 @@ struct ImmichMemoryProvider: TimelineProvider {
           dateOffset: 0
         )
       else {
-        completion(ImageEntry.handleError(for: cacheKey).entries.first!)
+        completion(await ImageEntry.handleError(for: cacheKey, api: api).entries.first!)
         return
       }
 
@@ -78,7 +78,7 @@ struct ImmichMemoryProvider: TimelineProvider {
 
       guard let api = try? await ImmichAPI() else {
         completion(
-          ImageEntry.handleError(for: cacheKey, error: .noLogin)
+          await ImageEntry.handleError(for: cacheKey, error: .noLogin)
         )
         return
       }
@@ -129,20 +129,20 @@ struct ImmichMemoryProvider: TimelineProvider {
           // Load or save a cached asset for when network conditions are bad
           if search.count == 0 {
             completion(
-              ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
+              await ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
             )
             return
           }
 
           entries.append(contentsOf: search)
         } catch {
-          completion(ImageEntry.handleError(for: cacheKey))
+          completion(await ImageEntry.handleError(for: cacheKey, api: api))
           return
         }
       }
 
-      // cache the last image
-      try? entries.last!.cache(for: cacheKey)
+      // save the last asset for fallback
+      ImageEntry.saveLast(for: cacheKey, metadata: entries.last!.metadata)
 
       completion(Timeline(entries: entries, policy: .atEnd))
     }

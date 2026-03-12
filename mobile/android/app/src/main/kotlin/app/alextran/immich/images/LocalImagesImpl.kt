@@ -32,14 +32,18 @@ data class Request(
 )
 
 @RequiresApi(Build.VERSION_CODES.Q)
-inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
+fun ImageDecoder.Source.decodeBitmap(
+  target: Size = Size(0, 0),
+  allocator: Int = ImageDecoder.ALLOCATOR_DEFAULT,
+  colorspace: ColorSpace? = null
+): Bitmap {
   return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
     if (target.width > 0 && target.height > 0) {
       val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
       decoder.setTargetSampleSize(sample)
     }
-    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-    decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
+    decoder.allocator = allocator
+    decoder.setTargetColorSpace(colorspace)
   }
 }
 
@@ -228,7 +232,11 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   private fun decodeSource(uri: Uri, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      ImageDecoder.createSource(resolver, uri).decodeBitmap(target)
+      ImageDecoder.createSource(resolver, uri).decodeBitmap(
+        target,
+        ImageDecoder.ALLOCATOR_SOFTWARE,
+        ColorSpace.get(ColorSpace.Named.SRGB)
+      )
     } else {
       val ref =
         Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri).disallowHardwareConfig()

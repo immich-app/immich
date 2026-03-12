@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-let IMMICH_SHARE_GROUP = "group.app.immich.share"
+// Constants and session configuration are in Shared/SharedURLSession.swift
 
 enum WidgetError: Error, Codable {
   case noLogin
@@ -104,87 +104,47 @@ struct Album: Codable, Equatable {
 // MARK: API
 
 class ImmichAPI {
-  typealias CustomHeaders = [String:String]
-  struct ServerConfig {
-    let serverEndpoint: String
-    let sessionKey: String
-    let customHeaders: CustomHeaders
-  }
-  
-  let serverConfig: ServerConfig
+  let serverEndpoint: String
 
   init() async throws {
-    // fetch the credentials from the UserDefaults store that dart placed here
-    guard let defaults = UserDefaults(suiteName: IMMICH_SHARE_GROUP),
-      let serverURL = defaults.string(forKey: "widget_server_url"),
-      let sessionKey = defaults.string(forKey: "widget_auth_token")
+    guard let serverURL = UserDefaults.group.string(forKey: SERVER_URL_KEY),
+      !serverURL.isEmpty
     else {
       throw WidgetError.noLogin
     }
 
-    if serverURL == "" || sessionKey == "" {
-      throw WidgetError.noLogin
-    }
-    
-    // custom headers come in the form of KV pairs in JSON
-    var customHeadersJSON = (defaults.string(forKey: "widget_custom_headers") ?? "")
-    var customHeaders: CustomHeaders = [:]
-    
-    if customHeadersJSON != "",
-       let parsedHeaders = try? JSONDecoder().decode(CustomHeaders.self, from: customHeadersJSON.data(using: .utf8)!) {
-      customHeaders = parsedHeaders
-    }
-
-    serverConfig = ServerConfig(
-      serverEndpoint: serverURL,
-      sessionKey: sessionKey,
-      customHeaders: customHeaders
-    )
+    serverEndpoint = serverURL
   }
 
   private func buildRequestURL(
-    serverConfig: ServerConfig,
     endpoint: String,
     params: [URLQueryItem] = []
   ) -> URL? {
-    guard let baseURL = URL(string: serverConfig.serverEndpoint) else {
+    guard let baseURL = URL(string: serverEndpoint) else {
       fatalError("Invalid base URL")
     }
 
-    // Combine the base URL and API path
     let fullPath = baseURL.appendingPathComponent(
       endpoint.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     )
 
-    // Add the session key as a query parameter
     var components = URLComponents(
       url: fullPath,
       resolvingAgainstBaseURL: false
     )
-    components?.queryItems = [
-      URLQueryItem(name: "sessionKey", value: serverConfig.sessionKey)
-    ]
-    components?.queryItems?.append(contentsOf: params)
+    if !params.isEmpty {
+      components?.queryItems = params
+    }
 
     return components?.url
-  }
-  
-  func applyCustomHeaders(for request: inout URLRequest) {
-    for (header, value) in serverConfig.customHeaders {
-      request.addValue(value, forHTTPHeaderField: header)
-    }
   }
 
   func fetchSearchResults(with filters: SearchFilter = Album.NONE.filter)
     async throws
     -> [Asset]
   {
-    // get URL
     guard
-      let searchURL = buildRequestURL(
-        serverConfig: serverConfig,
-        endpoint: "/search/random"
-      )
+      let searchURL = buildRequestURL(endpoint: "/search/random")
     else {
       throw URLError(.badURL)
     }
@@ -193,20 +153,15 @@ class ImmichAPI {
     request.httpMethod = "POST"
     request.httpBody = try JSONEncoder().encode(filters)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    applyCustomHeaders(for: &request)
-    
-    let (data, _) = try await URLSession.shared.data(for: request)
 
-    // decode data
+    let (data, _) = try await URLSessionManager.shared.session.data(for: request)
     return try JSONDecoder().decode([Asset].self, from: data)
   }
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
-    // get URL
     let memoryParams = [URLQueryItem(name: "for", value: date.ISO8601Format())]
     guard
       let searchURL = buildRequestURL(
-        serverConfig: serverConfig,
         endpoint: "/memories",
         params: memoryParams
       )
@@ -216,11 +171,8 @@ class ImmichAPI {
 
     var request = URLRequest(url: searchURL)
     request.httpMethod = "GET"
-    applyCustomHeaders(for: &request)
 
-    let (data, _) = try await URLSession.shared.data(for: request)
-
-    // decode data
+    let (data, _) = try await URLSessionManager.shared.session.data(for: request)
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
@@ -230,7 +182,6 @@ class ImmichAPI {
 
     guard
       let fetchURL = buildRequestURL(
-        serverConfig: serverConfig,
         endpoint: assetEndpoint,
         params: thumbnailParams
       )
@@ -238,9 +189,13 @@ class ImmichAPI {
       throw .invalidURL
     }
 
-    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil)
-    else {
-      throw .invalidURL
+    let request = URLRequest(url: fetchURL)
+    guard let (data, _) = try? await URLSessionManager.shared.session.data(for: request) else {
+      throw .fetchFailed
+    }
+
+    guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
+      throw .invalidImage
     }
 
     let decodeOptions: [NSString: Any] = [
@@ -263,23 +218,16 @@ class ImmichAPI {
   }
 
   func fetchAlbums() async throws -> [Album] {
-    // get URL
     guard
-      let searchURL = buildRequestURL(
-        serverConfig: serverConfig,
-        endpoint: "/albums"
-      )
+      let searchURL = buildRequestURL(endpoint: "/albums")
     else {
       throw URLError(.badURL)
     }
 
     var request = URLRequest(url: searchURL)
     request.httpMethod = "GET"
-    applyCustomHeaders(for: &request)
-    
-    let (data, _) = try await URLSession.shared.data(for: request)
 
-    // decode data
+    let (data, _) = try await URLSessionManager.shared.session.data(for: request)
     return try JSONDecoder().decode([Album].self, from: data)
   }
 }

@@ -71,14 +71,10 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
 
   LaunchedEffect(Unit) {
     // get albums from server
-    val serverCfg = ImmichAPI.getServerConfig(context)
-
-    if (serverCfg == null) {
+    if (!ImmichAPI.isLoggedIn(context)) {
       state = WidgetConfigState.LOG_IN
       return@LaunchedEffect
     }
-
-    val api = ImmichAPI(serverCfg)
 
     val currentState = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
     val currentAlbumId = currentState[kSelectedAlbum] ?: "NONE"
@@ -86,7 +82,7 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
     var albumItems: List<DropdownItem>
 
     try {
-      albumItems = api.fetchAlbums().map {
+      albumItems = ImmichAPI.fetchAlbums().map {
         DropdownItem(it.albumName, it.id)
       }
 

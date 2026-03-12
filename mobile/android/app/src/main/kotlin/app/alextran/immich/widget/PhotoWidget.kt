@@ -2,12 +2,12 @@ package app.alextran.immich.widget
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
+import android.util.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import androidx.core.net.toUri
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.glance.appwidget.*
+import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.*
 import androidx.glance.action.clickable
 import androidx.glance.layout.*
@@ -18,30 +18,28 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import app.alextran.immich.R
+import app.alextran.immich.images.decodeBitmap
 import app.alextran.immich.widget.model.*
-import java.io.File
 
 class PhotoWidget : GlanceAppWidget() {
   override var stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
   override suspend fun provideGlance(context: Context, id: GlanceId) {
-    provideContent {
-      val prefs = currentState<MutablePreferences>()
+    val state = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
+    val assetId = state[kAssetId]
+    val subtitle = state[kSubtitleText]
+    val deeplinkURL = state[kDeeplinkURL]?.toUri()
+    val widgetState = state[kWidgetState]
 
-      val imageUUID = prefs[kImageUUID]
-      val subtitle = prefs[kSubtitleText]
-      val deeplinkURL = prefs[kDeeplinkURL]?.toUri()
-      val widgetState = prefs[kWidgetState]
-      var bitmap: Bitmap? = null
-
-      if (imageUUID != null) {
-        // fetch a random photo from server
-        val file = File(context.cacheDir, imageFilename(imageUUID))
-
-        if (file.exists()) {
-          bitmap = loadScaledBitmap(file, 500, 500)
-        }
+    val bitmap = if (!assetId.isNullOrEmpty() && ImmichAPI.isLoggedIn(context)) {
+      try {
+        ImmichAPI.fetchImage(Asset(assetId, AssetType.IMAGE)).decodeBitmap(Size(500, 500))
+      } catch (e: Exception) {
+        null
       }
+    } else null
+
+    provideContent {
 
       // WIDGET CONTENT
       Box(
