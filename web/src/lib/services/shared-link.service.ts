@@ -1,5 +1,4 @@
 import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
@@ -138,7 +137,6 @@ export const handleRemoveSharedLinkAssets = async (sharedLink: SharedLinkRespons
 
   try {
     const results = await removeSharedLinkAssets({
-      ...authManager.params,
       id: sharedLink.id,
       assetIdsDto: { assetIds },
     });
