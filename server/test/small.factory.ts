@@ -1,26 +1,7 @@
-import { ShallowDehydrateObject } from 'kysely';
-import {
-  Activity,
-  Album,
-  ApiKey,
-  AuthApiKey,
-  AuthSharedLink,
-  AuthUser,
-  Exif,
-  Library,
-  Partner,
-  Person,
-  Session,
-  Tag,
-  User,
-  UserAdmin,
-} from 'src/database';
+import { AuthApiKey, AuthSharedLink, AuthUser, Exif, Library, UserAdmin } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetFileType, AssetOrder, Permission, UserMetadataKey, UserStatus } from 'src/enum';
-import { UserMetadataItem } from 'src/types';
-import { UserFactory } from 'test/factories/user.factory';
+import { AssetFileType, Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
 
 export const newUuid = () => v4();
@@ -109,49 +90,6 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
   return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
 };
 
-const partnerFactory = ({
-  sharedBy: sharedByProvided,
-  sharedWith: sharedWithProvided,
-  ...partner
-}: Partial<Partner> = {}) => {
-  const hydrateUser = (user: Partial<ShallowDehydrateObject<User>>) => ({
-    ...user,
-    profileChangedAt: user.profileChangedAt ? new Date(user.profileChangedAt) : undefined,
-  });
-  const sharedBy = UserFactory.create(sharedByProvided ? hydrateUser(sharedByProvided) : {});
-  const sharedWith = UserFactory.create(sharedWithProvided ? hydrateUser(sharedWithProvided) : {});
-
-  return {
-    sharedById: sharedBy.id,
-    sharedBy,
-    sharedWithId: sharedWith.id,
-    sharedWith,
-    createId: newUuidV7(),
-    createdAt: newDate(),
-    updatedAt: newDate(),
-    updateId: newUuidV7(),
-    inTimeline: true,
-    ...partner,
-  };
-};
-
-const sessionFactory = (session: Partial<Session> = {}) => ({
-  id: newUuid(),
-  createdAt: newDate(),
-  updatedAt: newDate(),
-  updateId: newUuidV7(),
-  deviceOS: 'android',
-  deviceType: 'mobile',
-  token: Buffer.from('abc123'),
-  parentId: null,
-  expiresAt: null,
-  userId: newUuid(),
-  pinExpiresAt: newDate(),
-  isPendingSyncReset: false,
-  appVersion: session.appVersion ?? null,
-  ...session,
-});
-
 const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
   active: 0,
   completed: 0,
@@ -160,22 +98,6 @@ const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
   waiting: 0,
   paused: 0,
   ...dto,
-});
-
-const userFactory = (user: Partial<User> = {}) => ({
-  id: newUuid(),
-  name: 'Test User',
-  email: 'test@immich.cloud',
-  avatarColor: null,
-  profileImagePath: '',
-  profileChangedAt: newDate(),
-  metadata: [
-    {
-      key: UserMetadataKey.Onboarding,
-      value: 'true',
-    },
-  ] as UserMetadataItem[],
-  ...user,
 });
 
 const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
@@ -218,34 +140,6 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     metadata,
   };
 };
-
-const activityFactory = (activity: Omit<Partial<Activity>, 'user'> = {}) => {
-  const userId = activity.userId || newUuid();
-  return {
-    id: newUuid(),
-    comment: null,
-    isLiked: false,
-    userId,
-    user: UserFactory.create({ id: userId }),
-    assetId: newUuid(),
-    albumId: newUuid(),
-    createdAt: newDate(),
-    updatedAt: newDate(),
-    updateId: newUuidV7(),
-    ...activity,
-  };
-};
-
-const apiKeyFactory = (apiKey: Partial<ApiKey> = {}) => ({
-  id: newUuid(),
-  userId: newUuid(),
-  createdAt: newDate(),
-  updatedAt: newDate(),
-  updateId: newUuidV7(),
-  name: 'Api Key',
-  permissions: [Permission.All],
-  ...apiKey,
-});
 
 const libraryFactory = (library: Partial<Library> = {}) => ({
   id: newUuid(),
@@ -328,88 +222,15 @@ const assetOcrFactory = (
   ...ocr,
 });
 
-const tagFactory = (tag: Partial<Tag>): Tag => ({
-  id: newUuid(),
-  color: null,
-  createdAt: newDate(),
-  parentId: null,
-  updatedAt: newDate(),
-  value: `tag-${newUuid()}`,
-  ...tag,
-});
-
-const assetEditFactory = (edit?: Partial<AssetEditActionItem>): AssetEditActionItem => {
-  switch (edit?.action) {
-    case AssetEditAction.Crop: {
-      return { action: AssetEditAction.Crop, parameters: { height: 42, width: 42, x: 0, y: 10 }, ...edit };
-    }
-    case AssetEditAction.Mirror: {
-      return { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal }, ...edit };
-    }
-    case AssetEditAction.Rotate: {
-      return { action: AssetEditAction.Rotate, parameters: { angle: 90 }, ...edit };
-    }
-    default: {
-      return { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } };
-    }
-  }
-};
-
-const personFactory = (person?: Partial<Person>): Person => ({
-  birthDate: newDate(),
-  color: null,
-  createdAt: newDate(),
-  faceAssetId: null,
-  id: newUuid(),
-  isFavorite: false,
-  isHidden: false,
-  name: 'person',
-  ownerId: newUuid(),
-  thumbnailPath: '/path/to/person/thumbnail.jpg',
-  updatedAt: newDate(),
-  updateId: newUuidV7(),
-  ...person,
-});
-
-const albumFactory = (album?: Partial<Omit<Album, 'assets'>>) => ({
-  albumName: 'My Album',
-  albumThumbnailAssetId: null,
-  albumUsers: [],
-  assets: [],
-  createdAt: newDate(),
-  deletedAt: null,
-  description: 'Album description',
-  id: newUuid(),
-  isActivityEnabled: false,
-  order: AssetOrder.Desc,
-  ownerId: newUuid(),
-  sharedLinks: [],
-  updatedAt: newDate(),
-  updateId: newUuidV7(),
-  ...album,
-});
-
 export const factory = {
-  activity: activityFactory,
-  apiKey: apiKeyFactory,
   assetOcr: assetOcrFactory,
   auth: authFactory,
-  authApiKey: authApiKeyFactory,
-  authUser: authUserFactory,
   library: libraryFactory,
-  partner: partnerFactory,
   queueStatistics: queueStatisticsFactory,
-  session: sessionFactory,
-  user: userFactory,
-  userAdmin: userAdminFactory,
   versionHistory: versionHistoryFactory,
   jobAssets: {
     sidecarWrite: assetSidecarWriteFactory,
   },
-  person: personFactory,
-  assetEdit: assetEditFactory,
-  tag: tagFactory,
-  album: albumFactory,
   uuid: newUuid,
   buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,
