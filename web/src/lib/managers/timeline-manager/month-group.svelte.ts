@@ -159,16 +159,18 @@ export class MonthGroup {
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const timesCache = new Map<number, ReturnType<typeof getTimes>>();
+    const timesCache = new Map<string, ReturnType<typeof getTimes>>();
 
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const offset = bucketAssets.localOffsetHours[i];
-      let cached = timesCache.get(offset);
+      const createdAt = bucketAssets.fileCreatedAt[i];
+      const cacheKey = `${createdAt}:${offset}`;
+      let cached = timesCache.get(cacheKey);
 
       if (!cached) {
-        cached = getTimes(bucketAssets.fileCreatedAt[i], offset);
-        timesCache.set(offset, cached);
+        cached = getTimes(createdAt, offset);
+        timesCache.set(cacheKey, cached);
       }
 
       const { localDateTime, fileCreatedAt } = cached;
