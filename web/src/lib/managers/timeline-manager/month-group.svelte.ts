@@ -31,6 +31,7 @@ export class MonthGroup {
   dayGroups: DayGroup[] = $state([]);
   readonly timelineManager: TimelineManager;
 
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
   #dayGroupsByDay: Map<number, DayGroup> = new Map();
 
   #height: number = $state(0);
