@@ -455,10 +455,12 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertSegmentForAsset(asset: TimelineAsset) {
-    let month = getMonthGroupByDate(this, asset.localDateTime);
+    const { year, month: monthNum } = asset.localDateTime;
+    const yearMonth = { year, month: monthNum };
+    let month = getMonthGroupByDate(this, yearMonth);
 
     if (!month) {
-      month = new MonthGroup(this, asset.localDateTime, 1, true, this.#options.order);
+      month = new MonthGroup(this, yearMonth, 1, true, this.#options.order);
       this.months.push(month);
     }
     return month;
