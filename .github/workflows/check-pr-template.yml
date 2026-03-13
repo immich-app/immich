@@ -19,6 +19,7 @@ jobs:
         with:
           sparse-checkout: .github/pull_request_template.md
           sparse-checkout-cone-mode: false
+          persist-credentials: false
 
       - name: Check required sections
         id: check
