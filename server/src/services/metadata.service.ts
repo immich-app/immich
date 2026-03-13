@@ -8,7 +8,7 @@ import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AssetFile } from 'src/database';
+import { Asset, AssetFile, LockableProperty } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetFileType,
@@ -459,10 +459,17 @@ export class MetadataService extends BaseService {
       lockedProperties,
     );
 
+    // exiftool treats empty strings as "delete field", which would cause the EXIF-embedded
+    // description to reappear on re-extraction. When the user has explicitly cleared the
+    // description, skip writing it to the sidecar and keep 'description' locked so that
+    // metadata extraction preserves the empty value from the database.
+    const descriptionCleared = description !== undefined && description === '';
+    const sidecarDescription = descriptionCleared ? undefined : description;
+
     const exif = _.omitBy(
       <Tags>{
-        Description: description,
-        ImageDescription: description,
+        Description: sidecarDescription,
+        ImageDescription: sidecarDescription,
         DateTimeOriginal: mergeTimeZone(dateTimeOriginal, timeZone)?.toISO(),
         GPSLatitude: latitude,
         GPSLongitude: longitude,
@@ -472,17 +479,26 @@ export class MetadataService extends BaseService {
       _.isUndefined,
     );
 
-    if (Object.keys(exif).length === 0) {
+    // Properties that should remain locked because they cannot be represented in the sidecar
+    // (e.g. an empty description would be treated as "delete" by exiftool).
+    const keepLocked: LockableProperty[] = descriptionCleared ? ['description'] : [];
+    const propertiesToUnlock = lockedProperties.filter((p) => !keepLocked.includes(p));
+
+    if (Object.keys(exif).length === 0 && keepLocked.length === 0) {
       return JobStatus.Skipped;
     }
 
-    await this.metadataRepository.writeTags(sidecarPath, exif);
+    if (Object.keys(exif).length > 0) {
+      await this.metadataRepository.writeTags(sidecarPath, exif);
 
-    if (asset.files.length === 0) {
-      await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
+      if (asset.files.length === 0) {
+        await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
+      }
     }
 
-    await this.assetRepository.unlockProperties(asset.id, lockedProperties);
+    if (propertiesToUnlock.length > 0) {
+      await this.assetRepository.unlockProperties(asset.id, propertiesToUnlock);
+    }
 
     return JobStatus.Success;
   }
