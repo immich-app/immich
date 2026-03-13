@@ -74,8 +74,12 @@
   };
 </script>
 
-<section>
-  {#if sharedLink?.allowUpload || assets.length > 1}
+{#if sharedLink?.allowUpload || assets.length > 1}
+  <main class="mt-24 mb-40 mx-4 isolate" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <GalleryViewer {assets} {assetInteraction} {viewport} allowDeletion={false} />
+  </main>
+
+  <header class="fixed top-0 inset-s-0 w-full">
     {#if assetInteraction.selectionActive}
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
@@ -129,14 +133,11 @@
         {/snippet}
       </ControlAppBar>
     {/if}
-    <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-      <GalleryViewer {assets} {assetInteraction} {viewport} allowDeletion={false} />
-    </section>
-  {:else if assets.length === 1}
-    {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
-      {/await}
+  </header>
+{:else if assets.length === 1}
+  {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
+    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
     {/await}
-  {/if}
-</section>
+  {/await}
+{/if}
