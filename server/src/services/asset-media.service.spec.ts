@@ -4,14 +4,17 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Stats } from 'node:fs';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { StorageService } from 'src/services/storage.service';
 import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -172,9 +175,41 @@ const assetEntity = Object.freeze({
   livePhotoVideoId: null,
 } as MapAsset);
 
+const replaceDto = Object.freeze({
+  deviceAssetId: 'deviceAssetId',
+  deviceId: 'deviceId',
+  fileModifiedAt: new Date('2024-04-15T23:41:36.910Z'),
+  fileCreatedAt: new Date('2024-04-15T23:41:36.910Z'),
+}) as AssetMediaReplaceDto;
+
+const existingAsset = Object.freeze({
+  ...assetEntity,
+  duration: null,
+  type: AssetType.Image,
+  checksum: Buffer.from('_getExistingAsset', 'utf8'),
+  libraryId: 'libraryId',
+  originalFileName: 'existing-filename.jpeg',
+}) as MapAsset;
+
+const sidecarAsset = Object.freeze({
+  ...existingAsset,
+  checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
+}) as MapAsset;
+
+const copiedAsset = Object.freeze({
+  id: 'copied-asset',
+  originalPath: 'copied-path',
+}) as MapAsset;
+
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
   let mocks: ServiceMocks;
+
+  beforeAll(() => {
+    // Initialize the disk backend for StorageService so that serveFromBackend works in tests.
+    // The DiskStorageBackend returns absolute paths as-is, so the mediaLocation value doesn't matter.
+    (StorageService as any).diskBackend = new DiskStorageBackend('/data');
+  });
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AssetMediaService));
@@ -757,6 +792,197 @@ describe(AssetMediaService.name, () => {
     });
   });
 
+  describe('replaceAsset', () => {
+    it('should fail the auth check when update photo does not exist', async () => {
+      await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
+        'Not found or no asset.update access',
+      );
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should fail if asset cannot be fetched', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, fileStub.photo)).rejects.toThrow(
+        'Asset not found',
+      );
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should update a photo with no sidecar to photo with no sidecar', async () => {
+      const updatedFile = { ...fileStub.photo, originalPath: '/fake_path/photo1.jpeg' };
+      const updatedAsset = { ...existingAsset, ...updatedFile };
+      mocks.asset.getById.mockResolvedValueOnce(existingAsset as any);
+      mocks.asset.getById.mockResolvedValueOnce(updatedAsset as any);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      // this is the original file size
+      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
+      // this is for the clone call
+      mocks.asset.create.mockResolvedValue(copiedAsset);
+
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
+        status: AssetMediaStatus.REPLACED,
+        id: 'copied-asset',
+      });
+
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: existingAsset.id,
+          originalFileName: 'photo1.jpeg',
+          originalPath: '/fake_path/photo1.jpeg',
+        }),
+      );
+      expect(mocks.asset.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          originalFileName: 'existing-filename.jpeg',
+          originalPath: 'fake_path/asset_1.jpeg',
+        }),
+      );
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          type: AssetFileType.Sidecar,
+        }),
+      );
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Trashed,
+      });
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
+      expect(mocks.storage.utimes).toHaveBeenCalledWith(
+        updatedFile.originalPath,
+        expect.any(Date),
+        new Date(replaceDto.fileModifiedAt),
+      );
+    });
+
+    it('should update a photo with sidecar to photo with sidecar', async () => {
+      const updatedFile = { ...fileStub.photo, originalPath: '/fake_path/photo1.jpeg' };
+      const sidecarFile = fileStub.photoSidecar;
+      const updatedAsset = { ...sidecarAsset, ...updatedFile };
+      mocks.asset.getById.mockResolvedValueOnce(existingAsset as any);
+      mocks.asset.getById.mockResolvedValueOnce(updatedAsset as any);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
+      // this is the original file size
+      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
+      // this is for the clone call
+      mocks.asset.create.mockResolvedValue(copiedAsset);
+
+      await expect(
+        sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile, sidecarFile),
+      ).resolves.toEqual({
+        status: AssetMediaStatus.REPLACED,
+        id: 'copied-asset',
+      });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Trashed,
+      });
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          path: sidecarFile.originalPath,
+          type: AssetFileType.Sidecar,
+        }),
+      );
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
+      expect(mocks.storage.utimes).toHaveBeenCalledWith(
+        updatedFile.originalPath,
+        expect.any(Date),
+        new Date(replaceDto.fileModifiedAt),
+      );
+    });
+
+    it('should update a photo with a sidecar to photo with no sidecar', async () => {
+      const updatedFile = { ...fileStub.photo, originalPath: '/fake_path/photo1.jpeg' };
+
+      const updatedAsset = { ...sidecarAsset, ...updatedFile };
+      mocks.asset.getById.mockResolvedValueOnce(sidecarAsset as any);
+      mocks.asset.getById.mockResolvedValueOnce(updatedAsset as any);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
+      // this is the original file size
+      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
+      // this is for the copy call
+      mocks.asset.create.mockResolvedValue(copiedAsset);
+
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
+        status: AssetMediaStatus.REPLACED,
+        id: 'copied-asset',
+      });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Trashed,
+      });
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          type: AssetFileType.Sidecar,
+        }),
+      );
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
+      expect(mocks.storage.utimes).toHaveBeenCalledWith(
+        updatedFile.originalPath,
+        expect.any(Date),
+        new Date(replaceDto.fileModifiedAt),
+      );
+    });
+
+    it('should skip utimes for S3 paths (non-absolute) in replaceFileData', async () => {
+      // S3 uploaded files have relative paths
+      const updatedFile = { ...fileStub.photo, originalPath: 'upload/user/ab/cd/photo1.jpeg' };
+      const updatedAsset = { ...existingAsset, ...updatedFile };
+      mocks.asset.getById.mockResolvedValueOnce(existingAsset as any);
+      mocks.asset.getById.mockResolvedValueOnce(updatedAsset as any);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+      // this is the original file size
+      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
+      // this is for the clone call
+      mocks.asset.create.mockResolvedValue(copiedAsset);
+
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
+        status: AssetMediaStatus.REPLACED,
+        id: 'copied-asset',
+      });
+
+      expect(mocks.storage.utimes).not.toHaveBeenCalled();
+    });
+
+    it('should handle a photo with sidecar to duplicate photo ', async () => {
+      const updatedFile = fileStub.photo;
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
+
+      mocks.asset.update.mockRejectedValue(error);
+      mocks.asset.getById.mockResolvedValueOnce(sidecarAsset as any);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(sidecarAsset.id);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
+      // this is the original file size
+      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
+      // this is for the clone call
+      mocks.asset.create.mockResolvedValue(copiedAsset);
+
+      await expect(sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile)).resolves.toEqual({
+        status: AssetMediaStatus.DUPLICATE,
+        id: sidecarAsset.id,
+      });
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [updatedFile.originalPath, undefined] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+  });
+
   describe('bulkUploadCheck', () => {
     it('should accept hex and base64 checksums', async () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
@@ -853,6 +1079,203 @@ describe(AssetMediaService.name, () => {
         name: JobName.FileDelete,
         data: { files: [expect.stringContaining('/data/upload/user-id/ra/nd/random-uuid.jpg')] },
       });
+    });
+  });
+
+  describe('viewThumbnail - additional branches', () => {
+    it('should throw BadRequestException when requesting Original size', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      await expect(
+        sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.Original }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should redirect to original for web-supported full-size images', async () => {
+      const asset = AssetFactory.from({ originalPath: '/path/to/image.jpg' })
+        .file({ type: AssetFileType.FullSize })
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({
+        ...asset,
+        path: asset.files[0].path,
+      });
+
+      const result = await sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.FULLSIZE });
+
+      expect(result).toEqual({ targetSize: 'original' });
+    });
+
+    it('should downgrade to preview if fullsize path is not available', async () => {
+      const asset = AssetFactory.from({
+        originalFileName: 'IMG_001.arw',
+        originalPath: '/data/library/IMG_001.arw',
+      }).build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({
+        ...asset,
+        path: null,
+      });
+
+      const result = await sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.FULLSIZE });
+
+      expect(result).toEqual({ targetSize: AssetMediaSize.PREVIEW });
+    });
+
+    it('should throw NotFoundException when thumbnail path is missing', async () => {
+      const asset = AssetFactory.from().build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({
+        ...asset,
+        path: null,
+      });
+
+      await expect(
+        sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('should force edited=true when shared link is present', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+
+      await sut.viewThumbnail(authStub.adminSharedLink, asset.id, { size: AssetMediaSize.PREVIEW, edited: false });
+
+      expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(asset.id, AssetFileType.Preview, true);
+    });
+  });
+
+  describe('bulkUploadCheck - trashed assets', () => {
+    it('should report trashed duplicates', async () => {
+      const checksum = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum, deletedAt: new Date('2024-01-01') }]);
+
+      const result = await sut.bulkUploadCheck(authStub.admin, {
+        assets: [{ id: '1', checksum: checksum.toString('hex') }],
+      });
+
+      expect(result.results[0]).toEqual({
+        id: '1',
+        assetId: 'asset-1',
+        action: AssetUploadAction.REJECT,
+        reason: AssetRejectReason.DUPLICATE,
+        isTrashed: true,
+      });
+    });
+  });
+
+  describe('uploadAsset - additional branches', () => {
+    it('should handle a file upload with metadata', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      const dtoWithMetadata = {
+        ...createDto,
+        metadata: [{ key: 'custom_key', value: 'custom_value' }],
+      } as unknown as AssetMediaCreateDto;
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await expect(sut.uploadAsset(authStub.user1, dtoWithMetadata, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.asset.upsertMetadata).toHaveBeenCalledWith(assetEntity.id, dtoWithMetadata.metadata);
+    });
+
+    it('should handle an error that is not a checksum constraint', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+      const error = new Error('some other database error');
+
+      mocks.asset.create.mockRejectedValue(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow('some other database error');
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['fake_path/asset_1.jpeg', undefined] },
+      });
+    });
+
+    it('should use body filename over original name for the created asset', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      const dtoWithFilename = {
+        ...createDto,
+        filename: 'custom-name.jpeg',
+      } as AssetMediaCreateDto;
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await sut.uploadAsset(authStub.user1, dtoWithFilename, file);
+
+      expect(mocks.asset.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          originalFileName: 'custom-name.jpeg',
+        }),
+      );
+    });
+  });
+
+  describe('downloadOriginal - shared link forces edited', () => {
+    it('should force edited=true when using a shared link', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await sut.downloadOriginal(authStub.adminSharedLink, asset.id, { edited: false });
+
+      expect(mocks.asset.getForOriginal).toHaveBeenCalledWith(asset.id, true);
+    });
+  });
+
+  describe('replaceAsset - duplicate handling', () => {
+    it('should throw InternalServerErrorException if duplicate cannot be located', async () => {
+      const updatedFile = fileStub.photo;
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
+
+      mocks.asset.update.mockRejectedValue(error);
+      mocks.asset.getById.mockResolvedValueOnce(existingAsset as any);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(void 0);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
+
+      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).rejects.toBeInstanceOf(
+        InternalServerErrorException,
+      );
+    });
+  });
+
+  describe('getUploadFilename - body filename override', () => {
+    it('should use body filename extension over file original name', () => {
+      const body = { filename: 'custom.png' };
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg', body))).toEqual(
+        'random-uuid.png',
+      );
     });
   });
 });

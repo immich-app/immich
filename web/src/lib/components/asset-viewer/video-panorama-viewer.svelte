@@ -1,9 +1,9 @@
 <script lang="ts">
   import { getAssetPlaybackUrl, getAssetUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import LoadingSpinner from '$lib/components/shared-components/LoadingSpinner.svelte';
 
   interface Props {
     asset: AssetResponseDto;

@@ -5,21 +5,28 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
+import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import type { AssetControlContext } from '$lib/types';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
+  AssetEditAction,
   AssetJobName,
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
+  editAsset,
+  getAssetEdits,
   getAssetInfo,
+  removeAssetEdits,
   runAssetJobs,
   updateAsset,
+  type AssetEditActionItemDto,
   type AssetJobsDto,
   type AssetResponseDto,
 } from '@immich/sdk';
@@ -42,6 +49,8 @@ import {
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiPlus,
+  mdiRotateLeft,
+  mdiRotateRight,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
@@ -224,6 +233,16 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: { key: 't' },
   };
 
+  const canEdit = () =>
+    !sharedLink &&
+    isOwner &&
+    asset.type === AssetTypeEnum.Image &&
+    !asset.livePhotoVideoId &&
+    asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
+    !asset.originalPath.toLowerCase().endsWith('.insp') &&
+    !asset.originalPath.toLowerCase().endsWith('.gif') &&
+    !asset.originalPath.toLowerCase().endsWith('.svg');
+
   const TagPeople: ActionItem = {
     title: $t('tag_people'),
     icon: mdiFaceRecognition,
@@ -238,17 +257,30 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Edit: ActionItem = {
     title: $t('editor'),
     icon: mdiTune,
-    $if: () =>
-      !sharedLink &&
-      isOwner &&
-      asset.type === AssetTypeEnum.Image &&
-      !asset.livePhotoVideoId &&
-      asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
-      !asset.originalPath.toLowerCase().endsWith('.insp') &&
-      !asset.originalPath.toLowerCase().endsWith('.gif') &&
-      !asset.originalPath.toLowerCase().endsWith('.svg'),
+    $if: canEdit,
     onAction: () => assetViewerManager.openEditor(),
     shortcuts: [{ key: 'e' }],
+  };
+
+  const RotateRight: ActionItem = {
+    title: $t('rotate_right'),
+    icon: mdiRotateRight,
+    $if: canEdit,
+    onAction: () => handleQuickRotate(asset, 90),
+  };
+
+  const RotateLeft: ActionItem = {
+    title: $t('rotate_left'),
+    icon: mdiRotateLeft,
+    $if: canEdit,
+    onAction: () => handleQuickRotate(asset, 270),
+  };
+
+  const Rotate180: ActionItem = {
+    title: $t('rotate_180'),
+    icon: mdiRotateRight,
+    $if: canEdit,
+    onAction: () => handleQuickRotate(asset, 180),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -294,6 +326,9 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Tag,
     TagPeople,
     Edit,
+    RotateRight,
+    RotateLeft,
+    Rotate180,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -391,5 +426,49 @@ const handleRunAssetJob = async (dto: AssetJobsDto) => {
     toastManager.primary(getAssetJobMessage($t, dto.name));
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
+  }
+};
+
+export const normalizeAngle = (angle: number): number => ((angle % 360) + 360) % 360;
+
+export const mergeRotation = (
+  existingEdits: AssetEditActionItemDto[],
+  additionalAngle: number,
+): AssetEditActionItemDto[] => {
+  const otherEdits = existingEdits.filter((e) => e.action !== AssetEditAction.Rotate);
+  const existingRotate = existingEdits.find((e) => e.action === AssetEditAction.Rotate);
+  const existingAngle = (existingRotate?.parameters as { angle?: number })?.angle ?? 0;
+  const merged = normalizeAngle(existingAngle + additionalAngle);
+
+  if (merged === 0) {
+    return otherEdits;
+  }
+
+  return [...otherEdits, { action: AssetEditAction.Rotate, parameters: { angle: merged } }];
+};
+
+const handleQuickRotate = async (asset: AssetResponseDto, angle: number) => {
+  const $t = await getFormatter();
+
+  try {
+    const existing = await getAssetEdits({ id: asset.id });
+    const edits = mergeRotation(
+      existing.edits.map(({ action, parameters }) => ({ action, parameters })),
+      angle,
+    );
+
+    const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === asset.id, 10_000);
+
+    await (edits.length === 0
+      ? removeAssetEdits({ id: asset.id })
+      : editAsset({ id: asset.id, assetEditsCreateDto: { edits } }));
+    await editCompleted;
+
+    const refreshedAsset = await getAssetInfo({ id: asset.id });
+    assetViewingStore.setAsset(refreshedAsset);
+    eventManager.emit('AssetUpdate', refreshedAsset);
+    eventManager.emit('AssetEditsApplied', asset.id);
+  } catch (error) {
+    handleError(error, $t('rotate_error'));
   }
 };

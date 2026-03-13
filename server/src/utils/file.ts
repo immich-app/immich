@@ -2,6 +2,7 @@ import { HttpException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
+import { Readable } from 'node:stream';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -30,6 +31,30 @@ export class ImmichFileResponse {
     Object.assign(this, response);
   }
 }
+
+export class ImmichRedirectResponse {
+  public readonly url!: string;
+  public readonly cacheControl!: CacheControl;
+
+  constructor(response: ImmichRedirectResponse) {
+    Object.assign(this, response);
+  }
+}
+
+export class ImmichStreamResponse {
+  public readonly stream!: Readable;
+  public readonly contentType!: string;
+  public readonly length?: number;
+  public readonly cacheControl!: CacheControl;
+  public readonly fileName?: string;
+
+  constructor(response: ImmichStreamResponse) {
+    Object.assign(this, response);
+  }
+}
+
+export type ImmichMediaResponse = ImmichFileResponse | ImmichRedirectResponse | ImmichStreamResponse;
+
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
@@ -43,7 +68,7 @@ const cacheControlHeaders: Record<CacheControl, string | null> = {
 export const sendFile = async (
   res: Response,
   next: NextFunction,
-  handler: () => Promise<ImmichFileResponse> | ImmichFileResponse,
+  handler: () => Promise<ImmichMediaResponse> | ImmichMediaResponse,
   logger: LoggingRepository,
 ): Promise<void> => {
   // promisified version of 'res.sendFile' for cleaner async handling
@@ -52,9 +77,35 @@ export const sendFile = async (
 
   try {
     const file = await handler();
+
+    if (file instanceof ImmichRedirectResponse) {
+      const cacheControlHeader = cacheControlHeaders[file.cacheControl];
+      if (cacheControlHeader) {
+        res.set('Cache-Control', cacheControlHeader);
+      }
+      res.redirect(file.url);
+      return;
+    }
+
+    if (file instanceof ImmichStreamResponse) {
+      const cacheControlHeader = cacheControlHeaders[file.cacheControl];
+      if (cacheControlHeader) {
+        res.set('Cache-Control', cacheControlHeader);
+      }
+      res.header('Content-Type', file.contentType);
+      if (file.length !== undefined) {
+        res.header('Content-Length', String(file.length));
+      }
+      if (file.fileName) {
+        res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+      }
+      file.stream.pipe(res);
+      return;
+    }
+
+    // ImmichFileResponse — existing behavior
     const cacheControlHeader = cacheControlHeaders[file.cacheControl];
     if (cacheControlHeader) {
-      // set the header to Cache-Control
       res.set('Cache-Control', cacheControlHeader);
     }
 

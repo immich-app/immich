@@ -84,4 +84,39 @@ describe('Image component', () => {
     expect(img.getAttribute('alt')).toBe('test alt');
     expect(img.getAttribute('draggable')).toBe('false');
   });
+
+  it('updates the image when src changes', async () => {
+    const { baseElement, rerender } = render(Image, { src: '/old.jpg', alt: 'test' });
+    expect(baseElement.querySelector('img')!.getAttribute('src')).toBe('/old.jpg');
+
+    await rerender({ src: '/new.jpg', alt: 'test' });
+    expect(baseElement.querySelector('img')!.getAttribute('src')).toBe('/new.jpg');
+  });
+
+  it('cancels the old URL when src changes', async () => {
+    const { rerender } = render(Image, { src: '/old.jpg', alt: 'test' });
+    expect(cancelImageUrl).not.toHaveBeenCalled();
+
+    await rerender({ src: '/new.jpg', alt: 'test' });
+    expect(cancelImageUrl).toHaveBeenCalledWith('/old.jpg');
+  });
+
+  it('calls onStart again when src changes', async () => {
+    const onStart = vi.fn();
+    const { rerender } = render(Image, { src: '/old.jpg', onStart });
+    expect(onStart).toHaveBeenCalledOnce();
+
+    await rerender({ src: '/new.jpg', onStart });
+    expect(onStart).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not update when src changes to the same value', async () => {
+    const onStart = vi.fn();
+    const { rerender } = render(Image, { src: '/same.jpg', onStart });
+    expect(onStart).toHaveBeenCalledOnce();
+
+    await rerender({ src: '/same.jpg', onStart });
+    expect(onStart).toHaveBeenCalledOnce();
+    expect(cancelImageUrl).not.toHaveBeenCalled();
+  });
 });

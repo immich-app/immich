@@ -2,7 +2,7 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { OnboardingRole } from '$lib/types';
-  import { Logo } from '@immich/ui';
+  import Logo from '$lib/components/shared-components/Logo.svelte';
   import { t } from 'svelte-i18n';
 
   let userRole = $derived(

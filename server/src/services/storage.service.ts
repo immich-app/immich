@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
+import { S3StorageBackend } from 'src/backends/s3-storage.backend';
+import { resolveBackend } from 'src/backends/storage-backend.provider';
 import { ErrorMessages } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -12,6 +15,7 @@ import {
   StorageFolder,
   SystemMetadataKey,
 } from 'src/enum';
+import { StorageBackend } from 'src/interfaces/storage-backend.interface';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, SystemFlags } from 'src/types';
 import { ImmichStartupError } from 'src/utils/misc';
@@ -20,6 +24,32 @@ const docsMessage = `Please see https://docs.immich.app/administration/system-in
 
 @Injectable()
 export class StorageService extends BaseService {
+  private static diskBackend: DiskStorageBackend;
+  private static s3Backend: S3StorageBackend | undefined;
+  private static writeBackendType: 'disk' | 's3' = 'disk';
+
+  static getDiskBackend(): DiskStorageBackend {
+    return StorageService.diskBackend;
+  }
+
+  static getS3Backend(): S3StorageBackend | undefined {
+    return StorageService.s3Backend;
+  }
+
+  static getWriteBackend(): StorageBackend {
+    if (StorageService.writeBackendType === 's3' && StorageService.s3Backend) {
+      return StorageService.s3Backend;
+    }
+    return StorageService.diskBackend;
+  }
+
+  static resolveBackendForKey(key: string): StorageBackend {
+    if (StorageService.s3Backend) {
+      return resolveBackend(key, StorageService.diskBackend, StorageService.s3Backend);
+    }
+    return StorageService.diskBackend;
+  }
+
   private detectMediaLocation(): string {
     const envData = this.configRepository.getEnv();
     if (envData.storage.mediaLocation) {
@@ -46,6 +76,22 @@ export class StorageService extends BaseService {
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.StorageService })
   async onBootstrap() {
     StorageCore.setMediaLocation(this.detectMediaLocation());
+
+    // Initialize storage backends
+    const envData = this.configRepository.getEnv();
+    StorageService.diskBackend = new DiskStorageBackend(StorageCore.getMediaLocation());
+    StorageService.writeBackendType = envData.storage.backend;
+
+    if (envData.storage.s3.bucket) {
+      StorageService.s3Backend = new S3StorageBackend(envData.storage.s3);
+      this.logger.log(`S3 storage backend configured (bucket: ${envData.storage.s3.bucket})`);
+    }
+
+    if (envData.storage.backend === 's3' && !StorageService.s3Backend) {
+      throw new ImmichStartupError('IMMICH_STORAGE_BACKEND is set to s3 but IMMICH_S3_BUCKET is not configured');
+    }
+
+    this.logger.log(`Storage write backend: ${envData.storage.backend}`);
 
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags =
@@ -143,9 +189,16 @@ export class StorageService extends BaseService {
       }
 
       try {
-        await this.storageRepository.unlink(file);
+        if (isAbsolute(file)) {
+          // Disk file — existing behavior
+          await this.storageRepository.unlink(file);
+        } else {
+          // S3 object — delete via backend
+          const backend = StorageService.resolveBackendForKey(file);
+          await backend.delete(file);
+        }
       } catch (error: any) {
-        this.logger.warn('Unable to remove file from disk', error);
+        this.logger.warn('Unable to remove file', error);
       }
     }
 

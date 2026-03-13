@@ -70,16 +70,7 @@ export class OAuthRepository {
 
     try {
       const tokens = await authorizationCodeGrant(client, new URL(url), { expectedState, pkceCodeVerifier });
-
-      let profile: OAuthProfile;
-      const tokenClaims = tokens.claims();
-      if (tokenClaims && 'email' in tokenClaims) {
-        this.logger.debug('Using ID token claims instead of userinfo endpoint');
-        profile = tokenClaims as OAuthProfile;
-      } else {
-        profile = await fetchUserInfo(client, tokens.access_token, oidc.skipSubjectCheck);
-      }
-
+      const profile = await fetchUserInfo(client, tokens.access_token, oidc.skipSubjectCheck);
       if (!profile.sub) {
         throw new Error('Unexpected profile response, no `sub`');
       }

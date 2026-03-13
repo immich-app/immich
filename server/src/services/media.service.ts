@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { createReadStream } from 'node:fs';
+import { unlink } from 'node:fs/promises';
+import { isAbsolute } from 'node:path';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
@@ -28,6 +32,7 @@ import {
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
+import { StorageService } from 'src/services/storage.service';
 import {
   AudioStreamInfo,
   DecodeToBufferOptions,
@@ -43,7 +48,7 @@ import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
-import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled, isPetDetectionEnabled } from 'src/utils/misc';
 import { getOutputDimensions } from 'src/utils/transform';
 
 interface UpsertFileOptions {
@@ -65,6 +70,41 @@ export class MediaService extends BaseService {
   async onBootstrap() {
     const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
     this.videoInterfaces = { dri, mali };
+  }
+
+  /**
+   * For S3 assets, downloads original to temp before processing.
+   * Returns the local path to use for processing and a cleanup function.
+   */
+  private async ensureLocalFile(filePath: string): Promise<{ localPath: string; cleanup: () => Promise<void> }> {
+    if (isAbsolute(filePath)) {
+      return { localPath: filePath, cleanup: async () => {} };
+    }
+    const backend = StorageService.resolveBackendForKey(filePath);
+    const { tempPath, cleanup } = await backend.downloadToTemp(filePath);
+    return { localPath: tempPath, cleanup };
+  }
+
+  /**
+   * After generating a file locally, uploads it to S3 if the write backend is S3.
+   * Returns the key to store in the DB.
+   */
+  private async persistFile(localPath: string, relativeKey: string, contentType?: string): Promise<string> {
+    const writeBackend = StorageService.getWriteBackend();
+    if (!writeBackend || writeBackend instanceof DiskStorageBackend) {
+      // Disk mode: the file was already written to the final path
+      return localPath;
+    }
+    // S3 mode: upload the locally-generated file
+    const stream = createReadStream(localPath);
+    await writeBackend.put(relativeKey, stream, { contentType });
+    // Clean up local temp file
+    try {
+      await unlink(localPath);
+    } catch {
+      /* ignore */
+    }
+    return relativeKey;
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
@@ -178,33 +218,53 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const generated = await this.generateEditedThumbnails(asset, config);
-    await this.syncFiles(
-      asset.files.filter((file) => file.isEdited),
-      generated?.files ?? [],
-    );
+    // For S3 assets, download the original to a local temp file for processing
+    const { localPath, cleanup } = await this.ensureLocalFile(asset.originalPath);
 
-    let thumbhash: Buffer | undefined = generated?.thumbhash;
-    if (!thumbhash) {
-      const extractedImage = await this.extractOriginalImage(asset, config.image);
-      const { info, data, colorspace } = extractedImage;
+    try {
+      const generated = await this.generateEditedThumbnails(asset, config, localPath);
 
-      thumbhash = await this.mediaRepository.generateThumbhash(data, {
-        colorspace,
-        processInvalidImages: false,
-        raw: info,
-        edits: [],
-      });
+      // Persist output files to S3 if needed
+      if (generated?.files) {
+        for (const file of generated.files) {
+          const relativeKey = StorageCore.getRelativeImagePath(asset, {
+            fileType: file.type,
+            format: file.path.split('.').pop() as ImageFormat,
+            isEdited: file.isEdited,
+          });
+          file.path = await this.persistFile(file.path, relativeKey, mimeTypes.lookup(file.path));
+        }
+      }
+
+      await this.syncFiles(
+        asset.files.filter((file) => file.isEdited),
+        generated?.files ?? [],
+      );
+
+      let thumbhash: Buffer | undefined = generated?.thumbhash;
+      if (!thumbhash) {
+        const extractedImage = await this.extractOriginalImage(asset, config.image, false, localPath);
+        const { info, data, colorspace } = extractedImage;
+
+        thumbhash = await this.mediaRepository.generateThumbhash(data, {
+          colorspace,
+          processInvalidImages: false,
+          raw: info,
+          edits: [],
+        });
+      }
+
+      if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
+        await this.assetRepository.update({ id: asset.id, thumbhash });
+      }
+
+      const fullsizeDimensions = generated?.fullsizeDimensions ?? getDimensions(asset.exifInfo!);
+      await this.assetRepository.update({ id: asset.id, ...fullsizeDimensions });
+
+      return JobStatus.Success;
+    } finally {
+      await cleanup();
     }
-
-    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
-      await this.assetRepository.update({ id: asset.id, thumbhash });
-    }
-
-    const fullsizeDimensions = generated?.fullsizeDimensions ?? getDimensions(asset.exifInfo!);
-    await this.assetRepository.update({ id: asset.id, ...fullsizeDimensions });
-
-    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
@@ -222,31 +282,56 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    let generated: Awaited<ReturnType<MediaService['generateImageThumbnails']>>;
-    if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
-      generated = await this.generateVideoThumbnails(asset, config);
-    } else if (asset.type === AssetType.Image) {
-      this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
-      generated = await this.generateImageThumbnails(asset, config);
-    } else {
-      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
-      return JobStatus.Skipped;
+    // For S3 assets, download the original to a local temp file for processing
+    const { localPath, cleanup } = await this.ensureLocalFile(asset.originalPath);
+
+    try {
+      let generated: Awaited<ReturnType<MediaService['generateImageThumbnails']>>;
+      if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
+        this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
+        generated = await this.generateVideoThumbnails(asset, config, localPath);
+      } else if (asset.type === AssetType.Image) {
+        this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
+        generated = await this.generateImageThumbnails(asset, config, false, localPath);
+      } else {
+        this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
+        return JobStatus.Skipped;
+      }
+
+      // Persist output files to S3 if needed
+      for (const file of generated.files) {
+        const relativeKey = StorageCore.getRelativeImagePath(asset, {
+          fileType: file.type,
+          format: file.path.split('.').pop() as ImageFormat,
+          isEdited: file.isEdited,
+        });
+        file.path = await this.persistFile(file.path, relativeKey, mimeTypes.lookup(file.path));
+      }
+
+      const editedGenerated = await this.generateEditedThumbnails(asset, config, localPath);
+      if (editedGenerated) {
+        for (const file of editedGenerated.files) {
+          const relativeKey = StorageCore.getRelativeImagePath(asset, {
+            fileType: file.type,
+            format: file.path.split('.').pop() as ImageFormat,
+            isEdited: file.isEdited,
+          });
+          file.path = await this.persistFile(file.path, relativeKey, mimeTypes.lookup(file.path));
+        }
+        generated.files.push(...editedGenerated.files);
+      }
+
+      await this.syncFiles(asset.files, generated.files);
+      const thumbhash = editedGenerated?.thumbhash || generated.thumbhash;
+
+      if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
+        await this.assetRepository.update({ id: asset.id, thumbhash });
+      }
+
+      return JobStatus.Success;
+    } finally {
+      await cleanup();
     }
-
-    const editedGenerated = await this.generateEditedThumbnails(asset, config);
-    if (editedGenerated) {
-      generated.files.push(...editedGenerated.files);
-    }
-
-    await this.syncFiles(asset.files, generated.files);
-    const thumbhash = editedGenerated?.thumbhash || generated.thumbhash;
-
-    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
-      await this.assetRepository.update({ id: asset.id, thumbhash });
-    }
-
-    return JobStatus.Success;
   }
 
   private async extractImage(originalPath: string, minSize: number) {
@@ -272,16 +357,22 @@ export class MediaService extends BaseService {
     return { info, data, colorspace };
   }
 
-  private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
+  private async extractOriginalImage(
+    asset: ThumbnailAsset,
+    image: SystemConfig['image'],
+    useEdits = false,
+    localOriginalPath?: string,
+  ) {
+    const inputPath = localOriginalPath ?? asset.originalPath;
     const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
+    const extracted = extractEmbedded ? await this.extractImage(inputPath, image.preview.size) : null;
     const generateFullsize =
       ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
         !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
       useEdits;
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    const thumbSource = extracted ? extracted.buffer : asset.originalPath;
+    const thumbSource = extracted ? extracted.buffer : inputPath;
     const { data, info, colorspace } = await this.decodeImage(
       thumbSource,
       // only specify orientation to extracted images which don't have EXIF orientation data
@@ -292,7 +383,7 @@ export class MediaService extends BaseService {
 
     let isTransparent = false;
     if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
-      ({ isTransparent } = await this.mediaRepository.getImageMetadata(asset.originalPath));
+      ({ isTransparent } = await this.mediaRepository.getImageMetadata(inputPath));
     }
 
     return {
@@ -306,9 +397,14 @@ export class MediaService extends BaseService {
     };
   }
 
-  private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
+  private async generateImageThumbnails(
+    asset: ThumbnailAsset,
+    { image }: SystemConfig,
+    useEdits: boolean = false,
+    localOriginalPath?: string,
+  ) {
     // Handle embedded preview extraction for RAW files
-    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
+    const extractedImage = await this.extractOriginalImage(asset, image, useEdits, localOriginalPath);
     const { info, data, colorspace, generateFullsize, convertFullsize, extracted, isTransparent } = extractedImage;
 
     const previewFormat = image.preview.format;
@@ -386,10 +482,11 @@ export class MediaService extends BaseService {
     const outputs = await Promise.all(promises);
 
     if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
+      const copySource = localOriginalPath ?? asset.originalPath;
       const promises = [
-        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewFile.path),
+        this.mediaRepository.copyTagGroup('XMP-GPano', copySource, previewFile.path),
         fullsizeFile
-          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizeFile.path)
+          ? this.mediaRepository.copyTagGroup('XMP-GPano', copySource, fullsizeFile.path)
           : Promise.resolve(),
       ];
       await Promise.all(promises);
@@ -408,7 +505,11 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
   async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
     const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
+    if (
+      !isFacialRecognitionEnabled(machineLearning) &&
+      !isFaceImportEnabled(metadata) &&
+      !isPetDetectionEnabled(machineLearning)
+    ) {
       return JobStatus.Skipped;
     }
 
@@ -419,53 +520,68 @@ export class MediaService extends BaseService {
     }
 
     const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
-    let inputImage: string | Buffer;
-    if (data.type === AssetType.Video) {
-      if (!previewPath) {
-        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
-        return JobStatus.Failed;
+
+    // For S3 assets, download to local temp files for processing
+    const originalLocal = await this.ensureLocalFile(originalPath);
+    const previewLocal = previewPath ? await this.ensureLocalFile(previewPath) : undefined;
+
+    try {
+      let inputImage: string | Buffer;
+      if (data.type === AssetType.Video) {
+        if (!previewLocal?.localPath) {
+          this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+          return JobStatus.Failed;
+        }
+        inputImage = previewLocal.localPath;
+      } else if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
+        const extracted = await this.extractImage(originalLocal.localPath, image.preview.size);
+        inputImage = extracted ? extracted.buffer : originalLocal.localPath;
+      } else {
+        inputImage = originalLocal.localPath;
       }
-      inputImage = previewPath;
-    } else if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
-      const extracted = await this.extractImage(originalPath, image.preview.size);
-      inputImage = extracted ? extracted.buffer : originalPath;
-    } else {
-      inputImage = originalPath;
+
+      const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
+        colorspace: image.colorspace,
+        processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+        // if this is an extracted image, it may not have orientation metadata
+        orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
+      });
+
+      const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+      this.storageCore.ensureFolders(thumbnailPath);
+
+      const thumbnailOptions: GenerateThumbnailOptions = {
+        colorspace: image.colorspace,
+        format: ImageFormat.Jpeg,
+        raw: info,
+        quality: image.thumbnail.quality,
+        progressive: false,
+        processInvalidImages: false,
+        size: FACE_THUMBNAIL_SIZE,
+        edits: [
+          {
+            action: AssetEditAction.Crop,
+            parameters: this.getCrop(
+              { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
+              { x1, y1, x2, y2 },
+            ),
+          },
+        ],
+      };
+
+      await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
+
+      // Persist person thumbnail to S3 if needed
+      const relativeKey = StorageCore.getRelativePersonThumbnailPath({ id, ownerId });
+      const finalPath = await this.persistFile(thumbnailPath, relativeKey, 'image/jpeg');
+
+      await this.personRepository.update({ id, thumbnailPath: finalPath });
+
+      return JobStatus.Success;
+    } finally {
+      await originalLocal.cleanup();
+      await previewLocal?.cleanup();
     }
-
-    const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
-      colorspace: image.colorspace,
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-      // if this is an extracted image, it may not have orientation metadata
-      orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
-    });
-
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
-    this.storageCore.ensureFolders(thumbnailPath);
-
-    const thumbnailOptions: GenerateThumbnailOptions = {
-      colorspace: image.colorspace,
-      format: ImageFormat.Jpeg,
-      raw: info,
-      quality: image.thumbnail.quality,
-      progressive: false,
-      processInvalidImages: false,
-      size: FACE_THUMBNAIL_SIZE,
-      edits: [
-        {
-          action: AssetEditAction.Crop,
-          parameters: this.getCrop(
-            { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
-            { x1, y1, x2, y2 },
-          ),
-        },
-      ],
-    };
-
-    await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
-
-    return JobStatus.Success;
   }
 
   private getCrop(
@@ -509,7 +625,9 @@ export class MediaService extends BaseService {
   private async generateVideoThumbnails(
     asset: ThumbnailPathEntity & { originalPath: string },
     { ffmpeg, image }: SystemConfig,
+    localOriginalPath?: string,
   ) {
+    const inputPath = localOriginalPath ?? asset.originalPath;
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
       format: image.preview.format,
@@ -526,7 +644,7 @@ export class MediaService extends BaseService {
     });
     this.storageCore.ensureFolders(previewFile.path);
 
-    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(inputPath);
     const mainVideoStream = this.getMainStream(videoStreams);
     if (!mainVideoStream) {
       throw new Error(`No video streams found for asset ${asset.id}`);
@@ -543,8 +661,8 @@ export class MediaService extends BaseService {
       format,
     );
 
-    await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
+    await this.mediaRepository.transcode(inputPath, previewFile.path, previewOptions);
+    await this.mediaRepository.transcode(inputPath, thumbnailFile.path, thumbnailOptions);
 
     const thumbhash = await this.mediaRepository.generateThumbhash(previewFile.path, {
       colorspace: image.colorspace,
@@ -584,87 +702,100 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const input = asset.originalPath;
+    // For S3 assets, download the original to a local temp file for processing
+    const { localPath: input, cleanup } = await this.ensureLocalFile(asset.originalPath);
     const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
 
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
-      countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
-    });
-    const videoStream = this.getMainStream(videoStreams);
-    const audioStream = this.getMainStream(audioStreams);
-    if (!videoStream || !format.formatName) {
-      return JobStatus.Failed;
-    }
-
-    if (!videoStream.height || !videoStream.width) {
-      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
-      return JobStatus.Failed;
-    }
-
-    let { ffmpeg } = await this.getConfig({ withCache: true });
-    const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
-    if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
-      const encodedVideo = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
-      if (encodedVideo) {
-        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
-        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [encodedVideo.path] } });
-        await this.assetRepository.deleteFiles([encodedVideo]);
-      } else {
-        this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
-      }
-
-      return JobStatus.Skipped;
-    }
-
-    const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-    if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
-      this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
-    } else {
-      this.logger.log(
-        `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
-      );
-    }
-
     try {
-      await this.mediaRepository.transcode(input, output, command);
-    } catch (error: any) {
-      this.logger.error(`Error occurred during transcoding: ${error.message}`);
-      if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+      const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
+        countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
+      });
+      const videoStream = this.getMainStream(videoStreams);
+      const audioStream = this.getMainStream(audioStreams);
+      if (!videoStream || !format.formatName) {
         return JobStatus.Failed;
       }
 
-      let partialFallbackSuccess = false;
-      if (ffmpeg.accelDecode) {
-        try {
-          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
-          ffmpeg = { ...ffmpeg, accelDecode: false };
+      if (!videoStream.height || !videoStream.width) {
+        this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+        return JobStatus.Failed;
+      }
+
+      let { ffmpeg } = await this.getConfig({ withCache: true });
+      const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
+      if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
+        const encodedVideo = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
+        if (encodedVideo) {
+          this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
+          await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [encodedVideo.path] } });
+          await this.assetRepository.deleteFiles([encodedVideo]);
+        } else {
+          this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
+        }
+
+        return JobStatus.Skipped;
+      }
+
+      const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
+      if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+        this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
+      } else {
+        this.logger.log(
+          `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
+        );
+      }
+
+      try {
+        await this.mediaRepository.transcode(input, output, command);
+      } catch (error: any) {
+        this.logger.error(`Error occurred during transcoding: ${error.message}`);
+        if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+          return JobStatus.Failed;
+        }
+
+        let partialFallbackSuccess = false;
+        if (ffmpeg.accelDecode) {
+          try {
+            this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
+            ffmpeg = { ...ffmpeg, accelDecode: false };
+            const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(
+              target,
+              videoStream,
+              audioStream,
+            );
+            await this.mediaRepository.transcode(input, output, command);
+            partialFallbackSuccess = true;
+          } catch (error: any) {
+            this.logger.error(`Error occurred during transcoding: ${error.message}`);
+          }
+        }
+
+        if (!partialFallbackSuccess) {
+          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
+          ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
           const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
           await this.mediaRepository.transcode(input, output, command);
-          partialFallbackSuccess = true;
-        } catch (error: any) {
-          this.logger.error(`Error occurred during transcoding: ${error.message}`);
         }
       }
 
-      if (!partialFallbackSuccess) {
-        this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-        ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
-        const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-        await this.mediaRepository.transcode(input, output, command);
-      }
+      this.logger.log(`Successfully encoded ${asset.id}`);
+
+      // Persist encoded video to S3 if needed
+      const relativeKey = StorageCore.getRelativeEncodedVideoPath(asset);
+      const finalPath = await this.persistFile(output, relativeKey, 'video/mp4');
+
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        type: AssetFileType.EncodedVideo,
+        path: finalPath,
+        isEdited: false,
+      });
+
+      return JobStatus.Success;
+    } finally {
+      await cleanup();
     }
-
-    this.logger.log(`Successfully encoded ${asset.id}`);
-
-    await this.assetRepository.upsertFile({
-      assetId: asset.id,
-      type: AssetFileType.EncodedVideo,
-      path: output,
-      isEdited: false,
-    });
-
-    return JobStatus.Success;
   }
 
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
@@ -874,12 +1005,13 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async generateEditedThumbnails(asset: ThumbnailAsset, config: SystemConfig) {
+  private async generateEditedThumbnails(asset: ThumbnailAsset, config: SystemConfig, localOriginalPath?: string) {
     if (asset.type !== AssetType.Image || (asset.files.length === 0 && asset.edits.length === 0)) {
       return;
     }
 
-    const generated = asset.edits.length > 0 ? await this.generateImageThumbnails(asset, config, true) : undefined;
+    const generated =
+      asset.edits.length > 0 ? await this.generateImageThumbnails(asset, config, true, localOriginalPath) : undefined;
 
     const crop = asset.edits.find((e) => e.action === AssetEditAction.Crop);
     const cropBox = crop

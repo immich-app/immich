@@ -345,6 +345,17 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> removeFromSpace(ActionSource source, String spaceId) async {
+    final ids = _getRemoteIdsForSource(source);
+    try {
+      final removedCount = await _service.removeFromSpace(ids, spaceId);
+      return ActionResult(count: removedCount, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to remove assets from space', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> setAlbumCover(ActionSource source, String albumId) async {
     final assets = _getAssets(source);
     final asset = assets.first;

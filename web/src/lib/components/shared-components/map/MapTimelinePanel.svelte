@@ -40,9 +40,10 @@
     selectedClusterIds: Set<string>;
     assetCount: number;
     onClose: () => void;
+    spaceId?: string;
   }
 
-  let { bbox, selectedClusterIds, assetCount, onClose }: Props = $props();
+  let { bbox, selectedClusterIds, assetCount, onClose, spaceId }: Props = $props();
 
   const assetInteraction = new AssetInteraction();
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -83,9 +84,10 @@
 
   const timelineOptions = $derived({
     bbox: timelineBoundingBox,
-    visibility: $mapSettings.includeArchived ? undefined : AssetVisibility.Timeline,
-    isFavorite: $mapSettings.onlyFavorites || undefined,
-    withPartners: $mapSettings.withPartners || undefined,
+    visibility: spaceId ? undefined : $mapSettings.includeArchived ? undefined : AssetVisibility.Timeline,
+    isFavorite: spaceId ? undefined : $mapSettings.onlyFavorites || undefined,
+    withPartners: spaceId ? undefined : $mapSettings.withPartners || undefined,
+    timelineSpaceId: spaceId,
     assetFilter: selectedClusterIds,
   });
 

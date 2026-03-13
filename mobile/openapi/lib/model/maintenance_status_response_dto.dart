@@ -103,7 +103,9 @@ class MaintenanceStatusResponseDto {
         action: MaintenanceAction.fromJson(json[r'action'])!,
         active: mapValueOfType<bool>(json, r'active')!,
         error: mapValueOfType<String>(json, r'error'),
-        progress: num.parse('${json[r'progress']}'),
+        progress: json[r'progress'] == null
+            ? null
+            : num.parse('${json[r'progress']}'),
         task: mapValueOfType<String>(json, r'task'),
       );
     }

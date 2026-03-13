@@ -40,6 +40,9 @@
 
 </p>
 
+> [!NOTE]
+> Este é um **fork comunitário** do [Immich](https://github.com/immich-app/immich) com funcionalidades adicionais. Para imagens Docker, instruções de migração e a lista completa de alterações, consulte o [README principal](../README.md).
+
 ## Avisos
 
 - ⚠️ Este projeto está sob **desenvolvimento constante**.

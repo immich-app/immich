@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
 import { AssetFileType, SharedLinkType } from 'src/enum';
@@ -15,6 +16,7 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
+import { StorageService } from 'src/services/storage.service';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mediumFactory, newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
@@ -32,6 +34,8 @@ const setup = (db?: Kysely<DB>) => {
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
+  // Initialize StorageService static backends for medium tests
+  (StorageService as any).diskBackend = new DiskStorageBackend('/tmp/immich-test');
 });
 
 describe(AssetService.name, () => {

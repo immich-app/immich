@@ -51,6 +51,7 @@ export enum QueryParameter {
   QUERY = 'query',
   SEARCHED_PEOPLE = 'searchedPeople',
   SMART_SEARCH = 'smartSearch',
+  SPACE_ID = 'spaceId',
   PAGE = 'page',
   PATH = 'path',
 }

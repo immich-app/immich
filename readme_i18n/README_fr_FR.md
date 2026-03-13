@@ -37,6 +37,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> Ceci est un **fork communautaire** d'[Immich](https://github.com/immich-app/immich) avec des fonctionnalités supplémentaires. Pour les images Docker, les instructions de migration et la liste complète des changements, consultez le [README principal](../README.md).
+
 ## Clause de non-responsabilité
 
 - ⚠️ Le projet est en **très fort** développement.

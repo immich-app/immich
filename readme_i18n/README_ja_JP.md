@@ -36,6 +36,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> これは [Immich](https://github.com/immich-app/immich) の**コミュニティフォーク**で、追加機能が含まれています。Dockerイメージ、移行手順、変更点の一覧については、[メインのREADME](../README.md)をご覧ください。
+
 ## 免責事項
 
 - ⚠️ このプロジェクトは **非常に活発に** 開発中です。

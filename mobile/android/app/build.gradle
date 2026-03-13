@@ -59,6 +59,11 @@ android {
     targetSdkVersion 35
     versionCode flutterVersionCode.toInteger()
     versionName flutterVersionName
+    testInstrumentationRunner "pl.leancode.patrol.PatrolJUnitRunner"
+  }
+
+  testOptions {
+    execution "ANDROID_TEST_ORCHESTRATOR"
   }
 
   signingConfigs {
@@ -124,6 +129,8 @@ dependencies {
 
   ksp "com.github.bumptech.glide:ksp:$glide_version"
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+
+  androidTestUtil "androidx.test:orchestrator:1.5.1"
 
   //Glance Widget
   implementation "androidx.glance:glance-appwidget:$compose_version"

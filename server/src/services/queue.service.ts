@@ -244,6 +244,14 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
       }
 
+      case QueueName.PetDetection: {
+        return this.jobRepository.queue({ name: JobName.PetDetectionQueueAll, data: { force } });
+      }
+
+      case QueueName.StorageBackendMigration: {
+        throw new BadRequestException('Use POST /storage-migration/start to begin a storage migration');
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }
@@ -256,6 +264,7 @@ export class QueueService extends BaseService {
       QueueName.StorageTemplateMigration,
       QueueName.DuplicateDetection,
       QueueName.BackupDatabase,
+      QueueName.StorageBackendMigration,
     ].includes(name);
   }
 

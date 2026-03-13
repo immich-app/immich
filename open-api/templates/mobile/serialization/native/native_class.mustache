@@ -191,7 +191,7 @@ class {{{classname}}} {
             {{/isEnum}}
             {{^isEnum}}
         {{{name}}}: json[r'{{{baseName}}}'] is Iterable
-            ? (json[r'{{{baseName}}}'] as Iterable).cast<{{{items.datatype}}}>().{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}}
+            ? (json[r'{{{baseName}}}'] as Iterable).cast<{{{items.datatype}}}{{#items.isNullable}}?{{/items.isNullable}}>().{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}}
             : {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}},
             {{/isEnum}}
           {{/isArray}}
@@ -203,7 +203,9 @@ class {{{classname}}} {
               {{#isNumber}}
         {{{name}}}: {{#isNullable}}json[r'{{{baseName}}}'] == null
             ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
-            : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
+            : {{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}json[r'{{{baseName}}}'] == null
+            ? null
+            : {{/defaultValue}}{{/required}}{{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
               {{/isNumber}}
               {{#isDouble}}
         {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}){{#isNullable}}?{{/isNullable}}.toDouble(),

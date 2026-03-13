@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { isAbsolute } from 'node:path';
 import { OnEvent, OnJob } from 'src/decorators';
 import { MapAlbumDto } from 'src/dtos/album.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
@@ -24,6 +25,7 @@ import {
 import { EmailTemplate } from 'src/repositories/email.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { StorageService } from 'src/services/storage.service';
 import { EmailImageAttachment, JobOf } from 'src/types';
 import { getFilenameExtension } from 'src/utils/file';
 import { getExternalDomain } from 'src/utils/misc';
@@ -448,11 +450,20 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    return {
-      filename: `album-thumbnail${getFilenameExtension(albumThumbnailFiles[0].path)}`,
-      path: albumThumbnailFiles[0].path,
-      cid: 'album-thumbnail',
-    };
+    const filePath = albumThumbnailFiles[0].path;
+    const filename = `album-thumbnail${getFilenameExtension(filePath)}`;
+
+    if (!isAbsolute(filePath)) {
+      const backend = StorageService.resolveBackendForKey(filePath);
+      const { stream } = await backend.get(filePath);
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+      }
+      return { filename, cid: 'album-thumbnail', content: Buffer.concat(chunks) };
+    }
+
+    return { filename, cid: 'album-thumbnail', path: filePath };
   }
 
   private async sendAlbumLocalNotification(

@@ -42,7 +42,7 @@ import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.inte
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadFiles } from 'src/types';
-import { ImmichFileResponse, sendFile } from 'src/utils/file';
+import { ImmichFileResponse, ImmichRedirectResponse, ImmichStreamResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
@@ -161,7 +161,11 @@ export class AssetMediaController {
   ) {
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
 
-    if (viewThumbnailRes instanceof ImmichFileResponse) {
+    if (
+      viewThumbnailRes instanceof ImmichFileResponse ||
+      viewThumbnailRes instanceof ImmichRedirectResponse ||
+      viewThumbnailRes instanceof ImmichStreamResponse
+    ) {
       await sendFile(res, next, () => Promise.resolve(viewThumbnailRes), this.logger);
     } else {
       // viewThumbnailRes is a AssetMediaRedirectResponse

@@ -28,6 +28,7 @@ export class TimelineService extends BaseService {
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const { userId, ...options } = dto;
     let userIds: string[] | undefined = undefined;
+    let timelineSpaceIds: string[] | undefined = undefined;
 
     if (userId) {
       userIds = [userId];
@@ -39,9 +40,16 @@ export class TimelineService extends BaseService {
         });
         userIds.push(...partnerIds);
       }
+
+      if (dto.withSharedSpaces) {
+        const spaceRows = await this.sharedSpaceRepository.getSpaceIdsForTimeline(auth.user.id);
+        if (spaceRows.length > 0) {
+          timelineSpaceIds = spaceRows.map((row) => row.spaceId);
+        }
+      }
     }
 
-    return { ...options, userIds };
+    return { ...options, userIds, timelineSpaceIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
@@ -51,6 +59,8 @@ export class TimelineService extends BaseService {
 
     if (dto.albumId) {
       await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
+    } else if (dto.spaceId) {
+      await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
     } else {
       dto.userId = dto.userId || auth.user.id;
     }
@@ -74,6 +84,18 @@ export class TimelineService extends BaseService {
       if (requestedArchived || requestedFavorite || requestedTrash) {
         throw new BadRequestException(
           'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        );
+      }
+    }
+
+    if (dto.withSharedSpaces) {
+      const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
+      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const requestedTrash = dto.isTrashed === true;
+
+      if (requestedArchived || requestedFavorite || requestedTrash) {
+        throw new BadRequestException(
+          'withSharedSpaces is only supported for non-archived, non-trashed, non-favorited assets',
         );
       }
     }

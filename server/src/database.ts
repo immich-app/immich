@@ -254,10 +254,12 @@ export type Person = {
   updateId: string;
   isFavorite: boolean;
   name: string;
+  type: string;
   birthDate: Date | null;
   color: string | null;
   faceAssetId: string | null;
   isHidden: boolean;
+  species: string | null;
   thumbnailPath: string;
 };
 
@@ -316,6 +318,71 @@ export type WorkflowAction = Selectable<WorkflowActionTable> & {
   pluginActionId: string;
   actionConfig: ActionConfig | null;
   order: number;
+};
+
+export type SharedSpace = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdById: string;
+  thumbnailAssetId: string | null;
+  color: string | null;
+  thumbnailCropY: number | null;
+  faceRecognitionEnabled: boolean;
+  lastActivityAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  createId: string;
+  updateId: string;
+};
+
+export type SharedSpaceMember = {
+  spaceId: string;
+  userId: string;
+  role: string;
+  joinedAt: Date;
+  showInTimeline: boolean;
+  lastViewedAt: Date | null;
+};
+
+export type SharedSpaceAsset = {
+  spaceId: string;
+  assetId: string;
+  addedById: string | null;
+  addedAt: Date;
+};
+
+export type SharedSpaceActivity = {
+  id: string;
+  spaceId: string;
+  userId: string | null;
+  type: string;
+  data: Record<string, unknown>;
+  createdAt: Date;
+};
+
+export type SharedSpacePerson = {
+  id: string;
+  spaceId: string;
+  name: string;
+  representativeFaceId: string | null;
+  thumbnailPath: string;
+  isHidden: boolean;
+  birthDate: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  updateId: string;
+};
+
+export type SharedSpacePersonFace = {
+  personId: string;
+  assetFaceId: string;
+};
+
+export type SharedSpacePersonAlias = {
+  personId: string;
+  userId: string;
+  alias: string;
 };
 
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;

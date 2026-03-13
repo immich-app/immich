@@ -56,6 +56,15 @@ export class FacialRecognitionConfig extends ModelConfig {
   minFaces!: number;
 }
 
+export class PetDetectionConfig extends ModelConfig {
+  @IsNumber()
+  @Min(0.1)
+  @Max(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for pet detection' })
+  minScore!: number;
+}
+
 export class OcrConfig extends ModelConfig {
   @IsNumber()
   @Min(1)

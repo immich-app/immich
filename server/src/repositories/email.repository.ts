@@ -126,8 +126,8 @@ export class EmailRepository {
 
     const attachments = imageAttachments?.map((attachment) => ({
       filename: attachment.filename,
-      path: attachment.path,
       cid: attachment.cid,
+      ...(attachment.content ? { content: attachment.content } : { path: attachment.path }),
     }));
 
     try {

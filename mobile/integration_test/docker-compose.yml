@@ -1,0 +1,50 @@
+name: immich-mobile-tests
+
+services:
+  immich-server:
+    container_name: immich-mobile-test-server
+    image: immich-server:latest
+    build:
+      context: ../../
+      dockerfile: server/Dockerfile
+    environment:
+      DB_HOSTNAME: database
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE_NAME: immich
+      IMMICH_MACHINE_LEARNING_ENABLED: 'false'
+      IMMICH_TELEMETRY_INCLUDE: all
+      IMMICH_ENV: testing
+      IMMICH_PORT: '2285'
+      IMMICH_IGNORE_MOUNT_CHECK_ERRORS: 'true'
+    depends_on:
+      redis:
+        condition: service_started
+      database:
+        condition: service_healthy
+    ports:
+      - 2285:2285
+
+  redis:
+    container_name: immich-mobile-test-redis
+    image: docker.io/valkey/valkey:9@sha256:2bce660b767cb62c8c0ea020e94a230093be63dbd6af4f21b044960517a5842d
+    healthcheck:
+      test: redis-cli ping || exit 1
+
+  database:
+    container_name: immich-mobile-test-postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    command: -c fsync=off -c shared_preload_libraries=vchord.so -c config_file=/var/lib/postgresql/data/postgresql.conf
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+    ports:
+      - 5435:5432
+    shm_size: 128mb
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 10s

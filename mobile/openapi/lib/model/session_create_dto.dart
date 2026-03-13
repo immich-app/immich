@@ -94,7 +94,9 @@ class SessionCreateDto {
       return SessionCreateDto(
         deviceOS: mapValueOfType<String>(json, r'deviceOS'),
         deviceType: mapValueOfType<String>(json, r'deviceType'),
-        duration: num.parse('${json[r'duration']}'),
+        duration: json[r'duration'] == null
+            ? null
+            : num.parse('${json[r'duration']}'),
       );
     }
     return null;

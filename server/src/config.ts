@@ -81,6 +81,11 @@ export type SystemConfig = {
       minRecognitionScore: number;
       maxResolution: number;
     };
+    petDetection: {
+      enabled: boolean;
+      modelName: string;
+      minScore: number;
+    };
   };
   map: {
     enabled: boolean;
@@ -235,6 +240,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.VideoConversion]: { concurrency: 1 },
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
+    [QueueName.PetDetection]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.Editor]: { concurrency: 2 },
   },
@@ -271,6 +277,11 @@ export const defaults = Object.freeze<SystemConfig>({
       minDetectionScore: 0.5,
       minRecognitionScore: 0.8,
       maxResolution: 736,
+    },
+    petDetection: {
+      enabled: false,
+      modelName: 'yolo11s',
+      minScore: 0.6,
     },
   },
   map: {

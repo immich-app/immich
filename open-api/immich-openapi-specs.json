@@ -9502,6 +9502,16 @@
             }
           },
           {
+            "name": "spaceId",
+            "required": false,
+            "in": "query",
+            "description": "Shared space ID to filter by",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "state",
             "required": false,
             "in": "query",
@@ -11810,6 +11820,1448 @@
         "x-immich-state": "Stable"
       }
     },
+    "/shared-spaces": {
+      "get": {
+        "description": "Retrieve all shared spaces the user is a member of.",
+        "operationId": "getAllSpaces",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharedSpaceResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get all shared spaces",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Create a new shared space for collaborative asset management.",
+        "operationId": "createSpace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpaceResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}": {
+      "delete": {
+        "description": "Permanently delete a shared space.",
+        "operationId": "removeSpace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.delete",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Retrieve details of a specific shared space.",
+        "operationId": "getSpace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpaceResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      },
+      "patch": {
+        "description": "Update the name or description of a shared space.",
+        "operationId": "updateSpace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpaceResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/activities": {
+      "get": {
+        "operationId": "getSpaceActivities",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to return",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to skip",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharedSpaceActivityResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get space activity feed",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-permission": "sharedSpace.read"
+      }
+    },
+    "/shared-spaces/{id}/assets": {
+      "delete": {
+        "description": "Remove one or more assets from a shared space.",
+        "operationId": "removeAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceAssetRemoveDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Remove assets from a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceAsset.delete",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Add one or more assets to a shared space.",
+        "operationId": "addAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceAssetAddDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Add assets to a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/map-markers": {
+      "get": {
+        "description": "Retrieve map markers for geotagged assets in a shared space.",
+        "operationId": "getSpaceMapMarkers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get map markers for a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/members": {
+      "get": {
+        "description": "Retrieve all members of a shared space.",
+        "operationId": "getMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharedSpaceMemberResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get members of a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Add a new member to a shared space with an optional role.",
+        "operationId": "addMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceMemberCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpaceMemberResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Add a member to a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceMember.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/members/me/timeline": {
+      "patch": {
+        "description": "Toggle whether this space's assets appear in the current user's personal timeline.",
+        "operationId": "updateMemberTimeline",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceMemberTimelineDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpaceMemberResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update timeline visibility for current member",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/members/{userId}": {
+      "delete": {
+        "description": "Remove a member from a shared space, or leave the space.",
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Remove a member from a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceMember.delete",
+        "x-immich-state": "Beta"
+      },
+      "patch": {
+        "description": "Update a member's role in a shared space.",
+        "operationId": "updateMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceMemberUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpaceMemberResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a member in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceMember.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/people": {
+      "get": {
+        "description": "Retrieve all people detected in a shared space.",
+        "operationId": "getSpacePeople",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharedSpacePersonResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get people in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/people/{personId}": {
+      "delete": {
+        "description": "Permanently delete a person and their face assignments from a shared space.",
+        "operationId": "deleteSpacePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a person from a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Retrieve details of a specific person in a shared space.",
+        "operationId": "getSpacePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpacePersonResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a person in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Update the name, visibility, birth date, or representative face of a person.",
+        "operationId": "updateSpacePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpacePersonUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedSpacePersonResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a person in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/people/{personId}/alias": {
+      "delete": {
+        "description": "Remove a user-specific alias for a person in a shared space.",
+        "operationId": "deleteSpacePersonAlias",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a person alias in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Set a user-specific alias for a person in a shared space.",
+        "operationId": "setSpacePersonAlias",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpacePersonAliasDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Set a person alias in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/people/{personId}/assets": {
+      "get": {
+        "description": "Retrieve asset IDs for all assets containing a specific person in a shared space.",
+        "operationId": "getSpacePersonAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get assets for a person in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/people/{personId}/merge": {
+      "post": {
+        "description": "Merge one or more people into the target person in a shared space.",
+        "operationId": "mergeSpacePeople",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpacePersonMergeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Merge people in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/people/{personId}/thumbnail": {
+      "get": {
+        "description": "Retrieve the thumbnail image for a person in a shared space.",
+        "operationId": "getSpacePersonThumbnail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a space person thumbnail",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/view": {
+      "patch": {
+        "description": "Update the last viewed timestamp for the current user in this space.",
+        "operationId": "markSpaceViewed",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Mark space as viewed",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Beta"
+      }
+    },
     "/stacks": {
       "delete": {
         "description": "Delete multiple stacks by providing a list of stack IDs.",
@@ -12222,6 +13674,201 @@
         ],
         "x-immich-permission": "stack.update",
         "x-immich-state": "Stable"
+      }
+    },
+    "/storage-migration/estimate": {
+      "get": {
+        "description": "Estimate the number of files and approximate size that would be migrated for the given direction.",
+        "operationId": "getEstimate",
+        "parameters": [
+          {
+            "name": "direction",
+            "required": true,
+            "in": "query",
+            "description": "Migration direction",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "toS3",
+                "toDisk"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get storage migration estimate",
+        "tags": [
+          "Storage Migration (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "job.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/storage-migration/rollback/{batchId}": {
+      "post": {
+        "description": "Rollback a previously completed storage migration batch by reverting all database path changes.",
+        "operationId": "rollback",
+        "parameters": [
+          {
+            "name": "batchId",
+            "required": true,
+            "in": "path",
+            "description": "Batch ID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Rollback a storage migration batch",
+        "tags": [
+          "Storage Migration (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "job.create",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/storage-migration/start": {
+      "post": {
+        "description": "Start a storage backend migration job to move files between disk and S3 storage.",
+        "operationId": "start",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageMigrationStartDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Start storage migration",
+        "tags": [
+          "Storage Migration (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "job.create",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/storage-migration/status": {
+      "get": {
+        "description": "Retrieve the current status of the storage migration queue, including active and pending job counts.",
+        "operationId": "getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get storage migration status",
+        "tags": [
+          "Storage Migration (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "job.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/sync/ack": {
@@ -13600,6 +15247,26 @@
             }
           },
           {
+            "name": "spaceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets belonging to a specific shared space",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "spacePersonId",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets containing a specific shared space person (space face recognition)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -13652,6 +15319,15 @@
             "required": false,
             "in": "query",
             "description": "Include assets shared by partners",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedSpaces",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from shared spaces where the user has timeline enabled",
             "schema": {
               "type": "boolean"
             }
@@ -13786,6 +15462,26 @@
             }
           },
           {
+            "name": "spaceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets belonging to a specific shared space",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "spacePersonId",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets containing a specific shared space person (space face recognition)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -13828,6 +15524,15 @@
             "required": false,
             "in": "query",
             "description": "Include assets shared by partners",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedSpaces",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from shared spaces where the user has timeline enabled",
             "schema": {
               "type": "boolean"
             }
@@ -15334,8 +17039,16 @@
       "description": "A shared link is a public url that provides access to a specific album, asset, or collection of assets. A shared link can be protected with a password, include a specific slug, allow or disallow downloads, and optionally include an expiration date."
     },
     {
+      "name": "Shared Spaces",
+      "description": "A shared space is a virtual library where multiple users can contribute and view photos together."
+    },
+    {
       "name": "Stacks",
       "description": "A stack is a group of related assets. One asset is the \"primary\" asset, and the rest are \"child\" assets. On the main timeline, stack parents are included by default, while child assets are hidden."
+    },
+    {
+      "name": "Storage Migration (admin)",
+      "description": "Administrative endpoints for migrating files between disk and S3 storage backends. Includes estimating migration scope, starting migrations, monitoring status, and rolling back completed batches."
     },
     {
       "name": "Sync",
@@ -18312,7 +20025,14 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "PetDetectionQueueAll",
+          "PetDetection",
+          "WorkflowRun",
+          "StorageBackendMigrationQueueAll",
+          "StorageBackendMigrationSingle",
+          "SharedSpaceFaceMatch",
+          "SharedSpaceFaceMatchAll",
+          "SharedSpacePersonThumbnail"
         ],
         "type": "string"
       },
@@ -19175,6 +20895,11 @@
             "minimum": 1,
             "type": "number"
           },
+          "spaceId": {
+            "description": "Shared space ID to filter by",
+            "format": "uuid",
+            "type": "string"
+          },
           "state": {
             "description": "Filter by state/province name",
             "nullable": true,
@@ -19877,6 +21602,16 @@
           "partner.read",
           "partner.update",
           "partner.delete",
+          "sharedSpace.create",
+          "sharedSpace.read",
+          "sharedSpace.update",
+          "sharedSpace.delete",
+          "sharedSpaceMember.create",
+          "sharedSpaceMember.update",
+          "sharedSpaceMember.delete",
+          "sharedSpaceAsset.create",
+          "sharedSpaceAsset.read",
+          "sharedSpaceAsset.delete",
           "person.create",
           "person.read",
           "person.update",
@@ -20037,8 +21772,18 @@
             "description": "Person name",
             "type": "string"
           },
+          "species": {
+            "description": "Pet species (e.g. dog, cat)",
+            "nullable": true,
+            "type": "string"
+          },
           "thumbnailPath": {
             "description": "Thumbnail path",
+            "type": "string"
+          },
+          "type": {
+            "default": "person",
+            "description": "Entity type (person or pet)",
             "type": "string"
           },
           "updatedAt": {
@@ -20063,7 +21808,8 @@
           "id",
           "isHidden",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "type"
         ],
         "type": "object"
       },
@@ -20169,8 +21915,18 @@
             "description": "Person name",
             "type": "string"
           },
+          "species": {
+            "description": "Pet species (e.g. dog, cat)",
+            "nullable": true,
+            "type": "string"
+          },
           "thumbnailPath": {
             "description": "Thumbnail path",
+            "type": "string"
+          },
+          "type": {
+            "default": "person",
+            "description": "Entity type (person or pet)",
             "type": "string"
           },
           "updatedAt": {
@@ -20196,7 +21952,33 @@
           "id",
           "isHidden",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "type"
+        ],
+        "type": "object"
+      },
+      "PetDetectionConfig": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "minScore": {
+            "description": "Minimum confidence score for pet detection",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "minScore",
+          "modelName"
         ],
         "type": "object"
       },
@@ -20616,8 +22398,10 @@
           "notifications",
           "backupDatabase",
           "ocr",
+          "petDetection",
           "workflow",
-          "editor"
+          "editor",
+          "storageBackendMigration"
         ],
         "type": "string"
       },
@@ -20759,6 +22543,9 @@
           "ocr": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "petDetection": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "search": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -20766,6 +22553,9 @@
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "smartSearch": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
+          "storageBackendMigration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "storageTemplateMigration": {
@@ -20793,9 +22583,11 @@
           "migration",
           "notifications",
           "ocr",
+          "petDetection",
           "search",
           "sidecar",
           "smartSearch",
+          "storageBackendMigration",
           "storageTemplateMigration",
           "thumbnailGeneration",
           "videoConversion",
@@ -20917,6 +22709,11 @@
             "maximum": 1000,
             "minimum": 1,
             "type": "number"
+          },
+          "spaceId": {
+            "description": "Shared space ID to filter by",
+            "format": "uuid",
+            "type": "string"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -22150,6 +23947,533 @@
         },
         "type": "object"
       },
+      "SharedSpaceActivityResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "When the event occurred",
+            "type": "string"
+          },
+          "data": {
+            "description": "Event-specific data",
+            "type": "object"
+          },
+          "id": {
+            "description": "Activity ID",
+            "type": "string"
+          },
+          "type": {
+            "description": "Activity type",
+            "type": "string"
+          },
+          "userAvatarColor": {
+            "description": "User avatar color",
+            "nullable": true,
+            "type": "string"
+          },
+          "userEmail": {
+            "description": "User email",
+            "nullable": true,
+            "type": "string"
+          },
+          "userId": {
+            "description": "User ID who performed the action",
+            "nullable": true,
+            "type": "string"
+          },
+          "userName": {
+            "description": "User name",
+            "nullable": true,
+            "type": "string"
+          },
+          "userProfileImagePath": {
+            "description": "User profile image path",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "data",
+          "id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceAssetAddDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceAssetRemoveDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceCreateDto": {
+        "properties": {
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "default": "primary",
+            "description": "Space color"
+          },
+          "description": {
+            "description": "Space description",
+            "maxLength": 500,
+            "type": "string"
+          },
+          "name": {
+            "description": "Space name",
+            "maxLength": 100,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceMemberCreateDto": {
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedSpaceRole"
+              }
+            ],
+            "default": "viewer",
+            "description": "Member role"
+          },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceMemberResponseDto": {
+        "properties": {
+          "avatarColor": {
+            "description": "Avatar color",
+            "type": "string"
+          },
+          "contributionCount": {
+            "description": "Number of photos contributed by this member",
+            "type": "number"
+          },
+          "email": {
+            "description": "User email",
+            "type": "string"
+          },
+          "joinedAt": {
+            "description": "Join date",
+            "type": "string"
+          },
+          "lastActiveAt": {
+            "description": "Last time this member added a photo",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "User name",
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "description": "Profile change date",
+            "type": "string"
+          },
+          "profileImagePath": {
+            "description": "Profile image path",
+            "type": "string"
+          },
+          "recentAssetId": {
+            "description": "Most recently added asset ID by this member",
+            "nullable": true,
+            "type": "string"
+          },
+          "role": {
+            "description": "Member role",
+            "enum": [
+              "owner",
+              "editor",
+              "viewer"
+            ],
+            "type": "string"
+          },
+          "showInTimeline": {
+            "description": "Show space assets in timeline",
+            "type": "boolean"
+          },
+          "userId": {
+            "description": "User ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "joinedAt",
+          "name",
+          "role",
+          "showInTimeline",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceMemberTimelineDto": {
+        "properties": {
+          "showInTimeline": {
+            "description": "Show space assets in personal timeline",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "showInTimeline"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceMemberUpdateDto": {
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedSpaceRole"
+              }
+            ],
+            "description": "Member role"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "SharedSpacePersonAliasDto": {
+        "properties": {
+          "alias": {
+            "description": "Alias name for this person",
+            "maxLength": 100,
+            "type": "string"
+          }
+        },
+        "required": [
+          "alias"
+        ],
+        "type": "object"
+      },
+      "SharedSpacePersonMergeDto": {
+        "properties": {
+          "ids": {
+            "description": "Person IDs to merge into target",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
+      "SharedSpacePersonResponseDto": {
+        "properties": {
+          "alias": {
+            "description": "User-specific alias for this person",
+            "nullable": true,
+            "type": "string"
+          },
+          "assetCount": {
+            "description": "Number of unique assets with this person",
+            "type": "number"
+          },
+          "birthDate": {
+            "description": "Person date of birth",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation date",
+            "type": "string"
+          },
+          "faceCount": {
+            "description": "Number of faces assigned to this person",
+            "type": "number"
+          },
+          "id": {
+            "description": "Person ID",
+            "type": "string"
+          },
+          "isHidden": {
+            "description": "Is hidden",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Person name",
+            "type": "string"
+          },
+          "representativeFaceId": {
+            "description": "Representative face ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "spaceId": {
+            "description": "Space ID",
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "description": "Thumbnail path",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "createdAt",
+          "faceCount",
+          "id",
+          "isHidden",
+          "name",
+          "spaceId",
+          "thumbnailPath",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SharedSpacePersonUpdateDto": {
+        "properties": {
+          "birthDate": {
+            "description": "Person date of birth",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "isHidden": {
+            "description": "Person visibility (hidden)",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Person name",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "representativeFaceId": {
+            "description": "Representative face ID",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SharedSpaceResponseDto": {
+        "properties": {
+          "assetCount": {
+            "description": "Number of assets",
+            "type": "number"
+          },
+          "color": {
+            "description": "Space color",
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation date",
+            "type": "string"
+          },
+          "createdById": {
+            "description": "Creator user ID",
+            "type": "string"
+          },
+          "description": {
+            "description": "Space description",
+            "nullable": true,
+            "type": "string"
+          },
+          "faceRecognitionEnabled": {
+            "description": "Whether face recognition is enabled for this space",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Space ID",
+            "type": "string"
+          },
+          "lastActivityAt": {
+            "description": "Last activity timestamp (most recent asset add)",
+            "nullable": true,
+            "type": "string"
+          },
+          "lastContributor": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "type": "object"
+          },
+          "lastViewedAt": {
+            "description": "When the current user last viewed this space",
+            "nullable": true,
+            "type": "string"
+          },
+          "memberCount": {
+            "description": "Number of members",
+            "type": "number"
+          },
+          "members": {
+            "description": "Space members (summary)",
+            "items": {
+              "$ref": "#/components/schemas/SharedSpaceMemberResponseDto"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "Space name",
+            "type": "string"
+          },
+          "newAssetCount": {
+            "description": "Number of new assets since last viewed",
+            "type": "number"
+          },
+          "recentAssetIds": {
+            "description": "Recent asset IDs for collage display (up to 4)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "recentAssetThumbhashes": {
+            "description": "Thumbhashes for recent assets (parallel array)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "thumbnailCropY": {
+            "description": "Vertical crop position for cover photo (0-100)",
+            "nullable": true,
+            "type": "number"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "createdById",
+          "id",
+          "name",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceRole": {
+        "description": "Member role",
+        "enum": [
+          "owner",
+          "editor",
+          "viewer"
+        ],
+        "type": "string"
+      },
+      "SharedSpaceUpdateDto": {
+        "properties": {
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "description": "Space color"
+          },
+          "description": {
+            "description": "Space description",
+            "maxLength": 500,
+            "type": "string"
+          },
+          "faceRecognitionEnabled": {
+            "description": "Enable face recognition for this space",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Space name",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "thumbnailCropY": {
+            "description": "Vertical crop position for cover photo (0-100)",
+            "maximum": 100,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "SignUpDto": {
         "properties": {
           "email": {
@@ -22308,6 +24632,11 @@
             "maximum": 1000,
             "minimum": 1,
             "type": "number"
+          },
+          "spaceId": {
+            "description": "Shared space ID to filter by",
+            "format": "uuid",
+            "type": "string"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -22554,6 +24883,11 @@
             ],
             "x-immich-state": "Stable"
           },
+          "spaceId": {
+            "description": "Shared space ID to filter by",
+            "format": "uuid",
+            "type": "string"
+          },
           "state": {
             "description": "Filter by state/province name",
             "nullable": true,
@@ -22628,6 +24962,99 @@
           "backups"
         ],
         "type": "string"
+      },
+      "StorageMigrationFileTypesDto": {
+        "properties": {
+          "encodedVideos": {
+            "default": true,
+            "description": "Include encoded video files",
+            "type": "boolean"
+          },
+          "fullsize": {
+            "default": true,
+            "description": "Include full-size files",
+            "type": "boolean"
+          },
+          "originals": {
+            "default": true,
+            "description": "Include original files",
+            "type": "boolean"
+          },
+          "personThumbnails": {
+            "default": true,
+            "description": "Include person thumbnail files",
+            "type": "boolean"
+          },
+          "previews": {
+            "default": true,
+            "description": "Include preview files",
+            "type": "boolean"
+          },
+          "profileImages": {
+            "default": true,
+            "description": "Include profile image files",
+            "type": "boolean"
+          },
+          "sidecars": {
+            "default": true,
+            "description": "Include sidecar files",
+            "type": "boolean"
+          },
+          "thumbnails": {
+            "default": true,
+            "description": "Include thumbnail files",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "encodedVideos",
+          "fullsize",
+          "originals",
+          "personThumbnails",
+          "previews",
+          "profileImages",
+          "sidecars",
+          "thumbnails"
+        ],
+        "type": "object"
+      },
+      "StorageMigrationStartDto": {
+        "properties": {
+          "concurrency": {
+            "default": 5,
+            "description": "Concurrency level",
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "deleteSource": {
+            "default": false,
+            "description": "Delete source files after migration",
+            "type": "boolean"
+          },
+          "direction": {
+            "description": "Migration direction",
+            "enum": [
+              "toS3",
+              "toDisk"
+            ],
+            "type": "string"
+          },
+          "fileTypes": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageMigrationFileTypesDto"
+              }
+            ],
+            "description": "File types to migrate"
+          }
+        },
+        "required": [
+          "deleteSource",
+          "direction",
+          "fileTypes"
+        ],
+        "type": "object"
       },
       "SyncAckDeleteDto": {
         "properties": {
@@ -24319,6 +26746,9 @@
           "ocr": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "petDetection": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -24347,6 +26777,7 @@
           "migration",
           "notifications",
           "ocr",
+          "petDetection",
           "search",
           "sidecar",
           "smartSearch",
@@ -24440,6 +26871,9 @@
           "ocr": {
             "$ref": "#/components/schemas/OcrConfig"
           },
+          "petDetection": {
+            "$ref": "#/components/schemas/PetDetectionConfig"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -24457,6 +26891,7 @@
           "enabled",
           "facialRecognition",
           "ocr",
+          "petDetection",
           "urls"
         ],
         "type": "object"

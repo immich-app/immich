@@ -171,7 +171,7 @@ let _sharedLink: SharedLinkResponseDto | undefined;
 export const setSharedLink = (sharedLink: typeof _sharedLink) => (_sharedLink = sharedLink);
 export const getSharedLink = (): typeof _sharedLink => _sharedLink;
 
-const createUrl = (path: string, parameters?: Record<string, unknown>) => {
+export const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const searchParameters = new URLSearchParams();
   for (const key in parameters) {
     const value = parameters[key];

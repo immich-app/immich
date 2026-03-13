@@ -17,4 +17,7 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   ocrAt!: Timestamp | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  petsDetectedAt!: Timestamp | null;
 }

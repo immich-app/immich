@@ -67,5 +67,13 @@
         {/if}
       </div>
     {/if}
+    <!-- BRANDING:UPSTREAM_START -->
+    <p class="mt-5 text-sm text-secondary">{$t('upstream_project')}</p>
+    <div class="flex flex-col gap-2 mt-2">
+      {@render link('https://github.com/immich-app/immich', mdiGithub, 'Immich')}
+      {@render link('https://docs.immich.app', mdiInformationOutline, $t('documentation'))}
+      {@render link('https://discord.immich.app', siDiscord, $t('discord'))}
+    </div>
+    <!-- BRANDING:UPSTREAM_END -->
   </ModalBody>
 </Modal>

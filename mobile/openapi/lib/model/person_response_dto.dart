@@ -19,7 +19,9 @@ class PersonResponseDto {
     this.isFavorite,
     required this.isHidden,
     required this.name,
+    this.species,
     required this.thumbnailPath,
+    this.type = 'person',
     this.updatedAt,
   });
 
@@ -53,8 +55,14 @@ class PersonResponseDto {
   /// Person name
   String name;
 
+  /// Pet species (e.g. dog, cat)
+  String? species;
+
   /// Thumbnail path
   String thumbnailPath;
+
+  /// Entity type (person or pet)
+  String type;
 
   /// Last update date
   ///
@@ -73,7 +81,9 @@ class PersonResponseDto {
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name &&
+    other.species == species &&
     other.thumbnailPath == thumbnailPath &&
+    other.type == type &&
     other.updatedAt == updatedAt;
 
   @override
@@ -85,11 +95,13 @@ class PersonResponseDto {
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
+    (species == null ? 0 : species!.hashCode) +
     (thumbnailPath.hashCode) +
+    (type.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, species=$species, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -111,7 +123,13 @@ class PersonResponseDto {
     }
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
+    if (this.species != null) {
+      json[r'species'] = this.species;
+    } else {
+    //  json[r'species'] = null;
+    }
       json[r'thumbnailPath'] = this.thumbnailPath;
+      json[r'type'] = this.type;
     if (this.updatedAt != null) {
       json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
     } else {
@@ -135,7 +153,9 @@ class PersonResponseDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
+        species: mapValueOfType<String>(json, r'species'),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        type: mapValueOfType<String>(json, r'type')!,
         updatedAt: mapDateTime(json, r'updatedAt', r''),
       );
     }
@@ -189,6 +209,7 @@ class PersonResponseDto {
     'isHidden',
     'name',
     'thumbnailPath',
+    'type',
   };
 }
 

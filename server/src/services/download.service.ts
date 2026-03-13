@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'node:path';
+import { isAbsolute, parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveDto, DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
+import { StorageService } from 'src/services/storage.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { getPreferences } from 'src/utils/preferences';
 
@@ -103,15 +104,22 @@ export class DownloadService extends BaseService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      let realpath = dto.edited && editedPath ? editedPath : originalPath;
+      let filePath = dto.edited && editedPath ? editedPath : originalPath;
 
-      try {
-        realpath = await this.storageRepository.realpath(realpath);
-      } catch {
-        this.logger.warn('Unable to resolve realpath', { originalPath });
+      if (isAbsolute(filePath)) {
+        // Disk asset — resolve symlinks and add by path
+        try {
+          filePath = await this.storageRepository.realpath(filePath);
+        } catch {
+          this.logger.warn('Unable to resolve realpath', { originalPath });
+        }
+        zip.addFile(filePath, filename);
+      } else {
+        // S3 asset — stream from backend
+        const backend = StorageService.resolveBackendForKey(filePath);
+        const { stream } = await backend.get(filePath);
+        zip.addFile(stream, filename);
       }
-
-      zip.addFile(realpath, filename);
     }
 
     void zip.finalize();

@@ -46,6 +46,23 @@ export async function loadFromTimeBuckets(
     }
   }
 
+  if (options.timelineSpaceId) {
+    const spaceAssets = await getTimeBucket(
+      {
+        ...authManager.params,
+        spaceId: options.timelineSpaceId,
+        timeBucket,
+      },
+      { signal },
+    );
+    if (!spaceAssets) {
+      return;
+    }
+    for (const id of spaceAssets.id) {
+      timelineManager.albumAssets.add(id);
+    }
+  }
+
   const unprocessedAssets = monthGroup.addAssets(bucketResponse, true);
   if (unprocessedAssets.length > 0) {
     console.error(

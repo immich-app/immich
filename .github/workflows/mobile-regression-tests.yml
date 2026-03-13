@@ -1,0 +1,78 @@
+name: Mobile Regression Tests
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  regression-tests:
+    name: Mobile Regression Suite
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        with:
+          channel: 'stable'
+          flutter-version-file: ./mobile/pubspec.yaml
+
+      - name: Setup Gradle cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('mobile/**/*.gradle*', 'mobile/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Install Patrol CLI
+        run: dart pub global activate patrol_cli
+
+      - name: Generate translation file
+        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
+        working-directory: ./mobile
+
+      - name: Install Android emulator system image
+        run: |
+          echo y | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-34;aosp_atd;x86_64" "emulator" "platform-tools"
+
+      - name: Start Immich backend
+        run: |
+          chmod +x mobile/integration_test/scripts/start-backend.sh
+          mobile/integration_test/scripts/start-backend.sh
+
+      - name: Run all integration tests
+        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed # zizmor: ignore[impostor-commit] v2.34.0
+        with:
+          api-level: 34
+          target: aosp_atd
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-boot-timeout: 600
+          working-directory: ./mobile
+          script: |
+            chmod +x integration_test/scripts/run-tests.sh
+            integration_test/scripts/run-tests.sh
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: regression-failure-screenshots
+          path: mobile/build/app/outputs/androidTest-results/
+
+      - name: Stop backend
+        if: always()
+        run: |
+          chmod +x mobile/integration_test/scripts/stop-backend.sh
+          mobile/integration_test/scripts/stop-backend.sh

@@ -319,6 +319,25 @@ export class StorageCore {
     }
   }
 
+  // --- Relative key methods (for S3 / backend-agnostic paths) ---
+
+  static getRelativeNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
+    return join(folder, ownerId, filename.slice(0, 2), filename.slice(2, 4), filename);
+  }
+
+  static getRelativeImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions): string {
+    const filename = `${asset.id}_${fileType}${isEdited ? '_edited' : ''}.${format}`;
+    return StorageCore.getRelativeNestedPath(StorageFolder.Thumbnails, asset.ownerId, filename);
+  }
+
+  static getRelativeEncodedVideoPath(asset: ThumbnailPathEntity): string {
+    return StorageCore.getRelativeNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}.mp4`);
+  }
+
+  static getRelativePersonThumbnailPath(person: ThumbnailPathEntity): string {
+    return StorageCore.getRelativeNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.id}.jpeg`);
+  }
+
   static getNestedFolder(folder: StorageFolder, ownerId: string, filename: string): string {
     return join(StorageCore.getFolderLocation(folder, ownerId), filename.slice(0, 2), filename.slice(2, 4));
   }

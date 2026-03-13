@@ -41,6 +41,9 @@
 
 </p>
 
+> [!NOTE]
+> Đây là **bản fork cộng đồng** của [Immich](https://github.com/immich-app/immich) với các tính năng bổ sung. Để xem Docker images, hướng dẫn chuyển đổi và danh sách đầy đủ các thay đổi, vui lòng xem [README chính](../README.md).
+
 ## Tuyên bố miễn trừ trách nhiệm
 
 - ⚠️ Dự án đang được phát triển **rất tích cực**.

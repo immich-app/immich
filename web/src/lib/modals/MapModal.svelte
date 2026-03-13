@@ -2,8 +2,9 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import { delay } from '$lib/utils/asset-utils';
   import type { MapMarkerResponseDto } from '@immich/sdk';
-  import { LoadingSpinner, Modal, ModalBody } from '@immich/ui';
+  import { Modal, ModalBody } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import LoadingSpinner from '$lib/components/shared-components/LoadingSpinner.svelte';
 
   type Props = {
     onClose: (assetIds?: string[]) => void;

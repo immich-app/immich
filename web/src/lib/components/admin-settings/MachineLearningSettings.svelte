@@ -325,6 +325,55 @@
           />
         </div>
       </SettingAccordion>
+
+      <SettingAccordion
+        key="pet-detection"
+        title={$t('admin.machine_learning_pet_detection')}
+        subtitle={$t('admin.machine_learning_pet_detection_description')}
+      >
+        <div class="ms-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_pet_detection_setting')}
+            subtitle={$t('admin.machine_learning_pet_detection_setting_description')}
+            bind:checked={configToEdit.machineLearning.petDetection.enabled}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingSelect
+            label={$t('admin.machine_learning_pet_detection_model')}
+            desc={$t('admin.machine_learning_pet_detection_model_description')}
+            name="pet-detection-model"
+            bind:value={configToEdit.machineLearning.petDetection.modelName}
+            options={[
+              { value: 'yolo11n', text: 'yolo11n (fast, least accurate)' },
+              { value: 'yolo11s', text: 'yolo11s (balanced, recommended)' },
+              { value: 'yolo11m', text: 'yolo11m (slow, most accurate)' },
+            ]}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petDetection.enabled}
+            isEdited={configToEdit.machineLearning.petDetection.modelName !==
+              config.machineLearning.petDetection.modelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_min_detection_score')}
+            description={$t('admin.machine_learning_min_detection_score_description')}
+            bind:value={configToEdit.machineLearning.petDetection.minScore}
+            step="0.01"
+            min={0.1}
+            max={1}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petDetection.enabled}
+            isEdited={configToEdit.machineLearning.petDetection.minScore !==
+              config.machineLearning.petDetection.minScore}
+          />
+        </div>
+      </SettingAccordion>
       <SettingButtonsRow bind:configToEdit keys={['machineLearning']} {disabled} />
     </form>
   </div>

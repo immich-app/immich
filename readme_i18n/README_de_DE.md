@@ -38,6 +38,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> Dies ist ein **Community-Fork** von [Immich](https://github.com/immich-app/immich) mit zusätzlichen Funktionen. Docker-Images, Wechselanleitungen und eine vollständige Liste der Änderungen finden Sie in der [Haupt-README](../README.md).
+
 - ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
 
 > [!NOTE]

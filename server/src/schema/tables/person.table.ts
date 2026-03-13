@@ -58,6 +58,12 @@ export class PersonTable {
   @Column({ type: 'character varying', nullable: true, default: null })
   color!: string | null;
 
+  @Column({ type: 'character varying', default: 'person' })
+  type!: Generated<string>;
+
+  @Column({ type: 'character varying', nullable: true })
+  species!: string | null;
+
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

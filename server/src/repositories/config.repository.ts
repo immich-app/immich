@@ -110,8 +110,18 @@ export interface EnvData {
   };
 
   storage: {
+    backend: 'disk' | 's3';
     ignoreMountCheckErrors: boolean;
     mediaLocation?: string;
+    s3: {
+      bucket: string;
+      region: string;
+      endpoint?: string;
+      accessKeyId?: string;
+      secretAccessKey?: string;
+      presignedUrlExpiry: number;
+      serveMode: 'redirect' | 'proxy';
+    };
   };
 
   workers: ImmichWorker[];
@@ -357,8 +367,18 @@ const getEnv = (): EnvData => {
     },
 
     storage: {
+      backend: (dto.IMMICH_STORAGE_BACKEND as 'disk' | 's3') || 'disk',
       ignoreMountCheckErrors: !!dto.IMMICH_IGNORE_MOUNT_CHECK_ERRORS,
       mediaLocation: dto.IMMICH_MEDIA_LOCATION,
+      s3: {
+        bucket: dto.IMMICH_S3_BUCKET || '',
+        region: dto.IMMICH_S3_REGION || 'us-east-1',
+        endpoint: dto.IMMICH_S3_ENDPOINT,
+        accessKeyId: dto.IMMICH_S3_ACCESS_KEY_ID,
+        secretAccessKey: dto.IMMICH_S3_SECRET_ACCESS_KEY,
+        presignedUrlExpiry: dto.IMMICH_S3_PRESIGNED_URL_EXPIRY || 3600,
+        serveMode: (dto.IMMICH_S3_SERVE_MODE as 'redirect' | 'proxy') || 'redirect',
+      },
     },
 
     telemetry: {

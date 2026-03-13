@@ -40,6 +40,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> 這是 [Immich](https://github.com/immich-app/immich) 的**社群分支**，包含額外功能。有關 Docker 映像、遷移說明和完整變更清單，請參閱[主 README](../README.md)。
+
 > [!WARNING]
 > ⚠️ 請務必遵循 [3-2-1 備份原則](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/)，守護珍貴的照片與影片！
 >

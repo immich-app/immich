@@ -151,6 +151,11 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.Failed;
     }
 
+    if (!path.isAbsolute(asset.originalPath)) {
+      this.logger.debug(`Skipping storage template migration for S3 asset ${id}`);
+      return JobStatus.Skipped;
+    }
+
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;

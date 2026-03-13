@@ -37,6 +37,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> Esta es una **bifurcación comunitaria** de [Immich](https://github.com/immich-app/immich) con funcionalidades adicionales. Para imágenes Docker, instrucciones de migración y la lista completa de cambios, consulta el [README principal](../README.md).
+
 ## Advertencia
 
 - ⚠️ El proyecto está en **activo desarrollo**.

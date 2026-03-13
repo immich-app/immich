@@ -4,10 +4,11 @@
   import { oauth } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner, toastManager } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import LoadingSpinner from '$lib/components/shared-components/LoadingSpinner.svelte';
 
   interface Props {
     user: UserAdminResponseDto;

@@ -43,6 +43,9 @@
 
 </p>
 
+> [!NOTE]
+> 这是 [Immich](https://github.com/immich-app/immich) 的**社区分支**，包含额外功能。有关 Docker 镜像、迁移说明和完整变更列表，请查看[主 README](../README.md)。
+
 ## 免责声明
 
 - ⚠️ 本项目正在 **非常活跃** 地开发中。

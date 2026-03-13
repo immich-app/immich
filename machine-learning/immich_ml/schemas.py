@@ -22,6 +22,7 @@ class BoundingBox(TypedDict):
 
 class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
+    PET_DETECTION = "pet-detection"
     SEARCH = "clip"
     OCR = "ocr"
 
@@ -44,6 +45,7 @@ class ModelSource(StrEnum):
     MCLIP = "mclip"
     OPENCLIP = "openclip"
     PADDLE = "paddle"
+    YOLO = "yolo"
 
 
 class ModelPrecision(StrEnum):
@@ -92,6 +94,15 @@ class DetectedFace(TypedDict):
 
 
 FacialRecognitionOutput = list[DetectedFace]
+
+
+class DetectedPet(TypedDict):
+    boundingBox: BoundingBox
+    score: float
+    label: str
+
+
+PetDetectionOutput = list[DetectedPet]
 
 
 class PipelineEntry(TypedDict):

@@ -60,7 +60,7 @@ export class MonthGroup {
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
-    this.yearMonth = { year: yearMonth.year, month: yearMonth.month };
+    this.yearMonth = yearMonth;
     this.monthGroupTitle = formatMonthGroupTitle(fromTimelinePlainYearMonth(yearMonth));
 
     this.loader = new CancellableTask(

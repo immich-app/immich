@@ -120,6 +120,7 @@ where
 -- PersonRepository.getFaceForFacialRecognitionJob
 select
   "asset_face"."id",
+  "asset_face"."assetId",
   "asset_face"."personId",
   "asset_face"."sourceType",
   (
@@ -177,6 +178,8 @@ select
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = 'preview'
       and "asset_file"."isEdited" = $1
+    limit
+      $2
   ) as "previewPath"
 from
   "person"
@@ -184,7 +187,7 @@ from
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "person"."id" = $2
+  "person"."id" = $3
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.reassignFace

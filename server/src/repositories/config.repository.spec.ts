@@ -39,6 +39,15 @@ const resetEnv = () => {
     'REDIS_URL',
 
     'NO_COLOR',
+
+    'IMMICH_STORAGE_BACKEND',
+    'IMMICH_S3_BUCKET',
+    'IMMICH_S3_REGION',
+    'IMMICH_S3_ENDPOINT',
+    'IMMICH_S3_ACCESS_KEY_ID',
+    'IMMICH_S3_SECRET_ACCESS_KEY',
+    'IMMICH_S3_PRESIGNED_URL_EXPIRY',
+    'IMMICH_S3_SERVE_MODE',
   ]) {
     delete process.env[env];
   }
@@ -322,6 +331,54 @@ describe('getEnv', () => {
       process.env.IMMICH_TELEMETRY_INCLUDE = 'io, host, api';
       const { telemetry } = getEnv();
       expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.Api, ImmichTelemetry.Host, ImmichTelemetry.Io]));
+    });
+  });
+
+  describe('storage', () => {
+    it('should default storage backend to disk', () => {
+      const { storage } = getEnv();
+      expect(storage.backend).toBe('disk');
+    });
+
+    it('should read S3 config from env vars', () => {
+      process.env.IMMICH_STORAGE_BACKEND = 's3';
+      process.env.IMMICH_S3_BUCKET = 'test-bucket';
+      process.env.IMMICH_S3_REGION = 'us-west-2';
+      process.env.IMMICH_S3_ENDPOINT = 'http://localhost:9000';
+      process.env.IMMICH_S3_ACCESS_KEY_ID = 'minioadmin';
+      process.env.IMMICH_S3_SECRET_ACCESS_KEY = 'minioadmin';
+      process.env.IMMICH_S3_PRESIGNED_URL_EXPIRY = '7200';
+      process.env.IMMICH_S3_SERVE_MODE = 'proxy';
+
+      const { storage } = getEnv();
+
+      expect(storage.backend).toBe('s3');
+      expect(storage.s3).toEqual({
+        bucket: 'test-bucket',
+        region: 'us-west-2',
+        endpoint: 'http://localhost:9000',
+        accessKeyId: 'minioadmin',
+        secretAccessKey: 'minioadmin',
+        presignedUrlExpiry: 7200,
+        serveMode: 'proxy',
+      });
+    });
+
+    it('should use S3 defaults when backend is s3', () => {
+      process.env.IMMICH_STORAGE_BACKEND = 's3';
+      process.env.IMMICH_S3_BUCKET = 'my-bucket';
+
+      const { storage } = getEnv();
+
+      expect(storage.s3).toEqual({
+        bucket: 'my-bucket',
+        region: 'us-east-1',
+        endpoint: undefined,
+        accessKeyId: undefined,
+        secretAccessKey: undefined,
+        presignedUrlExpiry: 3600,
+        serveMode: 'redirect',
+      });
     });
   });
 });

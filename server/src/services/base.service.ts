@@ -5,6 +5,8 @@ import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { CacheControl } from 'src/enum';
+import { ServeStrategy } from 'src/interfaces/storage-backend.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -44,7 +46,9 @@ import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
+import { SharedSpaceRepository } from 'src/repositories/shared-space.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
+import { StorageMigrationRepository } from 'src/repositories/storage-migration.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -60,6 +64,7 @@ import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
+import { ImmichFileResponse, ImmichMediaResponse, ImmichRedirectResponse, ImmichStreamResponse } from 'src/utils/file';
 
 export const BASE_SERVICE_DEPENDENCIES = [
   LoggingRepository,
@@ -101,7 +106,9 @@ export const BASE_SERVICE_DEPENDENCIES = [
   SessionRepository,
   SharedLinkRepository,
   SharedLinkAssetRepository,
+  SharedSpaceRepository,
   StackRepository,
+  StorageMigrationRepository,
   StorageRepository,
   SyncRepository,
   SyncCheckpointRepository,
@@ -160,7 +167,9 @@ export class BaseService {
     protected sessionRepository: SessionRepository,
     protected sharedLinkRepository: SharedLinkRepository,
     protected sharedLinkAssetRepository: SharedLinkAssetRepository,
+    protected sharedSpaceRepository: SharedSpaceRepository,
     protected stackRepository: StackRepository,
+    protected storageMigrationRepository: StorageMigrationRepository,
     protected storageRepository: StorageRepository,
     protected syncRepository: SyncRepository,
     protected syncCheckpointRepository: SyncCheckpointRepository,
@@ -213,6 +222,44 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  protected async serveFromBackend(
+    filePath: string,
+    contentType: string,
+    cacheControl: CacheControl,
+    fileName?: string,
+  ): Promise<ImmichMediaResponse> {
+    // lazy import to avoid circular dependency (StorageService extends BaseService)
+    const { StorageService } = await import('./storage.service.js');
+    const backend = StorageService.resolveBackendForKey(filePath);
+    const strategy: ServeStrategy = await backend.getServeStrategy(filePath, contentType);
+
+    switch (strategy.type) {
+      case 'file': {
+        return new ImmichFileResponse({
+          path: strategy.path,
+          contentType,
+          cacheControl,
+          fileName,
+        });
+      }
+      case 'redirect': {
+        return new ImmichRedirectResponse({
+          url: strategy.url,
+          cacheControl,
+        });
+      }
+      case 'stream': {
+        return new ImmichStreamResponse({
+          stream: strategy.stream,
+          contentType,
+          length: strategy.length,
+          cacheControl,
+          fileName,
+        });
+      }
+    }
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {

@@ -9,4 +9,5 @@ export const personFactory = Sync.makeFactory<PersonResponseDto>({
   name: Sync.each(() => faker.person.fullName()),
   thumbnailPath: Sync.each(() => faker.system.filePath()),
   updatedAt: Sync.each(() => faker.date.recent().toISOString()),
+  type: 'person',
 });

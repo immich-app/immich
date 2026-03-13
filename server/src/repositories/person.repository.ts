@@ -248,7 +248,7 @@ export class PersonRepository {
   getFaceForFacialRecognitionJob(id: string) {
     return this.db
       .selectFrom('asset_face')
-      .select(['asset_face.id', 'asset_face.personId', 'asset_face.sourceType'])
+      .select(['asset_face.id', 'asset_face.assetId', 'asset_face.personId', 'asset_face.sourceType'])
       .select((eb) =>
         jsonObjectFrom(
           eb
@@ -289,6 +289,7 @@ export class PersonRepository {
           .whereRef('asset_file.assetId', '=', 'asset.id')
           .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
           .where('asset_file.isEdited', '=', false)
+          .limit(1)
           .as('previewPath'),
       )
       .where('person.id', '=', id)
@@ -513,8 +514,19 @@ export class PersonRepository {
     return result?.latestDate;
   }
 
-  async createAssetFace(face: Insertable<AssetFaceTable>): Promise<void> {
-    await this.db.insertInto('asset_face').values(face).execute();
+  getByOwnerAndSpecies(ownerId: string, species: string) {
+    return this.db
+      .selectFrom('person')
+      .selectAll('person')
+      .where('person.ownerId', '=', ownerId)
+      .where('person.type', '=', 'pet')
+      .where('person.species', '=', species)
+      .executeTakeFirst();
+  }
+
+  async createAssetFace(face: Insertable<AssetFaceTable>): Promise<string> {
+    const result = await this.db.insertInto('asset_face').values(face).returning('id').executeTakeFirstOrThrow();
+    return result.id;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

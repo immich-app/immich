@@ -9,7 +9,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Logo, PasswordInput } from '@immich/ui';
+  import { Button, PasswordInput } from '@immich/ui';
+  import Logo from '$lib/components/shared-components/Logo.svelte';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 

@@ -100,6 +100,16 @@ class Permission {
   static const partnerPeriodRead = Permission._(r'partner.read');
   static const partnerPeriodUpdate = Permission._(r'partner.update');
   static const partnerPeriodDelete = Permission._(r'partner.delete');
+  static const sharedSpacePeriodCreate = Permission._(r'sharedSpace.create');
+  static const sharedSpacePeriodRead = Permission._(r'sharedSpace.read');
+  static const sharedSpacePeriodUpdate = Permission._(r'sharedSpace.update');
+  static const sharedSpacePeriodDelete = Permission._(r'sharedSpace.delete');
+  static const sharedSpaceMemberPeriodCreate = Permission._(r'sharedSpaceMember.create');
+  static const sharedSpaceMemberPeriodUpdate = Permission._(r'sharedSpaceMember.update');
+  static const sharedSpaceMemberPeriodDelete = Permission._(r'sharedSpaceMember.delete');
+  static const sharedSpaceAssetPeriodCreate = Permission._(r'sharedSpaceAsset.create');
+  static const sharedSpaceAssetPeriodRead = Permission._(r'sharedSpaceAsset.read');
+  static const sharedSpaceAssetPeriodDelete = Permission._(r'sharedSpaceAsset.delete');
   static const personPeriodCreate = Permission._(r'person.create');
   static const personPeriodRead = Permission._(r'person.read');
   static const personPeriodUpdate = Permission._(r'person.update');
@@ -259,6 +269,16 @@ class Permission {
     partnerPeriodRead,
     partnerPeriodUpdate,
     partnerPeriodDelete,
+    sharedSpacePeriodCreate,
+    sharedSpacePeriodRead,
+    sharedSpacePeriodUpdate,
+    sharedSpacePeriodDelete,
+    sharedSpaceMemberPeriodCreate,
+    sharedSpaceMemberPeriodUpdate,
+    sharedSpaceMemberPeriodDelete,
+    sharedSpaceAssetPeriodCreate,
+    sharedSpaceAssetPeriodRead,
+    sharedSpaceAssetPeriodDelete,
     personPeriodCreate,
     personPeriodRead,
     personPeriodUpdate,
@@ -453,6 +473,16 @@ class PermissionTypeTransformer {
         case r'partner.read': return Permission.partnerPeriodRead;
         case r'partner.update': return Permission.partnerPeriodUpdate;
         case r'partner.delete': return Permission.partnerPeriodDelete;
+        case r'sharedSpace.create': return Permission.sharedSpacePeriodCreate;
+        case r'sharedSpace.read': return Permission.sharedSpacePeriodRead;
+        case r'sharedSpace.update': return Permission.sharedSpacePeriodUpdate;
+        case r'sharedSpace.delete': return Permission.sharedSpacePeriodDelete;
+        case r'sharedSpaceMember.create': return Permission.sharedSpaceMemberPeriodCreate;
+        case r'sharedSpaceMember.update': return Permission.sharedSpaceMemberPeriodUpdate;
+        case r'sharedSpaceMember.delete': return Permission.sharedSpaceMemberPeriodDelete;
+        case r'sharedSpaceAsset.create': return Permission.sharedSpaceAssetPeriodCreate;
+        case r'sharedSpaceAsset.read': return Permission.sharedSpaceAssetPeriodRead;
+        case r'sharedSpaceAsset.delete': return Permission.sharedSpaceAssetPeriodDelete;
         case r'person.create': return Permission.personPeriodCreate;
         case r'person.read': return Permission.personPeriodRead;
         case r'person.update': return Permission.personPeriodUpdate;

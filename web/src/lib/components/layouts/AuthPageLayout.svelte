@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Card, CardBody, CardHeader, Heading, immichLogo, Logo, VStack } from '@immich/ui';
+  import { Card, CardBody, CardHeader, Heading, VStack } from '@immich/ui';
+  import Logo from '$lib/components/shared-components/Logo.svelte';
   import type { Snippet } from 'svelte';
   interface Props {
     title?: string;
@@ -15,9 +16,9 @@
   {#if withBackdrop}
     <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
       <img
-        src={immichLogo}
+        src="/gallery-logo-mark.svg"
         class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
-        alt="Immich logo"
+        alt="Gallery logo"
       />
       <div
         class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"

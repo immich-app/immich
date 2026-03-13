@@ -38,6 +38,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> Detta är en **community-fork** av [Immich](https://github.com/immich-app/immich) med ytterligare funktioner. För Docker-images, instruktioner för byte och en fullständig lista över ändringar, se [huvud-README](../README.md).
+
 ## Ansvarsfriskrivning
 
 - ⚠️ Projektet är under **mycket aktiv** utveckling.

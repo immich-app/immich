@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Readable } from 'node:stream';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
+import { StorageService } from 'src/services/storage.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -160,6 +161,97 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', asset.originalFileName);
+    });
+
+    it('should use edited path when edited flag is true and editedPath exists', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+      const editedAsset = { ...asset, editedPath: '/edited/path.jpg' };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([editedAsset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id], edited: true })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
+      expect(archiveMock.addFile).toHaveBeenCalledWith('/edited/path.jpg', asset.originalFileName);
+    });
+
+    it('should fall back to original path when edited flag is true but editedPath is null', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+      const assetWithoutEdit = { ...asset, editedPath: null };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([assetWithoutEdit]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id], edited: true })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(asset.originalPath, asset.originalFileName);
+    });
+
+    it('should use original path when edited flag is not set', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
+      expect(archiveMock.addFile).toHaveBeenCalledWith(asset.originalPath, asset.originalFileName);
+    });
+
+    it('should stream S3 assets by resolving the backend', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const mockStream = new Readable();
+
+      // S3 asset has a relative (non-absolute) path
+      const asset = AssetFactory.create({ originalPath: 's3://bucket/key/photo.jpg' });
+      // Override originalPath to a relative (non-absolute) path so isAbsolute returns false
+      const s3Asset = { ...asset, originalPath: 'upload/library/photo.jpg' };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([s3Asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([s3Asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      // Mock StorageService.resolveBackendForKey
+      const mockBackend = { get: vitest.fn().mockResolvedValue({ stream: mockStream }) };
+      vitest.spyOn(StorageService, 'resolveBackendForKey').mockReturnValue(mockBackend as any);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [s3Asset.id] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mockBackend.get).toHaveBeenCalledWith('upload/library/photo.jpg');
+      expect(archiveMock.addFile).toHaveBeenCalledWith(mockStream, s3Asset.originalFileName);
     });
   });
 

@@ -10,6 +10,7 @@ from unittest import mock
 import cv2
 import numpy as np
 import onnxruntime as ort
+from numpy.typing import NDArray
 import orjson
 import pytest
 from fastapi import HTTPException
@@ -28,6 +29,7 @@ from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
+from immich_ml.models.pet_detection import PetDetector
 from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
@@ -954,6 +956,110 @@ class TestOcr:
         rapid_recognizer.assert_called_once_with(
             OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
         )
+
+
+class TestPetDetection:
+    @staticmethod
+    def _make_yolo_output(
+        detections: list[tuple[float, float, float, float, int, float]],
+    ) -> list[NDArray[np.float32]]:
+        """Build a mock YOLOv8 output tensor (1, 84, 8400).
+
+        Each detection is (cx, cy, w, h, class_id, score).
+        """
+        num_proposals = 8400
+        output = np.zeros((1, 84, num_proposals), dtype=np.float32)
+        for i, (cx, cy, w, h, class_id, score) in enumerate(detections):
+            output[0, 0, i] = cx
+            output[0, 1, i] = cy
+            output[0, 2, i] = w
+            output[0, 3, i] = h
+            output[0, 4 + class_id, i] = score
+        return [output]
+
+    def test_basic_detection(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(PetDetector, "load")
+        detector = PetDetector("yolo11n", min_score=0.5, cache_dir="test_cache")
+
+        session = mock.Mock()
+        # Cat at center of 640x640 input, class_id=15 (cat), score=0.9
+        session.run.return_value = self._make_yolo_output([(320, 320, 100, 80, 15, 0.9)])
+        detector.session = session
+        detector._input_name = "images"
+
+        results = detector.predict(cv_image)
+
+        assert isinstance(results, list)
+        assert len(results) == 1
+        detection = results[0]
+        assert detection["label"] == "cat"
+        assert detection["score"] == pytest.approx(0.9, abs=1e-5)
+        assert set(detection["boundingBox"]) == {"x1", "y1", "x2", "y2"}
+        assert all(isinstance(v, int) for v in detection["boundingBox"].values())
+        session.run.assert_called_once()
+
+    def test_filters_non_animal_classes(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(PetDetector, "load")
+        detector = PetDetector("yolo11n", min_score=0.5, cache_dir="test_cache")
+
+        session = mock.Mock()
+        # class_id=0 is "person" in COCO — should be excluded
+        session.run.return_value = self._make_yolo_output([(320, 320, 100, 80, 0, 0.95)])
+        detector.session = session
+        detector._input_name = "images"
+
+        results = detector.predict(cv_image)
+
+        assert isinstance(results, list)
+        assert len(results) == 0
+
+    def test_filters_low_confidence(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(PetDetector, "load")
+        detector = PetDetector("yolo11n", min_score=0.7, cache_dir="test_cache")
+
+        session = mock.Mock()
+        # Dog with score 0.4 — below threshold of 0.7
+        session.run.return_value = self._make_yolo_output([(320, 320, 100, 80, 16, 0.4)])
+        detector.session = session
+        detector._input_name = "images"
+
+        results = detector.predict(cv_image)
+
+        assert isinstance(results, list)
+        assert len(results) == 0
+
+    def test_configure_updates_min_score(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(PetDetector, "load")
+        detector = PetDetector("yolo11n", min_score=0.6, cache_dir="test_cache")
+
+        assert detector.min_score == 0.6
+        detector.configure(minScore=0.3)
+        assert detector.min_score == 0.3
+
+    def test_nms_removes_overlapping_boxes(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+        mocker.patch.object(PetDetector, "load")
+        detector = PetDetector("yolo11n", min_score=0.5, cache_dir="test_cache")
+
+        session = mock.Mock()
+        # Two nearly identical cat detections — NMS should keep only the higher-scoring one
+        session.run.return_value = self._make_yolo_output([
+            (320, 320, 100, 80, 15, 0.9),
+            (322, 322, 100, 80, 15, 0.7),
+        ])
+        detector.session = session
+        detector._input_name = "images"
+
+        results = detector.predict(cv_image)
+
+        assert isinstance(results, list)
+        assert len(results) == 1
+        assert results[0]["score"] == pytest.approx(0.9, abs=1e-5)
+
+    def test_min_score_from_kwargs(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(PetDetector, "load")
+        detector = PetDetector("yolo11n", minScore=0.8, cache_dir="test_cache")
+
+        assert detector.min_score == 0.8
 
 
 @pytest.mark.asyncio

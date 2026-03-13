@@ -1,0 +1,52 @@
+{
+  "name": "Noodle Gallery",
+  "name_short": "Gallery",
+  "name_slug": "noodle-gallery",
+  "name_snake": "noodle_gallery",
+  "description": "Self-hosted photo and video management solution",
+
+  "repository": {
+    "name": "open-noodle/gallery",
+    "url": "https://github.com/open-noodle/gallery",
+    "docs_url": "https://github.com/open-noodle/gallery/tree/main/docs",
+    "issues_url": "https://github.com/open-noodle/gallery/issues/new/choose",
+    "releases_url": "https://github.com/open-noodle/gallery/releases"
+  },
+
+  "upstream": {
+    "name": "Immich",
+    "url": "https://github.com/immich-app/immich",
+    "docs_url": "https://docs.immich.app",
+    "discord_url": "https://discord.immich.app"
+  },
+
+  "mobile": {
+    "bundle_id": "app.noodle.gallery",
+    "bundle_id_debug": "app.noodle.gallery.debug",
+    "bundle_id_profile": "app.noodle.gallery.profile",
+    "deep_link_scheme": "noodle-gallery",
+    "oauth_callback": "app.noodle.gallery:///oauth-callback",
+    "shared_group": "group.app.noodle.gallery.share",
+    "download_dir": "DCIM/NoodleGallery",
+    "background_task_prefix": "app.noodle.gallery.background"
+  },
+
+  "docker": {
+    "registry": "ghcr.io/open-noodle",
+    "server_image": "gallery-server",
+    "ml_image": "gallery-ml"
+  },
+
+  "cli": {
+    "bin_name": "noodle-gallery",
+    "config_dir_name": "noodle-gallery"
+  },
+
+  "docs": {
+    "title": "Noodle Gallery",
+    "url": "https://docs.noodle.gallery"
+  },
+
+  "upstream_name": "Immich",
+  "upstream_name_lower": "immich"
+}

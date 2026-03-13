@@ -126,6 +126,31 @@ where
   )
   and "asset"."id" in ($2)
 
+-- AccessRepository.asset.checkSpaceAccess
+select
+  "asset"."id"
+from
+  "shared_space_asset"
+  inner join "shared_space_member" on "shared_space_member"."spaceId" = "shared_space_asset"."spaceId"
+  inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+  and "asset"."deletedAt" is null
+where
+  "shared_space_member"."userId" = $1
+  and "asset"."id" in ($2)
+
+-- AccessRepository.asset.checkSpaceEditAccess
+select
+  "asset"."id"
+from
+  "shared_space_asset"
+  inner join "shared_space_member" on "shared_space_member"."spaceId" = "shared_space_asset"."spaceId"
+  inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+  and "asset"."deletedAt" is null
+where
+  "shared_space_member"."userId" = $1
+  and "asset"."id" in ($2)
+  and "shared_space_member"."role" in ($3, $4)
+
 -- AccessRepository.asset.checkSharedLinkAccess
 select
   "asset"."id" as "assetId",
@@ -208,6 +233,15 @@ from
 where
   "asset_face"."id" in ($1)
   and "asset"."ownerId" = $2
+
+-- AccessRepository.sharedSpace.checkMemberAccess
+select
+  "shared_space_member"."spaceId"
+from
+  "shared_space_member"
+where
+  "shared_space_member"."spaceId" in ($1)
+  and "shared_space_member"."userId" = $2
 
 -- AccessRepository.partner.checkUpdateAccess
 select

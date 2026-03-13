@@ -92,6 +92,14 @@ describe(StackService.name, () => {
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
     });
 
+    it('should throw "Asset stack not found" when getById returns null', async () => {
+      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      mocks.stack.getById.mockResolvedValue(undefined);
+
+      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toThrow('Asset stack not found');
+    });
+
     it('should get stack', async () => {
       const auth = AuthFactory.create();
       const [primaryAsset, asset] = [AssetFactory.from().exif().build(), AssetFactory.from().exif().build()];

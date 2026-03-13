@@ -389,6 +389,11 @@ class _QuickAccessButtonList extends ConsumerWidget {
                 ),
                 onTap: () => context.pushRoute(const DriftPartnerRoute()),
               ),
+              ListTile(
+                leading: const Icon(Icons.workspaces_outlined, size: 26),
+                title: Text('Spaces', style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+                onTap: () => context.pushRoute(const SpacesRoute()),
+              ),
               _PartnerList(partners: partners),
             ],
           ),

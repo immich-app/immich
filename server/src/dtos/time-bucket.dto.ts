@@ -12,8 +12,17 @@ export class TimeBucketDto {
   @ValidateUUID({ optional: true, description: 'Filter assets belonging to a specific album' })
   albumId?: string;
 
+  @ValidateUUID({ optional: true, description: 'Filter assets belonging to a specific shared space' })
+  spaceId?: string;
+
   @ValidateUUID({ optional: true, description: 'Filter assets containing a specific person (face recognition)' })
   personId?: string;
+
+  @ValidateUUID({
+    optional: true,
+    description: 'Filter assets containing a specific shared space person (space face recognition)',
+  })
+  spacePersonId?: string;
 
   @ValidateUUID({ optional: true, description: 'Filter assets with a specific tag' })
   tagId?: string;
@@ -38,6 +47,12 @@ export class TimeBucketDto {
 
   @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
+
+  @ValidateBoolean({
+    optional: true,
+    description: 'Include assets from shared spaces where the user has timeline enabled',
+  })
+  withSharedSpaces?: boolean;
 
   @ValidateEnum({
     enum: AssetOrder,

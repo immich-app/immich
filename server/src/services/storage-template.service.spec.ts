@@ -110,6 +110,17 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.storage.stat).not.toHaveBeenCalled();
     });
 
+    it('should skip S3 assets with relative paths', async () => {
+      const asset = AssetFactory.from({ originalPath: 'upload/user/ab/cd/file.jpg' }).exif().build();
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(getForStorageTemplate(asset));
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.storage.copyFile).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
     it('should migrate single moving picture', async () => {
       const motionAsset = AssetFactory.from({
         type: AssetType.Video,
@@ -497,6 +508,55 @@ describe(StorageTemplateService.name, () => {
         expect(mocks.asset.update).not.toHaveBeenCalled();
       },
     );
+
+    it('should skip migration when source has a duplication annotation (+N suffix)', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      mocks.user.get.mockResolvedValue(user);
+
+      // The computed destination would be /data/library/{ownerId}/2022/2022-06-19/{originalFileName}
+      // But the source already has a +7 suffix, meaning it was previously renamed due to duplicates
+      const baseFileName = asset.originalFileName.replace('.jpg', '');
+      const computedPath = `/data/library/${user.id}/2022/2022-06-19/${baseFileName}`;
+      asset.originalPath = `${computedPath}+7.jpg`;
+
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(getForStorageTemplate(asset));
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors in getTemplatePath gracefully', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValue(getForStorageTemplate(asset));
+
+      // Force template rendering to throw by setting an invalid template
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{nonExistentHelper}}';
+      sut.onConfigInit({ newConfig: config });
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      // Should not attempt to move when template rendering fails
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('handle template migration', () => {

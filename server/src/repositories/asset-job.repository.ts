@@ -166,6 +166,8 @@ export class AssetJobRepository {
       .select(columns.assetFiles)
       .where('asset_file.assetId', '=', id)
       .$if(!!fileType, (qb) => qb.where('asset_file.type', '=', fileType!))
+      .orderBy('asset_file.isEdited', 'desc')
+      .limit(1)
       .execute();
   }
 
@@ -442,6 +444,30 @@ export class AssetJobRepository {
         qb
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
           .where('asset_job_status.ocrAt', 'is', null),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForPetDetection(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) => ['asset.ownerId', 'asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForPetDetectionJob(force?: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .where('asset_job_status.petsDetectedAt', 'is', null),
       )
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)

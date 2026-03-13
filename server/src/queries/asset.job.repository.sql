@@ -322,6 +322,10 @@ from
 where
   "asset_file"."assetId" = $1
   and "asset_file"."type" = $2
+order by
+  "asset_file"."isEdited" desc
+limit
+  $3
 
 -- AssetJobRepository.streamForSearchDuplicates
 select
@@ -710,6 +714,35 @@ from
   inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset_job_status"."ocrAt" is null
+  and "asset"."deletedAt" is null
+  and "asset"."visibility" != $1
+
+-- AssetJobRepository.getForPetDetection
+select
+  "asset"."ownerId",
+  "asset"."visibility",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $1
+  ) as "previewFile"
+from
+  "asset"
+where
+  "asset"."id" = $2
+
+-- AssetJobRepository.streamForPetDetectionJob
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
+where
+  "asset_job_status"."petsDetectedAt" is null
   and "asset"."deletedAt" is null
   and "asset"."visibility" != $1
 

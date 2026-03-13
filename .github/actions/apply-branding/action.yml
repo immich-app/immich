@@ -1,0 +1,20 @@
+name: Apply Branding
+description: Replaces Immich branding with Noodle Gallery before build
+
+runs:
+  using: composite
+  steps:
+    - name: Install jq
+      shell: bash
+      run: |
+        if ! command -v jq &>/dev/null; then
+          sudo apt-get update && sudo apt-get install -y jq
+        fi
+
+    - name: Apply branding overlay
+      shell: bash
+      run: ./branding/scripts/apply-branding.sh
+
+    - name: Verify branding applied
+      shell: bash
+      run: ./branding/scripts/verify-branding.sh

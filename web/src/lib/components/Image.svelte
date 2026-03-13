@@ -19,9 +19,13 @@
   let destroyed = false;
 
   $effect(() => {
-    if (src !== undefined && capturedSource === undefined) {
+    if (src !== undefined && src !== capturedSource) {
+      const oldSource = capturedSource;
       capturedSource = src;
       untrack(() => {
+        if (oldSource !== undefined) {
+          cancelImageUrl(oldSource);
+        }
         onStart?.();
       });
     }

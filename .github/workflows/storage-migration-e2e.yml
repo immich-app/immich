@@ -1,0 +1,51 @@
+name: Storage Migration E2E
+on:
+  schedule:
+    - cron: '0 6 * * *' # Daily at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run against'
+        required: true
+        default: 'main'
+        type: string
+
+permissions: {}
+
+jobs:
+  storage-migration-e2e:
+    name: Storage Migration E2E
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./e2e
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.branch || 'main' }}
+          persist-credentials: false
+          submodules: 'recursive'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - name: Setup Node
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version-file: './e2e/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run storage migration e2e test
+        run: ./storage-migration.sh --cleanup --verbose
+      - name: Capture Docker logs
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.storage-migration.yml logs --no-color > storage-migration-logs.txt 2>&1 || true
+      - name: Archive Docker logs
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: storage-migration-docker-logs
+          path: e2e/storage-migration-logs.txt

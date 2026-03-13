@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
+import { isAbsolute } from 'node:path';
 import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -16,6 +17,7 @@ export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
   OCR = 'ocr',
+  PET_DETECTION = 'pet-detection',
 }
 
 export enum ModelType {
@@ -74,7 +76,27 @@ export interface Face {
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
-export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
+
+export type DetectedPet = {
+  boundingBox: BoundingBox;
+  score: number;
+  label: string;
+};
+
+export type PetDetectionResponse = { [ModelTask.PET_DETECTION]: DetectedPet[] } & VisualResponse;
+
+export type PetDetectionRequest = {
+  [ModelTask.PET_DETECTION]: {
+    [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
+  };
+};
+
+export type MachineLearningRequest =
+  | ClipVisualRequest
+  | ClipTextualRequest
+  | FacialRecognitionRequest
+  | OcrRequest
+  | PetDetectionRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
@@ -229,12 +251,40 @@ export class MachineLearningRepository {
     return response[ModelTask.OCR];
   }
 
+  async detectPets(imagePath: string, { modelName, minScore }: { modelName: string; minScore: number }) {
+    const request = {
+      [ModelTask.PET_DETECTION]: {
+        [ModelType.DETECTION]: { modelName, options: { minScore } },
+      },
+    };
+    const response = await this.predict<PetDetectionResponse>({ imagePath }, request);
+    return {
+      imageHeight: response.imageHeight,
+      imageWidth: response.imageWidth,
+      pets: response[ModelTask.PET_DETECTION],
+    };
+  }
+
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));
 
     if ('imagePath' in payload) {
-      const fileBuffer = await readFile(payload.imagePath);
+      let fileBuffer: Buffer;
+      if (isAbsolute(payload.imagePath)) {
+        fileBuffer = await readFile(payload.imagePath);
+      } else {
+        // Dynamic import to avoid circular dependency:
+        // MachineLearningRepository -> StorageService -> BaseService -> MachineLearningRepository
+        const { StorageService } = await import('../services/storage.service.js');
+        const backend = StorageService.resolveBackendForKey(payload.imagePath);
+        const { stream } = await backend.get(payload.imagePath);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+          chunks.push(Buffer.from(chunk));
+        }
+        fileBuffer = Buffer.concat(chunks);
+      }
       formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);

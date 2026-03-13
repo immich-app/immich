@@ -121,6 +121,7 @@ dev_dependencies:
       ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
       path: packages/isar_generator/
   mocktail: ^1.0.4
+  patrol: 4.2.0
   # Type safe platform code
   pigeon: ^26.0.2
   riverpod_generator: ^2.6.1
@@ -170,3 +171,11 @@ flutter_launcher_icons:
 analyzer:
   exclude:
     - openapi/**
+
+patrol:
+  app_name: Immich
+  test_directory: integration_test
+  android:
+    package_name: app.alextran.immich
+  ios:
+    bundle_id: app.alextran.immich

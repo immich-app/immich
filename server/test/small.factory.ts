@@ -1,7 +1,31 @@
-import { AuthApiKey, AuthSharedLink, AuthUser, Exif, Library, UserAdmin } from 'src/database';
+import {
+  Activity,
+  Album,
+  ApiKey,
+  AuthApiKey,
+  AuthSharedLink,
+  AuthUser,
+  Exif,
+  Library,
+  Partner,
+  Person,
+  Session,
+  SharedSpace,
+  SharedSpaceActivity,
+  SharedSpaceMember,
+  SharedSpacePerson,
+  SharedSpacePersonAlias,
+  SharedSpacePersonFace,
+  Tag,
+  User,
+  UserAdmin,
+} from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetFileType, Permission, UserStatus } from 'src/enum';
+import { AssetFileType, AssetOrder, Permission, SharedSpaceRole, UserMetadataKey, UserStatus } from 'src/enum';
+import { UserMetadataItem } from 'src/types';
+import { UserFactory } from 'test/factories/user.factory';
 import { v4, v7 } from 'uuid';
 
 export const newUuid = () => v4();
@@ -100,6 +124,45 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
   return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
 };
 
+const partnerFactory = ({
+  sharedBy: sharedByProvided,
+  sharedWith: sharedWithProvided,
+  ...partner
+}: Partial<Partner> = {}) => {
+  const sharedBy = UserFactory.create((sharedByProvided as any) ?? {});
+  const sharedWith = UserFactory.create((sharedWithProvided as any) ?? {});
+
+  return {
+    sharedById: sharedBy.id,
+    sharedBy,
+    sharedWithId: sharedWith.id,
+    sharedWith,
+    createId: newUuidV7(),
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    updateId: newUuidV7(),
+    inTimeline: true,
+    ...partner,
+  };
+};
+
+const sessionFactory = (session: Partial<Session> = {}) => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUuidV7(),
+  deviceOS: 'android',
+  deviceType: 'mobile',
+  token: Buffer.from('abc123'),
+  parentId: null,
+  expiresAt: null,
+  userId: newUuid(),
+  pinExpiresAt: newDate(),
+  isPendingSyncReset: false,
+  appVersion: session.appVersion ?? null,
+  ...session,
+});
+
 const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
   active: 0,
   completed: 0,
@@ -108,6 +171,22 @@ const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
   waiting: 0,
   paused: 0,
   ...dto,
+});
+
+const userFactory = (user: Partial<User> = {}) => ({
+  id: newUuid(),
+  name: 'Test User',
+  email: 'test@immich.cloud',
+  avatarColor: null,
+  profileImagePath: '',
+  profileChangedAt: newDate(),
+  metadata: [
+    {
+      key: UserMetadataKey.Onboarding,
+      value: 'true',
+    },
+  ] as UserMetadataItem[],
+  ...user,
 });
 
 const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
@@ -150,6 +229,34 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     metadata,
   };
 };
+
+const activityFactory = (activity: Partial<Activity> = {}) => {
+  const userId = activity.userId || newUuid();
+  return {
+    id: newUuid(),
+    comment: null,
+    isLiked: false,
+    userId,
+    user: UserFactory.create({ id: userId }),
+    assetId: newUuid(),
+    albumId: newUuid(),
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    updateId: newUuidV7(),
+    ...activity,
+  };
+};
+
+const apiKeyFactory = (apiKey: Partial<ApiKey> = {}) => ({
+  id: newUuid(),
+  userId: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUuidV7(),
+  name: 'Api Key',
+  permissions: [Permission.All],
+  ...apiKey,
+});
 
 const libraryFactory = (library: Partial<Library> = {}) => ({
   id: newUuid(),
@@ -232,15 +339,160 @@ const assetOcrFactory = (
   ...ocr,
 });
 
+const tagFactory = (tag: Partial<Tag>): Tag => ({
+  id: newUuid(),
+  color: null,
+  createdAt: newDate(),
+  parentId: null,
+  updatedAt: newDate(),
+  value: `tag-${newUuid()}`,
+  ...tag,
+});
+
+const assetEditFactory = (edit?: Partial<AssetEditActionItem>): AssetEditActionItem => {
+  switch (edit?.action) {
+    case AssetEditAction.Crop: {
+      return { action: AssetEditAction.Crop, parameters: { height: 42, width: 42, x: 0, y: 10 }, ...edit };
+    }
+    case AssetEditAction.Mirror: {
+      return { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal }, ...edit };
+    }
+    case AssetEditAction.Rotate: {
+      return { action: AssetEditAction.Rotate, parameters: { angle: 90 }, ...edit };
+    }
+    default: {
+      return { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } };
+    }
+  }
+};
+
+const personFactory = (person?: Partial<Person>): Person => ({
+  birthDate: newDate(),
+  color: null,
+  createdAt: newDate(),
+  faceAssetId: null,
+  id: newUuid(),
+  isFavorite: false,
+  isHidden: false,
+  name: 'person',
+  ownerId: newUuid(),
+  species: null,
+  thumbnailPath: '/path/to/person/thumbnail.jpg',
+  type: 'person',
+  updatedAt: newDate(),
+  updateId: newUuidV7(),
+  ...person,
+});
+
+const sharedSpaceFactory = (data: Partial<SharedSpace> = {}): SharedSpace => ({
+  id: newUuid(),
+  name: 'Test Space',
+  description: null,
+  createdById: newUuid(),
+  thumbnailAssetId: null,
+  color: 'primary',
+  thumbnailCropY: null,
+  faceRecognitionEnabled: true,
+  lastActivityAt: null,
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  createId: newUuid(),
+  updateId: newUuid(),
+  ...data,
+});
+
+const sharedSpaceMemberFactory = (data: Partial<SharedSpaceMember> = {}): SharedSpaceMember => ({
+  spaceId: newUuid(),
+  userId: newUuid(),
+  role: SharedSpaceRole.Viewer,
+  joinedAt: newDate(),
+  showInTimeline: true,
+  lastViewedAt: null,
+  ...data,
+});
+
+const sharedSpaceActivityFactory = (data: Partial<SharedSpaceActivity> = {}): SharedSpaceActivity => ({
+  id: newUuid(),
+  spaceId: newUuid(),
+  userId: newUuid(),
+  type: 'asset_add',
+  data: {},
+  createdAt: newDate(),
+  ...data,
+});
+
+const sharedSpacePersonFactory = (data: Partial<SharedSpacePerson> = {}): SharedSpacePerson => ({
+  id: newUuid(),
+  spaceId: newUuid(),
+  name: '',
+  representativeFaceId: null,
+  thumbnailPath: '',
+  isHidden: false,
+  birthDate: null,
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUuidV7(),
+  ...data,
+});
+
+const sharedSpacePersonFaceFactory = (data: Partial<SharedSpacePersonFace> = {}): SharedSpacePersonFace => ({
+  personId: newUuid(),
+  assetFaceId: newUuid(),
+  ...data,
+});
+
+const sharedSpacePersonAliasFactory = (data: Partial<SharedSpacePersonAlias> = {}): SharedSpacePersonAlias => ({
+  personId: newUuid(),
+  userId: newUuid(),
+  alias: 'Alias Name',
+  ...data,
+});
+
+const albumFactory = (album?: Partial<Omit<Album, 'assets'>>) => ({
+  albumName: 'My Album',
+  albumThumbnailAssetId: null,
+  albumUsers: [],
+  assets: [],
+  createdAt: newDate(),
+  deletedAt: null,
+  description: 'Album description',
+  id: newUuid(),
+  isActivityEnabled: false,
+  order: AssetOrder.Desc,
+  ownerId: newUuid(),
+  sharedLinks: [],
+  updatedAt: newDate(),
+  updateId: newUuidV7(),
+  ...album,
+});
+
 export const factory = {
+  activity: activityFactory,
+  apiKey: apiKeyFactory,
+  authUser: authUserFactory,
+  authApiKey: authApiKeyFactory,
   assetOcr: assetOcrFactory,
   auth: authFactory,
   library: libraryFactory,
+  partner: partnerFactory,
   queueStatistics: queueStatisticsFactory,
+  session: sessionFactory,
+  user: userFactory,
+  userAdmin: userAdminFactory,
   versionHistory: versionHistoryFactory,
   jobAssets: {
     sidecarWrite: assetSidecarWriteFactory,
   },
+  person: personFactory,
+  assetEdit: assetEditFactory,
+  sharedSpace: sharedSpaceFactory,
+  sharedSpaceMember: sharedSpaceMemberFactory,
+  sharedSpaceActivity: sharedSpaceActivityFactory,
+  sharedSpacePerson: sharedSpacePersonFactory,
+  sharedSpacePersonFace: sharedSpacePersonFaceFactory,
+  sharedSpacePersonAlias: sharedSpacePersonAliasFactory,
+  tag: tagFactory,
+  album: albumFactory,
   uuid: newUuid,
   buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,

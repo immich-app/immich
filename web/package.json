@@ -37,6 +37,7 @@
     "@photo-sphere-viewer/settings-plugin": "^5.14.0",
     "@photo-sphere-viewer/video-plugin": "^5.14.0",
     "@types/geojson": "^7946.0.16",
+    "@zip.js/zip.js": "^2.8.23",
     "@zoom-image/core": "^0.42.0",
     "@zoom-image/svelte": "^0.3.0",
     "dom-to-image": "^2.6.0",

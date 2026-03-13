@@ -57,3 +57,4 @@ libisar.so
 
 # Translation file
 lib/generated/
+integration_test/test_bundle.dart

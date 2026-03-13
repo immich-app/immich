@@ -17,9 +17,15 @@ If you are looking for something to work on, there are discussions and issues wi
 
 We usually do not assign issues to new contributors, since it happens often that a PR is never even opened. Again, reach out on Discord if you fear putting a lot of time into fixing an issue, but ending up with a duplicate PR.
 
-## Use of generative AI
+## Use of Generative AI
 
-We ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.
+We **actively encourage** the use of LLMs and AI coding tools. Unlike some projects that ban AI-generated code, we believe these tools are a massive force multiplier when used correctly. The key ingredient isn't avoiding AI — it's having a clear spec.
+
+**All PRs must include a spec or design document** that describes *what* the change does and *why*. This applies whether you wrote every line by hand, pair-programmed with an LLM, or let an agent do the heavy lifting. A well-written spec means reviewers can evaluate intent and correctness, not just syntax — and it turns out that's what matters regardless of who (or what) wrote the code.
+
+**All PRs must also include tests.** We didn't get from 74% to 94% server test coverage by accident. Tests are how you prove your code works — spec says *what*, tests prove *that*. No tests, no merge.
+
+In our experience, the "large amount of back-and-forth" that some projects attribute to LLM-generated code is really a symptom of missing specs and unclear requirements. Solve that, add tests, and the tooling becomes irrelevant.
 
 ## Feature freezes
 

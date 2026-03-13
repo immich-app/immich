@@ -37,6 +37,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
+> [!NOTE]
+> Bu, ek özellikler içeren [Immich](https://github.com/immich-app/immich)'in bir **topluluk çatalıdır**. Docker imajları, geçiş talimatları ve değişikliklerin tam listesi için [ana README](../README.md)'ye bakın.
+
 ## Feragatname
 
 - ⚠️ Proje **çok aktif** bir şekilde geliştirilmektedir.

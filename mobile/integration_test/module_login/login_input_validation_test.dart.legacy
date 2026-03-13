@@ -1,3 +1,5 @@
+// NOTE: These tests use the legacy integration_test framework.
+// New tests should use Patrol. See integration_test/smoke/ and integration_test/regression/.
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 
