@@ -47,8 +47,8 @@
         isHidden = true;
       } else if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
         isHidden = false;
-      } else if (toggleVisibility === ToggleVisibility.HIDE_UNNANEMD && !person.name) {
-        isHidden = true;
+      } else if (toggleVisibility === ToggleVisibility.HIDE_UNNANEMD) {
+        isHidden = !person.name;
       }
 
       setHiddenOverride(person, isHidden);
