@@ -78,7 +78,7 @@ describe('AssetService', () => {
       const asset = assetFactory.build({ originalFileName: 'asset.heic', livePhotoVideoId: '1' });
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
-      expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset.mov' } });
+      expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset-motion.mov' } });
       expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
   });
