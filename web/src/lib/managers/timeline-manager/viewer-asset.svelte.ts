@@ -22,12 +22,14 @@ export class ViewerAsset {
   }
 
   position: CommonPosition | undefined = $state.raw();
-  asset: TimelineAsset;
-  id: string;
+  asset: TimelineAsset = <TimelineAsset>$state();
+  id: string = $derived(this.asset.id);
+  // asset: TimelineAsset;
+  // id: string;
 
   constructor(group: DayGroup, asset: TimelineAsset) {
     this.#group = group;
     this.asset = asset;
-    this.id = asset.id;
+    // this.id = asset.id;
   }
 }
