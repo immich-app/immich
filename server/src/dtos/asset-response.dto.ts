@@ -153,7 +153,6 @@ export type MapAsset = {
   duplicateId: string | null;
   duration: string | null;
   edits?: ShallowDehydrateObject<AssetEditActionItem>[];
-  encodedVideoPath: string | null;
   exifInfo?: ShallowDehydrateObject<Selectable<Exif>> | null;
   faces?: ShallowDehydrateObject<AssetFace>[];
   fileCreatedAt: Date;

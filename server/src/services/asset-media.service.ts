@@ -151,6 +151,10 @@ export class AssetMediaService extends BaseService {
       }
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 
+      if (auth.sharedLink) {
+        await this.sharedLinkRepository.addAssets(auth.sharedLink.id, [asset.id]);
+      }
+
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
       return { id: asset.id, status: AssetMediaStatus.CREATED };
@@ -341,6 +345,11 @@ export class AssetMediaService extends BaseService {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
+
+      if (auth.sharedLink) {
+        await this.sharedLinkRepository.addAssets(auth.sharedLink.id, [duplicateId]);
+      }
+
       return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
     }
 

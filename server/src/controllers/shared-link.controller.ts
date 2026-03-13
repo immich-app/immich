@@ -180,7 +180,7 @@ export class SharedLinkController {
   }
 
   @Delete(':id/assets')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.SharedLinkUpdate })
   @Endpoint({
     summary: 'Remove assets from a shared link',
     description:
