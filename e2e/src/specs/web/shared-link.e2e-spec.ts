@@ -12,15 +12,18 @@ import { asBearerAuth, utils } from 'src/utils';
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
   let asset: AssetMediaResponseDto;
+  let asset2: AssetMediaResponseDto;
   let album: AlbumResponseDto;
   let sharedLink: SharedLinkResponseDto;
   let sharedLinkPassword: SharedLinkResponseDto;
+  let individualSharedLink: SharedLinkResponseDto;
 
   test.beforeAll(async () => {
     utils.initSdk();
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     asset = await utils.createAsset(admin.accessToken);
+    asset2 = await utils.createAsset(admin.accessToken);
     album = await createAlbum(
       {
         createAlbumDto: {
@@ -38,6 +41,10 @@ test.describe('Shared Links', () => {
       type: SharedLinkType.Album,
       albumId: album.id,
       password: 'test-password',
+    });
+    individualSharedLink = await utils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Individual,
+      assetIds: [asset.id, asset2.id],
     });
   });
 
@@ -108,5 +115,22 @@ test.describe('Shared Links', () => {
     await page.locator('a[href="/"]').click();
     await page.waitForURL('/photos');
     await page.locator(`[data-asset-id="${asset.id}"]`).waitFor();
+  });
+
+  test('owner can remove assets from an individual shared link', async ({ context, page }) => {
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto(`/share/${individualSharedLink.key}`);
+    await page.locator(`[data-asset="${asset.id}"]`).waitFor();
+    await expect(page.locator(`[data-asset]`)).toHaveCount(2);
+
+    await page.locator(`[data-asset="${asset.id}"]`).hover();
+    await page.locator(`[data-asset="${asset.id}"] [role="checkbox"]`).click();
+
+    await page.getByRole('button', { name: 'Remove from shared link' }).click();
+    await page.getByRole('button', { name: 'Remove', exact: true }).click();
+
+    await expect(page.locator(`[data-asset="${asset.id}"]`)).toHaveCount(0);
+    await expect(page.locator(`[data-asset="${asset2.id}"]`)).toHaveCount(1);
   });
 });

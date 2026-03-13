@@ -183,7 +183,6 @@ export const getForAssetDeletion = (asset: ReturnType<AssetFactory['build']>) =>
   libraryId: asset.libraryId,
   ownerId: asset.ownerId,
   livePhotoVideoId: asset.livePhotoVideoId,
-  encodedVideoPath: asset.encodedVideoPath,
   originalPath: asset.originalPath,
   isOffline: asset.isOffline,
   exifInfo: asset.exifInfo ? getDehydrated(asset.exifInfo) : null,

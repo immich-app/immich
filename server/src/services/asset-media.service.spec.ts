@@ -163,7 +163,6 @@ const assetEntity = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  encodedVideoPath: '',
   duration: '0:00:00.000000',
   files: [] as AssetFile[],
   exifInfo: {
@@ -711,13 +710,18 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should return the encoded video path if available', async () => {
-      const asset = AssetFactory.create({ encodedVideoPath: '/path/to/encoded/video.mp4' });
+      const asset = AssetFactory.from()
+        .file({ type: AssetFileType.EncodedVideo, path: '/path/to/encoded/video.mp4' })
+        .build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForVideo.mockResolvedValue(asset);
+      mocks.asset.getForVideo.mockResolvedValue({
+        originalPath: asset.originalPath,
+        encodedVideoPath: asset.files[0].path,
+      });
 
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
-          path: asset.encodedVideoPath!,
+          path: '/path/to/encoded/video.mp4',
           cacheControl: CacheControl.PrivateWithCache,
           contentType: 'video/mp4',
         }),
@@ -727,7 +731,10 @@ describe(AssetMediaService.name, () => {
     it('should fall back to the original path', async () => {
       const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getForVideo.mockResolvedValue(asset);
+      mocks.asset.getForVideo.mockResolvedValue({
+        originalPath: asset.originalPath,
+        encodedVideoPath: null,
+      });
 
       await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({

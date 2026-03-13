@@ -200,7 +200,9 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+      ? AssetMediaSize.Original
+      : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
