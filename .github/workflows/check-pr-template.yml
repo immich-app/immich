@@ -29,7 +29,7 @@ jobs:
           OK=true
           while IFS= read -r header; do
             printf '%s\n' "$BODY" | grep -qF "$header" || OK=false
-          done < <(grep "^## " .github/pull_request_template.md)
+          done < <(sed '/<!--/,/-->/d' .github/pull_request_template.md | grep "^## ")
           echo "uses_template=$OK" >> "$GITHUB_OUTPUT"
 
   act:
