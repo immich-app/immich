@@ -202,13 +202,10 @@ from
 where
   (
     "person"."ownerId" = $1
-    and (
-      lower("person"."name") like $2
-      or lower("person"."name") like $3
-    )
+    and lower("person"."name") like $2
   )
 limit
-  $4
+  $3
 
 -- PersonRepository.getDistinctNames
 select distinct

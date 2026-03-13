@@ -323,10 +323,7 @@ export class PersonRepository {
       .where((eb) =>
         eb.and([
           eb('person.ownerId', '=', userId),
-          eb.or([
-            eb(eb.fn('lower', ['person.name']), 'like', `${personName.toLowerCase()}%`),
-            eb(eb.fn('lower', ['person.name']), 'like', `% ${personName.toLowerCase()}%`),
-          ]),
+          eb(eb.fn('lower', ['person.name']), 'like', `%${personName.toLowerCase()}%`),
         ]),
       )
       .limit(1000)
