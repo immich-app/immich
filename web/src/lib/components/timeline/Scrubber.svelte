@@ -338,19 +338,15 @@
       overallScrollPercent: toTimelineY(hoverY),
       scrubberMonthScrollPercent: monthGroupPercentY,
     };
-    if (wasDragging === false && isDragging) {
-      void startScrub?.(scrubData);
+
+    if (isDragging) {
+      if (!wasDragging) {
+        void startScrub?.(scrubData);
+      }
       void onScrub?.(scrubData);
-      return;
-    }
-    if (wasDragging && !isDragging) {
+    } else if (wasDragging) {
       void stopScrub?.(scrubData);
-      return;
     }
-    if (!isDragging) {
-      return;
-    }
-    void onScrub?.(scrubData);
   };
   const getTouch = (event: TouchEvent) => {
     // desktop safari does not support this since Apple does not have desktop touch devices
