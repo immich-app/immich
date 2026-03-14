@@ -139,20 +139,9 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
 - [About](https://docs.immich.app/overview/introduction)
 - [Installation](https://docs.immich.app/install/requirements)
 - [Roadmap](https://immich.app/roadmap)
-- [Demo](#demo)
 - [Features](#features)
 - [Translations](https://docs.immich.app/developer/translations)
 - [Contributing](https://docs.immich.app/overview/support-the-project)
-
-## Demo
-
-Access the demo [here](https://demo.immich.app). For the mobile app, you can use `https://demo.immich.app` for the `Server Endpoint URL`.
-
-### Login credentials
-
-| Email           | Password |
-| --------------- | -------- |
-| demo@immich.app | demo     |
 
 ## Features
 
