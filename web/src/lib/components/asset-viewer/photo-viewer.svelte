@@ -73,7 +73,8 @@
     }
 
     const natural = getNaturalSize(assetViewerManager.imgRef);
-    const scaled = scaleToFit(natural, container);
+    const scaled = scaleToFit(natural, { width: containerWidth, height: containerHeight });
+
     return {
       contentWidth: scaled.width,
       contentHeight: scaled.height,
