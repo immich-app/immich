@@ -79,6 +79,13 @@ object HttpClientManager {
 
   val isMtls: Boolean get() = keyChainAlias != null || keyStore.containsAlias(CERT_ALIAS)
 
+  fun getServerUrl(): String? {
+    if (!initialized) return null
+    val json = prefs.getString(PREFS_SERVER_URLS, null) ?: return null
+    val urls = Json.decodeFromString<List<String>>(json)
+    return urls.firstOrNull { it.toHttpUrlOrNull() != null }?.trimEnd('/')
+  }
+
   fun initialize(context: Context) {
     if (initialized) return
     synchronized(this) {

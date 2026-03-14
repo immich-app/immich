@@ -18,8 +18,6 @@ import java.io.File
 import java.io.IOException
 
 private const val TAG = "ImmichCloudRepo"
-private const val PREFS_NAME = "immich.ssl"
-private const val PREFS_SERVER_URL = "immich.server_url"
 private const val SYNC_PREFS_NAME = "immich.cloud_provider"
 
 data class ImmichAsset(
@@ -74,10 +72,7 @@ object ImmichCloudRepository {
   val isConfigured: Boolean
     get() = getServerUrl() != null
 
-  private fun getServerUrl(): String? {
-    val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    return prefs.getString(PREFS_SERVER_URL, null)?.trimEnd('/')
-  }
+  private fun getServerUrl(): String? = HttpClientManager.getServerUrl()
 
   private fun getClient(): OkHttpClient = HttpClientManager.getClient()
 
