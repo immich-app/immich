@@ -30,11 +30,15 @@ Store your photos and videos in any S3-compatible object storage — AWS S3, Min
 
 ### Shared Spaces
 
-Create collaborative photo-sharing spaces where multiple users can contribute and browse photos together. Unlike partner sharing (which shares your entire library one-way), Shared Spaces let you create focused groups — "Family", "Friends", "Vacation 2025" — with role-based access (Owner, Editor, Viewer). Photos are linked by reference with zero additional storage cost. Members can optionally merge space assets into their personal timeline with a single toggle. Available on both web and mobile. See the [Shared Spaces documentation](docs/docs/features/shared-spaces.md) for details.
+Create collaborative photo-sharing spaces where multiple users can contribute and browse photos together. Unlike partner sharing (which shares your entire library one-way), Shared Spaces let you create focused groups — "Family", "Friends", "Vacation 2025" — with role-based access (Owner, Editor, Viewer). Photos are linked by reference with zero additional storage cost. Members can optionally merge space assets into their personal timeline. Spaces feature album-style collage cards, cover photos with drag-to-reposition, list and grid views, pinnable favorites, and shared face recognition so people detected across the space are browsable by all members. Full mobile parity — create, manage, and browse spaces from the Flutter app. See the [Shared Spaces documentation](docs/docs/features/shared-spaces.md) for details.
 
 ### Pet Detection
 
 Automatically detect and tag pets in your photos using YOLO11 object detection. Detected animals appear in the People section alongside faces, making it easy to browse all your pet photos. Choose from three model sizes (nano, small, medium) depending on your accuracy vs. speed preference. Configurable from the Admin panel under Machine Learning settings. See the [Pet Detection documentation](docs/docs/features/pet-detection.md) for details.
+
+### Google Photos Import
+
+Import your Google Takeout archive directly from the web UI — no command-line tools needed. A guided 5-step wizard walks you through selecting your Takeout zip or folder, scanning and extracting photos, reviewing metadata, and uploading. The importer preserves original dates, GPS coordinates, descriptions, favorite and archived status, and album structure. Everything runs client-side in the browser using zip.js for extraction and the existing upload API, so no additional server configuration is required. Navigate to the `/import` page to get started.
 
 ### Image Editing Improvements
 
@@ -68,7 +72,7 @@ docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > immich-db-back
 Set the version in your `.env` file:
 
 ```bash
-IMMICH_VERSION=v3
+IMMICH_VERSION=v4
 ```
 
 Change the image references in your `docker-compose.yml`:
@@ -184,6 +188,11 @@ Access the demo [here](https://demo.immich.app). For the mobile app, you can use
 | Stacked Photos                               | Yes    | Yes |
 | Tags                                         | No     | Yes |
 | Folder View                                  | Yes    | Yes |
+| **Shared Spaces**                            | Yes    | Yes |
+| **S3-Compatible Storage**                    | Yes    | Yes |
+| **Google Photos Import**                     | No     | Yes |
+| **Pet Detection**                            | Yes    | Yes |
+| **Non-destructive Image Editing**            | No     | Yes |
 
 ## Translations
 
@@ -208,8 +217,8 @@ Pre-built Docker images are published to GitHub Container Registry (GHCR) under 
 ### Tags
 
 - **`release`** / **`release-cuda`** — most recent published build (like upstream's `release` tag)
-- **`v3`** — floats to the latest v3.x.x release (set `IMMICH_VERSION=v3` to auto-update within major version)
-- **`v3.0.1`** — pinned version using [semantic versioning](https://semver.org/)
+- **`v4`** — floats to the latest v4.x.x release (set `IMMICH_VERSION=v4` to auto-update within major version)
+- **`v4.2.6`** — pinned version using [semantic versioning](https://semver.org/)
 
 ### Publishing
 
@@ -218,18 +227,18 @@ Images are automatically built and published on every push to `main` via the **R
 **How it works:**
 1. Every merged PR triggers an automatic build
 2. The version is computed from the latest git tag using semantic versioning:
-   - `feat:` commit or `changelog:feat` PR label → **minor** bump (e.g. `v3.0.0` → `v3.1.0`)
-   - `BREAKING CHANGE` in commit body → **major** bump (e.g. `v3.1.0` → `v4.0.0`)
-   - Everything else (`fix:`, `docs:`, `chore:`, etc.) → **patch** bump (e.g. `v3.0.0` → `v3.0.1`)
+   - `feat:` commit or `changelog:feat` PR label → **minor** bump (e.g. `v4.2.6` → `v4.3.0`)
+   - `BREAKING CHANGE` in commit body → **major** bump (e.g. `v4.3.0` → `v5.0.0`)
+   - Everything else (`fix:`, `docs:`, `chore:`, etc.) → **patch** bump (e.g. `v4.2.6` → `v4.2.7`)
 3. Three jobs run in parallel: server, ML (CPU), and ML (CUDA)
-4. Each image is tagged with the version, the major version (e.g. `v3`), and `release`
+4. Each image is tagged with the version, the major version (e.g. `v4`), and `release`
 5. Git tags are created after successful builds
 6. Images are pushed to GHCR using the built-in `GITHUB_TOKEN` — no extra secrets needed
 
 **To manually publish a specific version:**
 
 ```bash
-gh workflow run docker.yml --ref main -f version=v3.0.1
+gh workflow run docker.yml --ref main -f version=v4.2.6
 ```
 
 Or use the GitHub Actions UI: Actions > Release > Run workflow > enter version > Run.
