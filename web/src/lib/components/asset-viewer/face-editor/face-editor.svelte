@@ -74,6 +74,7 @@
 
     canvas.add(faceRect);
     canvas.setActiveObject(faceRect);
+    setDefaultFaceRectanglePosition(faceRect);
   };
 
   onMount(async () => {
@@ -93,9 +94,19 @@
     };
   });
 
-  $effect(() => {
+  const setDefaultFaceRectanglePosition = (faceRect: Rect) => {
     const { offsetX, offsetY } = imageContentMetrics;
 
+    faceRect.set({
+      top: offsetY + 200,
+      left: offsetX + 200,
+    });
+
+    faceRect.setCoords();
+    positionFaceSelector();
+  };
+
+  $effect(() => {
     if (!canvas) {
       return;
     }
@@ -109,14 +120,20 @@
       return;
     }
 
-    faceRect.set({
-      top: offsetY + 200,
-      left: offsetX + 200,
-    });
-
-    faceRect.setCoords();
-    positionFaceSelector();
+    if (!isFaceRectIntersectingCanvas(faceRect, canvas)) {
+      setDefaultFaceRectanglePosition(faceRect);
+    }
   });
+
+  const isFaceRectIntersectingCanvas = (faceRect: Rect, canvas: Canvas) => {
+    const faceBox = faceRect.getBoundingRect();
+    return !(
+      0 > faceBox.left + faceBox.width ||
+      0 > faceBox.top + faceBox.height ||
+      canvas.width < faceBox.left ||
+      canvas.height < faceBox.top
+    );
+  };
 
   const cancel = () => {
     isFaceEditMode.value = false;

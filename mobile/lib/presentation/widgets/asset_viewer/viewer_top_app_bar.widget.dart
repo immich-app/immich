@@ -113,17 +113,14 @@ class _AppBarBackButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
-    final backgroundColor = showingDetails && !context.isDarkTheme ? Colors.white : Colors.black;
-    final foregroundColor = showingDetails && !context.isDarkTheme ? Colors.black : Colors.white;
-
     return Padding(
       padding: const EdgeInsets.only(left: 12.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
+          backgroundColor: showingDetails ? context.colorScheme.surface : Colors.transparent,
           shape: const CircleBorder(),
           iconSize: 22,
-          iconColor: foregroundColor,
+          iconColor: showingDetails ? context.colorScheme.onSurface : Colors.white,
           padding: EdgeInsets.zero,
           elevation: showingDetails ? 4 : 0,
         ),

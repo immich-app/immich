@@ -355,6 +355,29 @@ describe('TimelineManager', () => {
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })).not.toBeUndefined();
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })?.getAssets().length).toEqual(1);
     });
+
+    it('yearMonth is not a shared reference with asset.localDateTime (reference bug)', () => {
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+
+      timelineManager.upsertAssets([asset]);
+      const januaryMonth = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })!;
+      const monthYearMonth = januaryMonth.yearMonth;
+
+      const originalMonth = monthYearMonth.month;
+      expect(originalMonth).toEqual(1);
+
+      // Simulating updateObject
+      asset.localDateTime.month = 3;
+      asset.localDateTime.day = 20;
+
+      expect(monthYearMonth.month).toEqual(originalMonth);
+      expect(monthYearMonth.month).toEqual(1);
+    });
+
     it('asset is removed during upsert when TimelineManager if visibility changes', async () => {
       await timelineManager.updateOptions({
         visibility: AssetVisibility.Archive,

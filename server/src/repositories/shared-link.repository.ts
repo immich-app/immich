@@ -4,7 +4,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Album, columns } from 'src/database';
-import { DummyValue, GenerateSql } from 'src/decorators';
+import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { SharedLinkType } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -247,6 +247,20 @@ export class SharedLinkRepository {
 
   async remove(id: string): Promise<void> {
     await this.db.deleteFrom('shared_link').where('shared_link.id', '=', id).execute();
+  }
+
+  @ChunkedArray({ paramIndex: 1 })
+  async addAssets(id: string, assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return [];
+    }
+
+    return await this.db
+      .insertInto('shared_link_asset')
+      .values(assetIds.map((assetId) => ({ assetId, sharedLinkId: id })))
+      .onConflict((oc) => oc.doNothing())
+      .returning(['shared_link_asset.assetId'])
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

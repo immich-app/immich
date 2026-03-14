@@ -36,6 +36,7 @@ import {
   withExif,
   withFaces,
   withFacesAndPeople,
+  withFilePath,
   withFiles,
   withLibrary,
   withOwner,
@@ -1019,8 +1020,21 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFile({ assetId, type }: { assetId: string; type: AssetFileType }): Promise<void> {
-    await this.db.deleteFrom('asset_file').where('assetId', '=', asUuid(assetId)).where('type', '=', type).execute();
+  async deleteFile({
+    assetId,
+    type,
+    edited,
+  }: {
+    assetId: string;
+    type: AssetFileType;
+    edited?: boolean;
+  }): Promise<void> {
+    await this.db
+      .deleteFrom('asset_file')
+      .where('assetId', '=', asUuid(assetId))
+      .where('type', '=', type)
+      .$if(edited !== undefined, (qb) => qb.where('isEdited', '=', edited!))
+      .execute();
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
@@ -1139,7 +1153,8 @@ export class AssetRepository {
   async getForVideo(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .select(['asset.originalPath'])
+      .select((eb) => withFilePath(eb, AssetFileType.EncodedVideo).as('encodedVideoPath'))
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();

@@ -1569,6 +1569,11 @@ describe(MetadataService.name, () => {
         expected: { make: '1', model: '2' },
       },
       { exif: { AndroidMake: '1', AndroidModel: '2' }, expected: { make: '1', model: '2' } },
+      { exif: { DeviceManufacturer: '1', DeviceModelName: '2' }, expected: { make: '1', model: '2' } },
+      {
+        exif: { Make: '1', Model: '2', DeviceManufacturer: '3', DeviceModelName: '4' },
+        expected: { make: '1', model: '2' },
+      },
     ])('should read camera make and model $exif -> $expected', async ({ exif, expected }) => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));

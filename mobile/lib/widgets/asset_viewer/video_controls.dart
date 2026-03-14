@@ -72,17 +72,14 @@ class VideoControls extends HookConsumerWidget {
         children: [
           Row(
             children: [
-              IconTheme(
-                data: const IconThemeData(shadows: _controlShadows),
-                child: IconButton(
-                  iconSize: 32,
-                  padding: const EdgeInsets.all(12),
-                  constraints: const BoxConstraints(),
-                  icon: isFinished
-                      ? const Icon(Icons.replay, color: Colors.white, size: 32)
-                      : AnimatedPlayPause(color: Colors.white, size: 32, playing: isPlaying),
-                  onPressed: () => _toggle(ref, isCasting),
-                ),
+              IconButton(
+                iconSize: 32,
+                padding: const EdgeInsets.all(12),
+                constraints: const BoxConstraints(),
+                icon: isFinished
+                    ? const Icon(Icons.replay, color: Colors.white, size: 32, shadows: _controlShadows)
+                    : AnimatedPlayPause(color: Colors.white, size: 32, playing: isPlaying, shadows: _controlShadows),
+                onPressed: () => _toggle(ref, isCasting),
               ),
               const Spacer(),
               Text(

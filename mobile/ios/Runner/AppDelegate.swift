@@ -1,5 +1,6 @@
 import BackgroundTasks
 import Flutter
+import native_video_player
 import network_info_plus
 import path_provider_foundation
 import permission_handler_apple
@@ -18,6 +19,7 @@ import UIKit
       UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
 
+    SwiftNativeVideoPlayerPlugin.cookieStorage = URLSessionManager.cookieStorage
     GeneratedPluginRegistrant.register(with: self)
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
     AppDelegate.registerPlugins(with: controller.engine, controller: controller)
