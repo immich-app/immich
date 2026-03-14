@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-math-trunc */
 import { TUNABLES } from '$lib/utils/tunables';
 import type { MonthGroup } from '../month-group.svelte';
 import { TimelineManager } from '../timeline-manager.svelte';
@@ -7,75 +8,72 @@ const {
 } = TUNABLES;
 
 /**
- * General function to check if a rectangular region intersects with a window.
+ * General function to check if a rectangular region intersects with another regtangular region.
  */
-export function isIntersecting(regionTop: number, regionBottom: number, windowTop: number, windowBottom: number) {
+export function isIntersecting(regionTop: number, regionBottom: number, otherTop: number, otherBottom: number) {
   return (
-    (regionTop >= windowTop && regionTop < windowBottom) ||
-    (regionBottom >= windowTop && regionBottom < windowBottom) ||
-    (regionTop < windowTop && regionBottom >= windowBottom)
+    (regionTop >= otherTop && regionTop < otherBottom) ||
+    (regionBottom >= otherTop && regionBottom < otherBottom) ||
+    (regionTop < otherTop && regionBottom >= otherBottom)
   );
 }
 
-export function updateIntersectionMonthGroup(timelineManager: TimelineManager, month: MonthGroup) {
-  const monthGroupTop = month.top;
-  const monthGroupBottom = monthGroupTop + month.height;
-  const windowTop = timelineManager.visibleWindow.top;
-  const windowBottom = timelineManager.visibleWindow.bottom;
+const NEARBY = 1 << 0;
+const VISIBLE = 1 << 1;
 
-  const actuallyIntersecting = isIntersecting(monthGroupTop, monthGroupBottom, windowTop, windowBottom);
+export const IntersectionFlags = {
+  NONE: 0,
+  NEARBY,
+  VISIBLE,
+  RENDERABLE: NEARBY | VISIBLE,
+} as const;
 
-  let intersecting = actuallyIntersecting;
-  if (!actuallyIntersecting) {
-    intersecting = isIntersecting(
-      monthGroupTop,
-      monthGroupBottom,
-      windowTop - INTERSECTION_EXPAND_TOP,
-      windowBottom + INTERSECTION_EXPAND_BOTTOM,
-    );
+export type IntersectionFlag = (typeof IntersectionFlags)[keyof typeof IntersectionFlags];
+
+export function isVisible(flag: number): boolean {
+  return (flag & IntersectionFlags.VISIBLE) !== 0;
+}
+
+export function isRenderable(flag: number): boolean {
+  return (flag & IntersectionFlags.RENDERABLE) !== 0;
+}
+
+function calculateIntersection(regionTop: number, regionBottom: number, windowTop: number, windowBottom: number) {
+  if (regionBottom < windowTop - INTERSECTION_EXPAND_TOP || regionTop >= windowBottom + INTERSECTION_EXPAND_BOTTOM) {
+    return IntersectionFlags.NONE;
   }
 
-  month.intersecting = intersecting;
-  month.actuallyIntersecting = actuallyIntersecting;
-  if (intersecting) {
+  if (regionBottom < windowTop || regionTop >= windowBottom) {
+    return IntersectionFlags.NEARBY;
+  }
+
+  return IntersectionFlags.VISIBLE;
+}
+
+export function updateIntersectionMonthGroup(timelineManager: TimelineManager, month: MonthGroup) {
+  const intersection = calculateIntersection(
+    month.top,
+    month.top + month.height,
+    timelineManager.visibleWindow.top,
+    timelineManager.visibleWindow.bottom,
+  );
+
+  month.intersection = intersection;
+  if (isRenderable(intersection)) {
     timelineManager.clearDeferredLayout(month);
   }
 }
 
-// Bit flags for intersection state
-export const Intersection = {
-  NONE: 0,
-  PRE: 1,
-  ACTUAL: 3, // includes PRE (both bits set)
-} as const;
-
-/**
- * Returns a numeric flag: NONE (0), PRE (1, within expanded margin only), or ACTUAL (3, truly visible).
- */
 export function calculateViewerAssetIntersecting(
   timelineManager: TimelineManager,
   positionTop: number,
   positionHeight: number,
 ) {
-  const positionBottom = positionTop + positionHeight;
   const headerHeight = timelineManager.headerHeight;
-  const windowTop = timelineManager.visibleWindow.top - headerHeight;
-  const windowBottom = timelineManager.visibleWindow.bottom + headerHeight;
-
-  if (isIntersecting(positionTop, positionBottom, windowTop, windowBottom)) {
-    return Intersection.ACTUAL;
-  }
-
-  if (
-    isIntersecting(
-      positionTop,
-      positionBottom,
-      windowTop - INTERSECTION_EXPAND_TOP,
-      windowBottom + INTERSECTION_EXPAND_BOTTOM,
-    )
-  ) {
-    return Intersection.PRE;
-  }
-
-  return Intersection.NONE;
+  return calculateIntersection(
+    positionTop,
+    positionTop + positionHeight,
+    timelineManager.visibleWindow.top - headerHeight,
+    timelineManager.visibleWindow.bottom + headerHeight,
+  );
 }

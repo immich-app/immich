@@ -17,6 +17,12 @@ import {
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
+import {
+  IntersectionFlags,
+  isRenderable,
+  isVisible,
+  type IntersectionFlag,
+} from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
@@ -25,8 +31,7 @@ import type { AssetDescriptor, Direction, MoveAsset, TimelineAsset } from './typ
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class MonthGroup {
-  #intersecting: boolean = $state(false);
-  actuallyIntersecting: boolean = $state(false);
+  #intersection: IntersectionFlag = $state(IntersectionFlags.NONE);
   isLoaded: boolean = $state(false);
   dayGroups: DayGroup[] = $state([]);
   readonly timelineManager: TimelineManager;
@@ -78,21 +83,25 @@ export class MonthGroup {
     }
   }
 
-  set intersecting(newValue: boolean) {
-    const old = this.#intersecting;
+  set intersection(newValue: IntersectionFlag) {
+    const old = this.#intersection;
     if (old === newValue) {
       return;
     }
-    this.#intersecting = newValue;
-    if (newValue) {
+    this.#intersection = newValue;
+    if (isRenderable(newValue)) {
       void this.timelineManager.loadMonthGroup(this.yearMonth);
     } else {
       this.cancel();
     }
   }
 
+  get renderable() {
+    return isRenderable(this.#intersection);
+  }
+
   get intersecting() {
-    return this.#intersecting;
+    return isVisible(this.#intersection);
   }
 
   get lastDayGroup() {

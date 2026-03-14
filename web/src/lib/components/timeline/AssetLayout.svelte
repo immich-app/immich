@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { filterRenderable } from '$lib/managers/timeline-manager/utils.svelte';
   import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
@@ -20,7 +21,7 @@
         {
           asset: TimelineAsset;
           position: CommonPosition;
-          actuallyIntersecting: boolean;
+          intersecting: boolean;
         },
       ]
     >;
@@ -31,18 +32,14 @@
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-
-  const filterIntersecting = <T extends { intersecting: boolean }>(intersectables: T[]) => {
-    return intersectables.filter(({ intersecting }) => intersecting);
-  };
 </script>
 
 <!-- Image grid -->
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
-  {#each filterIntersecting(viewerAssets) as viewerAsset (viewerAsset.id)}
+  {#each filterRenderable(viewerAssets) as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
-    {@const actuallyIntersecting = viewerAsset.actuallyIntersecting!}
+    {@const intersecting = viewerAsset.intersecting!}
 
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div
@@ -55,7 +52,7 @@
       out:scale|global={{ start: 0.1, duration: scaleDuration }}
       animate:flip={{ duration: transitionDuration }}
     >
-      {@render thumbnail({ asset, position, actuallyIntersecting })}
+      {@render thumbnail({ asset, position, intersecting })}
       {@render customThumbnailLayout?.(asset)}
     </div>
   {/each}

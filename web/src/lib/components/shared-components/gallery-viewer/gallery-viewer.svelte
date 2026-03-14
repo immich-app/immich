@@ -14,7 +14,6 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
-  import { TUNABLES } from '$lib/utils/tunables';
   import { deleteAssets } from '$lib/utils/actions';
   import {
     archiveAssets,
@@ -28,6 +27,7 @@
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { TUNABLES } from '$lib/utils/tunables';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
@@ -82,14 +82,14 @@
     return `top: ${geo.getTop(i)}px; left: ${geo.getLeft(i)}px; width: ${geo.getWidth(i)}px; height: ${geo.getHeight(i)}px;`;
   };
 
-  const isIntersecting = (i: number) => {
+  const isRenderable = (i: number) => {
     const geo = geometry;
     const window = slidingWindow;
     const top = geo.getTop(i);
     return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
   };
 
-  const isActuallyIntersecting = (i: number) => {
+  const isIntersecting = (i: number) => {
     const geo = geometry;
     const top = geo.getTop(i) + pageHeaderOffset;
     const bottom = top + geo.getHeight(i);
@@ -387,7 +387,7 @@
     style:width={geometry.containerWidth + 'px'}
   >
     {#each assets as asset, i (asset.id + '-' + i)}
-      {#if isIntersecting(i)}
+      {#if isRenderable(i)}
         {@const currentAsset = toTimelineAsset(asset)}
         <div class="absolute" style:overflow="clip" style={getStyle(i)}>
           <Thumbnail
@@ -405,7 +405,7 @@
             asset={currentAsset}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
-            actuallyIntersecting={isActuallyIntersecting(i)}
+            intersecting={isIntersecting(i)}
             thumbnailWidth={geometry.getWidth(i)}
             thumbnailHeight={geometry.getHeight(i)}
           />

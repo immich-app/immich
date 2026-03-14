@@ -208,7 +208,7 @@ export class TimelineManager extends VirtualScrollManager {
       updateIntersectionMonthGroup(this, month);
     }
 
-    const month = this.months.find((month) => month.actuallyIntersecting);
+    const month = this.months.find((month) => month.intersecting);
     const viewportTopRatioInMonth = this.#calculateVewportTopRatioInMonth(month);
     const monthBottomViewportRatio = this.#calculateMonthBottomViewportRatio(month);
 

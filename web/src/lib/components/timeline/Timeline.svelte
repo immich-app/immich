@@ -645,7 +645,7 @@
     </section>
 
     {#each timelineManager.months as monthGroup (monthGroup.viewId)}
-      {@const display = monthGroup.intersecting}
+      {@const renderable = monthGroup.renderable}
       {@const absoluteHeight = monthGroup.top}
 
       {#if !monthGroup.isLoaded}
@@ -657,7 +657,7 @@
         >
           <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
         </div>
-      {:else if display}
+      {:else if renderable}
         <div
           class="month-group"
           style:height={monthGroup.height + 'px'}
@@ -673,7 +673,7 @@
             manager={timelineManager}
             onDayGroupSelect={handleGroupSelect}
           >
-            {#snippet thumbnail({ asset, position, dayGroup, groupIndex, actuallyIntersecting })}
+            {#snippet thumbnail({ asset, position, dayGroup, groupIndex, intersecting })}
               {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
               {@const isAssetSelected =
                 assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
@@ -684,7 +684,7 @@
                 {asset}
                 {albumUsers}
                 {groupIndex}
-                {actuallyIntersecting}
+                {intersecting}
                 onClick={(asset) => {
                   if (typeof onThumbnailClick === 'function') {
                     onThumbnailClick(asset, timelineManager, dayGroup, _onClick);

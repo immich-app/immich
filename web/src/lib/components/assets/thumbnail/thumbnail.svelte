@@ -34,7 +34,7 @@
     thumbnailSize?: number;
     thumbnailWidth?: number;
     thumbnailHeight?: number;
-    actuallyIntersecting?: boolean;
+    intersecting?: boolean;
     selected?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
@@ -57,7 +57,7 @@
     thumbnailSize = undefined,
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
-    actuallyIntersecting = true,
+    intersecting = true,
     selected = false,
     selectionCandidate = false,
     disabled = false,
@@ -89,7 +89,7 @@
   $effect(() => {
     if (loaded && !loadedEffectRan) {
       loadedEffectRan = true;
-      if (!actuallyIntersecting) {
+      if (!intersecting) {
         skipFade = true;
       }
     }
