@@ -27,7 +27,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.net.Authenticator
+import java.net.CookieHandler
+import java.net.PasswordAuthentication
 import java.net.Socket
+import java.net.URI
 import java.security.KeyStore
 import java.security.Principal
 import java.security.PrivateKey
@@ -104,6 +108,25 @@ object HttpClientManager {
       keyChainAlias = prefs.getString(PREFS_CERT_ALIAS, null)
 
       cookieJar.init(prefs)
+      System.setProperty("http.agent", USER_AGENT)
+      Authenticator.setDefault(object : Authenticator() {
+        override fun getPasswordAuthentication(): PasswordAuthentication? {
+          val url = requestingURL ?: return null
+          if (url.userInfo.isNullOrEmpty()) return null
+          val parts = url.userInfo.split(":", limit = 2)
+          return PasswordAuthentication(parts[0], parts.getOrElse(1) { "" }.toCharArray())
+        }
+      })
+      CookieHandler.setDefault(object : CookieHandler() {
+        override fun get(uri: URI, requestHeaders: Map<String, List<String>>): Map<String, List<String>> {
+          val httpUrl = uri.toString().toHttpUrlOrNull() ?: return emptyMap()
+          val cookies = cookieJar.loadForRequest(httpUrl)
+          if (cookies.isEmpty()) return emptyMap()
+          return mapOf("Cookie" to listOf(cookies.joinToString("; ") { "${it.name}=${it.value}" }))
+        }
+
+        override fun put(uri: URI, responseHeaders: Map<String, List<String>>) {}
+      })
 
       val savedHeaders = prefs.getString(PREFS_HEADERS, null)
       if (savedHeaders != null) {

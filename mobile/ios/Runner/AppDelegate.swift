@@ -20,6 +20,7 @@ import UIKit
     }
 
     SwiftNativeVideoPlayerPlugin.cookieStorage = URLSessionManager.cookieStorage
+    URLSessionManager.patchBackgroundDownloader()
     GeneratedPluginRegistrant.register(with: self)
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
     AppDelegate.registerPlugins(with: controller.engine, controller: controller)
