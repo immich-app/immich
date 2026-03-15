@@ -1,9 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { PartnerDirection } from 'src/repositories/partner.repository';
 import { PartnerService } from 'src/services/partner.service';
+import { AuthFactory } from 'test/factories/auth.factory';
+import { PartnerFactory } from 'test/factories/partner.factory';
 import { UserFactory } from 'test/factories/user.factory';
-import { getDehydrated, getForPartner } from 'test/mappers';
-import { factory } from 'test/small.factory';
+import { getForPartner } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(PartnerService.name, () => {
@@ -22,15 +23,9 @@ describe(PartnerService.name, () => {
     it("should return a list of partners with whom I've shared my library", async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
-      const sharedWithUser2 = factory.partner({
-        sharedBy: getDehydrated(user1),
-        sharedWith: getDehydrated(user2),
-      });
-      const sharedWithUser1 = factory.partner({
-        sharedBy: getDehydrated(user2),
-        sharedWith: getDehydrated(user1),
-      });
-      const auth = factory.auth({ user: { id: user1.id } });
+      const sharedWithUser2 = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const sharedWithUser1 = PartnerFactory.from().sharedBy(user2).sharedWith(user1).build();
+      const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.getAll.mockResolvedValue([getForPartner(sharedWithUser1), getForPartner(sharedWithUser2)]);
 
@@ -41,15 +36,9 @@ describe(PartnerService.name, () => {
     it('should return a list of partners who have shared their libraries with me', async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
-      const sharedWithUser2 = factory.partner({
-        sharedBy: getDehydrated(user1),
-        sharedWith: getDehydrated(user2),
-      });
-      const sharedWithUser1 = factory.partner({
-        sharedBy: getDehydrated(user2),
-        sharedWith: getDehydrated(user1),
-      });
-      const auth = factory.auth({ user: { id: user1.id } });
+      const sharedWithUser2 = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const sharedWithUser1 = PartnerFactory.from().sharedBy(user2).sharedWith(user1).build();
+      const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.getAll.mockResolvedValue([getForPartner(sharedWithUser1), getForPartner(sharedWithUser2)]);
       await expect(sut.search(auth, { direction: PartnerDirection.SharedWith })).resolves.toBeDefined();
@@ -61,8 +50,8 @@ describe(PartnerService.name, () => {
     it('should create a new partner', async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
-      const partner = factory.partner({ sharedBy: getDehydrated(user1), sharedWith: getDehydrated(user2) });
-      const auth = factory.auth({ user: { id: user1.id } });
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.get.mockResolvedValue(void 0);
       mocks.partner.create.mockResolvedValue(getForPartner(partner));
@@ -78,8 +67,8 @@ describe(PartnerService.name, () => {
     it('should throw an error when the partner already exists', async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
-      const partner = factory.partner({ sharedBy: getDehydrated(user1), sharedWith: getDehydrated(user2) });
-      const auth = factory.auth({ user: { id: user1.id } });
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.get.mockResolvedValue(getForPartner(partner));
 
@@ -93,8 +82,8 @@ describe(PartnerService.name, () => {
     it('should remove a partner', async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
-      const partner = factory.partner({ sharedBy: getDehydrated(user1), sharedWith: getDehydrated(user2) });
-      const auth = factory.auth({ user: { id: user1.id } });
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const auth = AuthFactory.create({ id: user1.id });
 
       mocks.partner.get.mockResolvedValue(getForPartner(partner));
 
@@ -104,8 +93,8 @@ describe(PartnerService.name, () => {
     });
 
     it('should throw an error when the partner does not exist', async () => {
-      const user2 = factory.user();
-      const auth = factory.auth();
+      const user2 = UserFactory.create();
+      const auth = AuthFactory.create();
 
       mocks.partner.get.mockResolvedValue(void 0);
 
@@ -117,8 +106,8 @@ describe(PartnerService.name, () => {
 
   describe('update', () => {
     it('should require access', async () => {
-      const user2 = factory.user();
-      const auth = factory.auth();
+      const user2 = UserFactory.create();
+      const auth = AuthFactory.create();
 
       await expect(sut.update(auth, user2.id, { inTimeline: false })).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -126,8 +115,8 @@ describe(PartnerService.name, () => {
     it('should update partner', async () => {
       const user1 = UserFactory.create();
       const user2 = UserFactory.create();
-      const partner = factory.partner({ sharedBy: getDehydrated(user1), sharedWith: getDehydrated(user2) });
-      const auth = factory.auth({ user: { id: user1.id } });
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const auth = AuthFactory.create({ id: user1.id });
 
       mocks.access.partner.checkUpdateAccess.mockResolvedValue(new Set([user2.id]));
       mocks.partner.update.mockResolvedValue(getForPartner(partner));

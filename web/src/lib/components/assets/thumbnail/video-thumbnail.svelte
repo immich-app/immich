@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import { Icon, LoadingSpinner } from '@immich/ui';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { Duration } from 'luxon';
@@ -25,7 +26,7 @@
     curve = false,
     playIcon = mdiPlayCircleOutline,
     pauseIcon = mdiPauseCircleOutline,
-    class: className = undefined,
+    class: className,
   }: Props = $props();
 
   let remainingSeconds = $state(durationInSeconds);
@@ -60,7 +61,7 @@
 {#if enablePlayback}
   <video
     bind:this={player}
-    class={['h-full w-full object-cover', className]}
+    class={cleanClass('h-full w-full object-cover', className)}
     class:rounded-xl={curve}
     muted
     autoplay

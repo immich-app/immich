@@ -2,9 +2,9 @@ import { MapService } from 'src/services/map.service';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
+import { PartnerFactory } from 'test/factories/partner.factory';
 import { userStub } from 'test/fixtures/user.stub';
 import { getForAlbum, getForPartner } from 'test/mappers';
-import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MapService.name, () => {
@@ -40,7 +40,7 @@ describe(MapService.name, () => {
 
     it('should include partner assets', async () => {
       const auth = AuthFactory.create();
-      const partner = factory.partner({ sharedWithId: auth.user.id });
+      const partner = PartnerFactory.create({ sharedWithId: auth.user.id });
 
       const asset = AssetFactory.from()
         .exif({ latitude: 42, longitude: 69, city: 'city', state: 'state', country: 'country' })

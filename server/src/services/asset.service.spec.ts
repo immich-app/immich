@@ -7,6 +7,7 @@ import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
+import { PartnerFactory } from 'test/factories/partner.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { getForAsset, getForAssetDeletion, getForPartner } from 'test/mappers';
 import { factory, newUuid } from 'test/small.factory';
@@ -80,8 +81,8 @@ describe(AssetService.name, () => {
     });
 
     it('should not include partner assets if not in timeline', async () => {
-      const partner = factory.partner({ inTimeline: false });
-      const auth = factory.auth({ user: { id: partner.sharedWithId } });
+      const partner = PartnerFactory.create({ inTimeline: false });
+      const auth = AuthFactory.create({ id: partner.sharedWithId });
 
       mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
       mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
@@ -92,8 +93,8 @@ describe(AssetService.name, () => {
     });
 
     it('should include partner assets if in timeline', async () => {
-      const partner = factory.partner({ inTimeline: true });
-      const auth = factory.auth({ user: { id: partner.sharedWithId } });
+      const partner = PartnerFactory.create({ inTimeline: true });
+      const auth = AuthFactory.create({ id: partner.sharedWithId });
 
       mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
       mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);

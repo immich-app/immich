@@ -51,7 +51,7 @@ class URLSessionManager: NSObject {
     diskCapacity: 1024 * 1024 * 1024,
     directory: cacheDir
   )
-  private static let userAgent: String = {
+  static let userAgent: String = {
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     return "Immich_iOS_\(version)"
   }()
@@ -158,6 +158,49 @@ class URLSessionManager: NSObject {
 
     return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
   }
+
+  /// Patches background_downloader's URLSession to use shared auth configuration.
+  /// Must be called before background_downloader creates its session (i.e. early in app startup).
+  static func patchBackgroundDownloader() {
+    // Swizzle URLSessionConfiguration.background(withIdentifier:) to inject shared config
+    let originalSel = NSSelectorFromString("backgroundSessionConfigurationWithIdentifier:")
+    let swizzledSel = #selector(URLSessionConfiguration.immich_background(withIdentifier:))
+    if let original = class_getClassMethod(URLSessionConfiguration.self, originalSel),
+       let swizzled = class_getClassMethod(URLSessionConfiguration.self, swizzledSel) {
+      method_exchangeImplementations(original, swizzled)
+    }
+
+    // Add auth challenge handling to background_downloader's UrlSessionDelegate
+    guard let targetClass = NSClassFromString("background_downloader.UrlSessionDelegate") else { return }
+
+    let sessionBlock: @convention(block) (AnyObject, URLSession, URLAuthenticationChallenge,
+        @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) -> Void
+    = { _, session, challenge, completion in
+      URLSessionManager.shared.delegate.handleChallenge(session, challenge, completion)
+    }
+    class_replaceMethod(targetClass,
+      NSSelectorFromString("URLSession:didReceiveChallenge:completionHandler:"),
+      imp_implementationWithBlock(sessionBlock), "v@:@@@?")
+
+    let taskBlock: @convention(block) (AnyObject, URLSession, URLSessionTask, URLAuthenticationChallenge,
+        @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) -> Void
+    = { _, session, task, challenge, completion in
+      URLSessionManager.shared.delegate.handleChallenge(session, challenge, completion, task: task)
+    }
+    class_replaceMethod(targetClass,
+      NSSelectorFromString("URLSession:task:didReceiveChallenge:completionHandler:"),
+      imp_implementationWithBlock(taskBlock), "v@:@@@@?")
+  }
+}
+
+private extension URLSessionConfiguration {
+  @objc dynamic class func immich_background(withIdentifier id: String) -> URLSessionConfiguration {
+    // After swizzle, this calls the original implementation
+    let config = immich_background(withIdentifier: id)
+    config.httpCookieStorage = URLSessionManager.cookieStorage
+    config.httpAdditionalHeaders = ["User-Agent": URLSessionManager.userAgent]
+    return config
+  }
 }
 
 class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWebSocketDelegate {
@@ -168,7 +211,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
   ) {
     handleChallenge(session, challenge, completionHandler)
   }
-  
+
   func urlSession(
     _ session: URLSession,
     task: URLSessionTask,
@@ -177,7 +220,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
   ) {
     handleChallenge(session, challenge, completionHandler, task: task)
   }
-  
+
   func handleChallenge(
     _ session: URLSession,
     _ challenge: URLAuthenticationChallenge,
@@ -190,7 +233,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
     default: completionHandler(.performDefaultHandling, nil)
     }
   }
-  
+
   private func handleClientCertificate(
     _ session: URLSession,
     completion: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
@@ -200,7 +243,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       kSecAttrLabel as String: CLIENT_CERT_LABEL,
       kSecReturnRef as String: true,
     ]
-    
+
     var item: CFTypeRef?
     let status = SecItemCopyMatching(query as CFDictionary, &item)
     if status == errSecSuccess, let identity = item {
@@ -214,7 +257,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
     }
     completion(.performDefaultHandling, nil)
   }
-  
+
   private func handleBasicAuth(
     _ session: URLSession,
     task: URLSessionTask?,
