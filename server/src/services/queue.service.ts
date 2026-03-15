@@ -79,9 +79,13 @@ export class QueueService extends BaseService {
 
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.JobService })
   onBootstrap() {
+    this.logger.log(`QueueService.onBootstrap() called, worker=${this.worker}`);
     this.jobRepository.setup(this.services);
     if (this.worker === ImmichWorker.Microservices) {
+      this.logger.log(`Starting workers for Microservices worker`);
       this.jobRepository.startWorkers();
+    } else {
+      this.logger.log(`Skipping startWorkers() - not Microservices worker (worker=${this.worker})`);
     }
   }
 
