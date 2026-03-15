@@ -18,9 +18,13 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widge
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_preloader.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_filmstrip.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
+import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -68,10 +72,11 @@ class AssetViewer extends ConsumerStatefulWidget {
     _setAsset(ref, asset);
   }
 
-  static void _setAsset(WidgetRef ref, BaseAsset asset) {
+  static void _setAsset(WidgetRef ref, BaseAsset asset, {bool updateControls = true}) {
     ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // Hide controls by default for videos
-    if (asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
+    // Hide controls by default for videos (skip during filmstrip scrub so the
+    // filmstrip isn't hidden mid-drag — the scrub handler passes false).
+    if (updateControls && asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
   }
 }
 
@@ -80,7 +85,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   late final _pageController = PageController(initialPage: widget.initialIndex);
   late final _preloader = AssetPreloader(timelineService: ref.read(timelineServiceProvider), mounted: () => mounted);
 
-  late int _currentPage = widget.initialIndex;
+  late final _currentPageNotifier = ValueNotifier<int>(widget.initialIndex);
+  int get _currentPage => _currentPageNotifier.value;
+  set _currentPage(int v) => _currentPageNotifier.value = v;
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
@@ -97,6 +104,28 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _pageController.jumpToPage(target);
       _onAssetChanged(target);
     }
+  }
+
+  void _onFilmstripTap(int index) {
+    final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
+    if (index < 0 || index > maxPage) return;
+    _currentPage = index;
+    _pageController.jumpToPage(index);
+    _onAssetChanged(index);
+  }
+
+  /// Called on every frame while the user drags the filmstrip.
+  /// Jumps the page and updates [currentAsset] so video controls react instantly,
+  /// but skips [setControls] so the filmstrip is never hidden mid-drag.
+  void _onFilmstripScrub(int index) async {
+    final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
+    if (index < 0 || index > maxPage) return;
+    _currentPage = index;
+    _pageController.jumpToPage(index);
+    final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
+    // Discard stale result if the user has already moved to a different asset.
+    if (!mounted || asset == null || _currentPage != index) return;
+    AssetViewer._setAsset(ref, asset, updateControls: false);
   }
 
   @override
@@ -118,6 +147,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   @override
   void dispose() {
     _pageController.dispose();
+    _currentPageNotifier.dispose();
     _preloader.dispose();
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
@@ -256,6 +286,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isZoomed = ref.watch(assetViewerProvider.select((s) => s.isZoomed));
+    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final isVideo = currentAsset?.isVideo ?? false;
+    final filmstripEnabled =
+        ref.watch(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.filmstripEnabled);
     final backgroundColor = showingDetails
         ? context.colorScheme.surface
         : Colors.black.withValues(alpha: ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)));
@@ -287,7 +321,50 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           child: const DownloadStatusFloatingButton(),
         ),
       ),
-      bottomNavigationBar: const ViewerBottomAppBar(),
+      // Layout from top (closest to photo) to bottom:
+      //   1. VideoControls  — only when video + filmstrip both active
+      //   2. Filmstrip
+      //   3. ViewerBottomAppBar (action buttons; VideoControls live here when no filmstrip)
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isVideo && filmstripEnabled && !showingDetails && currentAsset != null)
+            IgnorePointer(
+              ignoring: !showingControls,
+              child: AnimatedOpacity(
+                duration: Durations.short2,
+                opacity: showingControls ? 1.0 : 0.0,
+                child: VideoControls(videoPlayerName: currentAsset.heroTag),
+              ),
+            ),
+          if (filmstripEnabled && !showingDetails)
+            IgnorePointer(
+              // Key on the direct Column child so Flutter preserves the
+              // filmstrip State when VideoControls are added/removed above it.
+              key: const ValueKey('filmstrip_wrapper'),
+              ignoring: !showingControls,
+              child: AnimatedOpacity(
+                duration: Durations.short2,
+                opacity: showingControls ? 1.0 : 0.0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [Colors.black54, Colors.transparent],
+                    ),
+                  ),
+                  child: ViewerFilmstrip(
+                    currentIndex: _currentPageNotifier,
+                    onTap: _onFilmstripTap,
+                    onScrub: _onFilmstripScrub,
+                  ),
+                ),
+              ),
+            ),
+          ViewerBottomAppBar(hideVideoControls: filmstripEnabled),
+        ],
+      ),
       body: Stack(
         children: [
           NotificationListener<ScrollEndNotification>(

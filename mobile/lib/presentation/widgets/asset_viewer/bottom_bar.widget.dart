@@ -16,7 +16,9 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
 class ViewerBottomBar extends ConsumerWidget {
-  const ViewerBottomBar({super.key});
+  const ViewerBottomBar({super.key, this.hideVideoControls = false});
+
+  final bool hideVideoControls;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,7 +78,7 @@ class ViewerBottomBar extends ConsumerWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
+                        if (asset.isVideo && !hideVideoControls) VideoControls(videoPlayerName: asset.heroTag),
                         if (!isReadonlyModeEnabled)
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],

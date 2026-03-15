@@ -76,6 +76,10 @@ enum StoreKey<T> {
   // Image viewer navigation settings
   tapToNavigate<bool>._(141),
 
+  // Filmstrip navigation
+  filmstripEnabled<bool>._(142),
+  filmstripHeight<int>._(143),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
