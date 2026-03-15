@@ -24,6 +24,7 @@ class ImageWrapper extends StatefulWidget {
     required this.scaleStateCycle,
     required this.onTapUp,
     required this.onTapDown,
+    required this.onDoubleTap,
     required this.onDragStart,
     required this.onDragEnd,
     required this.onDragUpdate,
@@ -59,6 +60,7 @@ class ImageWrapper extends StatefulWidget {
   final ScaleStateCycle? scaleStateCycle;
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
+  final PhotoViewImageDoubleTapCallback? onDoubleTap;
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
@@ -201,6 +203,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
         scaleStateCycle: widget.scaleStateCycle,
         onTapUp: widget.onTapUp,
         onTapDown: widget.onTapDown,
+        onDoubleTap: widget.onDoubleTap,
         onDragStart: widget.onDragStart,
         onDragEnd: widget.onDragEnd,
         onDragUpdate: widget.onDragUpdate,
@@ -232,6 +235,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       scaleBoundaries: scaleBoundaries,
       onTapUp: widget.onTapUp,
       onTapDown: widget.onTapDown,
+      onDoubleTap: widget.onDoubleTap,
       onDragStart: widget.onDragStart,
       onDragEnd: widget.onDragEnd,
       onDragUpdate: widget.onDragUpdate,
@@ -281,6 +285,7 @@ class CustomChildWrapper extends StatelessWidget {
     required this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDoubleTap,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -314,6 +319,7 @@ class CustomChildWrapper extends StatelessWidget {
   final ScaleStateCycle? scaleStateCycle;
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
+  final PhotoViewImageDoubleTapCallback? onDoubleTap;
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
@@ -350,6 +356,7 @@ class CustomChildWrapper extends StatelessWidget {
       scaleBoundaries: scaleBoundaries,
       onTapUp: onTapUp,
       onTapDown: onTapDown,
+      onDoubleTap: onDoubleTap,
       onDragStart: onDragStart,
       onDragEnd: onDragEnd,
       onDragUpdate: onDragUpdate,

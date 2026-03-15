@@ -17,6 +17,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
+import 'package:immich_mobile/widgets/asset_viewer/video_double_tap_seek.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 
@@ -275,6 +276,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
               ),
             ),
           ),
+        Positioned.fill(child: VideoDoubleTapSeekOverlay(playerId: videoId)),
         if (showControls) Center(child: CustomVideoPlayerControls(videoId: videoId)),
       ],
     );

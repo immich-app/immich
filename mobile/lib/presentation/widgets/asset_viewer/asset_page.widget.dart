@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/widgets/asset_viewer/video_double_tap_seek.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -238,6 +239,24 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
   }
 
+  void _onVideoDoubleTap(
+    BuildContext context,
+    TapDownDetails details,
+    PhotoViewControllerValue controllerValue,
+    BaseAsset asset,
+  ) {
+    if (_showingDetails || _dragStart != null) {
+      return;
+    }
+
+    triggerVideoDoubleTapSeek(
+      ref,
+      playerId: asset.heroTag,
+      tapX: details.localPosition.dx,
+      viewportWidth: context.width,
+    );
+  }
+
   void _onLongPress(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue) =>
       ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
 
@@ -327,6 +346,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       onDragEnd: _onDragEnd,
       onDragCancel: _onDragCancel,
       onTapUp: _onTapUp,
+      onDoubleTap: (context, details, controllerValue) => _onVideoDoubleTap(context, details, controllerValue, asset),
       scaleStateChangedCallback: _onScaleStateChanged,
       heroAttributes: heroAttributes,
       filterQuality: FilterQuality.high,

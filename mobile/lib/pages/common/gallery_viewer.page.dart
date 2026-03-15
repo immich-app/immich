@@ -28,6 +28,7 @@ import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_viewer/bottom_gallery_bar.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/detail_panel.dart';
 import 'package:immich_mobile/widgets/asset_viewer/gallery_app_bar.dart';
+import 'package:immich_mobile/widgets/asset_viewer/video_double_tap_seek.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
@@ -271,6 +272,14 @@ class GalleryViewerPage extends HookConsumerWidget {
       return PhotoViewGalleryPageOptions.customChild(
         onDragStart: (_, details, __, ___) => localPosition.value = details.localPosition,
         onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+        onDoubleTap: (_, details, __) {
+          triggerVideoDoubleTapSeek(
+            ref,
+            playerId: asset.id.toString(),
+            tapX: details.localPosition.dx,
+            viewportWidth: context.width,
+          );
+        },
         heroAttributes: _getHeroAttributes(asset),
         filterQuality: FilterQuality.high,
         initialScale: PhotoViewComputedScale.contained * 0.99,

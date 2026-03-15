@@ -254,6 +254,7 @@ class PhotoView extends StatefulWidget {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDoubleTap,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -297,6 +298,7 @@ class PhotoView extends StatefulWidget {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDoubleTap,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -406,6 +408,9 @@ class PhotoView extends StatefulWidget {
   /// A pointer that might cause a tap has contacted the screen at a particular
   /// location.
   final PhotoViewImageTapDownCallback? onTapDown;
+
+  /// A pointer that completed a double tap in the PhotoView region.
+  final PhotoViewImageDoubleTapCallback? onDoubleTap;
 
   /// A pointer that might cause a tap has contacted the screen at a particular
   /// location.
@@ -566,6 +571,7 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
                 scaleStateCycle: widget.scaleStateCycle,
                 onTapUp: widget.onTapUp,
                 onTapDown: widget.onTapDown,
+                onDoubleTap: widget.onDoubleTap,
                 onDragStart: widget.onDragStart,
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
@@ -599,6 +605,7 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
                 scaleStateCycle: widget.scaleStateCycle,
                 onTapUp: widget.onTapUp,
                 onTapDown: widget.onTapDown,
+                onDoubleTap: widget.onDoubleTap,
                 onDragStart: widget.onDragStart,
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
@@ -642,6 +649,10 @@ typedef PhotoViewImageTapUpCallback =
 
 /// A type definition for a callback when the user taps down the photoview region
 typedef PhotoViewImageTapDownCallback =
+    Function(BuildContext context, TapDownDetails details, PhotoViewControllerValue controllerValue);
+
+/// A type definition for a callback when the user completes a double tap in the photoview region.
+typedef PhotoViewImageDoubleTapCallback =
     Function(BuildContext context, TapDownDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback when the user drags up

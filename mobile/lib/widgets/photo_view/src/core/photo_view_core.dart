@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
+        PhotoViewImageDoubleTapCallback,
         PhotoViewScaleState,
         PhotoViewHeroAttributes,
         PhotoViewImageTapDownCallback,
@@ -33,6 +34,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.enableRotation,
     required this.onTapUp,
     required this.onTapDown,
+    required this.onDoubleTap,
     required this.onDragStart,
     required this.onDragEnd,
     required this.onDragUpdate,
@@ -60,6 +62,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.enableRotation,
     this.onTapUp,
     this.onTapDown,
+    this.onDoubleTap,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -97,6 +100,7 @@ class PhotoViewCore extends StatefulWidget {
 
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
+  final PhotoViewImageDoubleTapCallback? onDoubleTap;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
 
   final PhotoViewImageDragStartCallback? onDragStart;
@@ -126,6 +130,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     with TickerProviderStateMixin, PhotoViewControllerDelegate, HitCornersDetector {
   double? _scaleBefore;
   double? _rotationBefore;
+  TapDownDetails? _lastDoubleTapDownDetails;
 
   late final AnimationController _scaleAnimationController;
   Animation<double>? _scaleAnimation;
@@ -233,7 +238,19 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
   }
 
+  void onDoubleTapDown(TapDownDetails details) {
+    _lastDoubleTapDownDetails = details;
+  }
+
   void onDoubleTap() {
+    final details = _lastDoubleTapDownDetails;
+    _lastDoubleTapDownDetails = null;
+
+    if (widget.onDoubleTap != null && details != null) {
+      widget.onDoubleTap!(context, details, controller.value);
+      return;
+    }
+
     nextScaleState();
   }
 
@@ -376,6 +393,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
           return PhotoViewGestureDetector(
             disableScaleGestures: widget.disableScaleGestures,
+            onDoubleTapDown: onDoubleTapDown,
             onDoubleTap: widget.disableScaleGestures ? null : onDoubleTap,
             onScaleStart: widget.disableScaleGestures ? null : onScaleStart,
             onScaleUpdate: widget.disableScaleGestures ? null : onScaleUpdate,

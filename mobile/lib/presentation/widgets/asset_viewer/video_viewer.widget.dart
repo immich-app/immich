@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/widgets/asset_viewer/video_double_tap_seek.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 
@@ -220,6 +221,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
               visible: _isVideoReady,
               child: NativeVideoPlayerView(onViewReady: _initController),
             ),
+            Positioned.fill(child: VideoDoubleTapSeekOverlay(playerId: widget.asset.heroTag)),
             Center(
               child: AnimatedOpacity(
                 opacity: status == VideoPlaybackStatus.buffering ? 1.0 : 0.0,

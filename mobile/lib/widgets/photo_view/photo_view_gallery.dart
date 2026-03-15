@@ -8,6 +8,7 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
         PhotoViewImageDragEndCallback,
         PhotoViewImageDragStartCallback,
         PhotoViewImageDragUpdateCallback,
+        PhotoViewImageDoubleTapCallback,
         PhotoViewImageLongPressStartCallback,
         PhotoViewImageScaleEndCallback,
         PhotoViewImageTapDownCallback,
@@ -281,6 +282,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             scaleStateCycle: pageOption.scaleStateCycle,
             onTapUp: pageOption.onTapUp,
             onTapDown: pageOption.onTapDown,
+            onDoubleTap: pageOption.onDoubleTap,
             onDragStart: pageOption.onDragStart,
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
@@ -319,6 +321,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             scaleStateCycle: pageOption.scaleStateCycle,
             onTapUp: pageOption.onTapUp,
             onTapDown: pageOption.onTapDown,
+            onDoubleTap: pageOption.onDoubleTap,
             onDragStart: pageOption.onDragStart,
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
@@ -366,6 +369,7 @@ class PhotoViewGalleryPageOptions {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDoubleTap,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -397,6 +401,7 @@ class PhotoViewGalleryPageOptions {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDoubleTap,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -466,6 +471,9 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.onTapDown]
   final PhotoViewImageTapDownCallback? onTapDown;
+
+  /// Mirror to [PhotoView.onDoubleTap]
+  final PhotoViewImageDoubleTapCallback? onDoubleTap;
 
   /// Mirror to [PhotoView.onScaleEnd]
   final PhotoViewImageScaleEndCallback? onScaleEnd;
