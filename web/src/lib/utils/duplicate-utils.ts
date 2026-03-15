@@ -1,8 +1,8 @@
 import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
-
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 import { sortBy } from 'lodash-es';
+import { DateTime } from 'luxon';
 
 /**
  * Suggests the best duplicate asset to keep from a list of duplicates.
@@ -31,10 +31,7 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
   return duplicateAssets.pop();
 };
 
-/* ---------------------------- Duplicate diffing --------------------------- */
-
-// All metadata field keys checked for differences, in display order
-export const METADATA_FIELD_KEYS = [
+export const MetadataFieldKeys = [
   'originalFileName',
   'originalPath',
   'fileSize',
@@ -62,21 +59,17 @@ export const METADATA_FIELD_KEYS = [
   'projectionType',
 ] as const;
 
-export type MetadataFieldKey = (typeof METADATA_FIELD_KEYS)[number];
-export type DifferingMetadataFields = Partial<Record<MetadataFieldKey, boolean>>;
+export type MetadataFieldKey = (typeof MetadataFieldKeys)[number];
+export type DifferingMetadataFields = Record<MetadataFieldKey, boolean>;
 
-export function normalizeForComparison(
-  key: MetadataFieldKey,
-  value: string | number | boolean | null | undefined,
-): string | number | boolean | null | undefined {
+export function normalizeForComparison(key: MetadataFieldKey, value: unknown): unknown {
   if (value === null || value === undefined) {
     return value;
   }
 
   if (key === 'fileCreatedAt' || key === 'fileModifiedAt' || key === 'dateTimeOriginal' || key === 'modifyDate') {
-    const s = String(value);
-    const m = s.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
-    return m ? m[1] : s;
+    const dateTime = DateTime.fromISO(String(value));
+    return dateTime.isValid ? dateTime.toISO() : String(value);
   }
 
   if (key === 'fNumber' && typeof value === 'number') {
@@ -93,10 +86,7 @@ export function normalizeForComparison(
 }
 
 // Helper function to get the value of a metadata field for an asset for comparison purposes only.
-function getValueForAsset(
-  asset: AssetResponseDto,
-  key: MetadataFieldKey,
-): string | number | boolean | null | undefined {
+function getValueForAsset(asset: AssetResponseDto, key: MetadataFieldKey): unknown {
   switch (key) {
     case 'fileCreatedAt':
     case 'fileModifiedAt':
@@ -119,24 +109,12 @@ function getValueForAsset(
   }
 }
 
-// Helper function to exclude fields that have no value across all assets.
-function hasAnyValue(assets: AssetResponseDto[], key: MetadataFieldKey): boolean {
-  return assets.some((asset) => {
-    const value = getValueForAsset(asset, key);
-    return value !== null && value !== undefined;
-  });
-}
-
 // Computes which metadata fields differ across a list of assets.
 export function computeDifferingMetadataFields(assets: AssetResponseDto[]): DifferingMetadataFields {
-  const diffs: DifferingMetadataFields = {};
+  const diffs = {} as DifferingMetadataFields;
 
-  for (const key of METADATA_FIELD_KEYS) {
-    if (!hasAnyValue(assets, key)) {
-      continue;
-    }
-
-    const uniqueValues = new Set<string | number | boolean | null | undefined>();
+  for (const key of MetadataFieldKeys) {
+    const uniqueValues = new Set<unknown>();
 
     for (const asset of assets) {
       const value = getValueForAsset(asset, key);
@@ -145,9 +123,7 @@ export function computeDifferingMetadataFields(assets: AssetResponseDto[]): Diff
       }
     }
 
-    if (uniqueValues.size > 1) {
-      diffs[key] = true;
-    }
+    diffs[key] = uniqueValues.size > 1;
   }
 
   return diffs;
