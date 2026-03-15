@@ -74,6 +74,27 @@
     }
   };
 
+  const handlePaste = (event: ClipboardEvent, index: number) => {
+    event.preventDefault();
+    const pasted = (event.clipboardData?.getData('text') ?? '').replaceAll(/\D/g, '');
+    if (pasted.length === 0) {
+      return;
+    }
+
+    for (let i = 0; i < pasted.length && index + i < pinLength; i++) {
+      pinValues[index + i] = pasted[i];
+    }
+
+    value = pinValues.join('').trim();
+
+    const lastFilledIndex = Math.min(index + pasted.length, pinLength) - 1;
+    pinCodeInputElements[lastFilledIndex]?.focus();
+
+    if (value.length === pinLength) {
+      onFilled?.(value);
+    }
+  };
+
   function handleKeydown(event: KeyboardEvent & { currentTarget: EventTarget & HTMLInputElement }) {
     const target = event.currentTarget as HTMLInputElement;
     const index = pinCodeInputElements.indexOf(target);
@@ -105,6 +126,9 @@
         return;
       }
       default: {
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+          return;
+        }
         if (Number.isNaN(Number(event.key))) {
           event.preventDefault();
         }
@@ -132,6 +156,7 @@
         bind:value={pinValues[index]}
         onkeydown={handleKeydown}
         oninput={(event) => handleInput(event, index)}
+        onpaste={(event) => handlePaste(event, index)}
         aria-label={`PIN digit ${index + 1} of ${pinLength}${label ? ` for ${label}` : ''}`}
       />
     {/each}
