@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import type { QueueSnapshot } from '$lib/types';
   import type { QueueResponseDto } from '@immich/sdk';
@@ -13,7 +14,7 @@
     class?: string;
   };
 
-  const { queue, class: className = '' }: Props = $props();
+  const { queue, class: className }: Props = $props();
 
   type Data = number | null;
   type NormalizedData = [
@@ -159,7 +160,7 @@
   requestAnimationFrame(update);
 </script>
 
-<div class="w-full {className}" bind:this={chartElement}>
+<div class={cleanClass('w-full', className)} bind:this={chartElement}>
   {#if data[0].length === 0}
     <LoadingSpinner size="giant" />
   {/if}

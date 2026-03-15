@@ -58,42 +58,39 @@ class NetworkApiImpl: NetworkApi {
     return Int64(Int(bitPattern: pointer))
   }
   
-  func setRequestHeaders(headers: [String : String], serverUrls: [String]) throws {
-    var headers = headers
-    if let token = headers.removeValue(forKey: "x-immich-user-token") {
+  func setRequestHeaders(headers: [String : String], serverUrls: [String], token: String?) throws {
+    URLSessionManager.setServerUrls(serverUrls)
+
+    if let token = token {
+      let expiry = Date().addingTimeInterval(COOKIE_EXPIRY_DAYS * 24 * 60 * 60)
       for serverUrl in serverUrls {
         guard let url = URL(string: serverUrl), let domain = url.host else { continue }
         let isSecure = serverUrl.hasPrefix("https")
-        let cookies: [(String, String, Bool)] = [
-          ("immich_access_token", token, true),
-          ("immich_is_authenticated", "true", false),
-          ("immich_auth_type", "password", true),
+        let values: [AuthCookie: String] = [
+          .accessToken: token,
+          .isAuthenticated: "true",
+          .authType: "password",
         ]
-        let expiry = Date().addingTimeInterval(400 * 24 * 60 * 60)
-        for (name, value, httpOnly) in cookies {
+        for (cookie, value) in values {
           var properties: [HTTPCookiePropertyKey: Any] = [
-            .name: name,
+            .name: cookie.name,
             .value: value,
             .domain: domain,
             .path: "/",
             .expires: expiry,
           ]
           if isSecure { properties[.secure] = "TRUE" }
-          if httpOnly { properties[.init("HttpOnly")] = "TRUE" }
-          if let cookie = HTTPCookie(properties: properties) {
-            URLSessionManager.cookieStorage.setCookie(cookie)
+          if cookie.httpOnly { properties[.init("HttpOnly")] = "TRUE" }
+          if let httpCookie = HTTPCookie(properties: properties) {
+            URLSessionManager.cookieStorage.setCookie(httpCookie)
           }
         }
       }
     }
 
-    if serverUrls.first != UserDefaults.group.string(forKey: SERVER_URL_KEY) {
-      UserDefaults.group.set(serverUrls.first, forKey: SERVER_URL_KEY)
-    }
-
     if headers != UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] {
       UserDefaults.group.set(headers, forKey: HEADERS_KEY)
-      URLSessionManager.shared.recreateSession() // Recreate session to apply custom headers without app restart
+      URLSessionManager.shared.recreateSession()
     }
   }
 }

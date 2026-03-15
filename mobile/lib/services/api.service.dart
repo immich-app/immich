@@ -11,7 +11,7 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-class ApiService implements Authentication {
+class ApiService {
   late ApiClient _apiClient;
 
   late UsersApi usersApi;
@@ -45,7 +45,6 @@ class ApiService implements Authentication {
       setEndpoint(endpoint);
     }
   }
-  String? _accessToken;
   final _log = Logger("ApiService");
 
   Future<void> updateHeaders() async {
@@ -54,11 +53,8 @@ class ApiService implements Authentication {
   }
 
   setEndpoint(String endpoint) {
-    _apiClient = ApiClient(basePath: endpoint, authentication: this);
+    _apiClient = ApiClient(basePath: endpoint);
     _apiClient.client = NetworkRepository.client;
-    if (_accessToken != null) {
-      setAccessToken(_accessToken!);
-    }
     usersApi = UsersApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
     oAuthApi = AuthenticationApi(_apiClient);
@@ -157,11 +153,6 @@ class ApiService implements Authentication {
     return "";
   }
 
-  Future<void> setAccessToken(String accessToken) async {
-    _accessToken = accessToken;
-    await Store.put(StoreKey.accessToken, accessToken);
-  }
-
   Future<void> setDeviceInfoHeader() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
@@ -185,10 +176,6 @@ class ApiService implements Authentication {
     if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
       urls.add(serverEndpoint);
     }
-    final serverUrl = Store.tryGet(StoreKey.serverUrl);
-    if (serverUrl != null && serverUrl.isNotEmpty) {
-      urls.add(serverUrl);
-    }
     final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
     if (localEndpoint != null && localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
@@ -205,28 +192,12 @@ class ApiService implements Authentication {
   }
 
   static Map<String, String> getRequestHeaders() {
-    var accessToken = Store.get(StoreKey.accessToken, "");
     var customHeadersStr = Store.get(StoreKey.customHeaders, "");
-    var header = <String, String>{};
-    if (accessToken.isNotEmpty) {
-      header['x-immich-user-token'] = accessToken;
-    }
-
     if (customHeadersStr.isEmpty) {
-      return header;
+      return const {};
     }
 
-    var customHeaders = jsonDecode(customHeadersStr) as Map;
-    customHeaders.forEach((key, value) {
-      header[key] = value;
-    });
-
-    return header;
-  }
-
-  @override
-  Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
-    return Future.value();
+    return (jsonDecode(customHeadersStr) as Map).cast<String, String>();
   }
 
   ApiClient get apiClient => _apiClient;

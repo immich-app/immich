@@ -3,7 +3,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getContentMetrics, getNaturalSize } from '$lib/utils/container-utils';
+  import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
@@ -74,6 +74,7 @@
 
     canvas.add(faceRect);
     canvas.setActiveObject(faceRect);
+    setDefaultFaceRectanglePosition(faceRect);
   };
 
   onMount(async () => {
@@ -81,16 +82,31 @@
     await getPeople();
   });
 
-  $effect(() => {
-    const metrics = getContentMetrics(htmlElement);
-
-    const imageBoundingBox = {
-      top: metrics.offsetY,
-      left: metrics.offsetX,
-      width: metrics.contentWidth,
-      height: metrics.contentHeight,
+  const imageContentMetrics = $derived.by(() => {
+    const natural = getNaturalSize(htmlElement);
+    const container = { width: containerWidth, height: containerHeight };
+    const { width: contentWidth, height: contentHeight } = scaleToFit(natural, container);
+    return {
+      contentWidth,
+      contentHeight,
+      offsetX: (containerWidth - contentWidth) / 2,
+      offsetY: (containerHeight - contentHeight) / 2,
     };
+  });
 
+  const setDefaultFaceRectanglePosition = (faceRect: Rect) => {
+    const { offsetX, offsetY } = imageContentMetrics;
+
+    faceRect.set({
+      top: offsetY + 200,
+      left: offsetX + 200,
+    });
+
+    faceRect.setCoords();
+    positionFaceSelector();
+  };
+
+  $effect(() => {
     if (!canvas) {
       return;
     }
@@ -104,14 +120,20 @@
       return;
     }
 
-    faceRect.set({
-      top: imageBoundingBox.top + 200,
-      left: imageBoundingBox.left + 200,
-    });
-
-    faceRect.setCoords();
-    positionFaceSelector();
+    if (!isFaceRectIntersectingCanvas(faceRect, canvas)) {
+      setDefaultFaceRectanglePosition(faceRect);
+    }
   });
+
+  const isFaceRectIntersectingCanvas = (faceRect: Rect, canvas: Canvas) => {
+    const faceBox = faceRect.getBoundingRect();
+    return !(
+      0 > faceBox.left + faceBox.width ||
+      0 > faceBox.top + faceBox.height ||
+      canvas.width < faceBox.left ||
+      canvas.height < faceBox.top
+    );
+  };
 
   const cancel = () => {
     isFaceEditMode.value = false;
@@ -214,13 +236,13 @@
     }
 
     const { left, top, width, height } = faceRect.getBoundingRect();
-    const metrics = getContentMetrics(htmlElement);
+    const { offsetX, offsetY, contentWidth, contentHeight } = imageContentMetrics;
     const natural = getNaturalSize(htmlElement);
 
-    const scaleX = natural.width / metrics.contentWidth;
-    const scaleY = natural.height / metrics.contentHeight;
-    const imageX = (left - metrics.offsetX) * scaleX;
-    const imageY = (top - metrics.offsetY) * scaleY;
+    const scaleX = natural.width / contentWidth;
+    const scaleY = natural.height / contentHeight;
+    const imageX = (left - offsetX) * scaleX;
+    const imageY = (top - offsetY) * scaleY;
 
     return {
       imageWidth: natural.width,

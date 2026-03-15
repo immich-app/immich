@@ -1,9 +1,10 @@
-import { editManager, type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
+import { type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
 import { normalizeTransformEdits } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
 import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
+import { clamp } from 'lodash-es';
 import { tick } from 'svelte';
 
 export type CropAspectRatio =
@@ -37,17 +38,27 @@ type RegionConvertParams = {
   to: ImageDimensions;
 };
 
+export enum ResizeBoundary {
+  None = 'none',
+  TopLeft = 'top-left',
+  TopRight = 'top-right',
+  BottomLeft = 'bottom-left',
+  BottomRight = 'bottom-right',
+  Left = 'left',
+  Right = 'right',
+  Top = 'top',
+  Bottom = 'bottom',
+}
+
 class TransformManager implements EditToolManager {
   canReset: boolean = $derived.by(() => this.checkEdits());
   hasChanges: boolean = $state(false);
 
-  darkenLevel = $state(0.65);
   isInteracting = $state(false);
   isDragging = $state(false);
   animationFrame = $state<ReturnType<typeof requestAnimationFrame> | null>(null);
-  canvasCursor = $state('default');
-  dragOffset = $state({ x: 0, y: 0 });
-  resizeSide = $state('');
+  dragAnchor = $state({ x: 0, y: 0 });
+  resizeSide = $state(ResizeBoundary.None);
   imgElement = $state<HTMLImageElement | null>(null);
   cropAreaEl = $state<HTMLElement | null>(null);
   overlayEl = $state<HTMLElement | null>(null);
@@ -69,7 +80,6 @@ class TransformManager implements EditToolManager {
     const newAngle = this.imageRotation % 360;
     return newAngle < 0 ? newAngle + 360 : newAngle;
   });
-  orientationChanged = $derived.by(() => this.normalizedRotation % 180 > 0);
 
   edits = $derived.by(() => this.getEdits());
 
@@ -81,9 +91,9 @@ class TransformManager implements EditToolManager {
       return;
     }
 
-    const newCrop = transformManager.recalculateCrop(aspectRatio);
+    const newCrop = this.recalculateCrop(aspectRatio);
     if (newCrop) {
-      transformManager.animateCropChange(this.cropAreaEl, this.region, newCrop);
+      this.animateCropChange(newCrop);
       this.region = newCrop;
     }
   }
@@ -216,17 +226,11 @@ class TransformManager implements EditToolManager {
   }
 
   reset() {
-    this.darkenLevel = 0.65;
     this.isInteracting = false;
     this.animationFrame = null;
-    this.canvasCursor = 'default';
-    this.dragOffset = { x: 0, y: 0 };
-    this.resizeSide = '';
+    this.dragAnchor = { x: 0, y: 0 };
+    this.resizeSide = ResizeBoundary.None;
     this.imgElement = null;
-    if (this.cropAreaEl) {
-      this.cropAreaEl.style.cursor = '';
-    }
-    document.body.style.cursor = '';
     this.cropAreaEl = null;
     this.isDragging = false;
     this.overlayEl = null;
@@ -295,12 +299,12 @@ class TransformManager implements EditToolManager {
     };
   }
 
-  animateCropChange(element: HTMLElement, from: Region, to: Region, duration = 100) {
-    const cropFrame = element.querySelector('.crop-frame') as HTMLElement;
-    if (!cropFrame) {
+  animateCropChange(to: Region, duration = 100) {
+    if (!this.cropFrame) {
       return;
     }
 
+    const from = this.region;
     const startTime = performance.now();
     const initialCrop = { ...from };
 
@@ -334,28 +338,6 @@ class TransformManager implements EditToolManager {
     return { newWidth, newHeight };
   }
 
-  // Calculate constrained dimensions based on aspect ratio and limits
-  getConstrainedDimensions(
-    desiredWidth: number,
-    desiredHeight: number,
-    maxWidth: number,
-    maxHeight: number,
-    minSize = 50,
-  ) {
-    const { newWidth, newHeight } = this.adjustDimensions(
-      desiredWidth,
-      desiredHeight,
-      this.cropAspectRatio,
-      maxWidth,
-      maxHeight,
-      minSize,
-    );
-    return {
-      width: Math.max(minSize, Math.min(newWidth, maxWidth)),
-      height: Math.max(minSize, Math.min(newHeight, maxHeight)),
-    };
-  }
-
   adjustDimensions(
     newWidth: number,
     newHeight: number,
@@ -364,49 +346,45 @@ class TransformManager implements EditToolManager {
     yLimit: number,
     minSize: number,
   ) {
+    if (aspectRatio === 'free') {
+      return {
+        newWidth: clamp(newWidth, minSize, xLimit),
+        newHeight: clamp(newHeight, minSize, yLimit),
+      };
+    }
+
     let w = newWidth;
     let h = newHeight;
 
-    let aspectMultiplier: number;
+    const [ratioWidth, ratioHeight] = aspectRatio.split(':').map(Number);
+    const aspectMultiplier = ratioWidth && ratioHeight ? ratioWidth / ratioHeight : w / h;
 
-    if (aspectRatio === 'free') {
-      aspectMultiplier = newWidth / newHeight;
-    } else {
-      const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
-      aspectMultiplier = widthRatio && heightRatio ? widthRatio / heightRatio : newWidth / newHeight;
-    }
-
-    if (aspectRatio !== 'free') {
-      h = w / aspectMultiplier;
+    h = w / aspectMultiplier;
+    // When dragging a corner, use the biggest region that fits 'inside' the mouse location.
+    if (h < newHeight) {
+      h = newHeight;
+      w = h * aspectMultiplier;
     }
 
     if (w > xLimit) {
       w = xLimit;
-      if (aspectRatio !== 'free') {
-        h = w / aspectMultiplier;
-      }
+      h = w / aspectMultiplier;
     }
     if (h > yLimit) {
       h = yLimit;
-      if (aspectRatio !== 'free') {
-        w = h * aspectMultiplier;
-      }
+      w = h * aspectMultiplier;
     }
 
     if (w < minSize) {
       w = minSize;
-      if (aspectRatio !== 'free') {
-        h = w / aspectMultiplier;
-      }
+      h = w / aspectMultiplier;
     }
     if (h < minSize) {
       h = minSize;
-      if (aspectRatio !== 'free') {
-        w = h * aspectMultiplier;
-      }
+      w = h * aspectMultiplier;
     }
 
-    if (aspectRatio !== 'free' && w / h !== aspectMultiplier) {
+    if (w / h !== aspectMultiplier) {
       if (w < minSize) {
         h = w / aspectMultiplier;
       }
@@ -428,10 +406,6 @@ class TransformManager implements EditToolManager {
     this.cropFrame.style.width = `${crop.width}px`;
     this.cropFrame.style.height = `${crop.height}px`;
 
-    this.drawOverlay(crop);
-  }
-
-  drawOverlay(crop: Region) {
     if (!this.overlayEl) {
       return;
     }
@@ -465,7 +439,6 @@ class TransformManager implements EditToolManager {
       const cropFrameEl = this.cropFrame;
       cropFrameEl?.classList.add('transition');
       this.region = this.normalizeCropArea(scale);
-      cropFrameEl?.classList.add('transition');
       cropFrameEl?.addEventListener('transitionend', () => cropFrameEl?.classList.remove('transition'), {
         passive: true,
       });
@@ -540,7 +513,7 @@ class TransformManager implements EditToolManager {
   normalizeCropArea(scale: number) {
     const img = this.imgElement;
     if (!img) {
-      return { ...this.region };
+      return this.region;
     }
 
     const scaleRatio = scale / this.cropImageScale;
@@ -576,38 +549,17 @@ class TransformManager implements EditToolManager {
     this.draw();
   }
 
-  handleMouseDown(e: MouseEvent) {
-    const canvas = this.cropAreaEl;
-    if (!canvas) {
+  handleMouseDownOn(e: MouseEvent, resizeBoundary: ResizeBoundary) {
+    if (e.button !== 0) {
       return;
     }
 
-    const { mouseX, mouseY } = this.getMousePosition(e);
-
-    const {
-      onLeftBoundary,
-      onRightBoundary,
-      onTopBoundary,
-      onBottomBoundary,
-      onTopLeftCorner,
-      onTopRightCorner,
-      onBottomLeftCorner,
-      onBottomRightCorner,
-    } = this.isOnCropBoundary(mouseX, mouseY);
-
-    if (
-      onTopLeftCorner ||
-      onTopRightCorner ||
-      onBottomLeftCorner ||
-      onBottomRightCorner ||
-      onLeftBoundary ||
-      onRightBoundary ||
-      onTopBoundary ||
-      onBottomBoundary
-    ) {
-      this.setResizeSide(mouseX, mouseY);
-    } else if (this.isInCropArea(mouseX, mouseY)) {
-      this.startDragging(mouseX, mouseY);
+    this.isInteracting = true;
+    this.resizeSide = resizeBoundary;
+    if (resizeBoundary === ResizeBoundary.None) {
+      this.isDragging = true;
+      const { mouseX, mouseY } = this.getMousePosition(e);
+      this.dragAnchor = { x: mouseX - this.region.x, y: mouseY - this.region.y };
     }
 
     document.body.style.userSelect = 'none';
@@ -615,20 +567,16 @@ class TransformManager implements EditToolManager {
   }
 
   handleMouseMove(e: MouseEvent) {
-    const canvas = this.cropAreaEl;
-    if (!canvas) {
+    if (!this.cropAreaEl) {
       return;
     }
 
-    const resizeSideValue = this.resizeSide;
     const { mouseX, mouseY } = this.getMousePosition(e);
 
     if (this.isDragging) {
       this.moveCrop(mouseX, mouseY);
-    } else if (resizeSideValue) {
+    } else if (this.resizeSide !== ResizeBoundary.None) {
       this.resizeCrop(mouseX, mouseY);
-    } else {
-      this.updateCursor(mouseX, mouseY);
     }
   }
 
@@ -638,131 +586,42 @@ class TransformManager implements EditToolManager {
 
     this.isInteracting = false;
     this.isDragging = false;
-    this.resizeSide = '';
-    this.fadeOverlay(true); // Darken the background
+    this.resizeSide = ResizeBoundary.None;
   }
 
   getMousePosition(e: MouseEvent) {
-    let offsetX = e.clientX;
-    let offsetY = e.clientY;
-    const clienRect = this.cropAreaEl?.getBoundingClientRect();
-    const rotateDeg = this.normalizedRotation;
-
-    if (rotateDeg == 90) {
-      offsetX = e.clientY - (clienRect?.top ?? 0);
-      offsetY = window.innerWidth - e.clientX - (window.innerWidth - (clienRect?.right ?? 0));
-    } else if (rotateDeg == 180) {
-      offsetX = window.innerWidth - e.clientX - (window.innerWidth - (clienRect?.right ?? 0));
-      offsetY = window.innerHeight - e.clientY - (window.innerHeight - (clienRect?.bottom ?? 0));
-    } else if (rotateDeg == 270) {
-      offsetX = window.innerHeight - e.clientY - (window.innerHeight - (clienRect?.bottom ?? 0));
-      offsetY = e.clientX - (clienRect?.left ?? 0);
-    } else if (rotateDeg == 0) {
-      offsetX -= clienRect?.left ?? 0;
-      offsetY -= clienRect?.top ?? 0;
+    if (!this.cropAreaEl) {
+      throw new Error('Crop area is undefined');
     }
-    return { mouseX: offsetX, mouseY: offsetY };
-  }
+    const clientRect = this.cropAreaEl.getBoundingClientRect();
 
-  // Boundary detection helpers
-  private isInRange(value: number, target: number, sensitivity: number): boolean {
-    return value >= target - sensitivity && value <= target + sensitivity;
-  }
-
-  private isWithinBounds(value: number, min: number, max: number): boolean {
-    return value >= min && value <= max;
-  }
-
-  isOnCropBoundary(mouseX: number, mouseY: number) {
-    const { x, y, width, height } = this.region;
-    const sensitivity = 10;
-    const cornerSensitivity = 15;
-    const { width: imgWidth, height: imgHeight } = this.cropImageSize;
-
-    const outOfBound = mouseX > imgWidth || mouseY > imgHeight || mouseX < 0 || mouseY < 0;
-    if (outOfBound) {
-      return {
-        onLeftBoundary: false,
-        onRightBoundary: false,
-        onTopBoundary: false,
-        onBottomBoundary: false,
-        onTopLeftCorner: false,
-        onTopRightCorner: false,
-        onBottomLeftCorner: false,
-        onBottomRightCorner: false,
-      };
+    switch (this.normalizedRotation) {
+      case 90: {
+        return {
+          mouseX: e.clientY - clientRect.top,
+          mouseY: -e.clientX + clientRect.right,
+        };
+      }
+      case 180: {
+        return {
+          mouseX: -e.clientX + clientRect.right,
+          mouseY: -e.clientY + clientRect.bottom,
+        };
+      }
+      case 270: {
+        return {
+          mouseX: -e.clientY + clientRect.bottom,
+          mouseY: e.clientX - clientRect.left,
+        };
+      }
+      // also case 0:
+      default: {
+        return {
+          mouseX: e.clientX - clientRect.left,
+          mouseY: e.clientY - clientRect.top,
+        };
+      }
     }
-
-    const onLeftBoundary = this.isInRange(mouseX, x, sensitivity) && this.isWithinBounds(mouseY, y, y + height);
-    const onRightBoundary =
-      this.isInRange(mouseX, x + width, sensitivity) && this.isWithinBounds(mouseY, y, y + height);
-    const onTopBoundary = this.isInRange(mouseY, y, sensitivity) && this.isWithinBounds(mouseX, x, x + width);
-    const onBottomBoundary =
-      this.isInRange(mouseY, y + height, sensitivity) && this.isWithinBounds(mouseX, x, x + width);
-
-    const onTopLeftCorner =
-      this.isInRange(mouseX, x, cornerSensitivity) && this.isInRange(mouseY, y, cornerSensitivity);
-    const onTopRightCorner =
-      this.isInRange(mouseX, x + width, cornerSensitivity) && this.isInRange(mouseY, y, cornerSensitivity);
-    const onBottomLeftCorner =
-      this.isInRange(mouseX, x, cornerSensitivity) && this.isInRange(mouseY, y + height, cornerSensitivity);
-    const onBottomRightCorner =
-      this.isInRange(mouseX, x + width, cornerSensitivity) && this.isInRange(mouseY, y + height, cornerSensitivity);
-
-    return {
-      onLeftBoundary,
-      onRightBoundary,
-      onTopBoundary,
-      onBottomBoundary,
-      onTopLeftCorner,
-      onTopRightCorner,
-      onBottomLeftCorner,
-      onBottomRightCorner,
-    };
-  }
-
-  isInCropArea(mouseX: number, mouseY: number) {
-    const { x, y, width, height } = this.region;
-    return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
-  }
-
-  setResizeSide(mouseX: number, mouseY: number) {
-    const {
-      onLeftBoundary,
-      onRightBoundary,
-      onTopBoundary,
-      onBottomBoundary,
-      onTopLeftCorner,
-      onTopRightCorner,
-      onBottomLeftCorner,
-      onBottomRightCorner,
-    } = this.isOnCropBoundary(mouseX, mouseY);
-
-    if (onTopLeftCorner) {
-      this.resizeSide = 'top-left';
-    } else if (onTopRightCorner) {
-      this.resizeSide = 'top-right';
-    } else if (onBottomLeftCorner) {
-      this.resizeSide = 'bottom-left';
-    } else if (onBottomRightCorner) {
-      this.resizeSide = 'bottom-right';
-    } else if (onLeftBoundary) {
-      this.resizeSide = 'left';
-    } else if (onRightBoundary) {
-      this.resizeSide = 'right';
-    } else if (onTopBoundary) {
-      this.resizeSide = 'top';
-    } else if (onBottomBoundary) {
-      this.resizeSide = 'bottom';
-    }
-  }
-
-  startDragging(mouseX: number, mouseY: number) {
-    this.isDragging = true;
-    const crop = this.region;
-    this.isInteracting = true;
-    this.dragOffset = { x: mouseX - crop.x, y: mouseY - crop.y };
-    this.fadeOverlay(false);
   }
 
   moveCrop(mouseX: number, mouseY: number) {
@@ -772,102 +631,116 @@ class TransformManager implements EditToolManager {
     }
 
     this.hasChanges = true;
-    const newX = Math.max(0, Math.min(mouseX - this.dragOffset.x, cropArea.clientWidth - this.region.width));
-    const newY = Math.max(0, Math.min(mouseY - this.dragOffset.y, cropArea.clientHeight - this.region.height));
-
-    this.region = {
-      ...this.region,
-      x: newX,
-      y: newY,
-    };
+    this.region.x = clamp(mouseX - this.dragAnchor.x, 0, cropArea.clientWidth - this.region.width);
+    this.region.y = clamp(mouseY - this.dragAnchor.y, 0, cropArea.clientHeight - this.region.height);
 
     this.draw();
   }
 
   resizeCrop(mouseX: number, mouseY: number) {
     const canvas = this.cropAreaEl;
-    const crop = this.region;
-    const resizeSideValue = this.resizeSide;
-    if (!canvas || !resizeSideValue) {
+    const currentCrop = this.region;
+    if (!canvas) {
       return;
     }
-    this.fadeOverlay(false);
+    this.isInteracting = true;
 
     this.hasChanges = true;
-    const { x, y, width, height } = crop;
+    const { x, y, width, height } = currentCrop;
     const minSize = 50;
-    let newRegion = { ...crop };
+    let newRegion = { ...currentCrop };
 
-    switch (resizeSideValue) {
-      case 'left': {
-        const desiredWidth = width + (x - mouseX);
-        if (desiredWidth >= minSize && mouseX >= 0) {
-          const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
-          const finalWidth = Math.max(minSize, Math.min(w, canvas.clientWidth));
-          const finalHeight = Math.max(minSize, Math.min(h, canvas.clientHeight));
-          newRegion = {
-            x: Math.max(0, x + width - finalWidth),
-            y,
-            width: finalWidth,
-            height: finalHeight,
-          };
-        }
+    let desiredWidth = width;
+    let desiredHeight = height;
+
+    // Width
+    switch (this.resizeSide) {
+      case ResizeBoundary.Left:
+      case ResizeBoundary.TopLeft:
+      case ResizeBoundary.BottomLeft: {
+        desiredWidth = Math.max(minSize, width + (x - Math.max(mouseX, 0)));
         break;
       }
-      case 'right': {
-        const desiredWidth = mouseX - x;
-        if (desiredWidth >= minSize && mouseX <= canvas.clientWidth) {
-          const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
-          newRegion = {
-            ...newRegion,
-            width: Math.max(minSize, Math.min(w, canvas.clientWidth - x)),
-            height: Math.max(minSize, Math.min(h, canvas.clientHeight)),
-          };
-        }
+      case ResizeBoundary.Right:
+      case ResizeBoundary.TopRight:
+      case ResizeBoundary.BottomRight: {
+        desiredWidth = Math.max(minSize, Math.max(mouseX, 0) - x);
         break;
       }
-      case 'top': {
-        const desiredHeight = height + (y - mouseY);
-        if (desiredHeight >= minSize && mouseY >= 0) {
-          const { newWidth: w, newHeight: h } = this.adjustDimensions(
-            width,
-            desiredHeight,
-            this.cropAspectRatio,
-            canvas.clientWidth,
-            canvas.clientHeight,
-            minSize,
-          );
-          newRegion = {
-            x,
-            y: Math.max(0, y + height - h),
-            width: w,
-            height: h,
-          };
-        }
+    }
+
+    // Height
+    switch (this.resizeSide) {
+      case ResizeBoundary.Top:
+      case ResizeBoundary.TopLeft:
+      case ResizeBoundary.TopRight: {
+        desiredHeight = Math.max(minSize, height + (y - Math.max(mouseY, 0)));
         break;
       }
-      case 'bottom': {
-        const desiredHeight = mouseY - y;
-        if (desiredHeight >= minSize && mouseY <= canvas.clientHeight) {
-          const { newWidth: w, newHeight: h } = this.adjustDimensions(
-            width,
-            desiredHeight,
-            this.cropAspectRatio,
-            canvas.clientWidth,
-            canvas.clientHeight - y,
-            minSize,
-          );
-          newRegion = {
-            ...newRegion,
-            width: w,
-            height: h,
-          };
-        }
+      case ResizeBoundary.Bottom:
+      case ResizeBoundary.BottomLeft:
+      case ResizeBoundary.BottomRight: {
+        desiredHeight = Math.max(minSize, Math.max(mouseY, 0) - y);
         break;
       }
-      case 'top-left': {
-        const desiredWidth = width + (x - Math.max(mouseX, 0));
-        const desiredHeight = height + (y - Math.max(mouseY, 0));
+    }
+
+    // Old
+    switch (this.resizeSide) {
+      case ResizeBoundary.Left: {
+        const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
+        const finalWidth = clamp(w, minSize, canvas.clientWidth);
+        newRegion = {
+          x: Math.max(0, x + width - finalWidth),
+          y,
+          width: finalWidth,
+          height: clamp(h, minSize, canvas.clientHeight),
+        };
+        break;
+      }
+      case ResizeBoundary.Right: {
+        const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
+        newRegion = {
+          ...newRegion,
+          width: clamp(w, minSize, canvas.clientWidth - x),
+          height: clamp(h, minSize, canvas.clientHeight),
+        };
+        break;
+      }
+      case ResizeBoundary.Top: {
+        const { newWidth: w, newHeight: h } = this.adjustDimensions(
+          desiredWidth,
+          desiredHeight,
+          this.cropAspectRatio,
+          canvas.clientWidth,
+          canvas.clientHeight,
+          minSize,
+        );
+        newRegion = {
+          x,
+          y: Math.max(0, y + height - h),
+          width: w,
+          height: h,
+        };
+        break;
+      }
+      case ResizeBoundary.Bottom: {
+        const { newWidth: w, newHeight: h } = this.adjustDimensions(
+          desiredWidth,
+          desiredHeight,
+          this.cropAspectRatio,
+          canvas.clientWidth,
+          canvas.clientHeight - y,
+          minSize,
+        );
+        newRegion = {
+          ...newRegion,
+          width: w,
+          height: h,
+        };
+        break;
+      }
+      case ResizeBoundary.TopLeft: {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           desiredWidth,
           desiredHeight,
@@ -884,9 +757,7 @@ class TransformManager implements EditToolManager {
         };
         break;
       }
-      case 'top-right': {
-        const desiredWidth = Math.max(mouseX, 0) - x;
-        const desiredHeight = height + (y - Math.max(mouseY, 0));
+      case ResizeBoundary.TopRight: {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           desiredWidth,
           desiredHeight,
@@ -903,9 +774,7 @@ class TransformManager implements EditToolManager {
         };
         break;
       }
-      case 'bottom-left': {
-        const desiredWidth = width + (x - Math.max(mouseX, 0));
-        const desiredHeight = Math.max(mouseY, 0) - y;
+      case ResizeBoundary.BottomLeft: {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           desiredWidth,
           desiredHeight,
@@ -922,9 +791,7 @@ class TransformManager implements EditToolManager {
         };
         break;
       }
-      case 'bottom-right': {
-        const desiredWidth = Math.max(mouseX, 0) - x;
-        const desiredHeight = Math.max(mouseY, 0) - y;
+      case ResizeBoundary.BottomRight: {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           desiredWidth,
           desiredHeight,
@@ -950,95 +817,6 @@ class TransformManager implements EditToolManager {
     };
 
     this.draw();
-  }
-
-  updateCursor(mouseX: number, mouseY: number) {
-    if (!this.cropAreaEl) {
-      return;
-    }
-
-    let {
-      onLeftBoundary,
-      onRightBoundary,
-      onTopBoundary,
-      onBottomBoundary,
-      onTopLeftCorner,
-      onTopRightCorner,
-      onBottomLeftCorner,
-      onBottomRightCorner,
-    } = this.isOnCropBoundary(mouseX, mouseY);
-
-    if (this.normalizedRotation == 90) {
-      [onTopBoundary, onRightBoundary, onBottomBoundary, onLeftBoundary] = [
-        onLeftBoundary,
-        onTopBoundary,
-        onRightBoundary,
-        onBottomBoundary,
-      ];
-
-      [onTopLeftCorner, onTopRightCorner, onBottomRightCorner, onBottomLeftCorner] = [
-        onBottomLeftCorner,
-        onTopLeftCorner,
-        onTopRightCorner,
-        onBottomRightCorner,
-      ];
-    } else if (this.normalizedRotation == 180) {
-      [onTopBoundary, onBottomBoundary] = [onBottomBoundary, onTopBoundary];
-      [onLeftBoundary, onRightBoundary] = [onRightBoundary, onLeftBoundary];
-
-      [onTopLeftCorner, onBottomRightCorner] = [onBottomRightCorner, onTopLeftCorner];
-      [onTopRightCorner, onBottomLeftCorner] = [onBottomLeftCorner, onTopRightCorner];
-    } else if (this.normalizedRotation == 270) {
-      [onTopBoundary, onRightBoundary, onBottomBoundary, onLeftBoundary] = [
-        onRightBoundary,
-        onBottomBoundary,
-        onLeftBoundary,
-        onTopBoundary,
-      ];
-
-      [onTopLeftCorner, onTopRightCorner, onBottomRightCorner, onBottomLeftCorner] = [
-        onTopRightCorner,
-        onBottomRightCorner,
-        onBottomLeftCorner,
-        onTopLeftCorner,
-      ];
-    }
-
-    let cursorName: string;
-    if (onTopLeftCorner || onBottomRightCorner) {
-      cursorName = 'nwse-resize';
-    } else if (onTopRightCorner || onBottomLeftCorner) {
-      cursorName = 'nesw-resize';
-    } else if (onLeftBoundary || onRightBoundary) {
-      cursorName = 'ew-resize';
-    } else if (onTopBoundary || onBottomBoundary) {
-      cursorName = 'ns-resize';
-    } else if (this.isInCropArea(mouseX, mouseY)) {
-      cursorName = 'move';
-    } else {
-      cursorName = 'default';
-    }
-
-    if (this.canvasCursor != cursorName && this.cropAreaEl && !editManager.isShowingConfirmDialog) {
-      this.canvasCursor = cursorName;
-      document.body.style.cursor = cursorName;
-      this.cropAreaEl.style.cursor = cursorName;
-    }
-  }
-
-  fadeOverlay(toDark: boolean) {
-    const overlay = this.overlayEl;
-    const cropFrame = document.querySelector('.crop-frame');
-
-    if (toDark) {
-      overlay?.classList.remove('light');
-      cropFrame?.classList.remove('resizing');
-    } else {
-      overlay?.classList.add('light');
-      cropFrame?.classList.add('resizing');
-    }
-
-    this.isInteracting = !toDark;
   }
 
   resetCrop() {

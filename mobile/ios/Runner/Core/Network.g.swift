@@ -225,7 +225,7 @@ protocol NetworkApi {
   func removeCertificate(completion: @escaping (Result<Void, Error>) -> Void)
   func hasCertificate() throws -> Bool
   func getClientPointer() throws -> Int64
-  func setRequestHeaders(headers: [String: String], serverUrls: [String]) throws
+  func setRequestHeaders(headers: [String: String], serverUrls: [String], token: String?) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -315,8 +315,9 @@ class NetworkApiSetup {
         let args = message as! [Any?]
         let headersArg = args[0] as! [String: String]
         let serverUrlsArg = args[1] as! [String]
+        let tokenArg: String? = nilOrValue(args[2])
         do {
-          try api.setRequestHeaders(headers: headersArg, serverUrls: serverUrlsArg)
+          try api.setRequestHeaders(headers: headersArg, serverUrls: serverUrlsArg, token: tokenArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
