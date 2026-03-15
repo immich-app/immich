@@ -33,37 +33,37 @@ ffmpeg:
 
 job:
   backgroundTask:
-    concurrency: 15
+    concurrency: 5
   smartSearch:
-    concurrency: 6
+    concurrency: 2
   metadataExtraction:
-    concurrency: 15
+    concurrency: 5
   faceDetection:
-    concurrency: 6
+    concurrency: 2
   search:
-    concurrency: 15
+    concurrency: 5
   sidecar:
-    concurrency: 15
+    concurrency: 5
   library:
-    concurrency: 15
+    concurrency: 5
   migration:
-    concurrency: 15
+    concurrency: 5
   assetThumbnailGeneration:
-    concurrency: 25
-  personThumbnailGeneration:
-    concurrency: 6
-  videoConversion:
-    concurrency: 6
-  notification:
-    concurrency: 15
-  ocr:
     concurrency: 3
+  personThumbnailGeneration:
+    concurrency: 2
+  videoConversion:
+    concurrency: 1
+  notification:
+    concurrency: 5
+  ocr:
+    concurrency: 1
   workflow:
-    concurrency: 15
+    concurrency: 5
   s3Upload:
-    concurrency: 15
+    concurrency: 3
   encryption:
-    concurrency: 6
+    concurrency: 2
 
 oauth:
   enabled: true
