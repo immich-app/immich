@@ -244,7 +244,7 @@ export async function disconnectDb(): Promise<void> {
 }
 
 export interface MigrationState {
-  assets: { id: string; originalPath: string; encodedVideoPath: string | null }[];
+  assets: { id: string; originalPath: string }[];
   assetFiles: { id: string; path: string; type: string }[];
   persons: { id: string; thumbnailPath: string }[];
   users: { id: string; profileImagePath: string }[];
@@ -253,9 +253,7 @@ export interface MigrationState {
 
 export async function captureState(): Promise<MigrationState> {
   const [assets, assetFiles, persons, users, migrationLogs] = await Promise.all([
-    queryDb<{ id: string; originalPath: string; encodedVideoPath: string | null }>(
-      'SELECT id, "originalPath", "encodedVideoPath" FROM asset ORDER BY id',
-    ),
+    queryDb<{ id: string; originalPath: string }>('SELECT id, "originalPath" FROM asset ORDER BY id'),
     queryDb<{ id: string; path: string; type: string }>('SELECT id, path, type FROM asset_file ORDER BY id'),
     queryDb<{ id: string; thumbnailPath: string }>(
       'SELECT id, "thumbnailPath" FROM person WHERE "thumbnailPath" != \'\' ORDER BY id',
