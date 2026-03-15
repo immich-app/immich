@@ -1,11 +1,13 @@
+import AdjustTool from '$lib/components/asset-viewer/editor/adjust-tool/adjust-tool.svelte';
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
+import { adjustManager } from '$lib/managers/edit/adjust-manager.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { getFormatter } from '$lib/utils/i18n';
 import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
-import { mdiCropRotate } from '@mdi/js';
+import { mdiCropRotate, mdiTune } from '@mdi/js';
 import type { Component } from 'svelte';
 
 export type EditAction = AssetEditsCreateDto['edits'][number];
@@ -22,6 +24,7 @@ export interface EditToolManager {
 
 export enum EditToolType {
   Transform = 'transform',
+  Adjust = 'adjust',
 }
 
 export interface EditTool {
@@ -38,6 +41,12 @@ export class EditManager {
       icon: mdiCropRotate,
       component: TransformTool,
       manager: transformManager,
+    },
+    {
+      type: EditToolType.Adjust,
+      icon: mdiTune,
+      component: AdjustTool,
+      manager: adjustManager,
     },
   ];
 

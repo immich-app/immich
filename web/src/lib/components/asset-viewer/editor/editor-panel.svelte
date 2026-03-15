@@ -1,12 +1,14 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
+  import { editManager, EditToolType, type EditTool } from '$lib/managers/edit/edit-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+
+  let currentEdits = $state<Parameters<typeof editManager.activateTool>[2] | null>(null);
 
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
@@ -23,8 +25,15 @@
 
   onMount(async () => {
     const edits = await getAssetEdits({ id: asset.id });
+    currentEdits = edits;
     await editManager.activateTool(EditToolType.Transform, asset, edits);
   });
+
+  async function switchTool(tool: EditTool) {
+    if (currentEdits) {
+      await editManager.activateTool(tool.type, asset, currentEdits);
+    }
+  }
 
   onDestroy(() => {
     editManager.cleanup();
@@ -64,6 +73,22 @@
     </HStack>
     <Button shape="round" size="small" onclick={applyEdits} loading={editManager.isApplyingEdits}>{$t('save')}</Button>
   </HStack>
+
+  <section class="px-2 mt-2">
+    <HStack gap={1}>
+      {#each editManager.tools as tool (tool.type)}
+        <IconButton
+          shape="round"
+          size="small"
+          variant={editManager.selectedTool?.type === tool.type ? 'filled' : 'ghost'}
+          color={editManager.selectedTool?.type === tool.type ? 'primary' : 'secondary'}
+          icon={tool.icon}
+          aria-label={tool.type}
+          onclick={() => switchTool(tool)}
+        />
+      {/each}
+    </HStack>
+  </section>
 
   <section>
     {#if editManager.selectedTool}

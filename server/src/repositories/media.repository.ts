@@ -146,7 +146,9 @@ export class MediaRepository {
   }
 
   private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    const affineEditOperations = edits.filter(
+      (edit) => edit.action !== 'crop' && edit.action !== 'adjust' && edit.action !== 'auto-enhance' && edit.action !== 'filter',
+    );
     const matrix = createAffineMatrix(affineEditOperations);
 
     const crop = edits.find((edit) => edit.action === 'crop');
@@ -166,6 +168,40 @@ export class MediaRepository {
       [a, b],
       [c, d],
     ]);
+
+    // Apply color adjustments
+    const adjust = edits.find((edit) => edit.action === 'adjust');
+    if (adjust && adjust.action === 'adjust') {
+      const { brightness, saturation, hue, contrast, sharpness } = adjust.parameters;
+
+      pipeline = pipeline.modulate({ brightness, saturation, hue });
+
+      if (contrast !== 1.0) {
+        pipeline = pipeline.linear(contrast, -(128 * (contrast - 1)));
+      }
+
+      if (sharpness > 0) {
+        pipeline = pipeline.sharpen({ sigma: sharpness });
+      }
+    }
+
+    // Apply auto-enhance
+    const autoEnhance = edits.find((edit) => edit.action === 'auto-enhance');
+    if (autoEnhance) {
+      pipeline = pipeline.normalize().sharpen({ sigma: 1.0 });
+    }
+
+    // Apply filter (color matrix via recomb)
+    const filter = edits.find((edit) => edit.action === 'filter');
+    if (filter && filter.action === 'filter') {
+      const m = filter.parameters.matrix;
+      // Extract 3x3 submatrix from 4x5 color matrix (rows 0-2, cols 0-2)
+      pipeline = pipeline.recomb([
+        [m[0], m[1], m[2]],
+        [m[5], m[6], m[7]],
+        [m[10], m[11], m[12]],
+      ]);
+    }
 
     return pipeline;
   }
