@@ -45,9 +45,9 @@ jobs:
       - name: Extract bucket name from fly.toml
         id: bucket
         run: |
-          BUCKET_NAME=$(grep 'STORAGE_S3_BUCKET' fly.toml | sed "s/.*= *['\"]\\([^'\"]*\\)['\"].*/\\1/")
+          BUCKET_NAME=$(grep 'STORAGE_S3_HOT_BUCKET' fly.toml | sed "s/.*= *['\"]\\([^'\"]*\\)['\"].*/\\1/")
           if [ -z "$BUCKET_NAME" ]; then
-            echo "ERROR: Could not find STORAGE_S3_BUCKET in fly.toml"
+            echo "ERROR: Could not find STORAGE_S3_HOT_BUCKET in fly.toml"
             exit 1
           fi
           echo "name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
