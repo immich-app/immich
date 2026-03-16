@@ -589,39 +589,45 @@ async function phaseMigrateToS3(): Promise<void> {
     }
   }
 
-  // API access: each asset original should be accessible (admin)
-  console.log('  Verifying API access to assets (admin)...');
-  for (const asset of state.assets) {
-    const res = await fetch(`${BASE_URL}/assets/${asset.id}/original`, {
-      headers: { Authorization: `Bearer ${token}` },
-      redirect: 'follow',
-    });
-    if (res.status !== 200) {
-      const body = await res.text();
-      assert.fail(`Expected 200 for asset ${asset.id} original, got ${res.status}: ${body}`);
+  // API access: admin can access their own assets
+  if (savedState.adminAssetIds) {
+    console.log('  Verifying API access to assets (admin)...');
+    for (const id of savedState.adminAssetIds as string[]) {
+      const res = await fetch(`${BASE_URL}/assets/${id}/original`, {
+        headers: { Authorization: `Bearer ${token}` },
+        redirect: 'follow',
+      });
+      if (res.status !== 200) {
+        const body = await res.text();
+        assert.fail(`Expected 200 for admin asset ${id} original, got ${res.status}: ${body}`);
+      }
+      await res.arrayBuffer();
     }
-    await res.arrayBuffer();
   }
 
   // API access: user2 can access their own assets
   if (user2Token && savedState.user2AssetIds) {
     console.log('  Verifying API access to assets (user2)...');
-    for (const id of savedState.user2AssetIds) {
-      const res = await fetch(`${BASE_URL}/assets/${id}/original`, {
-        headers: { Authorization: `Bearer ${user2Token}` },
+    for (const id of savedState.user2AssetIds as string[]) {
+      const res: Response = await fetch(`${BASE_URL}/assets/${id}/original`, {
+        headers: { Authorization: `Bearer ${user2Token as string}` },
         redirect: 'follow',
       });
-      assert.ok(res.status === 200, `Expected 200 for user2 asset ${id} original, got ${res.status}`);
+      if (res.status !== 200) {
+        const body = await res.text();
+        assert.fail(`Expected 200 for user2 asset ${id} original, got ${res.status}: ${body}`);
+      }
       await res.arrayBuffer();
     }
   }
 
-  // Content integrity: download originals and compare SHA-256 hashes
+  // Content integrity: download originals and compare SHA-256 hashes (each user downloads their own)
   if (savedState.contentHashes) {
     console.log('  Verifying content integrity (SHA-256)...');
+    const adminIds = new Set(savedState.adminAssetIds as string[]);
     for (const [assetId, expectedHash] of Object.entries(savedState.contentHashes)) {
-      // Admin can access all assets
-      const content = await downloadAssetOriginal(token, assetId);
+      const dlToken = adminIds.has(assetId) ? token : (user2Token ?? token);
+      const content = await downloadAssetOriginal(dlToken, assetId);
       const actualHash = sha256(content);
       assert.equal(
         actualHash,
@@ -743,38 +749,45 @@ async function phaseMigrateToDisk(): Promise<void> {
     `Expected >= 2 users with profile images after migration, got ${state.users.length}`,
   );
 
-  // API access: each asset original should be accessible (admin)
-  console.log('  Verifying API access to assets (admin)...');
-  for (const asset of state.assets) {
-    const res = await fetch(`${BASE_URL}/assets/${asset.id}/original`, {
-      headers: { Authorization: `Bearer ${token}` },
-      redirect: 'follow',
-    });
-    if (res.status !== 200) {
-      const body = await res.text();
-      assert.fail(`Expected 200 for asset ${asset.id} original, got ${res.status}: ${body}`);
+  // API access: admin can access their own assets
+  if (savedState.adminAssetIds) {
+    console.log('  Verifying API access to assets (admin)...');
+    for (const id of savedState.adminAssetIds as string[]) {
+      const res = await fetch(`${BASE_URL}/assets/${id}/original`, {
+        headers: { Authorization: `Bearer ${token}` },
+        redirect: 'follow',
+      });
+      if (res.status !== 200) {
+        const body = await res.text();
+        assert.fail(`Expected 200 for admin asset ${id} original, got ${res.status}: ${body}`);
+      }
+      await res.arrayBuffer();
     }
-    await res.arrayBuffer();
   }
 
   // API access: user2 can access their own assets
   if (user2Token && savedState.user2AssetIds) {
     console.log('  Verifying API access to assets (user2)...');
-    for (const id of savedState.user2AssetIds) {
-      const res = await fetch(`${BASE_URL}/assets/${id}/original`, {
-        headers: { Authorization: `Bearer ${user2Token}` },
+    for (const id of savedState.user2AssetIds as string[]) {
+      const res: Response = await fetch(`${BASE_URL}/assets/${id}/original`, {
+        headers: { Authorization: `Bearer ${user2Token as string}` },
         redirect: 'follow',
       });
-      assert.ok(res.status === 200, `Expected 200 for user2 asset ${id} original, got ${res.status}`);
+      if (res.status !== 200) {
+        const body = await res.text();
+        assert.fail(`Expected 200 for user2 asset ${id} original, got ${res.status}: ${body}`);
+      }
       await res.arrayBuffer();
     }
   }
 
-  // Content integrity: download originals and compare SHA-256 hashes
+  // Content integrity: download originals and compare SHA-256 hashes (each user downloads their own)
   if (savedState.contentHashes) {
     console.log('  Verifying content integrity (SHA-256)...');
+    const adminIds = new Set(savedState.adminAssetIds as string[]);
     for (const [assetId, expectedHash] of Object.entries(savedState.contentHashes)) {
-      const content = await downloadAssetOriginal(token, assetId);
+      const dlToken = adminIds.has(assetId) ? token : (user2Token ?? token);
+      const content = await downloadAssetOriginal(dlToken, assetId);
       const actualHash = sha256(content);
       assert.equal(
         actualHash,
@@ -1298,18 +1311,21 @@ async function phaseDeleteSourceFalse(): Promise<void> {
     }
   }
 
-  // API access should work (served from S3 now)
-  console.log('  Verifying API access works...');
-  for (const asset of postState.assets) {
-    const res = await fetch(`${BASE_URL}/assets/${asset.id}/original`, {
-      headers: { Authorization: `Bearer ${token}` },
-      redirect: 'follow',
-    });
-    if (res.status !== 200) {
-      const body = await res.text();
-      assert.fail(`Expected 200 for asset ${asset.id} original, got ${res.status}: ${body}`);
+  // API access should work (served from S3 now) — each user accesses their own assets
+  const savedStateLocal = loadState();
+  if (savedStateLocal.adminAssetIds) {
+    console.log('  Verifying API access works (admin)...');
+    for (const id of savedStateLocal.adminAssetIds as string[]) {
+      const res = await fetch(`${BASE_URL}/assets/${id}/original`, {
+        headers: { Authorization: `Bearer ${token}` },
+        redirect: 'follow',
+      });
+      if (res.status !== 200) {
+        const body = await res.text();
+        assert.fail(`Expected 200 for admin asset ${id} original, got ${res.status}: ${body}`);
+      }
+      await res.arrayBuffer();
     }
-    await res.arrayBuffer();
   }
 
   saveState({ lastToS3BatchId: batchId });
@@ -1331,10 +1347,14 @@ async function phaseContentVerify(): Promise<void> {
 
   const contentHashes: Record<string, string> = savedState.contentHashes;
 
-  // Download every asset original via API and compare SHA-256 hashes
+  // Download every asset original via API and compare SHA-256 hashes (each user downloads their own)
+  const adminIds = new Set(savedState.adminAssetIds as string[]);
+  const user2Token = savedState.user2 ? await loginUser(savedState.user2.email, savedState.user2.password) : null;
+
   console.log(`  Verifying content integrity for ${Object.keys(contentHashes).length} assets...`);
   for (const [assetId, expectedHash] of Object.entries(contentHashes)) {
-    const content = await downloadAssetOriginal(token, assetId);
+    const dlToken = adminIds.has(assetId) ? token : (user2Token ?? token);
+    const content = await downloadAssetOriginal(dlToken, assetId);
     const actualHash = sha256(content);
     assert.equal(
       actualHash,
@@ -1344,37 +1364,29 @@ async function phaseContentVerify(): Promise<void> {
     console.log(`  Asset ${assetId}: hash verified (${actualHash.slice(0, 12)}...)`);
   }
 
-  // Verify user2 can also download their own assets with correct content
-  if (savedState.user2 && savedState.user2AssetIds) {
-    console.log('  Verifying user2 content integrity...');
-    const user2Token = await loginUser(savedState.user2.email, savedState.user2.password);
-    for (const assetId of savedState.user2AssetIds) {
-      const expectedHash = contentHashes[assetId];
-      if (!expectedHash) {
-        continue;
-      }
-      const content = await downloadAssetOriginal(user2Token, assetId);
-      const actualHash = sha256(content);
-      assert.equal(
-        actualHash,
-        expectedHash,
-        `User2 content hash mismatch for asset ${assetId}: expected ${expectedHash}, got ${actualHash}`,
-      );
-    }
-    console.log(`  User2 content integrity verified for ${savedState.user2AssetIds.length} assets`);
-  }
-
-  // Verify thumbnail download works (via /assets/:id/thumbnail)
+  // Verify thumbnail download works (via /assets/:id/thumbnail) — each user's own assets
   console.log('  Verifying thumbnail API access...');
-  const state = await captureState();
-  for (const asset of state.assets) {
-    const res = await fetch(`${BASE_URL}/assets/${asset.id}/thumbnail`, {
-      headers: { Authorization: `Bearer ${token}` },
-      redirect: 'follow',
-    });
-    assert.ok(res.status === 200, `Expected 200 for asset ${asset.id} thumbnail, got ${res.status}`);
-    const body = await res.arrayBuffer();
-    assert.ok(body.byteLength > 0, `Expected non-empty thumbnail for asset ${asset.id}`);
+  if (savedState.adminAssetIds) {
+    for (const id of savedState.adminAssetIds as string[]) {
+      const res = await fetch(`${BASE_URL}/assets/${id}/thumbnail`, {
+        headers: { Authorization: `Bearer ${token}` },
+        redirect: 'follow',
+      });
+      assert.ok(res.status === 200, `Expected 200 for admin asset ${id} thumbnail, got ${res.status}`);
+      const body = await res.arrayBuffer();
+      assert.ok(body.byteLength > 0, `Expected non-empty thumbnail for asset ${id}`);
+    }
+  }
+  if (user2Token && savedState.user2AssetIds) {
+    for (const id of savedState.user2AssetIds as string[]) {
+      const res = await fetch(`${BASE_URL}/assets/${id}/thumbnail`, {
+        headers: { Authorization: `Bearer ${user2Token}` },
+        redirect: 'follow',
+      });
+      assert.ok(res.status === 200, `Expected 200 for user2 asset ${id} thumbnail, got ${res.status}`);
+      const body = await res.arrayBuffer();
+      assert.ok(body.byteLength > 0, `Expected non-empty thumbnail for asset ${id}`);
+    }
   }
 
   console.log('=== Phase: Content Verification complete ===');
