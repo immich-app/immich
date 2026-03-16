@@ -49,45 +49,22 @@
 
   const handleInput = (event: Event, index: number) => {
     const target = event.target as HTMLInputElement;
-    let currentPinValue = target.value;
+    const digits = target.value.replaceAll(/\D/g, '');
 
-    if (target.value.length > 1) {
-      currentPinValue = value.slice(0, 1);
-    }
-
-    if (Number.isNaN(Number(value))) {
+    if (digits.length === 0) {
       pinValues[index] = '';
       target.value = '';
+      value = pinValues.join('').trim();
       return;
     }
 
-    pinValues[index] = currentPinValue;
-
-    value = pinValues.join('').trim();
-
-    if (value && index < pinLength - 1) {
-      focusNext(index);
-    }
-
-    if (value.length === pinLength) {
-      onFilled?.(value);
-    }
-  };
-
-  const handlePaste = (event: ClipboardEvent, index: number) => {
-    event.preventDefault();
-    const pasted = (event.clipboardData?.getData('text') ?? '').replaceAll(/\D/g, '');
-    if (pasted.length === 0) {
-      return;
-    }
-
-    for (let i = 0; i < pasted.length && index + i < pinLength; i++) {
-      pinValues[index + i] = pasted[i];
+    for (let i = 0; i < digits.length && index + i < pinLength; i++) {
+      pinValues[index + i] = digits[i];
     }
 
     value = pinValues.join('').trim();
 
-    const lastFilledIndex = Math.min(index + pasted.length, pinLength) - 1;
+    const lastFilledIndex = Math.min(index + digits.length, pinLength) - 1;
     pinCodeInputElements[lastFilledIndex]?.focus();
 
     if (value.length === pinLength) {
@@ -125,15 +102,6 @@
         }
         return;
       }
-      default: {
-        if (event.ctrlKey || event.metaKey || event.altKey) {
-          return;
-        }
-        if (Number.isNaN(Number(event.key))) {
-          event.preventDefault();
-        }
-        break;
-      }
     }
   }
 </script>
@@ -149,14 +117,12 @@
         {type}
         inputmode="numeric"
         pattern="[0-9]*"
-        maxlength="1"
         bind:this={pinCodeInputElements[index]}
         id="pin-code-{index}"
         class="h-12 w-10 rounded-xl border-2 border-suble dark:border-gray-700 text-center text-lg font-medium focus:border-immich-primary focus:ring-primary dark:focus:border-primary font-mono bg-white dark:bg-light"
         bind:value={pinValues[index]}
         onkeydown={handleKeydown}
         oninput={(event) => handleInput(event, index)}
-        onpaste={(event) => handlePaste(event, index)}
         aria-label={`PIN digit ${index + 1} of ${pinLength}${label ? ` for ${label}` : ''}`}
       />
     {/each}
