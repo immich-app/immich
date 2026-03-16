@@ -15,6 +15,7 @@
 </picture>
 </p>
 <h3 align="center">High performance self-hosted photo and video management solution</h3>
+<h4 align="center"><a href="https://demo.opennoodle.de">Try the live demo</a></h4>
 <br/>
 
 > [!NOTE]
