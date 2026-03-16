@@ -22,6 +22,7 @@ class BackupSettings extends HookConsumerWidget {
     final ignoreIcloudAssets = useAppSettingsState(AppSettingsEnum.ignoreIcloudAssets);
     final isAdvancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final albumSync = useAppSettingsState(AppSettingsEnum.syncAlbums);
+    final backupOrderState = useAppSettingsState(AppSettingsEnum.backupOrder);
     final isCorruptCheckInProgress = ref.watch(backupVerificationProvider);
     final isAlbumSyncInProgress = useState(false);
 
@@ -75,6 +76,17 @@ class BackupSettings extends HookConsumerWidget {
               ? const CircularProgressIndicator()
               : ElevatedButton(onPressed: syncAlbums, child: Text('sync'.tr())),
         ),
+      SettingsButtonListTile(
+        icon: Icons.sort_rounded,
+        title: 'backup_order'.tr(),
+        subtileText: backupOrderState.value == 1
+            ? 'backup_order_oldest_first'.tr()
+            : 'backup_order_newest_first'.tr(),
+        buttonText: backupOrderState.value == 1
+            ? 'backup_order_newest_first'.tr()
+            : 'backup_order_oldest_first'.tr(),
+        onButtonTap: () => backupOrderState.value = backupOrderState.value == 1 ? 0 : 1,
+      ),
     ];
 
     return SettingsSubPageScaffold(settings: backupSettings, showDivider: true);

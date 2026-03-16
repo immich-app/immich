@@ -4,6 +4,8 @@ import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -106,7 +108,14 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
       )
-      ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);
+      ..orderBy([
+        (localAsset) {
+          final order = Store.tryGet(StoreKey.backupOrder) ?? 0;
+          return order == 1
+              ? OrderingTerm.asc(localAsset.createdAt)
+              : OrderingTerm.desc(localAsset.createdAt);
+        },
+      ]);
 
     if (onlyHashed) {
       query.where((lae) => lae.checksum.isNotNull());

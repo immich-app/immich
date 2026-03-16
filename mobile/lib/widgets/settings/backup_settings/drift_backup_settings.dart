@@ -48,7 +48,85 @@ class DriftBackupSettings extends ConsumerWidget {
           icon: Icons.sync,
         ),
         const _AlbumSyncActionButton(),
+        const Divider(),
+        const _BackupOrderChoice(),
       ],
+    );
+  }
+}
+
+class _BackupOrderChoice extends ConsumerStatefulWidget {
+  const _BackupOrderChoice();
+
+  @override
+  ConsumerState<_BackupOrderChoice> createState() => _BackupOrderChoiceState();
+}
+
+class _BackupOrderChoiceState extends ConsumerState<_BackupOrderChoice> {
+  late int _order;
+  late StreamSubscription<int?> _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _order = Store.tryGet(StoreKey.backupOrder) ??
+        AppSettingsEnum.backupOrder.defaultValue;
+    _subscription = Store.watch(StoreKey.backupOrder).listen((v) {
+      if (mounted && v != null) setState(() => _order = v);
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  void _showOrderPicker(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text("backup_order".t(context: context)),
+        children: [
+          RadioListTile<int>(
+            title: Text("backup_order_newest_first".t(context: context)),
+            value: 0,
+            groupValue: _order,
+            onChanged: (v) {
+              if (v != null) {
+                ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.backupOrder, v);
+              }
+              Navigator.pop(ctx);
+            },
+          ),
+          RadioListTile<int>(
+            title: Text("backup_order_oldest_first".t(context: context)),
+            value: 1,
+            groupValue: _order,
+            onChanged: (v) {
+              if (v != null) {
+                ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.backupOrder, v);
+              }
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: SettingListTile(
+        title: "backup_order".t(context: context),
+        subtitle: _order == 1
+            ? "backup_order_oldest_first".t(context: context)
+            : "backup_order_newest_first".t(context: context),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => _showOrderPicker(context),
+      ),
     );
   }
 }

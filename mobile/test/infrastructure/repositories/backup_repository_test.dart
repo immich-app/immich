@@ -1,6 +1,13 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
 import '../../medium/repository_context.dart';
@@ -8,6 +15,20 @@ import '../../medium/repository_context.dart';
 void main() {
   late MediumRepositoryContext ctx;
   late DriftBackupRepository sut;
+  late Drift storeDb;
+
+  setUpAll(() async {
+    storeDb = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    await StoreService.init(
+      storeRepository: DriftStoreRepository(storeDb),
+      listenUpdates: false,
+    );
+  });
+
+  tearDownAll(() async {
+    await Store.dispose();
+    await storeDb.close();
+  });
 
   setUp(() {
     ctx = MediumRepositoryContext();
@@ -15,6 +36,7 @@ void main() {
   });
 
   tearDown(() async {
+    await Store.delete(StoreKey.backupOrder);
     await ctx.dispose();
   });
 
@@ -227,6 +249,21 @@ void main() {
 
       final result = await sut.getCandidates(userId);
       expect(result.map((a) => a.id).toList(), [asset2.id, asset3.id, asset1.id]);
+    });
+
+    test('returns assets ordered by createdAt ascending when backupOrder is 1', () async {
+      await Store.put(StoreKey.backupOrder, 1);
+
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset1 = await ctx.newLocalAsset(createdAt: DateTime(2024, 1, 1));
+      final asset2 = await ctx.newLocalAsset(createdAt: DateTime(2024, 3, 1));
+      final asset3 = await ctx.newLocalAsset(createdAt: DateTime(2024, 2, 1));
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset1.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset2.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset3.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result.map((a) => a.id).toList(), [asset1.id, asset3.id, asset2.id]);
     });
 
     test('does not return duplicate when asset is in multiple selected albums', () async {
