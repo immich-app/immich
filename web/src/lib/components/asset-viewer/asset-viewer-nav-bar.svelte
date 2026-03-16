@@ -89,9 +89,9 @@
     title: $t('go_back'),
     type: $t('assets'),
     icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
-    $if: () => !!onClose,
+    $if: () => !!onClose && !isFaceEditMode.value,
     onAction: () => onClose?.(),
-    shortcuts: isFaceEditMode.value ? [] : [{ key: 'Escape' }],
+    shortcuts: [{ key: 'Escape' }],
   });
 
   const Actions = $derived(getAssetActions($t, asset));
