@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
@@ -137,6 +138,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     ..addListener(handleRotationAnimation);
   Animation<double>? _rotationAnimation;
 
+  // Double-tap-drag zoom state
+  double? _doubleTapDragInitialScale;
+  Offset? _doubleTapDragStartPosition;
+  double _doubleTapDragTotalDy = 0.0;
+
   PhotoViewHeroAttributes? get heroAttributes => widget.heroAttributes;
 
   late ScaleBoundaries cachedScaleBoundaries = widget.scaleBoundaries;
@@ -235,6 +241,78 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   void onDoubleTap() {
     nextScaleState();
+  }
+
+  // Double-tap-drag zoom handlers
+  void onDoubleTapDragStart(DragStartDetails details) {
+    _scaleAnimationController.stop();
+    _positionAnimationController.stop();
+    _rotationAnimationController.stop();
+    
+    _doubleTapDragInitialScale = scale;
+    _doubleTapDragStartPosition = details.globalPosition;
+    _doubleTapDragTotalDy = 0.0;
+  }
+
+  void onDoubleTapDragUpdate(DragUpdateDetails details) {
+    if (_doubleTapDragInitialScale == null) return;
+
+    // Accumulate the total drag distance
+    _doubleTapDragTotalDy += details.delta.dy;
+
+    // Calculate new scale based on drag distance
+    // Drag down (positive dy) = zoom in, drag up (negative dy) = zoom out
+    // Use exponential scaling for smooth feel
+    const double sensitivity = 0.005; // Adjust this to change zoom speed
+    final double scaleFactor = math.exp(_doubleTapDragTotalDy * sensitivity);
+    final double newScale = (_doubleTapDragInitialScale! * scaleFactor).clamp(
+      scaleBoundaries.minScale,
+      scaleBoundaries.maxScale,
+    );
+
+    updateScaleStateFromNewScale(newScale);
+    
+    // Update scale without changing position (zoom at center)
+    updateMultiple(
+      scale: newScale,
+      position: controller.position,
+    );
+  }
+
+  void onDoubleTapDragEnd(DragEndDetails details) {
+    _doubleTapDragInitialScale = null;
+    _doubleTapDragStartPosition = null;
+    _doubleTapDragTotalDy = 0.0;
+
+    // Ensure we're within scale bounds
+    final double s = scale;
+    final Offset p = controller.position;
+    final double maxScale = scaleBoundaries.maxScale;
+    final double minScale = scaleBoundaries.minScale;
+
+    // Update scale state based on final scale
+    final scaleState = getScaleStateFromNewScale(scale);
+    if (scaleState == PhotoViewScaleState.zoomedOut) {
+      scaleStateController.scaleState = PhotoViewScaleState.initial;
+    } else if (scaleState == PhotoViewScaleState.zoomedIn) {
+      // Optionally center the image when zoomed in
+      animateRotation(controller.rotation, 0);
+      if (_shouldAllowPanRotate()) {
+        animatePosition(controller.position, Offset.zero);
+      }
+    }
+
+    // Animate back to bounds if needed
+    if (s > maxScale) {
+      final double scaleComebackRatio = maxScale / s;
+      animateScale(s, maxScale);
+      final Offset clampedPosition = clampPosition(position: p * scaleComebackRatio, scale: maxScale);
+      animatePosition(p, clampedPosition);
+    } else if (s < minScale) {
+      final double scaleComebackRatio = minScale / s;
+      animateScale(s, minScale);
+      animatePosition(p, clampPosition(position: p * scaleComebackRatio, scale: minScale));
+    }
   }
 
   void animateScale(double from, double to) {
@@ -377,6 +455,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
           return PhotoViewGestureDetector(
             disableScaleGestures: widget.disableScaleGestures,
             onDoubleTap: widget.disableScaleGestures ? null : onDoubleTap,
+            onDoubleTapDragStart: widget.disableScaleGestures ? null : onDoubleTapDragStart,
+            onDoubleTapDragUpdate: widget.disableScaleGestures ? null : onDoubleTapDragUpdate,
+            onDoubleTapDragEnd: widget.disableScaleGestures ? null : onDoubleTapDragEnd,
             onScaleStart: widget.disableScaleGestures ? null : onScaleStart,
             onScaleUpdate: widget.disableScaleGestures ? null : onScaleUpdate,
             onScaleEnd: widget.disableScaleGestures ? null : onScaleEnd,

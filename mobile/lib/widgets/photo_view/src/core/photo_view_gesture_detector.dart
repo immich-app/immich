@@ -2,6 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_hit_corners.dart';
 
+/// Callback type for double-tap-drag gestures
+typedef DoubleTapDragStartCallback = void Function(DragStartDetails details);
+typedef DoubleTapDragUpdateCallback = void Function(DragUpdateDetails details);
+typedef DoubleTapDragEndCallback = void Function(DragEndDetails details);
+
 /// Credit to [eduribas](https://github.com/eduribas/photo_view/commit/508d9b77dafbcf88045b4a7fee737eed4064ea2c)
 /// for the gist
 class PhotoViewGestureDetector extends StatelessWidget {
@@ -12,6 +17,9 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onScaleUpdate,
     this.onScaleEnd,
     this.onDoubleTap,
+    this.onDoubleTapDragStart,
+    this.onDoubleTapDragUpdate,
+    this.onDoubleTapDragEnd,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -25,6 +33,9 @@ class PhotoViewGestureDetector extends StatelessWidget {
   });
 
   final GestureDoubleTapCallback? onDoubleTap;
+  final DoubleTapDragStartCallback? onDoubleTapDragStart;
+  final DoubleTapDragUpdateCallback? onDoubleTapDragUpdate;
+  final DoubleTapDragEndCallback? onDoubleTapDragEnd;
   final HitCornersDetector? hitDetector;
 
   final GestureScaleStartCallback? onScaleStart;
@@ -80,12 +91,25 @@ class PhotoViewGestureDetector extends StatelessWidget {
       );
     }
 
-    gestures[DoubleTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
-      () => DoubleTapGestureRecognizer(debugOwner: this),
-      (DoubleTapGestureRecognizer instance) {
-        instance.onDoubleTap = onDoubleTap;
-      },
-    );
+    // Use DoubleTapDragGestureRecognizer if drag callbacks are provided, otherwise use standard DoubleTapGestureRecognizer
+    if (onDoubleTapDragStart != null || onDoubleTapDragUpdate != null || onDoubleTapDragEnd != null) {
+      gestures[DoubleTapDragGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapDragGestureRecognizer>(
+        () => DoubleTapDragGestureRecognizer(debugOwner: this),
+        (DoubleTapDragGestureRecognizer instance) {
+          instance
+            ..onDoubleTapDragStart = onDoubleTapDragStart
+            ..onDoubleTapDragUpdate = onDoubleTapDragUpdate
+            ..onDoubleTapDragEnd = onDoubleTapDragEnd;
+        },
+      );
+    } else {
+      gestures[DoubleTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+        () => DoubleTapGestureRecognizer(debugOwner: this),
+        (DoubleTapGestureRecognizer instance) {
+          instance.onDoubleTap = onDoubleTap;
+        },
+      );
+    }
 
     gestures[PhotoViewGestureRecognizer] = GestureRecognizerFactoryWithHandlers<PhotoViewGestureRecognizer>(
       () => PhotoViewGestureRecognizer(
@@ -225,6 +249,154 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
       }
     }
   }
+}
+
+/// A gesture recognizer that detects double-tap-and-drag gestures for one-finger zoom.
+///
+/// This recognizer fires callbacks when:
+/// 1. User taps once
+/// 2. User taps again and holds (doesn't lift immediately)
+/// 3. While holding, user drags vertically to zoom in/out
+class DoubleTapDragGestureRecognizer extends OneSequenceGestureRecognizer {
+  DoubleTapDragGestureRecognizer({
+    super.debugOwner,
+    super.supportedDevices,
+    AllowedButtonsFilter? allowedButtonsFilter,
+  }) : super(allowedButtonsFilter: allowedButtonsFilter ?? _defaultButtonAcceptBehavior);
+
+  static bool _defaultButtonAcceptBehavior(int buttons) => buttons == kPrimaryButton;
+
+  DoubleTapDragStartCallback? onDoubleTapDragStart;
+  DoubleTapDragUpdateCallback? onDoubleTapDragUpdate;
+  DoubleTapDragEndCallback? onDoubleTapDragEnd;
+
+  _DoubleTapDragState _state = _DoubleTapDragState.ready;
+  OffsetPair? _firstTap;
+  OffsetPair? _secondTapDown;
+  int? _primaryPointer;
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    if (_state == _DoubleTapDragState.ready) {
+      // First tap down
+      _state = _DoubleTapDragState.firstTapDown;
+      _primaryPointer = event.pointer;
+      _firstTap = OffsetPair(local: event.localPosition, global: event.position);
+      startTrackingPointer(event.pointer, event.transform);
+    } else if (_state == _DoubleTapDragState.firstTapUp) {
+      // Second tap down - check if it's close to the first tap
+      final firstTapOffset = _firstTap!.global;
+      final secondTapOffset = event.position;
+      final distance = (secondTapOffset - firstTapOffset).distance;
+      
+      if (distance <= kDoubleTapSlop) {
+        // Valid second tap - start drag mode
+        _state = _DoubleTapDragState.secondTapDown;
+        _primaryPointer = event.pointer;
+        _secondTapDown = OffsetPair(local: event.localPosition, global: event.position);
+        startTrackingPointer(event.pointer, event.transform);
+        
+        if (onDoubleTapDragStart != null) {
+          final details = DragStartDetails(
+            sourceTimeStamp: event.timeStamp,
+            globalPosition: event.position,
+            localPosition: event.localPosition,
+          );
+          invokeCallback<void>('onDoubleTapDragStart', () => onDoubleTapDragStart!(details));
+        }
+      } else {
+        // Too far apart, reset
+        _reset();
+      }
+    }
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    assert(_state != _DoubleTapDragState.ready);
+    
+    if (event.pointer != _primaryPointer) {
+      return;
+    }
+
+    if (event is PointerMoveEvent) {
+      if (_state == _DoubleTapDragState.secondTapDown) {
+        // User is dragging after double-tap
+        final offset = event.position - _secondTapDown!.global;
+        if (offset.distance > kTouchSlop) {
+          // Movement threshold exceeded, accept the gesture
+          _state = _DoubleTapDragState.dragging;
+        }
+        
+        if (_state == _DoubleTapDragState.dragging && onDoubleTapDragUpdate != null) {
+          final delta = event.delta;
+          final details = DragUpdateDetails(
+            sourceTimeStamp: event.timeStamp,
+            delta: delta,
+            primaryDelta: -delta.dy, // Negative because drag down = zoom in
+            globalPosition: event.position,
+            localPosition: event.localPosition,
+          );
+          invokeCallback<void>('onDoubleTapDragUpdate', () => onDoubleTapDragUpdate!(details));
+        }
+      }
+    } else if (event is PointerUpEvent) {
+      if (_state == _DoubleTapDragState.firstTapDown) {
+        // First tap up - wait for second tap
+        _state = _DoubleTapDragState.firstTapUp;
+        stopTrackingPointer(_primaryPointer!);
+        
+        // Set a timer to reset if second tap doesn't come
+        Future.delayed(kDoubleTapTimeout, () {
+          if (_state == _DoubleTapDragState.firstTapUp) {
+            _reset();
+          }
+        });
+      } else if (_state == _DoubleTapDragState.secondTapDown || _state == _DoubleTapDragState.dragging) {
+        // Drag ended
+        if (onDoubleTapDragEnd != null) {
+          final details = DragEndDetails(
+            velocity: Velocity.zero,
+            primaryVelocity: 0.0,
+          );
+          invokeCallback<void>('onDoubleTapDragEnd', () => onDoubleTapDragEnd!(details));
+        }
+        resolve(GestureDisposition.accepted);
+        _reset();
+      }
+    } else if (event is PointerCancelEvent) {
+      _reset();
+    }
+  }
+
+  @override
+  String get debugDescription => 'double tap drag';
+
+  @override
+  void didStopTrackingLastPointer(int pointer) {
+    _reset();
+  }
+
+  void _reset() {
+    _state = _DoubleTapDragState.ready;
+    _firstTap = null;
+    _secondTapDown = null;
+    _primaryPointer = null;
+  }
+
+  @override
+  void dispose() {
+    _reset();
+    super.dispose();
+  }
+}
+
+enum _DoubleTapDragState {
+  ready,
+  firstTapDown,
+  firstTapUp,
+  secondTapDown,
+  dragging,
 }
 
 /// An [InheritedWidget] responsible to give a axis aware scope to [PhotoViewGestureRecognizer].
