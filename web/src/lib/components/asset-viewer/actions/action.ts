@@ -12,6 +12,7 @@ type ActionMap = {
   [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
   [AssetAction.SET_STACK_PRIMARY_ASSET]: { stack: StackResponseDto };
   [AssetAction.REMOVE_ASSET_FROM_STACK]: { stack: StackResponseDto | null; asset: AssetResponseDto };
+  [AssetAction.REMOVE_FROM_ALBUM]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_LOCKED]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: TimelineAsset };
   [AssetAction.SET_PERSON_FEATURED_PHOTO]: { asset: AssetResponseDto; person: PersonResponseDto };

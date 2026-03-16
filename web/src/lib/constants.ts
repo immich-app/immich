@@ -10,6 +10,7 @@ export enum AssetAction {
   UNSTACK = 'unstack',
   SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
   REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
+  REMOVE_FROM_ALBUM = 'remove-from-album',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
   SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',

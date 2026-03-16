@@ -330,7 +330,8 @@
         };
         break;
       }
-      case AssetAction.UNSTACK: {
+      case AssetAction.UNSTACK:
+      case AssetAction.REMOVE_FROM_ALBUM: {
         closeViewer();
         break;
       }
