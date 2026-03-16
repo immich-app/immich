@@ -437,8 +437,8 @@
         {/if}
       </Timeline>
 
-      {#if showActivityStatus && !activityManager.isLoading}
-        <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
+      {#if showActivityStatus}
+        <div class="absolute z-2 bottom-0 end-0 mb-6 me-12">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
