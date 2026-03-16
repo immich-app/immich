@@ -806,6 +806,54 @@ class DriftActivitiesRouteArgs {
 }
 
 /// generated route for
+/// [DriftAdjustImagePage]
+class DriftAdjustImageRoute extends PageRouteInfo<DriftAdjustImageRouteArgs> {
+  DriftAdjustImageRoute({
+    Key? key,
+    required Image image,
+    required BaseAsset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DriftAdjustImageRoute.name,
+         args: DriftAdjustImageRouteArgs(key: key, image: image, asset: asset),
+         initialChildren: children,
+       );
+
+  static const String name = 'DriftAdjustImageRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftAdjustImageRouteArgs>();
+      return DriftAdjustImagePage(
+        key: args.key,
+        image: args.image,
+        asset: args.asset,
+      );
+    },
+  );
+}
+
+class DriftAdjustImageRouteArgs {
+  const DriftAdjustImageRouteArgs({
+    this.key,
+    required this.image,
+    required this.asset,
+  });
+
+  final Key? key;
+
+  final Image image;
+
+  final BaseAsset asset;
+
+  @override
+  String toString() {
+    return 'DriftAdjustImageRouteArgs{key: $key, image: $image, asset: $asset}';
+  }
+}
+
+/// generated route for
 /// [DriftAlbumOptionsPage]
 class DriftAlbumOptionsRoute extends PageRouteInfo<DriftAlbumOptionsRouteArgs> {
   DriftAlbumOptionsRoute({

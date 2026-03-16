@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -9,6 +8,7 @@ import 'package:immich_mobile/constants/filters.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/image_converter.dart';
 
 /// A widget for filtering an image.
 /// This widget uses [HookWidget] to manage its lifecycle and state. It allows
@@ -26,43 +26,9 @@ class DriftFilterImagePage extends HookWidget {
     final colorFilter = useState<ColorFilter>(filters[0]);
     final selectedFilterIndex = useState<int>(0);
 
-    Future<ui.Image> createFilteredImage(ui.Image inputImage, ColorFilter filter) {
-      final completer = Completer<ui.Image>();
-      final size = Size(inputImage.width.toDouble(), inputImage.height.toDouble());
-      final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder);
-
-      final paint = Paint()..colorFilter = filter;
-      canvas.drawImage(inputImage, Offset.zero, paint);
-
-      recorder.endRecording().toImage(size.width.round(), size.height.round()).then((image) {
-        completer.complete(image);
-      });
-
-      return completer.future;
-    }
-
     void applyFilter(ColorFilter filter, int index) {
       colorFilter.value = filter;
       selectedFilterIndex.value = index;
-    }
-
-    Future<Image> applyFilterAndConvert(ColorFilter filter) async {
-      final completer = Completer<ui.Image>();
-      image.image
-          .resolve(ImageConfiguration.empty)
-          .addListener(
-            ImageStreamListener((ImageInfo info, bool _) {
-              completer.complete(info.image);
-            }),
-          );
-      final uiImage = await completer.future;
-
-      final filteredUiImage = await createFilteredImage(uiImage, filter);
-      final byteData = await filteredUiImage.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
-
-      return Image.memory(pngBytes, fit: BoxFit.contain);
     }
 
     return Scaffold(
@@ -74,7 +40,7 @@ class DriftFilterImagePage extends HookWidget {
           IconButton(
             icon: Icon(Icons.done_rounded, color: context.primaryColor, size: 24),
             onPressed: () async {
-              final filteredImage = await applyFilterAndConvert(colorFilter.value);
+              final filteredImage = await applyColorFilterToImage(image, colorFilter.value);
               unawaited(context.pushRoute(DriftEditImageRoute(asset: asset, image: filteredImage, isEdited: true)));
             },
           ),

@@ -137,6 +137,18 @@ class DriftEditImagePage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 IconButton(
+                  icon: Icon(Icons.tune, color: context.themeData.iconTheme.color, size: 25),
+                  onPressed: () {
+                    context.pushRoute(DriftAdjustImageRoute(asset: asset, image: image));
+                  },
+                ),
+                Text("adjust".tr(), style: context.textTheme.displayMedium),
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
                   icon: Icon(Icons.filter, color: context.themeData.iconTheme.color, size: 25),
                   onPressed: () {
                     context.pushRoute(DriftFilterImageRoute(asset: asset, image: image));
