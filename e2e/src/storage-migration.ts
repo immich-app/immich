@@ -596,7 +596,10 @@ async function phaseMigrateToS3(): Promise<void> {
       headers: { Authorization: `Bearer ${token}` },
       redirect: 'follow',
     });
-    assert.ok(res.status === 200, `Expected 200 for asset ${asset.id} original, got ${res.status}`);
+    if (res.status !== 200) {
+      const body = await res.text();
+      assert.fail(`Expected 200 for asset ${asset.id} original, got ${res.status}: ${body}`);
+    }
     await res.arrayBuffer();
   }
 
@@ -747,7 +750,10 @@ async function phaseMigrateToDisk(): Promise<void> {
       headers: { Authorization: `Bearer ${token}` },
       redirect: 'follow',
     });
-    assert.ok(res.status === 200, `Expected 200 for asset ${asset.id} original, got ${res.status}`);
+    if (res.status !== 200) {
+      const body = await res.text();
+      assert.fail(`Expected 200 for asset ${asset.id} original, got ${res.status}: ${body}`);
+    }
     await res.arrayBuffer();
   }
 
@@ -1299,7 +1305,10 @@ async function phaseDeleteSourceFalse(): Promise<void> {
       headers: { Authorization: `Bearer ${token}` },
       redirect: 'follow',
     });
-    assert.ok(res.status === 200, `Expected 200 for asset ${asset.id} original, got ${res.status}`);
+    if (res.status !== 200) {
+      const body = await res.text();
+      assert.fail(`Expected 200 for asset ${asset.id} original, got ${res.status}: ${body}`);
+    }
     await res.arrayBuffer();
   }
 
