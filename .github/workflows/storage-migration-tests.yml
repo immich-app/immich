@@ -47,6 +47,11 @@ jobs:
           IMMICH_STORAGE_BACKEND=disk \
           docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
 
+      - name: Create MinIO bucket
+        run: |
+          docker compose exec -T minio mc alias set local http://localhost:9000 minioadmin minioadmin
+          docker compose exec -T minio mc mb local/immich-test --ignore-existing
+
       - name: 'Phase: setup'
         run: pnpm tsx src/storage-migration.ts setup
 
