@@ -60,7 +60,7 @@ export class MonthGroup {
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
-    this.yearMonth = yearMonth;
+    this.yearMonth = { year: yearMonth.year, month: yearMonth.month };
     this.monthGroupTitle = formatMonthGroupTitle(fromTimelinePlainYearMonth(yearMonth));
 
     this.loader = new CancellableTask(
@@ -196,6 +196,11 @@ export class MonthGroup {
         timelineAsset.latitude = bucketAssets.latitude?.[i];
         timelineAsset.longitude = bucketAssets.longitude?.[i];
       }
+
+      if (this.timelineManager.isExcluded(timelineAsset)) {
+        continue;
+      }
+
       this.addTimelineAsset(timelineAsset, addContext);
     }
     if (preSorted) {

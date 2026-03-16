@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, OrderByDirection, Selectable, sql } from 'kysely';
+import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -433,7 +433,7 @@ export class SearchRepository {
       .select((eb) =>
         eb
           .fn('to_jsonb', [eb.table('asset_exif')])
-          .$castTo<Selectable<AssetExifTable>>()
+          .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>()
           .as('exifInfo'),
       )
       .orderBy('asset_exif.city')

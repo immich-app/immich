@@ -7,7 +7,6 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   MemoryType,
-  QueueName,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -144,37 +143,10 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getQueueName = derived(t, ($t) => {
-  return (name: QueueName) => {
-    const names: Record<QueueName, string> = {
-      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
-      [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
-      [QueueName.Sidecar]: $t('admin.sidecar_job'),
-      [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
-      [QueueName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
-      [QueueName.FaceDetection]: $t('admin.face_detection'),
-      [QueueName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
-      [QueueName.VideoConversion]: $t('admin.video_conversion_job'),
-      [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
-      [QueueName.Migration]: $t('admin.migration_job'),
-      [QueueName.BackgroundTask]: $t('admin.background_task_job'),
-      [QueueName.Search]: $t('search'),
-      [QueueName.Library]: $t('external_libraries'),
-      [QueueName.Notifications]: $t('notifications'),
-      [QueueName.BackupDatabase]: $t('admin.backup_database'),
-      [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
-      [QueueName.Workflow]: $t('workflows'),
-      [QueueName.Editor]: $t('editor'),
-    };
-
-    return names[name];
-  };
-});
-
 let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
-export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
+export const setSharedLink = (sharedLink: typeof _sharedLink) => (_sharedLink = sharedLink);
+export const getSharedLink = (): typeof _sharedLink => _sharedLink;
 
 const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const searchParameters = new URLSearchParams();
@@ -214,13 +186,23 @@ export const getAssetUrl = ({
   return getAssetMediaUrl({ id, size, cacheKey });
 };
 
+export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
+  return {
+    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    preview: getAssetUrl({ asset, sharedLink })!,
+    original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
+  };
+}
+
 const forceUseOriginal = (asset: AssetResponseDto) => {
   return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+      ? AssetMediaSize.Original
+      : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };

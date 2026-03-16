@@ -10,7 +10,6 @@ import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -18,14 +17,15 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 const _kSeparator = '  •  ';
 
 class DateTimeDetails extends ConsumerWidget {
-  const DateTimeDetails({super.key});
+  final BaseAsset asset;
+  final ExifInfo? exifInfo;
+
+  const DateTimeDetails({super.key, required this.asset, this.exifInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetNotifier);
-    if (asset == null) return const SizedBox.shrink();
-
-    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+    final asset = this.asset;
+    final exifInfo = this.exifInfo;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
     return Column(
@@ -106,9 +106,7 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
 
   @override
   Widget build(BuildContext context) {
-    final currentExifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
-
-    final currentDescription = currentExifInfo?.description ?? '';
+    final currentDescription = widget.exif.description ?? '';
     final hintText = (widget.isEditable ? 'exif_bottom_sheet_description' : 'exif_bottom_sheet_no_description').t(
       context: context,
     );
@@ -134,7 +132,7 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
             errorBorder: InputBorder.none,
             focusedErrorBorder: InputBorder.none,
           ),
-          onTapOutside: (_) => saveDescription(currentExifInfo?.description),
+          onTapOutside: (_) => saveDescription(widget.exif.description),
         ),
       ),
     );

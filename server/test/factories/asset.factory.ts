@@ -55,7 +55,6 @@ export class AssetFactory {
       deviceId: '',
       duplicateId: null,
       duration: null,
-      encodedVideoPath: null,
       fileCreatedAt: newDate(),
       fileModifiedAt: newDate(),
       isExternal: false,

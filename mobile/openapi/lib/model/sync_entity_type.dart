@@ -29,6 +29,8 @@ class SyncEntityType {
   static const assetV1 = SyncEntityType._(r'AssetV1');
   static const assetDeleteV1 = SyncEntityType._(r'AssetDeleteV1');
   static const assetExifV1 = SyncEntityType._(r'AssetExifV1');
+  static const assetEditV1 = SyncEntityType._(r'AssetEditV1');
+  static const assetEditDeleteV1 = SyncEntityType._(r'AssetEditDeleteV1');
   static const assetMetadataV1 = SyncEntityType._(r'AssetMetadataV1');
   static const assetMetadataDeleteV1 = SyncEntityType._(r'AssetMetadataDeleteV1');
   static const partnerV1 = SyncEntityType._(r'PartnerV1');
@@ -64,6 +66,7 @@ class SyncEntityType {
   static const personV1 = SyncEntityType._(r'PersonV1');
   static const personDeleteV1 = SyncEntityType._(r'PersonDeleteV1');
   static const assetFaceV1 = SyncEntityType._(r'AssetFaceV1');
+  static const assetFaceV2 = SyncEntityType._(r'AssetFaceV2');
   static const assetFaceDeleteV1 = SyncEntityType._(r'AssetFaceDeleteV1');
   static const userMetadataV1 = SyncEntityType._(r'UserMetadataV1');
   static const userMetadataDeleteV1 = SyncEntityType._(r'UserMetadataDeleteV1');
@@ -79,6 +82,8 @@ class SyncEntityType {
     assetV1,
     assetDeleteV1,
     assetExifV1,
+    assetEditV1,
+    assetEditDeleteV1,
     assetMetadataV1,
     assetMetadataDeleteV1,
     partnerV1,
@@ -114,6 +119,7 @@ class SyncEntityType {
     personV1,
     personDeleteV1,
     assetFaceV1,
+    assetFaceV2,
     assetFaceDeleteV1,
     userMetadataV1,
     userMetadataDeleteV1,
@@ -164,6 +170,8 @@ class SyncEntityTypeTypeTransformer {
         case r'AssetV1': return SyncEntityType.assetV1;
         case r'AssetDeleteV1': return SyncEntityType.assetDeleteV1;
         case r'AssetExifV1': return SyncEntityType.assetExifV1;
+        case r'AssetEditV1': return SyncEntityType.assetEditV1;
+        case r'AssetEditDeleteV1': return SyncEntityType.assetEditDeleteV1;
         case r'AssetMetadataV1': return SyncEntityType.assetMetadataV1;
         case r'AssetMetadataDeleteV1': return SyncEntityType.assetMetadataDeleteV1;
         case r'PartnerV1': return SyncEntityType.partnerV1;
@@ -199,6 +207,7 @@ class SyncEntityTypeTypeTransformer {
         case r'PersonV1': return SyncEntityType.personV1;
         case r'PersonDeleteV1': return SyncEntityType.personDeleteV1;
         case r'AssetFaceV1': return SyncEntityType.assetFaceV1;
+        case r'AssetFaceV2': return SyncEntityType.assetFaceV2;
         case r'AssetFaceDeleteV1': return SyncEntityType.assetFaceDeleteV1;
         case r'UserMetadataV1': return SyncEntityType.userMetadataV1;
         case r'UserMetadataDeleteV1': return SyncEntityType.userMetadataDeleteV1;

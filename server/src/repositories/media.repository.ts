@@ -107,7 +107,7 @@ export class MediaRepository {
         ExposureTime: tags.exposureTime,
         ProfileDescription: tags.profileDescription,
         ColorSpace: tags.colorspace,
-        Rating: tags.rating,
+        Rating: tags.rating === null ? 0 : tags.rating,
         // specially convert Orientation to numeric Orientation# for exiftool
         'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
       };
@@ -243,23 +243,26 @@ export class MediaRepository {
         bitrate: this.parseInt(results.format.bit_rate),
       },
       videoStreams: results.streams
-        .filter((stream) => stream.codec_type === 'video')
-        .filter((stream) => !stream.disposition?.attached_pic)
-        .map((stream) => ({
-          index: stream.index,
-          height: this.parseInt(stream.height),
-          width: this.parseInt(stream.width),
-          codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
-          codecType: stream.codec_type,
-          frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
-          rotation: this.parseInt(stream.rotation),
-          isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
-          bitrate: this.parseInt(stream.bit_rate),
-          pixelFormat: stream.pix_fmt || 'yuv420p',
-          colorPrimaries: stream.color_primaries,
-          colorSpace: stream.color_space,
-          colorTransfer: stream.color_transfer,
-        })),
+        .filter((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic)
+        .map((stream) => {
+          const height = this.parseInt(stream.height);
+          const dar = this.getDar(stream.display_aspect_ratio);
+          return {
+            index: stream.index,
+            height,
+            width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
+            codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
+            codecType: stream.codec_type,
+            frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
+            rotation: this.parseInt(stream.rotation),
+            isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
+            bitrate: this.parseInt(stream.bit_rate),
+            pixelFormat: stream.pix_fmt || 'yuv420p',
+            colorPrimaries: stream.color_primaries,
+            colorSpace: stream.color_space,
+            colorTransfer: stream.color_transfer,
+          };
+        }),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
         .map((stream) => ({
@@ -309,9 +312,9 @@ export class MediaRepository {
     });
   }
 
-  async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
-    const { width = 0, height = 0 } = await sharp(input).metadata();
-    return { width, height };
+  async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    return { width, height, isTransparent: hasAlpha };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
@@ -351,5 +354,16 @@ export class MediaRepository {
 
   private parseFloat(value: string | number | undefined): number {
     return Number.parseFloat(value as string) || 0;
+  }
+
+  private getDar(dar: string | undefined): number {
+    if (dar) {
+      const [darW, darH] = dar.split(':').map(Number);
+      if (darW && darH) {
+        return darW / darH;
+      }
+    }
+
+    return 0;
   }
 }

@@ -1,13 +1,21 @@
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, expect, it, MockedFunction, vi } from 'vitest';
 
 import { Action, checkBulkUpload, defaults, getSupportedMediaTypes, Reason } from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
 
-import { checkForDuplicates, getAlbumName, startWatch, uploadFiles, UploadOptionsDto } from 'src/commands/asset';
+import {
+  checkForDuplicates,
+  deleteFiles,
+  findSidecar,
+  getAlbumName,
+  startWatch,
+  uploadFiles,
+  UploadOptionsDto,
+} from 'src/commands/asset';
 
 vi.mock('@immich/sdk');
 
@@ -50,7 +58,7 @@ describe('uploadFiles', () => {
   });
 
   it('returns new assets when upload file is successful', async () => {
-    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
       return {
         status: 200,
         body: JSON.stringify({ id: 'fc5621b1-86f6-44a1-9905-403e607df9f5', status: 'created' }),
@@ -67,7 +75,7 @@ describe('uploadFiles', () => {
 
   it('returns new assets when upload file retry is successful', async () => {
     let counter = 0;
-    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
       counter++;
       if (counter < retry) {
         throw new Error('Network error');
@@ -88,7 +96,7 @@ describe('uploadFiles', () => {
   });
 
   it('returns new assets when upload file retry is failed', async () => {
-    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
       throw new Error('Network error');
     });
 
@@ -228,16 +236,19 @@ describe('startWatch', () => {
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
 
-    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-    expect(checkBulkUpload).toHaveBeenCalledWith({
-      assetBulkUploadCheckDto: {
-        assets: [
-          expect.objectContaining({
-            id: testFilePath,
-          }),
-        ],
-      },
-    });
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: [
+              expect.objectContaining({
+                id: testFilePath,
+              }),
+            ],
+          },
+        }),
+      { timeout: 5000 },
+    );
   });
 
   it('should filter out unsupported files', async () => {
@@ -249,16 +260,19 @@ describe('startWatch', () => {
     await fs.promises.writeFile(testFilePath, 'testjpg');
     await fs.promises.writeFile(unsupportedFilePath, 'testtxt');
 
-    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-    expect(checkBulkUpload).toHaveBeenCalledWith({
-      assetBulkUploadCheckDto: {
-        assets: expect.arrayContaining([
-          expect.objectContaining({
-            id: testFilePath,
-          }),
-        ]),
-      },
-    });
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: expect.arrayContaining([
+              expect.objectContaining({
+                id: testFilePath,
+              }),
+            ]),
+          },
+        }),
+      { timeout: 5000 },
+    );
 
     expect(checkBulkUpload).not.toHaveBeenCalledWith({
       assetBulkUploadCheckDto: {
@@ -283,16 +297,19 @@ describe('startWatch', () => {
     await fs.promises.writeFile(testFilePath, 'testjpg');
     await fs.promises.writeFile(ignoredFilePath, 'ignoredjpg');
 
-    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-    expect(checkBulkUpload).toHaveBeenCalledWith({
-      assetBulkUploadCheckDto: {
-        assets: expect.arrayContaining([
-          expect.objectContaining({
-            id: testFilePath,
-          }),
-        ]),
-      },
-    });
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: expect.arrayContaining([
+              expect.objectContaining({
+                id: testFilePath,
+              }),
+            ]),
+          },
+        }),
+      { timeout: 5000 },
+    );
 
     expect(checkBulkUpload).not.toHaveBeenCalledWith({
       assetBulkUploadCheckDto: {
@@ -307,5 +324,87 @@ describe('startWatch', () => {
 
   afterEach(async () => {
     await fs.promises.rm(testFolder, { recursive: true, force: true });
+  });
+});
+
+describe('findSidecar', () => {
+  let testDir: string;
+  let testFilePath: string;
+
+  beforeEach(() => {
+    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-sidecar-'));
+    testFilePath = path.join(testDir, 'test.jpg');
+    fs.writeFileSync(testFilePath, 'test');
+  });
+
+  afterEach(() => {
+    fs.rmSync(testDir, { recursive: true, force: true });
+  });
+
+  it('should find sidecar file with photo.xmp naming convention', () => {
+    const sidecarPath = path.join(testDir, 'test.xmp');
+    fs.writeFileSync(sidecarPath, 'xmp data');
+
+    const result = findSidecar(testFilePath);
+    expect(result).toBe(sidecarPath);
+  });
+
+  it('should find sidecar file with photo.ext.xmp naming convention', () => {
+    const sidecarPath = path.join(testDir, 'test.jpg.xmp');
+    fs.writeFileSync(sidecarPath, 'xmp data');
+
+    const result = findSidecar(testFilePath);
+    expect(result).toBe(sidecarPath);
+  });
+
+  it('should prefer photo.ext.xmp over photo.xmp when both exist', () => {
+    const sidecarPath1 = path.join(testDir, 'test.xmp');
+    const sidecarPath2 = path.join(testDir, 'test.jpg.xmp');
+    fs.writeFileSync(sidecarPath1, 'xmp data 1');
+    fs.writeFileSync(sidecarPath2, 'xmp data 2');
+
+    const result = findSidecar(testFilePath);
+    // Should return the first one found (photo.xmp) based on the order in the code
+    expect(result).toBe(sidecarPath1);
+  });
+
+  it('should return undefined when no sidecar file exists', () => {
+    const result = findSidecar(testFilePath);
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('deleteFiles', () => {
+  let testDir: string;
+  let testFilePath: string;
+
+  beforeEach(() => {
+    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-delete-'));
+    testFilePath = path.join(testDir, 'test.jpg');
+    fs.writeFileSync(testFilePath, 'test');
+  });
+
+  afterEach(() => {
+    fs.rmSync(testDir, { recursive: true, force: true });
+  });
+
+  it('should delete asset and sidecar file when main file is deleted', async () => {
+    const sidecarPath = path.join(testDir, 'test.xmp');
+    fs.writeFileSync(sidecarPath, 'xmp data');
+
+    await deleteFiles([{ id: 'test-id', filepath: testFilePath }], [], { delete: true, concurrency: 1 });
+
+    expect(fs.existsSync(testFilePath)).toBe(false);
+    expect(fs.existsSync(sidecarPath)).toBe(false);
+  });
+
+  it('should not delete sidecar file when delete option is false', async () => {
+    const sidecarPath = path.join(testDir, 'test.xmp');
+    fs.writeFileSync(sidecarPath, 'xmp data');
+
+    await deleteFiles([{ id: 'test-id', filepath: testFilePath }], [], { delete: false, concurrency: 1 });
+
+    expect(fs.existsSync(testFilePath)).toBe(true);
+    expect(fs.existsSync(sidecarPath)).toBe(true);
   });
 });

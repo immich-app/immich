@@ -20,7 +20,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -221,8 +220,37 @@ class GalleryViewerPage extends HookConsumerWidget {
         onDragUpdate: (_, details, __) {
           handleSwipeUpDown(details);
         },
-        onTapDown: (_, __, ___) {
-          ref.read(showControlsProvider.notifier).toggle();
+        onTapDown: (ctx, tapDownDetails, _) {
+          final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+          if (!tapToNavigate) {
+            ref.read(showControlsProvider.notifier).toggle();
+            return;
+          }
+
+          double tapX = tapDownDetails.globalPosition.dx;
+          double screenWidth = ctx.width;
+
+          // We want to change images if the user taps in the leftmost or
+          // rightmost quarter of the screen
+          bool tappedLeftSide = tapX < screenWidth / 4;
+          bool tappedRightSide = tapX > screenWidth * (3 / 4);
+
+          int? currentPage = controller.page?.toInt();
+          int maxPage = renderList.totalAssets - 1;
+
+          if (tappedLeftSide && currentPage != null) {
+            // Nested if because we don't want to fallback to show/hide controls
+            if (currentPage != 0) {
+              controller.jumpToPage(currentPage - 1);
+            }
+          } else if (tappedRightSide && currentPage != null) {
+            // Nested if because we don't want to fallback to show/hide controls
+            if (currentPage != maxPage) {
+              controller.jumpToPage(currentPage + 1);
+            }
+          } else {
+            ref.read(showControlsProvider.notifier).toggle();
+          }
         },
         onLongPressStart: asset.isMotionPhoto
             ? (_, __, ___) {
@@ -338,9 +366,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 stackIndex.value = 0;
 
                 ref.read(currentAssetProvider.notifier).set(newAsset);
-                if (newAsset.isVideo || newAsset.isMotionPhoto) {
-                  ref.read(videoPlaybackValueProvider.notifier).reset();
-                }
 
                 // Wait for page change animation to finish, then precache the next image
                 Timer(const Duration(milliseconds: 400), () {

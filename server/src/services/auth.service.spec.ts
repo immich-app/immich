@@ -6,9 +6,13 @@ import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, Permission } from 'src/enum';
 import { AuthService } from 'src/services/auth.service';
 import { UserMetadataItem } from 'src/types';
+import { ApiKeyFactory } from 'test/factories/api-key.factory';
+import { AuthFactory } from 'test/factories/auth.factory';
+import { SessionFactory } from 'test/factories/session.factory';
+import { UserFactory } from 'test/factories/user.factory';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { factory, newUuid } from 'test/small.factory';
+import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const oauthResponse = ({
@@ -91,8 +95,8 @@ describe(AuthService.name, () => {
     });
 
     it('should successfully log the user in', async () => {
-      const user = { ...(factory.user() as UserAdmin), password: 'immich_password' };
-      const session = factory.session();
+      const user = UserFactory.create({ password: 'immich_password' });
+      const session = SessionFactory.create();
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(session);
 
@@ -113,8 +117,8 @@ describe(AuthService.name, () => {
 
   describe('changePassword', () => {
     it('should change the password', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
@@ -132,8 +136,8 @@ describe(AuthService.name, () => {
     });
 
     it('should throw when password does not match existing password', async () => {
-      const user = factory.user();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
@@ -144,8 +148,8 @@ describe(AuthService.name, () => {
     });
 
     it('should throw when user does not have a password', async () => {
-      const user = factory.user();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
@@ -154,8 +158,8 @@ describe(AuthService.name, () => {
     });
 
     it('should change the password and logout other sessions', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
       const dto = { password: 'old-password', newPassword: 'new-password', invalidateSessions: true };
 
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
@@ -175,7 +179,7 @@ describe(AuthService.name, () => {
 
   describe('logout', () => {
     it('should return the end session endpoint', async () => {
-      const auth = factory.auth();
+      const auth = AuthFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
 
@@ -186,7 +190,7 @@ describe(AuthService.name, () => {
     });
 
     it('should return the default redirect', async () => {
-      const auth = factory.auth();
+      const auth = AuthFactory.create();
 
       await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
@@ -262,11 +266,11 @@ describe(AuthService.name, () => {
     });
 
     it('should validate using authorization header', async () => {
-      const session = factory.session();
+      const session = SessionFactory.create();
       const sessionWithToken = {
         id: session.id,
         updatedAt: session.updatedAt,
-        user: factory.authUser(),
+        user: UserFactory.create(),
         pinExpiresAt: null,
         appVersion: null,
       };
@@ -340,7 +344,7 @@ describe(AuthService.name, () => {
     });
 
     it('should accept a base64url key', async () => {
-      const user = factory.userAdmin();
+      const user = UserFactory.create();
       const sharedLink = { ...sharedLinkStub.valid, user } as any;
 
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
@@ -361,7 +365,7 @@ describe(AuthService.name, () => {
     });
 
     it('should accept a hex key', async () => {
-      const user = factory.userAdmin();
+      const user = UserFactory.create();
       const sharedLink = { ...sharedLinkStub.valid, user } as any;
 
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
@@ -396,7 +400,7 @@ describe(AuthService.name, () => {
     });
 
     it('should accept a valid slug', async () => {
-      const user = factory.userAdmin();
+      const user = UserFactory.create();
       const sharedLink = { ...sharedLinkStub.valid, slug: 'slug-123', user } as any;
 
       mocks.sharedLink.getBySlug.mockResolvedValue(sharedLink);
@@ -428,11 +432,11 @@ describe(AuthService.name, () => {
     });
 
     it('should return an auth dto', async () => {
-      const session = factory.session();
+      const session = SessionFactory.create();
       const sessionWithToken = {
         id: session.id,
         updatedAt: session.updatedAt,
-        user: factory.authUser(),
+        user: UserFactory.create(),
         pinExpiresAt: null,
         appVersion: null,
       };
@@ -455,11 +459,11 @@ describe(AuthService.name, () => {
     });
 
     it('should throw if admin route and not an admin', async () => {
-      const session = factory.session();
+      const session = SessionFactory.create();
       const sessionWithToken = {
         id: session.id,
         updatedAt: session.updatedAt,
-        user: factory.authUser(),
+        user: UserFactory.create(),
         isPendingSyncReset: false,
         pinExpiresAt: null,
         appVersion: null,
@@ -477,11 +481,11 @@ describe(AuthService.name, () => {
     });
 
     it('should update when access time exceeds an hour', async () => {
-      const session = factory.session({ updatedAt: DateTime.now().minus({ hours: 2 }).toJSDate() });
+      const session = SessionFactory.create({ updatedAt: DateTime.now().minus({ hours: 2 }).toJSDate() });
       const sessionWithToken = {
         id: session.id,
         updatedAt: session.updatedAt,
-        user: factory.authUser(),
+        user: UserFactory.create(),
         isPendingSyncReset: false,
         pinExpiresAt: null,
         appVersion: null,
@@ -513,12 +517,12 @@ describe(AuthService.name, () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
-      expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+      expect(mocks.apiKey.getKey).toHaveBeenCalledWith(Buffer.from('auth_token (hashed)'));
     });
 
     it('should throw an error if api key has insufficient permissions', async () => {
-      const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [] });
+      const authUser = UserFactory.create();
+      const authApiKey = ApiKeyFactory.create({ permissions: [] });
 
       mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
 
@@ -533,8 +537,8 @@ describe(AuthService.name, () => {
     });
 
     it('should default to requiring the all permission when omitted', async () => {
-      const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [Permission.AssetRead] });
+      const authUser = UserFactory.create();
+      const authApiKey = ApiKeyFactory.create({ permissions: [Permission.AssetRead] });
 
       mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
 
@@ -548,10 +552,12 @@ describe(AuthService.name, () => {
     });
 
     it('should not require any permission when metadata is set to `false`', async () => {
-      const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [Permission.ActivityRead] });
+      const authUser = UserFactory.create();
+      const authApiKey = ApiKeyFactory.from({ permissions: [Permission.ActivityRead] })
+        .user(authUser)
+        .build();
 
-      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+      mocks.apiKey.getKey.mockResolvedValue(authApiKey);
 
       const result = sut.authenticate({
         headers: { 'x-api-key': 'auth_token' },
@@ -562,10 +568,12 @@ describe(AuthService.name, () => {
     });
 
     it('should return an auth dto', async () => {
-      const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [Permission.All] });
+      const authUser = UserFactory.create();
+      const authApiKey = ApiKeyFactory.from({ permissions: [Permission.All] })
+        .user(authUser)
+        .build();
 
-      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+      mocks.apiKey.getKey.mockResolvedValue(authApiKey);
 
       await expect(
         sut.authenticate({
@@ -574,7 +582,7 @@ describe(AuthService.name, () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
-      expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+      expect(mocks.apiKey.getKey).toHaveBeenCalledWith(Buffer.from('auth_token (hashed)'));
     });
   });
 
@@ -629,12 +637,12 @@ describe(AuthService.name, () => {
     });
 
     it('should link an existing user', async () => {
-      const user = factory.userAdmin();
+      const user = UserFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -649,7 +657,7 @@ describe(AuthService.name, () => {
     });
 
     it('should not link to a user with a different oauth sub', async () => {
-      const user = factory.userAdmin({ isAdmin: true, oauthId: 'existing-sub' });
+      const user = UserFactory.create({ isAdmin: true, oauthId: 'existing-sub' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
       mocks.user.getByEmail.mockResolvedValueOnce(user);
@@ -669,13 +677,13 @@ describe(AuthService.name, () => {
     });
 
     it('should allow auto registering by default', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.getByEmail.mockResolvedValue(void 0);
-      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -690,13 +698,13 @@ describe(AuthService.name, () => {
     });
 
     it('should throw an error if user should be auto registered but the email claim does not exist', async () => {
-      const user = factory.userAdmin({ isAdmin: true });
+      const user = UserFactory.create({ isAdmin: true });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(user);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
       mocks.oauth.getProfile.mockResolvedValue({ sub, email: undefined });
 
       await expect(
@@ -717,11 +725,11 @@ describe(AuthService.name, () => {
       'app.immich:///oauth-callback?code=abc123',
     ]) {
       it(`should use the mobile redirect override for a url of ${url}`, async () => {
-        const user = factory.userAdmin();
+        const user = UserFactory.create();
 
         mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
         mocks.user.getByOAuthId.mockResolvedValue(user);
-        mocks.session.create.mockResolvedValue(factory.session());
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
 
         await sut.callback({ url, state: 'xyz789', codeVerifier: 'foo' }, {}, loginDetails);
 
@@ -735,13 +743,13 @@ describe(AuthService.name, () => {
     }
 
     it('should use the default quota', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.user.getByEmail.mockResolvedValue(void 0);
-      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -755,14 +763,14 @@ describe(AuthService.name, () => {
     });
 
     it('should ignore an invalid storage quota', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_quota: 'abc' });
-      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -776,14 +784,14 @@ describe(AuthService.name, () => {
     });
 
     it('should ignore a negative quota', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_quota: -5 });
       mocks.user.getAdmin.mockResolvedValue(user);
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -797,14 +805,14 @@ describe(AuthService.name, () => {
     });
 
     it('should set quota for 0 quota', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_quota: 0 });
-      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -825,15 +833,15 @@ describe(AuthService.name, () => {
     });
 
     it('should use a valid storage quota', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_quota: 5 });
       mocks.user.getByEmail.mockResolvedValue(void 0);
-      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -855,7 +863,7 @@ describe(AuthService.name, () => {
 
     it('should sync the profile picture', async () => {
       const fileId = newUuid();
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
       const pictureUrl = 'https://auth.immich.cloud/profiles/1.jpg';
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
@@ -871,7 +879,7 @@ describe(AuthService.name, () => {
         data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
       });
       mocks.user.update.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -889,7 +897,7 @@ describe(AuthService.name, () => {
     });
 
     it('should not sync the profile picture if the user already has one', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id', profileImagePath: 'not-empty' });
+      const user = UserFactory.create({ oauthId: 'oauth-id', profileImagePath: 'not-empty' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfile.mockResolvedValue({
@@ -899,7 +907,7 @@ describe(AuthService.name, () => {
       });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -914,15 +922,15 @@ describe(AuthService.name, () => {
     });
 
     it('should only allow "admin" and "user" for the role claim', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
       mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_role: 'foo' });
       mocks.user.getByEmail.mockResolvedValue(void 0);
-      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -943,14 +951,14 @@ describe(AuthService.name, () => {
     });
 
     it('should create an admin user if the role claim is set to admin', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
       mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_role: 'admin' });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -971,7 +979,7 @@ describe(AuthService.name, () => {
     });
 
     it('should accept a custom role claim', async () => {
-      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue({
         oauth: { ...systemConfigStub.oauthWithAutoRegister, roleClaim: 'my_role' },
@@ -980,7 +988,7 @@ describe(AuthService.name, () => {
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(factory.session());
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await expect(
         sut.callback(
@@ -1003,8 +1011,8 @@ describe(AuthService.name, () => {
 
   describe('link', () => {
     it('should link an account', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ apiKey: { permissions: [] }, user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.from(user).apiKey({ permissions: [] }).build();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.update.mockResolvedValue(user);
@@ -1019,8 +1027,8 @@ describe(AuthService.name, () => {
     });
 
     it('should not link an already linked oauth.sub', async () => {
-      const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [] });
+      const authUser = UserFactory.create();
+      const authApiKey = ApiKeyFactory.create({ permissions: [] });
       const auth = { user: authUser, apiKey: authApiKey };
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
@@ -1036,8 +1044,8 @@ describe(AuthService.name, () => {
 
   describe('unlink', () => {
     it('should unlink an account', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user, apiKey: { permissions: [] } });
+      const user = UserFactory.create();
+      const auth = AuthFactory.from(user).apiKey({ permissions: [] }).build();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.update.mockResolvedValue(user);
@@ -1050,8 +1058,8 @@ describe(AuthService.name, () => {
 
   describe('setupPinCode', () => {
     it('should setup a PIN code', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
       const dto = { pinCode: '123456' };
 
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
@@ -1065,8 +1073,8 @@ describe(AuthService.name, () => {
     });
 
     it('should fail if the user already has a PIN code', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
 
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
 
@@ -1076,8 +1084,8 @@ describe(AuthService.name, () => {
 
   describe('changePinCode', () => {
     it('should change the PIN code', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
       const dto = { pinCode: '123456', newPinCode: '012345' };
 
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
@@ -1091,37 +1099,37 @@ describe(AuthService.name, () => {
     });
 
     it('should fail if the PIN code does not match', async () => {
-      const user = factory.userAdmin();
+      const user = UserFactory.create();
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
       await expect(
-        sut.changePinCode(factory.auth({ user }), { pinCode: '000000', newPinCode: '012345' }),
+        sut.changePinCode(AuthFactory.create(user), { pinCode: '000000', newPinCode: '012345' }),
       ).rejects.toThrow('Wrong PIN code');
     });
   });
 
   describe('resetPinCode', () => {
     it('should reset the PIN code', async () => {
-      const currentSession = factory.session();
-      const user = factory.userAdmin();
+      const currentSession = SessionFactory.create();
+      const user = UserFactory.create();
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
       mocks.session.lockAll.mockResolvedValue(void 0);
       mocks.session.update.mockResolvedValue(currentSession);
 
-      await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
+      await sut.resetPinCode(AuthFactory.create(user), { pinCode: '123456' });
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
       expect(mocks.session.lockAll).toHaveBeenCalledWith(user.id);
     });
 
     it('should throw if the PIN code does not match', async () => {
-      const user = factory.userAdmin();
+      const user = UserFactory.create();
       mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
-      await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
+      await expect(sut.resetPinCode(AuthFactory.create(user), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
     });
   });
 });

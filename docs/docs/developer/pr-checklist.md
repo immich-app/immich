@@ -53,7 +53,7 @@ You can use `dart fix --apply` and `dcm fix lib` to potentially correct some iss
 
 ## OpenAPI
 
-The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/developer/open-api.md) for more details.
+The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/api.md) for more details.
 
 ## Database Migrations
 

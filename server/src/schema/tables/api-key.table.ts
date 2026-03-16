@@ -1,6 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { Permission } from 'src/enum';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +7,10 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { Permission } from 'src/enum';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('api_key')
 @UpdatedAtTrigger('api_key_updatedAt')
@@ -21,8 +21,8 @@ export class ApiKeyTable {
   @Column()
   name!: string;
 
-  @Column()
-  key!: string;
+  @Column({ type: 'bytea', index: true })
+  key!: Buffer;
 
   @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   userId!: string;

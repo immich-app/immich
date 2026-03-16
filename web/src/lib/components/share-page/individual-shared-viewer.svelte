@@ -16,7 +16,7 @@
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -48,21 +48,11 @@
 
   const handleUploadAssets = async (files: File[] = []) => {
     try {
-      let results: (string | undefined)[] = [];
-      results = await (!files || files.length === 0 || !Array.isArray(files)
+      await (!files || files.length === 0 || !Array.isArray(files)
         ? openFileUploadDialog()
         : fileUploadHandler({ files }));
-      const data = await addSharedLinkAssets({
-        ...authManager.params,
-        id: sharedLink.id,
-        assetIdsDto: {
-          assetIds: results.filter((id) => !!id) as string[],
-        },
-      });
 
-      const added = data.filter((item) => item.success).length;
-
-      toastManager.success($t('assets_added_count', { values: { count: added } }));
+      toastManager.success();
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }
@@ -84,8 +74,12 @@
   };
 </script>
 
-<section>
-  {#if sharedLink?.allowUpload || assets.length > 1}
+{#if sharedLink?.allowUpload || assets.length > 1}
+  <main class="mt-24 mb-40 mx-4 isolate" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <GalleryViewer {assets} {assetInteraction} {viewport} allowDeletion={false} />
+  </main>
+
+  <header class="fixed top-0 inset-s-0 w-full">
     {#if assetInteraction.selectionActive}
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
@@ -139,14 +133,11 @@
         {/snippet}
       </ControlAppBar>
     {/if}
-    <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-      <GalleryViewer {assets} {assetInteraction} {viewport} />
-    </section>
-  {:else if assets.length === 1}
-    {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
-      {/await}
+  </header>
+{:else if assets.length === 1}
+  {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
+    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
     {/await}
-  {/if}
-</section>
+  {/await}
+{/if}

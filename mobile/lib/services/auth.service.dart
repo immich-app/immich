@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -64,27 +64,16 @@ class AuthService {
   }
 
   Future<bool> validateAuxilaryServerUrl(String url) async {
-    final httpclient = HttpClient();
     bool isValid = false;
 
     try {
       final uri = Uri.parse('$url/users/me');
-      final request = await httpclient.getUrl(uri);
-
-      // add auth token + any configured custom headers
-      final customHeaders = ApiService.getRequestHeaders();
-      customHeaders.forEach((key, value) {
-        request.headers.add(key, value);
-      });
-
-      final response = await request.close();
+      final response = await NetworkRepository.client.get(uri);
       if (response.statusCode == 200) {
         isValid = true;
       }
     } catch (error) {
       _log.severe("Error validating auxiliary endpoint", error);
-    } finally {
-      httpclient.close();
     }
 
     return isValid;
