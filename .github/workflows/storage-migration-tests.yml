@@ -59,7 +59,7 @@ jobs:
         run: pnpm tsx src/storage-migration.ts estimate
 
       # ---------------------------------------------------------------
-      # Phase group 2: backend=s3 — migrate to S3, verify, rollback
+      # Phase group 2: backend=s3 — migrate to S3, verify
       # ---------------------------------------------------------------
       - name: Restart server (backend=s3)
         run: |
@@ -78,20 +78,8 @@ jobs:
       - name: 'Phase: sidecar-verify'
         run: pnpm tsx src/storage-migration.ts sidecar-verify
 
-      - name: 'Phase: rollback'
-        run: pnpm tsx src/storage-migration.ts rollback
-
       # ---------------------------------------------------------------
-      # Phase group 3: backend=s3 — re-migrate after rollback, concurrent
-      # ---------------------------------------------------------------
-      - name: 'Phase: migrate-to-s3 (after rollback)'
-        run: pnpm tsx src/storage-migration.ts migrate-to-s3
-
-      - name: 'Phase: concurrent-rejection'
-        run: pnpm tsx src/storage-migration.ts concurrent-rejection
-
-      # ---------------------------------------------------------------
-      # Phase group 4: backend=disk — migrate back to disk
+      # Phase group 3: backend=disk — migrate back to disk
       # ---------------------------------------------------------------
       - name: Restart server (backend=disk)
         run: |
@@ -102,7 +90,7 @@ jobs:
         run: pnpm tsx src/storage-migration.ts migrate-to-disk
 
       # ---------------------------------------------------------------
-      # Phase group 5: backend=s3 — selective migration
+      # Phase group 4: backend=s3 — selective migration
       # ---------------------------------------------------------------
       - name: Restart server (backend=s3)
         run: |
@@ -116,18 +104,21 @@ jobs:
         run: pnpm tsx src/storage-migration.ts selective-cleanup
 
       # ---------------------------------------------------------------
-      # Phase group 6: backend=disk — migrate back for delete-source-false
+      # Phase group 5: backend=disk — migrate back for delete-source-false
       # ---------------------------------------------------------------
       - name: Restart server (backend=disk)
         run: |
           IMMICH_STORAGE_BACKEND=disk \
           docker compose up -d --no-deps --force-recreate --wait --wait-timeout 120 immich-server
 
-      - name: 'Phase: migrate-to-disk'
+      - name: 'Phase: migrate-to-disk (2)'
         run: pnpm tsx src/storage-migration.ts migrate-to-disk
 
       # ---------------------------------------------------------------
-      # Phase group 7: backend=s3 — delete-source-false
+      # Phase group 6: backend=s3 — delete-source-false, then rollback
+      # Rollback is last because it leaves DB/files in an inconsistent
+      # state (paths absolute but files on S3) — no further migration
+      # tests are valid after rollback without re-uploading assets.
       # ---------------------------------------------------------------
       - name: Restart server (backend=s3)
         run: |
@@ -136,6 +127,9 @@ jobs:
 
       - name: 'Phase: delete-source-false'
         run: pnpm tsx src/storage-migration.ts delete-source-false
+
+      - name: 'Phase: rollback'
+        run: pnpm tsx src/storage-migration.ts rollback
 
       # ---------------------------------------------------------------
       # Cleanup and logs
