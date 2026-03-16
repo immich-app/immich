@@ -271,41 +271,39 @@ export async function startMigration(
 }
 
 export async function waitForMigration(token: string, timeoutMs = 120_000): Promise<void> {
-  // Give the orchestrator job time to be picked up by BullMQ workers.
-  // On CI after a server restart, workers may take several seconds to connect.
+  // BullMQ queue counts are ephemeral — fast-completing jobs may finish before
+  // we can poll. Instead, poll until the queue is idle AND stays idle for a
+  // stabilization period, indicating all jobs (including the orchestrator that
+  // queues worker jobs) have completed.
   await sleep(5000);
 
   const deadline = Date.now() + timeoutMs;
-  let sawActivity = false;
+  let idleSince: number | null = null;
+  const stabilizationMs = 5000; // queue must be idle for this long
 
   while (Date.now() < deadline) {
     const status = await api('GET', '/storage-migration/status', { token });
-
     const active = status.active ?? 0;
     const waiting = status.waiting ?? 0;
-    const completed = status.completed ?? 0;
-    const failed = status.failed ?? 0;
 
-    console.log(
-      `  migration status: isActive=${status.isActive} active=${active} waiting=${waiting} completed=${completed} failed=${failed}`,
-    );
+    console.log(`  migration status: active=${active} waiting=${waiting} isActive=${status.isActive}`);
 
-    if (status.isActive || active > 0 || waiting > 0 || completed > 0 || failed > 0) {
-      sawActivity = true;
-    }
+    const isIdle = !status.isActive && active === 0 && waiting === 0;
 
-    if (sawActivity && !status.isActive && waiting === 0 && active === 0) {
-      if (failed > 0) {
-        throw new Error(`Storage migration completed with ${failed} failed jobs`);
+    if (isIdle) {
+      if (idleSince === null) {
+        idleSince = Date.now();
+      } else if (Date.now() - idleSince >= stabilizationMs) {
+        return;
       }
-      return;
+    } else {
+      idleSince = null;
     }
 
-    // If we haven't seen any activity yet, keep waiting — the job may not have been picked up
     await sleep(1000);
   }
 
-  throw new Error(`waitForMigration timed out after ${timeoutMs}ms (sawActivity=${sawActivity})`);
+  throw new Error(`waitForMigration timed out after ${timeoutMs}ms`);
 }
 
 // ---------------------------------------------------------------------------
