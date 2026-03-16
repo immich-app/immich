@@ -148,6 +148,7 @@ export class DayGroup {
     // TODO: lazily get positions instead of loading them all here
     for (let i = 0; i < this.viewerAssets.length; i++) {
       this.viewerAssets[i].position = geometry.getPosition(i);
+      this.viewerAssets[i].updateIntersecting();
     }
   }
 
