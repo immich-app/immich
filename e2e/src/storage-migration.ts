@@ -271,27 +271,41 @@ export async function startMigration(
 }
 
 export async function waitForMigration(token: string, timeoutMs = 120_000): Promise<void> {
-  // Give the orchestrator job time to queue worker jobs
-  await sleep(2000);
+  // Give the orchestrator job time to be picked up by BullMQ workers.
+  // On CI after a server restart, workers may take several seconds to connect.
+  await sleep(5000);
+
   const deadline = Date.now() + timeoutMs;
+  let sawActivity = false;
+
   while (Date.now() < deadline) {
     const status = await api('GET', '/storage-migration/status', { token });
 
+    const active = status.active ?? 0;
+    const waiting = status.waiting ?? 0;
+    const completed = status.completed ?? 0;
+    const failed = status.failed ?? 0;
+
     console.log(
-      `  migration status: isActive=${status.isActive} active=${status.active ?? 0} waiting=${status.waiting ?? 0} completed=${status.completed ?? 0} failed=${status.failed ?? 0}`,
+      `  migration status: isActive=${status.isActive} active=${active} waiting=${waiting} completed=${completed} failed=${failed}`,
     );
 
-    if (!status.isActive && (status.waiting ?? 0) === 0 && (status.active ?? 0) === 0) {
-      if ((status.failed ?? 0) > 0) {
-        throw new Error(`Storage migration completed with ${status.failed} failed jobs`);
+    if (status.isActive || active > 0 || waiting > 0 || completed > 0 || failed > 0) {
+      sawActivity = true;
+    }
+
+    if (sawActivity && !status.isActive && waiting === 0 && active === 0) {
+      if (failed > 0) {
+        throw new Error(`Storage migration completed with ${failed} failed jobs`);
       }
       return;
     }
 
+    // If we haven't seen any activity yet, keep waiting — the job may not have been picked up
     await sleep(1000);
   }
 
-  throw new Error(`waitForMigration timed out after ${timeoutMs}ms`);
+  throw new Error(`waitForMigration timed out after ${timeoutMs}ms (sawActivity=${sawActivity})`);
 }
 
 // ---------------------------------------------------------------------------
