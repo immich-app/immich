@@ -10,6 +10,10 @@ Shared Spaces are virtual libraries where multiple users can contribute, browse,
 - **Works alongside existing sharing** — Partner sharing, album sharing, and shared links continue to work as before.
 - **Web and mobile** — Full support on both web and the mobile app.
 - **Shared face recognition** — People detected across the space are browsable by all members.
+- **Activity log** — A feed of all actions taken in the space (photos added/removed, members joining/leaving, settings changes).
+- **New since last visit** — See what changed since you last opened a space, with badges and timeline dividers.
+- **Map view** — Browse geotagged photos from a space on an interactive map.
+- **Search within a space** — Smart search scoped to a single space's assets.
 
 ## Roles and Permissions
 
@@ -26,6 +30,10 @@ Shared Spaces are virtual libraries where multiple users can contribute, browse,
 | Change space color          | Yes   | No     | No     |
 | Delete the space            | Yes   | No     | No     |
 | Leave the space             | No    | Yes    | Yes    |
+| Search within space         | Yes   | Yes    | Yes    |
+| View activity log           | Yes   | Yes    | Yes    |
+| View space on map           | Yes   | Yes    | Yes    |
+| Manage people (name, merge) | Yes   | Yes    | No     |
 | Toggle timeline integration | Yes   | Yes    | Yes    |
 
 ## Creating a Space
@@ -44,6 +52,16 @@ Shared Spaces are virtual libraries where multiple users can contribute, browse,
 2. Tap **Spaces**.
 3. Tap the **+** button.
 4. Enter a name and tap Create.
+
+## Getting Started Banner
+
+When you create a new space, a 3-step onboarding checklist appears at the top of the space page (visible to the Owner only):
+
+1. **Add Photos** — Add your first photos to the space.
+2. **Invite Members** — Add at least one other user.
+3. **Set Cover** — Choose a cover photo for the space.
+
+The banner shows a progress bar and disappears once all three steps are complete. It can be collapsed if you want to dismiss it early.
 
 ## Adding Members
 
@@ -156,11 +174,66 @@ Sort spaces by name, last activity, date created, or asset count. Click the same
 
 Pin frequently used spaces to the top of the list by right-clicking (web) and selecting **Pin to top**. Pinned spaces appear in a separate section above unpinned ones in both grid and list views. Pins are stored locally in the browser — they do not sync between devices.
 
+## Activity Log
+
+Every space has an activity log that tracks actions taken by members. Open it by clicking the **panel icon** in the space toolbar to reveal the side panel, then select the **Activity** tab.
+
+### Tracked Events
+
+The activity log records the following events:
+
+- **Photos added** — Who added photos, how many, with thumbnail previews of the first few.
+- **Photos removed** — Who removed photos and how many.
+- **Member joined** — Who joined the space, their role, and who invited them.
+- **Member left** — Who left the space voluntarily.
+- **Member removed** — Who was removed by the Owner.
+- **Role changed** — Whose role changed and from what to what (e.g., Viewer to Editor).
+- **Cover photo changed** — Who set a new cover photo.
+- **Space renamed** — The old and new name.
+- **Color changed** — When the space color was updated.
+
+Events are grouped by day (Today, Yesterday, or the date) and displayed with different visual styles based on importance — photo additions and removals show thumbnail strips, member events show avatar rows, and settings changes appear as compact single-line entries.
+
+The log is paginated and loads 50 events at a time with a **Load more** button for older activity.
+
+### Member Contributions
+
+The **Members** tab in the side panel shows each member's contribution stats: how many photos they've added, when they were last active, and a thumbnail of their most recent contribution.
+
+## New Since Last Visit
+
+Spaces track when each member last viewed them. When other members add photos while you're away, you'll see:
+
+- **On the spaces list** — A colored badge showing the number of new photos and the name of the last contributor (e.g., "5 new" with a pulsing dot indicator).
+- **Inside the space** — A sticky colored divider in the timeline marking where new photos begin, showing the count and date (e.g., "12 new · since Mar 15").
+
+This tracking is per-member — your "last viewed" timestamp updates each time you open the space.
+
+## Search
+
+When a space has photos, a search bar appears at the top of the space detail page. Searches use smart/semantic search scoped to only that space's assets, so results are limited to photos within the space.
+
+## Map View
+
+View geotagged photos from a space on an interactive map. Click the **map icon** in the space toolbar to open the map filtered to that space's assets. A **Back to space** link lets you return to the space detail page.
+
 ## Shared Face Recognition
 
 When enabled, face recognition runs across all photos in the space. Detected people are browsable by all space members in the People section of the space, making it easy to find photos of specific people across everyone's contributions.
 
 The Owner can toggle face recognition on or off from the space detail page header. When disabled, existing face data is preserved but hidden.
+
+### People Page
+
+Click the people count in the space hero banner to open the full People page, which shows a grid of all recognized people in the space. From here:
+
+- **Editors** can rename a person by clicking their name.
+- **Editors** can merge duplicate people via the hover context menu.
+- Clicking a person opens their detail page with all their photos from the space.
+
+### Face Matching
+
+When face recognition is enabled and new photos are added, a background job automatically matches detected faces against existing people in the space. If no match is found, a new person entry is created. When face recognition is first enabled on a space that already has photos, all existing photos are processed.
 
 ## Space Colors
 
