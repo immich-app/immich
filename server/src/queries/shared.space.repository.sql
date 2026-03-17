@@ -416,6 +416,30 @@ where
   "asset_face"."assetId" = $1
   and "asset_face"."deletedAt" is null
 
+-- SharedSpaceRepository.isAssetInSpace
+select
+  "assetId"
+from
+  "shared_space_asset"
+where
+  "spaceId" = $1
+  and "assetId" = $2
+limit
+  $3
+
+-- SharedSpaceRepository.isFaceInSpace
+select
+  "asset_face"."id"
+from
+  "shared_space_asset"
+  inner join "asset_face" on "asset_face"."assetId" = "shared_space_asset"."assetId"
+where
+  "shared_space_asset"."spaceId" = $1
+  and "asset_face"."id" = $2
+  and "asset_face"."deletedAt" is null
+limit
+  $3
+
 -- SharedSpaceRepository.getAssetIdsInSpace
 select
   "assetId"

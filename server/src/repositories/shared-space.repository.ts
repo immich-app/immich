@@ -535,6 +535,32 @@ export class SharedSpaceRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async isAssetInSpace(spaceId: string, assetId: string): Promise<boolean> {
+    const result = await this.db
+      .selectFrom('shared_space_asset')
+      .select('assetId')
+      .where('spaceId', '=', spaceId)
+      .where('assetId', '=', assetId)
+      .limit(1)
+      .executeTakeFirst();
+    return !!result;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async isFaceInSpace(spaceId: string, faceId: string): Promise<boolean> {
+    const result = await this.db
+      .selectFrom('shared_space_asset')
+      .innerJoin('asset_face', 'asset_face.assetId', 'shared_space_asset.assetId')
+      .select('asset_face.id')
+      .where('shared_space_asset.spaceId', '=', spaceId)
+      .where('asset_face.id', '=', faceId)
+      .where('asset_face.deletedAt', 'is', null)
+      .limit(1)
+      .executeTakeFirst();
+    return !!result;
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getAssetIdsInSpace(spaceId: string) {
     return this.db.selectFrom('shared_space_asset').select('assetId').where('spaceId', '=', spaceId).execute();

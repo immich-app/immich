@@ -150,6 +150,14 @@ export class SharedSpaceService extends BaseService {
     const minimumRole = isMetadataUpdate ? SharedSpaceRole.Owner : SharedSpaceRole.Editor;
     await this.requireRole(auth, id, minimumRole);
 
+    // Validate thumbnail asset belongs to the space
+    if (dto.thumbnailAssetId !== undefined && dto.thumbnailAssetId !== null) {
+      const isInSpace = await this.sharedSpaceRepository.isAssetInSpace(id, dto.thumbnailAssetId);
+      if (!isInSpace) {
+        throw new BadRequestException('Thumbnail asset must belong to the space');
+      }
+    }
+
     // Reset crop position when cover photo changes
     const thumbnailCropY = dto.thumbnailAssetId === undefined ? dto.thumbnailCropY : null;
 
@@ -350,6 +358,7 @@ export class SharedSpaceService extends BaseService {
 
   async addAssets(auth: AuthDto, spaceId: string, dto: SharedSpaceAssetAddDto): Promise<void> {
     await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: dto.assetIds });
     await this.sharedSpaceRepository.addAssets(
       dto.assetIds.map((assetId) => ({ spaceId, assetId, addedById: auth.user.id })),
     );
@@ -506,6 +515,13 @@ export class SharedSpaceService extends BaseService {
     const person = await this.sharedSpaceRepository.getPersonById(personId);
     if (!person || person.spaceId !== spaceId) {
       throw new BadRequestException('Person not found');
+    }
+
+    if (dto.representativeFaceId) {
+      const isInSpace = await this.sharedSpaceRepository.isFaceInSpace(spaceId, dto.representativeFaceId);
+      if (!isInSpace) {
+        throw new BadRequestException('Representative face must belong to an asset in the space');
+      }
     }
 
     const updated = await this.sharedSpaceRepository.updatePerson(personId, {

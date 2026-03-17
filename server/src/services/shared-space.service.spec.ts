@@ -659,6 +659,7 @@ describe(SharedSpaceService.name, () => {
       const updatedSpace = { ...space, thumbnailAssetId };
 
       mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.isAssetInSpace.mockResolvedValue(true);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(updatedSpace);
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
@@ -705,6 +706,7 @@ describe(SharedSpaceService.name, () => {
       const member = makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Editor });
 
       mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.isAssetInSpace.mockResolvedValue(true);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue({ ...space, thumbnailAssetId });
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
@@ -712,6 +714,22 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.update(auth, space.id, { thumbnailAssetId });
 
       expect(result.thumbnailAssetId).toBe(thumbnailAssetId);
+    });
+
+    it('should reject thumbnailAssetId that is not in the space', async () => {
+      const auth = factory.auth();
+      const space = factory.sharedSpace();
+      const foreignAssetId = newUuid();
+      const member = makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Editor });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.isAssetInSpace.mockResolvedValue(false);
+
+      await expect(sut.update(auth, space.id, { thumbnailAssetId: foreignAssetId })).rejects.toThrow(
+        'Thumbnail asset must belong to the space',
+      );
+
+      expect(mocks.sharedSpace.update).not.toHaveBeenCalled();
     });
 
     it('should not allow editor to update name', async () => {
@@ -839,6 +857,7 @@ describe(SharedSpaceService.name, () => {
       const member = makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Editor });
 
       mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.isAssetInSpace.mockResolvedValue(true);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue({ ...space, thumbnailAssetId: newUuid(), thumbnailCropY: null });
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
@@ -890,6 +909,7 @@ describe(SharedSpaceService.name, () => {
     it('should log cover_change when thumbnailAssetId changes', async () => {
       const space = factory.sharedSpace({ thumbnailAssetId: null });
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.isAssetInSpace.mockResolvedValue(true);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue({ ...space, thumbnailAssetId: 'asset-1' });
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
@@ -1409,6 +1429,7 @@ describe(SharedSpaceService.name, () => {
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
 
       mocks.sharedSpace.getMember.mockResolvedValue(editorMember);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId1, assetId2]));
       mocks.sharedSpace.addAssets.mockResolvedValue([]);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
@@ -1422,6 +1443,24 @@ describe(SharedSpaceService.name, () => {
       ]);
     });
 
+    it('should reject adding assets the user does not have access to', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const ownedAssetId = newUuid();
+      const foreignAssetId = newUuid();
+      const editorMember = makeMemberResult({ spaceId, userId: auth.user.id, role: SharedSpaceRole.Editor });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(editorMember);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([ownedAssetId]));
+      mocks.access.asset.checkAlbumAccess.mockResolvedValue(new Set());
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set());
+      mocks.access.asset.checkSpaceAccess.mockResolvedValue(new Set());
+
+      await expect(sut.addAssets(auth, spaceId, { assetIds: [ownedAssetId, foreignAssetId] })).rejects.toThrow();
+
+      expect(mocks.sharedSpace.addAssets).not.toHaveBeenCalled();
+    });
+
     it('should NOT auto-set thumbnailAssetId when space has no thumbnail', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
@@ -1430,6 +1469,7 @@ describe(SharedSpaceService.name, () => {
       const space = factory.sharedSpace({ id: spaceId, thumbnailAssetId: null, faceRecognitionEnabled: false });
 
       mocks.sharedSpace.getMember.mockResolvedValue(editorMember);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId1]));
       mocks.sharedSpace.addAssets.mockResolvedValue([]);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
@@ -1448,6 +1488,7 @@ describe(SharedSpaceService.name, () => {
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
 
       mocks.sharedSpace.getMember.mockResolvedValue(editorMember);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.sharedSpace.addAssets.mockResolvedValue([]);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
@@ -1476,6 +1517,7 @@ describe(SharedSpaceService.name, () => {
       const auth = factory.auth();
       const space = factory.sharedSpace({ faceRecognitionEnabled: false });
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['a1', 'a2', 'a3']));
       mocks.sharedSpace.addAssets.mockResolvedValue([]);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
@@ -1500,6 +1542,7 @@ describe(SharedSpaceService.name, () => {
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
 
       mocks.sharedSpace.getMember.mockResolvedValue(editorMember);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId1, assetId2]));
       mocks.sharedSpace.addAssets.mockResolvedValue([]);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
@@ -1525,6 +1568,7 @@ describe(SharedSpaceService.name, () => {
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
 
       mocks.sharedSpace.getMember.mockResolvedValue(editorMember);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.sharedSpace.addAssets.mockResolvedValue([]);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
@@ -2404,6 +2448,46 @@ describe(SharedSpaceService.name, () => {
 
       expect(result.name).toBe('New Name');
       expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personId, { name: 'New Name' });
+    });
+
+    it('should reject representativeFaceId that does not belong to an asset in the space', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const foreignFaceId = newUuid();
+      const person = factory.sharedSpacePerson({ id: personId, spaceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(person);
+      mocks.sharedSpace.isFaceInSpace.mockResolvedValue(false);
+
+      await expect(
+        sut.updateSpacePerson(auth, spaceId, personId, { representativeFaceId: foreignFaceId }),
+      ).rejects.toThrow('Representative face must belong to an asset in the space');
+
+      expect(mocks.sharedSpace.updatePerson).not.toHaveBeenCalled();
+    });
+
+    it('should allow representativeFaceId that belongs to an asset in the space', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const faceId = newUuid();
+      const person = factory.sharedSpacePerson({ id: personId, spaceId });
+      const updatedPerson = factory.sharedSpacePerson({ id: personId, spaceId, representativeFaceId: faceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(person);
+      mocks.sharedSpace.isFaceInSpace.mockResolvedValue(true);
+      mocks.sharedSpace.updatePerson.mockResolvedValue(updatedPerson);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(5);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(3);
+      mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
+
+      const result = await sut.updateSpacePerson(auth, spaceId, personId, { representativeFaceId: faceId });
+
+      expect(result.representativeFaceId).toBe(faceId);
+      expect(mocks.sharedSpace.isFaceInSpace).toHaveBeenCalledWith(spaceId, faceId);
     });
   });
 

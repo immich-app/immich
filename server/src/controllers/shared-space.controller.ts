@@ -290,7 +290,7 @@ export class SharedSpaceController {
   }
 
   @Put(':id/people/:personId')
-  @Authenticated({ permission: Permission.SharedSpaceAssetCreate })
+  @Authenticated({ permission: Permission.SharedSpaceUpdate })
   @Endpoint({
     summary: 'Update a person in a shared space',
     description: 'Update the name, visibility, birth date, or representative face of a person.',
@@ -306,7 +306,7 @@ export class SharedSpaceController {
   }
 
   @Delete(':id/people/:personId')
-  @Authenticated({ permission: Permission.SharedSpaceAssetCreate })
+  @Authenticated({ permission: Permission.SharedSpaceUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Delete a person from a shared space',
@@ -322,7 +322,7 @@ export class SharedSpaceController {
   }
 
   @Post(':id/people/:personId/merge')
-  @Authenticated({ permission: Permission.SharedSpaceAssetCreate })
+  @Authenticated({ permission: Permission.SharedSpaceUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Merge people in a shared space',

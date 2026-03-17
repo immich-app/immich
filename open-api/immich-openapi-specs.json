@@ -12761,7 +12761,7 @@
             "state": "Beta"
           }
         ],
-        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-permission": "sharedSpace.update",
         "x-immich-state": "Beta"
       },
       "get": {
@@ -12893,7 +12893,7 @@
             "state": "Beta"
           }
         ],
-        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-permission": "sharedSpace.update",
         "x-immich-state": "Beta"
       }
     },
@@ -13145,7 +13145,7 @@
             "state": "Beta"
           }
         ],
-        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-permission": "sharedSpace.update",
         "x-immich-state": "Beta"
       }
     },
