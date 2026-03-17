@@ -49,22 +49,21 @@
 
   const handleInput = (event: Event, index: number) => {
     const target = event.target as HTMLInputElement;
-    const digits = target.value.replaceAll(/\D/g, '');
+    const digits = target.value.replaceAll(/\D/g, '').slice(0, pinLength - index);
 
     if (digits.length === 0) {
       pinValues[index] = '';
-      target.value = '';
       value = pinValues.join('').trim();
       return;
     }
 
-    for (let i = 0; i < digits.length && index + i < pinLength; i++) {
+    for (let i = 0; i < digits.length; i++) {
       pinValues[index + i] = digits[i];
     }
 
     value = pinValues.join('').trim();
 
-    const lastFilledIndex = Math.min(index + digits.length, pinLength) - 1;
+    const lastFilledIndex = Math.min(index + digits.length, pinLength - 1);
     pinCodeInputElements[lastFilledIndex]?.focus();
 
     if (value.length === pinLength) {
