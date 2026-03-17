@@ -1,19 +1,11 @@
-<script lang="ts" module>
-  export interface SearchDisplayFilters {
-    isNotInAlbum: boolean;
-    isArchive: boolean;
-    isFavorite: boolean;
-  }
-</script>
-
 <script lang="ts">
+  import type { SearchDisplayFilters } from '$lib/types';
   import { Checkbox, Label, Text } from '@immich/ui';
-
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     filters: SearchDisplayFilters;
-  }
+  };
 
   let { filters = $bindable() }: Props = $props();
 </script>
