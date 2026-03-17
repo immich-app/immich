@@ -16,6 +16,8 @@
     expectedVersion: string;
   };
 
+  type BackupWithTimezone = DatabaseBackupDto & { timezone?: string };
+
   let props: Props = $props();
 
   let backups = $state(props.backups ?? []);
@@ -51,12 +53,13 @@
     const unknownDateKey = $t('unknown_date');
 
     for (const backup of backups) {
+      const timezone = (backup as BackupWithTimezone).timezone ?? DateTime.local().zoneName;
       const dateMatch = backup.filename.match(/\d+T\d+/);
       let dateKey: string;
       let dt: DateTime;
 
       if (dateMatch) {
-        dt = DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: 'utc' });
+        dt = DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: timezone });
         dateKey = dt.toFormat('LLLL d, yyyy');
       } else {
         dt = DateTime.fromMillis(0);
@@ -128,6 +131,7 @@
           filename={backup.filename}
           filesize={backup.filesize}
           expectedVersion={props.expectedVersion}
+          timezone={(backup as BackupWithTimezone).timezone}
         />
       {/each}
     </Stack>

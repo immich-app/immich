@@ -17671,6 +17671,9 @@
           },
           "filesize": {
             "type": "number"
+          },
+          "timezone": {
+            "type": "string"
           }
         },
         "required": [
