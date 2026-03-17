@@ -23,7 +23,7 @@ class FavoriteActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).favorite(source);
 
     if (source == ActionSource.viewer) {
-      return;
+      return; // Viewer state is updated by actionProvider; no toast needed
     }
 
     ref.read(multiSelectProvider.notifier).reset();
