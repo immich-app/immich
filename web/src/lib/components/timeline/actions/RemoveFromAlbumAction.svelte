@@ -10,16 +10,19 @@
   interface Props {
     album: AlbumResponseDto;
     onRemove: ((assetIds: string[]) => void) | undefined;
+    assetIds?: string[];
     menuItem?: boolean;
   }
 
-  let { album = $bindable(), onRemove, menuItem = false }: Props = $props();
+  let { album = $bindable(), onRemove, assetIds, menuItem = false }: Props = $props();
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const context = getAssetControlContext();
 
   const removeFromAlbum = async () => {
+    const ids = assetIds ?? context?.getAssets().map(({ id }) => id) ?? [];
+
     const isConfirmed = await modalManager.showDialog({
-      prompt: $t('remove_assets_album_confirmation', { values: { count: getAssets().length } }),
+      prompt: $t('remove_assets_album_confirmation', { values: { count: ids.length } }),
     });
 
     if (!isConfirmed) {
@@ -27,7 +30,6 @@
     }
 
     try {
-      const ids = [...getAssets()].map((a) => a.id);
       const results = await removeAssetFromAlbum({
         id: album.id,
         bulkIdsDto: { ids },
@@ -40,7 +42,7 @@
       const count = results.filter(({ success }) => success).length;
       toastManager.primary($t('assets_removed_count', { values: { count } }));
 
-      clearSelect();
+      context?.clearSelect();
     } catch (error) {
       handleError(error, $t('errors.error_removing_assets_from_album'));
     }
