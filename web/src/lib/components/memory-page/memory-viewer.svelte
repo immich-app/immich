@@ -63,8 +63,9 @@
   let playerInitialized = $state(false);
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
-  let currentMemoryAssetFull = $derived.by(async () =>
-    current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
+  const currentAssetId = $derived(current?.asset.id);
+  const currentMemoryAssetFull = $derived.by(async () =>
+    currentAssetId ? await getAssetInfo({ ...authManager.params, id: currentAssetId }) : undefined,
   );
   let currentTimelineAssets = $derived(current?.memory.assets ?? []);
   let viewerAssets = $derived([
@@ -550,14 +551,18 @@
               </div>
 
               <div>
-                <IconButton
-                  href={Route.photos({ at: current.asset.id })}
-                  icon={mdiImageSearch}
-                  aria-label={$t('view_in_timeline')}
-                  color="secondary"
-                  variant="ghost"
-                  shape="round"
-                />
+                {#await currentMemoryAssetFull then asset}
+                  {#if asset}
+                    <IconButton
+                      href={Route.photos({ at: asset.stack?.primaryAssetId ?? asset.id })}
+                      icon={mdiImageSearch}
+                      aria-label={$t('view_in_timeline')}
+                      color="secondary"
+                      variant="ghost"
+                      shape="round"
+                    />
+                  {/if}
+                {/await}
               </div>
             </div>
             <!-- CONTROL BUTTONS -->
