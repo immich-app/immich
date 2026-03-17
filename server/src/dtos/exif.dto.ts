@@ -49,6 +49,12 @@ export class ExifResponseDto {
   projectionType?: string | null = null;
   @ApiPropertyOptional({ type: 'number', description: 'Rating' })
   rating?: number | null = null;
+  @ApiPropertyOptional({ type: 'number', description: 'Bits per sample (per channel)' })
+  bitsPerSample?: number | null = null;
+  @ApiPropertyOptional({ description: 'ICC profile description' })
+  profileDescription?: string | null = null;
+  @ApiPropertyOptional({ description: 'Color space' })
+  colorspace?: string | null = null;
 }
 
 export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
@@ -75,6 +81,9 @@ export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
     description: entity.description,
     projectionType: entity.projectionType,
     rating: entity.rating,
+    bitsPerSample: entity.bitsPerSample,
+    profileDescription: entity.profileDescription,
+    colorspace: entity.colorspace,
   };
 }
 
