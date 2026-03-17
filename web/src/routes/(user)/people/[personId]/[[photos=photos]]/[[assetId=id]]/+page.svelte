@@ -149,7 +149,7 @@
     }
     try {
       person = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
-      toastManager.success($t('feature_photo_updated'));
+      toastManager.primary($t('feature_photo_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }
@@ -210,7 +210,7 @@
 
     try {
       person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
-      toastManager.success($t('change_name_successfully'));
+      toastManager.primary($t('change_name_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
     }

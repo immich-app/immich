@@ -72,7 +72,7 @@
       });
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
-      toastManager.success($t('merged_people_count', { values: { count } }));
+      toastManager.primary($t('merged_people_count', { values: { count } }));
       onMerge(mergedPerson);
     } catch (error) {
       handleError(error, $t('cannot_merge_people'));

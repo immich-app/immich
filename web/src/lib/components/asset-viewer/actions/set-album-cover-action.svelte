@@ -23,7 +23,7 @@
         },
       });
       eventManager.emit('AlbumUpdate', response);
-      toastManager.success($t('album_cover_updated'));
+      toastManager.primary($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }

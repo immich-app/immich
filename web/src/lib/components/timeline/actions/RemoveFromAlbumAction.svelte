@@ -38,7 +38,7 @@
       onRemove?.(ids);
 
       const count = results.filter(({ success }) => success).length;
-      toastManager.success($t('assets_removed_count', { values: { count } }));
+      toastManager.primary($t('assets_removed_count', { values: { count } }));
 
       clearSelect();
     } catch (error) {

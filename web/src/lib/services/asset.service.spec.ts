@@ -11,7 +11,7 @@ import { vitest } from 'vitest';
 
 vitest.mock('@immich/ui', () => ({
   toastManager: {
-    success: vitest.fn(),
+    primary: vitest.fn(),
   },
 }));
 
@@ -67,7 +67,7 @@ describe('AssetService', () => {
       const asset = assetFactory.build({ originalFileName: 'asset.heic' });
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
-      expect(toastManager.success).toHaveBeenCalledWith('formatter');
+      expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
 
     it('should use the motion asset originalFileName when showing toasts', async () => {
@@ -79,7 +79,7 @@ describe('AssetService', () => {
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
       expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset.mov' } });
-      expect(toastManager.success).toHaveBeenCalledWith('formatter');
+      expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
   });
 });
