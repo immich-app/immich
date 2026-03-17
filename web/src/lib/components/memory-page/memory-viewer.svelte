@@ -206,7 +206,7 @@
     }
 
     await memoryStore.deleteMemory(current.memory.id);
-    toastManager.success($t('removed_memory'));
+    toastManager.primary($t('removed_memory'));
     init(page);
   };
 
@@ -217,7 +217,7 @@
 
     const newSavedState = !current.memory.isSaved;
     await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
-    toastManager.success(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
+    toastManager.primary(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
     init(page);
   };
 

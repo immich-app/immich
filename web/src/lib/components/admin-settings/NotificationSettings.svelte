@@ -45,7 +45,7 @@
         },
       });
 
-      toastManager.success($t('admin.notification_email_test_email_sent', { values: { email: $user.email } }));
+      toastManager.primary($t('admin.notification_email_test_email_sent', { values: { email: $user.email } }));
 
       if (!disabled) {
         await handleSystemConfigSave({ notifications: configToEdit.notifications });

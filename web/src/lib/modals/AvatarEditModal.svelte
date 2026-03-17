@@ -20,7 +20,7 @@
         await deleteProfileImage();
       }
 
-      toastManager.success($t('saved_profile'));
+      toastManager.primary($t('saved_profile'));
 
       $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
       onClose();

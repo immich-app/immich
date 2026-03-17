@@ -131,7 +131,7 @@
       previousWorkflow = updated;
       editWorkflow = updated;
 
-      toastManager.success($t('workflow_update_success'), {
+      toastManager.primary($t('workflow_update_success'), {
         closable: true,
       });
     } catch (error) {

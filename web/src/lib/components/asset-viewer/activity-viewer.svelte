@@ -74,7 +74,7 @@
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      toastManager.success(deleteMessages[reaction.type]);
+      toastManager.primary(deleteMessages[reaction.type]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }
