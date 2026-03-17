@@ -50,8 +50,18 @@ export class StorageRepository {
     return fs.readdir(folder);
   }
 
-  copyFile(source: string, target: string) {
-    return fs.copyFile(source, target);
+  async copyFile(source: string, target: string) {
+    await fs.copyFile(source, target);
+    await this.datasync(target);
+  }
+
+  async datasync(filepath: string) {
+    const handle = await fs.open(filepath, 'r');
+    try {
+      await handle.datasync();
+    } finally {
+      await handle.close();
+    }
   }
 
   stat(filepath: string) {
@@ -59,19 +69,19 @@ export class StorageRepository {
   }
 
   createFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer, { flag: 'wx' });
+    return fs.writeFile(filepath, buffer, { flag: 'wx', flush: true });
   }
 
   createWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'w' });
+    return createWriteStream(filepath, { flags: 'w', flush: true });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer, { flag: 'w' });
+    return fs.writeFile(filepath, buffer, { flag: 'w', flush: true });
   }
 
   overwriteFile(filepath: string, buffer: Buffer) {
-    return fs.writeFile(filepath, buffer, { flag: 'r+' });
+    return fs.writeFile(filepath, buffer, { flag: 'r+', flush: true });
   }
 
   rename(source: string, target: string) {

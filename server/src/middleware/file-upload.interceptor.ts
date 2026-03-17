@@ -10,6 +10,7 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { RouteKey } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
 import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util';
@@ -54,6 +55,7 @@ export class FileUploadInterceptor implements NestInterceptor {
   constructor(
     private reflect: Reflector,
     private assetService: AssetMediaService,
+    private storageRepository: StorageRepository,
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
@@ -125,7 +127,18 @@ export class FileUploadInterceptor implements NestInterceptor {
     });
 
     if (!this.isAssetUploadFile(file)) {
-      this.defaultStorage._handleFile(request, file, callback);
+      this.defaultStorage._handleFile(request, file, (error, info) => {
+        if (error) {
+          return callback(error);
+        }
+        // Multer does not sync files to disk after writing.
+        //
+        // TODO: use `flush: true` in multer when available: https://github.com/expressjs/multer/issues/1381
+        this.storageRepository
+          .datasync(info!.path!)
+          .then(() => callback(null, info!))
+          .catch((error) => callback(error));
+      });
       return;
     }
 
@@ -136,7 +149,13 @@ export class FileUploadInterceptor implements NestInterceptor {
         hash.destroy();
         callback(error);
       } else {
-        callback(null, { ...info, checksum: hash.digest() });
+        this.storageRepository
+          .datasync(info!.path!)
+          .then(() => callback(null, { ...info, checksum: hash.digest() }))
+          .catch((error) => {
+            hash.destroy();
+            callback(error);
+          });
       }
     });
   }

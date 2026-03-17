@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { mimeTypes } from 'src/utils/mime-types';
 
 interface ExifDuration {
@@ -94,7 +95,10 @@ export class MetadataRepository {
     taskTimeoutMillis: 2 * 60 * 1000,
   });
 
-  constructor(private logger: LoggingRepository) {
+  constructor(
+    private logger: LoggingRepository,
+    private storageRepository: StorageRepository,
+  ) {
     this.logger.setContext(MetadataRepository.name);
   }
 
@@ -121,6 +125,7 @@ export class MetadataRepository {
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
       await this.exiftool.write(path, tags);
+      await this.storageRepository.datasync(path);
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }

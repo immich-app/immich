@@ -10,6 +10,7 @@ import { Exif } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
@@ -45,7 +46,10 @@ export type ExtractResult = {
 
 @Injectable()
 export class MediaRepository {
-  constructor(private logger: LoggingRepository) {
+  constructor(
+    private logger: LoggingRepository,
+    private storageRepository: StorageRepository,
+  ) {
     this.logger.setContext(MediaRepository.name);
   }
 
@@ -116,6 +120,7 @@ export class MediaRepository {
         ignoreMinorErrors: true,
         writeArgs: ['-overwrite_original'],
       });
+      await this.storageRepository.datasync(output);
       return true;
     } catch (error: any) {
       this.logger.warn(`Could not write exif data to image: ${error.message}`);
@@ -133,6 +138,7 @@ export class MediaRepository {
           writeArgs: ['-TagsFromFile', source, `-${tagGroup}:all>${tagGroup}:all`, '-overwrite_original'],
         },
       );
+      await this.storageRepository.datasync(target);
       return true;
     } catch (error: any) {
       this.logger.warn(`Could not copy tag data to image: ${error.message}`);
@@ -180,6 +186,7 @@ export class MediaRepository {
     });
 
     await decoded.toFile(output);
+    await this.storageRepository.datasync(output);
   }
 
   private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
@@ -274,14 +281,18 @@ export class MediaRepository {
     };
   }
 
-  transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
+  async transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
-      return new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         this.configureFfmpegCall(input, output, options)
           .on('error', reject)
           .on('end', () => resolve())
           .run();
       });
+      if (typeof output === 'string') {
+        await this.storageRepository.datasync(output);
+      }
+      return;
     }
 
     if (typeof output !== 'string') {
@@ -290,7 +301,7 @@ export class MediaRepository {
 
     // two-pass allows for precise control of bitrate at the cost of running twice
     // recommended for vp9 for better quality and compression
-    return new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       // first pass output is not saved as only the .log file is needed
       this.configureFfmpegCall(input, '/dev/null', options)
         .addOptions('-pass', '1')
@@ -310,6 +321,7 @@ export class MediaRepository {
         })
         .run();
     });
+    await this.storageRepository.datasync(output);
   }
 
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {

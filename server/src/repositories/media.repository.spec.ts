@@ -6,6 +6,7 @@ import { SourceType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { automock } from 'test/utils';
 
@@ -65,8 +66,11 @@ describe(MediaRepository.name, () => {
   let sut: MediaRepository;
 
   beforeEach(() => {
-    // eslint-disable-next-line no-sparse-arrays
-    sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+    sut = new MediaRepository(
+      // eslint-disable-next-line no-sparse-arrays
+      automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
+      automock(StorageRepository, { args: [{ setContext: () => {} }], strict: false }),
+    );
   });
 
   describe('applyEdits (single actions)', () => {
