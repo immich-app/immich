@@ -60,6 +60,9 @@ class VideoControls extends HookConsumerWidget {
       }
     });
 
+    ref.listen(assetViewerProvider.select((v) => v.showingControls), (prev, showing) {
+      if (showing && prev != showing) hideTimer.reset();
+    });
     ref.listen(provider.select((v) => v.status), (_, __) => hideTimer.reset());
 
     final notifier = ref.read(provider.notifier);
