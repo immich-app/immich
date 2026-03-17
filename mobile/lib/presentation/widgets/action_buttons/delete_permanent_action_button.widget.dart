@@ -35,12 +35,12 @@ class DeletePermanentActionButton extends ConsumerWidget {
         false;
     if (!confirm) return;
 
-    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
-    ref.read(multiSelectProvider.notifier).reset();
-
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
+
+    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
+    ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'delete_permanently_action_prompt'.t(
       context: context,

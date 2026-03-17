@@ -25,12 +25,12 @@ class TrashActionButton extends ConsumerWidget {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).trash(source);
-    ref.read(multiSelectProvider.notifier).reset();
-
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
+
+    final result = await ref.read(actionProvider.notifier).trash(source);
+    ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'trash_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
