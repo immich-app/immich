@@ -15,7 +15,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-import java.io.IOException
 
 private const val TAG = "ImmichCloudRepo"
 private const val SYNC_PREFS_NAME = "immich.cloud_provider"
@@ -56,7 +55,6 @@ object ImmichCloudRepository {
   private lateinit var appContext: Context
   private lateinit var syncPrefs: SharedPreferences
 
-  private var syncGeneration: Long = 0
   private var cachedPeople: List<ImmichPerson>? = null
   private var peopleCacheTime: Long = 0
   private val PEOPLE_CACHE_TTL_MS = 5 * 60 * 1000L
@@ -64,9 +62,8 @@ object ImmichCloudRepository {
   fun initialize(context: Context) {
     appContext = context.applicationContext
     syncPrefs = appContext.getSharedPreferences(SYNC_PREFS_NAME, Context.MODE_PRIVATE)
-    syncGeneration = syncPrefs.getLong("sync_generation", 0)
     HttpClientManager.initialize(appContext)
-    Log.d(TAG, "initialize: syncGen=$syncGeneration, dbExists=${getDatabaseFile()?.exists()}")
+    Log.d(TAG, "initialize: dbExists=${getDatabaseFile()?.exists()}")
   }
 
   val isConfigured: Boolean
@@ -104,30 +101,6 @@ object ImmichCloudRepository {
     }
   }
 
-  fun getMediaCollectionId(): String {
-    return syncPrefs.getString("media_collection_id", "immich-cloud-v2") ?: "immich-cloud-v2"
-  }
-
-  fun getLastSyncGeneration(): Long {
-    if (syncGeneration == 0L) {
-      refreshSyncGeneration()
-    }
-    return syncGeneration
-  }
-
-  private fun refreshSyncGeneration() {
-    try {
-      val count = countAssetsFromDb()
-      if (count > 0) {
-        syncGeneration = count
-        syncPrefs.edit().putLong("sync_generation", syncGeneration).apply()
-        Log.d(TAG, "refreshSyncGeneration: $syncGeneration (from DB)")
-      }
-    } catch (e: Exception) {
-      Log.e(TAG, "refreshSyncGeneration error", e)
-    }
-  }
-
   private fun getTimelineUserIds(db: SQLiteDatabase): List<String> {
     val userId = getCurrentUserId(db) ?: return emptyList()
     val userIds = mutableListOf(userId)
@@ -161,27 +134,6 @@ object ImmichCloudRepository {
 
   private fun buildOwnerPlaceholders(userIds: List<String>): String {
     return userIds.joinToString(",") { "?" }
-  }
-
-  private fun countAssetsFromDb(): Long {
-    val db = openDatabase() ?: return 0
-    return try {
-      val userIds = getTimelineUserIds(db)
-      if (userIds.isEmpty()) return 0
-      val placeholders = buildOwnerPlaceholders(userIds)
-      val cursor = db.rawQuery(
-        "SELECT COUNT(*) FROM remote_asset_entity WHERE visibility = 0 AND deleted_at IS NULL AND owner_id IN ($placeholders)",
-        userIds.toTypedArray()
-      )
-      cursor.use {
-        if (it.moveToFirst()) it.getLong(0) else 0
-      }
-    } catch (e: Exception) {
-      Log.e(TAG, "countAssetsFromDb error", e)
-      0
-    } finally {
-      db.close()
-    }
   }
 
   fun getAccountName(): String {
@@ -246,17 +198,7 @@ object ImmichCloudRepository {
     }
   }
 
-  fun incrementSyncGeneration() {
-    syncGeneration++
-    syncPrefs.edit().putLong("sync_generation", syncGeneration).apply()
-  }
-
-  fun updateMediaCollectionId(newId: String) {
-    syncPrefs.edit().putString("media_collection_id", newId).apply()
-  }
-
   fun queryAllAssets(
-    syncGeneration: Long? = null,
     pageSize: Int = 1000,
     pageToken: String? = null
   ): QueryResult {
@@ -336,32 +278,7 @@ object ImmichCloudRepository {
 
       for (i in offset until end) {
         val a = assetsArr.getJSONObject(i)
-        val id = a.getString("id")
-        val type = a.optString("type", "IMAGE")
-        val isImage = type == "IMAGE"
-        val createdAt = a.optString("fileCreatedAt", a.optString("createdAt", ""))
-        val exifInfo = a.optJSONObject("exifInfo")
-        val fileSize = exifInfo?.optLong("fileSizeInByte", 1) ?: 1L
-        val orientation = exifInfo?.optString("orientation", "0")?.toIntOrNull() ?: 0
-        val width = exifInfo?.optInt("exifImageWidth", 0) ?: 0
-        val height = exifInfo?.optInt("exifImageHeight", 0) ?: 0
-        val duration = a.optString("duration", "")
-        val durationMillis = parseDuration(duration)
-
-        assets.add(
-          ImmichAsset(
-            id = id,
-            mimeType = if (isImage) "image/jpeg" else "video/mp4",
-            dateTakenMillis = parseIso8601(createdAt),
-            width = width,
-            height = height,
-            sizeBytes = if (fileSize > 0) fileSize else 1L,
-            durationMillis = durationMillis,
-            isFavorite = a.optBoolean("isFavorite", false),
-            orientation = orientation,
-            isImage = isImage
-          )
-        )
+        assets.add(assetFromApiJson(a))
       }
 
       val nextToken = if (end < assetsArr.length()) end.toString() else null
@@ -449,98 +366,6 @@ object ImmichCloudRepository {
     } catch (e: Exception) {
       Log.e(TAG, "getAssetById error", e)
       null
-    } finally {
-      db.close()
-    }
-  }
-
-  fun queryDeletedAssets(syncGeneration: Long): List<String> {
-    val db = openDatabase() ?: return emptyList()
-    return try {
-      val currentIds = getCurrentTimelineAssetIds(db)
-      val previousIds = loadTrackedAssetIds()
-      val deleted = previousIds - currentIds
-      Log.d(TAG, "queryDeletedAssets: previous=${previousIds.size}, current=${currentIds.size}, deleted=${deleted.size}")
-      deleted.toList()
-    } catch (e: Exception) {
-      Log.e(TAG, "queryDeletedAssets error", e)
-      emptyList()
-    } finally {
-      db.close()
-    }
-  }
-
-  private fun getCurrentTimelineAssetIds(db: SQLiteDatabase): Set<String> {
-    val userIds = getTimelineUserIds(db)
-    if (userIds.isEmpty()) return emptySet()
-    val placeholders = buildOwnerPlaceholders(userIds)
-    val cursor = db.rawQuery(
-      "SELECT id FROM remote_asset_entity WHERE visibility = 0 AND deleted_at IS NULL AND owner_id IN ($placeholders)",
-      userIds.toTypedArray()
-    )
-    val ids = mutableSetOf<String>()
-    cursor.use {
-      while (it.moveToNext()) {
-        ids.add(it.getString(0))
-      }
-    }
-    return ids
-  }
-
-  fun snapshotCurrentAssetIds() {
-    val db = openDatabase() ?: return
-    try {
-      val currentIds = getCurrentTimelineAssetIds(db)
-      saveTrackedAssetIds(currentIds)
-      Log.d(TAG, "snapshotCurrentAssetIds: saved ${currentIds.size} IDs")
-    } catch (e: Exception) {
-      Log.e(TAG, "snapshotCurrentAssetIds error", e)
-    } finally {
-      db.close()
-    }
-  }
-
-  private fun getTrackingFile(): File {
-    return File(appContext.filesDir, "cloud_provider_tracked_ids.txt")
-  }
-
-  private fun loadTrackedAssetIds(): Set<String> {
-    val file = getTrackingFile()
-    if (!file.exists()) return emptySet()
-    return try {
-      file.readLines().filter { it.isNotBlank() }.toSet()
-    } catch (e: Exception) {
-      Log.e(TAG, "loadTrackedAssetIds error", e)
-      emptySet()
-    }
-  }
-
-  private fun saveTrackedAssetIds(ids: Set<String>) {
-    try {
-      getTrackingFile().writeText(ids.joinToString("\n"))
-    } catch (e: Exception) {
-      Log.e(TAG, "saveTrackedAssetIds error", e)
-    }
-  }
-
-  fun detectAndApplyChanges() {
-    val db = openDatabase() ?: return
-    try {
-      val currentIds = getCurrentTimelineAssetIds(db)
-      val previousIds = loadTrackedAssetIds()
-
-      if (previousIds.isNotEmpty() && currentIds != previousIds) {
-        incrementSyncGeneration()
-        Log.d(TAG, "detectAndApplyChanges: asset set changed, bumped syncGen to $syncGeneration")
-      }
-
-      val count = currentIds.size.toLong()
-      if (count > 0 && count != syncGeneration) {
-        syncGeneration = count
-        syncPrefs.edit().putLong("sync_generation", syncGeneration).apply()
-      }
-    } catch (e: Exception) {
-      Log.e(TAG, "detectAndApplyChanges error", e)
     } finally {
       db.close()
     }
@@ -677,52 +502,6 @@ object ImmichCloudRepository {
     }
   }
 
-  fun searchAssets(
-    query: String,
-    pageSize: Int = 100,
-    pageToken: String? = null
-  ): QueryResult {
-    Log.d(TAG, "searchAssets: query=$query, pageSize=$pageSize, pageToken=$pageToken")
-    return try {
-      val page = pageToken?.toIntOrNull() ?: 1
-      val url = buildUrl("/search/smart") ?: return QueryResult(emptyList(), null)
-      val jsonBody = JSONObject().apply {
-        put("query", query)
-        put("page", page)
-        put("size", pageSize)
-      }
-      val mediaType = "application/json".toMediaType()
-      val requestBody = jsonBody.toString().toRequestBody(mediaType)
-      val request = Request.Builder().url(url).post(requestBody).build()
-      val response = getClient().newCall(request).execute()
-      if (!response.isSuccessful) {
-        Log.e(TAG, "searchAssets API failed: ${response.code}")
-        response.close()
-        return QueryResult(emptyList(), null)
-      }
-      val body = response.body?.string() ?: "{}"
-      response.close()
-      val result = JSONObject(body)
-      val assetsObj = result.optJSONObject("assets") ?: return QueryResult(emptyList(), null)
-      val items = assetsObj.optJSONArray("items") ?: return QueryResult(emptyList(), null)
-      val total = assetsObj.optInt("total", 0)
-
-      val assets = mutableListOf<ImmichAsset>()
-      for (i in 0 until items.length()) {
-        val a = items.getJSONObject(i)
-        assets.add(assetFromApiJson(a))
-      }
-
-      val fetched = (page - 1) * pageSize + assets.size
-      val nextToken = if (fetched < total) (page + 1).toString() else null
-      Log.d(TAG, "searchAssets: returning ${assets.size} assets, nextToken=$nextToken")
-      QueryResult(assets, nextToken)
-    } catch (e: Exception) {
-      Log.e(TAG, "searchAssets error", e)
-      QueryResult(emptyList(), null)
-    }
-  }
-
   private fun assetFromApiJson(a: JSONObject): ImmichAsset {
     val id = a.getString("id")
     val type = a.optString("type", "IMAGE")
@@ -813,11 +592,5 @@ object ImmichCloudRepository {
       .build()
     val request = Request.Builder().url(urlWithParams).get().build()
     return downloadToTempFile(request, "preview_${assetId}_$sizeParam")
-  }
-
-  fun openVideoStream(assetId: String): ParcelFileDescriptor? {
-    val url = buildUrl("/assets/$assetId/video/playback") ?: return null
-    val request = Request.Builder().url(url).get().build()
-    return downloadToTempFile(request, "video_$assetId")
   }
 }
