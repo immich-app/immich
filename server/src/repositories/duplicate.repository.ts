@@ -3,6 +3,7 @@ import { Kysely, NotNull, Selectable, ShallowDehydrateObject, sql } from 'kysely
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
