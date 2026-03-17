@@ -19,7 +19,7 @@ import {
   UserLike,
 } from 'test/factories/types';
 import { UserFactory } from 'test/factories/user.factory';
-import { newDate, newSha1, newUuid, newUuidV7 } from 'test/small.factory';
+import { newSha1, newUuid, newUuidV7 } from 'test/small.factory';
 
 export class AssetFactory {
   #owner!: UserFactory;
@@ -43,10 +43,12 @@ export class AssetFactory {
 
     const originalFileName = dto.originalFileName ?? (dto.type === AssetType.Video ? `MOV_${id}.mp4` : `IMG_${id}.jpg`);
 
+    let now = Date.now();
+
     return new AssetFactory({
       id,
-      createdAt: newDate(),
-      updatedAt: newDate(),
+      createdAt: new Date(now++),
+      updatedAt: new Date(now++),
       deletedAt: null,
       updateId: newUuidV7(),
       status: AssetStatus.Active,
@@ -55,14 +57,14 @@ export class AssetFactory {
       deviceId: '',
       duplicateId: null,
       duration: null,
-      fileCreatedAt: newDate(),
-      fileModifiedAt: newDate(),
+      fileCreatedAt: new Date(now++),
+      fileModifiedAt: new Date(now++),
       isExternal: false,
       isFavorite: false,
       isOffline: false,
       libraryId: null,
       livePhotoVideoId: null,
-      localDateTime: newDate(),
+      localDateTime: new Date(now),
       originalFileName,
       originalPath: `/data/library/${originalFileName}`,
       ownerId: newUuid(),

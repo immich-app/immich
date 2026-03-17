@@ -67,7 +67,7 @@
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
-  let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
+  let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -137,15 +137,13 @@
     const searchDto: SearchTerms = {
       page: nextPage,
       withExif: true,
-      isVisible: true,
-      language: $lang,
       ...terms,
     };
 
     try {
       const { albums, assets } =
         ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
-          ? await searchSmart({ smartSearchDto: searchDto })
+          ? await searchSmart({ smartSearchDto: { ...searchDto, language: $lang } })
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
@@ -230,7 +228,7 @@
   const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
     cancelMultiselect(assetInteraction);
 
-    if (terms.isNotInAlbum.toString() == 'true') {
+    if (terms.isNotInAlbum) {
       const assetIdSet = new Set(assetIds);
       searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
