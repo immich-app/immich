@@ -1,9 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 
 const _pageSize = 50;
+
+/// Minimum server version that supports paginated activity loading (take + before params).
+const _paginationMinVersion = ServerVersion(major: 2, minor: 6, patch: 0);
 
 // ignore: unintended_html_in_doc_comment
 /// Maintains the current list of all activities for <share-album-id, asset>
@@ -21,18 +26,22 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
   bool get hasMore => _hasMore;
   bool get isLoadingMore => _isLoadingMore;
 
+  bool get _paginationSupported =>
+      ref.read(serverInfoProvider).serverVersion >= _paginationMinVersion;
+
   @override
   Future<List<Activity>> build((String albumId, String? assetId) args) async {
     albumId = args.$1;
     assetId = args.$2;
     _hasMore = true;
     _isLoadingMore = false;
+    final paginationSupported = _paginationSupported;
     final activities = await ref.watch(activityServiceProvider).getAllActivities(
       albumId,
       assetId: assetId,
-      take: _pageSize,
+      take: paginationSupported ? _pageSize : null,
     );
-    _hasMore = activities.length >= _pageSize;
+    _hasMore = paginationSupported && activities.length >= _pageSize;
     return activities;
   }
 

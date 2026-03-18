@@ -1,3 +1,4 @@
+import { websocketStore } from '$lib/stores/websocket';
 import {
   createActivity,
   deleteActivity,
@@ -13,6 +14,30 @@ import { get } from 'svelte/store';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
+
+/** Minimum server version that supports paginated activity loading (take + before params). */
+const PAGINATION_MIN_VERSION = { major: 2, minor: 6, patch: 0 };
+
+function waitForServerVersion(): Promise<{ major: number; minor: number; patch: number }> {
+  return new Promise((resolve) => {
+    const unsubscribe = websocketStore.serverVersion.subscribe((version) => {
+      if (version) {
+        unsubscribe();
+        resolve(version);
+      }
+    });
+  });
+}
+
+function versionSupportsPagination(version: { major: number; minor: number; patch: number }): boolean {
+  if (version.major !== PAGINATION_MIN_VERSION.major) {
+    return version.major > PAGINATION_MIN_VERSION.major;
+  }
+  if (version.minor !== PAGINATION_MIN_VERSION.minor) {
+    return version.minor > PAGINATION_MIN_VERSION.minor;
+  }
+  return version.patch >= PAGINATION_MIN_VERSION.patch;
+}
 
 type CacheKey = string;
 type ActivityCache = {
@@ -160,8 +185,14 @@ class ActivityManager {
       return;
     }
 
-    this.#activities = await getActivities({ albumId, assetId, take: ActivityManager.PAGE_SIZE });
-    this.#hasMore = this.#activities.length >= ActivityManager.PAGE_SIZE;
+    const serverVersion = await waitForServerVersion();
+    const paginationSupported = versionSupportsPagination(serverVersion);
+    this.#activities = await getActivities({
+      albumId,
+      assetId,
+      take: paginationSupported ? ActivityManager.PAGE_SIZE : undefined,
+    });
+    this.#hasMore = paginationSupported && this.#activities.length >= ActivityManager.PAGE_SIZE;
 
     const [liked] = await getActivities({
       albumId,
