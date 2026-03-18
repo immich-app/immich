@@ -887,15 +887,16 @@ describe(AssetService.name, () => {
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
 
       const editAction = { action: AssetEditAction.Rotate, parameters: { angle: 90 } } as const;
+      const editResponse = { ...editAction, id: expect.any(String) };
       await expect(sut.editAsset(auth, asset.id, { edits: [editAction] })).resolves.toEqual({
         assetId: asset.id,
-        edits: [editAction],
+        edits: [editResponse],
       });
 
       await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
         expect.objectContaining({ isEdited: true }),
       );
-      await expect(ctx.get(AssetEditRepository).getAll(asset.id)).resolves.toEqual([editAction]);
+      await expect(ctx.get(AssetEditRepository).getAll(asset.id)).resolves.toEqual([editResponse]);
     });
   });
 });

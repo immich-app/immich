@@ -131,6 +131,7 @@ void main() {
         durationInSeconds: 0,
         orientation: 0,
         isFavorite: false,
+        playbackStyle: PlatformAssetPlaybackStyle.image
       );
 
       final assetsToRestore = [LocalAssetStub.image1];
@@ -214,6 +215,7 @@ void main() {
         isFavorite: false,
         createdAt: 1700000000,
         updatedAt: 1732000000,
+        playbackStyle: PlatformAssetPlaybackStyle.image
       );
 
       final localAsset = platformAsset.toLocalAsset();

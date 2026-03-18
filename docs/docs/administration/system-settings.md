@@ -230,7 +230,7 @@ The default value is `ultrafast`.
 
 ### Audio codec (`ffmpeg.targetAudioCodec`) {#ffmpeg.targetAudioCodec}
 
-Which audio codec to use when the audio stream is being transcoded. Can be one of `mp3`, `aac`, `libopus`.
+Which audio codec to use when the audio stream is being transcoded. Can be one of `mp3`, `aac`, `opus`.
 
 The default value is `aac`.
 

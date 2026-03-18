@@ -1,3 +1,5 @@
+import { on } from 'svelte/events';
+
 interface Options {
   onFocusOut?: (event: FocusEvent) => void;
 }
@@ -19,11 +21,11 @@ export function focusOutside(node: HTMLElement, options: Options = {}) {
     }
   };
 
-  node.addEventListener('focusout', handleFocusOut);
+  const off = on(node, 'focusout', handleFocusOut);
 
   return {
     destroy() {
-      node.removeEventListener('focusout', handleFocusOut);
+      off();
     },
   };
 }

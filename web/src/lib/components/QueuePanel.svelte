@@ -112,7 +112,7 @@
 
       switch (dto.command) {
         case QueueCommand.Empty: {
-          toastManager.success($t('admin.cleared_jobs', { values: { job: item.title } }));
+          toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
           break;
         }
       }

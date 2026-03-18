@@ -25,6 +25,7 @@ class FileMediaRepository {
       type: AssetType.image,
       createdAt: entity.createDateTime,
       updatedAt: entity.modifiedDateTime,
+      playbackStyle: AssetPlaybackStyle.image,
       isEdited: false,
     );
   }

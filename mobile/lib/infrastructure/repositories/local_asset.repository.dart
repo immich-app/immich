@@ -184,7 +184,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     if (keepFavorites) {
-      whereClause = whereClause & _db.localAssetEntity.isFavorite.equals(false);
+      whereClause =
+          whereClause & _db.localAssetEntity.isFavorite.equals(false) & _db.remoteAssetEntity.isFavorite.equals(false);
     }
 
     query.where(whereClause);

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:immich_ui/src/components/icon_button.dart';
 import 'package:immich_ui/src/types.dart';
-
-import 'icon_button.dart';
 
 class ImmichCloseButton extends StatelessWidget {
   final VoidCallback? onPressed;

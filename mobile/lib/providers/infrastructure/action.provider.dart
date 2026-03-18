@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -123,7 +122,7 @@ class ActionNotifier extends Notifier<void> {
   Set<BaseAsset> _getAssets(ActionSource source) {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
-      ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
+      ActionSource.viewer => switch (ref.read(assetViewerProvider).currentAsset) {
         BaseAsset asset => {asset},
         null => const {},
       },
@@ -307,7 +306,10 @@ class ActionNotifier extends Notifier<void> {
       // does not update the currentAsset which means
       // the exif provider will not be refreshed automatically
       if (source == ActionSource.viewer) {
-        ref.invalidate(currentAssetExifProvider);
+        final currentAsset = ref.read(assetViewerProvider).currentAsset;
+        if (currentAsset != null) {
+          ref.invalidate(assetExifProvider(currentAsset));
+        }
       }
 
       return ActionResult(count: ids.length, success: true);
@@ -409,7 +411,6 @@ class ActionNotifier extends Notifier<void> {
       if (source == ActionSource.viewer) {
         final updatedParent = await _assetService.getRemoteAsset(assets.first.id);
         if (updatedParent != null) {
-          ref.read(currentAssetNotifier.notifier).setAsset(updatedParent);
           ref.read(assetViewerProvider.notifier).setAsset(updatedParent);
         }
       }
@@ -453,7 +454,7 @@ class ActionNotifier extends Notifier<void> {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
-    final cancelToken = CancellationToken();
+    final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
 
     // Initialize progress for all assets
@@ -464,7 +465,7 @@ class ActionNotifier extends Notifier<void> {
     try {
       await _foregroundUploadService.uploadManual(
         assetsToUpload,
-        cancelToken,
+        cancelToken: cancelToken,
         callbacks: UploadCallbacks(
           onProgress: (localAssetId, filename, bytes, totalBytes) {
             final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;

@@ -24,7 +24,7 @@ Immich has three main clients:
 3. CLI - Command-line utility for bulk upload
 
 :::info
-All three clients use [OpenAPI](./open-api.md) to auto-generate rest clients for easy integration. For more information about this process, see [OpenAPI](./open-api.md).
+All three clients use [OpenAPI](/api.md) to auto-generate rest clients for easy integration. For more information about this process, see [OpenAPI](/api.md).
 :::
 
 ### Mobile App
@@ -71,7 +71,7 @@ An incoming HTTP request is mapped to a controller (`src/controllers`). Controll
 
 ### Domain Transfer Objects (DTOs)
 
-The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](./open-api.md) schemas and control the generated code used by each client.
+The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](/api.md) schemas and control the generated code used by each client.
 
 ### Background Jobs
 

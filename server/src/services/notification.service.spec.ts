@@ -10,6 +10,7 @@ import { AssetFactory } from 'test/factories/asset.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { notificationStub } from 'test/fixtures/notification.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { getForAlbum } from 'test/mappers';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -269,14 +270,14 @@ describe(NotificationService.name, () => {
     });
 
     it('should skip if recipient could not be found', async () => {
-      mocks.album.getById.mockResolvedValue(AlbumFactory.create());
+      mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.create()));
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should skip if the recipient has email notifications disabled', async () => {
-      mocks.album.getById.mockResolvedValue(AlbumFactory.create());
+      mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.create()));
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
         metadata: [
@@ -292,7 +293,7 @@ describe(NotificationService.name, () => {
     });
 
     it('should skip if the recipient has email notifications for album invite disabled', async () => {
-      mocks.album.getById.mockResolvedValue(AlbumFactory.create());
+      mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.create()));
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
         metadata: [
@@ -308,7 +309,7 @@ describe(NotificationService.name, () => {
     });
 
     it('should send invite email', async () => {
-      mocks.album.getById.mockResolvedValue(AlbumFactory.create());
+      mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.create()));
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
         metadata: [
@@ -331,7 +332,7 @@ describe(NotificationService.name, () => {
 
     it('should send invite email without album thumbnail if thumbnail asset does not exist', async () => {
       const album = AlbumFactory.create({ albumThumbnailAssetId: newUuid() });
-      mocks.album.getById.mockResolvedValue(album);
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
         metadata: [
@@ -363,7 +364,7 @@ describe(NotificationService.name, () => {
     it('should send invite email with album thumbnail as jpeg', async () => {
       const assetFile = AssetFileFactory.create({ type: AssetFileType.Thumbnail });
       const album = AlbumFactory.create({ albumThumbnailAssetId: assetFile.assetId });
-      mocks.album.getById.mockResolvedValue(album);
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
         metadata: [
@@ -394,8 +395,10 @@ describe(NotificationService.name, () => {
 
     it('should send invite email with album thumbnail and arbitrary extension', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail }).build();
-      const album = AlbumFactory.from({ albumThumbnailAssetId: asset.id }).asset(asset).build();
-      mocks.album.getById.mockResolvedValue(album);
+      const album = AlbumFactory.from({ albumThumbnailAssetId: asset.id })
+        .asset(asset, (builder) => builder.exif())
+        .build();
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
         metadata: [
@@ -432,7 +435,7 @@ describe(NotificationService.name, () => {
     });
 
     it('should skip if owner could not be found', async () => {
-      mocks.album.getById.mockResolvedValue(AlbumFactory.create({ ownerId: 'non-existent' }));
+      mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.create({ ownerId: 'non-existent' })));
 
       await expect(sut.handleAlbumUpdate({ id: '', recipientId: '1' })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.systemMetadata.get).not.toHaveBeenCalled();
@@ -440,7 +443,7 @@ describe(NotificationService.name, () => {
 
     it('should skip recipient that could not be looked up', async () => {
       const album = AlbumFactory.from().albumUser({ userId: 'non-existent' }).build();
-      mocks.album.getById.mockResolvedValue(album);
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValueOnce(album.owner);
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -459,7 +462,7 @@ describe(NotificationService.name, () => {
         })
         .build();
       const album = AlbumFactory.from().albumUser({ userId: user.id }).build();
-      mocks.album.getById.mockResolvedValue(album);
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue(user);
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -478,7 +481,7 @@ describe(NotificationService.name, () => {
         })
         .build();
       const album = AlbumFactory.from().albumUser({ userId: user.id }).build();
-      mocks.album.getById.mockResolvedValue(album);
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue(user);
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -492,7 +495,7 @@ describe(NotificationService.name, () => {
     it('should send email', async () => {
       const user = UserFactory.create();
       const album = AlbumFactory.from().albumUser({ userId: user.id }).build();
-      mocks.album.getById.mockResolvedValue(album);
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue(user);
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });

@@ -26,7 +26,7 @@
     isLoading = true;
     try {
       await setupPinCode({ pinCodeSetupDto: { pinCode: newPinCode } });
-      toastManager.success($t('pin_code_setup_successfully'));
+      toastManager.primary($t('pin_code_setup_successfully'));
       onCreated?.(newPinCode);
       resetForm();
     } catch (error) {

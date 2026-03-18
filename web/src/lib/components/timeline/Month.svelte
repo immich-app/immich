@@ -35,7 +35,6 @@
   let { isUploading } = uploadAssetsStore;
   let hoveredDayGroup = $state<string | null>(null);
 
-  const isMouseOverGroup = $derived(hoveredDayGroup !== null);
   const transitionDuration = $derived(monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150);
 
   const filterIntersecting = <T extends { intersecting: boolean }>(intersectables: T[]) => {
@@ -54,7 +53,6 @@
 </script>
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
-  {@const absoluteWidth = dayGroup.left}
   {@const isDayGroupSelected = assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
@@ -64,11 +62,12 @@
     ]}
     data-group
     style:position="absolute"
-    style:transform={`translate3d(${absoluteWidth}px,${dayGroup.top}px,0)`}
+    style:inset-inline-start={dayGroup.start + 'px'}
+    style:top={dayGroup.top + 'px'}
     onmouseenter={() => (hoveredDayGroup = dayGroup.groupTitle)}
     onmouseleave={() => (hoveredDayGroup = null)}
   >
-    <!-- Month title -->
+    <!-- Day title -->
     <div
       class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
       style:width={dayGroup.width + 'px'}
@@ -76,15 +75,14 @@
       {#if !singleSelect}
         <div
           class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
-          class:w-8={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
-            assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
+          class:w-8={hoveredDayGroup === dayGroup.groupTitle || assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
           onclick={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
         >
           {#if isDayGroupSelected}
             <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
           {:else}
-            <Icon icon={mdiCircleOutline} size="24" color="#757575" />
+            <Icon icon={mdiCircleOutline} size="24" class="text-light-500" />
           {/if}
         </div>
       {/if}
