@@ -1,7 +1,8 @@
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
-import { SharedLinkType } from 'src/enum';
+import { Permission, SharedLinkType } from 'src/enum';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import request from 'supertest';
+import { factory } from 'test/small.factory';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
 describe(SharedLinkController.name, () => {
@@ -29,6 +30,18 @@ describe(SharedLinkController.name, () => {
         .post('/shared-links')
         .send({ expiresAt: null, type: SharedLinkType.Individual });
       expect(service.create).toHaveBeenCalledWith(undefined, expect.objectContaining({ expiresAt: null }));
+    });
+  });
+
+  describe('DELETE /shared-links/:id/assets', () => {
+    it('should require shared link update permission', async () => {
+      await request(ctx.getHttpServer()).delete(`/shared-links/${factory.uuid()}/assets`).send({ assetIds: [] });
+
+      expect(ctx.authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({ permission: Permission.SharedLinkUpdate, sharedLinkRoute: false }),
+        }),
+      );
     });
   });
 });

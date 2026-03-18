@@ -92,9 +92,6 @@ export class AssetTable {
   @Column({ type: 'character varying', nullable: true })
   duration!: string | null;
 
-  @Column({ type: 'character varying', nullable: true, default: '' })
-  encodedVideoPath!: string | null;
-
   @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum
 

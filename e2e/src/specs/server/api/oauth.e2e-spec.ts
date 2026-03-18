@@ -380,4 +380,23 @@ describe(`/oauth`, () => {
       });
     });
   });
+
+  describe('idTokenClaims', () => {
+    it('should use claims from the ID token if IDP includes them', async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+      });
+      const callbackParams = await loginWithOAuth(OAuthUser.ID_TOKEN_CLAIMS);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        name: 'ID Token User',
+        userEmail: 'oauth-id-token-claims@immich.app',
+        userId: expect.any(String),
+      });
+    });
+  });
 });

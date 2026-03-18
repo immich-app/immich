@@ -5,6 +5,7 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
 import type { AssetControlContext } from '$lib/types';
 import { getSharedLink, sleep } from '$lib/utils';
@@ -31,6 +32,7 @@ import {
   mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
+  mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
@@ -223,6 +225,17 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: { key: 't' },
   };
 
+  const TagPeople: ActionItem = {
+    title: $t('tag_people'),
+    icon: mdiFaceRecognition,
+    type: $t('assets'),
+    $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
+    onAction: () => {
+      isFaceEditMode.value = !isFaceEditMode.value;
+    },
+    shortcuts: { key: 'p' },
+  };
+
   const Edit: ActionItem = {
     title: $t('editor'),
     icon: mdiTune,
@@ -279,6 +292,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     ZoomOut,
     Copy,
     Tag,
+    TagPeople,
     Edit,
     RefreshFacesJob,
     RefreshMetadataJob,
@@ -320,7 +334,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     }
 
     try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename } }));
+      toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
       downloadUrl(
         getBaseUrl() +
           `/assets/${id}/original` +
@@ -338,7 +352,7 @@ const handleFavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.success($t('added_to_favorites'));
+    toastManager.primary($t('added_to_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
@@ -350,7 +364,7 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.success($t('removed_from_favorites'));
+    toastManager.primary($t('removed_from_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
@@ -373,7 +387,7 @@ const handleRunAssetJob = async (dto: AssetJobsDto) => {
 
   try {
     await runAssetJobs({ assetJobsDto: dto });
-    toastManager.success(getAssetJobMessage($t, dto.name));
+    toastManager.primary(getAssetJobMessage($t, dto.name));
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
   }

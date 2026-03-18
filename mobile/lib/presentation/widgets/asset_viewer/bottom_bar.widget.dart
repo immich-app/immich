@@ -61,15 +61,27 @@ class ViewerBottomBar extends ConsumerWidget {
                 ),
               ),
               child: Container(
-                color: Colors.black.withAlpha(125),
-                padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
-                    if (!isReadonlyModeEnabled)
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
-                  ],
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Colors.black45, Colors.black12, Colors.transparent],
+                    stops: [0.0, 0.7, 1.0],
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
+                        if (!isReadonlyModeEnabled)
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

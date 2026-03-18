@@ -427,11 +427,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
+  Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
@@ -442,13 +438,6 @@ class SharedLinksApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-    if (slug != null) {
-      queryParams.addAll(_queryParams('', 'slug', slug));
-    }
 
     const contentTypes = <String>['application/json'];
 
@@ -473,12 +462,8 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
-    final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
+  Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto,) async {
+    final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

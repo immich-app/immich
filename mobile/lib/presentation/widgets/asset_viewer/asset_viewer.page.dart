@@ -81,19 +81,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   late final _preloader = AssetPreloader(timelineService: ref.read(timelineServiceProvider), mounted: () => mounted);
 
   late int _currentPage = widget.initialIndex;
+  late int _totalAssets = ref.read(timelineServiceProvider).totalAssets;
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
-
-  bool _assetReloadRequested = false;
 
   void _onTapNavigate(int direction) {
     final page = _pageController.page?.toInt();
     if (page == null) return;
     final target = page + direction;
-    final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
+    final maxPage = _totalAssets - 1;
     if (target >= 0 && target <= maxPage) {
-      _currentPage = target;
       _pageController.jumpToPage(target);
       _onAssetChanged(target);
     }
@@ -141,7 +139,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final page = _pageController.page?.round();
     if (page != null && page != _currentPage) {
-      _currentPage = page;
       _onAssetChanged(page);
     }
     return false;
@@ -153,8 +150,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetChanged(int index) async {
-    final timelineService = ref.read(timelineServiceProvider);
-    final asset = await timelineService.getAssetAsync(index);
+    _currentPage = index;
+
+    final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
     if (asset == null) return;
 
     AssetViewer._setAsset(ref, asset);
@@ -193,9 +191,18 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
       case ViewerReloadAssetEvent():
-        _assetReloadRequested = true;
+        _onViewerReloadEvent();
       default:
     }
+  }
+
+  void _onViewerReloadEvent() {
+    if (_totalAssets <= 1) return;
+
+    final index = _pageController.page?.round() ?? 0;
+    final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
+    _pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut);
+    _onAssetChanged(target);
   }
 
   void _onTimelineReloadEvent() {
@@ -207,41 +214,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    var index = _pageController.page?.round() ?? 0;
     final currentAsset = ref.read(assetViewerProvider).currentAsset;
-    if (currentAsset != null) {
-      final newIndex = timelineService.getIndex(currentAsset.heroTag);
-      if (newIndex != null && newIndex != index) {
-        index = newIndex;
-        _currentPage = index;
-        _pageController.jumpToPage(index);
-      }
-    }
+    final assetIndex = currentAsset != null ? timelineService.getIndex(currentAsset.heroTag) : null;
+    final index = (assetIndex ?? _currentPage).clamp(0, totalAssets - 1);
 
-    if (index >= totalAssets) {
-      index = totalAssets - 1;
-      _currentPage = index;
+    if (index != _currentPage) {
       _pageController.jumpToPage(index);
+      _onAssetChanged(index);
+    } else if (currentAsset != null && assetIndex == null) {
+      _onAssetChanged(index);
     }
 
-    if (_assetReloadRequested) {
-      _assetReloadRequested = false;
-      _onAssetReloadEvent(index);
+    if (_totalAssets != totalAssets) {
+      setState(() {
+        _totalAssets = totalAssets;
+      });
     }
-  }
-
-  void _onAssetReloadEvent(int index) async {
-    final timelineService = ref.read(timelineServiceProvider);
-
-    final newAsset = await timelineService.getAssetAsync(index);
-    if (newAsset == null) return;
-
-    final currentAsset = ref.read(assetViewerProvider).currentAsset;
-
-    // Do not reload if the asset has not changed
-    if (newAsset.heroTag == currentAsset?.heroTag) return;
-
-    _onAssetChanged(index);
   }
 
   void _setSystemUIMode(bool controls, bool details) {
@@ -301,7 +289,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                     : CurrentPlatform.isIOS
                     ? const FastScrollPhysics()
                     : const FastClampingScrollPhysics(),
-                itemCount: ref.read(timelineServiceProvider).totalAssets,
+                itemCount: _totalAssets,
                 itemBuilder: (context, index) =>
                     AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
               ),

@@ -148,10 +148,12 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                         children: [
                           Icon(Icons.warning_rounded, color: context.colorScheme.error, fill: 1),
                           const SizedBox(width: 8),
-                          Text(
-                            context.t.backup_error_sync_failed,
-                            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
-                            textAlign: TextAlign.center,
+                          Flexible(
+                            child: Text(
+                              context.t.backup_error_sync_failed,
+                              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ],
                       ),
@@ -344,6 +346,7 @@ class _RemainderCard extends ConsumerWidget {
                       remainderCount.toString(),
                       style: context.textTheme.titleLarge?.copyWith(
                         color: context.colorScheme.onSurface.withAlpha(syncStatus.isRemoteSyncing ? 50 : 255),
+                        fontFeatures: [const FontFeature.tabularFigures()],
                       ),
                     ),
                     if (syncStatus.isRemoteSyncing)
@@ -483,6 +486,7 @@ class _PreparingStatusState extends ConsumerState {
                     style: context.textTheme.titleMedium?.copyWith(
                       color: context.colorScheme.primary,
                       fontWeight: FontWeight.w600,
+                      fontFeatures: [const FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -507,6 +511,7 @@ class _PreparingStatusState extends ConsumerState {
                   style: context.textTheme.titleMedium?.copyWith(
                     color: context.primaryColor,
                     fontWeight: FontWeight.w600,
+                    fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),
               ],

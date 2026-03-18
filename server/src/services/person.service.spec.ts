@@ -12,7 +12,7 @@ import { PersonFactory } from 'test/factories/person.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { getAsDetectedFace, getForFacialRecognitionJob } from 'test/mappers';
+import { getAsDetectedFace, getForAssetFace, getForDetectedFaces, getForFacialRecognitionJob } from 'test/mappers';
 import { newDate, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -202,16 +202,16 @@ describe(PersonService.name, () => {
       mocks.person.update.mockResolvedValue(person);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
 
-      await expect(sut.update(auth, person.id, { birthDate: new Date('1976-06-30') })).resolves.toEqual({
+      await expect(sut.update(auth, person.id, { birthDate: '1976-06-30' })).resolves.toEqual({
         id: person.id,
         name: person.name,
         birthDate: '1976-06-30',
         thumbnailPath: person.thumbnailPath,
         isHidden: false,
         isFavorite: false,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, birthDate: new Date('1976-06-30') });
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, birthDate: '1976-06-30' });
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
@@ -319,7 +319,7 @@ describe(PersonService.name, () => {
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       mocks.person.getById.mockResolvedValue(person);
       mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
-      mocks.person.getFacesByIds.mockResolvedValue([face]);
+      mocks.person.getFacesByIds.mockResolvedValue([getForAssetFace(face)]);
       mocks.person.reassignFace.mockResolvedValue(1);
       mocks.person.getRandomFace.mockResolvedValue(AssetFaceFactory.create());
       mocks.person.refreshFaces.mockResolvedValue();
@@ -353,15 +353,17 @@ describe(PersonService.name, () => {
       const face = AssetFaceFactory.create();
       const asset = AssetFactory.from({ id: face.assetId }).exif().build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.person.getFaces.mockResolvedValue([face]);
+      mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
       mocks.asset.getForFaces.mockResolvedValue({ edits: [], ...asset.exifInfo });
-      await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([mapFaces(face, auth)]);
+      await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([
+        mapFaces(getForAssetFace(face), auth),
+      ]);
     });
 
     it('should reject if the user has not access to the asset', async () => {
       const face = AssetFaceFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
-      mocks.person.getFaces.mockResolvedValue([face]);
+      mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
       await expect(sut.getFacesById(AuthFactory.create(), { id: face.assetId })).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -390,7 +392,7 @@ describe(PersonService.name, () => {
 
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
-      mocks.person.getFaceById.mockResolvedValue(face);
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
       mocks.person.reassignFace.mockResolvedValue(1);
       mocks.person.getById.mockResolvedValue(person);
       await expect(sut.reassignFacesById(AuthFactory.create(), person.id, { id: face.id })).resolves.toEqual({
@@ -400,7 +402,7 @@ describe(PersonService.name, () => {
         id: person.id,
         name: person.name,
         thumbnailPath: person.thumbnailPath,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       });
 
       expect(mocks.job.queue).not.toHaveBeenCalledWith();
@@ -412,7 +414,7 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
 
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
-      mocks.person.getFaceById.mockResolvedValue(face);
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
       mocks.person.reassignFace.mockResolvedValue(1);
       mocks.person.getById.mockResolvedValue(person);
       await expect(
@@ -735,18 +737,18 @@ describe(PersonService.name, () => {
     });
 
     it('should skip when no resize path', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).not.toHaveBeenCalled();
     });
 
     it('should handle no results', async () => {
       const start = Date.now();
-      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).exif().build();
 
       mocks.machineLearning.detectFaces.mockResolvedValue({ imageHeight: 500, imageWidth: 400, faces: [] });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
         asset.files[0].path,
@@ -764,12 +766,12 @@ describe(PersonService.name, () => {
     });
 
     it('should create a face with no person and queue recognition job', async () => {
-      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).exif().build();
       const face = AssetFaceFactory.create({ assetId: asset.id });
       mocks.crypto.randomUUID.mockReturnValue(face.id);
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
       mocks.search.searchFaces.mockResolvedValue([{ ...face, distance: 0.7 }]);
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.person.refreshFaces.mockResolvedValue();
 
       await sut.handleDetectFaces({ id: asset.id });
@@ -788,9 +790,9 @@ describe(PersonService.name, () => {
     });
 
     it('should delete an existing face not among the new detected faces', async () => {
-      const asset = AssetFactory.from().face().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().face().file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue({ faces: [], imageHeight: 500, imageWidth: 400 });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
 
       await sut.handleDetectFaces({ id: asset.id });
 
@@ -809,9 +811,9 @@ describe(PersonService.name, () => {
         boundingBoxY1: 200,
         boundingBoxY2: 300,
       });
-      const asset = AssetFactory.from({ id: assetId }).face().file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from({ id: assetId }).face().file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.crypto.randomUUID.mockReturnValue(face.id);
       mocks.person.refreshFaces.mockResolvedValue();
 
@@ -832,9 +834,9 @@ describe(PersonService.name, () => {
 
     it('should add embedding to matching metadata face', async () => {
       const face = AssetFaceFactory.create({ sourceType: SourceType.Exif });
-      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from().face(face).file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.person.refreshFaces.mockResolvedValue();
 
       await sut.handleDetectFaces({ id: asset.id });
@@ -848,9 +850,9 @@ describe(PersonService.name, () => {
     it('should not add embedding to non-matching metadata face', async () => {
       const assetId = newUuid();
       const face = AssetFaceFactory.create({ assetId, sourceType: SourceType.Exif });
-      const asset = AssetFactory.from({ id: assetId }).file({ type: AssetFileType.Preview }).build();
+      const asset = AssetFactory.from({ id: assetId }).file({ type: AssetFileType.Preview }).exif().build();
       mocks.machineLearning.detectFaces.mockResolvedValue(getAsDetectedFace(face));
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       mocks.crypto.randomUUID.mockReturnValue(face.id);
 
       await sut.handleDetectFaces({ id: asset.id });
@@ -1237,7 +1239,7 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create({ ownerId: user.id });
       const face = AssetFaceFactory.from().person(person).build();
 
-      expect(mapFaces(face, auth)).toEqual({
+      expect(mapFaces(getForAssetFace(face), auth)).toEqual({
         boundingBoxX1: 100,
         boundingBoxX2: 200,
         boundingBoxY1: 100,
@@ -1251,11 +1253,13 @@ describe(PersonService.name, () => {
     });
 
     it('should not map person if person is null', () => {
-      expect(mapFaces(AssetFaceFactory.create(), AuthFactory.create()).person).toBeNull();
+      expect(mapFaces(getForAssetFace(AssetFaceFactory.create()), AuthFactory.create()).person).toBeNull();
     });
 
     it('should not map person if person does not match auth user id', () => {
-      expect(mapFaces(AssetFaceFactory.from().person().build(), AuthFactory.create()).person).toBeNull();
+      expect(
+        mapFaces(getForAssetFace(AssetFaceFactory.from().person().build()), AuthFactory.create()).person,
+      ).toBeNull();
     });
   });
 });

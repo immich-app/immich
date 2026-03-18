@@ -22,6 +22,7 @@
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { user } from '$lib/stores/user.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -34,7 +35,9 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
+  import LoadingDots from '$lib/components/LoadingDots.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import {
     mdiArrowLeft,
     mdiArrowRight,
@@ -86,7 +89,7 @@
     title: $t('go_back'),
     type: $t('assets'),
     icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
-    $if: () => !!onClose,
+    $if: () => !!onClose && !isFaceEditMode.value,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
   });
@@ -104,7 +107,16 @@
     <ActionButton action={Close} />
   </div>
 
-  <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+  <div class="flex items-center gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+    {#if assetViewerManager.isImageLoading}
+      <Tooltip text={$t('loading')}>
+        {#snippet child({ props })}
+          <div {...props} role="status" aria-label={$t('loading')}>
+            <LoadingDots class="me-1" />
+          </div>
+        {/snippet}
+      </Tooltip>
+    {/if}
     <ActionButton action={Cast} />
     <ActionButton action={Actions.Share} />
     <ActionButton action={Actions.Offline} />

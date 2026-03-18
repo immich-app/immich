@@ -5987,19 +5987,14 @@ export function updateSharedLink({ id, sharedLinkEditDto }: {
 /**
  * Remove assets from a shared link
  */
-export function removeSharedLinkAssets({ id, key, slug, assetIdsDto }: {
+export function removeSharedLinkAssets({ id, assetIdsDto }: {
     id: string;
-    key?: string;
-    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
-    }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key,
-        slug
-    }))}`, oazapfts.json({
+    }>(`/shared-links/${encodeURIComponent(id)}/assets`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetIdsDto
