@@ -58,7 +58,7 @@
       query,
       ocr: searchQuery.ocr,
       queryType: defaultQueryType(),
-      queryAssetId: (searchQuery as SmartSearchDto).queryAssetId,
+      queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
       tagIds:
         'tagIds' in searchQuery
