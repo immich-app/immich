@@ -14,7 +14,7 @@ vi.mock('$lib/utils/i18n', () => ({
   getPreferredLocale: vi.fn(),
 }));
 vi.mock('@immich/ui', () => ({
-  toastManager: { success: vi.fn(), danger: vi.fn() },
+  toastManager: { success: vi.fn(), danger: vi.fn(), primary: vi.fn() },
   modalManager: { show: vi.fn() },
   ConfirmModal: {},
 }));
@@ -64,7 +64,7 @@ describe('EditManager', () => {
       expect(getAssetInfo).toHaveBeenCalledWith({ id: asset.id });
       expect(eventManager.emit).toHaveBeenCalledWith('AssetUpdate', refreshedAsset);
       expect(eventManager.emit).toHaveBeenCalledWith('AssetEditsApplied', asset.id);
-      expect(toastManager.success).toHaveBeenCalled();
+      expect(toastManager.primary).toHaveBeenCalled();
     });
 
     it('should emit AssetUpdate before AssetEditsApplied', async () => {
