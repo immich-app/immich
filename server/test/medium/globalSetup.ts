@@ -1,9 +1,5 @@
-import { Kysely } from 'kysely';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { DatabaseRepository } from 'src/repositories/database.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { DB } from 'src/schema';
-import { getKyselyConfig } from 'src/utils/database';
+import { Migrator } from '@immich/sql-tools';
+import { join } from 'node:path';
 import { GenericContainer, Wait } from 'testcontainers';
 
 const globalSetup = async () => {
@@ -40,13 +36,15 @@ const globalSetup = async () => {
 
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
 
-  const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }));
+  const migrator = new Migrator({
+    allowUnorderedMigrations: false,
+    connectionParams: { connectionType: 'url', url: postgresUrl },
+    // eslint-disable-next-line unicorn/prefer-module
+    migrationFolder: join(__dirname, '../../src/schema/migrations'),
+  });
+  await migrator.runMigrations();
 
-  const configRepository = new ConfigRepository();
-  const logger = LoggingRepository.create();
-  await new DatabaseRepository(db, logger, configRepository).runMigrations();
-
-  await db.destroy();
+  await migrator.destroy();
 };
 
 export default globalSetup;

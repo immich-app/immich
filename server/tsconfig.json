@@ -25,5 +25,6 @@
     "types": ["vitest/globals"],
     "noErrorTruncation": true
   },
+   "include": ["src", "test"],
   "exclude": ["dist", "node_modules", "upload"]
 }
