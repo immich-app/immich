@@ -1,5 +1,6 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import { autoHideSearchTypeSelector } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
@@ -162,6 +163,17 @@
           <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
+            </Field>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="search" title={$t('search')} subtitle={$t('search_feature_description')}>
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+            <Field
+              label={$t('auto_hide_search_type_selector')}
+              description={$t('auto_hide_search_type_selector_description')}
+            >
+              <Switch bind:checked={$autoHideSearchTypeSelector} />
             </Field>
           </div>
         </SettingAccordion>

@@ -4,6 +4,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
   import { Route } from '$lib/route';
+  import { autoHideSearchTypeSelector } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
@@ -306,7 +307,7 @@
       />
     </div>
 
-    {#if searchStore.isSearchEnabled}
+    {#if searchStore.isSearchEnabled || !$autoHideSearchTypeSelector}
       <div
         id={searchTypeId}
         class="absolute inset-y-0 flex items-center end-16"
