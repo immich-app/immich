@@ -261,6 +261,11 @@ export class AuthService extends BaseService {
   }
 
   async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
     const expectedState = dto.state ?? this.getCookieOauthState(headers);
     if (!expectedState?.length) {
       throw new BadRequestException('OAuth state is missing');
@@ -271,7 +276,6 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth code verifier is missing');
     }
 
-    const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
     const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
@@ -298,7 +302,8 @@ export class AuthService extends BaseService {
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      if (!profile.email) {
+      const email = profile.email;
+      if (!email) {
         throw new BadRequestException('OAuth profile does not have an email address');
       }
 
@@ -320,10 +325,13 @@ export class AuthService extends BaseService {
         isValid: (value: unknown) => isString(value) && ['admin', 'user'].includes(value),
       });
 
-      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.createUser({
-        name: userName,
-        email: profile.email,
+        name:
+          profile.name ||
+          `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
+          profile.preferred_username ||
+          email,
+        email,
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,

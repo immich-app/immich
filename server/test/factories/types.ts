@@ -1,4 +1,5 @@
 import { Selectable } from 'kysely';
+import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
@@ -34,3 +35,4 @@ export type PartnerLike = Partial<Selectable<PartnerTable>>;
 export type ActivityLike = Partial<Selectable<ActivityTable>>;
 export type ApiKeyLike = Partial<Selectable<ApiKeyTable>>;
 export type SessionLike = Partial<Selectable<SessionTable>>;
+export type OAuthProfileLike = Partial<OAuthProfile>;
