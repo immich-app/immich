@@ -106,7 +106,8 @@ export class SmartInfoService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForClipEncoding(id);
-    if (!asset || asset.files.length !== 1) {
+    const previewFile = asset?.files[0];
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.Failed;
     }
 
@@ -114,41 +115,49 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
-    if (machineLearning.streamMode?.enabled) {
-      await this.mlStreamRepository.publish({
-        correlationId: this.cryptoRepository.randomUUID(),
-        assetId: asset.id,
-        taskType: MlStreamTask.Clip,
-        imagePath: asset.files[0].path,
-        config: {
-          modelName: machineLearning.clip.modelName,
-        },
-        timestamp: Date.now(),
-        attempt: 1,
-      });
+    // Ensure preview file is available locally (download from S3 if needed)
+    const { downloadedFromS3, localPath } = await this.ensurePreviewFile(asset.id, previewFile, 'smart search');
+
+    try {
+      // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+      if (machineLearning.streamMode?.enabled) {
+        await this.mlStreamRepository.publish({
+          correlationId: this.cryptoRepository.randomUUID(),
+          assetId: asset.id,
+          taskType: MlStreamTask.Clip,
+          imagePath: localPath,
+          config: {
+            modelName: machineLearning.clip.modelName,
+          },
+          timestamp: Date.now(),
+          attempt: 1,
+        });
+        return JobStatus.Success;
+      }
+
+      // Sync mode (existing behavior)
+      const embedding = await this.machineLearningRepository.encodeImage(localPath, machineLearning.clip);
+
+      if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
+        this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
+        await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
+      }
+
+      const newConfig = await this.getConfig({ withCache: true });
+      if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+        // Skip the job if the the model has changed since the embedding was generated.
+        return JobStatus.Skipped;
+      }
+
+      await this.searchRepository.upsert(asset.id, embedding);
+
+      // Track smart search completion for encryption coordination
+      await this.assetRepository.upsertJobStatus({ assetId: asset.id, smartSearchAt: new Date() });
+
       return JobStatus.Success;
+    } finally {
+      // Clean up downloaded S3 file
+      await this.cleanupDownloadedFile(asset.id, localPath, downloadedFromS3);
     }
-
-    // Sync mode (existing behavior)
-    const embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
-
-    if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
-      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
-      await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
-    }
-
-    const newConfig = await this.getConfig({ withCache: true });
-    if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
-      // Skip the job if the the model has changed since the embedding was generated.
-      return JobStatus.Skipped;
-    }
-
-    await this.searchRepository.upsert(asset.id, embedding);
-
-    // Track smart search completion for encryption coordination
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, smartSearchAt: new Date() });
-
-    return JobStatus.Success;
   }
 }

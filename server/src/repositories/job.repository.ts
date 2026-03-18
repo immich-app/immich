@@ -12,7 +12,7 @@ import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobCounts, JobItem, JobOf } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
-import { getActualQueueName, getMachineIdFromJob, isAffinityQueue } from 'src/utils/queue.util';
+import { getActualQueueName, isAffinityQueue, isInitialRecoveryJob } from 'src/utils/queue.util';
 
 type JobMapItem = {
   jobName: JobName;
@@ -139,6 +139,17 @@ export class JobRepository implements OnModuleDestroy {
         (job) => this.eventRepository.emit('JobRun', baseQueueName, job as JobItem),
         { ...bull.config, concurrency: 1, ...workerOptions },
       );
+
+      // For affinity queues, also listen to the global queue for recovery jobs
+      // Recovery jobs are initially queued without machineId so any machine can pick them up
+      if (isAffinityQueue(baseQueueName) && actualQueueName !== baseQueueName) {
+        this.logger.log(`Starting global queue worker for recovery jobs: ${baseQueueName}`);
+        this.workers[`${baseQueueName}-global`] = new Worker(
+          baseQueueName,
+          (job) => this.eventRepository.emit('JobRun', baseQueueName, job as JobItem),
+          { ...bull.config, concurrency: 1, ...workerOptions },
+        );
+      }
     }
   }
 
@@ -201,43 +212,65 @@ export class JobRepository implements OnModuleDestroy {
     }
 
     worker.concurrency = concurrency;
+
+    // Also set concurrency on the global queue worker for recovery jobs
+    const globalWorker = this.workers[`${queueName}-global`];
+    if (globalWorker) {
+      globalWorker.concurrency = concurrency;
+    }
   }
 
   async isActive(name: QueueName): Promise<boolean> {
-    const queue = this.getQueue(name);
+    const queue = this.getQueueForStatus(name);
     const count = await queue.getActiveCount();
     return count > 0;
   }
 
   async isPaused(name: QueueName): Promise<boolean> {
-    return this.getQueue(name).isPaused();
+    return this.getQueueForStatus(name).isPaused();
   }
 
   pause(name: QueueName) {
-    return this.getQueue(name).pause();
+    return this.getQueueForStatus(name).pause();
   }
 
   resume(name: QueueName) {
-    return this.getQueue(name).resume();
+    return this.getQueueForStatus(name).resume();
   }
 
   empty(name: QueueName) {
-    return this.getQueue(name).drain();
+    return this.getQueueForStatus(name).drain();
   }
 
   clear(name: QueueName, type: QueueCleanType) {
-    return this.getQueue(name).clean(0, 1000, type);
+    return this.getQueueForStatus(name).clean(0, 1000, type);
   }
 
-  getJobCounts(name: QueueName): Promise<JobCounts> {
-    return this.getQueue(name).getJobCounts(
-      'active',
-      'completed',
-      'failed',
-      'delayed',
-      'waiting',
-      'paused',
-    ) as unknown as Promise<JobCounts>;
+  async getJobCounts(name: QueueName): Promise<JobCounts> {
+    if (!isAffinityQueue(name)) {
+      return this.getQueue(name).getJobCounts(
+        'active', 'completed', 'failed', 'delayed', 'waiting', 'paused',
+      ) as unknown as Promise<JobCounts>;
+    }
+
+    // Affinity queues: aggregate counts across base + all machine-prefixed variants
+    const variants = await this.discoverQueueVariants(name);
+    const totals: JobCounts = { active: 0, completed: 0, failed: 0, delayed: 0, waiting: 0, paused: 0 };
+
+    for (const variant of variants) {
+      const queue = this.getDynamicQueue(variant);
+      const counts = await queue.getJobCounts(
+        'active', 'completed', 'failed', 'delayed', 'waiting', 'paused',
+      ) as unknown as JobCounts;
+      totals.active += counts.active || 0;
+      totals.completed += counts.completed || 0;
+      totals.failed += counts.failed || 0;
+      totals.delayed += counts.delayed || 0;
+      totals.waiting += counts.waiting || 0;
+      totals.paused += counts.paused || 0;
+    }
+
+    return totals;
   }
 
   private getQueueName(name: JobName) {
@@ -249,24 +282,22 @@ export class JobRepository implements OnModuleDestroy {
       return;
     }
 
-    const { machineId: currentMachineId } = this.configRepository.getEnv();
-
     const promises = [];
     const itemsByQueue = {} as Record<string, (JobItem & { data: any; options: JobsOptions | undefined })[]>;
     for (const item of items) {
       const baseQueueName = this.getQueueName(item.name);
 
-      // Use machineId from job data if present (chain propagation)
-      // Otherwise use current machine's ID (initial job from HTTP)
-      const machineId = getMachineIdFromJob(item.data, currentMachineId);
+      // Only use machine affinity when machineId is explicitly set in job data
+      // (meaning a previous pipeline step injected it via onDone).
+      // Admin/standalone jobs have no machineId -> base queue -> distributed across all workers.
+      // Initial recovery jobs also go to base queue so any machine can pick them up.
+      const hasExplicitMachineId = !!item.data?.machineId;
+      const isInitialRecovery = isInitialRecoveryJob(item.data);
+      const useAffinity = isAffinityQueue(baseQueueName) && hasExplicitMachineId && !isInitialRecovery;
 
-      // For affinity queues, inject machineId into job data if not already present
-      let jobData = item.data || {};
-      if (isAffinityQueue(baseQueueName) && !jobData.machineId) {
-        jobData = { ...jobData, machineId };
-      }
-
-      const actualQueueName = getActualQueueName(baseQueueName, machineId);
+      const machineId = useAffinity ? item.data!.machineId! : '';
+      const jobData = item.data || {};
+      const actualQueueName = useAffinity ? getActualQueueName(baseQueueName, machineId) : baseQueueName;
 
       const job = {
         name: item.name,
@@ -311,7 +342,7 @@ export class JobRepository implements OnModuleDestroy {
   }
 
   async searchJobs(name: QueueName, dto: QueueJobSearchDto): Promise<QueueJobResponseDto[]> {
-    const jobs = await this.getQueue(name).getJobs(dto.status ?? Object.values(QueueJobStatus), 0, 1000);
+    const jobs = await this.getQueueForStatus(name).getJobs(dto.status ?? Object.values(QueueJobStatus), 0, 1000);
     return jobs.map((job) => {
       const { id, name, timestamp, data } = job;
       return { id, name: name as JobName, timestamp, data };
@@ -343,6 +374,52 @@ export class JobRepository implements OnModuleDestroy {
 
   private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
+  }
+
+  /**
+   * Discover all queue variants (base + machine-prefixed) for an affinity queue.
+   * Scans Redis for `immich_bull:{baseName}-*:meta` keys.
+   * Results are cached for 60 seconds.
+   */
+  private variantCache: Record<string, { variants: string[]; timestamp: number }> = {};
+  private async discoverQueueVariants(baseName: QueueName): Promise<string[]> {
+    const cached = this.variantCache[baseName];
+    if (cached && Date.now() - cached.timestamp < 60_000) {
+      return cached.variants;
+    }
+
+    const variants: string[] = [baseName];
+    try {
+      const queue = this.getQueue(baseName);
+      const client = await queue.client;
+
+      let cursor = '0';
+      do {
+        const [nextCursor, keys] = await client.scan(
+          cursor, 'MATCH', `immich_bull:${baseName}-*:meta`, 'COUNT', 100,
+        );
+        cursor = nextCursor;
+        for (const key of keys) {
+          const match = key.match(/immich_bull:([^:]+):meta/);
+          if (match && match[1] !== baseName) {
+            variants.push(match[1]);
+          }
+        }
+      } while (cursor !== '0');
+    } catch (error) {
+      this.logger.error(`Failed to discover queue variants for ${baseName}: ${error}`);
+    }
+
+    this.variantCache[baseName] = { variants, timestamp: Date.now() };
+    return variants;
+  }
+
+  /**
+   * Get the queue for status operations (isActive, isPaused, pause, resume, empty, clear).
+   * Always returns the base queue -- getJobCounts() already aggregates across all variants.
+   */
+  private getQueueForStatus(name: QueueName): Queue {
+    return this.getQueue(name);
   }
 
   /**

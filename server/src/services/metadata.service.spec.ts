@@ -598,6 +598,8 @@ describe(MetadataService.name, () => {
     });
 
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
+      // First call: ensureLocalFile (asset exists locally), Second call: motion video doesn't exist yet
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
         ...assetStub.livePhotoWithOriginalFileName,
         livePhotoVideoId: null,
@@ -659,6 +661,8 @@ describe(MetadataService.name, () => {
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
+      // First call: ensureLocalFile (asset exists locally), Second call: motion video doesn't exist yet
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
       mocks.storage.stat.mockResolvedValue({
         size: 123_456,
         mtime: assetStub.livePhotoWithOriginalFileName.fileModifiedAt,
@@ -717,6 +721,8 @@ describe(MetadataService.name, () => {
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
+      // First call: ensureLocalFile (asset exists locally), Second call: motion video doesn't exist yet
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
         ...assetStub.livePhotoWithOriginalFileName,
         livePhotoVideoId: null,
@@ -819,6 +825,8 @@ describe(MetadataService.name, () => {
     });
 
     it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
+      // First call: ensureLocalFile (asset exists locally), Second call: motion video doesn't exist yet
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
         ...assetStub.livePhotoStillAsset,
         livePhotoVideoId: null,

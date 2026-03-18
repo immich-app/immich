@@ -31,6 +31,7 @@ import { PersonService } from 'src/services/person.service';
 import { PluginService } from 'src/services/plugin.service';
 import { PresignedUrlService } from 'src/services/presigned-url.service';
 import { QueueService } from 'src/services/queue.service';
+import { RecoveryService } from 'src/services/recovery.service';
 import { S3StorageService } from 'src/services/s3-storage.service';
 import { SearchService } from 'src/services/search.service';
 import { ServerService } from 'src/services/server.service';
@@ -88,6 +89,7 @@ export const services = [
   PluginService,
   PresignedUrlService,
   QueueService,
+  RecoveryService,
   S3StorageService,
   SearchService,
   ServerService,

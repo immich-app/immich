@@ -286,7 +286,8 @@ export class AssetJobRepository {
   getForOcr(id: string) {
     return this.db
       .selectFrom('asset')
-      .select((eb) => ['asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
+      .select(['asset.id', 'asset.visibility'])
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -491,5 +492,55 @@ export class AssetJobRepository {
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForMigrationJob() {
     return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', 'is', null).stream();
+  }
+
+  /**
+   * Find assets that have been uploaded to S3 but haven't completed processing.
+   * These are "orphaned" assets that need recovery (e.g., machine crashed mid-processing).
+   *
+   * Criteria:
+   * - storageBackend = S3 (uploaded successfully)
+   * - s3Key IS NOT NULL (has S3 location)
+   * - Not deleted
+   * - Created more than 30 minutes ago (avoid re-processing in-flight jobs)
+   * - Missing metadata extraction OR missing thumbnails (processing incomplete)
+   *
+   * Returns job status fields so recovery can queue the appropriate job.
+   */
+  @GenerateSql({ params: [] })
+  getOrphanedS3Assets() {
+    // Only recover assets older than 30 minutes to avoid re-processing in-flight jobs
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .select([
+        'asset.id',
+        'asset.ownerId',
+        'asset.s3Key',
+        'asset.s3Bucket',
+        'asset_job_status.metadataExtractedAt',
+        'asset_job_status.previewAt',
+        'asset_job_status.thumbnailAt',
+      ])
+      .where('asset.storageBackend', '=', StorageBackend.S3)
+      .where('asset.s3Key', 'is not', null)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.createdAt', '<', thirtyMinutesAgo)
+      // Exclude hidden assets (live photo videos) - they intentionally don't have thumbnails
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .where((eb) =>
+        eb.or([
+          // No job status at all (never processed)
+          eb('asset_job_status.assetId', 'is', null),
+          // Metadata not extracted
+          eb('asset_job_status.metadataExtractedAt', 'is', null),
+          // Thumbnails not generated
+          eb('asset_job_status.previewAt', 'is', null),
+          eb('asset_job_status.thumbnailAt', 'is', null),
+        ]),
+      )
+      .execute();
   }
 }

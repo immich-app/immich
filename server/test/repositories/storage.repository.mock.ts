@@ -58,7 +58,7 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
     createFileFromStream: vitest.fn(),
     existsSync: vitest.fn(),
     overwriteFile: vitest.fn(),
-    unlink: vitest.fn().mockResolvedValue(undefined),
+    unlink: vitest.fn().mockResolvedValue(),
     unlinkDir: vitest.fn().mockResolvedValue(true),
     removeEmptyDirs: vitest.fn(),
     checkFileExists: vitest.fn().mockResolvedValue(true),

@@ -21,7 +21,6 @@ import {
   JobStatus,
   QueueName,
   SourceType,
-  StorageBackend,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
@@ -216,30 +215,45 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetExtractMetadata, queue: QueueName.MetadataExtraction })
-  async handleMetadataExtraction(data: JobOf<JobName.AssetExtractMetadata>) {
+  async handleMetadataExtraction(data: JobOf<JobName.AssetExtractMetadata>): Promise<JobStatus> {
     const [{ metadata, reverseGeocoding }, asset] = await Promise.all([
       this.getConfig({ withCache: true }),
       this.assetJobRepository.getForMetadataExtraction(data.id),
     ]);
 
     if (!asset) {
-      return;
+      return JobStatus.Failed;
     }
 
-    // Ensure local file exists, download from S3 if needed
-    const { downloadedFromS3 } = await this.ensureLocalFile(
-      asset.id,
-      asset.ownerId,
-      asset.originalPath,
-      asset.storageBackend,
-      asset.s3Bucket,
-      asset.s3Key,
-      'metadata extraction',
-    );
+    // Determine the local file path to use for processing
+    // Priority: 1) localPath from job data (fresh upload), 2) download from S3 if needed
+    let filePath = data.localPath;
+    let downloadedFromS3 = false;
+
+    if (filePath && (await this.storageRepository.checkFileExists(filePath))) {
+      // Use localPath from job data (temp file from upload)
+      this.logger.debug(`Using localPath from job data for metadata extraction: ${filePath}`);
+    } else {
+      // No localPath or file doesn't exist - download from S3 or use local asset path
+      const result = await this.ensureLocalFile(
+        asset.id,
+        asset.ownerId,
+        asset.originalPath,
+        asset.storageBackend,
+        asset.s3Bucket,
+        asset.s3Key,
+        'metadata extraction',
+      );
+      filePath = result.localPath;
+      downloadedFromS3 = result.downloadedFromS3;
+    }
+
+    // Create a modified asset object with the local file path for processing
+    const assetForProcessing = { ...asset, originalPath: filePath };
 
     const [exifTags, stats] = await Promise.all([
-      this.getExifTags(asset),
-      this.storageRepository.stat(asset.originalPath),
+      this.getExifTags(assetForProcessing),
+      this.storageRepository.stat(filePath),
     ]);
     this.logger.verbose('Exif Tags', exifTags);
 
@@ -335,7 +349,16 @@ export class MetadataService extends BaseService {
     });
 
     // Clean up downloaded file if it was fetched from S3
-    await this.cleanupDownloadedFile(asset.id, asset.originalPath, downloadedFromS3);
+    // Note: Don't cleanup localPath from job data - that's handled by job.service after all jobs complete
+    // For recovery jobs, keep the downloaded file so the next job (thumbnail generation) can use it
+    // The ensureLocalFile method uses a consistent temp path that subsequent jobs can find
+    if (data.source !== 'recovery') {
+      await this.cleanupDownloadedFile(asset.id, filePath, downloadedFromS3);
+    } else if (downloadedFromS3) {
+      this.logger.debug(`Recovery job: keeping downloaded file for thumbnail generation at ${filePath}`);
+    }
+
+    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })

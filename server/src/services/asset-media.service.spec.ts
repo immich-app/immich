@@ -28,6 +28,7 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
+import { vitest } from 'vitest';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 
@@ -209,6 +210,10 @@ describe(AssetMediaService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AssetMediaService));
+
+    // Mock getRedis to avoid real Redis connections in trackUploadForScaling
+    const mockRedis = { incr: vitest.fn(), expire: vitest.fn(), sadd: vitest.fn() };
+    vitest.spyOn(sut as any, 'getRedis').mockResolvedValue(mockRedis);
   });
 
   describe('getUploadAssetIdByChecksum', () => {

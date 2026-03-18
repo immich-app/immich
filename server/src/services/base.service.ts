@@ -5,7 +5,8 @@ import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
-import { StorageBackend } from 'src/enum';
+import { join, basename } from 'node:path';
+import { StorageBackend, StorageFolder } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AdminRecoveryKeyRepository } from 'src/repositories/admin-recovery-key.repository';
@@ -258,9 +259,9 @@ export class BaseService {
 
   /**
    * Ensure a file is available locally for processing.
-   * If the file doesn't exist locally but is in S3, downloads it temporarily.
+   * If the file doesn't exist locally but is in S3, downloads it to a temp directory.
    * Also handles assets that are in S3 but missing S3 metadata in the database.
-   * Returns whether the file was downloaded from S3 (for cleanup purposes).
+   * Returns whether the file was downloaded from S3 and the actual local path to use.
    */
   protected async ensureLocalFile(
     assetId: string,
@@ -270,23 +271,42 @@ export class BaseService {
     s3Bucket: string | null,
     s3Key: string | null,
     context: string,
-  ): Promise<{ downloadedFromS3: boolean }> {
-    const localFileExists = await this.storageRepository.checkFileExists(originalPath);
+  ): Promise<{ downloadedFromS3: boolean; localPath: string }> {
+    // For S3 assets, originalPath is the S3 key - we need to download to a temp path
+    // For local assets, originalPath is the actual local path
+    const isS3Asset = storageBackend === StorageBackend.S3;
 
-    if (localFileExists) {
-      return { downloadedFromS3: false };
+    if (!isS3Asset) {
+      // Local asset - check if file exists at originalPath
+      const localFileExists = await this.storageRepository.checkFileExists(originalPath);
+      if (localFileExists) {
+        return { downloadedFromS3: false, localPath: originalPath };
+      }
+    }
+
+    // Generate temp path for S3 download
+    const tempDir = join(StorageCore.getBaseFolder(StorageFolder.Upload), 'temp-recovery', assetId);
+    const rawFilename = s3Key ? basename(s3Key) : basename(originalPath);
+    // Sanitize filename for defense-in-depth (s3Key is system-generated, but be safe)
+    const filename = rawFilename.replaceAll(/[^\w.-]/g, '_');
+    const tempPath = join(tempDir, filename);
+
+    // Check if we already downloaded this file (from a previous job in the same chain)
+    if (await this.storageRepository.checkFileExists(tempPath)) {
+      this.logger.debug(`Using existing temp file for asset ${assetId}: ${tempPath}`);
+      return { downloadedFromS3: true, localPath: tempPath };
     }
 
     // Try to download from S3 if we have metadata
-    if (storageBackend === StorageBackend.S3 && s3Bucket && s3Key) {
+    if (isS3Asset && s3Bucket && s3Key) {
       this.logger.log(`Downloading asset ${assetId} from S3 for ${context}`);
       try {
+        this.storageRepository.mkdirSync(tempDir);
         const s3Adapter = await this.s3Manager.getAdapterForBucket(s3Bucket);
-        const localAdapter = this.s3Manager.getLocalAdapter();
         const { stream } = await s3Adapter.readStream(s3Key);
-        await localAdapter.writeStreamAsync(originalPath, stream);
-        this.logger.debug(`Downloaded asset ${assetId} from S3 to ${originalPath}`);
-        return { downloadedFromS3: true };
+        await this.storageRepository.createFileFromStream(tempPath, stream);
+        this.logger.debug(`Downloaded asset ${assetId} from S3 to ${tempPath}`);
+        return { downloadedFromS3: true, localPath: tempPath };
       } catch (error) {
         this.logger.error(`Failed to download asset ${assetId} from S3: ${error}`);
         throw new Error(`Failed to download from S3 for ${context}: ${error}`);
@@ -310,9 +330,9 @@ export class BaseService {
 
         if (exists) {
           this.logger.log(`Found asset ${assetId} in S3 (missing metadata), downloading for ${context}`);
-          const localAdapter = this.s3Manager.getLocalAdapter();
+          this.storageRepository.mkdirSync(tempDir);
           const { stream } = await s3Adapter.readStream(generatedS3Key);
-          await localAdapter.writeStreamAsync(originalPath, stream);
+          await this.storageRepository.createFileFromStream(tempPath, stream);
 
           // Update asset with S3 metadata so future jobs don't need this fallback
           await this.assetRepository.update({
@@ -321,8 +341,8 @@ export class BaseService {
             s3Bucket: bucket,
             s3Key: generatedS3Key,
           });
-          this.logger.debug(`Updated asset ${assetId} with S3 metadata and downloaded to ${originalPath}`);
-          return { downloadedFromS3: true };
+          this.logger.debug(`Updated asset ${assetId} with S3 metadata and downloaded to ${tempPath}`);
+          return { downloadedFromS3: true, localPath: tempPath };
         }
       } catch (error) {
         this.logger.warn(`S3 fallback check failed for asset ${assetId}: ${error}`);
@@ -330,7 +350,7 @@ export class BaseService {
       }
     }
 
-    throw new Error(`Local file missing for ${context}: ${originalPath}`);
+    throw new Error(`Input file is missing: ${originalPath}`);
   }
 
   /**
@@ -346,12 +366,64 @@ export class BaseService {
   }
 
   /**
-   * Clean up a file that was downloaded from S3 for processing.
+   * Ensure a preview/thumbnail file is available locally for ML processing.
+   * If the file doesn't exist locally but is in S3, downloads it to a temp directory.
+   * This is used by ML job handlers (SmartSearch, FaceDetection, OCR) that need
+   * to read the preview file but may find it missing after a machine restart.
    */
-  protected async cleanupDownloadedFile(assetId: string, originalPath: string, downloadedFromS3: boolean): Promise<void> {
+  protected async ensurePreviewFile(
+    assetId: string,
+    previewFile: { path: string; storageBackend: string | null; s3Bucket: string | null; s3Key: string | null },
+    context: string,
+  ): Promise<{ downloadedFromS3: boolean; localPath: string }> {
+    const { path, storageBackend, s3Bucket, s3Key } = previewFile;
+
+    // Check if local file exists
+    const localFileExists = await this.storageRepository.checkFileExists(path);
+    if (localFileExists) {
+      return { downloadedFromS3: false, localPath: path };
+    }
+
+    // Local file missing - try to download from S3 if we have metadata
+    if (storageBackend === StorageBackend.S3 && s3Bucket && s3Key) {
+      this.logger.log(`Preview file missing locally for asset ${assetId}, downloading from S3 for ${context}`);
+
+      const tempDir = join(StorageCore.getBaseFolder(StorageFolder.Upload), 'temp-recovery', assetId);
+      const rawFilename = basename(s3Key);
+      const filename = rawFilename.replaceAll(/[^\w.-]/g, '_');
+      const tempPath = join(tempDir, filename);
+
+      // Check if we already downloaded this file
+      if (await this.storageRepository.checkFileExists(tempPath)) {
+        this.logger.debug(`Using existing temp preview file for asset ${assetId}: ${tempPath}`);
+        return { downloadedFromS3: true, localPath: tempPath };
+      }
+
+      try {
+        this.storageRepository.mkdirSync(tempDir);
+        const s3Adapter = await this.s3Manager.getAdapterForBucket(s3Bucket);
+        const { stream } = await s3Adapter.readStream(s3Key);
+        await this.storageRepository.createFileFromStream(tempPath, stream);
+        this.logger.debug(`Downloaded preview for asset ${assetId} from S3 to ${tempPath}`);
+        return { downloadedFromS3: true, localPath: tempPath };
+      } catch (error) {
+        this.logger.error(`Failed to download preview for asset ${assetId} from S3: ${error}`);
+        throw new Error(`Failed to download preview from S3 for ${context}: ${error}`);
+      }
+    }
+
+    // No S3 info and local file missing - fail
+    throw new Error(`Preview file missing for ${context}: ${path}`);
+  }
+
+  /**
+   * Clean up a file that was downloaded from S3 for processing.
+   * @param localPath The local file path to delete (as returned by ensureLocalFile)
+   */
+  protected async cleanupDownloadedFile(assetId: string, localPath: string, downloadedFromS3: boolean): Promise<void> {
     if (downloadedFromS3) {
       try {
-        await this.storageRepository.unlink(originalPath);
+        await this.storageRepository.unlink(localPath);
         this.logger.debug(`Cleaned up downloaded S3 file for asset ${assetId}`);
       } catch (error) {
         this.logger.warn(`Failed to clean up downloaded S3 file for asset ${assetId}: ${error}`);

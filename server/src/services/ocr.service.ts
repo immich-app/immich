@@ -45,7 +45,8 @@ export class OcrService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForOcr(id);
-    if (!asset || !asset.previewFile) {
+    const previewFile = asset?.files[0];
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.Failed;
     }
 
@@ -53,34 +54,42 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
-    if (machineLearning.streamMode?.enabled) {
-      await this.mlStreamRepository.publish({
-        correlationId: this.cryptoRepository.randomUUID(),
-        assetId: id,
-        taskType: MlStreamTask.Ocr,
-        imagePath: asset.previewFile,
-        config: {
-          modelName: machineLearning.ocr.modelName,
-          minDetectionScore: machineLearning.ocr.minDetectionScore,
-          minRecognitionScore: machineLearning.ocr.minRecognitionScore,
-          maxResolution: machineLearning.ocr.maxResolution,
-        },
-        timestamp: Date.now(),
-        attempt: 1,
-      });
+    // Ensure preview file is available locally (download from S3 if needed)
+    const { downloadedFromS3, localPath } = await this.ensurePreviewFile(asset.id, previewFile, 'OCR');
+
+    try {
+      // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+      if (machineLearning.streamMode?.enabled) {
+        await this.mlStreamRepository.publish({
+          correlationId: this.cryptoRepository.randomUUID(),
+          assetId: id,
+          taskType: MlStreamTask.Ocr,
+          imagePath: localPath,
+          config: {
+            modelName: machineLearning.ocr.modelName,
+            minDetectionScore: machineLearning.ocr.minDetectionScore,
+            minRecognitionScore: machineLearning.ocr.minRecognitionScore,
+            maxResolution: machineLearning.ocr.maxResolution,
+          },
+          timestamp: Date.now(),
+          attempt: 1,
+        });
+        return JobStatus.Success;
+      }
+
+      // Sync mode (existing behavior)
+      const ocrResults = await this.machineLearningRepository.ocr(localPath, machineLearning.ocr);
+      const { ocrDataList, searchText } = this.parseOcrResults(id, ocrResults);
+      await this.ocrRepository.upsert(id, ocrDataList, searchText);
+
+      await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
+
+      this.logger.debug(`Processed ${ocrResults.text.length} OCR result(s) for ${id}`);
       return JobStatus.Success;
+    } finally {
+      // Clean up downloaded S3 file
+      await this.cleanupDownloadedFile(asset.id, localPath, downloadedFromS3);
     }
-
-    // Sync mode (existing behavior)
-    const ocrResults = await this.machineLearningRepository.ocr(asset.previewFile, machineLearning.ocr);
-    const { ocrDataList, searchText } = this.parseOcrResults(id, ocrResults);
-    await this.ocrRepository.upsert(id, ocrDataList, searchText);
-
-    await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
-
-    this.logger.debug(`Processed ${ocrResults.text.length} OCR result(s) for ${id}`);
-    return JobStatus.Success;
   }
 
   private parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {

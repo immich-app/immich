@@ -1,4 +1,4 @@
-import { AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus, StorageBackend } from 'src/enum';
 import { OcrService } from 'src/services/ocr.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
@@ -8,14 +8,26 @@ describe(OcrService.name, () => {
   let sut: OcrService;
   let mocks: ServiceMocks;
 
+  const mockPreviewFile = {
+    id: 'file-1',
+    path: assetStub.image.files[1].path,
+    type: AssetFileType.Preview,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+  };
+
   beforeEach(() => {
     ({ sut, mocks } = newTestService(OcrService));
 
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
     mocks.assetJob.getForOcr.mockResolvedValue({
+      id: assetStub.image.id,
       visibility: AssetVisibility.Timeline,
-      previewFile: assetStub.image.files[1].path,
+      files: [mockPreviewFile],
     });
+    // Mock that local file exists (no S3 download needed)
+    mocks.storage.checkFileExists.mockResolvedValue(true);
   });
 
   const mockOcrResult = (...texts: string[]) => {
@@ -70,7 +82,7 @@ describe(OcrService.name, () => {
     });
 
     it('should skip assets without a resize path', async () => {
-      mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
+      mocks.assetJob.getForOcr.mockResolvedValue({ id: assetStub.noResizePath.id, visibility: AssetVisibility.Timeline, files: [] });
 
       expect(await sut.handleOcr({ id: assetStub.noResizePath.id })).toEqual(JobStatus.Failed);
 
@@ -164,8 +176,9 @@ describe(OcrService.name, () => {
 
     it('should skip invisible assets', async () => {
       mocks.assetJob.getForOcr.mockResolvedValue({
+        id: assetStub.livePhotoMotionAsset.id,
         visibility: AssetVisibility.Hidden,
-        previewFile: assetStub.image.files[1].path,
+        files: [mockPreviewFile],
       });
 
       expect(await sut.handleOcr({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.Skipped);

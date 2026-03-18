@@ -368,29 +368,33 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
-    if (machineLearning.streamMode?.enabled) {
-      await this.mlStreamRepository.publish({
-        correlationId: this.cryptoRepository.randomUUID(),
-        assetId: asset.id,
-        taskType: MlStreamTask.Face,
-        imagePath: previewFile.path,
-        config: {
-          modelName: machineLearning.facialRecognition.modelName,
-          minScore: machineLearning.facialRecognition.minScore,
-        },
-        timestamp: Date.now(),
-        attempt: 1,
-      });
-      return JobStatus.Success;
-    }
+    // Ensure preview file is available locally (download from S3 if needed)
+    const { downloadedFromS3, localPath } = await this.ensurePreviewFile(asset.id, previewFile, 'face detection');
 
-    // Sync mode (existing behavior)
-    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
-      previewFile.path,
-      machineLearning.facialRecognition,
-    );
-    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
+    try {
+      // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+      if (machineLearning.streamMode?.enabled) {
+        await this.mlStreamRepository.publish({
+          correlationId: this.cryptoRepository.randomUUID(),
+          assetId: asset.id,
+          taskType: MlStreamTask.Face,
+          imagePath: localPath,
+          config: {
+            modelName: machineLearning.facialRecognition.modelName,
+            minScore: machineLearning.facialRecognition.minScore,
+          },
+          timestamp: Date.now(),
+          attempt: 1,
+        });
+        return JobStatus.Success;
+      }
+
+      // Sync mode (existing behavior)
+      const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
+        localPath,
+        machineLearning.facialRecognition,
+      );
+      this.logger.debug(`${faces.length} faces detected in ${localPath}`);
 
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];
@@ -450,7 +454,11 @@ export class PersonService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
 
-    return JobStatus.Success;
+      return JobStatus.Success;
+    } finally {
+      // Clean up downloaded S3 file
+      await this.cleanupDownloadedFile(asset.id, localPath, downloadedFromS3);
+    }
   }
 
   private iou(

@@ -173,7 +173,8 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.AssetThumbnailGeneration })
-  async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
+  async handleGenerateThumbnails(data: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
+    const { id } = data;
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found in database or missing metadata`);
@@ -185,16 +186,31 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Ensure local file exists, download from S3 if needed
-    const { downloadedFromS3 } = await this.ensureLocalFile(
-      id,
-      asset.ownerId,
-      asset.originalPath,
-      asset.storageBackend,
-      asset.s3Bucket,
-      asset.s3Key,
-      'thumbnail generation',
-    );
+    // Determine the local file path to use for processing
+    // Priority: 1) localPath from job data (fresh upload), 2) download from S3 if needed
+    let filePath = data.localPath;
+    let downloadedFromS3 = false;
+
+    if (filePath && (await this.storageRepository.checkFileExists(filePath))) {
+      // Use localPath from job data (temp file from upload)
+      this.logger.debug(`Using localPath from job data for thumbnail generation: ${filePath}`);
+    } else {
+      // No localPath or file doesn't exist - download from S3 or use local asset path
+      const result = await this.ensureLocalFile(
+        id,
+        asset.ownerId,
+        asset.originalPath,
+        asset.storageBackend,
+        asset.s3Bucket,
+        asset.s3Key,
+        'thumbnail generation',
+      );
+      filePath = result.localPath;
+      downloadedFromS3 = result.downloadedFromS3;
+    }
+
+    // Create a modified asset object with the local file path for processing
+    const assetForProcessing = { ...asset, originalPath: filePath };
 
     let generated: {
       previewPath: string;
@@ -204,11 +220,11 @@ export class MediaService extends BaseService {
     };
 
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
-      generated = await this.generateVideoThumbnails(asset);
+      this.logger.verbose(`Thumbnail generation for video ${id} ${filePath}`);
+      generated = await this.generateVideoThumbnails(assetForProcessing);
     } else if (asset.type === AssetType.Image) {
-      this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
-      generated = await this.generateImageThumbnails(asset);
+      this.logger.verbose(`Thumbnail generation for image ${id} ${filePath}`);
+      generated = await this.generateImageThumbnails(assetForProcessing);
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
       return JobStatus.Skipped;
@@ -266,7 +282,14 @@ export class MediaService extends BaseService {
     await this.uploadThumbnailsToS3Inline(asset.id, asset.ownerId, generated.thumbnailPath, generated.previewPath);
 
     // Clean up downloaded S3 file (it's already in S3, no need to keep local copy)
-    await this.cleanupDownloadedFile(id, asset.originalPath, downloadedFromS3);
+    // Note: Don't cleanup localPath from job data - that's handled by job.service after all jobs complete
+    // For recovery videos, keep the file - it's needed for video encoding
+    const isRecoveryVideo = data.source === 'recovery' && asset.type === AssetType.Video;
+    if (!isRecoveryVideo) {
+      await this.cleanupDownloadedFile(id, filePath, downloadedFromS3);
+    } else if (downloadedFromS3) {
+      this.logger.debug(`Recovery video: keeping downloaded file for encoding at ${filePath}`);
+    }
 
     return JobStatus.Success;
   }
@@ -358,15 +381,8 @@ export class MediaService extends BaseService {
             s3Key,
           });
 
-          // Delete local file after successful upload if configured
-          if (storage.upload.deleteLocalAfterUpload) {
-            try {
-              await this.storageRepository.unlink(thumbnailPath);
-              this.logger.debug(`Deleted local thumbnail for asset ${assetId}`);
-            } catch (error) {
-              this.logger.warn(`Failed to delete local thumbnail: ${error}`);
-            }
-          }
+          // Don't delete local thumbnail here - ML jobs still need to read it
+          // Cleanup happens after ML jobs complete
 
           this.logger.log(`Successfully uploaded thumbnail inline for asset ${assetId} to S3`);
         }
@@ -401,15 +417,8 @@ export class MediaService extends BaseService {
             s3Key,
           });
 
-          // Delete local file after successful upload if configured
-          if (storage.upload.deleteLocalAfterUpload) {
-            try {
-              await this.storageRepository.unlink(previewPath);
-              this.logger.debug(`Deleted local preview for asset ${assetId}`);
-            } catch (error) {
-              this.logger.warn(`Failed to delete local preview: ${error}`);
-            }
-          }
+          // Don't delete local preview here - ML jobs still need to read it
+          // Cleanup happens after ML jobs complete
 
           this.logger.log(`Successfully uploaded preview inline for asset ${assetId} to S3`);
         }
@@ -533,19 +542,26 @@ export class MediaService extends BaseService {
 
     let inputImage: string | Buffer;
     let downloadedFromS3 = false;
+    let s3LocalPath: string | undefined;
 
     if (data.type === AssetType.Video) {
       if (!previewPath) {
         this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
         return JobStatus.Failed;
       }
-      // Check that preview file exists locally
-      const previewExists = await this.storageRepository.checkFileExists(previewPath);
-      if (!previewExists) {
-        this.logger.warn(`Person thumbnail generation failed for ${id}: preview file not found at ${previewPath}`);
-        throw new Error(`Local preview file missing for person thumbnail: ${previewPath}`);
-      }
-      inputImage = previewPath;
+      // For S3-backed previews, download from S3 if not available locally
+      const result = await this.ensureLocalFile(
+        assetId,
+        ownerId,
+        previewPath,
+        data.previewStorageBackend,
+        data.previewS3Bucket,
+        data.previewS3Key,
+        'person thumbnail generation (video preview)',
+      );
+      downloadedFromS3 = result.downloadedFromS3;
+      s3LocalPath = result.localPath;
+      inputImage = s3LocalPath;
     } else {
       // Ensure local file exists, download from S3 if needed
       const result = await this.ensureLocalFile(
@@ -558,12 +574,13 @@ export class MediaService extends BaseService {
         'person thumbnail generation',
       );
       downloadedFromS3 = result.downloadedFromS3;
+      s3LocalPath = result.localPath;
 
-      if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
-        const extracted = await this.extractImage(originalPath, image.preview.size);
-        inputImage = extracted ? extracted.buffer : originalPath;
+      if (image.extractEmbedded && mimeTypes.isRaw(s3LocalPath)) {
+        const extracted = await this.extractImage(s3LocalPath, image.preview.size);
+        inputImage = extracted ? extracted.buffer : s3LocalPath;
       } else {
-        inputImage = originalPath;
+        inputImage = s3LocalPath;
       }
     }
 
@@ -597,7 +614,9 @@ export class MediaService extends BaseService {
     await this.uploadPersonThumbnailToS3Inline(id, ownerId, thumbnailPath);
 
     // Clean up downloaded S3 file if we downloaded it
-    await this.cleanupDownloadedFile(id, originalPath, downloadedFromS3);
+    if (s3LocalPath) {
+      await this.cleanupDownloadedFile(id, s3LocalPath, downloadedFromS3);
+    }
 
     return JobStatus.Success;
   }
@@ -754,7 +773,8 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetEncodeVideo, queue: QueueName.VideoConversion })
-  async handleVideoConversion({ id }: JobOf<JobName.AssetEncodeVideo>): Promise<JobStatus> {
+  async handleVideoConversion(data: JobOf<JobName.AssetEncodeVideo>): Promise<JobStatus> {
+    const { id } = data;
     const asset = await this.assetJobRepository.getForVideoConversion(id);
     if (!asset) {
       this.logger.error(`Video conversion failed for ${id}: asset not found in database`);
@@ -767,19 +787,31 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Ensure local file exists, download from S3 if needed
-    const { downloadedFromS3 } = await this.ensureLocalFile(
-      id,
-      asset.ownerId,
-      asset.originalPath,
-      asset.storageBackend,
-      asset.s3Bucket,
-      asset.s3Key,
-      'video conversion',
-    );
+    // Determine the local file path to use for processing
+    // Priority: 1) localPath from job data (fresh upload), 2) download from S3 if needed
+    let filePath = data.localPath;
+    let downloadedFromS3 = false;
 
-    this.logger.debug(`Using local file for video encoding: ${asset.originalPath}`);
-    const input = asset.originalPath;
+    if (filePath && (await this.storageRepository.checkFileExists(filePath))) {
+      // Use localPath from job data (temp file from upload)
+      this.logger.debug(`Using localPath from job data for video conversion: ${filePath}`);
+    } else {
+      // No localPath or file doesn't exist - download from S3 or use local asset path
+      const result = await this.ensureLocalFile(
+        id,
+        asset.ownerId,
+        asset.originalPath,
+        asset.storageBackend,
+        asset.s3Bucket,
+        asset.s3Key,
+        'video conversion',
+      );
+      filePath = result.localPath;
+      downloadedFromS3 = result.downloadedFromS3;
+    }
+
+    this.logger.debug(`Using local file for video encoding: ${filePath}`);
+    const input = filePath;
 
     const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
@@ -868,7 +900,8 @@ export class MediaService extends BaseService {
     await this.uploadEncodedVideoToS3Inline(asset.id, asset.ownerId, output);
 
     // Clean up downloaded S3 file if we downloaded it
-    await this.cleanupDownloadedFile(id, asset.originalPath, downloadedFromS3);
+    // Note: Don't cleanup localPath from job data - that's handled by job.service after all jobs complete
+    await this.cleanupDownloadedFile(id, filePath, downloadedFromS3);
 
     return JobStatus.Success;
   }

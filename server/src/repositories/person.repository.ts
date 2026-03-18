@@ -321,6 +321,30 @@ export class PersonRepository {
           .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
           .as('previewPath'),
       )
+      .select((eb) =>
+        eb
+          .selectFrom('asset_file')
+          .select('asset_file.storageBackend')
+          .whereRef('asset_file.assetId', '=', 'asset.id')
+          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+          .as('previewStorageBackend'),
+      )
+      .select((eb) =>
+        eb
+          .selectFrom('asset_file')
+          .select('asset_file.s3Key')
+          .whereRef('asset_file.assetId', '=', 'asset.id')
+          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+          .as('previewS3Key'),
+      )
+      .select((eb) =>
+        eb
+          .selectFrom('asset_file')
+          .select('asset_file.s3Bucket')
+          .whereRef('asset_file.assetId', '=', 'asset.id')
+          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+          .as('previewS3Bucket'),
+      )
       .where('person.id', '=', id)
       .where('asset_face.deletedAt', 'is', null)
       .executeTakeFirst();

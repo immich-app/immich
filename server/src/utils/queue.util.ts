@@ -43,13 +43,13 @@ export function isAffinityQueue(queue: QueueName): boolean {
 }
 
 /**
- * Get machineId from job data, falling back to current machine.
- * This enables machineId propagation through job chains.
+ * Check if a job is an initial recovery job.
+ * Initial recovery jobs have source='recovery' but no machineId yet.
+ * These should go to the global queue so any machine can pick them up.
  *
- * @param jobData - The job data object that may contain machineId
- * @param currentMachineId - The current machine's ID to use as fallback
- * @returns The machineId to use for queue routing
+ * @param jobData - The job data object to check
+ * @returns true if this is an initial recovery job
  */
-export function getMachineIdFromJob(jobData: { machineId?: string } | undefined, currentMachineId: string): string {
-  return jobData?.machineId || currentMachineId;
+export function isInitialRecoveryJob(jobData: { source?: string; machineId?: string } | undefined): boolean {
+  return jobData?.source === 'recovery' && !jobData?.machineId;
 }

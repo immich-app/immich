@@ -188,11 +188,13 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
-export type JobSource = 'upload' | 'sidecar-write' | 'copy';
+export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'recovery';
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
   notify?: boolean;
+  /** Local temp file path for processing (used during upload before S3 migration) */
+  localPath?: string;
 }
 
 export interface IAssetDeleteJob extends IEntityJob {

@@ -214,6 +214,9 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
   newThumbnailMiddle: Object.freeze({
     ownerId: userStub.admin.id,
@@ -231,6 +234,9 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
   newThumbnailEnd: Object.freeze({
     ownerId: userStub.admin.id,
@@ -248,6 +254,9 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
   rawEmbeddedThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
@@ -265,6 +274,9 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
   negativeCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
@@ -282,6 +294,9 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
   overflowingCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
@@ -299,6 +314,9 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
   videoThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
@@ -316,5 +334,8 @@ export const personThumbnailStub = {
     s3Bucket: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
+    previewStorageBackend: StorageBackend.Local,
+    previewS3Key: null,
+    previewS3Bucket: null,
   }),
 };

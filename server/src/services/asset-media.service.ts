@@ -54,8 +54,10 @@ export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
 }
 
-// Redis key prefix for upload rate tracking (used by autoscaler)
+// Redis key prefixes for upload rate tracking (used by autoscaler)
 const UPLOAD_COUNTER_KEY_PREFIX = 'immich:scaling:uploads:';
+const VIDEO_UPLOAD_COUNTER_KEY_PREFIX = 'immich:scaling:video-uploads:';
+const UPLOADERS_KEY_PREFIX = 'immich:scaling:uploaders:';
 const UPLOAD_COUNTER_TTL_SECONDS = 180; // 3 minutes (covers 2-min window + buffer)
 
 @Injectable()
@@ -77,14 +79,30 @@ export class AssetMediaService extends BaseService {
   /**
    * Increment upload counter for autoscaler rate-based scaling.
    * Uses minute buckets with TTL for sliding window calculation.
+   * Videos are tracked separately as they consume more resources.
+   * Unique uploaders are tracked to scale based on concurrent users.
    */
-  private async trackUploadForScaling(): Promise<void> {
+  private async trackUploadForScaling(userId: string, isVideo: boolean): Promise<void> {
     try {
       const redis = await this.getRedis();
-      const bucket = Math.floor(Date.now() / 60000); // minute bucket
-      const key = `${UPLOAD_COUNTER_KEY_PREFIX}${bucket}`;
-      await redis.incr(key);
-      await redis.expire(key, UPLOAD_COUNTER_TTL_SECONDS);
+      const bucket = Math.floor(Date.now() / 60_000); // minute bucket
+
+      // Always increment total uploads
+      const uploadKey = `${UPLOAD_COUNTER_KEY_PREFIX}${bucket}`;
+      await redis.incr(uploadKey);
+      await redis.expire(uploadKey, UPLOAD_COUNTER_TTL_SECONDS);
+
+      // Track video uploads separately for penalty calculation
+      if (isVideo) {
+        const videoKey = `${VIDEO_UPLOAD_COUNTER_KEY_PREFIX}${bucket}`;
+        await redis.incr(videoKey);
+        await redis.expire(videoKey, UPLOAD_COUNTER_TTL_SECONDS);
+      }
+
+      // Track unique uploaders per bucket (for multi-user scaling)
+      const uploadersKey = `${UPLOADERS_KEY_PREFIX}${bucket}`;
+      await redis.sadd(uploadersKey, userId);
+      await redis.expire(uploadersKey, UPLOAD_COUNTER_TTL_SECONDS);
     } catch (error) {
       // Non-critical - log and continue (don't fail upload due to scaling metrics)
       this.logger.warn(`Failed to track upload for scaling: ${error}`);
@@ -198,7 +216,9 @@ export class AssetMediaService extends BaseService {
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
       // Track upload for autoscaler rate-based scaling
-      await this.trackUploadForScaling();
+      // Videos have duration set, photos don't
+      const isVideo = dto.duration !== undefined && dto.duration !== null && dto.duration !== '';
+      await this.trackUploadForScaling(auth.user.id, isVideo);
 
       return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
@@ -581,8 +601,8 @@ export class AssetMediaService extends BaseService {
         } = await this.s3Manager.getConfigForLocation(StorageLocationType.Originals);
 
         // Generate S3 key
-        const rawExt = getFilenameExtension(localPath).replace('.', '') || 'bin';
-        const ext = rawExt.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'bin';
+        const rawExt = getFilenameExtension(localPath).replaceAll('.', '') || 'bin';
+        const ext = rawExt.replaceAll(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'bin';
         s3Key = `users/${ownerId}/${assetId}/original.${ext}`;
 
         this.logger.log(`Uploading asset ${assetId} to S3 synchronously: ${s3Key}`);

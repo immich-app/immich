@@ -2,7 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
-import { AssetType, AssetVisibility, JobName, JobStatus, ManualJobName } from 'src/enum';
+import { AssetType, AssetVisibility, JobName, JobStatus, ManualJobName, StorageBackend } from 'src/enum';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
@@ -131,15 +132,18 @@ export class JobService extends BaseService {
     const message = this.formatJobLogMessage(context);
 
     switch (context.event) {
-      case 'job_start':
+      case 'job_start': {
         this.logger.debug(message);
         break;
-      case 'job_complete':
+      }
+      case 'job_complete': {
         this.logger.verbose(message);
         break;
-      case 'job_failed':
+      }
+      case 'job_failed': {
         this.logger.error(message);
         break;
+      }
     }
   }
 
@@ -190,9 +194,27 @@ export class JobService extends BaseService {
 
       case JobName.StorageTemplateMigrationSingle: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
-          // Generate thumbnails first while local file exists
-          // S3 upload happens after and may delete local file
-          await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: item.data });
+          // Inject machineId so follow-up jobs route to this machine's affinity queue
+          // (we have the local file from the upload pipeline)
+          const { machineId } = this.configRepository.getEnv();
+          await this.jobRepository.queue({
+            name: JobName.AssetGenerateThumbnails,
+            data: { ...item.data, machineId },
+          });
+        }
+        break;
+      }
+
+      case JobName.AssetExtractMetadata: {
+        // For recovery jobs, queue thumbnail generation after metadata extraction
+        // Inject current machineId so follow-up jobs have affinity to this machine
+        // (we've already downloaded the file from S3)
+        if (item.data.source === 'recovery') {
+          const { machineId } = this.configRepository.getEnv();
+          await this.jobRepository.queue({
+            name: JobName.AssetGenerateThumbnails,
+            data: { ...item.data, machineId },
+          });
         }
         break;
       }
@@ -212,13 +234,12 @@ export class JobService extends BaseService {
       }
 
       case JobName.AssetGenerateThumbnails: {
-        // After thumbnails are generated, queue S3 upload for the original file
-        // This order ensures local file exists during thumbnail generation
-        if (item.data.source === 'upload' || item.data.source === 'copy') {
-          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
-        }
+        // With synchronous S3 upload, the original file is already in S3 at upload time.
+        // No need to queue S3UploadAsset here anymore.
 
-        if (!item.data.notify && item.data.source !== 'upload') {
+        // For fresh uploads and recovery jobs, queue follow-up processing jobs
+        const isProcessingJob = item.data.source === 'upload' || item.data.source === 'recovery';
+        if (!item.data.notify && !isProcessingJob) {
           break;
         }
 
@@ -235,7 +256,16 @@ export class JobService extends BaseService {
         ];
 
         if (asset.type === AssetType.Video) {
+          // Video: keep temp file for encoding, cleanup happens after encoding
           jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
+        } else if ((item.data.source === 'upload' || item.data.source === 'recovery') && item.data.localPath) {
+          // Photo: cleanup temp file now (all processing complete)
+          try {
+            await this.storageRepository.unlink(item.data.localPath);
+            this.logger.debug(`Cleaned up temp file for asset ${item.data.id}: ${item.data.localPath}`);
+          } catch (error) {
+            this.logger.debug(`Temp file cleanup skipped (may already be deleted): ${item.data.localPath}`, error);
+          }
         }
 
         await this.jobRepository.queueAll(jobs);
@@ -309,8 +339,9 @@ export class JobService extends BaseService {
         break;
       }
 
-      // OCR complete - no additional jobs needed
+      // OCR complete - cleanup local thumbnails/previews if backed by S3
       case JobName.Ocr: {
+        await this.cleanupLocalThumbnails(item.data.id);
         break;
       }
 
@@ -318,8 +349,56 @@ export class JobService extends BaseService {
       // S3 upload for the original is now done before thumbnail generation
       // The encoded video still needs its own upload (handled separately)
       case JobName.AssetEncodeVideo: {
+        // Video encoding complete - cleanup temp file for upload and recovery jobs
+        const localPath = item.data.localPath;
+        const shouldCleanup = (item.data.source === 'upload' || item.data.source === 'recovery') && localPath;
+        if (shouldCleanup) {
+          try {
+            await this.storageRepository.unlink(localPath);
+            this.logger.debug(`Cleaned up temp file for video ${item.data.id}: ${localPath}`);
+          } catch (error) {
+            this.logger.debug(`Temp file cleanup skipped (may already be deleted): ${localPath}`, error);
+          }
+        }
         break;
       }
+    }
+  }
+
+  /**
+   * Cleanup local thumbnail/preview files after ML jobs complete.
+   * Only deletes if the files are backed by S3 (already uploaded).
+   */
+  private async cleanupLocalThumbnails(assetId: string): Promise<void> {
+    try {
+      const asset = await this.assetRepository.getById(assetId, { files: true });
+      if (!asset?.files) {
+        return;
+      }
+
+      const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
+
+      // Delete local preview if backed by S3
+      if (previewFile?.storageBackend === StorageBackend.S3 && previewFile.path) {
+        try {
+          await this.storageRepository.unlink(previewFile.path);
+          this.logger.debug(`Cleaned up local preview for asset ${assetId}`);
+        } catch {
+          // File may already be deleted, ignore
+        }
+      }
+
+      // Delete local thumbnail if backed by S3
+      if (thumbnailFile?.storageBackend === StorageBackend.S3 && thumbnailFile.path) {
+        try {
+          await this.storageRepository.unlink(thumbnailFile.path);
+          this.logger.debug(`Cleaned up local thumbnail for asset ${assetId}`);
+        } catch {
+          // File may already be deleted, ignore
+        }
+      }
+    } catch (error) {
+      this.logger.debug(`Thumbnail cleanup skipped for asset ${assetId}`, error);
     }
   }
 }
