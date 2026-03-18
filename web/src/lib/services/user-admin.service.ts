@@ -166,13 +166,15 @@ const generatePassword = (length: number = 16) => {
   let generatedPassword = '';
 
   const characterSet = '0123456789' + 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ',.-{}+!#$%/()=?';
+  const maxValid = Math.floor(2 ** 32 / characterSet.length) * characterSet.length;
 
   for (let i = 0; i < length; i++) {
-    let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
-    randomNumber = randomNumber / 2 ** 32;
-    randomNumber = Math.floor(randomNumber * characterSet.length);
+    let randomNumber: number;
+    do {
+      randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
+    } while (randomNumber >= maxValid);
 
-    generatedPassword += characterSet[randomNumber];
+    generatedPassword += characterSet[randomNumber % characterSet.length];
   }
 
   return generatedPassword;

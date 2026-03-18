@@ -7,7 +7,7 @@ const prompt = (inquirer: InquirerService) => {
     const { id, oauthId, email, name } = admin;
     console.log(`Found Admin:
 - ID=${id}
-- OAuth ID=${oauthId}
+- OAuth ID=${oauthId ? '***' : 'N/A'}
 - Email=${email}
 - Name=${name}`);
 

@@ -110,6 +110,25 @@ describe('tokenizeForSearch', () => {
     it('should handle Latin followed by CJK without spaces', () => {
       expect(tokenizeForSearch('hello\u4E16\u754C')).toEqual(['hello', '\u4E16\u754C']);
     });
+
+    it('should truncate input longer than 1000 characters', () => {
+      const longText = 'a'.repeat(2000);
+      const result = tokenizeForSearch(longText);
+      expect(result).toEqual(['a'.repeat(1000)]);
+    });
+
+    it('should not truncate input at exactly 1000 characters', () => {
+      const text = 'a'.repeat(1000);
+      const result = tokenizeForSearch(text);
+      expect(result).toEqual(['a'.repeat(1000)]);
+    });
+
+    it('should handle truncation mid-word', () => {
+      const text = 'hello ' + 'x'.repeat(1000);
+      const result = tokenizeForSearch(text);
+      // 'hello' = 5 chars, space = 1, then 994 x's to reach 1000
+      expect(result).toEqual(['hello', 'x'.repeat(994)]);
+    });
   });
 });
 
