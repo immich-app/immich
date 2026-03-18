@@ -18,6 +18,7 @@
     showDateRange?: boolean;
     showItemCount?: boolean;
     onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
+    referrerRoute?: string;
   }
 
   let {
@@ -27,6 +28,7 @@
     showDateRange = false,
     showItemCount = false,
     onShowContextMenu = undefined,
+    referrerRoute = undefined,
   }: Props = $props();
 
   let isCollapsed = $derived(!!group && isAlbumGroupCollapsed($albumViewSettings, group.id));
@@ -64,7 +66,7 @@
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         <a
-          href={Route.viewAlbum(album)}
+          href={Route.viewAlbum(album, referrerRoute ? { previousRoute: referrerRoute } : undefined)}
           animate:flip={{ duration: 400 }}
           oncontextmenu={(event) => oncontextmenu(event, album)}
         >

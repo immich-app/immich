@@ -52,7 +52,7 @@ export const Route = {
 
   // albums
   albums: () => '/albums',
-  viewAlbum: ({ id }: { id: string }) => `/albums/${id}`,
+  viewAlbum: ({ id }: { id: string }, params?: { previousRoute?: string }) => `/albums/${id}` + asQueryString(params),
   viewAlbumAsset: ({ albumId, assetId }: { albumId: string; assetId: string }) =>
     `/albums/${albumId}/photos/${assetId}`,
 

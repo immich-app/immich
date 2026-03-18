@@ -76,14 +76,20 @@
     mdiPlus,
     mdiPresentationPlay,
   } from '@mdi/js';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import { afterNavigate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { QueryParameter } from '$lib/constants';
+  import { isExternalUrl } from '$lib/utils/navigation';
 
   interface Props {
     data: PageData;
   }
+
+  let previousRoute = $state<string>(Route.albums());
 
   let { data = $bindable() }: Props = $props();
 
@@ -135,7 +141,7 @@
       cancelMultiselect(assetInteraction);
       return;
     }
-    await goto(Route.albums());
+    await goto(previousRoute);
   };
 
   const refreshAlbum = async () => {
@@ -206,9 +212,22 @@
     }
   };
 
+  onMount(() => {
+    const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
+    if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
+      previousRoute = getPreviousRoute;
+    }
+  });
+
   onNavigate(async ({ to }) => {
     if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
       await handleDeleteAlbum(album, { notify: false, prompt: false });
+    }
+  });
+
+  afterNavigate(({ from }) => {
+    if (from?.url && from.route.id !== $page.route.id) {
+      previousRoute = from.url.href;
     }
   });
 
@@ -282,7 +301,7 @@
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id === album.id) {
-      await goto(Route.albums());
+      await goto(previousRoute);
       viewMode = AlbumPageViewMode.VIEW;
     }
   };
@@ -501,7 +520,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === AlbumPageViewMode.VIEW}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
 

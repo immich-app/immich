@@ -36,6 +36,7 @@
     showOwner?: boolean;
     albumGroupIds?: string[];
     empty?: Snippet;
+    referrerRoute?: string;
   }
 
   let {
@@ -48,6 +49,7 @@
     // eslint-disable-next-line no-useless-assignment
     albumGroupIds = $bindable([]),
     empty,
+    referrerRoute = undefined,
   }: Props = $props();
 
   interface AlbumGroupOption {
@@ -261,6 +263,7 @@
         showDateRange
         showItemCount
         onShowContextMenu={showAlbumContextMenu}
+        {referrerRoute}
       />
     {:else}
       {#each groupedAlbums as albumGroup (albumGroup.id)}
@@ -271,6 +274,7 @@
           showDateRange
           showItemCount
           onShowContextMenu={showAlbumContextMenu}
+          {referrerRoute}
         />
       {/each}
     {/if}

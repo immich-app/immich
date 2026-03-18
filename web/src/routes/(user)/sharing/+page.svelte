@@ -76,7 +76,7 @@
 
       <div>
         <!-- Shared Album List -->
-        <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
+        <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner referrerRoute={Route.sharing()}>
           <!-- Empty List -->
           {#snippet empty()}
             <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} class="mt-10 mx-auto" />
