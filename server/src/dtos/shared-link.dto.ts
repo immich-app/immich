@@ -57,13 +57,6 @@ const SharedLinkLoginSchema = z
   })
   .meta({ id: 'SharedLinkLoginDto' });
 
-const SharedLinkPasswordSchema = z
-  .object({
-    password: z.string().optional().describe('Link password'),
-    token: z.string().optional().describe('Access token'),
-  })
-  .meta({ id: 'SharedLinkPasswordDto' });
-
 const SharedLinkResponseSchema = z
   .object({
     id: z.string().describe('Shared link ID'),
@@ -96,7 +89,6 @@ export class SharedLinkSearchDto extends createZodDto(SharedLinkSearchSchema) {}
 export class SharedLinkCreateDto extends createZodDto(SharedLinkCreateSchema) {}
 export class SharedLinkEditDto extends createZodDto(SharedLinkEditSchema) {}
 export class SharedLinkLoginDto extends createZodDto(SharedLinkLoginSchema) {}
-export class SharedLinkPasswordDto extends createZodDto(SharedLinkPasswordSchema) {}
 export class SharedLinkResponseDto extends createZodDto(SharedLinkResponseSchema) {}
 
 export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetadata: boolean }): SharedLinkResponseDto {

@@ -3684,18 +3684,13 @@ export function createAlbum({ createAlbumDto }: {
 /**
  * Add assets to albums
  */
-export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
-    key?: string;
-    slug?: string;
+export function addAssetsToAlbums({ albumsAddAssetsDto }: {
     albumsAddAssetsDto: AlbumsAddAssetsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumsAddAssetsResponseDto;
-    }>(`/albums/assets${QS.query(QS.explode({
-        key,
-        slug
-    }))}`, oazapfts.json({
+    }>("/albums/assets", oazapfts.json({
         ...opts,
         method: "PUT",
         body: albumsAddAssetsDto
@@ -3778,19 +3773,14 @@ export function removeAssetFromAlbum({ id, bulkIdsDto }: {
 /**
  * Add assets to an album
  */
-export function addAssetsToAlbum({ id, key, slug, bulkIdsDto }: {
+export function addAssetsToAlbum({ id, bulkIdsDto }: {
     id: string;
-    key?: string;
-    slug?: string;
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: BulkIdResponseDto[];
-    }>(`/albums/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key,
-        slug
-    }))}`, oazapfts.json({
+    }>(`/albums/${encodeURIComponent(id)}/assets`, oazapfts.json({
         ...opts,
         method: "PUT",
         body: bulkIdsDto
@@ -5906,20 +5896,16 @@ export function sharedLinkLogin({ key, slug, sharedLinkLoginDto }: {
 /**
  * Retrieve current shared link
  */
-export function getMySharedLink({ key, password, slug, token }: {
+export function getMySharedLink({ key, slug }: {
     key?: string;
-    password?: string;
     slug?: string;
-    token?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SharedLinkResponseDto;
     }>(`/shared-links/me${QS.query(QS.explode({
         key,
-        password,
-        slug,
-        token
+        slug
     }))}`, {
         ...opts
     }));
@@ -5983,19 +5969,14 @@ export function removeSharedLinkAssets({ id, assetIdsDto }: {
 /**
  * Add assets to a shared link
  */
-export function addSharedLinkAssets({ id, key, slug, assetIdsDto }: {
+export function addSharedLinkAssets({ id, assetIdsDto }: {
     id: string;
-    key?: string;
-    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
-    }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key,
-        slug
-    }))}`, oazapfts.json({
+    }>(`/shared-links/${encodeURIComponent(id)}/assets`, oazapfts.json({
         ...opts,
         method: "PUT",
         body: assetIdsDto

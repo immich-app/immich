@@ -103,7 +103,7 @@ export class AlbumController {
   }
 
   @Put(':id/assets')
-  @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  @Authenticated({ permission: Permission.AlbumAssetCreate })
   @Endpoint({
     summary: 'Add assets to an album',
     description: 'Add multiple assets to a specific album by its ID.',
@@ -118,7 +118,7 @@ export class AlbumController {
   }
 
   @Put('assets')
-  @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  @Authenticated({ permission: Permission.AlbumAssetCreate })
   @Endpoint({
     summary: 'Add assets to albums',
     description: 'Send a list of asset IDs and album IDs to add each asset to each album.',

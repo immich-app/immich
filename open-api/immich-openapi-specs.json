@@ -1768,24 +1768,7 @@
       "put": {
         "description": "Send a list of asset IDs and album IDs to add each asset to each album.",
         "operationId": "addAssetsToAlbums",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2182,22 +2165,6 @@
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
               "type": "string"
             }
           }
@@ -11428,27 +11395,9 @@
             }
           },
           {
-            "name": "password",
-            "required": false,
-            "in": "query",
-            "description": "Link password",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "slug",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "token",
-            "required": false,
-            "in": "query",
-            "description": "Access token",
             "schema": {
               "type": "string"
             }
@@ -11766,22 +11715,6 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
@@ -11838,6 +11771,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "sharedLink.update",
         "x-immich-state": "Stable"
       }
     },
