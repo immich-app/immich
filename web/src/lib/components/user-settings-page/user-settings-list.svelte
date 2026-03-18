@@ -26,6 +26,7 @@
     mdiServerOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '../shared-components/settings/setting-accordion.svelte';
@@ -36,7 +37,6 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
-  import { onMount } from 'svelte';
 
   interface Props {
     sessions?: SessionResponseDto[];
@@ -48,7 +48,7 @@
 
   onMount(async () => {
     keys = await getApiKeys();
-  })
+  });
 
   let oauthOpen =
     oauth.isCallback(globalThis.location) ||
