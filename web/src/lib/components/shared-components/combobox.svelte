@@ -345,8 +345,10 @@
         {
           shortcut: { key: 'Escape' },
           onShortcut: (event) => {
-            event.stopPropagation();
-            closeDropdown();
+            if (isOpen) {
+              event.stopPropagation();
+              closeDropdown();
+            }
           },
         },
       ]}
