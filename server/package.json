@@ -24,7 +24,7 @@
     "typeorm": "typeorm",
     "migrations:debug": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations generate --debug",
     "migrations:generate": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations generate",
-    "migrations:create": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations generate",
+    "migrations:create": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations create",
     "migrations:run": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations run",
     "migrations:revert": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations revert",
     "schema:drop": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} query 'DROP schema public cascade; CREATE schema public;'",

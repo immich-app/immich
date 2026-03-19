@@ -202,7 +202,14 @@ export class SharedLinkRepository {
       .leftJoin('album', 'album.id', 'shared_link.albumId')
       .where('album.deletedAt', 'is', null)
       .select((eb) => [
-        ...columns.authSharedLink,
+        'shared_link.id',
+        'shared_link.userId',
+        'shared_link.albumId',
+        'shared_link.expiresAt',
+        'shared_link.showExif',
+        'shared_link.allowUpload',
+        'shared_link.allowDownload',
+        'shared_link.password',
         jsonObjectFrom(
           eb.selectFrom('user').select(columns.authUser).whereRef('user.id', '=', 'shared_link.userId'),
         ).as('user'),

@@ -330,6 +330,7 @@ export class AlbumRepository {
     await db
       .insertInto('album_asset')
       .values(assetIds.map((assetId) => ({ albumId, assetId })))
+      .onConflict((oc) => oc.doNothing())
       .execute();
   }
 
