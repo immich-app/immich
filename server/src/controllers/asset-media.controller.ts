@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Next,
@@ -200,6 +201,70 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
+  }
+
+  @Get(':id/video/hls/manifest.m3u8')
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Header('Access-Control-Allow-Origin', '*')
+  @Endpoint({
+    summary: 'Get HLS manifest',
+    description: 'Returns an HLS m3u8 manifest for segmented video playback.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  async getHlsManifest(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Res() res: Response,
+  ) {
+    const { manifest, contentType } = await this.service.getVideoHlsManifest(auth, id);
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'private, max-age=86400');
+    res.send(manifest);
+  }
+
+  @Get(':id/video/hls/:segment.ts')
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Header('Access-Control-Allow-Origin', '*')
+  @Endpoint({
+    summary: 'Get HLS segment',
+    description: 'Returns a single MPEG-TS segment for HLS playback.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  async getHlsSegment(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('segment') segment: string,
+    @Res() res: Response,
+  ) {
+    const segmentIndex = Number.parseInt(segment, 10);
+    if (Number.isNaN(segmentIndex) || segmentIndex < 0) {
+      res.status(HttpStatus.BAD_REQUEST).send('Invalid segment index');
+      return;
+    }
+    const { filepath, startTime, duration } = await this.service.getVideoHlsSegment(auth, id, segmentIndex);
+    const ffmpegModule = await import('fluent-ffmpeg');
+    const ffmpegFn = ffmpegModule.default;
+
+    res.set('Content-Type', 'video/mp2t');
+    res.set('Cache-Control', 'private, max-age=86400');
+
+    const command = ffmpegFn(filepath)
+      .inputOptions([`-ss ${startTime}`])
+      .outputOptions([
+        `-t ${duration}`,
+        '-c:v copy',
+        '-c:a aac',
+        '-f mpegts',
+        '-movflags +frag_keyframe+empty_moov',
+      ])
+      .on('error', (error: Error) => {
+        if (!res.headersSent) {
+          this.logger.error(`HLS segment error: ${error.message}`);
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).end();
+        }
+      });
+
+    command.pipe(res, { end: true });
   }
 
   @Post('exist')

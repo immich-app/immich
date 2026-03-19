@@ -284,6 +284,74 @@ export class AssetMediaService extends BaseService {
     });
   }
 
+  async getVideoHlsManifest(auth: AuthDto, id: string): Promise<{ manifest: string; contentType: string }> {
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
+
+    const asset = await this.assetRepository.getForVideo(id);
+    if (!asset) {
+      throw new NotFoundException('Asset not found or asset is not a video');
+    }
+
+    const filepath = asset.encodedVideoPath || asset.originalPath;
+    const videoInfo = await this.mediaRepository.probe(filepath);
+    const duration = videoInfo.format.duration || 0;
+
+    if (duration <= 0) {
+      throw new InternalServerErrorException('Could not determine video duration');
+    }
+
+    const segmentDuration = 6;
+    const segmentCount = Math.ceil(duration / segmentDuration);
+
+    let manifest = '#EXTM3U\n';
+    manifest += '#EXT-X-VERSION:3\n';
+    manifest += `#EXT-X-TARGETDURATION:${segmentDuration}\n`;
+    manifest += '#EXT-X-MEDIA-SEQUENCE:0\n';
+    manifest += '#EXT-X-PLAYLIST-TYPE:VOD\n';
+
+    for (let i = 0; i < segmentCount; i++) {
+      const segDuration = Math.min(segmentDuration, duration - i * segmentDuration);
+      manifest += `#EXTINF:${segDuration.toFixed(3)},\n`;
+      manifest += `${i}.ts\n`;
+    }
+
+    manifest += '#EXT-X-ENDLIST\n';
+
+    return { manifest, contentType: 'application/vnd.apple.mpegurl' };
+  }
+
+  async getVideoHlsSegment(
+    auth: AuthDto,
+    id: string,
+    segmentIndex: number,
+  ): Promise<{ filepath: string; startTime: number; duration: number }> {
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
+
+    const asset = await this.assetRepository.getForVideo(id);
+    if (!asset) {
+      throw new NotFoundException('Asset not found or asset is not a video');
+    }
+
+    const filepath = asset.encodedVideoPath || asset.originalPath;
+    const videoInfo = await this.mediaRepository.probe(filepath);
+    const totalDuration = videoInfo.format.duration || 0;
+
+    if (totalDuration <= 0) {
+      throw new InternalServerErrorException('Could not determine video duration');
+    }
+
+    const segmentDuration = 6;
+    const startTime = segmentIndex * segmentDuration;
+
+    if (startTime >= totalDuration) {
+      throw new NotFoundException('Segment index out of range');
+    }
+
+    const duration = Math.min(segmentDuration, totalDuration - startTime);
+
+    return { filepath, startTime, duration };
+  }
+
   async checkExistingAssets(
     auth: AuthDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,

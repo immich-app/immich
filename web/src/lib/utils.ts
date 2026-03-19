@@ -9,6 +9,7 @@ import {
   MemoryType,
   finishOAuth,
   getAssetOriginalPath,
+  getAssetHlsManifestPath,
   getAssetPlaybackPath,
   getAssetThumbnailPath,
   getBaseUrl,
@@ -240,6 +241,11 @@ export const getAssetMediaUrl = (options: AssetUrlOptions) => {
 export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   const { id, cacheKey: c } = options;
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
+};
+
+export const getAssetHlsManifestUrl = (options: AssetUrlOptions) => {
+  const { id, cacheKey: c } = options;
+  return createUrl(getAssetHlsManifestPath(id), { ...authManager.params, c });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>

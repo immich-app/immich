@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CustomVideoPlayer from '$lib/components/asset-viewer/custom-video-player.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
@@ -10,11 +11,9 @@
     videoViewerMuted,
     videoViewerVolume,
   } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { getAssetHlsManifestUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -43,29 +42,100 @@
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
+  let isBuffering = $state(false);
+  let hlsInstance: any = $state(null);
+
+  // Direct playback URL (used as fallback)
   let assetFileUrl = $derived(
     playOriginalVideo
       ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
       : getAssetPlaybackUrl({ id: assetId, cacheKey }),
   );
+
+  // HLS manifest URL for segmented streaming
+  let hlsManifestUrl = $derived(
+    playOriginalVideo ? null : getAssetHlsManifestUrl({ id: assetId, cacheKey }),
+  );
+
   let isScrubbing = $state(false);
   let showVideo = $state(false);
   let hasFocused = $state(false);
 
+  const initHls = async () => {
+    if (!videoPlayer || !hlsManifestUrl) return;
+
+    try {
+      const Hls = (await import('hls.js')).default;
+
+      if (Hls.isSupported()) {
+        // Destroy previous instance if any
+        if (hlsInstance) {
+          hlsInstance.destroy();
+        }
+
+        const hls = new Hls({
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          maxBufferSize: 60 * 1000 * 1000, // 60MB
+          startLevel: -1, // auto
+          enableWorker: true,
+        });
+
+        hls.loadSource(hlsManifestUrl);
+        hls.attachMedia(videoPlayer);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if ($autoPlayVideo && videoPlayer) {
+            videoPlayer.play().catch(() => {
+              // auto-play blocked
+            });
+          }
+        });
+
+        hls.on(Hls.Events.ERROR, (_event: any, data: any) => {
+          if (data.fatal) {
+            // On fatal error, fallback to direct playback
+            hls.destroy();
+            hlsInstance = null;
+            if (videoPlayer) {
+              videoPlayer.src = assetFileUrl;
+            }
+          }
+        });
+
+        hlsInstance = hls;
+        return;
+      }
+    } catch {
+      // hls.js not available, fall through to direct playback
+    }
+
+    // Fallback: native HLS support (Safari) or direct playback
+    if (videoPlayer) {
+      if (hlsManifestUrl && videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+        videoPlayer.src = hlsManifestUrl;
+      } else {
+        videoPlayer.src = assetFileUrl;
+      }
+    }
+  };
+
   onMount(() => {
-    // Show video after mount to ensure fading in.
     showVideo = true;
   });
 
   $effect(() => {
-    // reactive on `assetFileUrl` changes
-    if (assetFileUrl) {
+    if (assetFileUrl && videoPlayer) {
       hasFocused = false;
-      videoPlayer?.load();
+      void initHls();
     }
   });
 
   onDestroy(() => {
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      hlsInstance = null;
+    }
     if (videoPlayer) {
       videoPlayer.src = '';
     }
@@ -82,8 +152,6 @@
         await tryForceMutedPlay(video);
         return;
       }
-
-      // auto-play failed
     } finally {
       isLoading = false;
     }
@@ -93,21 +161,11 @@
     if (video.muted) {
       return;
     }
-
     try {
       video.muted = true;
       await handleCanPlay(video);
     } catch {
       // muted auto-play failed
-    }
-  };
-
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if (event.detail.direction === 'left') {
-      onNextAsset();
-    }
-    if (event.detail.direction === 'right') {
-      onPreviousAsset();
     }
   };
 
@@ -138,41 +196,40 @@
         />
       </div>
     {:else}
-      <video
-        bind:this={videoPlayer}
-        loop={$loopVideoPreference && loopVideo}
+      <CustomVideoPlayer
+        src={assetFileUrl}
+        poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
         autoplay={$autoPlayVideo}
-        playsinline
-        controls
-        disablePictureInPicture
-        class="h-full object-contain"
-        {...useSwipe(onSwipe)}
-        oncanplay={(e) => handleCanPlay(e.currentTarget)}
-        onended={onVideoEnded}
-        onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
-        onseeking={() => (isScrubbing = true)}
-        onseeked={() => (isScrubbing = false)}
-        onplaying={(e) => {
+        loop={$loopVideoPreference && loopVideo}
+        bind:muted={$videoViewerMuted}
+        bind:volume={$videoViewerVolume}
+        bind:videoElement={videoPlayer}
+        bind:isBuffering
+        onCanPlay={(video) => handleCanPlay(video)}
+        onEnded={onVideoEnded}
+        onVolumeChange={(e) => {
+          const target = e.currentTarget as HTMLVideoElement;
+          $videoViewerMuted = target.muted;
+        }}
+        onSeeking={() => (isScrubbing = true)}
+        onSeeked={() => (isScrubbing = false)}
+        onPlaying={(e) => {
+          const target = e.currentTarget as HTMLVideoElement;
           if (!hasFocused) {
-            e.currentTarget.focus();
+            target.focus();
             hasFocused = true;
           }
         }}
-        onclose={() => onClose()}
-        muted={$videoViewerMuted}
-        bind:volume={$videoViewerVolume}
-        poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
-        src={assetFileUrl}
-      >
-      </video>
+        onClose={() => onClose()}
+      />
 
       {#if isLoading}
         <div class="absolute flex place-content-center place-items-center">
-          <LoadingSpinner />
+          <div class="h-12 w-12 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
         </div>
       {/if}
 
-      {#if isFaceEditMode.value}
+      {#if isFaceEditMode.value && videoPlayer}
         <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
       {/if}
     {/if}
