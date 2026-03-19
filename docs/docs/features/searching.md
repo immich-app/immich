@@ -30,17 +30,6 @@ You can search the following types of content:
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='Advanced search filters' />
 
-## Search UI Settings
-
-Immich provides customizable settings to control the search interface behavior. You can configure these options from your [`Account Settings > Features > Search`](https://my.immich.app/user-settings?isOpen=feature+search).
-
-### Auto-hide search type selector
-
-By default, the search type selector (Context/Filename/Description/OCR) automatically hides when the search bar is not active. This keeps the interface clean and uncluttered during normal browsing.
-
-- **When enabled (default)**: The selector only displays while the search bar is actively focused.
-- **When disabled**: The selector remains visible at all times, providing quick access to switch search types without clicking the search bar first.
-
 ## Configuration
 
 Navigating to `Administration > Settings > Machine Learning Settings > Smart Search` will show the options available.
