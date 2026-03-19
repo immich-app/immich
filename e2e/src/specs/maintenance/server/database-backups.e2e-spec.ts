@@ -151,7 +151,7 @@ describe('/admin/database-backups', () => {
       await utils.connectDatabase();
     });
 
-    it.sequential('should restore a backup when not onboarded', { timeout: 60_000 }, async () => {
+    it.sequential('should restore a backup', { timeout: 60_000 }, async () => {
       let filename = await utils.createBackup(admin.accessToken);
 
       // work-around until test is running on released version

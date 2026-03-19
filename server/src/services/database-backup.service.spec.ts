@@ -855,6 +855,9 @@ describe(DatabaseBackupService.name, () => {
       expect(progress).toHaveBeenCalledWith('backup', 0.05);
       expect(progress).toHaveBeenCalledWith('migrations', 0.9);
       expect(progress).toHaveBeenCalledWith('rollback', 0);
+
+      expect(mocks.user.hasAdmin).toHaveBeenCalled();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
     });
 
     it('should rollback if API healthcheck fails', async () => {
@@ -870,7 +873,9 @@ describe(DatabaseBackupService.name, () => {
       expect(progress).toHaveBeenCalledWith('migrations', 0.9);
       expect(progress).toHaveBeenCalledWith('rollback', 0);
 
+      expect(mocks.user.hasAdmin).toHaveBeenCalled();
       expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
     });
   });
 });
