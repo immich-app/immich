@@ -35,6 +35,10 @@ const envData: EnvData = {
     vectorExtension: DatabaseExtension.Vectors,
   },
 
+  helmet: {
+    config: {},
+  },
+
   licensePublicKey: {
     client: 'client-public-key',
     server: 'server-public-key',

@@ -2,6 +2,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import helmetMiddleware from 'helmet';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { excludePaths, serverVersion } from 'src/constants';
@@ -39,7 +40,7 @@ export async function configureExpress(
   },
 ) {
   const configRepository = app.get(ConfigRepository);
-  const { environment, host, port, resourcePaths, network } = configRepository.getEnv();
+  const { environment, host, port, helmet, resourcePaths, network } = configRepository.getEnv();
 
   const logger = await app.resolve(LoggingRepository);
   logger.setContext('Bootstrap');
@@ -47,6 +48,12 @@ export async function configureExpress(
 
   app.set('trust proxy', ['loopback', ...network.trustedProxies]);
   app.set('etag', 'strong');
+
+  if (helmet.config) {
+    app.use(helmetMiddleware(helmet.config));
+    logger.log('Initialized helmet middleware');
+  }
+
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
 
