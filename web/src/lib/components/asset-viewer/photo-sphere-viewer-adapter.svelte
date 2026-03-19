@@ -128,10 +128,8 @@
     }
 
     const boxes = getOcrBoundingBoxes(ocrData, {
-      contentWidth: viewer.state.textureData.panoData.croppedWidth,
-      contentHeight: viewer.state.textureData.panoData.croppedHeight,
-      offsetX: 0,
-      offsetY: 0,
+      width: viewer.state.textureData.panoData.croppedWidth,
+      height: viewer.state.textureData.panoData.croppedHeight,
     });
 
     for (const [index, box] of boxes.entries()) {

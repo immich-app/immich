@@ -13,7 +13,7 @@
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
-  import { getNaturalSize, scaleToFit, type ContentMetrics } from '$lib/utils/container-utils';
+  import { getNaturalSize, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
@@ -24,14 +24,14 @@
   import { t } from 'svelte-i18n';
   import type { AssetCursor } from './asset-viewer.svelte';
 
-  interface Props {
+  type Props = {
     cursor: AssetCursor;
     element?: HTMLDivElement;
     sharedLink?: SharedLinkResponseDto;
     onReady?: () => void;
     onError?: () => void;
     onSwipe?: (event: SwipeCustomEvent) => void;
-  }
+  };
 
   let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
@@ -66,23 +66,15 @@
     height: containerHeight,
   });
 
-  const overlayMetrics = $derived.by((): ContentMetrics => {
+  const overlaySize = $derived.by((): Size => {
     if (!assetViewerManager.imgRef || !visibleImageReady) {
-      return { contentWidth: 0, contentHeight: 0, offsetX: 0, offsetY: 0 };
+      return { width: 0, height: 0 };
     }
 
-    const natural = getNaturalSize(assetViewerManager.imgRef);
-    const scaled = scaleToFit(natural, { width: containerWidth, height: containerHeight });
-
-    return {
-      contentWidth: scaled.width,
-      contentHeight: scaled.height,
-      offsetX: 0,
-      offsetY: 0,
-    };
+    return scaleToFit(getNaturalSize(assetViewerManager.imgRef), { width: containerWidth, height: containerHeight });
   });
 
-  const highlightedBoxes = $derived(getBoundingBox($boundingBoxesArray, overlayMetrics));
+  const highlightedBoxes = $derived(getBoundingBox($boundingBoxesArray, overlaySize));
   const isHighlighting = $derived(highlightedBoxes.length > 0);
 
   let visibleBoxes = $state<BoundingBox[]>([]);
@@ -94,7 +86,7 @@
     }
   });
 
-  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
+  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlaySize) : []);
 
   const onCopy = async () => {
     if (!canCopyImageToClipboard() || !assetViewerManager.imgRef) {
@@ -162,6 +154,8 @@
     $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground && !!asset.thumbhash,
   );
 
+  let adaptiveImage = $state<HTMLDivElement | undefined>();
+
   const faceToNameMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
@@ -192,7 +186,7 @@
     const mouseX = (event.clientX - containerRect.left - contentOffsetX * currentZoom - currentPositionX) / currentZoom;
     const mouseY = (event.clientY - containerRect.top - contentOffsetY * currentZoom - currentPositionY) / currentZoom;
 
-    const faceBoxes = getBoundingBox(faces, overlayMetrics);
+    const faceBoxes = getBoundingBox(faces, overlaySize);
 
     for (const [index, box] of faceBoxes.entries()) {
       if (mouseX >= box.left && mouseX <= box.left + box.width && mouseY >= box.top && mouseY <= box.top + box.height) {
@@ -226,7 +220,7 @@
   ondblclick={onZoom}
   onmousemove={handleImageMouseMove}
   onmouseleave={handleImageMouseLeave}
-  use:zoomImageAction={{ disabled: assetViewerManager.isFaceEditMode || ocrManager.showOverlay }}
+  use:zoomImageAction={{ zoomTarget: adaptiveImage }}
   {...useSwipe((event) => onSwipe?.(event))}
 >
   <AdaptiveImage
@@ -244,6 +238,7 @@
       onReady?.();
     }}
     bind:imgRef={assetViewerManager.imgRef}
+    bind:ref={adaptiveImage}
   >
     {#snippet backdrop()}
       {#if blurredSlideshow}

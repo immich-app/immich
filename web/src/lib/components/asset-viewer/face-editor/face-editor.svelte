@@ -12,12 +12,12 @@
   import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     htmlElement: HTMLImageElement | HTMLVideoElement;
     containerWidth: number;
     containerHeight: number;
     assetId: string;
-  }
+  };
 
   let { htmlElement, containerWidth, containerHeight, assetId }: Props = $props();
 
@@ -304,6 +304,7 @@
 <div
   id="face-editor-data"
   class="absolute start-0 top-0 z-5 h-full w-full overflow-hidden"
+  data-overlay-interactive
   data-face-left={faceBoxPosition.left}
   data-face-top={faceBoxPosition.top}
   data-face-width={faceBoxPosition.width}
