@@ -1,6 +1,6 @@
-import { LoginResponseDto, ManualJobName, updateAdminOnboarding } from '@immich/sdk';
+import { LoginResponseDto, ManualJobName } from '@immich/sdk';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, utils } from 'src/utils';
+import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -10,7 +10,9 @@ describe('/admin/database-backups', () => {
 
   beforeAll(async () => {
     await utils.resetDatabase();
-    admin = await utils.adminSetup();
+    admin = await utils.adminSetup({
+      onboarding: false,
+    });
     await utils.resetBackups(admin.accessToken);
   });
 
@@ -94,7 +96,9 @@ describe('/admin/database-backups', () => {
         ({ status, body }) => status === 200 && !body.maintenanceMode,
       );
 
-      admin = await utils.adminSetup();
+      admin = await utils.adminSetup({
+        onboarding: false,
+      });
     });
 
     it.sequential('should not work when the server is configured', async () => {
@@ -148,12 +152,6 @@ describe('/admin/database-backups', () => {
     });
 
     it.sequential('should restore a backup when not onboarded', { timeout: 60_000 }, async () => {
-      // some users may have skipped onboarding
-      await updateAdminOnboarding(
-        { adminOnboardingUpdateDto: { isOnboarded: false } },
-        { headers: asBearerAuth(admin.accessToken) },
-      );
-
       let filename = await utils.createBackup(admin.accessToken);
 
       // work-around until test is running on released version
