@@ -167,6 +167,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               minHeight: 10.0,
               value: percentage,
               borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+              stopIndicatorRadius: 0,
             ),
             Text(
               'backup_controller_page_storage_format',
