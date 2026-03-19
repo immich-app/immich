@@ -869,11 +869,7 @@ export class MediaService extends BaseService {
         try {
           this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
           ffmpeg = { ...ffmpeg, accelDecode: false };
-          const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(
-            target,
-            videoStream,
-            audioStream,
-          );
+          const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
           await this.mediaRepository.transcode(input, output, command);
           partialFallbackSuccess = true;
         } catch (error: any) {

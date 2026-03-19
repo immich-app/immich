@@ -3,10 +3,10 @@ import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
 import { AssetType, AssetVisibility, JobName, JobStatus, ManualJobName, StorageBackend } from 'src/enum';
-import { getAssetFiles } from 'src/utils/asset.util';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 
 /**

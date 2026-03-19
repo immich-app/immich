@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { ImmichWorker, JobName } from 'src/enum';
-import { JobItem } from 'src/types';
 import { BaseService } from 'src/services/base.service';
+import { JobItem } from 'src/types';
 
 /**
  * RecoveryService - Boot-time Recovery for Orphaned Assets
@@ -86,7 +86,9 @@ export class RecoveryService extends BaseService {
         await this.jobRepository.queue(job);
       }
 
-      this.logger.log(`Successfully queued ${orphans.length} orphaned assets for recovery (${metadataCount} metadata, ${thumbnailCount} thumbnails)`);
+      this.logger.log(
+        `Successfully queued ${orphans.length} orphaned assets for recovery (${metadataCount} metadata, ${thumbnailCount} thumbnails)`,
+      );
     } catch (error) {
       this.logger.error(`Failed to recover orphaned assets`, error);
       // Don't throw - recovery failure shouldn't prevent server startup

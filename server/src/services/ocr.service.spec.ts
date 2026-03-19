@@ -82,7 +82,11 @@ describe(OcrService.name, () => {
     });
 
     it('should skip assets without a resize path', async () => {
-      mocks.assetJob.getForOcr.mockResolvedValue({ id: assetStub.noResizePath.id, visibility: AssetVisibility.Timeline, files: [] });
+      mocks.assetJob.getForOcr.mockResolvedValue({
+        id: assetStub.noResizePath.id,
+        visibility: AssetVisibility.Timeline,
+        files: [],
+      });
 
       expect(await sut.handleOcr({ id: assetStub.noResizePath.id })).toEqual(JobStatus.Failed);
 

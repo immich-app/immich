@@ -396,63 +396,66 @@ export class PersonService extends BaseService {
       );
       this.logger.debug(`${faces.length} faces detected in ${localPath}`);
 
-    const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
-    const embeddings: FaceSearchTable[] = [];
-    const mlFaceIds = new Set<string>();
+      const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
+      const embeddings: FaceSearchTable[] = [];
+      const mlFaceIds = new Set<string>();
 
-    for (const face of asset.faces) {
-      if (face.sourceType === SourceType.MachineLearning) {
-        mlFaceIds.add(face.id);
+      for (const face of asset.faces) {
+        if (face.sourceType === SourceType.MachineLearning) {
+          mlFaceIds.add(face.id);
+        }
       }
-    }
 
-    const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
-    const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
-    for (const { boundingBox, embedding } of faces) {
-      const scaledBox = {
-        x1: boundingBox.x1 * widthScale,
-        y1: boundingBox.y1 * heightScale,
-        x2: boundingBox.x2 * widthScale,
-        y2: boundingBox.y2 * heightScale,
-      };
-      const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
+      const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
+      const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
+      for (const { boundingBox, embedding } of faces) {
+        const scaledBox = {
+          x1: boundingBox.x1 * widthScale,
+          y1: boundingBox.y1 * heightScale,
+          x2: boundingBox.x2 * widthScale,
+          y2: boundingBox.y2 * heightScale,
+        };
+        const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
 
-      if (match && !mlFaceIds.delete(match.id)) {
-        embeddings.push({ faceId: match.id, embedding });
-      } else if (!match) {
-        const faceId = this.cryptoRepository.randomUUID();
-        facesToAdd.push({
-          id: faceId,
-          assetId: asset.id,
-          imageHeight,
-          imageWidth,
-          boundingBoxX1: boundingBox.x1,
-          boundingBoxY1: boundingBox.y1,
-          boundingBoxX2: boundingBox.x2,
-          boundingBoxY2: boundingBox.y2,
-        });
-        embeddings.push({ faceId, embedding });
+        if (match && !mlFaceIds.delete(match.id)) {
+          embeddings.push({ faceId: match.id, embedding });
+        } else if (!match) {
+          const faceId = this.cryptoRepository.randomUUID();
+          facesToAdd.push({
+            id: faceId,
+            assetId: asset.id,
+            imageHeight,
+            imageWidth,
+            boundingBoxX1: boundingBox.x1,
+            boundingBoxY1: boundingBox.y1,
+            boundingBoxX2: boundingBox.x2,
+            boundingBoxY2: boundingBox.y2,
+          });
+          embeddings.push({ faceId, embedding });
+        }
       }
-    }
-    const faceIdsToRemove = [...mlFaceIds];
+      const faceIdsToRemove = [...mlFaceIds];
 
-    if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddings.length > 0) {
-      await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddings);
-    }
+      if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddings.length > 0) {
+        await this.personRepository.refreshFaces(facesToAdd, faceIdsToRemove, embeddings);
+      }
 
-    if (faceIdsToRemove.length > 0) {
-      this.logger.log(`Removed ${faceIdsToRemove.length} faces below detection threshold in asset ${id}`);
-    }
+      if (faceIdsToRemove.length > 0) {
+        this.logger.log(`Removed ${faceIdsToRemove.length} faces below detection threshold in asset ${id}`);
+      }
 
-    if (facesToAdd.length > 0) {
-      this.logger.log(`Detected ${facesToAdd.length} new faces in asset ${id}`);
-      const jobs = facesToAdd.map((face) => ({ name: JobName.FacialRecognition, data: { id: face.id } }) as const);
-      await this.jobRepository.queueAll([{ name: JobName.FacialRecognitionQueueAll, data: { force: false } }, ...jobs]);
-    } else if (embeddings.length > 0) {
-      this.logger.log(`Added ${embeddings.length} face embeddings for asset ${id}`);
-    }
+      if (facesToAdd.length > 0) {
+        this.logger.log(`Detected ${facesToAdd.length} new faces in asset ${id}`);
+        const jobs = facesToAdd.map((face) => ({ name: JobName.FacialRecognition, data: { id: face.id } }) as const);
+        await this.jobRepository.queueAll([
+          { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
+          ...jobs,
+        ]);
+      } else if (embeddings.length > 0) {
+        this.logger.log(`Added ${embeddings.length} face embeddings for asset ${id}`);
+      }
 
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
+      await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
 
       return JobStatus.Success;
     } finally {

@@ -511,35 +511,37 @@ export class AssetJobRepository {
     // Only recover assets older than 30 minutes to avoid re-processing in-flight jobs
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-    return this.db
-      .selectFrom('asset')
-      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-      .select([
-        'asset.id',
-        'asset.ownerId',
-        'asset.s3Key',
-        'asset.s3Bucket',
-        'asset_job_status.metadataExtractedAt',
-        'asset_job_status.previewAt',
-        'asset_job_status.thumbnailAt',
-      ])
-      .where('asset.storageBackend', '=', StorageBackend.S3)
-      .where('asset.s3Key', 'is not', null)
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.createdAt', '<', thirtyMinutesAgo)
-      // Exclude hidden assets (live photo videos) - they intentionally don't have thumbnails
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where((eb) =>
-        eb.or([
-          // No job status at all (never processed)
-          eb('asset_job_status.assetId', 'is', null),
-          // Metadata not extracted
-          eb('asset_job_status.metadataExtractedAt', 'is', null),
-          // Thumbnails not generated
-          eb('asset_job_status.previewAt', 'is', null),
-          eb('asset_job_status.thumbnailAt', 'is', null),
-        ]),
-      )
-      .execute();
+    return (
+      this.db
+        .selectFrom('asset')
+        .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+        .select([
+          'asset.id',
+          'asset.ownerId',
+          'asset.s3Key',
+          'asset.s3Bucket',
+          'asset_job_status.metadataExtractedAt',
+          'asset_job_status.previewAt',
+          'asset_job_status.thumbnailAt',
+        ])
+        .where('asset.storageBackend', '=', StorageBackend.S3)
+        .where('asset.s3Key', 'is not', null)
+        .where('asset.deletedAt', 'is', null)
+        .where('asset.createdAt', '<', thirtyMinutesAgo)
+        // Exclude hidden assets (live photo videos) - they intentionally don't have thumbnails
+        .where('asset.visibility', '!=', AssetVisibility.Hidden)
+        .where((eb) =>
+          eb.or([
+            // No job status at all (never processed)
+            eb('asset_job_status.assetId', 'is', null),
+            // Metadata not extracted
+            eb('asset_job_status.metadataExtractedAt', 'is', null),
+            // Thumbnails not generated
+            eb('asset_job_status.previewAt', 'is', null),
+            eb('asset_job_status.thumbnailAt', 'is', null),
+          ]),
+        )
+        .execute()
+    );
   }
 }

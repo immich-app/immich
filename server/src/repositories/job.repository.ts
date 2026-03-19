@@ -249,7 +249,12 @@ export class JobRepository implements OnModuleDestroy {
   async getJobCounts(name: QueueName): Promise<JobCounts> {
     if (!isAffinityQueue(name)) {
       return this.getQueue(name).getJobCounts(
-        'active', 'completed', 'failed', 'delayed', 'waiting', 'paused',
+        'active',
+        'completed',
+        'failed',
+        'delayed',
+        'waiting',
+        'paused',
       ) as unknown as Promise<JobCounts>;
     }
 
@@ -259,9 +264,14 @@ export class JobRepository implements OnModuleDestroy {
 
     for (const variant of variants) {
       const queue = this.getDynamicQueue(variant);
-      const counts = await queue.getJobCounts(
-        'active', 'completed', 'failed', 'delayed', 'waiting', 'paused',
-      ) as unknown as JobCounts;
+      const counts = (await queue.getJobCounts(
+        'active',
+        'completed',
+        'failed',
+        'delayed',
+        'waiting',
+        'paused',
+      )) as unknown as JobCounts;
       totals.active += counts.active || 0;
       totals.completed += counts.completed || 0;
       totals.failed += counts.failed || 0;
@@ -395,9 +405,7 @@ export class JobRepository implements OnModuleDestroy {
 
       let cursor = '0';
       do {
-        const [nextCursor, keys] = await client.scan(
-          cursor, 'MATCH', `immich_bull:${baseName}-*:meta`, 'COUNT', 100,
-        );
+        const [nextCursor, keys] = await client.scan(cursor, 'MATCH', `immich_bull:${baseName}-*:meta`, 'COUNT', 100);
         cursor = nextCursor;
         for (const key of keys) {
           const match = key.match(/immich_bull:([^:]+):meta/);
