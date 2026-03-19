@@ -155,6 +155,33 @@ describe('transformFaceBoundingBox', () => {
       expect(result.boundingBoxX2).toBe(50);
       expect(result.boundingBoxY2).toBe(50);
     });
+
+    it('should always return whole numbers', () => {
+      const edits: AssetEditActionItem[] = [
+        { action: AssetEditAction.Crop, parameters: { x: 50, y: 50, width: 250, height: 250 } },
+      ];
+
+      expect(transformFaceBoundingBox(baseFace, edits, { width: 1000, height: 400 })).toMatchObject({
+        boundingBoxX1: 50,
+        boundingBoxY1: 0,
+        boundingBoxX2: 150,
+        boundingBoxY2: 50,
+      });
+
+      expect(transformFaceBoundingBox(baseFace, edits, { width: 1001, height: 401 })).toMatchObject({
+        boundingBoxX1: 50,
+        boundingBoxY1: 0,
+        boundingBoxX2: 150,
+        boundingBoxY2: 50,
+      });
+
+      expect(transformFaceBoundingBox(baseFace, edits, { width: 999, height: 399 })).toMatchObject({
+        boundingBoxX1: 49,
+        boundingBoxY1: -0,
+        boundingBoxX2: 149,
+        boundingBoxY2: 49,
+      });
+    });
   });
 });
 
