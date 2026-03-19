@@ -22,7 +22,7 @@
     try {
       await changePinCode({ pinCodeChangeDto: { pinCode: currentPinCode, newPinCode } });
       resetForm();
-      toastManager.success($t('pin_code_changed_successfully'));
+      toastManager.primary($t('pin_code_changed_successfully'));
     } catch (error) {
       handleError(error, $t('unable_to_change_pin_code'));
     } finally {

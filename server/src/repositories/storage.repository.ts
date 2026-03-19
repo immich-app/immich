@@ -63,7 +63,7 @@ export class StorageRepository {
   }
 
   createWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'w' });
+    return createWriteStream(filepath, { flags: 'w', flush: true });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {

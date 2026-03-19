@@ -8,7 +8,7 @@ export const handleCreateJob = async (dto: JobCreateDto) => {
 
   try {
     await createJob({ jobCreateDto: dto });
-    toastManager.success($t('admin.job_created'));
+    toastManager.primary($t('admin.job_created'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));

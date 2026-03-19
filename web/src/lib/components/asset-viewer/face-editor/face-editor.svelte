@@ -6,6 +6,7 @@
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { shortcut } from '$lib/actions/shortcut';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
@@ -288,6 +289,8 @@
     }
   };
 </script>
+
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel }} />
 
 <div
   id="face-editor-data"

@@ -1,6 +1,9 @@
+import { MediaType } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
+import type { DateTime } from 'luxon';
+import type { SvelteSet } from 'svelte/reactivity';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -47,4 +50,42 @@ export type AssetControlContext = {
   getAssets: () => TimelineAsset[]; // All assets includes partners' assets
   getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
   clearSelect: () => void;
+};
+
+export type SearchCameraFilter = {
+  make?: string;
+  model?: string;
+  lensModel?: string;
+};
+
+export type SearchDateFilter = {
+  takenBefore?: DateTime;
+  takenAfter?: DateTime;
+};
+
+export type SearchDisplayFilters = {
+  isNotInAlbum: boolean;
+  isArchive: boolean;
+  isFavorite: boolean;
+};
+
+export type SearchLocationFilter = {
+  country?: string;
+  state?: string;
+  city?: string;
+};
+
+export type SearchFilter = {
+  query: string;
+  ocr?: string;
+  queryType: 'smart' | 'metadata' | 'description' | 'ocr';
+  personIds: SvelteSet<string>;
+  tagIds: SvelteSet<string> | null;
+  location: SearchLocationFilter;
+  queryAssetId?: string;
+  camera: SearchCameraFilter;
+  date: SearchDateFilter;
+  display: SearchDisplayFilters;
+  mediaType: MediaType;
+  rating?: number | null;
 };

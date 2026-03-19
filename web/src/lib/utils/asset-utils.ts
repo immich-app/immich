@@ -49,7 +49,7 @@ export const tagAssets = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.success($t('tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('tagged_assets', { values: { count: assetIds.length } }));
   }
 
   return assetIds;
@@ -70,7 +70,7 @@ export const removeTag = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.success($t('removed_tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
   }
 
   return assetIds;
@@ -364,7 +364,7 @@ export const deleteStack = async (stackIds: string[]) => {
 
     await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
 
-    toastManager.success($t('unstacked_assets_count', { values: { count } }));
+    toastManager.primary($t('unstacked_assets_count', { values: { count } }));
 
     const assets = stacks.flatMap((stack) => stack.assets);
     for (const asset of assets) {
@@ -385,7 +385,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
     await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
     await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
 
-    toastManager.success($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
+    toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
 
     keepAsset.stack = null;
     return keepAsset;
@@ -440,7 +440,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
-    toastManager.success(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
+    toastManager.primary(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
   }
@@ -459,7 +459,7 @@ export const archiveAssets = async (assets: { id: string }[], visibility: AssetV
       });
     }
 
-    toastManager.success(
+    toastManager.primary(
       visibility === AssetVisibility.Archive
         ? $t('archived_count', { values: { count: ids.length } })
         : $t('unarchived_count', { values: { count: ids.length } }),
