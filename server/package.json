@@ -5,6 +5,10 @@
   "author": "",
   "private": true,
   "license": "GNU Affero General Public License version 3",
+  "files": [
+    "bin",
+    "dist"
+  ],
   "scripts": {
     "build": "nest build",
     "format": "prettier --cache --check .",
