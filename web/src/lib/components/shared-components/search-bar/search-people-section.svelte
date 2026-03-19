@@ -9,6 +9,7 @@
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
+  import { tv } from 'tailwind-variants';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
@@ -49,6 +50,16 @@
     const nameLower = name.toLowerCase();
     return name ? list.filter((p) => p.name.toLowerCase().includes(nameLower)) : list;
   };
+
+  const styles = tv({
+    base: 'flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all',
+    variants: {
+      selected: {
+        true: 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white',
+        false: 'border-transparent',
+      },
+    },
+  });
 </script>
 
 {#await peoplePromise}
@@ -74,11 +85,7 @@
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
-              person.id,
-            )
-              ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
-              : 'border-transparent'}"
+            class={styles({ selected: selectedPeople.has(person.id) })}
             onclick={() => togglePersonSelection(person.id)}
           >
             <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />

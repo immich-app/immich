@@ -334,7 +334,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     }
 
     try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename } }));
+      toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
       downloadUrl(
         getBaseUrl() +
           `/assets/${id}/original` +
@@ -352,7 +352,7 @@ const handleFavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.success($t('added_to_favorites'));
+    toastManager.primary($t('added_to_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
@@ -364,7 +364,7 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.success($t('removed_from_favorites'));
+    toastManager.primary($t('removed_from_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
@@ -387,7 +387,7 @@ const handleRunAssetJob = async (dto: AssetJobsDto) => {
 
   try {
     await runAssetJobs({ assetJobsDto: dto });
-    toastManager.success(getAssetJobMessage($t, dto.name));
+    toastManager.primary(getAssetJobMessage($t, dto.name));
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
   }

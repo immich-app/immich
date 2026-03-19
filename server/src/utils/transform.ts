@@ -179,10 +179,10 @@ export const transformFaceBoundingBox = (
   // Ensure x1,y1 is top-left and x2,y2 is bottom-right
   const [p1, p2] = transformedPoints;
   return {
-    boundingBoxX1: Math.min(p1.x, p2.x),
-    boundingBoxY1: Math.min(p1.y, p2.y),
-    boundingBoxX2: Math.max(p1.x, p2.x),
-    boundingBoxY2: Math.max(p1.y, p2.y),
+    boundingBoxX1: Math.trunc(Math.min(p1.x, p2.x)),
+    boundingBoxY1: Math.trunc(Math.min(p1.y, p2.y)),
+    boundingBoxX2: Math.trunc(Math.max(p1.x, p2.x)),
+    boundingBoxY2: Math.trunc(Math.max(p1.y, p2.y)),
     imageWidth: currentWidth,
     imageHeight: currentHeight,
   };

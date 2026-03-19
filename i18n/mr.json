@@ -814,8 +814,6 @@
   "deduplication_criteria_2": "EXIF डेटा प्रमाण",
   "deduplication_info": "डुप्लिकेट निवारण माहिती",
   "deduplication_info_description": "डुप्लिकेट स्वयंचलितपणे निवडून काढण्यासाठी खालील निकष वापरले जातात:",
-  "default_locale": "पूर्वनिर्धारित भाषा",
-  "default_locale_description": "तुमच्या ब्राउझरच्या भाषा-परिसरानुसार दिनांक व संख्या स्वरूपित करा",
   "delete": "हटवा",
   "delete_action_confirmation_message": "तुम्हाला ही फाईल हटवायची आहे का? ही क्रिया सर्व्हरच्या ट्रॅशमध्ये हलवेल आणि स्थानिकपणे हटवायचे का ते विचारेल",
   "delete_action_prompt": "{count} हटवले",

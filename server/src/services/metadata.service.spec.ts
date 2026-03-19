@@ -330,7 +330,7 @@ describe(MetadataService.name, () => {
         duration: null,
         fileCreatedAt: asset.fileCreatedAt,
         fileModifiedAt: asset.fileModifiedAt,
-        localDateTime: asset.localDateTime,
+        localDateTime: asset.fileCreatedAt,
         width: null,
         height: null,
       });
@@ -360,7 +360,7 @@ describe(MetadataService.name, () => {
         duration: null,
         fileCreatedAt: asset.fileCreatedAt,
         fileModifiedAt: asset.fileModifiedAt,
-        localDateTime: asset.localDateTime,
+        localDateTime: asset.fileCreatedAt,
         width: null,
         height: null,
       });

@@ -1,18 +1,11 @@
-<script lang="ts" module>
-  export interface SearchDateFilter {
-    takenBefore?: DateTime;
-    takenAfter?: DateTime;
-  }
-</script>
-
 <script lang="ts">
+  import type { SearchDateFilter } from '$lib/types';
   import { DatePicker, Text } from '@immich/ui';
-  import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     filters: SearchDateFilter;
-  }
+  };
 
   let { filters = $bindable() }: Props = $props();
 
