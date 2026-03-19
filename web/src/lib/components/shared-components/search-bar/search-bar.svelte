@@ -310,6 +310,7 @@
       id={searchTypeId}
       class="absolute inset-y-0 flex items-center end-16"
       class:end-28={value.length > 0}
+      class:max-md:hidden={value}
     >
       <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
         <Button
