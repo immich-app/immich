@@ -306,7 +306,6 @@
       />
     </div>
 
-    {#if searchStore.isSearchEnabled}
       <div
         id={searchTypeId}
         class="absolute inset-y-0 flex items-center end-16"
@@ -342,7 +341,6 @@
           {/if}
         </div>
       </div>
-    {/if}
 
     {#if showClearIcon}
       <div class="absolute inset-y-0 end-0 flex items-center pe-2">
