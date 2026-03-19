@@ -111,18 +111,6 @@ export class DownloadService extends BaseService {
         this.logger.warn('Unable to resolve realpath', { originalPath });
       }
 
-      // Check file exists before adding to zip to prevent corrupted archives
-      try {
-        const exists = await this.storageRepository.stat(realpath);
-        if (!exists) {
-          this.logger.warn(`File not found, skipping from archive: ${realpath}`);
-          continue;
-        }
-      } catch {
-        this.logger.warn(`File not accessible, skipping from archive: ${realpath}`);
-        continue;
-      }
-
       zip.addFile(realpath, filename);
     }
 
