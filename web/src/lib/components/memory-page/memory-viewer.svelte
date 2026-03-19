@@ -22,10 +22,16 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { memoryManager, type MemoryAsset } from '$lib/managers/memory-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
+  import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
@@ -50,6 +56,7 @@
   } from '@mdi/js';
   import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
+  import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
@@ -62,6 +69,7 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   const currentAssetId = $derived(current?.asset.id);
+  const currentAssetDto = $derived(current ? current.memory.assets[current.assetIndex] : undefined);
   const currentMemoryAssetFull = $derived.by(async () =>
     currentAssetId ? await getAssetInfo({ ...authManager.params, id: currentAssetId }) : undefined,
   );
@@ -74,6 +82,14 @@
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
+  let transition = $state({
+    name: undefined as string | undefined,
+    previousPanel: undefined as string | undefined,
+    nextPanel: undefined as string | undefined,
+    active: false,
+  });
+  const showTransitionOverlays = $derived(transition.active || transition.name === 'hero');
+  const showNavButtonOverlay = $derived(transition.name === 'hero');
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   // need to include padding in the viewport for gallery
@@ -81,18 +97,6 @@
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
-
-  const handleNavigate = async (asset?: { id: string }) => {
-    if (assetViewerManager.isViewing) {
-      return asset;
-    }
-
-    if (!asset) {
-      return;
-    }
-
-    await goto(asHref(asset));
-  };
 
   const setProgressDuration = (asset: TimelineAsset) => {
     if (asset.isVideo) {
@@ -109,11 +113,177 @@
     }
   };
 
-  const handleNextAsset = () => handleNavigate(current?.next?.asset);
-  const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
-  const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
-  const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
-  const handleEscape = async () => goto(Route.photos());
+  const scrollToTop = () => {
+    if (window.scrollY === 0) {
+      return Promise.resolve();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return new Promise<void>((resolve) => {
+      const timeout = setTimeout(resolve, 500);
+      window.addEventListener(
+        'scrollend',
+        () => {
+          clearTimeout(timeout);
+          resolve();
+        },
+        { once: true },
+      );
+    });
+  };
+
+  const withMemoryTransition = async (
+    asset: { id: string } | undefined,
+    config: Omit<Parameters<typeof viewTransitionManager.startTransition>[0], 'onFinished'> & {
+      onFinished?: () => void;
+    },
+  ) => {
+    if ($isViewing || !asset) {
+      return;
+    }
+
+    await scrollToTop();
+
+    transition.active = true;
+    viewTransitionManager
+      .startTransition({
+        ...config,
+        onFinished: () => {
+          transition.previousPanel = undefined;
+          transition.nextPanel = undefined;
+          transition.name = undefined;
+          transition.active = false;
+          config.onFinished?.();
+        },
+      })
+      .catch((error: unknown) => console.error('[Memory] transition failed:', error));
+  };
+
+  const navigateWithTransition = (asset?: { id: string }) =>
+    withMemoryTransition(asset, {
+      types: ['memory-nav'],
+      prepareOldSnapshot: () => {
+        transition.name = 'memory-fade-out';
+      },
+      performUpdate: async () => {
+        await goto(asHref(asset!));
+        await eventManager.untilNext('ViewerOpenTransitionReady');
+      },
+      prepareNewSnapshot: () => {
+        transition.name = 'memory-fade-in';
+      },
+    });
+
+  const handleNextAsset = () => {
+    const next = current?.next;
+    if (next && next.memory.id !== current?.memory.id) {
+      void navigateToMemory('next', next.asset);
+    } else {
+      void navigateWithTransition(next?.asset);
+    }
+  };
+  const handlePreviousAsset = () => {
+    const previous = current?.previous;
+    if (previous && previous.memory.id !== current?.memory.id) {
+      void navigateToMemory('previous', previous.asset);
+    } else {
+      void navigateWithTransition(previous?.asset);
+    }
+  };
+  const navigateToMemory = (direction: 'next' | 'previous', asset?: { id: string }) => {
+    const isNext = direction === 'next';
+    const useHeroMorph = !mediaQueryManager.reducedMotion;
+
+    return withMemoryTransition(asset, {
+      types: ['memory'],
+      prepareOldSnapshot: () => {
+        if (useHeroMorph) {
+          if (isNext) {
+            transition.nextPanel = 'hero';
+            transition.previousPanel = 'memory-departing';
+          } else {
+            transition.previousPanel = 'hero';
+            transition.nextPanel = 'memory-departing';
+          }
+          transition.name = 'hero-out';
+        } else {
+          transition.name = 'memory-fade-out';
+        }
+      },
+      performUpdate: async () => {
+        transition.nextPanel = undefined;
+        transition.previousPanel = undefined;
+        if (useHeroMorph) {
+          if (isNext) {
+            transition.previousPanel = 'hero-out';
+          } else {
+            transition.nextPanel = 'hero-out';
+          }
+        }
+        transition.name = useHeroMorph ? 'hero' : 'memory-fade-in';
+        await goto(asHref(asset!));
+        await eventManager.untilNext('ViewerOpenTransitionReady');
+      },
+    });
+  };
+
+  const handleNextMemory = () => void navigateToMemory('next', current?.nextMemory?.assets[0]);
+  const handlePreviousMemory = () => void navigateToMemory('previous', current?.previousMemory?.assets[0]);
+  const closeMemoryViewer = () => {
+    if (current && current.assetIndex > 0 && !mediaQueryManager.reducedMotion) {
+      const firstAsset = current.memory.assets[0];
+      void withMemoryTransition(firstAsset, {
+        types: ['memory-nav', 'memory-nav-fast'],
+        prepareOldSnapshot: () => {
+          transition.name = 'memory-fade-out';
+        },
+        performUpdate: async () => {
+          await goto(asHref(firstAsset));
+          await eventManager.untilNext('ViewerOpenTransitionReady');
+        },
+        prepareNewSnapshot: () => {
+          transition.name = 'memory-fade-in';
+        },
+        onFinished: () => closeToTimeline(),
+      });
+    } else {
+      closeToTimeline();
+    }
+  };
+
+  const closeToTimeline = () => {
+    const memoryId = current?.memory.id;
+    let cardImage: HTMLElement | null | undefined;
+
+    void viewTransitionManager.startTransition({
+      types: ['memory-enter'],
+      prepareOldSnapshot: () => {
+        transition.name = 'hero';
+      },
+      performUpdate: async () => {
+        transition.name = undefined;
+        await goto(Route.photos());
+        await tick();
+
+        const memoryCard = memoryId
+          ? document.querySelector<HTMLElement>(`[data-memory-id="${CSS.escape(memoryId)}"]`)
+          : null;
+        memoryCard?.scrollIntoView({ behavior: 'instant', inline: 'nearest', block: 'nearest' });
+        cardImage = memoryCard?.querySelector<HTMLElement>('img');
+        if (cardImage) {
+          cardImage.style.viewTransitionName = 'hero';
+          await tick();
+        }
+      },
+      onFinished: () => {
+        if (cardImage) {
+          cardImage.style.viewTransitionName = '';
+          cardImage = null;
+        }
+      },
+    });
+  };
+
+  const handleEscape = closeMemoryViewer;
   const handleSelectAll = () =>
     assetMultiSelectManager.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
 
@@ -157,13 +327,17 @@
     }
   };
 
-  const handleProgress = async (progress: number) => {
+  const handleProgress = (progress: number) => {
     if (!progressBarController) {
       return;
     }
 
-    if (progress === 1 && !paused) {
-      await (current?.next ? handleNextAsset() : handlePromiseError(handleAction('handleProgressLast', 'pause')));
+    if (progress === 1 && !paused && !transition.active) {
+      if (current?.next) {
+        handleNextAsset();
+      } else {
+        handlePromiseError(handleAction('handleProgressLast', 'pause'));
+      }
     }
   };
 
@@ -267,7 +441,18 @@
     playerInitialized = false;
   };
 
-  const resetAndPlay = () => {
+  const resolveTransitionIfPending = () => {
+    if (viewTransitionManager.activeViewTransition) {
+      transition.name = 'hero';
+      eventManager.emit('ViewerOpenTransitionReady');
+      requestAnimationFrame(() => {
+        transition.name = undefined;
+      });
+    }
+  };
+
+  const handleMemoryImageReady = () => {
+    resolveTransitionIfPending();
     handlePromiseError(handleAction('resetAndPlay', 'reset'));
     handlePromiseError(handleAction('resetAndPlay', 'play'));
   };
@@ -282,7 +467,7 @@
       handlePromiseError(handleAction('initPlayer[AssetViewOpen]', 'pause'));
     } else if (isVideo) {
       // Image assets will start playing when the image is loaded. Only autostart video assets.
-      resetAndPlay();
+      handleMemoryImageReady();
     }
     playerInitialized = true;
   };
@@ -310,7 +495,7 @@
 
   $effect(() => {
     if (progressBarController) {
-      handlePromiseError(handleProgress(progressBarController.current));
+      handleProgress(progressBarController.current);
     }
   });
 
@@ -379,7 +564,7 @@
   bind:clientWidth={viewport.width}
 >
   {#if current}
-    <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
+    <ControlAppBar onClose={closeMemoryViewer} forceDark multiRow>
       {#snippet leading()}
         {#if current}
           <p class="text-lg">
@@ -455,7 +640,11 @@
         class="ms-[-100%] box-border flex h-[calc(100vh-224px)] md:h-[calc(100vh-180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
         <!-- PREVIOUS MEMORY -->
-        <div class="h-1/2 w-[20vw] rounded-2xl {current.previousMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
+        <div
+          class="h-1/2 w-[20vw] rounded-2xl opacity-25 transition-opacity duration-150 hover:opacity-70 {current.previousMemory
+            ? ''
+            : 'opacity-0!'}"
+        >
           <button
             type="button"
             class="relative h-full w-full rounded-2xl"
@@ -468,6 +657,7 @@
                 src={getAssetMediaUrl({ id: current.previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('previous_memory')}
                 draggable="false"
+                style:view-transition-name={transition.previousPanel}
               />
             {:else}
               <enhanced:img
@@ -480,7 +670,10 @@
             {/if}
 
             {#if current.previousMemory}
-              <div class="absolute bottom-4 end-4 text-start text-white">
+              <div
+                class="absolute bottom-4 end-4 text-start text-white"
+                style:view-transition-name={transition.active ? 'memory-overlay-prev' : undefined}
+              >
                 <p class="uppercase text-xs font-semibold text-gray-200">{$t('previous')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
@@ -489,39 +682,42 @@
         </div>
 
         <!-- CURRENT MEMORY -->
-        <div
-          class="main-view relative flex h-full w-[70vw] place-content-center place-items-center rounded-2xl bg-black"
-        >
-          <div class="relative h-full w-full rounded-2xl bg-black">
-            {#key current.asset.id}
-              {#if current.asset.isVideo}
-                <MemoryVideoViewer
-                  asset={current.asset}
-                  bind:videoPlayer
-                  videoViewerMuted={$videoViewerMuted}
-                  videoViewerVolume={$videoViewerVolume}
-                />
-              {:else}
-                <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
-              {/if}
-            {/key}
+        <div class="main-view relative isolate h-full w-[70vw] rounded-2xl bg-black">
+          {#key current.asset.id}
+            {#if current.asset.isVideo}
+              <MemoryVideoViewer
+                asset={current.asset}
+                bind:videoPlayer
+                videoViewerMuted={$videoViewerMuted}
+                videoViewerVolume={$videoViewerVolume}
+              />
+            {:else if currentAssetDto}
+              <MemoryPhotoViewer
+                asset={currentAssetDto}
+                transitionName={transition.name}
+                onImageLoad={handleMemoryImageReady}
+                onError={resolveTransitionIfPending}
+              />
+            {/if}
+          {/key}
 
-            <div
-              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2 dark"
-              class:opacity-0={galleryInView}
-              class:opacity-100={!galleryInView}
-            >
-              <div class="flex items-center">
-                <IconButton
-                  icon={isSaved ? mdiHeart : mdiHeartOutline}
-                  shape="round"
-                  variant="ghost"
-                  color="secondary"
-                  aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
-                  onclick={() => handleSaveMemory()}
-                  class="w-12 h-12"
-                />
-                <!-- <IconButton
+          <div
+            class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2 dark"
+            class:opacity-0={galleryInView}
+            class:opacity-100={!galleryInView}
+            style:view-transition-name={showTransitionOverlays ? 'memory-controls' : undefined}
+          >
+            <div class="flex items-center">
+              <IconButton
+                icon={isSaved ? mdiHeart : mdiHeartOutline}
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
+                onclick={() => handleSaveMemory()}
+                class="w-12 h-12"
+              />
+              <!-- <IconButton
                   icon={mdiShareVariantOutline}
                   shape="round"
                   variant="ghost"
@@ -529,42 +725,46 @@
                   color="secondary"
                   aria-label={$t('share')}
                 /> -->
-                <ButtonContextMenu
-                  icon={mdiDotsVertical}
-                  title={$t('menu')}
-                  onclick={() => handlePromiseError(handleAction('ContextMenuClick', 'pause'))}
-                  direction="left"
-                  size="medium"
-                  align="bottom-right"
-                >
-                  <MenuOption onClick={() => handleDeleteMemory()} text={$t('remove_memory')} icon={mdiCardsOutline} />
-                  <MenuOption
-                    onClick={() => handleDeleteMemoryAsset()}
-                    text={$t('remove_photo_from_memory')}
-                    icon={mdiImageMinusOutline}
-                  />
-                  <!-- shortcut={{ key: 'l', shift: shared }} -->
-                </ButtonContextMenu>
-              </div>
-
-              <div>
-                {#await currentMemoryAssetFull then asset}
-                  {#if asset}
-                    <IconButton
-                      href={Route.photos({ at: asset.stack?.primaryAssetId ?? asset.id })}
-                      icon={mdiImageSearch}
-                      aria-label={$t('view_in_timeline')}
-                      color="secondary"
-                      variant="ghost"
-                      shape="round"
-                    />
-                  {/if}
-                {/await}
-              </div>
+              <ButtonContextMenu
+                icon={mdiDotsVertical}
+                title={$t('menu')}
+                onclick={() => handlePromiseError(handleAction('ContextMenuClick', 'pause'))}
+                direction="left"
+                size="medium"
+                align="bottom-right"
+              >
+                <MenuOption onClick={() => handleDeleteMemory()} text={$t('remove_memory')} icon={mdiCardsOutline} />
+                <MenuOption
+                  onClick={() => handleDeleteMemoryAsset()}
+                  text={$t('remove_photo_from_memory')}
+                  icon={mdiImageMinusOutline}
+                />
+                <!-- shortcut={{ key: 'l', shift: shared }} -->
+              </ButtonContextMenu>
             </div>
-            <!-- CONTROL BUTTONS -->
+
+            <div>
+              {#await currentMemoryAssetFull then asset}
+                {#if asset}
+                  <IconButton
+                    href={Route.photos({ at: asset.stack?.primaryAssetId ?? asset.id })}
+                    icon={mdiImageSearch}
+                    aria-label={$t('view_in_timeline')}
+                    color="secondary"
+                    variant="ghost"
+                    shape="round"
+                  />
+                {/if}
+              {/await}
+            </div>
+          </div>
+          <!-- CONTROL BUTTONS -->
+          <div
+            class="absolute inset-0 pointer-events-none"
+            style:view-transition-name={showNavButtonOverlay ? 'memory-nav-buttons' : undefined}
+          >
             {#if current.previous}
-              <div class="absolute top-1/2 start-0 ms-4 dark">
+              <div class="absolute top-1/2 inset-s-0 ms-4 dark pointer-events-auto">
                 <IconButton
                   shape="round"
                   aria-label={$t('previous_memory')}
@@ -578,7 +778,7 @@
             {/if}
 
             {#if current.next}
-              <div class="absolute top-1/2 end-0 me-4 dark">
+              <div class="absolute top-1/2 inset-e-0 me-4 dark pointer-events-auto">
                 <IconButton
                   shape="round"
                   aria-label={$t('next_memory')}
@@ -590,25 +790,32 @@
                 />
               </div>
             {/if}
+          </div>
 
-            <div class="absolute start-8 top-4 text-sm font-medium text-white">
-              <p>
-                {fromISODateTimeUTC(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
-                  locale: $locale,
-                })}
-              </p>
-              <p>
-                {#await currentMemoryAssetFull then asset}
-                  {asset?.exifInfo?.city || ''}
-                  {asset?.exifInfo?.country || ''}
-                {/await}
-              </p>
-            </div>
+          <div
+            class="absolute start-8 top-4 text-sm font-medium text-white"
+            style:view-transition-name={showTransitionOverlays ? 'memory-overlay' : undefined}
+          >
+            <p>
+              {fromISODateTimeUTC(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
+                locale: $locale,
+              })}
+            </p>
+            <p>
+              {#await currentMemoryAssetFull then asset}
+                {asset?.exifInfo?.city || ''}
+                {asset?.exifInfo?.country || ''}
+              {/await}
+            </p>
           </div>
         </div>
 
         <!-- NEXT MEMORY -->
-        <div class="h-1/2 w-[20vw] rounded-2xl {current.nextMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
+        <div
+          class="h-1/2 w-[20vw] rounded-2xl opacity-25 transition-opacity duration-150 hover:opacity-70 {current.nextMemory
+            ? ''
+            : 'opacity-0!'}"
+        >
           <button
             type="button"
             class="relative h-full w-full rounded-2xl"
@@ -621,6 +828,7 @@
                 src={getAssetMediaUrl({ id: current.nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('next_memory')}
                 draggable="false"
+                style:view-transition-name={transition.nextPanel}
               />
             {:else}
               <enhanced:img
@@ -633,7 +841,10 @@
             {/if}
 
             {#if current.nextMemory}
-              <div class="absolute bottom-4 start-4 text-start text-white">
+              <div
+                class="absolute bottom-4 start-4 text-start text-white"
+                style:view-transition-name={transition.active ? 'memory-overlay-next' : undefined}
+              >
                 <p class="uppercase text-xs font-semibold text-gray-200">{$t('up_next')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
@@ -677,8 +888,6 @@
 
 <style>
   .main-view {
-    box-shadow:
-      0 4px 4px 0 rgba(0, 0, 0, 0.3),
-      0 8px 12px 6px rgba(0, 0, 0, 0.15);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
   }
 </style>

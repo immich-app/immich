@@ -2,14 +2,15 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
 import { tick } from 'svelte';
 
-export function startViewerTransition(
+function startHeroTransition(
+  type: string,
   heroAssetId: string,
   openViewer: () => void,
   activateHeroAsset: (assetId: string) => void,
   deactivateHeroAsset: () => void,
 ) {
   void viewTransitionManager.startTransition({
-    types: ['viewer'],
+    types: [type],
     prepareOldSnapshot: () => {
       activateHeroAsset(heroAssetId);
     },
@@ -22,6 +23,24 @@ export function startViewerTransition(
       await tick();
     },
   });
+}
+
+export function startViewerTransition(
+  heroAssetId: string,
+  openViewer: () => void,
+  activateHeroAsset: (assetId: string) => void,
+  deactivateHeroAsset: () => void,
+) {
+  startHeroTransition('viewer', heroAssetId, openViewer, activateHeroAsset, deactivateHeroAsset);
+}
+
+export function startMemoryTransition(
+  heroAssetId: string,
+  openViewer: () => void,
+  activateHeroAsset: (assetId: string) => void,
+  deactivateHeroAsset: () => void,
+) {
+  startHeroTransition('memory-enter', heroAssetId, openViewer, activateHeroAsset, deactivateHeroAsset);
 }
 
 let activeOverlay: HTMLElement | undefined;

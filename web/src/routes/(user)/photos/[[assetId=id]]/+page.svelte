@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { beforeNavigate, goto } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -36,8 +37,9 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { startMemoryTransition } from '$lib/utils/transition-utils';
   import { AssetVisibility } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel, type CarouselImageItem } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -90,6 +92,17 @@
       src: getAssetMediaUrl({ id: memory.assets[0].id }),
     })),
   );
+
+  let memoryTransitionId = $state<string | null>(null);
+
+  const handleMemoryCardClick = (item: CarouselImageItem) => {
+    startMemoryTransition(
+      item.id ?? item.href,
+      () => void goto(item.href),
+      (id) => (memoryTransitionId = id),
+      () => (memoryTransitionId = null),
+    );
+  };
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
@@ -103,7 +116,33 @@
     withStacked
   >
     {#if authManager.preferences.memories.enabled}
-      <ImageCarousel {items} />
+      {#snippet memoryCard(item: CarouselImageItem)}
+        <a
+          class="relative me-2 inline-block aspect-3/4 h-54 rounded-xl last:me-0 max-md:h-37.5 md:me-4 md:aspect-4/3 xl:aspect-video"
+          href={item.href}
+          data-memory-id={item.id}
+          onclick={(e) => {
+            e.preventDefault();
+            handleMemoryCardClick(item);
+          }}
+          style:box-shadow="rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px"
+        >
+          <img
+            class="h-full w-full rounded-xl object-cover"
+            src={item.src}
+            alt={item.alt ?? item.title}
+            draggable="false"
+            style:view-transition-name={memoryTransitionId === (item.id ?? item.href) ? 'hero' : undefined}
+          />
+          <div
+            class="absolute inset-s-0 top-0 h-full w-full rounded-xl bg-linear-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
+          ></div>
+          <p class="absolute inset-s-4 bottom-2 text-lg text-white max-md:text-sm">
+            {item.title}
+          </p>
+        </a>
+      {/snippet}
+      <ImageCarousel {items} child={memoryCard} />
     {/if}
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
