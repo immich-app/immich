@@ -7,7 +7,7 @@ on:
 permissions: {}
 
 env:
-  LABEL_ID: "LA_kwDOGyI-8M8AAAACcAeOfg" # auto-closed:template
+  LABEL_ID: 'LA_kwDOGyI-8M8AAAACcAeOfg' # auto-closed:template
 
 jobs:
   parse:
