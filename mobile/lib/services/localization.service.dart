@@ -18,7 +18,7 @@ Future<bool> loadTranslations() async {
     path: translationsPath,
     useOnlyLangCode: false,
     onLoadError: (e) => dPrint(() => e.toString()),
-    fallbackLocale: locales.values.first,
+    fallbackLocale: defaultLocale,
   );
 
   await controller.loadTranslations();

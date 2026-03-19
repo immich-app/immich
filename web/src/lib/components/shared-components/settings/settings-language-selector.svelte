@@ -1,9 +1,10 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
   import Combobox from '$lib/components/shared-components/combobox.svelte';
-  import { defaultLang, langs } from '$lib/constants';
+  import { defaultLang } from '$lib/constants';
   import { lang } from '$lib/stores/preferences.store';
-  import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
+  import { langs } from '$lib/utils/i18n';
+  import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n-meta';
   import { Label, Text } from '@immich/ui';
   import { locale as i18nLocale, t } from 'svelte-i18n';
 
@@ -13,14 +14,7 @@
 
   let { showSettingDescription = false }: Props = $props();
 
-  const langOptions = langs
-    .map((lang) => ({ label: lang.name, value: lang.code }))
-    .sort((a, b) => {
-      if (b.label.startsWith('Development')) {
-        return -1;
-      }
-      return a.label.localeCompare(b.label);
-    });
+  const langOptions = langs.map((lang) => ({ label: lang.name, value: lang.code }));
 
   const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };
 
