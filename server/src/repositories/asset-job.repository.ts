@@ -15,7 +15,6 @@ import {
   withExifInner,
   withFaces,
   withFacesAndPeople,
-  withFilePath,
   withFiles,
 } from 'src/utils/database';
 
