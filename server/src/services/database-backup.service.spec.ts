@@ -27,6 +27,7 @@ describe(DatabaseBackupService.name, () => {
       mocks.systemMetadata as never,
       mocks.process,
       mocks.database as never,
+      mocks.user as never,
       mocks.cron as never,
       mocks.job as never,
       maintenanceHealthRepositoryMock as never,
