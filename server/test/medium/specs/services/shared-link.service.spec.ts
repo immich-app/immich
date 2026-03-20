@@ -372,14 +372,16 @@ describe(SharedLinkService.name, () => {
   });
 
   describe('get', () => {
-    it('should return an album shared link when shared_link_asset rows exist', async () => {
+    it('should return an album shared link with assets', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user });
       const { album } = await ctx.newAlbum({ ownerId: user.id });
 
-      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
-      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const [{ asset: asset1 }, { asset: asset2 }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id }),
+        ctx.newAsset({ ownerId: user.id }),
+      ]);
       await Promise.all([
         ctx.newExif({ assetId: asset1.id, make: 'Canon' }),
         ctx.newExif({ assetId: asset2.id, make: 'Canon' }),
@@ -396,7 +398,6 @@ describe(SharedLinkService.name, () => {
       });
 
       await sharedLinkRepo.addAssets(sharedLink.id, [asset1.id, asset2.id]);
-
       const result = await sut.get(auth, sharedLink.id);
       const assetIds = result.assets.map((asset) => asset.id);
 
