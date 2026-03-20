@@ -1,7 +1,34 @@
 import 'package:flutter/painting.dart';
 
-/// A mixin that provides listener tracking for ImageStreamCompleters
-/// protecting against synchronous cache drops and background memory pressure.
+/// Tracks listeners on an [ImageStreamCompleter] to safely cancel in-flight
+/// network requests without interfering with [ImageCache] internals.
+///
+/// ### Problem
+/// Cancelling fetches when the listener count drops to 1 (cache only) or 0
+/// is unsafe due to three framework behaviours:
+///
+/// 1. **Memory-pressure eviction** — `ImageCache.clear()` removes the cache
+///    listener while UI widgets still need the image. A count-based check
+///    would cancel the active fetch, leaving the UI with no image.
+/// 2. **Synchronous detach during `putIfAbsent`** — When an `initialImage`
+///    is provided, the cache attaches, receives the frame, and detaches
+///    synchronously *before* the UI widget can attach. Count reaches 0 and
+///    would trigger a false cancel.
+/// 3. **Listener misidentification** — After the cache detaches (via 1 or 2),
+///    the next UI listener could be mistaken for the cache listener, causing
+///    incorrect cancellations when that widget is disposed.
+///
+/// ### Solution: First-Listener Heuristic
+/// The cache is always the first listener attached (via `putIfAbsent`). This
+/// mixin records that identity once and uses it for all subsequent decisions:
+///
+/// * **Identity locking** — The first listener is assumed to be the cache.
+///   Once identified, `_hasIdentifiedCacheListener` prevents reassignment.
+/// * **Targeted cancellation** — Cancel only when the identified cache
+///   listener is the sole remaining listener and no image has been delivered.
+/// * **Sync-removal bypass** — When `hadInitialImage` is set, the first
+///   synchronous removal of the cache listener is ignored so the fetch
+///   survives until the UI attaches.
 mixin CacheAwareListenerTrackerMixin on ImageStreamCompleter {
   void Function()? _onLastListenerRemoved;
   int _listenerCount = 0;
