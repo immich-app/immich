@@ -52,7 +52,7 @@
         ? openFileUploadDialog()
         : fileUploadHandler({ files }));
 
-      toastManager.success();
+      toastManager.primary();
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }

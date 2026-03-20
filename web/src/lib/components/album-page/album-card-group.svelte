@@ -65,6 +65,7 @@
       {#each albums as album, index (album.id)}
         <a
           href={Route.viewAlbum(album)}
+          class="h-fit"
           animate:flip={{ duration: 400 }}
           oncontextmenu={(event) => oncontextmenu(event, album)}
         >

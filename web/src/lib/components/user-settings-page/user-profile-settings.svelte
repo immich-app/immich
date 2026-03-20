@@ -23,7 +23,7 @@
       Object.assign(editedUser, data);
       $user = data;
 
-      toastManager.success($t('saved_profile'));
+      toastManager.primary($t('saved_profile'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_profile'));
     }

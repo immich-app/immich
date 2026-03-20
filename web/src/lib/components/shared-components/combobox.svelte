@@ -212,12 +212,12 @@
         bottom: `${rootHeight - top}px`,
         left: `${left}px`,
         width: `${boundary.width}px`,
-        maxHeight: maxHeight(top - dropdownOffset),
+        maxHeight: maxHeight(boundary.top - dropdownOffset),
       };
     }
 
-    const viewportHeight = visualViewport?.height || rootHeight;
-    const availableHeight = modalBounds ? rootHeight - bottom : viewportHeight - boundary.bottom;
+    const viewportHeight = visualViewport?.height || window.innerHeight;
+    const availableHeight = viewportHeight - boundary.bottom;
     return {
       top: `${bottom}px`,
       left: `${left}px`,
@@ -345,8 +345,10 @@
         {
           shortcut: { key: 'Escape' },
           onShortcut: (event) => {
-            event.stopPropagation();
-            closeDropdown();
+            if (isOpen) {
+              event.stopPropagation();
+              closeDropdown();
+            }
           },
         },
       ]}

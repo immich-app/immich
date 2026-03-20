@@ -22,7 +22,7 @@
       try {
         loading = true;
         user = await oauth.link(globalThis.location);
-        toastManager.success($t('linked_oauth_account'));
+        toastManager.primary($t('linked_oauth_account'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_link_oauth_account'));
       } finally {
@@ -36,7 +36,7 @@
   const handleUnlink = async () => {
     try {
       user = await oauth.unlink();
-      toastManager.success($t('unlinked_oauth_account'));
+      toastManager.primary($t('unlinked_oauth_account'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_unlink_account'));
     }

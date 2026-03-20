@@ -6,6 +6,9 @@ on:
 
 permissions: {}
 
+env:
+  LABEL_ID: 'LA_kwDOGyI-8M8AAAACcAeOfg' # auto-closed:template
+
 jobs:
   parse:
     runs-on: ubuntu-latest
@@ -46,9 +49,10 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
+            -f labelId="$LABEL_ID" \
             -f body="This PR has been automatically closed as the description doesn't follow our template. After you edit it to match the template, the PR will automatically be reopened." \
             -f query='
-              mutation CommentAndClosePR($prId: ID!, $body: String!) {
+              mutation CommentAndClosePR($prId: ID!, $body: String!, $labelId: ID!) {
                 addComment(input: {
                   subjectId: $prId,
                   body: $body
@@ -60,20 +64,33 @@ jobs:
                 }) {
                   __typename
                 }
+                addLabelsToLabelable(input: {
+                  labelableId: $prId,
+                  labelIds: [$labelId]
+                }) {
+                  __typename
+                }
               }'
 
-      - name: Reopen PR (sections now present, PR closed)
-        if: ${{ needs.parse.outputs.uses_template == 'true' && github.event.pull_request.state == 'closed' }}
+      - name: Reopen PR (sections now present, PR was auto-closed)
+        if: ${{ needs.parse.outputs.uses_template == 'true' && github.event.pull_request.state == 'closed' && contains(github.event.pull_request.labels.*.node_id, env.LABEL_ID) }}
         env:
           GH_TOKEN: ${{ github.token }}
           NODE_ID: ${{ github.event.pull_request.node_id }}
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
+            -f labelId="$LABEL_ID" \
             -f query='
-              mutation ReopenPR($prId: ID!) {
+              mutation ReopenPR($prId: ID!, $labelId: ID!) {
                 reopenPullRequest(input: {
                   pullRequestId: $prId
+                }) {
+                  __typename
+                }
+                removeLabelsFromLabelable(input: {
+                  labelableId: $prId,
+                  labelIds: [$labelId]
                 }) {
                   __typename
                 }

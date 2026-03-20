@@ -33,13 +33,11 @@
 {#if isOwned}
   <Textarea
     bind:value={description}
-    class="outline-none border-b max-h-32 border-transparent pl-0 bg-transparent ring-0 focus:ring-0 resize-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary dark:bg-transparent"
-    rows={1}
-    grow
-    shape="rectangle"
+    variant="ghost"
     onfocusout={handleFocusOut}
     placeholder={$t('add_a_description')}
     data-testid="autogrow-textarea"
+    class="max-h-32"
     {@attach fromAction(shortcut, () => ({
       shortcut: { key: 'Enter', ctrl: true },
       onShortcut: (e) => e.currentTarget.blur(),

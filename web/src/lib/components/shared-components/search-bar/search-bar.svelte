@@ -14,11 +14,11 @@
   import { t } from 'svelte-i18n';
   import SearchHistoryBox from './search-history-box.svelte';
 
-  interface Props {
+  type Props = {
     value?: string;
     grayTheme: boolean;
     searchQuery?: MetadataSearchDto | SmartSearchDto;
-  }
+  };
 
   let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
 

@@ -71,7 +71,7 @@
       disableButtons = true;
       const data = await createPerson({ personCreateDto: {} });
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
-      toastManager.success($t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }));
+      toastManager.primary($t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_reassign_assets_new_person'));
     } finally {
@@ -88,7 +88,7 @@
       disableButtons = true;
       if (selectedPerson) {
         await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
-        toastManager.success(
+        toastManager.primary(
           $t('reassigned_assets_to_existing_person', {
             values: { count: assetIds.length, name: selectedPerson.name || null },
           }),

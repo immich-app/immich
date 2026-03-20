@@ -200,7 +200,7 @@
         },
       });
       eventManager.emit('AlbumUpdate', response);
-      toastManager.success($t('album_cover_updated'));
+      toastManager.primary($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }
@@ -287,7 +287,11 @@
     }
   };
 
-  const onAlbumAddAssets = async () => {
+  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+    if (!albumIds.includes(album.id)) {
+      return;
+    }
+
     await refreshAlbum();
     timelineInteraction.clearMultiselect();
     await setModeToView();

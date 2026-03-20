@@ -31,7 +31,7 @@
         person,
       });
 
-      toastManager.success($t('feature_photo_updated'));
+      toastManager.primary($t('feature_photo_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }

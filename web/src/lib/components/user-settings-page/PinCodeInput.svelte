@@ -49,25 +49,22 @@
 
   const handleInput = (event: Event, index: number) => {
     const target = event.target as HTMLInputElement;
-    let currentPinValue = target.value;
+    const digits = target.value.replaceAll(/\D/g, '').slice(0, pinLength - index);
 
-    if (target.value.length > 1) {
-      currentPinValue = value.slice(0, 1);
-    }
-
-    if (Number.isNaN(Number(value))) {
+    if (digits.length === 0) {
       pinValues[index] = '';
-      target.value = '';
+      value = pinValues.join('').trim();
       return;
     }
 
-    pinValues[index] = currentPinValue;
+    for (let i = 0; i < digits.length; i++) {
+      pinValues[index + i] = digits[i];
+    }
 
     value = pinValues.join('').trim();
 
-    if (value && index < pinLength - 1) {
-      focusNext(index);
-    }
+    const lastFilledIndex = Math.min(index + digits.length, pinLength - 1);
+    pinCodeInputElements[lastFilledIndex]?.focus();
 
     if (value.length === pinLength) {
       onFilled?.(value);
@@ -104,12 +101,6 @@
         }
         return;
       }
-      default: {
-        if (Number.isNaN(Number(event.key))) {
-          event.preventDefault();
-        }
-        break;
-      }
     }
   }
 </script>
@@ -125,7 +116,6 @@
         {type}
         inputmode="numeric"
         pattern="[0-9]*"
-        maxlength="1"
         bind:this={pinCodeInputElements[index]}
         id="pin-code-{index}"
         class="h-12 w-10 rounded-xl border-2 border-suble dark:border-gray-700 text-center text-lg font-medium focus:border-immich-primary focus:ring-primary dark:focus:border-primary font-mono bg-white dark:bg-light"
