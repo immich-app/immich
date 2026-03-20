@@ -45,7 +45,6 @@ class AnimatedImageStreamCompleter extends MultiFrameImageStreamCompleter with C
           self.setImage(item);
         } else if (item is ui.Codec) {
           if (!codecCompleter.isCompleted) {
-            self.didProvideImage = true;
             codecCompleter.complete(item);
           }
         }

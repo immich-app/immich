@@ -37,20 +37,10 @@ mixin CacheAwareListenerTrackerMixin on ImageStreamCompleter {
   ImageStreamListener? _cacheListener;
   bool _hasIdentifiedCacheListener = false;
 
-  /// Subclasses can set this to true when they provided an image
-  /// Not necessary when using setImage
-  bool didProvideImage = false;
-
   /// Initializes the tracking state. Must be called in the subclass constructor.
   void setupListenerTracking({required bool hadInitialImage, void Function()? onLastListenerRemoved}) {
     _hadInitialImage = hadInitialImage;
     _onLastListenerRemoved = onLastListenerRemoved;
-  }
-
-  @override
-  void setImage(ImageInfo image) {
-    didProvideImage = true;
-    super.setImage(image);
   }
 
   @override
@@ -79,7 +69,7 @@ mixin CacheAwareListenerTrackerMixin on ImageStreamCompleter {
       return;
     }
 
-    final bool onlyCacheListenerLeft = _listenerCount == 1 && _cacheListener != null && !didProvideImage;
+    final bool onlyCacheListenerLeft = _listenerCount == 1 && _cacheListener != null;
 
     final bool completelyAbandoned = _listenerCount == 0;
 
