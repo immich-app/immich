@@ -277,10 +277,8 @@ object HttpClientManager {
     return result
   }
 
-  fun rebuildCronetEngine(): CronetEngine {
-    val old = cronetEngine!!
+  fun rebuildCronetEngine() {
     cronetEngine = buildCronetEngine()
-    return old
   }
 
   val cronetStoragePath: File get() = cronetStorageDir
@@ -301,7 +299,7 @@ object HttpClientManager {
     }
   }
 
-  private fun buildCronetEngine(): CronetEngine {
+  fun buildCronetEngine(): CronetEngine {
     return CronetEngine.Builder(appContext)
       .enableHttp2(true)
       .enableQuic(true)

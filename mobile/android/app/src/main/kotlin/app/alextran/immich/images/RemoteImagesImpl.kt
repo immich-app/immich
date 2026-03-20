@@ -205,18 +205,20 @@ private class CronetImageFetcher : ImageFetcher {
 
   private fun onDrained() {
     val onCacheCleared = synchronized(stateLock) {
-      val onCacheCleared = onCacheCleared
+      val onCacheCleared = this.onCacheCleared
       this.onCacheCleared = null
       onCacheCleared
-    }
-    if (onCacheCleared != null) {
-      val oldEngine = HttpClientManager.rebuildCronetEngine()
-      oldEngine.shutdown()
-      CoroutineScope(Dispatchers.IO).launch {
-        val result = runCatching { deleteFolderAndGetSize(HttpClientManager.cronetStoragePath.toPath()) }
-        synchronized(stateLock) { draining = false }
-        onCacheCleared(result)
+    } ?: return
+
+    CoroutineScope(Dispatchers.IO).launch {
+      val result = runCatching {
+        HttpClientManager.cronetEngine?.shutdown()
+        val deletionResult = deleteFolderAndGetSize(HttpClientManager.cronetStoragePath.toPath())
+        HttpClientManager.rebuildCronetEngine()
+        deletionResult
       }
+      synchronized(stateLock) { draining = false }
+      onCacheCleared(result)
     }
   }
 
