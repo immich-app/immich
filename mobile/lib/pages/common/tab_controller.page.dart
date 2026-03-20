@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -18,6 +19,7 @@ class TabControllerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isRefreshingAssets = ref.watch(assetProvider);
+    final isRefreshingRemoteAlbums = ref.watch(isRefreshingRemoteAlbumProvider);
     final isScreenLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
 
     Widget buildIcon({required Widget icon, required bool isProcessing}) {
@@ -73,9 +75,12 @@ class TabControllerPage extends HookConsumerWidget {
         selectedIcon: Icon(Icons.search, color: context.primaryColor),
       ),
       NavigationDestination(
-        label: 'Spaces',
-        icon: const Icon(Icons.workspaces_outlined),
-        selectedIcon: Icon(Icons.workspaces, color: context.primaryColor),
+        label: 'albums'.tr(),
+        icon: const Icon(Icons.photo_album_outlined),
+        selectedIcon: buildIcon(
+          isProcessing: isRefreshingRemoteAlbums,
+          icon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
+        ),
       ),
       NavigationDestination(
         label: 'library'.tr(),
@@ -109,7 +114,7 @@ class TabControllerPage extends HookConsumerWidget {
 
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
-      routes: [const PhotosRoute(), SearchRoute(), const SpacesRoute(), const LibraryRoute()],
+      routes: [const PhotosRoute(), SearchRoute(), const AlbumsRoute(), const LibraryRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {

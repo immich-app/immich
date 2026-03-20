@@ -19,9 +19,21 @@ const ExifInfoSchema = CollectionSchema(
   properties: {
     r'city': PropertySchema(id: 0, name: r'city', type: IsarType.string),
     r'country': PropertySchema(id: 1, name: r'country', type: IsarType.string),
-    r'dateTimeOriginal': PropertySchema(id: 2, name: r'dateTimeOriginal', type: IsarType.dateTime),
-    r'description': PropertySchema(id: 3, name: r'description', type: IsarType.string),
-    r'exposureSeconds': PropertySchema(id: 4, name: r'exposureSeconds', type: IsarType.float),
+    r'dateTimeOriginal': PropertySchema(
+      id: 2,
+      name: r'dateTimeOriginal',
+      type: IsarType.dateTime,
+    ),
+    r'description': PropertySchema(
+      id: 3,
+      name: r'description',
+      type: IsarType.string,
+    ),
+    r'exposureSeconds': PropertySchema(
+      id: 4,
+      name: r'exposureSeconds',
+      type: IsarType.float,
+    ),
     r'f': PropertySchema(id: 5, name: r'f', type: IsarType.float),
     r'fileSize': PropertySchema(id: 6, name: r'fileSize', type: IsarType.long),
     r'iso': PropertySchema(id: 7, name: r'iso', type: IsarType.int),
@@ -31,9 +43,17 @@ const ExifInfoSchema = CollectionSchema(
     r'make': PropertySchema(id: 11, name: r'make', type: IsarType.string),
     r'mm': PropertySchema(id: 12, name: r'mm', type: IsarType.float),
     r'model': PropertySchema(id: 13, name: r'model', type: IsarType.string),
-    r'orientation': PropertySchema(id: 14, name: r'orientation', type: IsarType.string),
+    r'orientation': PropertySchema(
+      id: 14,
+      name: r'orientation',
+      type: IsarType.string,
+    ),
     r'state': PropertySchema(id: 15, name: r'state', type: IsarType.string),
-    r'timeZone': PropertySchema(id: 16, name: r'timeZone', type: IsarType.string),
+    r'timeZone': PropertySchema(
+      id: 16,
+      name: r'timeZone',
+      type: IsarType.string,
+    ),
   },
 
   estimateSize: _exifInfoEstimateSize,
@@ -51,7 +71,11 @@ const ExifInfoSchema = CollectionSchema(
   version: '3.3.0-dev.3',
 );
 
-int _exifInfoEstimateSize(ExifInfo object, List<int> offsets, Map<Type, List<int>> allOffsets) {
+int _exifInfoEstimateSize(
+  ExifInfo object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   var bytesCount = offsets.last;
   {
     final value = object.city;
@@ -110,7 +134,12 @@ int _exifInfoEstimateSize(ExifInfo object, List<int> offsets, Map<Type, List<int
   return bytesCount;
 }
 
-void _exifInfoSerialize(ExifInfo object, IsarWriter writer, List<int> offsets, Map<Type, List<int>> allOffsets) {
+void _exifInfoSerialize(
+  ExifInfo object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   writer.writeString(offsets[0], object.city);
   writer.writeString(offsets[1], object.country);
   writer.writeDateTime(offsets[2], object.dateTimeOriginal);
@@ -130,7 +159,12 @@ void _exifInfoSerialize(ExifInfo object, IsarWriter writer, List<int> offsets, M
   writer.writeString(offsets[16], object.timeZone);
 }
 
-ExifInfo _exifInfoDeserialize(Id id, IsarReader reader, List<int> offsets, Map<Type, List<int>> allOffsets) {
+ExifInfo _exifInfoDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   final object = ExifInfo(
     city: reader.readStringOrNull(offsets[0]),
     country: reader.readStringOrNull(offsets[1]),
@@ -154,7 +188,12 @@ ExifInfo _exifInfoDeserialize(Id id, IsarReader reader, List<int> offsets, Map<T
   return object;
 }
 
-P _exifInfoDeserializeProp<P>(IsarReader reader, int propertyId, int offset, Map<Type, List<int>> allOffsets) {
+P _exifInfoDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
   switch (propertyId) {
     case 0:
       return (reader.readStringOrNull(offset)) as P;
@@ -224,25 +263,43 @@ extension ExifInfoQueryWhere on QueryBuilder<ExifInfo, ExifInfo, QWhereClause> {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: false))
-            .addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: false));
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
       } else {
         return query
-            .addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: false))
-            .addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: false));
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
       }
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idGreaterThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: include));
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idLessThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: include));
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
     });
   }
 
@@ -254,29 +311,46 @@ extension ExifInfoQueryWhere on QueryBuilder<ExifInfo, ExifInfo, QWhereClause> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.between(lower: lowerId, includeLower: includeLower, upper: upperId, includeUpper: includeUpper),
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
 }
 
-extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {
+extension ExifInfoQueryFilter
+    on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'city'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'city'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'city'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'city'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'city', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'city',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -288,7 +362,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'city', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'city',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -300,7 +379,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'city', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'city',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -326,66 +410,109 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'city', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'city',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'city', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'city',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'city', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'city',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'city', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'city',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'city', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'city', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'city', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'city', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'country'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'country'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'country'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'country'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'country', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'country',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -397,7 +524,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'country', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'country',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -409,7 +541,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'country', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'country',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -435,91 +572,137 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'country', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'country',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'country', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'country',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'country', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'country',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'country', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'country',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'country', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'country', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'country', value: ''));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'dateTimeOriginal'));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'dateTimeOriginal'));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalEqualTo(DateTime? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'dateTimeOriginal', value: value));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalGreaterThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'dateTimeOriginal', value: value),
+        FilterCondition.greaterThan(property: r'country', value: ''),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalLessThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  dateTimeOriginalIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'dateTimeOriginal', value: value),
+        const FilterCondition.isNull(property: r'dateTimeOriginal'),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalBetween(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  dateTimeOriginalIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'dateTimeOriginal'),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  dateTimeOriginalEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'dateTimeOriginal', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  dateTimeOriginalGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'dateTimeOriginal',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  dateTimeOriginalLessThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'dateTimeOriginal',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  dateTimeOriginalBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
@@ -540,13 +723,18 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'description'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'description'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsNotNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  descriptionIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'description'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'description'),
+      );
     });
   }
 
@@ -556,12 +744,17 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'description', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  descriptionGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -622,7 +815,11 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'description', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -633,7 +830,11 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'description', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -644,7 +845,11 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'description', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'description',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -655,71 +860,104 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'description', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'description',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'description', value: ''));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'description', value: ''));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'exposureSeconds'));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'exposureSeconds'));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'exposureSeconds', value: value, epsilon: epsilon),
+        FilterCondition.equalTo(property: r'description', value: ''),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  descriptionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'description', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  exposureSecondsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'exposureSeconds'),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  exposureSecondsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'exposureSeconds'),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  exposureSecondsEqualTo(double? value, {double epsilon = Query.epsilon}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'exposureSeconds',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  exposureSecondsGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'exposureSeconds', value: value, epsilon: epsilon),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'exposureSeconds',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsLessThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  exposureSecondsLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'exposureSeconds', value: value, epsilon: epsilon),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'exposureSeconds',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsBetween(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  exposureSecondsBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -743,19 +981,28 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'f'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'f'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'f'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'f'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fEqualTo(double? value, {double epsilon = Query.epsilon}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'f', value: value, epsilon: epsilon));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'f', value: value, epsilon: epsilon),
+      );
     });
   }
 
@@ -766,7 +1013,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'f', value: value, epsilon: epsilon),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'f',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -778,7 +1031,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'f', value: value, epsilon: epsilon),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'f',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -807,33 +1066,57 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'fileSize'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'fileSize'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'fileSize'));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'fileSize', value: value));
-    });
-  }
-
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeGreaterThan(int? value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'fileSize', value: value),
+        const FilterCondition.isNotNull(property: r'fileSize'),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeLessThan(int? value, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeEqualTo(
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'fileSize', value: value));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'fileSize', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'fileSize',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'fileSize',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -858,31 +1141,55 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'id'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'id'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'id'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'id'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idEqualTo(Id? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'id', value: value));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idGreaterThan(Id? value, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idGreaterThan(
+    Id? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'id', value: value));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idLessThan(Id? value, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> idLessThan(
+    Id? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'id', value: value));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -907,31 +1214,57 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'iso'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'iso'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'iso'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'iso'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoEqualTo(int? value) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoEqualTo(
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'iso', value: value));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'iso', value: value),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoGreaterThan(int? value, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'iso', value: value));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'iso',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoLessThan(int? value, {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoLessThan(
+    int? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'iso', value: value));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'iso',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -956,19 +1289,33 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> latIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'lat'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'lat'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> latIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'lat'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'lat'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> latEqualTo(double? value, {double epsilon = Query.epsilon}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> latEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'lat', value: value, epsilon: epsilon));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'lat',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -979,7 +1326,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'lat', value: value, epsilon: epsilon),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lat',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -991,7 +1344,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'lat', value: value, epsilon: epsilon),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lat',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -1020,20 +1379,31 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'lens'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'lens'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'lens'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'lens'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'lens', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'lens',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1045,7 +1415,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'lens', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lens',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1057,7 +1432,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'lens', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lens',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1083,65 +1463,111 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'lens', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'lens',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'lens', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'lens',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'lens', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'lens',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'lens', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'lens',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'lens', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'lens', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'lens', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'lens', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> longIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'long'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'long'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> longIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'long'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'long'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> longEqualTo(double? value, {double epsilon = Query.epsilon}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> longEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'long', value: value, epsilon: epsilon));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'long',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -1152,7 +1578,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'long', value: value, epsilon: epsilon),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'long',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -1164,7 +1596,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'long', value: value, epsilon: epsilon),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'long',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -1193,20 +1631,31 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'make'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'make'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'make'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'make'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'make', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'make',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1218,7 +1667,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'make', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'make',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1230,7 +1684,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'make', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'make',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1256,65 +1715,111 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'make', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'make',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'make', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'make',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'make', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'make',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'make', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'make',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'make', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'make', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'make', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'make', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> mmIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'mm'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'mm'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> mmIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'mm'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'mm'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> mmEqualTo(double? value, {double epsilon = Query.epsilon}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> mmEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'mm', value: value, epsilon: epsilon));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'mm',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -1325,7 +1830,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'mm', value: value, epsilon: epsilon),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'mm',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -1337,7 +1848,13 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'mm', value: value, epsilon: epsilon),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'mm',
+          value: value,
+
+          epsilon: epsilon,
+        ),
       );
     });
   }
@@ -1366,20 +1883,31 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'model'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'model'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'model'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'model'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'model', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'model',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1391,7 +1919,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'model', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'model',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1403,7 +1936,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'model', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'model',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1429,59 +1967,96 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'model', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'model',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'model', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'model',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'model', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'model',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'model', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'model',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'model', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'model', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'model', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'model', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'orientation'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'orientation'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsNotNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  orientationIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'orientation'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'orientation'),
+      );
     });
   }
 
@@ -1491,12 +2066,17 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'orientation', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'orientation',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  orientationGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1557,7 +2137,11 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'orientation', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'orientation',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1568,7 +2152,11 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'orientation', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'orientation',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1579,7 +2167,11 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'orientation', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'orientation',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1590,39 +2182,59 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'orientation', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'orientation',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'orientation', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'orientation', value: ''),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsNotEmpty() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+  orientationIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'orientation', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'orientation', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'state'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'state'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'state'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'state'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'state', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'state',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1634,7 +2246,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'state', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'state',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1646,7 +2263,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'state', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'state',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1672,66 +2294,109 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'state', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'state',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'state', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'state',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'state', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'state',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'state', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'state',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'state', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'state', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'state', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'state', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'timeZone'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'timeZone'),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'timeZone'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'timeZone'),
+      );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneEqualTo(String? value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'timeZone', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'timeZone',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1760,7 +2425,12 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'timeZone', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'timeZone',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -1792,51 +2462,82 @@ extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterConditi
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'timeZone', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'timeZone',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'timeZone', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'timeZone',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'timeZone', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'timeZone',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'timeZone', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'timeZone',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'timeZone', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'timeZone', value: ''),
+      );
     });
   }
 
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'timeZone', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'timeZone', value: ''),
+      );
     });
   }
 }
 
-extension ExifInfoQueryObject on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
+extension ExifInfoQueryObject
+    on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
 
-extension ExifInfoQueryLinks on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
+extension ExifInfoQueryLinks
+    on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
 
 extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByCity() {
@@ -2044,7 +2745,8 @@ extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
   }
 }
 
-extension ExifInfoQuerySortThenBy on QueryBuilder<ExifInfo, ExifInfo, QSortThenBy> {
+extension ExifInfoQuerySortThenBy
+    on QueryBuilder<ExifInfo, ExifInfo, QSortThenBy> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByCity() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'city', Sort.asc);
@@ -2262,14 +2964,19 @@ extension ExifInfoQuerySortThenBy on QueryBuilder<ExifInfo, ExifInfo, QSortThenB
   }
 }
 
-extension ExifInfoQueryWhereDistinct on QueryBuilder<ExifInfo, ExifInfo, QDistinct> {
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCity({bool caseSensitive = true}) {
+extension ExifInfoQueryWhereDistinct
+    on QueryBuilder<ExifInfo, ExifInfo, QDistinct> {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCity({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'city', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCountry({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCountry({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'country', caseSensitive: caseSensitive);
     });
@@ -2281,7 +2988,9 @@ extension ExifInfoQueryWhereDistinct on QueryBuilder<ExifInfo, ExifInfo, QDistin
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByDescription({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByDescription({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
     });
@@ -2317,7 +3026,9 @@ extension ExifInfoQueryWhereDistinct on QueryBuilder<ExifInfo, ExifInfo, QDistin
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByLens({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByLens({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lens', caseSensitive: caseSensitive);
     });
@@ -2329,7 +3040,9 @@ extension ExifInfoQueryWhereDistinct on QueryBuilder<ExifInfo, ExifInfo, QDistin
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByMake({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByMake({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'make', caseSensitive: caseSensitive);
     });
@@ -2341,32 +3054,41 @@ extension ExifInfoQueryWhereDistinct on QueryBuilder<ExifInfo, ExifInfo, QDistin
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByModel({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByModel({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'model', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByOrientation({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByOrientation({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'orientation', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByState({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByState({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'state', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByTimeZone({bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByTimeZone({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timeZone', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension ExifInfoQueryProperty on QueryBuilder<ExifInfo, ExifInfo, QQueryProperty> {
+extension ExifInfoQueryProperty
+    on QueryBuilder<ExifInfo, ExifInfo, QQueryProperty> {
   QueryBuilder<ExifInfo, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
@@ -2385,7 +3107,8 @@ extension ExifInfoQueryProperty on QueryBuilder<ExifInfo, ExifInfo, QQueryProper
     });
   }
 
-  QueryBuilder<ExifInfo, DateTime?, QQueryOperations> dateTimeOriginalProperty() {
+  QueryBuilder<ExifInfo, DateTime?, QQueryOperations>
+  dateTimeOriginalProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'dateTimeOriginal');
     });

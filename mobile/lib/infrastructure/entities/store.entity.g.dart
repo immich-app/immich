@@ -18,7 +18,11 @@ const StoreValueSchema = CollectionSchema(
   id: 902899285492123510,
   properties: {
     r'intValue': PropertySchema(id: 0, name: r'intValue', type: IsarType.long),
-    r'strValue': PropertySchema(id: 1, name: r'strValue', type: IsarType.string),
+    r'strValue': PropertySchema(
+      id: 1,
+      name: r'strValue',
+      type: IsarType.string,
+    ),
   },
 
   estimateSize: _storeValueEstimateSize,
@@ -36,7 +40,11 @@ const StoreValueSchema = CollectionSchema(
   version: '3.3.0-dev.3',
 );
 
-int _storeValueEstimateSize(StoreValue object, List<int> offsets, Map<Type, List<int>> allOffsets) {
+int _storeValueEstimateSize(
+  StoreValue object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   var bytesCount = offsets.last;
   {
     final value = object.strValue;
@@ -47,12 +55,22 @@ int _storeValueEstimateSize(StoreValue object, List<int> offsets, Map<Type, List
   return bytesCount;
 }
 
-void _storeValueSerialize(StoreValue object, IsarWriter writer, List<int> offsets, Map<Type, List<int>> allOffsets) {
+void _storeValueSerialize(
+  StoreValue object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   writer.writeLong(offsets[0], object.intValue);
   writer.writeString(offsets[1], object.strValue);
 }
 
-StoreValue _storeValueDeserialize(Id id, IsarReader reader, List<int> offsets, Map<Type, List<int>> allOffsets) {
+StoreValue _storeValueDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   final object = StoreValue(
     id,
     intValue: reader.readLongOrNull(offsets[0]),
@@ -61,7 +79,12 @@ StoreValue _storeValueDeserialize(Id id, IsarReader reader, List<int> offsets, M
   return object;
 }
 
-P _storeValueDeserializeProp<P>(IsarReader reader, int propertyId, int offset, Map<Type, List<int>> allOffsets) {
+P _storeValueDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
   switch (propertyId) {
     case 0:
       return (reader.readLongOrNull(offset)) as P;
@@ -82,7 +105,8 @@ List<IsarLinkBase<dynamic>> _storeValueGetLinks(StoreValue object) {
 
 void _storeValueAttach(IsarCollection<dynamic> col, Id id, StoreValue object) {}
 
-extension StoreValueQueryWhereSort on QueryBuilder<StoreValue, StoreValue, QWhere> {
+extension StoreValueQueryWhereSort
+    on QueryBuilder<StoreValue, StoreValue, QWhere> {
   QueryBuilder<StoreValue, StoreValue, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
@@ -90,7 +114,8 @@ extension StoreValueQueryWhereSort on QueryBuilder<StoreValue, StoreValue, QWher
   }
 }
 
-extension StoreValueQueryWhere on QueryBuilder<StoreValue, StoreValue, QWhereClause> {
+extension StoreValueQueryWhere
+    on QueryBuilder<StoreValue, StoreValue, QWhereClause> {
   QueryBuilder<StoreValue, StoreValue, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
@@ -101,25 +126,43 @@ extension StoreValueQueryWhere on QueryBuilder<StoreValue, StoreValue, QWhereCla
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: false))
-            .addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: false));
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
       } else {
         return query
-            .addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: false))
-            .addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: false));
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
       }
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<StoreValue, StoreValue, QAfterWhereClause> idGreaterThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: include));
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
+  QueryBuilder<StoreValue, StoreValue, QAfterWhereClause> idLessThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: include));
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
     });
   }
 
@@ -131,28 +174,56 @@ extension StoreValueQueryWhere on QueryBuilder<StoreValue, StoreValue, QWhereCla
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.between(lower: lowerId, includeLower: includeLower, upper: upperId, includeUpper: includeUpper),
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
 }
 
-extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterCondition> {
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> idEqualTo(Id value) {
+extension StoreValueQueryFilter
+    on QueryBuilder<StoreValue, StoreValue, QFilterCondition> {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> idEqualTo(
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'id', value: value));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> idGreaterThan(Id value, {bool include = false}) {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'id', value: value));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> idLessThan(Id value, {bool include = false}) {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'id', value: value));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -177,33 +248,56 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
 
   QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'intValue'));
-    });
-  }
-
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'intValue'));
-    });
-  }
-
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'intValue', value: value));
-    });
-  }
-
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueGreaterThan(int? value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'intValue', value: value),
+        const FilterCondition.isNull(property: r'intValue'),
       );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueLessThan(int? value, {bool include = false}) {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  intValueIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'intValue', value: value));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'intValue'),
+      );
+    });
+  }
+
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'intValue', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  intValueGreaterThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'intValue',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> intValueLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'intValue',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -228,13 +322,18 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
 
   QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> strValueIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'strValue'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'strValue'),
+      );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> strValueIsNotNull() {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  strValueIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'strValue'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'strValue'),
+      );
     });
   }
 
@@ -244,12 +343,17 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'strValue', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'strValue',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> strValueGreaterThan(
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  strValueGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -273,7 +377,12 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'strValue', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'strValue',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -299,13 +408,15 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> strValueStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  strValueStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'strValue', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'strValue',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -316,7 +427,11 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'strValue', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'strValue',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -327,7 +442,11 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'strValue', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'strValue',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -338,29 +457,42 @@ extension StoreValueQueryFilter on QueryBuilder<StoreValue, StoreValue, QFilterC
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'strValue', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'strValue',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> strValueIsEmpty() {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  strValueIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'strValue', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'strValue', value: ''),
+      );
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition> strValueIsNotEmpty() {
+  QueryBuilder<StoreValue, StoreValue, QAfterFilterCondition>
+  strValueIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'strValue', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'strValue', value: ''),
+      );
     });
   }
 }
 
-extension StoreValueQueryObject on QueryBuilder<StoreValue, StoreValue, QFilterCondition> {}
+extension StoreValueQueryObject
+    on QueryBuilder<StoreValue, StoreValue, QFilterCondition> {}
 
-extension StoreValueQueryLinks on QueryBuilder<StoreValue, StoreValue, QFilterCondition> {}
+extension StoreValueQueryLinks
+    on QueryBuilder<StoreValue, StoreValue, QFilterCondition> {}
 
-extension StoreValueQuerySortBy on QueryBuilder<StoreValue, StoreValue, QSortBy> {
+extension StoreValueQuerySortBy
+    on QueryBuilder<StoreValue, StoreValue, QSortBy> {
   QueryBuilder<StoreValue, StoreValue, QAfterSortBy> sortByIntValue() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'intValue', Sort.asc);
@@ -386,7 +518,8 @@ extension StoreValueQuerySortBy on QueryBuilder<StoreValue, StoreValue, QSortBy>
   }
 }
 
-extension StoreValueQuerySortThenBy on QueryBuilder<StoreValue, StoreValue, QSortThenBy> {
+extension StoreValueQuerySortThenBy
+    on QueryBuilder<StoreValue, StoreValue, QSortThenBy> {
   QueryBuilder<StoreValue, StoreValue, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -424,21 +557,25 @@ extension StoreValueQuerySortThenBy on QueryBuilder<StoreValue, StoreValue, QSor
   }
 }
 
-extension StoreValueQueryWhereDistinct on QueryBuilder<StoreValue, StoreValue, QDistinct> {
+extension StoreValueQueryWhereDistinct
+    on QueryBuilder<StoreValue, StoreValue, QDistinct> {
   QueryBuilder<StoreValue, StoreValue, QDistinct> distinctByIntValue() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'intValue');
     });
   }
 
-  QueryBuilder<StoreValue, StoreValue, QDistinct> distinctByStrValue({bool caseSensitive = true}) {
+  QueryBuilder<StoreValue, StoreValue, QDistinct> distinctByStrValue({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'strValue', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension StoreValueQueryProperty on QueryBuilder<StoreValue, StoreValue, QQueryProperty> {
+extension StoreValueQueryProperty
+    on QueryBuilder<StoreValue, StoreValue, QQueryProperty> {
   QueryBuilder<StoreValue, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');

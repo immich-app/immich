@@ -2,7 +2,6 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
@@ -55,7 +54,7 @@
     <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />
   {/if}
 
-  {#if !authManager.isDemo && $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
+  {#if $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
     <NavbarItem title={$t('shared_links')} href={Route.sharedLinks()} icon={mdiLink} />
   {/if}
 
@@ -95,9 +94,7 @@
 
   <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
 
-  {#if !authManager.isDemo}
-    <NavbarItem title={$t('import')} href={Route.import()} icon={mdiDatabaseImportOutline} />
-  {/if}
+  <NavbarItem title={$t('import')} href={Route.import()} icon={mdiDatabaseImportOutline} />
 
   <NavbarItem
     title={$t('archive')}
@@ -108,7 +105,7 @@
 
   <NavbarItem title={$t('locked_folder')} href={Route.locked()} icon={mdiLockOutline} activeIcon={mdiLock} />
 
-  {#if !authManager.isDemo && featureFlagsManager.value.trash}
+  {#if featureFlagsManager.value.trash}
     <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
   {/if}
 

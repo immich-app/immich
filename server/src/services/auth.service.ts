@@ -80,20 +80,6 @@ export class AuthService extends BaseService {
     return this.createLoginResponse(user, details);
   }
 
-  async demoLogin(details: LoginDetails) {
-    const { demo } = this.configRepository.getEnv();
-    if (!demo.enabled) {
-      throw new UnauthorizedException('Demo mode is not enabled');
-    }
-
-    const user = await this.userRepository.getByEmail(demo.email);
-    if (!user) {
-      throw new UnauthorizedException('Demo user not found');
-    }
-
-    return this.createLoginResponse(user, details);
-  }
-
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);

@@ -74,12 +74,7 @@ class LibraryPage extends ConsumerWidget {
             const Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: [
-                PeopleCollectionCard(),
-                PlacesCollectionCard(),
-                LocalAlbumsCollectionCard(),
-                AlbumsCollectionCard(),
-              ],
+              children: [PeopleCollectionCard(), PlacesCollectionCard(), LocalAlbumsCollectionCard()],
             ),
             const SizedBox(height: 12),
             const QuickAccessButtons(),
@@ -142,9 +137,9 @@ class QuickAccessButtons extends ConsumerWidget {
             onTap: () => context.pushRoute(const PartnerRoute()),
           ),
           ListTile(
-            leading: const Icon(Icons.photo_album_outlined, size: 26),
-            title: Text('albums'.tr(), style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
-            onTap: () => context.pushRoute(const AlbumsRoute()),
+            leading: const Icon(Icons.workspaces_outlined, size: 26),
+            title: Text('Spaces', style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
+            onTap: () => context.pushRoute(const SpacesRoute()),
           ),
           PartnerList(partners: partners),
         ],
@@ -295,66 +290,6 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   context.t.on_this_device,
-                  style: context.textTheme.titleSmall?.copyWith(
-                    color: context.colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class AlbumsCollectionCard extends ConsumerWidget {
-  const AlbumsCollectionCard({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final albums = ref.watch(albumProvider);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
-        final widthFactor = isTablet ? 0.25 : 0.5;
-        final size = context.width * widthFactor - 20.0;
-
-        return GestureDetector(
-          onTap: () => context.pushRoute(const AlbumsRoute()),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: size,
-                width: size,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    gradient: LinearGradient(
-                      colors: [context.colorScheme.primary.withAlpha(30), context.colorScheme.primary.withAlpha(25)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    padding: const EdgeInsets.all(12),
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: albums.take(4).map((album) {
-                      return AlbumThumbnailCard(album: album, showTitle: false);
-                    }).toList(),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'albums'.tr(),
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,

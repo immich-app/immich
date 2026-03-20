@@ -166,17 +166,6 @@ export class EnvDto {
   @ValidateBoolean({ optional: true })
   IMMICH_ALLOW_SETUP?: boolean;
 
-  @ValidateBoolean({ optional: true })
-  IMMICH_DEMO_MODE?: boolean;
-
-  @IsString()
-  @Optional()
-  IMMICH_DEMO_USER_EMAIL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_DEMO_USER_PASSWORD?: string;
-
   @IsIPRange({ requireCIDR: false }, { each: true })
   @Transform(({ value }) =>
     value && typeof value === 'string'

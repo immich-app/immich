@@ -141,7 +141,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           toastType: ToastType.success,
         );
 
-        unawaited(context.pushRoute(const DriftLibraryRoute()));
+        unawaited(context.pushRoute(const DriftAlbumsRoute()));
       } catch (e) {
         ImmichToast.show(
           context: context,

@@ -6,14 +6,17 @@ part of 'app_settings.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appSettingsServiceHash() => r'89cece3a19e06612f5639ae290120e854a0c5a31';
+String _$appSettingsServiceHash() =>
+    r'89cece3a19e06612f5639ae290120e854a0c5a31';
 
 /// See also [appSettingsService].
 @ProviderFor(appSettingsService)
 final appSettingsServiceProvider = Provider<AppSettingsService>.internal(
   appSettingsService,
   name: r'appSettingsServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$appSettingsServiceHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$appSettingsServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

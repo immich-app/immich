@@ -49,27 +49,6 @@ export class AuthController {
     });
   }
 
-  @Post('demo-login')
-  @Endpoint({
-    summary: 'Demo login',
-    description: 'Login as the demo user. Only available when demo mode is enabled.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  async demoLogin(
-    @Res({ passthrough: true }) res: Response,
-    @GetLoginDetails() loginDetails: LoginDetails,
-  ): Promise<LoginResponseDto> {
-    const body = await this.service.demoLogin(loginDetails);
-    return respondWithCookie(res, body, {
-      isSecure: loginDetails.isSecure,
-      values: [
-        { key: ImmichCookie.AccessToken, value: body.accessToken },
-        { key: ImmichCookie.AuthType, value: AuthType.Password },
-        { key: ImmichCookie.IsAuthenticated, value: 'true' },
-      ],
-    });
-  }
-
   @Post('admin-sign-up')
   @Endpoint({
     summary: 'Register admin',

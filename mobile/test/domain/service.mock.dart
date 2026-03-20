@@ -17,3 +17,4 @@ class MockNativeSyncApi extends Mock implements NativeSyncApi {}
 class MockAppSettingsService extends Mock implements AppSettingsService {}
 
 class MockBackgroundUploadService extends Mock implements BackgroundUploadService {}
+

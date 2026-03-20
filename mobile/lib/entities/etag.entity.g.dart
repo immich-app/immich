@@ -17,7 +17,11 @@ const ETagSchema = CollectionSchema(
   name: r'ETag',
   id: -644290296585643859,
   properties: {
-    r'assetCount': PropertySchema(id: 0, name: r'assetCount', type: IsarType.long),
+    r'assetCount': PropertySchema(
+      id: 0,
+      name: r'assetCount',
+      type: IsarType.long,
+    ),
     r'id': PropertySchema(id: 1, name: r'id', type: IsarType.string),
     r'time': PropertySchema(id: 2, name: r'time', type: IsarType.dateTime),
   },
@@ -33,7 +37,13 @@ const ETagSchema = CollectionSchema(
       name: r'id',
       unique: true,
       replace: true,
-      properties: [IndexPropertySchema(name: r'id', type: IndexType.hash, caseSensitive: true)],
+      properties: [
+        IndexPropertySchema(
+          name: r'id',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
     ),
   },
   links: {},
@@ -45,19 +55,33 @@ const ETagSchema = CollectionSchema(
   version: '3.3.0-dev.3',
 );
 
-int _eTagEstimateSize(ETag object, List<int> offsets, Map<Type, List<int>> allOffsets) {
+int _eTagEstimateSize(
+  ETag object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.id.length * 3;
   return bytesCount;
 }
 
-void _eTagSerialize(ETag object, IsarWriter writer, List<int> offsets, Map<Type, List<int>> allOffsets) {
+void _eTagSerialize(
+  ETag object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   writer.writeLong(offsets[0], object.assetCount);
   writer.writeString(offsets[1], object.id);
   writer.writeDateTime(offsets[2], object.time);
 }
 
-ETag _eTagDeserialize(Id id, IsarReader reader, List<int> offsets, Map<Type, List<int>> allOffsets) {
+ETag _eTagDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
   final object = ETag(
     assetCount: reader.readLongOrNull(offsets[0]),
     id: reader.readString(offsets[1]),
@@ -66,7 +90,12 @@ ETag _eTagDeserialize(Id id, IsarReader reader, List<int> offsets, Map<Type, Lis
   return object;
 }
 
-P _eTagDeserializeProp<P>(IsarReader reader, int propertyId, int offset, Map<Type, List<int>> allOffsets) {
+P _eTagDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
   switch (propertyId) {
     case 0:
       return (reader.readLongOrNull(offset)) as P;
@@ -154,7 +183,9 @@ extension ETagQueryWhereSort on QueryBuilder<ETag, ETag, QWhere> {
 extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
   QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: isarId, upper: isarId));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: isarId, upper: isarId),
+      );
     });
   }
 
@@ -162,25 +193,43 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IdWhereClause.lessThan(upper: isarId, includeUpper: false))
-            .addWhereClause(IdWhereClause.greaterThan(lower: isarId, includeLower: false));
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+            );
       } else {
         return query
-            .addWhereClause(IdWhereClause.greaterThan(lower: isarId, includeLower: false))
-            .addWhereClause(IdWhereClause.lessThan(upper: isarId, includeUpper: false));
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+            );
       }
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdGreaterThan(Id isarId, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdGreaterThan(
+    Id isarId, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.greaterThan(lower: isarId, includeLower: include));
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
+      );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdLessThan(Id isarId, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdLessThan(
+    Id isarId, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.lessThan(upper: isarId, includeUpper: include));
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
+      );
     });
   }
 
@@ -204,7 +253,9 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
 
   QueryBuilder<ETag, ETag, QAfterWhereClause> idEqualTo(String id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'id', value: [id]));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'id', value: [id]),
+      );
     });
   }
 
@@ -212,12 +263,40 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [], upper: [id], includeUpper: false))
-            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [id], includeLower: false, upper: []));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [id], includeLower: false, upper: []))
-            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [], upper: [id], includeUpper: false));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -226,34 +305,56 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
 extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
   QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'assetCount'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'assetCount'),
+      );
     });
   }
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'assetCount'));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'assetCount', value: value));
-    });
-  }
-
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountGreaterThan(int? value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'assetCount', value: value),
+        const FilterCondition.isNotNull(property: r'assetCount'),
       );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountLessThan(int? value, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountEqualTo(
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'assetCount', value: value),
+        FilterCondition.equalTo(property: r'assetCount', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'assetCount',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'assetCount',
+          value: value,
+        ),
       );
     });
   }
@@ -277,10 +378,17 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idEqualTo(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value, caseSensitive: caseSensitive),
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -292,7 +400,12 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(include: include, property: r'id', value: value, caseSensitive: caseSensitive),
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -304,7 +417,12 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(include: include, property: r'id', value: value, caseSensitive: caseSensitive),
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
@@ -330,65 +448,117 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(property: r'id', value: value, caseSensitive: caseSensitive),
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idEndsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(property: r'id', value: value, caseSensitive: caseSensitive),
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(property: r'id', value: value, caseSensitive: caseSensitive),
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(property: r'id', wildcard: pattern, caseSensitive: caseSensitive),
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'id', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(property: r'id', value: ''));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'isarId', value: value));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isarId', value: value),
+      );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> isarIdGreaterThan(Id value, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> isarIdGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'isarId', value: value));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> isarIdLessThan(Id value, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> isarIdLessThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'isarId', value: value));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -413,31 +583,55 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> timeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(property: r'time'));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'time'),
+      );
     });
   }
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> timeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'time'));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'time'),
+      );
     });
   }
 
   QueryBuilder<ETag, ETag, QAfterFilterCondition> timeEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(property: r'time', value: value));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'time', value: value),
+      );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeGreaterThan(DateTime? value, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'time', value: value));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'time',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeLessThan(DateTime? value, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> timeLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'time', value: value));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'time',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -560,7 +754,9 @@ extension ETagQueryWhereDistinct on QueryBuilder<ETag, ETag, QDistinct> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QDistinct> distinctById({bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QDistinct> distinctById({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });

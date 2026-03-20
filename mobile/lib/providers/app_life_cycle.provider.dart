@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -102,8 +103,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         case TabEnum.home:
           await _ref.read(assetProvider.notifier).getAllAsset();
 
-        case TabEnum.spaces:
-          break;
+        case TabEnum.albums:
+          await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
 
         case TabEnum.library:
         case TabEnum.search:

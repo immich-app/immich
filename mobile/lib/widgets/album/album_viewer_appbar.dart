@@ -59,7 +59,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
     deleteAlbum() async {
       final bool success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
 
-      unawaited(context.navigateTo(const TabControllerRoute(children: [LibraryRoute()])));
+      unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
 
       if (!success) {
         ImmichToast.show(
@@ -107,7 +107,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
       bool isSuccess = await ref.watch(albumProvider.notifier).leaveAlbum(album);
 
       if (isSuccess) {
-        unawaited(context.navigateTo(const TabControllerRoute(children: [LibraryRoute()])));
+        unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
       } else {
         context.pop();
         ImmichToast.show(

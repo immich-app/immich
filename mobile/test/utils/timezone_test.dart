@@ -12,7 +12,10 @@ void main() {
       test('should convert UTC to Asia/Hong_Kong (+08:00)', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'Asia/Hong_Kong');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'Asia/Hong_Kong',
+        );
 
         expect(adjustedTime.hour, 20); // 12:00 UTC + 8 hours = 20:00
         expect(offset, const Duration(hours: 8));
@@ -21,14 +24,20 @@ void main() {
       test('should convert UTC to America/New_York (handles DST)', () {
         // Summer time (EDT = UTC-4)
         final summerUtc = DateTime.utc(2024, 6, 15, 12, 0, 0);
-        final (summerTime, summerOffset) = applyTimezoneOffset(dateTime: summerUtc, timeZone: 'America/New_York');
+        final (summerTime, summerOffset) = applyTimezoneOffset(
+          dateTime: summerUtc,
+          timeZone: 'America/New_York',
+        );
 
         expect(summerTime.hour, 8); // 12:00 UTC - 4 hours = 08:00
         expect(summerOffset, const Duration(hours: -4));
 
         // Winter time (EST = UTC-5)
         final winterUtc = DateTime.utc(2024, 1, 15, 12, 0, 0);
-        final (winterTime, winterOffset) = applyTimezoneOffset(dateTime: winterUtc, timeZone: 'America/New_York');
+        final (winterTime, winterOffset) = applyTimezoneOffset(
+          dateTime: winterUtc,
+          timeZone: 'America/New_York',
+        );
 
         expect(winterTime.hour, 7); // 12:00 UTC - 5 hours = 07:00
         expect(winterOffset, const Duration(hours: -5));
@@ -37,14 +46,20 @@ void main() {
       test('should convert UTC to Europe/London', () {
         // Winter (GMT = UTC+0)
         final winterUtc = DateTime.utc(2024, 1, 15, 12, 0, 0);
-        final (winterTime, winterOffset) = applyTimezoneOffset(dateTime: winterUtc, timeZone: 'Europe/London');
+        final (winterTime, winterOffset) = applyTimezoneOffset(
+          dateTime: winterUtc,
+          timeZone: 'Europe/London',
+        );
 
         expect(winterTime.hour, 12);
         expect(winterOffset, Duration.zero);
 
         // Summer (BST = UTC+1)
         final summerUtc = DateTime.utc(2024, 6, 15, 12, 0, 0);
-        final (summerTime, summerOffset) = applyTimezoneOffset(dateTime: summerUtc, timeZone: 'Europe/London');
+        final (summerTime, summerOffset) = applyTimezoneOffset(
+          dateTime: summerUtc,
+          timeZone: 'Europe/London',
+        );
 
         expect(summerTime.hour, 13);
         expect(summerOffset, const Duration(hours: 1));
@@ -53,7 +68,10 @@ void main() {
       test('should handle timezone with 30-minute offset (Asia/Kolkata)', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'Asia/Kolkata');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'Asia/Kolkata',
+        );
 
         expect(adjustedTime.hour, 17);
         expect(adjustedTime.minute, 30); // 12:00 UTC + 5:30 = 17:30
@@ -63,7 +81,10 @@ void main() {
       test('should handle timezone with 45-minute offset (Asia/Kathmandu)', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'Asia/Kathmandu');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'Asia/Kathmandu',
+        );
 
         expect(adjustedTime.hour, 17);
         expect(adjustedTime.minute, 45); // 12:00 UTC + 5:45 = 17:45
@@ -75,7 +96,10 @@ void main() {
       test('should handle UTC+08:00 format', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC+08:00');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC+08:00',
+        );
 
         expect(adjustedTime.hour, 20);
         expect(offset, const Duration(hours: 8));
@@ -84,7 +108,10 @@ void main() {
       test('should handle UTC-05:00 format', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC-05:00');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC-05:00',
+        );
 
         expect(adjustedTime.hour, 7);
         expect(offset, const Duration(hours: -5));
@@ -93,7 +120,10 @@ void main() {
       test('should handle UTC+8 format (without minutes)', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC+8');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC+8',
+        );
 
         expect(adjustedTime.hour, 20);
         expect(offset, const Duration(hours: 8));
@@ -102,7 +132,10 @@ void main() {
       test('should handle UTC-5 format (without minutes)', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC-5');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC-5',
+        );
 
         expect(adjustedTime.hour, 7);
         expect(offset, const Duration(hours: -5));
@@ -111,7 +144,10 @@ void main() {
       test('should handle plain UTC format', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC',
+        );
 
         expect(adjustedTime.hour, 12);
         expect(offset, Duration.zero);
@@ -120,7 +156,10 @@ void main() {
       test('should handle lowercase utc format', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'utc+08:00');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'utc+08:00',
+        );
 
         expect(adjustedTime.hour, 20);
         expect(offset, const Duration(hours: 8));
@@ -129,7 +168,10 @@ void main() {
       test('should handle UTC+05:30 format (with minutes)', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC+05:30');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC+05:30',
+        );
 
         expect(adjustedTime.hour, 17);
         expect(adjustedTime.minute, 30);
@@ -141,7 +183,10 @@ void main() {
       test('should return UTC time when timezone is null', () {
         final localTime = DateTime(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: localTime, timeZone: null);
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: localTime,
+          timeZone: null,
+        );
 
         expect(adjustedTime.isUtc, true);
         expect(offset, adjustedTime.timeZoneOffset);
@@ -150,7 +195,10 @@ void main() {
       test('should return UTC time when timezone is invalid', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'Invalid/Timezone');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'Invalid/Timezone',
+        );
 
         expect(adjustedTime.isUtc, true);
         expect(adjustedTime.hour, 12);
@@ -160,7 +208,10 @@ void main() {
       test('should return UTC time when UTC offset format is malformed', () {
         final utcTime = DateTime.utc(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, offset) = applyTimezoneOffset(dateTime: utcTime, timeZone: 'UTC++08');
+        final (adjustedTime, offset) = applyTimezoneOffset(
+          dateTime: utcTime,
+          timeZone: 'UTC++08',
+        );
 
         expect(adjustedTime.isUtc, true);
         expect(adjustedTime.hour, 12);
@@ -212,7 +263,10 @@ void main() {
         // Create a local time (not UTC)
         final localTime = DateTime(2024, 6, 15, 12, 0, 0);
 
-        final (adjustedTime, _) = applyTimezoneOffset(dateTime: localTime, timeZone: 'Asia/Hong_Kong');
+        final (adjustedTime, _) = applyTimezoneOffset(
+          dateTime: localTime,
+          timeZone: 'Asia/Hong_Kong',
+        );
 
         // The function converts to UTC first, then applies timezone
         // So local 12:00 -> UTC (depends on local timezone) -> HK time
