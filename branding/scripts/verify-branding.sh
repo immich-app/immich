@@ -23,6 +23,7 @@ check_files=(
   "open-api/immich-openapi-specs.json"
   "cli/package.json"
   "web/src/lib/modals/HelpAndFeedbackModal.svelte"
+  "web/src/lib/modals/ServerAboutModal.svelte"
 )
 
 for file in "${check_files[@]}"; do
@@ -81,6 +82,20 @@ if [[ -f "$help_modal" ]]; then
     echo "  OK: HelpAndFeedbackModal.svelte (URLs patched)"
   fi
 fi
+
+# Check Dockerfiles for upstream repo references
+echo "--- Checking Dockerfiles ---"
+for dockerfile in "server/Dockerfile" "machine-learning/Dockerfile"; do
+  filepath="$REPO_ROOT/$dockerfile"
+  if [[ -f "$filepath" ]]; then
+    if grep -q "immich-app/immich" "$filepath"; then
+      echo "  WARN: Upstream repo reference found in $dockerfile"
+      EXIT_CODE=1
+    else
+      echo "  OK: $dockerfile"
+    fi
+  fi
+done
 
 # Verify Docker env vars are set
 env_example="$REPO_ROOT/docker/example.env"

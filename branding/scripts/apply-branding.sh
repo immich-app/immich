@@ -83,6 +83,21 @@ patch_web() {
     echo "  Patched manifest.json"
   fi
 
+  # About modal — hardcoded product name
+  local about_modal="$REPO_ROOT/web/src/lib/modals/ServerAboutModal.svelte"
+  if [[ -f "$about_modal" ]]; then
+    sed -i "s/title=\"Immich\"/title=\"${NAME}\"/g" "$about_modal"
+    echo "  Patched ServerAboutModal.svelte"
+  fi
+
+  # Server status — hardcoded repo check and release URL
+  local server_status="$REPO_ROOT/web/src/lib/components/shared-components/side-bar/server-status.svelte"
+  if [[ -f "$server_status" ]]; then
+    sed -i "s|info\.repository === 'immich-app/immich'|info.repository === '${REPO_NAME}'|g" "$server_status"
+    sed -i "s|https://github\.com/immich-app/immich/releases/tag/|${REPO_URL}/releases/tag/|g" "$server_status"
+    echo "  Patched server-status.svelte"
+  fi
+
   # OpenAPI spec
   local openapi="$REPO_ROOT/open-api/immich-openapi-specs.json"
   if [[ -f "$openapi" ]]; then
@@ -336,6 +351,8 @@ patch_docker() {
       # Replace upstream image references
       sed -i "s|ghcr\.io/immich-app/immich-server|${DOCKER_REGISTRY}/${DOCKER_SERVER_IMAGE}|g" "$f"
       sed -i "s|ghcr\.io/immich-app/immich-machine-learning|${DOCKER_REGISTRY}/${DOCKER_ML_IMAGE}|g" "$f"
+      # Replace upstream repo references in environment variables
+      sed -i "s|immich-app/immich|${REPO_NAME}|g" "$f"
       echo "  Patched $(basename "$f")"
     fi
   done
@@ -388,6 +405,24 @@ patch_docs() {
 }
 
 #
+# --- Dockerfiles ---
+#
+patch_dockerfiles() {
+  echo "--- Patching Dockerfiles ---"
+
+  for dockerfile in "$REPO_ROOT/server/Dockerfile" "$REPO_ROOT/machine-learning/Dockerfile"; do
+    if [[ -f "$dockerfile" ]]; then
+      sed -i "s|immich-app/immich/actions/runs|${REPO_NAME}/actions/runs|g" "$dockerfile"
+      sed -i "s|immich-app/immich/pkgs/container|${REPO_NAME}/pkgs/container|g" "$dockerfile"
+      sed -i "s|ENV IMMICH_REPOSITORY=immich-app/immich|ENV IMMICH_REPOSITORY=${REPO_NAME}|g" "$dockerfile"
+      sed -i "s|ENV IMMICH_REPOSITORY_URL=https://github.com/immich-app/immich|ENV IMMICH_REPOSITORY_URL=${REPO_URL}|g" "$dockerfile"
+      sed -i "s|immich-app/immich/commit/|${REPO_NAME}/commit/|g" "$dockerfile"
+      echo "  Patched $(basename "$(dirname "$dockerfile")")/Dockerfile"
+    fi
+  done
+}
+
+#
 # --- Main ---
 #
 main() {
@@ -398,6 +433,7 @@ main() {
   patch_android
   patch_ios
   patch_docker
+  patch_dockerfiles
   patch_cli
   patch_docs
   echo "=== Branding applied successfully ==="
