@@ -21,14 +21,14 @@
   },
 
   "mobile": {
-    "bundle_id": "app.noodle.gallery",
-    "bundle_id_debug": "app.noodle.gallery.debug",
-    "bundle_id_profile": "app.noodle.gallery.profile",
+    "bundle_id": "de.opennoodle.gallery",
+    "bundle_id_debug": "de.opennoodle.gallery.debug",
+    "bundle_id_profile": "de.opennoodle.gallery.profile",
     "deep_link_scheme": "noodle-gallery",
-    "oauth_callback": "app.noodle.gallery:///oauth-callback",
-    "shared_group": "group.app.noodle.gallery.share",
+    "oauth_callback": "de.opennoodle.gallery:///oauth-callback",
+    "shared_group": "group.de.opennoodle.gallery.share",
     "download_dir": "DCIM/NoodleGallery",
-    "background_task_prefix": "app.noodle.gallery.background"
+    "background_task_prefix": "de.opennoodle.gallery.background"
   },
 
   "docker": {

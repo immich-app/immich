@@ -54,7 +54,7 @@ android {
   }
 
   defaultConfig {
-    applicationId "app.alextran.immich"
+    applicationId "de.opennoodle.gallery"
     minSdkVersion 26
     targetSdkVersion 35
     versionCode flutterVersionCode.toInteger()
