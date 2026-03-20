@@ -59,7 +59,7 @@ android {
     targetSdkVersion 35
     versionCode flutterVersionCode.toInteger()
     versionName flutterVersionName
-    testInstrumentationRunner "pl.leancode.patrol.PatrolJUnitRunner"
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
 
   testOptions {
