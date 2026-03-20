@@ -969,8 +969,6 @@
   "drop_files_to_upload": "Drop files anywhere to upload",
   "duplicates": "Duplicates",
   "duplicates_description": "Resolve each group by indicating which, if any, are duplicates.",
-  "duplicates_synchronize_setting_description": "Configure which asset metadata is copied to assets that are kept.",
-  "duplicates_synchronize_settings": "Synchronize",
   "duration": "Duration",
   "edit": "Edit",
   "edit_album": "Edit album",

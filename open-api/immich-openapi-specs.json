@@ -5332,11 +5332,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.6.0",
+            "version": "v3.0.0",
             "state": "Added"
           },
           {
-            "version": "v2.6.0",
+            "version": "v3.0.0",
             "state": "Alpha"
           }
         ],

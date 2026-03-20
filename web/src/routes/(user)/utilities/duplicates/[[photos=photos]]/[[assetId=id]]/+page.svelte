@@ -3,9 +3,9 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import LinkToDocs from '$lib/components/LinkToDocs.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import LinkToDocs from '$lib/components/LinkToDocs.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -262,11 +262,11 @@
     </HStack>
   {/snippet}
 
-  <div class="">
+  <div>
     {#if duplicates && duplicates.length > 0}
-      <div class="mb-2 text-sm dark:text-white">
+      <Text size="small" color="muted" class="mb-4">
         <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
-      </div>
+      </Text>
 
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl

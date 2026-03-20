@@ -29,7 +29,6 @@
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
-    // Use server-provided suggested keep asset IDs
     if (suggestedKeepAssetIds.length > 0) {
       for (const id of suggestedKeepAssetIds) {
         selectedAssetIds.add(id);
@@ -37,7 +36,6 @@
       return;
     }
 
-    // Fallback to first asset if no suggestion
     if (assets.length > 0) {
       selectedAssetIds.add(assets[0].id);
     }

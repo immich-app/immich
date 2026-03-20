@@ -54,9 +54,8 @@ export class DuplicateController {
   @Authenticated({ permission: Permission.DuplicateDelete })
   @Endpoint({
     summary: 'Resolve duplicate groups',
-    description:
-      'Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.',
-    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
+    description: 'Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.',
+    history: new HistoryBuilder().added('v3.0.0').alpha('v3.0.0'),
   })
   resolveDuplicates(@Auth() auth: AuthDto, @Body() dto: DuplicateResolveDto): Promise<BulkIdResponseDto[]> {
     return this.service.resolve(auth, dto);

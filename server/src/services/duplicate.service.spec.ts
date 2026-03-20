@@ -1,4 +1,5 @@
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -155,7 +156,7 @@ describe(DuplicateService.name, () => {
       mocks.duplicateRepository.get.mockResolvedValueOnce(void 0);
       mocks.duplicateRepository.get.mockResolvedValueOnce({
         duplicateId: 'group-2',
-        assets: [asset],
+        assets: [asset as unknown as MapAsset],
       });
 
       await expect(
@@ -206,7 +207,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       mocks.duplicateRepository.get.mockResolvedValue({
         duplicateId: 'group-1',
-        assets: [asset],
+        assets: [asset as unknown as MapAsset],
       });
 
       await expect(
@@ -219,7 +220,10 @@ describe(DuplicateService.name, () => {
     it('should skip when trashAssetIds contains non-member', async () => {
       const asset = AssetFactory.create();
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
-      mocks.duplicateRepository.get.mockResolvedValue({ duplicateId: 'group-1', assets: [asset] });
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset as unknown as MapAsset],
+      });
 
       await expect(
         sut.resolve(authStub.admin, {
@@ -234,7 +238,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       mocks.duplicateRepository.get.mockResolvedValue({
         duplicateId: 'group-1',
-        assets: [asset1, asset2],
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
       });
 
       const result = await sut.resolve(authStub.admin, {
@@ -252,7 +256,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       mocks.duplicateRepository.get.mockResolvedValue({
         duplicateId: 'group-1',
-        assets: [asset1, asset2, asset3],
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset, asset3 as unknown as MapAsset],
       });
 
       const result = await sut.resolve(authStub.admin, {
@@ -269,7 +273,7 @@ describe(DuplicateService.name, () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
       mocks.duplicateRepository.get.mockResolvedValue({
         duplicateId: 'group-1',
-        assets: [asset1, asset2],
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
       });
 
       const result = await sut.resolve(authStub.admin, {
@@ -291,13 +295,31 @@ describe(DuplicateService.name, () => {
         assets: [
           {
             ...asset1,
-            tags: [{ id: 'tag-1', value: 'Work', createdAt: new Date(), updatedAt: new Date(), userId: 'user-1' }],
+            tags: [
+              {
+                id: 'tag-1',
+                value: 'Work',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                parentId: null,
+                color: null,
+              },
+            ],
           },
           {
             ...asset2,
-            tags: [{ id: 'tag-2', value: 'Travel', createdAt: new Date(), updatedAt: new Date(), userId: 'user-1' }],
+            tags: [
+              {
+                id: 'tag-2',
+                value: 'Travel',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                parentId: null,
+                color: null,
+              },
+            ],
           },
-        ],
+        ] as any,
       });
 
       const result = await sut.resolve(authStub.admin, {

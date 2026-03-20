@@ -146,7 +146,7 @@ export class DuplicateRepository {
       .executeTakeFirst();
 
     if (!result || !result.duplicateId) {
-      return undefined;
+      return;
     }
 
     return { duplicateId: result.duplicateId, assets: result.assets };
