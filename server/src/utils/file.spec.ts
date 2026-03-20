@@ -5,6 +5,11 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ImmichFileResponse, ImmichRedirectResponse, ImmichStreamResponse, sendFile } from 'src/utils/file';
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('node:fs/promises', () => ({
+  access: vi.fn().mockResolvedValue(void 0),
+  constants: { R_OK: 4 },
+}));
+
 describe('ImmichRedirectResponse', () => {
   it('should store redirect URL and cache control', () => {
     const response = new ImmichRedirectResponse({
@@ -233,6 +238,59 @@ describe('sendFile with ImmichMediaResponse', () => {
     );
 
     expect(res.header).toHaveBeenCalledWith('Content-Disposition', `inline; filename*=UTF-8''my-photo.jpg`);
+  });
+
+  it('should reject file path with traversal segments', async () => {
+    const res = {
+      set: vi.fn(),
+      header: vi.fn(),
+      headersSent: false,
+      sendFile: vi.fn((_path: string, _options: any, cb: (err?: Error) => void) => cb()),
+    } as any;
+    const next = vi.fn();
+
+    await sendFile(
+      res,
+      next,
+      () =>
+        new ImmichFileResponse({
+          path: '/upload/library/../../../etc/passwd',
+          contentType: 'application/octet-stream',
+          cacheControl: CacheControl.None,
+        }),
+      mockLogger,
+    );
+
+    expect(res.sendFile).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(expect.any(HttpException));
+  });
+
+  it('should pass root option to sendFile to prevent path traversal', async () => {
+    const res = {
+      set: vi.fn(),
+      header: vi.fn(),
+      headersSent: false,
+      sendFile: vi.fn((_path: string, _options: any, cb: (err?: Error) => void) => cb()),
+    } as any;
+    const next = vi.fn();
+
+    await sendFile(
+      res,
+      next,
+      () =>
+        new ImmichFileResponse({
+          path: '/tmp/test-file.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      mockLogger,
+    );
+
+    expect(res.sendFile).toHaveBeenCalledWith(
+      '/tmp/test-file.jpg',
+      { root: '/', dotfiles: 'allow' },
+      expect.any(Function),
+    );
   });
 
   it('should handle non-http errors by logging and calling next', async () => {
