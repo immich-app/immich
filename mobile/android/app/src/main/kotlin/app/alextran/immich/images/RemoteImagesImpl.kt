@@ -21,11 +21,6 @@ import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
@@ -211,12 +206,7 @@ private class CronetImageFetcher : ImageFetcher {
     } ?: return
 
     CoroutineScope(Dispatchers.IO).launch {
-      val result = runCatching {
-        HttpClientManager.cronetEngine?.shutdown()
-        val deletionResult = deleteFolderAndGetSize(HttpClientManager.cronetStoragePath.toPath())
-        HttpClientManager.rebuildCronetEngine()
-        deletionResult
-      }
+      val result = HttpClientManager.rebuildCronetEngine()
       synchronized(stateLock) { draining = false }
       onCacheCleared(result)
     }
@@ -308,26 +298,6 @@ private class CronetImageFetcher : ImageFetcher {
     }
   }
 
-  suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
-    var totalSize = 0L
-
-    Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
-      override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-        totalSize += attrs.size()
-        Files.delete(file)
-        return FileVisitResult.CONTINUE
-      }
-
-      override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-        if (dir != root) {
-          Files.delete(dir)
-        }
-        return FileVisitResult.CONTINUE
-      }
-    })
-
-    totalSize
-  }
 }
 
 private class OkHttpImageFetcher private constructor(
