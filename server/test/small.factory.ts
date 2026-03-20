@@ -63,12 +63,22 @@ const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
     expiresAt = null,
     userId = newUuid(),
     showExif = true,
+    albumId = null,
     allowUpload = false,
     allowDownload = true,
     password = null,
   } = sharedLink;
 
-  return { id, expiresAt, userId, showExif, allowUpload, allowDownload, password };
+  return {
+    id,
+    albumId,
+    expiresAt,
+    userId,
+    showExif,
+    allowUpload,
+    allowDownload,
+    password,
+  };
 };
 
 const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({

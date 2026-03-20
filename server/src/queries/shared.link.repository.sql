@@ -173,6 +173,7 @@ order by
 select
   "shared_link"."id",
   "shared_link"."userId",
+  "shared_link"."albumId",
   "shared_link"."expiresAt",
   "shared_link"."showExif",
   "shared_link"."allowUpload",
@@ -211,6 +212,7 @@ where
 select
   "shared_link"."id",
   "shared_link"."userId",
+  "shared_link"."albumId",
   "shared_link"."expiresAt",
   "shared_link"."showExif",
   "shared_link"."allowUpload",

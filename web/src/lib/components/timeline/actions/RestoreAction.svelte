@@ -24,7 +24,7 @@
       const ids = [...getAssets()].map((a) => a.id);
       await restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
-      toastManager.success($t('assets_restored_count', { values: { count: ids.length } }));
+      toastManager.primary($t('assets_restored_count', { values: { count: ids.length } }));
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_assets'));

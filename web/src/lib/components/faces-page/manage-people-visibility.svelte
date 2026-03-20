@@ -67,7 +67,7 @@
         if (failCount > 0) {
           toastManager.warning($t('errors.unable_to_change_visibility', { values: { count: failCount } }));
         }
-        toastManager.success($t('visibility_changed', { values: { count: successCount } }));
+        toastManager.primary($t('visibility_changed', { values: { count: successCount } }));
       }
 
       for (const person of people) {

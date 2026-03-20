@@ -92,7 +92,7 @@
     const message = featureFlagsManager.value.trash
       ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
       : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
-    toastManager.success(message);
+    toastManager.primary(message);
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
@@ -190,7 +190,7 @@
 
         duplicates = [];
 
-        toastManager.success($t('resolved_all_duplicates'));
+        toastManager.primary($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
         await goto(Route.duplicatesUtility());
       },

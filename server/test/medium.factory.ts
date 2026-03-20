@@ -220,9 +220,9 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { result };
   }
 
-  async newAlbum(dto: Insertable<AlbumTable>) {
+  async newAlbum(dto: Insertable<AlbumTable>, assetIds?: string[]) {
     const album = mediumFactory.albumInsert(dto);
-    const result = await this.get(AlbumRepository).create(album, [], []);
+    const result = await this.get(AlbumRepository).create(album, assetIds ?? [], []);
     return { album, result };
   }
 

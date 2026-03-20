@@ -113,6 +113,8 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
   implementation 'org.chromium.net:cronet-embedded:143.7445.0'
+  implementation("androidx.media3:media3-datasource-okhttp:1.9.2")
+  implementation("androidx.media3:media3-datasource-cronet:1.9.2")
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
   implementation "androidx.work:work-runtime-ktx:$work_version"
   implementation "androidx.concurrent:concurrent-futures:$concurrent_version"

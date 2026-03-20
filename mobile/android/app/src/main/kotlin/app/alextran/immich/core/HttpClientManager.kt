@@ -3,7 +3,13 @@ package app.alextran.immich.core
 import android.content.Context
 import android.content.SharedPreferences
 import android.security.KeyChain
+import androidx.annotation.OptIn
 import androidx.core.content.edit
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.ResolvingDataSource
+import androidx.media3.datasource.cronet.CronetDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import app.alextran.immich.BuildConfig
 import app.alextran.immich.NativeBuffer
 import okhttp3.Cache
@@ -16,15 +22,22 @@ import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
+import org.chromium.net.CronetEngine
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.net.Authenticator
+import java.net.CookieHandler
+import java.net.PasswordAuthentication
 import java.net.Socket
+import java.net.URI
 import java.security.KeyStore
 import java.security.Principal
 import java.security.PrivateKey
 import java.security.cert.X509Certificate
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
@@ -56,6 +69,7 @@ private enum class AuthCookie(val cookieName: String, val httpOnly: Boolean) {
  */
 object HttpClientManager {
   private const val CACHE_SIZE_BYTES = 100L * 1024 * 1024  // 100MiB
+  const val MEDIA_CACHE_SIZE_BYTES = 1024L * 1024 * 1024  // 1GiB
   private const val KEEP_ALIVE_CONNECTIONS = 10
   private const val KEEP_ALIVE_DURATION_MINUTES = 5L
   private const val MAX_REQUESTS_PER_HOST = 64
@@ -66,6 +80,11 @@ object HttpClientManager {
   private lateinit var client: OkHttpClient
   private lateinit var appContext: Context
   private lateinit var prefs: SharedPreferences
+
+  var cronetEngine: CronetEngine? = null
+    private set
+  private lateinit var cronetStorageDir: File
+  val cronetExecutor: ExecutorService = Executors.newFixedThreadPool(4)
 
   private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
@@ -89,6 +108,25 @@ object HttpClientManager {
       keyChainAlias = prefs.getString(PREFS_CERT_ALIAS, null)
 
       cookieJar.init(prefs)
+      System.setProperty("http.agent", USER_AGENT)
+      Authenticator.setDefault(object : Authenticator() {
+        override fun getPasswordAuthentication(): PasswordAuthentication? {
+          val url = requestingURL ?: return null
+          if (url.userInfo.isNullOrEmpty()) return null
+          val parts = url.userInfo.split(":", limit = 2)
+          return PasswordAuthentication(parts[0], parts.getOrElse(1) { "" }.toCharArray())
+        }
+      })
+      CookieHandler.setDefault(object : CookieHandler() {
+        override fun get(uri: URI, requestHeaders: Map<String, List<String>>): Map<String, List<String>> {
+          val httpUrl = uri.toString().toHttpUrlOrNull() ?: return emptyMap()
+          val cookies = cookieJar.loadForRequest(httpUrl)
+          if (cookies.isEmpty()) return emptyMap()
+          return mapOf("Cookie" to listOf(cookies.joinToString("; ") { "${it.name}=${it.value}" }))
+        }
+
+        override fun put(uri: URI, responseHeaders: Map<String, List<String>>) {}
+      })
 
       val savedHeaders = prefs.getString(PREFS_HEADERS, null)
       if (savedHeaders != null) {
@@ -107,6 +145,10 @@ object HttpClientManager {
 
       val cacheDir = File(File(context.cacheDir, "okhttp"), "api")
       client = build(cacheDir)
+
+      cronetStorageDir = File(context.cacheDir, "cronet").apply { mkdirs() }
+      cronetEngine = buildCronetEngine()
+
       initialized = true
     }
   }
@@ -221,6 +263,53 @@ object HttpClientManager {
     val httpUrl = url.toHttpUrlOrNull() ?: return null
     return cookieJar.loadForRequest(httpUrl).takeIf { it.isNotEmpty() }
       ?.joinToString("; ") { "${it.name}=${it.value}" }
+  }
+
+  fun getAuthHeaders(url: String): Map<String, String> {
+    val result = mutableMapOf<String, String>()
+    headers.forEach { (key, value) -> result[key] = value }
+    loadCookieHeader(url)?.let { result["Cookie"] = it }
+    url.toHttpUrlOrNull()?.let { httpUrl ->
+      if (httpUrl.username.isNotEmpty()) {
+        result["Authorization"] = Credentials.basic(httpUrl.username, httpUrl.password)
+      }
+    }
+    return result
+  }
+
+  fun rebuildCronetEngine(): CronetEngine {
+    val old = cronetEngine!!
+    cronetEngine = buildCronetEngine()
+    return old
+  }
+
+  val cronetStoragePath: File get() = cronetStorageDir
+
+  @OptIn(UnstableApi::class)
+  fun createDataSourceFactory(headers: Map<String, String>): DataSource.Factory {
+    return if (isMtls) {
+      OkHttpDataSource.Factory(client.newBuilder().cache(null).build())
+    } else {
+      ResolvingDataSource.Factory(
+        CronetDataSource.Factory(cronetEngine!!, cronetExecutor)
+      ) { dataSpec ->
+        val newHeaders = dataSpec.httpRequestHeaders.toMutableMap()
+        newHeaders.putAll(getAuthHeaders(dataSpec.uri.toString()))
+        newHeaders["Cache-Control"] = "no-store"
+        dataSpec.buildUpon().setHttpRequestHeaders(newHeaders).build()
+      }
+    }
+  }
+
+  private fun buildCronetEngine(): CronetEngine {
+    return CronetEngine.Builder(appContext)
+      .enableHttp2(true)
+      .enableQuic(true)
+      .enableBrotli(true)
+      .setStoragePath(cronetStorageDir.absolutePath)
+      .setUserAgent(USER_AGENT)
+      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, MEDIA_CACHE_SIZE_BYTES)
+      .build()
   }
 
   private fun build(cacheDir: File): OkHttpClient {

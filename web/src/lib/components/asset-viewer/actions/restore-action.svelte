@@ -21,7 +21,7 @@
       await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
       asset.isTrashed = false;
       onAction({ type: AssetAction.RESTORE, asset: toTimelineAsset(asset) });
-      toastManager.success($t('restored_asset'));
+      toastManager.primary($t('restored_asset'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_assets'));
     }

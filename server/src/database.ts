@@ -169,6 +169,7 @@ export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;
   userId: string;
+  albumId: string | null;
   showExif: boolean;
   allowUpload: boolean;
   allowDownload: boolean;
@@ -357,15 +358,6 @@ export const columns = {
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
-  authSharedLink: [
-    'shared_link.id',
-    'shared_link.userId',
-    'shared_link.expiresAt',
-    'shared_link.showExif',
-    'shared_link.allowUpload',
-    'shared_link.allowDownload',
-    'shared_link.password',
-  ],
   user: userColumns,
   userWithPrefix: userWithPrefixColumns,
   userAdmin: [
