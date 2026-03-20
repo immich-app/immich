@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Selectable, ShallowDehydrateObject, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Selectable, ShallowDehydrateObject, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
@@ -17,6 +17,32 @@ export type SharedLinkSearchOptions = {
   albumId?: string;
 };
 
+const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>, options: { withExif: boolean; limit?: number }) => {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('shared_link_asset')
+      .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
+      .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
+      .where('asset.deletedAt', 'is', null)
+      .selectAll('asset')
+      .$if(options.withExif, (qb) =>
+        qb
+          .innerJoinLateral(
+            (eb) =>
+              eb
+                .selectFrom('asset_exif')
+                .selectAll('asset_exif')
+                .whereRef('asset_exif.assetId', '=', 'asset.id')
+                .as('exifInfo'),
+            (join) => join.onTrue(),
+          )
+          .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo')),
+      )
+      .orderBy('asset.fileCreatedAt', 'asc')
+      .$if(!!options.limit, (qb) => qb.limit(options.limit!)),
+  ).as('assets');
+};
+
 @Injectable()
 export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -26,6 +52,7 @@ export class SharedLinkRepository {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
+      .select((eb) => withSharedAssets(eb, { withExif: true }))
       .leftJoinLateral(
         (eb) =>
           eb
@@ -82,27 +109,6 @@ export class SharedLinkRepository {
             .as('album'),
         (join) => join.onTrue(),
       )
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('shared_link_asset')
-            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
-            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
-            .where('asset.deletedAt', 'is', null)
-            .selectAll('asset')
-            .innerJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('asset_exif')
-                  .selectAll('asset_exif')
-                  .whereRef('asset_exif.assetId', '=', 'asset.id')
-                  .as('exifInfo'),
-              (join) => join.onTrue(),
-            )
-            .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
-            .orderBy('asset.fileCreatedAt', 'asc'),
-        ).as('assets'),
-      )
       .select((eb) => eb.fn.toJson(eb.table('album')).$castTo<ShallowDehydrateObject<Album> | null>().as('album'))
       .where('shared_link.id', '=', id)
       .where('shared_link.userId', '=', userId)
@@ -116,19 +122,8 @@ export class SharedLinkRepository {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
+      .select((eb) => withSharedAssets(eb, { withExif: false, limit: 1 }))
       .where('shared_link.userId', '=', userId)
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('shared_link_asset')
-            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
-            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
-            .where('asset.deletedAt', 'is', null)
-            .selectAll('asset')
-            .orderBy('asset.fileCreatedAt', 'asc')
-            .limit(1),
-        ).as('assets'),
-      )
       .leftJoinLateral(
         (eb) =>
           eb
