@@ -17,30 +17,14 @@ export type SharedLinkSearchOptions = {
   albumId?: string;
 };
 
-const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>, options: { withExif: boolean; limit?: number }) => {
-  return jsonArrayFrom(
-    eb
-      .selectFrom('shared_link_asset')
-      .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
-      .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
-      .where('asset.deletedAt', 'is', null)
-      .selectAll('asset')
-      .$if(options.withExif, (qb) =>
-        qb
-          .innerJoinLateral(
-            (eb) =>
-              eb
-                .selectFrom('asset_exif')
-                .selectAll('asset_exif')
-                .whereRef('asset_exif.assetId', '=', 'asset.id')
-                .as('exifInfo'),
-            (join) => join.onTrue(),
-          )
-          .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo')),
-      )
-      .orderBy('asset.fileCreatedAt', 'asc')
-      .$if(!!options.limit, (qb) => qb.limit(options.limit!)),
-  ).as('assets');
+const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
+  return eb
+    .selectFrom('shared_link_asset')
+    .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
+    .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
+    .where('asset.deletedAt', 'is', null)
+    .selectAll('asset')
+    .orderBy('asset.fileCreatedAt', 'asc');
 };
 
 @Injectable()
@@ -52,7 +36,21 @@ export class SharedLinkRepository {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
-      .select((eb) => withSharedAssets(eb, { withExif: true }))
+      .select((eb) =>
+        jsonArrayFrom(
+          withSharedAssets(eb)
+            .innerJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('asset_exif')
+                  .selectAll('asset_exif')
+                  .whereRef('asset_exif.assetId', '=', 'asset.id')
+                  .as('exifInfo'),
+              (join) => join.onTrue(),
+            )
+            .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo')),
+        ).as('assets'),
+      )
       .leftJoinLateral(
         (eb) =>
           eb
@@ -122,7 +120,7 @@ export class SharedLinkRepository {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
-      .select((eb) => withSharedAssets(eb, { withExif: false, limit: 1 }))
+      .select((eb) => jsonArrayFrom(withSharedAssets(eb).limit(1)).as('assets'))
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
         (eb) =>
