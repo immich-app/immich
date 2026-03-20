@@ -8,6 +8,7 @@ mixin CacheAwareListenerTrackerMixin on ImageStreamCompleter {
   bool _hadInitialImage = false;
   bool _hasIgnoredFirstSyncRemoval = false;
   ImageStreamListener? _cacheListener;
+  bool _hasIdentifiedCacheListener = false;
 
   /// Subclasses can set this to true when they provided an image
   /// Not necessary when using setImage
@@ -27,7 +28,8 @@ mixin CacheAwareListenerTrackerMixin on ImageStreamCompleter {
 
   @override
   void addListener(ImageStreamListener listener) {
-    if (_listenerCount == 0 && _cacheListener == null) {
+    if (!_hasIdentifiedCacheListener) {
+      _hasIdentifiedCacheListener = true;
       _cacheListener = listener;
     }
 
@@ -40,11 +42,12 @@ mixin CacheAwareListenerTrackerMixin on ImageStreamCompleter {
     super.removeListener(listener);
     _listenerCount--;
 
-    if (listener == _cacheListener) {
+    final bool isCacheListener = listener == _cacheListener;
+    if (isCacheListener) {
       _cacheListener = null;
     }
 
-    if (_hadInitialImage && !_hasIgnoredFirstSyncRemoval) {
+    if (_hadInitialImage && !_hasIgnoredFirstSyncRemoval && isCacheListener) {
       _hasIgnoredFirstSyncRemoval = true;
       return;
     }
