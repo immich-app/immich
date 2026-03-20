@@ -15,6 +15,11 @@ class TestImageCompleter extends ImageStreamCompleter with CacheAwareListenerTra
       },
     );
   }
+
+  @override
+  void setImage(ImageInfo image) {
+    super.setImage(image);
+  }
 }
 
 void main() {
