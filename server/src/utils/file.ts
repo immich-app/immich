@@ -79,6 +79,17 @@ export const sendFile = async (
     const file = await handler();
 
     if (file instanceof ImmichRedirectResponse) {
+      let parsed: URL;
+      try {
+        parsed = new URL(file.url);
+      } catch {
+        throw new HttpException('Invalid redirect URL', 500);
+      }
+
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        throw new HttpException('Invalid redirect URL protocol', 500);
+      }
+
       const cacheControlHeader = cacheControlHeaders[file.cacheControl];
       if (cacheControlHeader) {
         res.set('Cache-Control', cacheControlHeader);

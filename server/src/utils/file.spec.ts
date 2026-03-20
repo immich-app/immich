@@ -137,6 +137,54 @@ describe('sendFile with ImmichMediaResponse', () => {
     expect(res.redirect).toHaveBeenCalledWith('https://example.com');
   });
 
+  it('should reject redirect with javascript: protocol', async () => {
+    const res = {
+      set: vi.fn(),
+      header: vi.fn(),
+      redirect: vi.fn(),
+      headersSent: false,
+    } as any;
+    const next = vi.fn();
+
+    await sendFile(
+      res,
+      next,
+      () =>
+        new ImmichRedirectResponse({
+          url: 'javascript:alert(1)',
+          cacheControl: CacheControl.None,
+        }),
+      mockLogger,
+    );
+
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(expect.any(HttpException));
+  });
+
+  it('should reject redirect with invalid URL', async () => {
+    const res = {
+      set: vi.fn(),
+      header: vi.fn(),
+      redirect: vi.fn(),
+      headersSent: false,
+    } as any;
+    const next = vi.fn();
+
+    await sendFile(
+      res,
+      next,
+      () =>
+        new ImmichRedirectResponse({
+          url: '//evil.com/path',
+          cacheControl: CacheControl.None,
+        }),
+      mockLogger,
+    );
+
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(expect.any(HttpException));
+  });
+
   it('should send file response for ImmichFileResponse', async () => {
     const res = {
       set: vi.fn(),
