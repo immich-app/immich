@@ -25,7 +25,7 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
-  <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
+  <application android:label="Noodle Gallery" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
     android:largeHeap="true" android:enableOnBackInvokedCallback="false" android:allowBackup="false"
     android:networkSecurityConfig="@xml/network_security_config">
@@ -68,13 +68,13 @@
 
       <!--TODO:
       Add this filter if you want to handle shared images-->
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to Noodle Gallery">
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="image/*" />
       </intent-filter>
 
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to Noodle Gallery">
         <action android:name="android.intent.action.SEND_MULTIPLE" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="image/*" />
@@ -82,12 +82,12 @@
 
       <!--TODO:
       Add this filter if you want to handle shared videos-->
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to Noodle Gallery">
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="video/*" />
       </intent-filter>
-      <intent-filter android:label="Upload to Immich">
+      <intent-filter android:label="Upload to Noodle Gallery">
         <action android:name="android.intent.action.SEND_MULTIPLE" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="video/*" />

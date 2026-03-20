@@ -9,11 +9,15 @@ class ImmichTitleText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image(
-      image: AssetImage(context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png'),
-      width: fontSize * 4,
-      filterQuality: FilterQuality.high,
-      color: context.primaryColor,
+    return Text(
+      'Noodle Gallery',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: fontSize * 0.7,
+        fontWeight: FontWeight.bold,
+        color: color ?? context.primaryColor,
+        letterSpacing: -1.0,
+      ),
     );
   }
 }
