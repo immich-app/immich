@@ -13,9 +13,7 @@ String _$exifRepositoryHash() => r'bf4a3f6a50d954a23d317659b4f3e2f381066463';
 final exifRepositoryProvider = Provider<IsarExifRepository>.internal(
   exifRepository,
   name: r'exifRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$exifRepositoryHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$exifRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/shared_space.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -45,9 +46,9 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
-        label: 'albums'.tr(),
-        icon: const Icon(Icons.photo_album_outlined),
-        selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
+        label: 'Spaces',
+        icon: const Icon(Icons.workspaces_outlined),
+        selectedIcon: Icon(Icons.workspaces, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
@@ -78,7 +79,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     }
 
     return AutoTabsRouter(
-      routes: const [MainTimelineRoute(), DriftSearchRoute(), DriftAlbumsRoute(), DriftLibraryRoute()],
+      routes: const [MainTimelineRoute(), DriftSearchRoute(), SpacesRoute(), DriftLibraryRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
@@ -124,9 +125,9 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     ref.read(searchInputFocusProvider).requestFocus();
   }
 
-  // Album page
-  if (index == kAlbumTabIndex) {
-    ref.read(remoteAlbumProvider.notifier).refresh();
+  // Spaces page
+  if (index == kSpacesTabIndex) {
+    ref.invalidate(sharedSpacesProvider);
   }
 
   // Library page

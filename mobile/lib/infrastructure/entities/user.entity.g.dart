@@ -25,48 +25,16 @@ const UserSchema = CollectionSchema(
     ),
     r'email': PropertySchema(id: 1, name: r'email', type: IsarType.string),
     r'id': PropertySchema(id: 2, name: r'id', type: IsarType.string),
-    r'inTimeline': PropertySchema(
-      id: 3,
-      name: r'inTimeline',
-      type: IsarType.bool,
-    ),
+    r'inTimeline': PropertySchema(id: 3, name: r'inTimeline', type: IsarType.bool),
     r'isAdmin': PropertySchema(id: 4, name: r'isAdmin', type: IsarType.bool),
-    r'isPartnerSharedBy': PropertySchema(
-      id: 5,
-      name: r'isPartnerSharedBy',
-      type: IsarType.bool,
-    ),
-    r'isPartnerSharedWith': PropertySchema(
-      id: 6,
-      name: r'isPartnerSharedWith',
-      type: IsarType.bool,
-    ),
-    r'memoryEnabled': PropertySchema(
-      id: 7,
-      name: r'memoryEnabled',
-      type: IsarType.bool,
-    ),
+    r'isPartnerSharedBy': PropertySchema(id: 5, name: r'isPartnerSharedBy', type: IsarType.bool),
+    r'isPartnerSharedWith': PropertySchema(id: 6, name: r'isPartnerSharedWith', type: IsarType.bool),
+    r'memoryEnabled': PropertySchema(id: 7, name: r'memoryEnabled', type: IsarType.bool),
     r'name': PropertySchema(id: 8, name: r'name', type: IsarType.string),
-    r'profileImagePath': PropertySchema(
-      id: 9,
-      name: r'profileImagePath',
-      type: IsarType.string,
-    ),
-    r'quotaSizeInBytes': PropertySchema(
-      id: 10,
-      name: r'quotaSizeInBytes',
-      type: IsarType.long,
-    ),
-    r'quotaUsageInBytes': PropertySchema(
-      id: 11,
-      name: r'quotaUsageInBytes',
-      type: IsarType.long,
-    ),
-    r'updatedAt': PropertySchema(
-      id: 12,
-      name: r'updatedAt',
-      type: IsarType.dateTime,
-    ),
+    r'profileImagePath': PropertySchema(id: 9, name: r'profileImagePath', type: IsarType.string),
+    r'quotaSizeInBytes': PropertySchema(id: 10, name: r'quotaSizeInBytes', type: IsarType.long),
+    r'quotaUsageInBytes': PropertySchema(id: 11, name: r'quotaUsageInBytes', type: IsarType.long),
+    r'updatedAt': PropertySchema(id: 12, name: r'updatedAt', type: IsarType.dateTime),
   },
 
   estimateSize: _userEstimateSize,
@@ -80,13 +48,7 @@ const UserSchema = CollectionSchema(
       name: r'id',
       unique: true,
       replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'id',
-          type: IndexType.hash,
-          caseSensitive: true,
-        ),
-      ],
+      properties: [IndexPropertySchema(name: r'id', type: IndexType.hash, caseSensitive: true)],
     ),
   },
   links: {},
@@ -98,11 +60,7 @@ const UserSchema = CollectionSchema(
   version: '3.3.0-dev.3',
 );
 
-int _userEstimateSize(
-  User object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+int _userEstimateSize(User object, List<int> offsets, Map<Type, List<int>> allOffsets) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.email.length * 3;
   bytesCount += 3 + object.id.length * 3;
@@ -111,12 +69,7 @@ int _userEstimateSize(
   return bytesCount;
 }
 
-void _userSerialize(
-  User object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+void _userSerialize(User object, IsarWriter writer, List<int> offsets, Map<Type, List<int>> allOffsets) {
   writer.writeByte(offsets[0], object.avatarColor.index);
   writer.writeString(offsets[1], object.email);
   writer.writeString(offsets[2], object.id);
@@ -132,16 +85,9 @@ void _userSerialize(
   writer.writeDateTime(offsets[12], object.updatedAt);
 }
 
-User _userDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+User _userDeserialize(Id id, IsarReader reader, List<int> offsets, Map<Type, List<int>> allOffsets) {
   final object = User(
-    avatarColor:
-        _UseravatarColorValueEnumMap[reader.readByteOrNull(offsets[0])] ??
-        AvatarColor.primary,
+    avatarColor: _UseravatarColorValueEnumMap[reader.readByteOrNull(offsets[0])] ?? AvatarColor.primary,
     email: reader.readString(offsets[1]),
     id: reader.readString(offsets[2]),
     inTimeline: reader.readBoolOrNull(offsets[3]) ?? false,
@@ -158,17 +104,10 @@ User _userDeserialize(
   return object;
 }
 
-P _userDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
+P _userDeserializeProp<P>(IsarReader reader, int propertyId, int offset, Map<Type, List<int>> allOffsets) {
   switch (propertyId) {
     case 0:
-      return (_UseravatarColorValueEnumMap[reader.readByteOrNull(offset)] ??
-              AvatarColor.primary)
-          as P;
+      return (_UseravatarColorValueEnumMap[reader.readByteOrNull(offset)] ?? AvatarColor.primary) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
@@ -298,9 +237,7 @@ extension UserQueryWhereSort on QueryBuilder<User, User, QWhere> {
 extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
   QueryBuilder<User, User, QAfterWhereClause> isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(lower: isarId, upper: isarId),
-      );
+      return query.addWhereClause(IdWhereClause.between(lower: isarId, upper: isarId));
     });
   }
 
@@ -308,43 +245,25 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
-            );
+            .addWhereClause(IdWhereClause.lessThan(upper: isarId, includeUpper: false))
+            .addWhereClause(IdWhereClause.greaterThan(lower: isarId, includeLower: false));
       } else {
         return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
-            );
+            .addWhereClause(IdWhereClause.greaterThan(lower: isarId, includeLower: false))
+            .addWhereClause(IdWhereClause.lessThan(upper: isarId, includeUpper: false));
       }
     });
   }
 
-  QueryBuilder<User, User, QAfterWhereClause> isarIdGreaterThan(
-    Id isarId, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterWhereClause> isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
-      );
+      return query.addWhereClause(IdWhereClause.greaterThan(lower: isarId, includeLower: include));
     });
   }
 
-  QueryBuilder<User, User, QAfterWhereClause> isarIdLessThan(
-    Id isarId, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterWhereClause> isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
-      );
+      return query.addWhereClause(IdWhereClause.lessThan(upper: isarId, includeUpper: include));
     });
   }
 
@@ -368,9 +287,7 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
 
   QueryBuilder<User, User, QAfterWhereClause> idEqualTo(String id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'id', value: [id]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'id', value: [id]));
     });
   }
 
@@ -378,82 +295,36 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'id',
-                lower: [],
-                upper: [id],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'id',
-                lower: [id],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [], upper: [id], includeUpper: false))
+            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [id], includeLower: false, upper: []));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'id',
-                lower: [id],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'id',
-                lower: [],
-                upper: [id],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [id], includeLower: false, upper: []))
+            .addWhereClause(IndexWhereClause.between(indexName: r'id', lower: [], upper: [id], includeUpper: false));
       }
     });
   }
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
-  QueryBuilder<User, User, QAfterFilterCondition> avatarColorEqualTo(
-    AvatarColor value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorEqualTo(AvatarColor value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'avatarColor', value: value));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorGreaterThan(AvatarColor value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'avatarColor', value: value),
+        FilterCondition.greaterThan(include: include, property: r'avatarColor', value: value),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> avatarColorGreaterThan(
-    AvatarColor value, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorLessThan(AvatarColor value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'avatarColor',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> avatarColorLessThan(
-    AvatarColor value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'avatarColor',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'avatarColor', value: value),
       );
     });
   }
@@ -477,17 +348,10 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> emailEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> emailEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'email',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'email', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -499,12 +363,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'email',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.greaterThan(include: include, property: r'email', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -516,12 +375,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'email',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'email', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -547,93 +401,54 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> emailStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> emailStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'email',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'email', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> emailEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> emailEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'email',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'email', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> emailContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> emailContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'email',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'email', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> emailMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> emailMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'email',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'email', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> emailIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'email', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'email', value: ''));
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> emailIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'email', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'email', value: ''));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> idEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> idEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'id', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -645,12 +460,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.greaterThan(include: include, property: r'id', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -662,12 +472,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'id', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -693,155 +498,89 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> idStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'id', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> idEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'id', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> idContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'id', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> idMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> idMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'id',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'id', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'id', value: ''));
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'id', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'id', value: ''));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> inTimelineEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> inTimelineEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'inTimeline', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'inTimeline', value: value));
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> isAdminEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isAdmin', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isAdmin', value: value));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> isPartnerSharedByEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> isPartnerSharedByEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isPartnerSharedBy', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isPartnerSharedBy', value: value));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> isPartnerSharedWithEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> isPartnerSharedWithEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isPartnerSharedWith', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isPartnerSharedWith', value: value));
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isarId', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isarId', value: value));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> isarIdGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'isarId',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'isarId', value: value));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> isarIdLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'isarId',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'isarId', value: value));
     });
   }
 
@@ -864,27 +603,16 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'memoryEnabled', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'memoryEnabled', value: value));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> nameEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> nameEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'name', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -896,12 +624,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.greaterThan(include: include, property: r'name', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -913,12 +636,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'name', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -944,93 +662,54 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> nameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> nameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'name', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> nameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> nameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'name', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> nameContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> nameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'name', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> nameMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> nameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'name',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'name', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'name', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'name', value: ''));
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'name', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'name', value: ''));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'profileImagePath',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'profileImagePath', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1096,112 +775,65 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'profileImagePath',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'profileImagePath', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'profileImagePath',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'profileImagePath', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'profileImagePath',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'profileImagePath', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> profileImagePathMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'profileImagePath',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'profileImagePath', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> profileImagePathIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'profileImagePath', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'profileImagePath', value: ''));
     });
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> profileImagePathIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'profileImagePath', value: ''));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'quotaSizeInBytes', value: value));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'profileImagePath', value: ''),
+        FilterCondition.greaterThan(include: include, property: r'quotaSizeInBytes', value: value),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesEqualTo(
-    int value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'quotaSizeInBytes', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'quotaSizeInBytes',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'quotaSizeInBytes',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'quotaSizeInBytes', value: value),
       );
     });
   }
@@ -1225,42 +857,24 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesEqualTo(
-    int value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'quotaUsageInBytes', value: value));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'quotaUsageInBytes', value: value),
+        FilterCondition.greaterThan(include: include, property: r'quotaUsageInBytes', value: value),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'quotaUsageInBytes',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'quotaUsageInBytes',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'quotaUsageInBytes', value: value),
       );
     });
   }
@@ -1284,43 +898,23 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> updatedAtEqualTo(
-    DateTime value,
-  ) {
+  QueryBuilder<User, User, QAfterFilterCondition> updatedAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'updatedAt', value: value));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> updatedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'updatedAt', value: value),
+        FilterCondition.greaterThan(include: include, property: r'updatedAt', value: value),
       );
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> updatedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<User, User, QAfterFilterCondition> updatedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> updatedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'updatedAt', value: value));
     });
   }
 
@@ -1683,17 +1277,13 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByEmail({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QDistinct> distinctByEmail({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'email', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctById({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QDistinct> distinctById({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });
@@ -1729,22 +1319,15 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByName({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QDistinct> distinctByName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByProfileImagePath({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<User, User, QDistinct> distinctByProfileImagePath({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'profileImagePath',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'profileImagePath', caseSensitive: caseSensitive);
     });
   }
 

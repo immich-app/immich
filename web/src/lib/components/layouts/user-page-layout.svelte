@@ -4,6 +4,7 @@
 
 <script lang="ts">
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
@@ -50,7 +51,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar onUploadClick={() => openFileUploadDialog()} />
+    <NavigationBar onUploadClick={authManager.isDemo ? undefined : () => openFileUploadDialog()} />
   {/if}
 </header>
 <div

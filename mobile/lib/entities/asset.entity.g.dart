@@ -17,91 +17,26 @@ const AssetSchema = CollectionSchema(
   name: r'Asset',
   id: -2933289051367723566,
   properties: {
-    r'checksum': PropertySchema(
-      id: 0,
-      name: r'checksum',
-      type: IsarType.string,
-    ),
-    r'durationInSeconds': PropertySchema(
-      id: 1,
-      name: r'durationInSeconds',
-      type: IsarType.long,
-    ),
-    r'fileCreatedAt': PropertySchema(
-      id: 2,
-      name: r'fileCreatedAt',
-      type: IsarType.dateTime,
-    ),
-    r'fileModifiedAt': PropertySchema(
-      id: 3,
-      name: r'fileModifiedAt',
-      type: IsarType.dateTime,
-    ),
-    r'fileName': PropertySchema(
-      id: 4,
-      name: r'fileName',
-      type: IsarType.string,
-    ),
+    r'checksum': PropertySchema(id: 0, name: r'checksum', type: IsarType.string),
+    r'durationInSeconds': PropertySchema(id: 1, name: r'durationInSeconds', type: IsarType.long),
+    r'fileCreatedAt': PropertySchema(id: 2, name: r'fileCreatedAt', type: IsarType.dateTime),
+    r'fileModifiedAt': PropertySchema(id: 3, name: r'fileModifiedAt', type: IsarType.dateTime),
+    r'fileName': PropertySchema(id: 4, name: r'fileName', type: IsarType.string),
     r'height': PropertySchema(id: 5, name: r'height', type: IsarType.int),
-    r'isArchived': PropertySchema(
-      id: 6,
-      name: r'isArchived',
-      type: IsarType.bool,
-    ),
-    r'isFavorite': PropertySchema(
-      id: 7,
-      name: r'isFavorite',
-      type: IsarType.bool,
-    ),
-    r'isOffline': PropertySchema(
-      id: 8,
-      name: r'isOffline',
-      type: IsarType.bool,
-    ),
-    r'isTrashed': PropertySchema(
-      id: 9,
-      name: r'isTrashed',
-      type: IsarType.bool,
-    ),
-    r'livePhotoVideoId': PropertySchema(
-      id: 10,
-      name: r'livePhotoVideoId',
-      type: IsarType.string,
-    ),
+    r'isArchived': PropertySchema(id: 6, name: r'isArchived', type: IsarType.bool),
+    r'isFavorite': PropertySchema(id: 7, name: r'isFavorite', type: IsarType.bool),
+    r'isOffline': PropertySchema(id: 8, name: r'isOffline', type: IsarType.bool),
+    r'isTrashed': PropertySchema(id: 9, name: r'isTrashed', type: IsarType.bool),
+    r'livePhotoVideoId': PropertySchema(id: 10, name: r'livePhotoVideoId', type: IsarType.string),
     r'localId': PropertySchema(id: 11, name: r'localId', type: IsarType.string),
     r'ownerId': PropertySchema(id: 12, name: r'ownerId', type: IsarType.long),
-    r'remoteId': PropertySchema(
-      id: 13,
-      name: r'remoteId',
-      type: IsarType.string,
-    ),
-    r'stackCount': PropertySchema(
-      id: 14,
-      name: r'stackCount',
-      type: IsarType.long,
-    ),
+    r'remoteId': PropertySchema(id: 13, name: r'remoteId', type: IsarType.string),
+    r'stackCount': PropertySchema(id: 14, name: r'stackCount', type: IsarType.long),
     r'stackId': PropertySchema(id: 15, name: r'stackId', type: IsarType.string),
-    r'stackPrimaryAssetId': PropertySchema(
-      id: 16,
-      name: r'stackPrimaryAssetId',
-      type: IsarType.string,
-    ),
-    r'thumbhash': PropertySchema(
-      id: 17,
-      name: r'thumbhash',
-      type: IsarType.string,
-    ),
-    r'type': PropertySchema(
-      id: 18,
-      name: r'type',
-      type: IsarType.byte,
-      enumMap: _AssettypeEnumValueMap,
-    ),
-    r'updatedAt': PropertySchema(
-      id: 19,
-      name: r'updatedAt',
-      type: IsarType.dateTime,
-    ),
+    r'stackPrimaryAssetId': PropertySchema(id: 16, name: r'stackPrimaryAssetId', type: IsarType.string),
+    r'thumbhash': PropertySchema(id: 17, name: r'thumbhash', type: IsarType.string),
+    r'type': PropertySchema(id: 18, name: r'type', type: IsarType.byte, enumMap: _AssettypeEnumValueMap),
+    r'updatedAt': PropertySchema(id: 19, name: r'updatedAt', type: IsarType.dateTime),
     r'visibility': PropertySchema(
       id: 20,
       name: r'visibility',
@@ -122,26 +57,14 @@ const AssetSchema = CollectionSchema(
       name: r'remoteId',
       unique: false,
       replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'remoteId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        ),
-      ],
+      properties: [IndexPropertySchema(name: r'remoteId', type: IndexType.hash, caseSensitive: true)],
     ),
     r'localId': IndexSchema(
       id: 1199848425898359622,
       name: r'localId',
       unique: false,
       replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'localId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        ),
-      ],
+      properties: [IndexPropertySchema(name: r'localId', type: IndexType.hash, caseSensitive: true)],
     ),
     r'ownerId_checksum': IndexSchema(
       id: -3295822444433175883,
@@ -149,16 +72,8 @@ const AssetSchema = CollectionSchema(
       unique: true,
       replace: false,
       properties: [
-        IndexPropertySchema(
-          name: r'ownerId',
-          type: IndexType.value,
-          caseSensitive: false,
-        ),
-        IndexPropertySchema(
-          name: r'checksum',
-          type: IndexType.hash,
-          caseSensitive: true,
-        ),
+        IndexPropertySchema(name: r'ownerId', type: IndexType.value, caseSensitive: false),
+        IndexPropertySchema(name: r'checksum', type: IndexType.hash, caseSensitive: true),
       ],
     ),
   },
@@ -171,11 +86,7 @@ const AssetSchema = CollectionSchema(
   version: '3.3.0-dev.3',
 );
 
-int _assetEstimateSize(
-  Asset object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+int _assetEstimateSize(Asset object, List<int> offsets, Map<Type, List<int>> allOffsets) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.checksum.length * 3;
   bytesCount += 3 + object.fileName.length * 3;
@@ -218,12 +129,7 @@ int _assetEstimateSize(
   return bytesCount;
 }
 
-void _assetSerialize(
-  Asset object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+void _assetSerialize(Asset object, IsarWriter writer, List<int> offsets, Map<Type, List<int>> allOffsets) {
   writer.writeString(offsets[0], object.checksum);
   writer.writeLong(offsets[1], object.durationInSeconds);
   writer.writeDateTime(offsets[2], object.fileCreatedAt);
@@ -248,12 +154,7 @@ void _assetSerialize(
   writer.writeInt(offsets[21], object.width);
 }
 
-Asset _assetDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+Asset _assetDeserialize(Id id, IsarReader reader, List<int> offsets, Map<Type, List<int>> allOffsets) {
   final object = Asset(
     checksum: reader.readString(offsets[0]),
     durationInSeconds: reader.readLong(offsets[1]),
@@ -274,24 +175,15 @@ Asset _assetDeserialize(
     stackId: reader.readStringOrNull(offsets[15]),
     stackPrimaryAssetId: reader.readStringOrNull(offsets[16]),
     thumbhash: reader.readStringOrNull(offsets[17]),
-    type:
-        _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
-        AssetType.other,
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ?? AssetType.other,
     updatedAt: reader.readDateTime(offsets[19]),
-    visibility:
-        _AssetvisibilityValueEnumMap[reader.readByteOrNull(offsets[20])] ??
-        AssetVisibilityEnum.timeline,
+    visibility: _AssetvisibilityValueEnumMap[reader.readByteOrNull(offsets[20])] ?? AssetVisibilityEnum.timeline,
     width: reader.readIntOrNull(offsets[21]),
   );
   return object;
 }
 
-P _assetDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
+P _assetDeserializeProp<P>(IsarReader reader, int propertyId, int offset, Map<Type, List<int>> allOffsets) {
   switch (propertyId) {
     case 0:
       return (reader.readString(offset)) as P;
@@ -330,15 +222,11 @@ P _assetDeserializeProp<P>(
     case 17:
       return (reader.readStringOrNull(offset)) as P;
     case 18:
-      return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
-              AssetType.other)
-          as P;
+      return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ?? AssetType.other) as P;
     case 19:
       return (reader.readDateTime(offset)) as P;
     case 20:
-      return (_AssetvisibilityValueEnumMap[reader.readByteOrNull(offset)] ??
-              AssetVisibilityEnum.timeline)
-          as P;
+      return (_AssetvisibilityValueEnumMap[reader.readByteOrNull(offset)] ?? AssetVisibilityEnum.timeline) as P;
     case 21:
       return (reader.readIntOrNull(offset)) as P;
     default:
@@ -347,18 +235,8 @@ P _assetDeserializeProp<P>(
 }
 
 const _AssettypeEnumValueMap = {'other': 0, 'image': 1, 'video': 2, 'audio': 3};
-const _AssettypeValueEnumMap = {
-  0: AssetType.other,
-  1: AssetType.image,
-  2: AssetType.video,
-  3: AssetType.audio,
-};
-const _AssetvisibilityEnumValueMap = {
-  'timeline': 0,
-  'hidden': 1,
-  'archive': 2,
-  'locked': 3,
-};
+const _AssettypeValueEnumMap = {0: AssetType.other, 1: AssetType.image, 2: AssetType.video, 3: AssetType.audio};
+const _AssetvisibilityEnumValueMap = {'timeline': 0, 'hidden': 1, 'archive': 2, 'locked': 3};
 const _AssetvisibilityValueEnumMap = {
   0: AssetVisibilityEnum.timeline,
   1: AssetVisibilityEnum.hidden,
@@ -395,15 +273,9 @@ extension AssetByIndex on IsarCollection<Asset> {
     return deleteByIndexSync(r'ownerId_checksum', [ownerId, checksum]);
   }
 
-  Future<List<Asset?>> getAllByOwnerIdChecksum(
-    List<int> ownerIdValues,
-    List<String> checksumValues,
-  ) {
+  Future<List<Asset?>> getAllByOwnerIdChecksum(List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(
-      checksumValues.length == len,
-      'All index values must have the same length',
-    );
+    assert(checksumValues.length == len, 'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -412,15 +284,9 @@ extension AssetByIndex on IsarCollection<Asset> {
     return getAllByIndex(r'ownerId_checksum', values);
   }
 
-  List<Asset?> getAllByOwnerIdChecksumSync(
-    List<int> ownerIdValues,
-    List<String> checksumValues,
-  ) {
+  List<Asset?> getAllByOwnerIdChecksumSync(List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(
-      checksumValues.length == len,
-      'All index values must have the same length',
-    );
+    assert(checksumValues.length == len, 'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -429,15 +295,9 @@ extension AssetByIndex on IsarCollection<Asset> {
     return getAllByIndexSync(r'ownerId_checksum', values);
   }
 
-  Future<int> deleteAllByOwnerIdChecksum(
-    List<int> ownerIdValues,
-    List<String> checksumValues,
-  ) {
+  Future<int> deleteAllByOwnerIdChecksum(List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(
-      checksumValues.length == len,
-      'All index values must have the same length',
-    );
+    assert(checksumValues.length == len, 'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -446,15 +306,9 @@ extension AssetByIndex on IsarCollection<Asset> {
     return deleteAllByIndex(r'ownerId_checksum', values);
   }
 
-  int deleteAllByOwnerIdChecksumSync(
-    List<int> ownerIdValues,
-    List<String> checksumValues,
-  ) {
+  int deleteAllByOwnerIdChecksumSync(List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(
-      checksumValues.length == len,
-      'All index values must have the same length',
-    );
+    assert(checksumValues.length == len, 'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -475,15 +329,8 @@ extension AssetByIndex on IsarCollection<Asset> {
     return putAllByIndex(r'ownerId_checksum', objects);
   }
 
-  List<Id> putAllByOwnerIdChecksumSync(
-    List<Asset> objects, {
-    bool saveLinks = true,
-  }) {
-    return putAllByIndexSync(
-      r'ownerId_checksum',
-      objects,
-      saveLinks: saveLinks,
-    );
+  List<Id> putAllByOwnerIdChecksumSync(List<Asset> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'ownerId_checksum', objects, saveLinks: saveLinks);
   }
 }
 
@@ -506,43 +353,25 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            );
+            .addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: false))
+            .addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: false));
       } else {
         return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            );
+            .addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: false))
+            .addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: false));
       }
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> idGreaterThan(
-    Id id, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
-      );
+      return query.addWhereClause(IdWhereClause.greaterThan(lower: id, includeLower: include));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> idLessThan(
-    Id id, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
-      );
+      return query.addWhereClause(IdWhereClause.lessThan(upper: id, includeUpper: include));
     });
   }
 
@@ -554,86 +383,48 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
+        IdWhereClause.between(lower: lowerId, includeLower: includeLower, upper: upperId, includeUpper: includeUpper),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'remoteId', value: [null]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'remoteId', value: [null]));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'remoteId',
-          lower: [null],
-          includeLower: false,
-          upper: [],
-        ),
+        IndexWhereClause.between(indexName: r'remoteId', lower: [null], includeLower: false, upper: []),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdEqualTo(
-    String? remoteId,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdEqualTo(String? remoteId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'remoteId', value: [remoteId]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'remoteId', value: [remoteId]));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdNotEqualTo(
-    String? remoteId,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdNotEqualTo(String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'remoteId',
-                lower: [],
-                upper: [remoteId],
-                includeUpper: false,
-              ),
+              IndexWhereClause.between(indexName: r'remoteId', lower: [], upper: [remoteId], includeUpper: false),
             )
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'remoteId',
-                lower: [remoteId],
-                includeLower: false,
-                upper: [],
-              ),
+              IndexWhereClause.between(indexName: r'remoteId', lower: [remoteId], includeLower: false, upper: []),
             );
       } else {
         return query
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'remoteId',
-                lower: [remoteId],
-                includeLower: false,
-                upper: [],
-              ),
+              IndexWhereClause.between(indexName: r'remoteId', lower: [remoteId], includeLower: false, upper: []),
             )
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'remoteId',
-                lower: [],
-                upper: [remoteId],
-                includeUpper: false,
-              ),
+              IndexWhereClause.between(indexName: r'remoteId', lower: [], upper: [remoteId], includeUpper: false),
             );
       }
     });
@@ -641,95 +432,53 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> localIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'localId', value: [null]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'localId', value: [null]));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> localIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'localId',
-          lower: [null],
-          includeLower: false,
-          upper: [],
-        ),
+        IndexWhereClause.between(indexName: r'localId', lower: [null], includeLower: false, upper: []),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdEqualTo(
-    String? localId,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdEqualTo(String? localId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'localId', value: [localId]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'localId', value: [localId]));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdNotEqualTo(
-    String? localId,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdNotEqualTo(String? localId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'localId',
-                lower: [],
-                upper: [localId],
-                includeUpper: false,
-              ),
+              IndexWhereClause.between(indexName: r'localId', lower: [], upper: [localId], includeUpper: false),
             )
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'localId',
-                lower: [localId],
-                includeLower: false,
-                upper: [],
-              ),
+              IndexWhereClause.between(indexName: r'localId', lower: [localId], includeLower: false, upper: []),
             );
       } else {
         return query
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'localId',
-                lower: [localId],
-                includeLower: false,
-                upper: [],
-              ),
+              IndexWhereClause.between(indexName: r'localId', lower: [localId], includeLower: false, upper: []),
             )
             .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'localId',
-                lower: [],
-                upper: [localId],
-                includeUpper: false,
-              ),
+              IndexWhereClause.between(indexName: r'localId', lower: [], upper: [localId], includeUpper: false),
             );
       }
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdEqualToAnyChecksum(
-    int ownerId,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdEqualToAnyChecksum(int ownerId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(
-          indexName: r'ownerId_checksum',
-          value: [ownerId],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'ownerId_checksum', value: [ownerId]));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdNotEqualToAnyChecksum(
-    int ownerId,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdNotEqualToAnyChecksum(int ownerId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -771,34 +520,18 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdGreaterThanAnyChecksum(
-    int ownerId, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdGreaterThanAnyChecksum(int ownerId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'ownerId_checksum',
-          lower: [ownerId],
-          includeLower: include,
-          upper: [],
-        ),
+        IndexWhereClause.between(indexName: r'ownerId_checksum', lower: [ownerId], includeLower: include, upper: []),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdLessThanAnyChecksum(
-    int ownerId, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdLessThanAnyChecksum(int ownerId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'ownerId_checksum',
-          lower: [],
-          upper: [ownerId],
-          includeUpper: include,
-        ),
+        IndexWhereClause.between(indexName: r'ownerId_checksum', lower: [], upper: [ownerId], includeUpper: include),
       );
     });
   }
@@ -822,22 +555,13 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdChecksumEqualTo(
-    int ownerId,
-    String checksum,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdChecksumEqualTo(int ownerId, String checksum) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(
-          indexName: r'ownerId_checksum',
-          value: [ownerId, checksum],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(indexName: r'ownerId_checksum', value: [ownerId, checksum]));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause>
-  ownerIdEqualToChecksumNotEqualTo(int ownerId, String checksum) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdEqualToChecksumNotEqualTo(int ownerId, String checksum) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -881,17 +605,10 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
 }
 
 extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'checksum',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'checksum', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -920,12 +637,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'checksum',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'checksum', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -951,116 +663,68 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'checksum',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'checksum', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'checksum',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'checksum', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'checksum',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'checksum', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'checksum',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'checksum', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'checksum', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'checksum', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'checksum', value: ''));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'durationInSeconds', value: value));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'checksum', value: ''),
+        FilterCondition.greaterThan(include: include, property: r'durationInSeconds', value: value),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsEqualTo(
-    int value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'durationInSeconds', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  durationInSecondsGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'durationInSeconds',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'durationInSeconds',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'durationInSeconds', value: value),
       );
     });
   }
@@ -1084,42 +748,24 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtEqualTo(
-    DateTime value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'fileCreatedAt', value: value));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'fileCreatedAt', value: value),
+        FilterCondition.greaterThan(include: include, property: r'fileCreatedAt', value: value),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'fileCreatedAt',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'fileCreatedAt',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'fileCreatedAt', value: value),
       );
     });
   }
@@ -1143,42 +789,24 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtEqualTo(
-    DateTime value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'fileModifiedAt', value: value));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'fileModifiedAt', value: value),
+        FilterCondition.greaterThan(include: include, property: r'fileModifiedAt', value: value),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'fileModifiedAt',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'fileModifiedAt',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'fileModifiedAt', value: value),
       );
     });
   }
@@ -1202,17 +830,10 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'fileName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'fileName', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1241,12 +862,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'fileName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'fileName', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1272,133 +888,77 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'fileName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'fileName', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'fileName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'fileName', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'fileName',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'fileName', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'fileName',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'fileName', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'fileName', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'fileName', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'fileName', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'fileName', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> heightIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'height'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'height'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> heightIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'height'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'height'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> heightEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'height', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'height', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> heightGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> heightGreaterThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'height',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'height', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> heightLessThan(
-    int? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> heightLessThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'height',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'height', value: value));
     });
   }
 
@@ -1423,39 +983,19 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'id', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'id', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'id', value: value));
     });
   }
 
@@ -1478,60 +1018,39 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isArchivedEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isArchivedEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isArchived', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isArchived', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isFavoriteEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isFavoriteEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isFavorite', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isFavorite', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isOfflineEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isOfflineEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isOffline', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isOffline', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isTrashedEqualTo(
-    bool value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isTrashedEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isTrashed', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'isTrashed', value: value));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'livePhotoVideoId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'livePhotoVideoId'));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  livePhotoVideoIdIsNotNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'livePhotoVideoId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'livePhotoVideoId'));
     });
   }
 
@@ -1541,11 +1060,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'livePhotoVideoId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'livePhotoVideoId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1611,11 +1126,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'livePhotoVideoId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'livePhotoVideoId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1626,11 +1137,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'livePhotoVideoId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'livePhotoVideoId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1641,11 +1148,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'livePhotoVideoId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'livePhotoVideoId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1656,59 +1159,39 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'livePhotoVideoId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'livePhotoVideoId', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'livePhotoVideoId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'livePhotoVideoId', value: ''));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  livePhotoVideoIdIsNotEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'livePhotoVideoId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'livePhotoVideoId', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'localId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'localId'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'localId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'localId'));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'localId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'localId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1720,12 +1203,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'localId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.greaterThan(include: include, property: r'localId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1737,12 +1215,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'localId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'localId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1768,117 +1241,67 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'localId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'localId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'localId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'localId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'localId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'localId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'localId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'localId', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'localId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'localId', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'localId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'localId', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'ownerId', value: value));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'ownerId', value: value),
+        FilterCondition.greaterThan(include: include, property: r'ownerId', value: value),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'ownerId',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'ownerId',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'ownerId', value: value));
     });
   }
 
@@ -1903,31 +1326,20 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'remoteId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'remoteId'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'remoteId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'remoteId'));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'remoteId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'remoteId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1956,12 +1368,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'remoteId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'remoteId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1987,118 +1394,68 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'remoteId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'remoteId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'remoteId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'remoteId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'remoteId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'remoteId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'remoteId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'remoteId', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'remoteId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'remoteId', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'remoteId', value: ''));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'stackCount', value: value));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'remoteId', value: ''),
+        FilterCondition.greaterThan(include: include, property: r'stackCount', value: value),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(
-    int value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'stackCount', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'stackCount',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'stackCount',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'stackCount', value: value),
       );
     });
   }
@@ -2124,31 +1481,20 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'stackId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'stackId'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'stackId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'stackId'));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'stackId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'stackId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2160,12 +1506,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'stackId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.greaterThan(include: include, property: r'stackId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2177,12 +1518,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'stackId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'stackId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2208,97 +1544,59 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'stackId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'stackId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'stackId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'stackId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'stackId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'stackId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'stackId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'stackId', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'stackId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'stackId', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'stackId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'stackId', value: ''));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  stackPrimaryAssetIdIsNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'stackPrimaryAssetId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'stackPrimaryAssetId'));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  stackPrimaryAssetIdIsNotNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'stackPrimaryAssetId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'stackPrimaryAssetId'));
     });
   }
 
@@ -2308,17 +1606,12 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'stackPrimaryAssetId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'stackPrimaryAssetId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  stackPrimaryAssetIdGreaterThan(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2373,15 +1666,13 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  stackPrimaryAssetIdStartsWith(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'stackPrimaryAssetId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'stackPrimaryAssetId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2392,11 +1683,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'stackPrimaryAssetId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'stackPrimaryAssetId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2407,11 +1694,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'stackPrimaryAssetId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'stackPrimaryAssetId', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2422,63 +1705,39 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'stackPrimaryAssetId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'stackPrimaryAssetId', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  stackPrimaryAssetIdIsEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'stackPrimaryAssetId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'stackPrimaryAssetId', value: ''));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition>
-  stackPrimaryAssetIdIsNotEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          property: r'stackPrimaryAssetId',
-          value: '',
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'stackPrimaryAssetId', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'thumbhash'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'thumbhash'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'thumbhash'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'thumbhash'));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'thumbhash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'thumbhash', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2507,12 +1766,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'thumbhash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.lessThan(include: include, property: r'thumbhash', value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -2538,119 +1792,65 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'thumbhash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.startsWith(property: r'thumbhash', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'thumbhash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.endsWith(property: r'thumbhash', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'thumbhash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.contains(property: r'thumbhash', value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'thumbhash',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.matches(property: r'thumbhash', wildcard: pattern, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'thumbhash', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'thumbhash', value: ''));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'thumbhash', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(property: r'thumbhash', value: ''));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeEqualTo(
-    AssetType value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeEqualTo(AssetType value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'type', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'type', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeGreaterThan(
-    AssetType value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeGreaterThan(AssetType value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'type',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'type', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeLessThan(
-    AssetType value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeLessThan(AssetType value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'type',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'type', value: value));
     });
   }
 
@@ -2673,43 +1873,23 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtEqualTo(
-    DateTime value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'updatedAt', value: value));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'updatedAt', value: value),
+        FilterCondition.greaterThan(include: include, property: r'updatedAt', value: value),
       );
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'updatedAt',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'updatedAt', value: value));
     });
   }
 
@@ -2732,13 +1912,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityEqualTo(
-    AssetVisibilityEnum value,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityEqualTo(AssetVisibilityEnum value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'visibility', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'visibility', value: value));
     });
   }
 
@@ -2748,11 +1924,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'visibility',
-          value: value,
-        ),
+        FilterCondition.greaterThan(include: include, property: r'visibility', value: value),
       );
     });
   }
@@ -2763,11 +1935,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'visibility',
-          value: value,
-        ),
+        FilterCondition.lessThan(include: include, property: r'visibility', value: value),
       );
     });
   }
@@ -2793,55 +1961,31 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> widthIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'width'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(property: r'width'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> widthIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'width'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(property: r'width'));
     });
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> widthEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'width', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(property: r'width', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> widthGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> widthGreaterThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'width',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(include: include, property: r'width', value: value));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> widthLessThan(
-    int? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> widthLessThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'width',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(include: include, property: r'width', value: value));
     });
   }
 
@@ -3414,9 +2558,7 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
 }
 
 extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
-  QueryBuilder<Asset, Asset, QDistinct> distinctByChecksum({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByChecksum({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'checksum', caseSensitive: caseSensitive);
     });
@@ -3440,9 +2582,7 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByFileName({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByFileName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'fileName', caseSensitive: caseSensitive);
     });
@@ -3478,20 +2618,13 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByLivePhotoVideoId({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByLivePhotoVideoId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'livePhotoVideoId',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'livePhotoVideoId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByLocalId({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByLocalId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'localId', caseSensitive: caseSensitive);
     });
@@ -3503,9 +2636,7 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByRemoteId({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByRemoteId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'remoteId', caseSensitive: caseSensitive);
     });
@@ -3517,28 +2648,19 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackId({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByStackId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'stackId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackPrimaryAssetId({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByStackPrimaryAssetId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'stackPrimaryAssetId',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'stackPrimaryAssetId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'thumbhash', caseSensitive: caseSensitive);
     });
@@ -3696,8 +2818,7 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, AssetVisibilityEnum, QQueryOperations>
-  visibilityProperty() {
+  QueryBuilder<Asset, AssetVisibilityEnum, QQueryOperations> visibilityProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'visibility');
     });
