@@ -119,7 +119,7 @@ export class ServerService extends BaseService {
   }
 
   async getSystemConfig(): Promise<ServerConfigDto> {
-    const { setup } = this.configRepository.getEnv();
+    const { setup, demo } = this.configRepository.getEnv();
     const config = await this.getConfig({ withCache: false });
     const isInitialized = !setup.allow || (await this.userRepository.hasAdmin());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
@@ -136,6 +136,7 @@ export class ServerService extends BaseService {
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: false,
+      demoMode: demo.enabled,
     };
   }
 

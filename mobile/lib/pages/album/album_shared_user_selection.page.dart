@@ -32,7 +32,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
       if (newAlbum != null) {
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
         unawaited(context.maybePop(true));
-        unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
+        unawaited(context.navigateTo(const TabControllerRoute(children: [LibraryRoute()])));
       }
 
       ScaffoldMessenger(

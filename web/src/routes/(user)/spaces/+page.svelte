@@ -5,6 +5,7 @@
   import SpacesControls from '$lib/components/spaces/spaces-controls.svelte';
   import SpacesTable from '$lib/components/spaces/spaces-table.svelte';
   import SpaceCreateModal from '$lib/modals/SpaceCreateModal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { pinnedSpaceIds, spaceViewSettings } from '$lib/stores/space-view.store';
   import { user } from '$lib/stores/user.store';
@@ -40,13 +41,19 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
-    <Button shape="round" size="small" leadingIcon={mdiPlus} onclick={handleCreate}>
-      {$t('spaces_create')}
-    </Button>
+    {#if !authManager.isDemo}
+      <Button shape="round" size="small" leadingIcon={mdiPlus} onclick={handleCreate}>
+        {$t('spaces_create')}
+      </Button>
+    {/if}
   {/snippet}
 
   {#if spaces.length === 0}
-    <EmptyPlaceholder text={$t('spaces_empty')} onClick={handleCreate} class="mt-10 mx-auto" />
+    <EmptyPlaceholder
+      text={$t('spaces_empty')}
+      onClick={authManager.isDemo ? undefined : handleCreate}
+      class="mt-10 mx-auto"
+    />
   {:else}
     <SpacesControls {spaces} onSorted={(sorted) => (sortedSpaces = sorted)} />
 

@@ -5,7 +5,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/shared_space.provider.dart';
 import 'package:immich_mobile/repositories/shared_space_api.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/spaces/space_card.dart';
 
 @RoutePage()
 class SpacesPage extends HookConsumerWidget {
@@ -64,7 +66,7 @@ class SpacesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Spaces'), elevation: 0, centerTitle: false),
+      appBar: const ImmichAppBar(),
       body: spacesAsync.when(
         data: (spaces) {
           if (spaces.isEmpty) {
@@ -96,52 +98,27 @@ class SpacesPage extends HookConsumerWidget {
 
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(sharedSpacesProvider),
-            child: ListView.builder(
-              itemCount: spaces.length,
-              itemBuilder: (context, index) {
-                final space = spaces[index];
-                return ListTile(
-                  leading: const Icon(Icons.workspaces_outlined),
-                  title: Text(space.name, style: context.textTheme.bodyLarge),
-                  subtitle: space.description != null
-                      ? Text(space.description!, maxLines: 1, overflow: TextOverflow.ellipsis)
-                      : null,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (space.assetCount != null)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.photo_outlined, size: 16, color: context.colorScheme.onSurface.withAlpha(150)),
-                              const SizedBox(width: 2),
-                              Text('${space.assetCount!.toInt()}', style: context.textTheme.bodySmall),
-                            ],
-                          ),
-                        ),
-                      if (space.memberCount != null)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.people_outline, size: 16, color: context.colorScheme.onSurface.withAlpha(150)),
-                              const SizedBox(width: 2),
-                              Text('${space.memberCount!.toInt()}', style: context.textTheme.bodySmall),
-                            ],
-                          ),
-                        ),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
-                  onTap: () async {
-                    await context.pushRoute(SpaceDetailRoute(spaceId: space.id));
-                    ref.invalidate(sharedSpacesProvider);
-                  },
-                );
-              },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.72,
+                ),
+                itemCount: spaces.length,
+                itemBuilder: (context, index) {
+                  final space = spaces[index];
+                  return SpaceCard(
+                    space: space,
+                    onTap: () async {
+                      await context.pushRoute(SpaceDetailRoute(spaceId: space.id));
+                      ref.invalidate(sharedSpacesProvider);
+                    },
+                  );
+                },
+              ),
             ),
           );
         },

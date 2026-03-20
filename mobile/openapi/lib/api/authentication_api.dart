@@ -120,6 +120,54 @@ class AuthenticationApi {
     }
   }
 
+  /// Demo login
+  ///
+  /// Login as the demo user. Only available when demo mode is enabled.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> demoLoginWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/auth/demo-login';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Demo login
+  ///
+  /// Login as the demo user. Only available when demo mode is enabled.
+  Future<LoginResponseDto?> demoLogin() async {
+    final response = await demoLoginWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LoginResponseDto',) as LoginResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Finish OAuth
   ///
   /// Complete the OAuth authorization process by exchanging the authorization code for a session token.

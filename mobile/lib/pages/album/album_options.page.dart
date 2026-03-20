@@ -53,7 +53,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         final isSuccess = await ref.read(albumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
+          unawaited(context.navigateTo(const TabControllerRoute(children: [LibraryRoute()])));
         } else {
           showErrorMessage();
         }

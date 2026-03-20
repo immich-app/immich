@@ -203,6 +203,8 @@ export class ServerConfigDto {
   mapLightStyleUrl!: string;
   @ApiProperty({ description: 'Whether maintenance mode is active' })
   maintenanceMode!: boolean;
+  @ApiProperty({ description: 'Whether demo mode is active' })
+  demoMode!: boolean;
 }
 
 export class ServerFeaturesDto {

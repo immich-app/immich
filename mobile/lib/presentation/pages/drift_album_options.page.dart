@@ -46,7 +46,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     void leaveAlbum() async {
       try {
         await ref.read(remoteAlbumProvider.notifier).leaveAlbum(album.id, userId: userId);
-        unawaited(context.navigateTo(const DriftAlbumsRoute()));
+        unawaited(context.navigateTo(const DriftLibraryRoute()));
       } catch (_) {
         showErrorMessage();
       }
