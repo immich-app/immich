@@ -29,28 +29,6 @@ export class SharedLinkRepository {
       .leftJoinLateral(
         (eb) =>
           eb
-            .selectFrom('shared_link_asset')
-            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
-            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
-            .where('asset.deletedAt', 'is', null)
-            .selectAll('asset')
-            .innerJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('asset_exif')
-                  .selectAll('asset_exif')
-                  .whereRef('asset_exif.assetId', '=', 'asset.id')
-                  .as('exifInfo'),
-              (join) => join.onTrue(),
-            )
-            .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
-            .orderBy('asset.fileCreatedAt', 'asc')
-            .as('a'),
-        (join) => join.onTrue(),
-      )
-      .leftJoinLateral(
-        (eb) =>
-          eb
             .selectFrom('album')
             .selectAll('album')
             .whereRef('album.id', '=', 'shared_link.albumId')
@@ -105,16 +83,26 @@ export class SharedLinkRepository {
         (join) => join.onTrue(),
       )
       .select((eb) =>
-        eb.fn
-          .coalesce(eb.fn.jsonAgg('a').filterWhere('a.id', 'is not', null), sql`'[]'`)
-          .$castTo<
-            (ShallowDehydrateObject<Selectable<AssetTable>> & {
-              exifInfo: ShallowDehydrateObject<Selectable<AssetExifTable>>;
-            })[]
-          >()
-          .as('assets'),
+        jsonArrayFrom(
+          eb
+            .selectFrom('shared_link_asset')
+            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
+            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
+            .where('asset.deletedAt', 'is', null)
+            .selectAll('asset')
+            .innerJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('asset_exif')
+                  .selectAll('asset_exif')
+                  .whereRef('asset_exif.assetId', '=', 'asset.id')
+                  .as('exifInfo'),
+              (join) => join.onTrue(),
+            )
+            .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
+            .orderBy('asset.fileCreatedAt', 'asc'),
+        ).as('assets'),
       )
-      .groupBy(['shared_link.id', sql`"album".*`])
       .select((eb) => eb.fn.toJson(eb.table('album')).$castTo<ShallowDehydrateObject<Album> | null>().as('album'))
       .where('shared_link.id', '=', id)
       .where('shared_link.userId', '=', userId)

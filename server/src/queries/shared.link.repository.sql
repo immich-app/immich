@@ -3,37 +3,35 @@
 -- SharedLinkRepository.get
 select
   "shared_link".*,
-  coalesce(
-    json_agg("a") filter (
-      where
-        "a"."id" is not null
-    ),
-    '[]'
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset".*,
+          to_json("exifInfo") as "exifInfo"
+        from
+          "shared_link_asset"
+          inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+          inner join lateral (
+            select
+              "asset_exif".*
+            from
+              "asset_exif"
+            where
+              "asset_exif"."assetId" = "asset"."id"
+          ) as "exifInfo" on true
+        where
+          "shared_link"."id" = "shared_link_asset"."sharedLinkId"
+          and "asset"."deletedAt" is null
+        order by
+          "asset"."fileCreatedAt" asc
+      ) as agg
   ) as "assets",
   to_json("album") as "album"
 from
   "shared_link"
-  left join lateral (
-    select
-      "asset".*,
-      to_json("exifInfo") as "exifInfo"
-    from
-      "shared_link_asset"
-      inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
-      inner join lateral (
-        select
-          "asset_exif".*
-        from
-          "asset_exif"
-        where
-          "asset_exif"."assetId" = "asset"."id"
-      ) as "exifInfo" on true
-    where
-      "shared_link"."id" = "shared_link_asset"."sharedLinkId"
-      and "asset"."deletedAt" is null
-    order by
-      "asset"."fileCreatedAt" asc
-  ) as "a" on true
   left join lateral (
     select
       "album".*,
@@ -95,9 +93,6 @@ where
     "shared_link"."type" = $3
     or "album"."id" is not null
   )
-group by
-  "shared_link"."id",
-  "album".*
 order by
   "shared_link"."createdAt" desc
 
