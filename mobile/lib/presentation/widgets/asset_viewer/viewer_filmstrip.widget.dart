@@ -88,6 +88,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (_loading) return; // TODO: consider cancelling in-flight load and starting new one?
 
     final total = _timelineService.totalAssets;
+    // TODO: Might want to check if _bufferWindow is not more than what cache can hold.
     final half = _bufferWindow ~/ 2;
     final start = (idx - half).clamp(0, total - 1);
     final count = _bufferWindow.clamp(0, total - start);

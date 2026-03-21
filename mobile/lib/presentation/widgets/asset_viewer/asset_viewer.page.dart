@@ -109,7 +109,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onFilmstripChanged(int index) {
+  void _onFilmstripIndexChanged(int index) {
     final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
     if (index < 0 || index > maxPage) return;
     _currentPage = index;
@@ -311,6 +311,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
       ),
       // Layout from top (closest to photo) to bottom:
+      // TODO: Double check this decision to split out VideoControls
       //   1. VideoControls  - only when video + filmstrip both active
       //   2. Filmstrip
       //   3. ViewerBottomAppBar (action buttons; VideoControls live here when no filmstrip)
@@ -345,8 +346,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                   ),
                   child: ViewerFilmstrip(
                     currentIndex: _currentPageNotifier,
-                    onTap: _onFilmstripChanged,
-                    onScrub: _onFilmstripChanged,
+                    onTap: _onFilmstripIndexChanged,
+                    onScrub: _onFilmstripIndexChanged,
                   ),
                 ),
               ),
