@@ -27,6 +27,26 @@ const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
     .orderBy('asset.fileCreatedAt', 'asc');
 };
 
+export const withExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) => {
+  return eb
+    .selectFrom('asset_exif')
+    .selectAll('asset_exif')
+    .whereRef('asset_exif.assetId', '=', 'asset.id')
+    .as('exifInfo');
+};
+
+const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) => {
+  return eb.selectFrom('user').whereRef('user.id', '=', 'album.ownerId').where('user.deletedAt', 'is', null);
+};
+
+const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
+  return eb
+    .selectFrom('album')
+    .selectAll('album')
+    .whereRef('album.id', '=', 'shared_link.albumId')
+    .where('album.deletedAt', 'is', null);
+};
+
 @Injectable()
 export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -39,25 +59,13 @@ export class SharedLinkRepository {
       .select((eb) =>
         jsonArrayFrom(
           withSharedAssets(eb)
-            .innerJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('asset_exif')
-                  .selectAll('asset_exif')
-                  .whereRef('asset_exif.assetId', '=', 'asset.id')
-                  .as('exifInfo'),
-              (join) => join.onTrue(),
-            )
+            .innerJoinLateral(withExifInfo, (join) => join.onTrue())
             .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo')),
         ).as('assets'),
       )
       .leftJoinLateral(
         (eb) =>
-          eb
-            .selectFrom('album')
-            .selectAll('album')
-            .whereRef('album.id', '=', 'shared_link.albumId')
-            .where('album.deletedAt', 'is', null)
+          withSharedLinkAlbum(eb)
             .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
             .leftJoinLateral(
               (eb) =>
@@ -66,28 +74,14 @@ export class SharedLinkRepository {
                   .selectAll('asset')
                   .whereRef('album_asset.assetId', '=', 'asset.id')
                   .where('asset.deletedAt', 'is', null)
-                  .innerJoinLateral(
-                    (eb) =>
-                      eb
-                        .selectFrom('asset_exif')
-                        .selectAll('asset_exif')
-                        .whereRef('asset_exif.assetId', '=', 'asset.id')
-                        .as('exifInfo'),
-                    (join) => join.onTrue(),
-                  )
+                  .innerJoinLateral(withExifInfo, (join) => join.onTrue())
                   .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
                   .orderBy('asset.fileCreatedAt', 'asc')
                   .as('assets'),
               (join) => join.onTrue(),
             )
             .innerJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('user')
-                  .selectAll('user')
-                  .whereRef('user.id', '=', 'album.ownerId')
-                  .where('user.deletedAt', 'is', null)
-                  .as('owner'),
+              (eb) => withAlbumOwner(eb).selectAll('user').as('owner'),
               (join) => join.onTrue(),
             )
             .select((eb) =>
@@ -124,14 +118,10 @@ export class SharedLinkRepository {
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
         (eb) =>
-          eb
-            .selectFrom('album')
-            .selectAll('album')
-            .whereRef('album.id', '=', 'shared_link.albumId')
+          withSharedLinkAlbum(eb)
             .innerJoinLateral(
               (eb) =>
-                eb
-                  .selectFrom('user')
+                withAlbumOwner(eb)
                   .select([
                     'user.id',
                     'user.email',
@@ -149,13 +139,10 @@ export class SharedLinkRepository {
                     'user.status',
                     'user.profileChangedAt',
                   ])
-                  .whereRef('user.id', '=', 'album.ownerId')
-                  .where('user.deletedAt', 'is', null)
                   .as('owner'),
               (join) => join.onTrue(),
             )
             .select((eb) => eb.fn.toJson('owner').as('owner'))
-            .where('album.deletedAt', 'is', null)
             .as('album'),
         (join) => join.onTrue(),
       )
@@ -257,11 +244,7 @@ export class SharedLinkRepository {
             .selectFrom('asset')
             .whereRef('asset.id', '=', 'shared_link_asset.assetId')
             .selectAll('asset')
-            .innerJoinLateral(
-              (eb) =>
-                eb.selectFrom('asset_exif').whereRef('asset_exif.assetId', '=', 'asset.id').selectAll().as('exifInfo'),
-              (join) => join.onTrue(),
-            )
+            .innerJoinLateral(withExifInfo, (join) => join.onTrue())
             .as('assets'),
         (join) => join.onTrue(),
       )

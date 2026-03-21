@@ -260,7 +260,7 @@ from
       "asset"
       inner join lateral (
         select
-          *
+          "asset_exif".*
         from
           "asset_exif"
         where
