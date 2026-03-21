@@ -2570,6 +2570,46 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.reassignPersonFaces).toHaveBeenCalledWith(sourceId, targetId);
       expect(mocks.sharedSpace.deletePerson).toHaveBeenCalledWith(sourceId);
     });
+
+    it('should throw when a source person does not belong to the space', async () => {
+      const spaceId = newUuid();
+      const targetId = newUuid();
+      const validSourceId = newUuid();
+      const invalidSourceId = newUuid();
+      const target = factory.sharedSpacePerson({ id: targetId, spaceId });
+      const validSource = factory.sharedSpacePerson({ id: validSourceId, spaceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById
+        .mockResolvedValueOnce(target)
+        .mockResolvedValueOnce(validSource)
+        .mockResolvedValueOnce(undefined);
+
+      await expect(
+        sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [validSourceId, invalidSourceId] }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(mocks.sharedSpace.reassignPersonFaces).not.toHaveBeenCalled();
+      expect(mocks.sharedSpace.deletePerson).not.toHaveBeenCalled();
+    });
+
+    it('should throw when a source person belongs to a different space', async () => {
+      const spaceId = newUuid();
+      const otherSpaceId = newUuid();
+      const targetId = newUuid();
+      const sourceId = newUuid();
+      const target = factory.sharedSpacePerson({ id: targetId, spaceId });
+      const wrongSpaceSource = factory.sharedSpacePerson({ id: sourceId, spaceId: otherSpaceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById
+        .mockResolvedValueOnce(target)
+        .mockResolvedValueOnce(wrongSpaceSource);
+
+      await expect(
+        sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [sourceId] }),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('setSpacePersonAlias', () => {

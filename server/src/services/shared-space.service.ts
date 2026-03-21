@@ -566,14 +566,18 @@ export class SharedSpaceService extends BaseService {
       throw new BadRequestException('Cannot merge a person into themselves');
     }
 
+    const sources = [];
     for (const sourceId of dto.ids) {
       const source = await this.sharedSpaceRepository.getPersonById(sourceId);
       if (!source || source.spaceId !== spaceId) {
-        continue;
+        throw new BadRequestException('Source person not found in this space');
       }
+      sources.push(source);
+    }
 
-      await this.sharedSpaceRepository.reassignPersonFaces(sourceId, targetPersonId);
-      await this.sharedSpaceRepository.deletePerson(sourceId);
+    for (const source of sources) {
+      await this.sharedSpaceRepository.reassignPersonFaces(source.id, targetPersonId);
+      await this.sharedSpaceRepository.deletePerson(source.id);
     }
   }
 
