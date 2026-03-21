@@ -19,6 +19,8 @@ import {
   Tag,
   User,
   UserAdmin,
+  UserGroup,
+  UserGroupMember,
 } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto';
@@ -448,6 +450,26 @@ const sharedSpacePersonAliasFactory = (data: Partial<SharedSpacePersonAlias> = {
   ...data,
 });
 
+const userGroupFactory = (data: Partial<UserGroup> = {}): UserGroup => ({
+  id: newUuid(),
+  name: 'Test Group',
+  color: null,
+  origin: 'manual',
+  createdById: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  createId: newUuid(),
+  updateId: newUuid(),
+  ...data,
+});
+
+const userGroupMemberFactory = (data: Partial<UserGroupMember> = {}): UserGroupMember => ({
+  groupId: newUuid(),
+  userId: newUuid(),
+  addedAt: newDate(),
+  ...data,
+});
+
 const albumFactory = (album?: Partial<Omit<Album, 'assets'>>) => ({
   albumName: 'My Album',
   albumThumbnailAssetId: null,
@@ -491,6 +513,8 @@ export const factory = {
   sharedSpacePerson: sharedSpacePersonFactory,
   sharedSpacePersonFace: sharedSpacePersonFaceFactory,
   sharedSpacePersonAlias: sharedSpacePersonAliasFactory,
+  userGroup: userGroupFactory,
+  userGroupMember: userGroupMemberFactory,
   tag: tagFactory,
   album: albumFactory,
   uuid: newUuid,

@@ -15789,6 +15789,345 @@
         "x-immich-state": "Stable"
       }
     },
+    "/user-groups": {
+      "get": {
+        "description": "Retrieve all user groups created by the current user.",
+        "operationId": "getAllGroups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserGroupResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get all user groups",
+        "tags": [
+          "User Groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "userGroup.read",
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Create a named group of users for quick selection when sharing.",
+        "operationId": "createGroup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserGroupCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGroupResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a user group",
+        "tags": [
+          "User Groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "userGroup.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/user-groups/{id}": {
+      "delete": {
+        "description": "Permanently delete a user group. Does not affect albums or spaces shared with group members.",
+        "operationId": "removeGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a user group",
+        "tags": [
+          "User Groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "userGroup.delete",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Retrieve details of a specific user group.",
+        "operationId": "getGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGroupResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a user group",
+        "tags": [
+          "User Groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "userGroup.read",
+        "x-immich-state": "Beta"
+      },
+      "patch": {
+        "description": "Update the name or color of a user group.",
+        "operationId": "updateGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserGroupUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGroupResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a user group",
+        "tags": [
+          "User Groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "userGroup.update",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/user-groups/{id}/members": {
+      "put": {
+        "description": "Replace all members of a user group with the provided list.",
+        "operationId": "setMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserGroupMemberSetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserGroupMemberResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Set group members",
+        "tags": [
+          "User Groups"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "userGroup.update",
+        "x-immich-state": "Beta"
+      }
+    },
     "/users": {
       "get": {
         "description": "Retrieve a list of all users on the server.",
@@ -17115,6 +17454,10 @@
     {
       "name": "Users (admin)",
       "description": "Administrative endpoints for managing users, including creating, updating, deleting, and restoring users. Also includes endpoints for resetting passwords and PIN codes."
+    },
+    {
+      "name": "User Groups",
+      "description": "Personal user groups for quick selection when sharing albums or inviting members to shared spaces."
     },
     {
       "name": "Users",
@@ -21650,6 +21993,10 @@
           "sharedSpaceAsset.create",
           "sharedSpaceAsset.read",
           "sharedSpaceAsset.delete",
+          "userGroup.create",
+          "userGroup.read",
+          "userGroup.update",
+          "userGroup.delete",
           "person.create",
           "person.read",
           "person.update",
@@ -28280,6 +28627,144 @@
           "amber"
         ],
         "type": "string"
+      },
+      "UserGroupCreateDto": {
+        "properties": {
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "description": "Group color"
+          },
+          "name": {
+            "description": "Group name",
+            "maxLength": 100,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "UserGroupMemberResponseDto": {
+        "properties": {
+          "avatarColor": {
+            "description": "Avatar color",
+            "type": "string"
+          },
+          "email": {
+            "description": "User email",
+            "type": "string"
+          },
+          "name": {
+            "description": "User name",
+            "type": "string"
+          },
+          "profileImagePath": {
+            "description": "Profile image path",
+            "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "UserGroupMemberSetDto": {
+        "properties": {
+          "userIds": {
+            "description": "User IDs",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "userIds"
+        ],
+        "type": "object"
+      },
+      "UserGroupResponseDto": {
+        "properties": {
+          "color": {
+            "description": "Group color",
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation date",
+            "type": "string"
+          },
+          "id": {
+            "description": "Group ID",
+            "type": "string"
+          },
+          "members": {
+            "description": "Members",
+            "items": {
+              "$ref": "#/components/schemas/UserGroupMemberResponseDto"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "Group name",
+            "type": "string"
+          },
+          "origin": {
+            "description": "Group origin (manual or oidc)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "members",
+          "name",
+          "origin"
+        ],
+        "type": "object"
+      },
+      "UserGroupUpdateDto": {
+        "properties": {
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "description": "Group color",
+            "nullable": true
+          },
+          "name": {
+            "description": "Group name",
+            "maxLength": 100,
+            "type": "string"
+          }
+        },
+        "type": "object"
       },
       "UserLicense": {
         "properties": {

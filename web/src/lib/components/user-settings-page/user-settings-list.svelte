@@ -3,6 +3,7 @@
   import ChangePinCodeSettings from '$lib/components/user-settings-page/PinCodeSettings.svelte';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
   import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
+  import GroupSettings from '$lib/components/user-settings-page/group-settings.svelte';
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
   import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
@@ -13,6 +14,7 @@
   import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
   import {
     mdiAccountGroupOutline,
+    mdiAccountMultipleOutline,
     mdiAccountOutline,
     mdiApi,
     mdiBellOutline,
@@ -140,6 +142,15 @@
     subtitle={$t('manage_sharing_with_partners')}
   >
     <PartnerSettings user={$user} />
+  </SettingAccordion>
+
+  <SettingAccordion
+    icon={mdiAccountMultipleOutline}
+    key="user-groups"
+    title={$t('user_groups')}
+    subtitle={$t('manage_user_groups')}
+  >
+    <GroupSettings user={$user} />
   </SettingAccordion>
 
   <SettingAccordion

@@ -201,6 +201,8 @@ export const endpointTags: Record<ApiTag, string> = {
     'Endpoints for managing the trash can, which includes assets that have been discarded. Items in the trash are automatically deleted after a configured amount of time.',
   [ApiTag.UsersAdmin]:
     'Administrative endpoints for managing users, including creating, updating, deleting, and restoring users. Also includes endpoints for resetting passwords and PIN codes.',
+  [ApiTag.UserGroups]:
+    'Personal user groups for quick selection when sharing albums or inviting members to shared spaces.',
   [ApiTag.Users]:
     'Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more.',
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',

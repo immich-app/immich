@@ -3047,6 +3047,48 @@ export type TrashResponseDto = {
     /** Number of items in trash */
     count: number;
 };
+export type UserGroupMemberResponseDto = {
+    /** Avatar color */
+    avatarColor?: string;
+    /** User email */
+    email: string;
+    /** User name */
+    name: string;
+    /** Profile image path */
+    profileImagePath?: string;
+    /** User ID */
+    userId: string;
+};
+export type UserGroupResponseDto = {
+    /** Group color */
+    color?: Color | null;
+    /** Creation date */
+    createdAt: string;
+    /** Group ID */
+    id: string;
+    /** Members */
+    members: UserGroupMemberResponseDto[];
+    /** Group name */
+    name: string;
+    /** Group origin (manual or oidc) */
+    origin: string;
+};
+export type UserGroupCreateDto = {
+    /** Group color */
+    color?: UserAvatarColor;
+    /** Group name */
+    name: string;
+};
+export type UserGroupUpdateDto = {
+    /** Group color */
+    color?: (UserAvatarColor) | null;
+    /** Group name */
+    name?: string;
+};
+export type UserGroupMemberSetDto = {
+    /** User IDs */
+    userIds: string[];
+};
 export type UserUpdateMeDto = {
     /** Avatar color */
     avatarColor?: (UserAvatarColor) | null;
@@ -7201,6 +7243,88 @@ export function restoreAssets({ bulkIdsDto }: {
     })));
 }
 /**
+ * Get all user groups
+ */
+export function getAllGroups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserGroupResponseDto[];
+    }>("/user-groups", {
+        ...opts
+    }));
+}
+/**
+ * Create a user group
+ */
+export function createGroup({ userGroupCreateDto }: {
+    userGroupCreateDto: UserGroupCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserGroupResponseDto;
+    }>("/user-groups", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: userGroupCreateDto
+    })));
+}
+/**
+ * Delete a user group
+ */
+export function removeGroup({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/user-groups/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Get a user group
+ */
+export function getGroup({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserGroupResponseDto;
+    }>(`/user-groups/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a user group
+ */
+export function updateGroup({ id, userGroupUpdateDto }: {
+    id: string;
+    userGroupUpdateDto: UserGroupUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserGroupResponseDto;
+    }>(`/user-groups/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PATCH",
+        body: userGroupUpdateDto
+    })));
+}
+/**
+ * Set group members
+ */
+export function setMembers({ id, userGroupMemberSetDto }: {
+    id: string;
+    userGroupMemberSetDto: UserGroupMemberSetDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserGroupMemberResponseDto[];
+    }>(`/user-groups/${encodeURIComponent(id)}/members`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: userGroupMemberSetDto
+    })));
+}
+/**
  * Get all users
  */
 export function searchUsers(opts?: Oazapfts.RequestOpts) {
@@ -7655,6 +7779,10 @@ export enum Permission {
     SharedSpaceAssetCreate = "sharedSpaceAsset.create",
     SharedSpaceAssetRead = "sharedSpaceAsset.read",
     SharedSpaceAssetDelete = "sharedSpaceAsset.delete",
+    UserGroupCreate = "userGroup.create",
+    UserGroupRead = "userGroup.read",
+    UserGroupUpdate = "userGroup.update",
+    UserGroupDelete = "userGroup.delete",
     PersonCreate = "person.create",
     PersonRead = "person.read",
     PersonUpdate = "person.update",
