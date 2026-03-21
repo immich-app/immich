@@ -300,7 +300,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel, ignoreInputFields: false }} />
 
 <div
   id="face-editor-data"
