@@ -2443,6 +2443,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(5);
       mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(3);
       mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
 
       const result = await sut.updateSpacePerson(auth, spaceId, personId, { name: 'New Name' });
 
@@ -2483,11 +2484,36 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(5);
       mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(3);
       mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
 
       const result = await sut.updateSpacePerson(auth, spaceId, personId, { representativeFaceId: faceId });
 
       expect(result.representativeFaceId).toBe(faceId);
       expect(mocks.sharedSpace.isFaceInSpace).toHaveBeenCalledWith(spaceId, faceId);
+    });
+
+    it('should log activity when updating a person', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const person = factory.sharedSpacePerson({ id: personId, spaceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(person);
+      mocks.sharedSpace.updatePerson.mockResolvedValue(person);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(5);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(3);
+      mocks.sharedSpace.getAlias.mockResolvedValue(null);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.updateSpacePerson(auth, spaceId, personId, { name: 'New Name' });
+
+      expect(mocks.sharedSpace.logActivity).toHaveBeenCalledWith({
+        spaceId,
+        userId: auth.user.id,
+        type: SharedSpaceActivityType.PersonUpdate,
+        data: { personId },
+      });
     });
   });
 
@@ -2514,10 +2540,32 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
       mocks.sharedSpace.getPersonById.mockResolvedValue(person);
       mocks.sharedSpace.deletePerson.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
 
       await sut.deleteSpacePerson(auth, spaceId, personId);
 
       expect(mocks.sharedSpace.deletePerson).toHaveBeenCalledWith(personId);
+    });
+
+    it('should log activity when deleting a person', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const person = factory.sharedSpacePerson({ id: personId, spaceId, name: 'Alice' });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(person);
+      mocks.sharedSpace.deletePerson.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.deleteSpacePerson(auth, spaceId, personId);
+
+      expect(mocks.sharedSpace.logActivity).toHaveBeenCalledWith({
+        spaceId,
+        userId: auth.user.id,
+        type: SharedSpaceActivityType.PersonDelete,
+        data: { personId, personName: 'Alice' },
+      });
     });
   });
 
@@ -2564,6 +2612,7 @@ describe(SharedSpaceService.name, () => {
         .mockResolvedValueOnce(source); // source lookup
       mocks.sharedSpace.reassignPersonFaces.mockResolvedValue(void 0);
       mocks.sharedSpace.deletePerson.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
 
       await sut.mergeSpacePeople(auth, spaceId, targetId, { ids: [sourceId] });
 
@@ -2609,6 +2658,31 @@ describe(SharedSpaceService.name, () => {
       await expect(
         sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [sourceId] }),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should log activity when merging people', async () => {
+      const spaceId = newUuid();
+      const targetId = newUuid();
+      const sourceId = newUuid();
+      const target = factory.sharedSpacePerson({ id: targetId, spaceId });
+      const source = factory.sharedSpacePerson({ id: sourceId, spaceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById
+        .mockResolvedValueOnce(target)
+        .mockResolvedValueOnce(source);
+      mocks.sharedSpace.reassignPersonFaces.mockResolvedValue(void 0);
+      mocks.sharedSpace.deletePerson.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [sourceId] });
+
+      expect(mocks.sharedSpace.logActivity).toHaveBeenCalledWith({
+        spaceId,
+        userId: expect.any(String),
+        type: SharedSpaceActivityType.PersonMerge,
+        data: { targetPersonId: targetId, mergedCount: 1 },
+      });
     });
   });
 

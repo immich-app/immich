@@ -74,6 +74,9 @@ export enum SharedSpaceActivityType {
   CoverChange = 'cover_change',
   SpaceRename = 'space_rename',
   SpaceColorChange = 'space_color_change',
+  PersonUpdate = 'person_update',
+  PersonDelete = 'person_delete',
+  PersonMerge = 'person_merge',
 }
 
 export enum AssetOrder {

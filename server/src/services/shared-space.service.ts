@@ -535,6 +535,13 @@ export class SharedSpaceService extends BaseService {
     const assetCount = await this.sharedSpaceRepository.getPersonAssetCount(personId);
     const alias = await this.sharedSpaceRepository.getAlias(personId, auth.user.id);
 
+    await this.sharedSpaceRepository.logActivity({
+      spaceId,
+      userId: auth.user.id,
+      type: SharedSpaceActivityType.PersonUpdate,
+      data: { personId },
+    });
+
     return this.mapSpacePerson(updated, faceCount, assetCount, alias?.alias ?? null);
   }
 
@@ -547,6 +554,13 @@ export class SharedSpaceService extends BaseService {
     }
 
     await this.sharedSpaceRepository.deletePerson(personId);
+
+    await this.sharedSpaceRepository.logActivity({
+      spaceId,
+      userId: auth.user.id,
+      type: SharedSpaceActivityType.PersonDelete,
+      data: { personId, personName: person.name },
+    });
   }
 
   async mergeSpacePeople(
@@ -579,6 +593,13 @@ export class SharedSpaceService extends BaseService {
       await this.sharedSpaceRepository.reassignPersonFaces(source.id, targetPersonId);
       await this.sharedSpaceRepository.deletePerson(source.id);
     }
+
+    await this.sharedSpaceRepository.logActivity({
+      spaceId,
+      userId: auth.user.id,
+      type: SharedSpaceActivityType.PersonMerge,
+      data: { targetPersonId, mergedCount: sources.length },
+    });
   }
 
   async setSpacePersonAlias(
