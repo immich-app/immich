@@ -260,7 +260,9 @@ export class DuplicateService extends BaseService {
         rating = assetRating;
       }
     }
-    response.exifUpdate.rating = rating;
+    if (rating > 0) {
+      response.exifUpdate.rating = rating;
+    }
 
     const descriptionLines = uniqueNonEmptyLines(assets.map((asset) => asset.exifInfo?.description));
     const description = descriptionLines.length > 0 ? descriptionLines.join('\n') : null;
