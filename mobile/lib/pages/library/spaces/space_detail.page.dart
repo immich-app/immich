@@ -112,7 +112,7 @@ class _SpaceDetailPageState extends ConsumerState<SpaceDetailPage> {
     if (newAssets == null || newAssets.isEmpty) return;
 
     try {
-      final assetIds = newAssets.map((a) => (a as RemoteAsset).id).toList();
+      final assetIds = newAssets.whereType<RemoteAsset>().map((a) => a.id).toList();
       await ref.read(sharedSpaceApiRepositoryProvider).addAssets(widget.spaceId, assetIds);
       ref.invalidate(sharedSpacesProvider);
       if (context.mounted) {
