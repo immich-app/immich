@@ -145,6 +145,79 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     }
   }
 
+  /// Handles scroll notifications to track drag state and fire [onScrub]/[onTap].
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification && notification.dragDetails != null) {
+      _userDragging = true;
+      _lastDragIndex = -1;
+    } else if (notification is ScrollUpdateNotification) {
+      // Guard with _userDragging so programmatic animateTo calls don't trigger
+      // onScrub and cause cascading index jumps.
+      if (_userDragging) _onFilmstripDrag();
+    } else if (notification is ScrollEndNotification) {
+      if (_userDragging && _lastDragIndex >= 0) {
+        // Commit the final position now the drag is done.
+        widget.onTap(_lastDragIndex);
+      }
+      _userDragging = false;
+      _lastDragIndex = -1;
+    }
+    return false;
+  }
+
+  /// Builds a single thumbnail item. Shows a grey placeholder if the asset
+  /// is not yet in the [TimelineService] buffer.
+  Widget _buildItem(int idx, int currentIdx) {
+    final asset = _timelineService.getAssetSafe(idx);
+    final isSelected = idx == currentIdx;
+    return GestureDetector(
+      onTap: () => widget.onTap(idx),
+      child: Padding(
+        padding: const EdgeInsets.only(right: _itemGap),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          decoration: BoxDecoration(
+            border: isSelected ? Border.all(color: Colors.white, width: 2.0) : null,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: SizedBox(
+              width: _itemExtent,
+              height: _stripHeight,
+              child: asset == null
+                  ? const ColoredBox(color: Colors.black26)
+                  : Thumbnail.fromAsset(
+                      asset: asset,
+                      fit: BoxFit.cover,
+                      size: Size(_itemExtent, _itemExtent),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the horizontal [ListView] spanning the full timeline.
+  /// Uses [LayoutBuilder] to compute centering padding so the first and last
+  /// items can be scrolled to the centre of the viewport.
+  Widget _buildList(int currentIdx, int total) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
+        return ListView.builder(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          itemCount: total,
+          itemExtent: _itemExtent + _itemGap,
+          padding: EdgeInsets.symmetric(horizontal: sidePadding),
+          itemBuilder: (context, idx) => _buildItem(idx, currentIdx),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Keep watching so we rebuild when the asset changes (e.g. after stack change).
@@ -164,77 +237,12 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
     return SizedBox(
       height: _stripHeight,
-      child: ListenableBuilder(
-        listenable: widget.currentIndex,
-        builder: (context, _) {
-          final currentIdx = widget.currentIndex.value;
-          return NotificationListener<ScrollNotification>(
-            onNotification: (notification) {
-              if (notification is ScrollStartNotification && notification.dragDetails != null) {
-                _userDragging = true;
-                _lastDragIndex = -1;
-              } else if (notification is ScrollUpdateNotification) {
-                // Guard with _userDragging so programmatic animateTo
-                // calls don't trigger onScrub and cause cascading index jumps.
-                if (_userDragging) _onFilmstripDrag();
-              } else if (notification is ScrollEndNotification) {
-                if (_userDragging && _lastDragIndex >= 0) {
-                  // Commit the final position now the drag is done.
-                  widget.onTap(_lastDragIndex);
-                }
-                _userDragging = false;
-                _lastDragIndex = -1;
-              }
-              return false;
-            },
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
-                return ListView.builder(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: total,
-                  itemExtent: _itemExtent + _itemGap,
-                  padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                  itemBuilder: (context, idx) {
-                    final asset = _timelineService.getAssetSafe(idx);
-                    final isSelected = idx == currentIdx;
-
-                    return GestureDetector(
-                      onTap: () => widget.onTap(idx),
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: _itemGap),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          decoration: BoxDecoration(
-                            border: isSelected
-                                ? Border.all(color: Colors.white, width: 2.0)
-                                : null,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(2),
-                            child: SizedBox(
-                              width: _itemExtent,
-                              height: _stripHeight,
-                              child: asset == null
-                                  ? const ColoredBox(color: Colors.black26)
-                                  : Thumbnail.fromAsset(
-                                      asset: asset,
-                                      fit: BoxFit.cover,
-                                      size: Size(_itemExtent, _itemExtent),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          );
-        },
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScrollNotification,
+        child: ListenableBuilder(
+          listenable: widget.currentIndex,
+          builder: (context, _) => _buildList(widget.currentIndex.value, total),
+        ),
       ),
     );
   }
