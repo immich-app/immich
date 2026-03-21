@@ -444,7 +444,6 @@ export class SharedSpaceRepository {
     await this.db
       .deleteFrom('shared_space_person')
       .where('spaceId', '=', spaceId)
-      .where('name', '=', '')
       .where('id', 'not in', this.db.selectFrom('shared_space_person_face').select('personId'))
       .execute();
   }
