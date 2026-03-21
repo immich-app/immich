@@ -21,7 +21,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_filmstrip.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
-import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -72,12 +71,12 @@ class AssetViewer extends ConsumerStatefulWidget {
     _setAsset(ref, asset);
   }
 
-  static void _setAsset(WidgetRef ref, BaseAsset asset, {bool updateControls = true}) {
+  static void _setAsset(WidgetRef ref, BaseAsset asset) {
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // Hide controls for videos, but when the filmstrip is active let the
     // VideoControls auto-hide timer handle it so controls aren't abruptly hidden.
     final filmstripEnabled = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.filmstripEnabled);
-    if (updateControls && asset.isVideo && !filmstripEnabled) {
+    if (asset.isVideo && !filmstripEnabled) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
   }
@@ -275,8 +274,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isZoomed = ref.watch(assetViewerProvider.select((s) => s.isZoomed));
-    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
-    final isVideo = currentAsset?.isVideo ?? false;
     final filmstripEnabled =
         ref.watch(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.filmstripEnabled);
     final backgroundColor = showingDetails
