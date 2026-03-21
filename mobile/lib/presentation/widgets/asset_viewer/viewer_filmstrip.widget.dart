@@ -145,7 +145,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     }
   }
 
-  /// Handles scroll notifications to track drag state and fire [onScrub]/[onTap].
+  /// Handles scroll notifications to track drag state and fire [onScrub].
   bool _onScrollNotification(ScrollNotification notification) {
     if (notification is ScrollStartNotification && notification.dragDetails != null) {
       _userDragging = true;
@@ -155,10 +155,6 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
       // onScrub and cause cascading index jumps.
       if (_userDragging) _onFilmstripDrag();
     } else if (notification is ScrollEndNotification) {
-      if (_userDragging && _lastDragIndex >= 0) {
-        // Commit the final position now the drag is done.
-        widget.onTap(_lastDragIndex);
-      }
       _userDragging = false;
       _lastDragIndex = -1;
     }
