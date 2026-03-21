@@ -414,6 +414,9 @@ export class SharedSpaceService extends BaseService {
     await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
 
     const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space) {
+      throw new NotFoundException('Space not found');
+    }
     await this.sharedSpaceRepository.removeAssets(spaceId, dto.assetIds);
 
     const lastAddedAt = await this.sharedSpaceRepository.getLastAssetAddedAt(spaceId);

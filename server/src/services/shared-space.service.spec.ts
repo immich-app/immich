@@ -1614,6 +1614,15 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.deleteOrphanedPersons.mockResolvedValue(void 0);
     });
 
+    it('should throw when space is not found after role check', async () => {
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getById.mockResolvedValue(undefined);
+
+      await expect(sut.removeAssets(factory.auth(), newUuid(), { assetIds: [newUuid()] })).rejects.toThrow(
+        'Space not found',
+      );
+    });
+
     it('should remove assets when editor', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
