@@ -14,6 +14,7 @@
   import { t } from 'svelte-i18n';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import LoadingSpinner from '$lib/components/shared-components/LoadingSpinner.svelte';
+  import { handleError } from '$lib/utils/handle-error';
 
   type Props = {
     spaceId: string;
@@ -84,11 +85,15 @@
   const onSubmit = async () => {
     const added: SharedSpaceMemberResponseDto[] = [];
     for (const user of selectedUsers.values()) {
-      const member = await addMember({
-        id: spaceId,
-        sharedSpaceMemberCreateDto: { userId: user.id },
-      });
-      added.push(member);
+      try {
+        const member = await addMember({
+          id: spaceId,
+          sharedSpaceMemberCreateDto: { userId: user.id },
+        });
+        added.push(member);
+      } catch (error) {
+        handleError(error, $t('spaces_error_adding_member', { values: { name: user.name } }));
+      }
     }
     onClose(added);
   };

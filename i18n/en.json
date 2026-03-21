@@ -2294,6 +2294,7 @@
   "spaces_delete_person": "Delete person",
   "spaces_delete_person_confirmation": "Are you sure you want to delete {name}? This action cannot be undone.",
   "spaces_empty": "No shared spaces yet. Create one to start sharing with family and friends.",
+  "spaces_error_adding_member": "Error adding {name}",
   "spaces_error_deleting_person": "Error deleting person",
   "spaces_error_loading_people": "Error loading people",
   "spaces_error_merging_people": "Error merging people",
