@@ -67,9 +67,7 @@
     }
 
     const previousRole = member.role;
-    members = members.map((m) =>
-      m.userId === member.userId ? { ...m, role: newRole as unknown as Role } : m,
-    );
+    members = members.map((m) => (m.userId === member.userId ? { ...m, role: newRole as unknown as Role } : m));
 
     try {
       const updated = await updateMember({
