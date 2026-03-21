@@ -26,20 +26,20 @@ class SimilarPhotosActionButton extends ConsumerWidget {
     ref.invalidate(assetViewerProvider);
     ref.invalidate(paginatedSearchProvider);
 
-    final preFilterNotifier = ref.read(searchPreFilterProvider.notifier);
-    preFilterNotifier.clear();
-    preFilterNotifier.setFilter(
-      SearchFilter(
-        assetId: assetId,
-        people: {},
-        location: SearchLocationFilter(),
-        camera: SearchCameraFilter(),
-        date: SearchDateFilter(),
-        display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
-        rating: SearchRatingFilter(),
-        mediaType: AssetType.image,
-      ),
-    );
+    ref.read(searchPreFilterProvider.notifier)
+      ..clear()
+      ..setFilter(
+        SearchFilter(
+          assetId: assetId,
+          people: {},
+          location: SearchLocationFilter(),
+          camera: SearchCameraFilter(),
+          date: SearchDateFilter(),
+          display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+          rating: SearchRatingFilter(),
+          mediaType: AssetType.image,
+        ),
+      );
 
     unawaited(context.navigateTo(const DriftSearchRoute()));
   }
