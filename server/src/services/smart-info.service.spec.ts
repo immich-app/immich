@@ -1,7 +1,7 @@
 import { SystemConfig } from 'src/config';
 import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { SmartInfoService } from 'src/services/smart-info.service';
-import { getCLIPModelInfo } from 'src/utils/misc';
+import { getCLIPModelInfo, isAssetIdOnlyClipModel } from 'src/utils/misc';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -40,10 +40,10 @@ describe(SmartInfoService.name, () => {
       ).not.toThrow();
     });
 
-    it('should allow Qwen CLIP variants with explicit dimensions', () => {
+    it('should allow custom CLIP variants with explicit dimensions', () => {
       expect(() =>
         sut.onConfigValidate({
-          newConfig: { machineLearning: { clip: { modelName: 'qwen3-vl-embedding-1024' } } } as SystemConfig,
+          newConfig: { machineLearning: { clip: { modelName: 'custom-clip-model-1024' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
       ).not.toThrow();
@@ -270,14 +270,26 @@ describe(SmartInfoService.name, () => {
       expect(getCLIPModelInfo('ViT-B-32::openai')).toEqual({ dimSize: 512 });
     });
 
-    it('should resolve Qwen CLIP dimensions from the model name', () => {
-      expect(getCLIPModelInfo('qwen3-vl-embedding')).toEqual({ dimSize: 1536 });
-      expect(getCLIPModelInfo('qwen3-vl-embedding-768')).toEqual({ dimSize: 768 });
-      expect(getCLIPModelInfo('org/qwen3-vl-embedding:1152')).toEqual({ dimSize: 1152 });
+    it('should resolve custom CLIP dimensions from the model name', () => {
+      expect(getCLIPModelInfo('custom-clip-model-768')).toEqual({ dimSize: 768 });
+      expect(getCLIPModelInfo('org/custom-clip-model:1152')).toEqual({ dimSize: 1152 });
+      expect(getCLIPModelInfo('another_model_1536')).toEqual({ dimSize: 1536 });
     });
 
     it('should throw an error if the model is not present', () => {
       expect(() => getCLIPModelInfo('test-model')).toThrow('Unknown CLIP model: test-model');
+    });
+  });
+
+  describe('isAssetIdOnlyClipModel', () => {
+    it('should detect custom dimension variants', () => {
+      expect(isAssetIdOnlyClipModel('custom-clip-model-768')).toBe(true);
+      expect(isAssetIdOnlyClipModel('org/custom-clip-model:1152')).toBe(true);
+    });
+
+    it('should not flag built-in CLIP models', () => {
+      expect(isAssetIdOnlyClipModel('ViT-B-16-SigLIP-512__webli')).toBe(false);
+      expect(isAssetIdOnlyClipModel('ViT-B-32__openai')).toBe(false);
     });
   });
 });

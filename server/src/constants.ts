@@ -64,8 +64,7 @@ export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico
 export const FACE_THUMBNAIL_SIZE = 250;
 
 type ModelInfo = { dimSize: number };
-export const QWEN_CLIP_BASE_MODEL = 'qwen3-vl-embedding';
-export const QWEN_CLIP_DIMENSIONS = [512, 640, 768, 1024, 1152, 1536] as const;
+export const CUSTOM_CLIP_DIMENSIONS = [512, 640, 768, 1024, 1152, 1536] as const;
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   RN101__openai: { dimSize: 512 },
   RN101__yfcc15m: { dimSize: 512 },
