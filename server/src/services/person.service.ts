@@ -43,7 +43,7 @@ import { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isAssetIdOnlyFaceModel, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { isFacialRecognitionEnabled } from 'src/utils/misc';
 import { Point, transformPoints } from 'src/utils/transform';
 
 @Injectable()
@@ -308,8 +308,7 @@ export class PersonService extends BaseService {
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
     const previewFile = asset?.files[0];
-    const assetIdOnlyModel = isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName);
-    if (!asset || asset.files.length !== 1 || (!previewFile && !assetIdOnlyModel)) {
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.Failed;
     }
 
@@ -318,11 +317,10 @@ export class PersonService extends BaseService {
     }
 
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
-      asset.id,
-      previewFile?.path ?? null,
+      previewFile.path,
       machineLearning.facialRecognition,
     );
-    this.logger.debug(`${faces.length} faces detected in ${previewFile?.path ?? asset.id}`);
+    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];

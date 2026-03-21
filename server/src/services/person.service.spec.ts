@@ -751,7 +751,6 @@ describe(PersonService.name, () => {
       mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
       await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
-        asset.id,
         asset.files[0].path,
         expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l' }),
       );
@@ -788,32 +787,6 @@ describe(PersonService.name, () => {
       ]);
       expect(mocks.person.reassignFace).not.toHaveBeenCalled();
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
-    });
-
-    it('should detect faces by asset id for custom face models without a resize path', async () => {
-      const asset = AssetFactory.from().exif().build();
-      mocks.systemMetadata.get.mockResolvedValue({
-        machineLearning: {
-          enabled: true,
-          facialRecognition: {
-            enabled: true,
-            modelName: 'custom-face-model',
-            minScore: 0.7,
-            maxDistance: 0.5,
-            minFaces: 3,
-          },
-        },
-      });
-      mocks.machineLearning.detectFaces.mockResolvedValue({ imageHeight: 500, imageWidth: 400, faces: [] });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
-
-      await sut.handleDetectFaces({ id: asset.id });
-
-      expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
-        asset.id,
-        null,
-        expect.objectContaining({ minScore: 0.7, modelName: 'custom-face-model' }),
-      );
     });
 
     it('should delete an existing face not among the new detected faces', async () => {
