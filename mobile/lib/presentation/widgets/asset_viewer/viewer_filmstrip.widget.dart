@@ -22,7 +22,7 @@ class ViewerFilmstrip extends ConsumerStatefulWidget {
   final void Function(int index) onTap;
 
   /// Called on every frame during a drag while the index changes.
-  /// Should only update the page position — NOT trigger full asset loading,
+  /// Should only update the page position, NOT trigger full asset loading,
   /// since doing so mid-drag causes video controls to hide the filmstrip.
   final void Function(int index) onScrub;
 
@@ -124,7 +124,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _loading = false;
     // Use addPostFrameCallback so the ListView is fully laid out before we
     // attempt to scroll (hasClients is false until after the rebuild).
-    // Always jump instantly after a window load — animating from a reset
+    // Always jump instantly after a window load; animating from a reset
     // position looks like a jarring jump. Only skip if user is dragging.
     if (!_userDragging) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

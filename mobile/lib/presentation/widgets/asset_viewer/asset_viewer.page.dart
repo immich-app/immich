@@ -74,9 +74,13 @@ class AssetViewer extends ConsumerStatefulWidget {
 
   static void _setAsset(WidgetRef ref, BaseAsset asset, {bool updateControls = true}) {
     ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // Hide controls by default for videos (skip during filmstrip scrub so the
-    // filmstrip isn't hidden mid-drag — the scrub handler passes false).
-    if (updateControls && asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
+    // Hide controls for videos, but when the filmstrip is active let the
+    // VideoControls auto-hide timer handle it so controls aren't yanked away
+    // immediately on every swipe.
+    final filmstripEnabled = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.filmstripEnabled);
+    if (updateControls && asset.isVideo && !filmstripEnabled) {
+      ref.read(assetViewerProvider.notifier).setControls(false);
+    }
   }
 }
 
@@ -322,7 +326,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
       ),
       // Layout from top (closest to photo) to bottom:
-      //   1. VideoControls  — only when video + filmstrip both active
+      //   1. VideoControls  - only when video + filmstrip both active
       //   2. Filmstrip
       //   3. ViewerBottomAppBar (action buttons; VideoControls live here when no filmstrip)
       bottomNavigationBar: Column(
