@@ -310,50 +310,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           child: const DownloadStatusFloatingButton(),
         ),
       ),
-      // Layout from top (closest to photo) to bottom:
-      // TODO: Double check this decision to split out VideoControls
-      //   1. VideoControls  - only when video + filmstrip both active
-      //   2. Filmstrip
-      //   3. ViewerBottomAppBar (action buttons; VideoControls live here when no filmstrip)
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isVideo && filmstripEnabled && !showingDetails && currentAsset != null)
-            IgnorePointer(
-              ignoring: !showingControls,
-              child: AnimatedOpacity(
-                duration: Durations.short2,
-                opacity: showingControls ? 1.0 : 0.0,
-                child: VideoControls(videoPlayerName: currentAsset.heroTag),
-              ),
-            ),
-          if (filmstripEnabled && !showingDetails)
-            IgnorePointer(
-              // Key on the direct Column child so Flutter preserves the
-              // filmstrip State when VideoControls are added/removed above it.
-              key: const ValueKey('filmstrip_wrapper'),
-              ignoring: !showingControls,
-              child: AnimatedOpacity(
-                duration: Durations.short2,
-                opacity: showingControls ? 1.0 : 0.0,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [Colors.black54, Colors.transparent],
-                    ),
-                  ),
-                  child: ViewerFilmstrip(
-                    currentIndex: _currentPageNotifier,
-                    onTap: _onFilmstripIndexChanged,
-                    onScrub: _onFilmstripIndexChanged,
-                  ),
-                ),
-              ),
-            ),
-          ViewerBottomAppBar(hideVideoControls: filmstripEnabled),
-        ],
+      bottomNavigationBar: ViewerBottomAppBar(
+        filmstrip: filmstripEnabled
+            ? ViewerFilmstrip(
+                currentIndex: _currentPageNotifier,
+                onTap: _onFilmstripIndexChanged,
+                onScrub: _onFilmstripIndexChanged,
+              )
+            : null,
       ),
       body: Stack(
         children: [
