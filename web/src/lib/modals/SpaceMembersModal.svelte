@@ -65,6 +65,9 @@
       return;
     }
 
+    const previousRole = member.role;
+    members = members.map((m) => (m.userId === member.userId ? { ...m, role: newRole } : m));
+
     try {
       const updated = await updateMember({
         id: spaceId,
@@ -73,6 +76,7 @@
       });
       members = members.map((m) => (m.userId === updated.userId ? updated : m));
     } catch (error) {
+      members = members.map((m) => (m.userId === member.userId ? { ...m, role: previousRole } : m));
       handleError(error, $t('errors.error_updating_member_role'));
     }
   };
