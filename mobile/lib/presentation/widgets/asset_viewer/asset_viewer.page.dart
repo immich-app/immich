@@ -75,8 +75,7 @@ class AssetViewer extends ConsumerStatefulWidget {
   static void _setAsset(WidgetRef ref, BaseAsset asset, {bool updateControls = true}) {
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // Hide controls for videos, but when the filmstrip is active let the
-    // VideoControls auto-hide timer handle it so controls aren't yanked away
-    // immediately on every swipe.
+    // VideoControls auto-hide timer handle it so controls aren't abruptly hidden.
     final filmstripEnabled = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.filmstripEnabled);
     if (updateControls && asset.isVideo && !filmstripEnabled) {
       ref.read(assetViewerProvider.notifier).setControls(false);

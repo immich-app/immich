@@ -42,20 +42,12 @@ class ViewerFilmstrip extends ConsumerStatefulWidget {
 
 class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   static const double _itemGap = 2.0;
-  static const int _windowSize = 80; // assets loaded around the current index
 
-  // Mutable height, updated from settings; item extent = strip height - 4 (border gap).
   late double _stripHeight;
   late double _itemExtent;
 
   late final ScrollController _scrollController;
   late TimelineService _timelineService;
-
-  /// Loaded assets in the current window.
-  List<BaseAsset?> _assets = [];
-
-  /// The absolute index of _assets[0] in the timeline.
-  int _windowStart = 0;
 
   bool _loading = false;
   int _previousIndex = -1;
@@ -75,7 +67,10 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _scrollController = ScrollController();
     _timelineService = ref.read(timelineServiceProvider);
     widget.currentIndex.addListener(_onIndexChanged);
-    _loadWindow(widget.currentIndex.value);
+    _ensureBuffered(widget.currentIndex.value);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scrollToCurrentItem(widget.currentIndex.value, animated: false);
+    });
   }
 
   @override
@@ -90,47 +85,21 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (idx == _previousIndex) return;
     _previousIndex = idx;
 
-    // Reload window if current index is near the edges.
-    final localIdx = idx - _windowStart;
-    if (localIdx < 10 || localIdx > _windowSize - 10) {
-      _loadWindow(idx);
-    } else if (!_userDragging) {
-      _scrollToCurrentItem(idx);
-    }
+    if (_userDragging) return;
+
+    _scrollToCurrentItem(idx);
+    _ensureBuffered(idx);
   }
 
-  Future<void> _loadWindow(int centerIndex) async {
+  /// Triggers a buffer load if [idx] is not already in the TimelineService
+  /// buffer. The service loads ~1024 items per DB query, so this is cheap.
+  Future<void> _ensureBuffered(int idx) async {
     if (_loading) return;
+    if (_timelineService.getAssetSafe(idx) != null) return;
     _loading = true;
-
-    final total = _timelineService.totalAssets;
-    if (total == 0) {
-      _loading = false;
-      return;
-    }
-
-    final start = (centerIndex - _windowSize ~/ 2).clamp(0, total);
-    final count = (_windowSize).clamp(0, total - start);
-
-    final loaded = await _timelineService.loadAssets(start, count);
-
-    if (!mounted) return;
-
-    setState(() {
-      _windowStart = start;
-      _assets = loaded;
-    });
-
+    await _timelineService.loadAssets(idx, 1);
     _loading = false;
-    // Use addPostFrameCallback so the ListView is fully laid out before we
-    // attempt to scroll (hasClients is false until after the rebuild).
-    // Always jump instantly after a window load; animating from a reset
-    // position looks like a jarring jump. Only skip if user is dragging.
-    if (!_userDragging) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_userDragging) _scrollToCurrentItem(centerIndex, animated: false);
-      });
-    }
+    if (mounted) setState(() {});
   }
 
   void _onFilmstripDrag() {
@@ -138,24 +107,31 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final offset = _scrollController.offset;
     // With centering padding (viewportWidth/2 - itemExtent/2) on each side,
     // item N is centred in the viewport at scroll offset = N * (itemExtent + itemGap).
-    final localIdx = (offset / (_itemExtent + _itemGap))
+    final idx = (offset / (_itemExtent + _itemGap))
         .round()
-        .clamp(0, _assets.length - 1);
-    final absoluteIdx = _windowStart + localIdx;
-    final total = _timelineService.totalAssets;
-    if (absoluteIdx < 0 || absoluteIdx >= total) return;
-    if (absoluteIdx == _lastDragIndex) return;
-    _lastDragIndex = absoluteIdx;
-    widget.onScrub(absoluteIdx);
+        .clamp(0, _timelineService.totalAssets - 1);
+    if (idx == _lastDragIndex) return;
+    final prevIdx = _lastDragIndex;
+
+    _lastDragIndex = idx;
+    _ensureBuffered(idx);
+    widget.onScrub(idx);
+
+    // Prefetch 100 items ahead in the scroll direction so the SQLite load
+    // happens well before the user reaches unbuffered territory.
+    // Called after _ensureBuffered(idx) so the current item takes priority.
+    if (prevIdx >= 0) {
+      final direction = idx > prevIdx ? 1 : -1;
+      final prefetchIdx = (idx + direction * 100).clamp(0, _timelineService.totalAssets - 1);
+      _ensureBuffered(prefetchIdx);
+    }
   }
 
-  void _scrollToCurrentItem(int absoluteIndex, {bool animated = true}) {
+  void _scrollToCurrentItem(int index, {bool animated = true}) {
     if (!_scrollController.hasClients) return;
-    final localIdx = absoluteIndex - _windowStart;
-    if (localIdx < 0 || localIdx >= _assets.length) return;
+    if (index < 0 || index >= _timelineService.totalAssets) return;
 
-    // With centering padding, item N centres at offset = N * (itemExtent + itemGap).
-    final targetOffset = localIdx.toDouble() * (_itemExtent + _itemGap);
+    final targetOffset = index.toDouble() * (_itemExtent + _itemGap);
 
     final clamped = targetOffset.clamp(
       _scrollController.position.minScrollExtent,
@@ -178,59 +154,54 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final newHeight = ref.watch(appSettingsServiceProvider).getSetting<int>(AppSettingsEnum.filmstripHeight).toDouble();
     if (newHeight != _stripHeight) {
       _applyHeight(newHeight);
-      // Re-centre the current thumbnail after layout with the new item size.
       WidgetsBinding.instance.addPostFrameCallback(
         (_) { if (mounted) _scrollToCurrentItem(widget.currentIndex.value); },
       );
     }
 
+    final total = _timelineService.totalAssets;
+    if (total == 0) return const SizedBox.shrink();
+
     return SizedBox(
       height: _stripHeight,
-      child: _assets.isEmpty
-          ? const SizedBox.shrink()
-          : ListenableBuilder(
-              listenable: widget.currentIndex,
-              builder: (context, _) {
-                final currentIdx = widget.currentIndex.value;
-                return NotificationListener<ScrollNotification>(
-                  onNotification: (notification) {
-                    if (notification is ScrollStartNotification &&
-                        notification.dragDetails != null) {
-                      _userDragging = true;
-                      _lastDragIndex = -1;
-                    } else if (notification is ScrollUpdateNotification) {
-                      // Guard with _userDragging so programmatic animateTo
-                      // calls (e.g. _scrollToCurrentItem) don't trigger
-                      // onScrub and cause cascading index jumps.
-                      // _userDragging stays true through momentum after a
-                      // fling, so fast swipes still update the photo.
-                      if (_userDragging) _onFilmstripDrag();
-                    } else if (notification is ScrollEndNotification) {
-                      if (_userDragging && _lastDragIndex >= 0) {
-                        // Commit the final position now the drag is done.
-                        widget.onTap(_lastDragIndex);
-                      }
-                      _userDragging = false;
-                      _lastDragIndex = -1;
-                    }
-                    return false;
-                  },
-                  child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
-                    return ListView.builder(
+      child: ListenableBuilder(
+        listenable: widget.currentIndex,
+        builder: (context, _) {
+          final currentIdx = widget.currentIndex.value;
+          return NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollStartNotification && notification.dragDetails != null) {
+                _userDragging = true;
+                _lastDragIndex = -1;
+              } else if (notification is ScrollUpdateNotification) {
+                // Guard with _userDragging so programmatic animateTo
+                // calls don't trigger onScrub and cause cascading index jumps.
+                if (_userDragging) _onFilmstripDrag();
+              } else if (notification is ScrollEndNotification) {
+                if (_userDragging && _lastDragIndex >= 0) {
+                  // Commit the final position now the drag is done.
+                  widget.onTap(_lastDragIndex);
+                }
+                _userDragging = false;
+                _lastDragIndex = -1;
+              }
+              return false;
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
+                return ListView.builder(
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
-                  itemCount: _assets.length,
+                  itemCount: total,
                   itemExtent: _itemExtent + _itemGap,
                   padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                  itemBuilder: (context, localIdx) {
-                    final absoluteIdx = _windowStart + localIdx;
-                    final asset = _assets[localIdx];
-                    final isSelected = absoluteIdx == currentIdx;
+                  itemBuilder: (context, idx) {
+                    final asset = _timelineService.getAssetSafe(idx);
+                    final isSelected = idx == currentIdx;
 
                     return GestureDetector(
-                      onTap: () => widget.onTap(absoluteIdx),
+                      onTap: () => widget.onTap(idx),
                       child: Padding(
                         padding: const EdgeInsets.only(right: _itemGap),
                         child: AnimatedContainer(
@@ -259,12 +230,12 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
                       ),
                     );
                   },
-                  );
-                  },
-                ),
                 );
               },
             ),
+          );
+        },
+      ),
     );
   }
 }
