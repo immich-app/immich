@@ -70,7 +70,7 @@ export class DuplicateRepository {
               (join) => join.onTrue(),
             )
             .select('asset.duplicateId')
-            .select((eb) => eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').as('assets'))
+            .select((eb) => eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'))
             .where('asset.ownerId', '=', asUuid(userId))
             .where('asset.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()
