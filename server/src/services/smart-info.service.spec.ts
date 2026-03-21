@@ -43,7 +43,7 @@ describe(SmartInfoService.name, () => {
     it('should allow custom CLIP variants with explicit dimensions', () => {
       expect(() =>
         sut.onConfigValidate({
-          newConfig: { machineLearning: { clip: { modelName: 'custom-clip-model-1024' } } } as SystemConfig,
+          newConfig: { machineLearning: { clip: { modelName: '1024' } } } as SystemConfig,
           oldConfig: {} as SystemConfig,
         }),
       ).not.toThrow();
@@ -270,10 +270,10 @@ describe(SmartInfoService.name, () => {
       expect(getCLIPModelInfo('ViT-B-32::openai')).toEqual({ dimSize: 512 });
     });
 
-    it('should resolve custom CLIP dimensions from the model name', () => {
-      expect(getCLIPModelInfo('custom-clip-model-768')).toEqual({ dimSize: 768 });
-      expect(getCLIPModelInfo('org/custom-clip-model:1152')).toEqual({ dimSize: 1152 });
-      expect(getCLIPModelInfo('another_model_1536')).toEqual({ dimSize: 1536 });
+    it('should resolve numeric CLIP model names', () => {
+      expect(getCLIPModelInfo('768')).toEqual({ dimSize: 768 });
+      expect(getCLIPModelInfo('org/1152')).toEqual({ dimSize: 1152 });
+      expect(getCLIPModelInfo('1536')).toEqual({ dimSize: 1536 });
     });
 
     it('should throw an error if the model is not present', () => {
@@ -282,9 +282,9 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('isAssetIdOnlyClipModel', () => {
-    it('should detect custom dimension variants', () => {
-      expect(isAssetIdOnlyClipModel('custom-clip-model-768')).toBe(true);
-      expect(isAssetIdOnlyClipModel('org/custom-clip-model:1152')).toBe(true);
+    it('should detect numeric asset-id-only models', () => {
+      expect(isAssetIdOnlyClipModel('768')).toBe(true);
+      expect(isAssetIdOnlyClipModel('org/1152')).toBe(true);
     });
 
     it('should not flag built-in CLIP models', () => {

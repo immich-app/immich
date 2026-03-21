@@ -18,8 +18,8 @@ import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import {
+  ASSET_ID_ONLY_CLIP_MODELS,
   CLIP_MODEL_INFO,
-  CUSTOM_CLIP_DIMENSIONS,
   endpointTags,
   serverVersion,
 } from 'src/constants';
@@ -129,38 +129,14 @@ function cleanModelName(modelName: string): string {
   return token.replaceAll(':', '_');
 }
 
-function parseCustomClipModelInfo(modelName: string) {
-  const token = cleanModelName(modelName);
-  const match = token.match(/(?:^|[-_])(\d+)$/);
-  if (!match) {
-    return;
-  }
-
-  const dimSize = Number.parseInt(match[1], 10);
-  if (!CUSTOM_CLIP_DIMENSIONS.some((dimension) => dimension === dimSize)) {
-    return;
-  }
-
-  return { dimSize, assetIdOnly: true };
-}
-
 export function isAssetIdOnlyClipModel(modelName: string) {
-  if (CLIP_MODEL_INFO[cleanModelName(modelName)]) {
-    return false;
-  }
-
-  return parseCustomClipModelInfo(modelName)?.assetIdOnly ?? false;
+  return ASSET_ID_ONLY_CLIP_MODELS.includes(cleanModelName(modelName) as (typeof ASSET_ID_ONLY_CLIP_MODELS)[number]);
 }
 
 export function getCLIPModelInfo(modelName: string) {
   const modelInfo = CLIP_MODEL_INFO[cleanModelName(modelName)];
   if (modelInfo) {
     return modelInfo;
-  }
-
-  const customModelInfo = parseCustomClipModelInfo(modelName);
-  if (customModelInfo) {
-    return { dimSize: customModelInfo.dimSize };
   }
 
   throw new Error(`Unknown CLIP model: ${modelName}`);

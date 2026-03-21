@@ -64,8 +64,9 @@ export const excludePaths = ['/.well-known/immich', '/custom.css', '/favicon.ico
 export const FACE_THUMBNAIL_SIZE = 250;
 
 type ModelInfo = { dimSize: number };
-export const CUSTOM_CLIP_DIMENSIONS = [512, 640, 768, 1024, 1152, 1536] as const;
+export const ASSET_ID_ONLY_CLIP_MODELS = ['512', '640', '768', '1024', '1152', '1536'] as const;
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
+  512: { dimSize: 512 },
   RN101__openai: { dimSize: 512 },
   RN101__yfcc15m: { dimSize: 512 },
   'ViT-B-16__laion400m_e31': { dimSize: 512 },
@@ -78,10 +79,12 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-B-32__openai': { dimSize: 512 },
   'XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k': { dimSize: 512 },
   'XLM-Roberta-Large-Vit-B-32': { dimSize: 512 },
+  640: { dimSize: 640 },
   RN50x4__openai: { dimSize: 640 },
   'ViT-B-16-plus-240__laion400m_e31': { dimSize: 640 },
   'ViT-B-16-plus-240__laion400m_e32': { dimSize: 640 },
   'XLM-Roberta-Large-Vit-B-16Plus': { dimSize: 640 },
+  768: { dimSize: 768 },
   'LABSE-Vit-L-14': { dimSize: 768 },
   RN50x16__openai: { dimSize: 768 },
   'ViT-B-16-SigLIP-256__webli': { dimSize: 768 },
@@ -98,6 +101,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'XLM-Roberta-Large-Vit-L-14': { dimSize: 768 },
   'nllb-clip-base-siglip__mrl': { dimSize: 768 },
   'nllb-clip-base-siglip__v1': { dimSize: 768 },
+  1024: { dimSize: 1024 },
   RN50__cc12m: { dimSize: 1024 },
   RN50__openai: { dimSize: 1024 },
   RN50__yfcc15m: { dimSize: 1024 },
@@ -109,6 +113,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-L-16-SigLIP-384__webli': { dimSize: 1024 },
   'ViT-g-14__laion2b-s12b-b42k': { dimSize: 1024 },
   'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': { dimSize: 1024 },
+  1152: { dimSize: 1152 },
   'ViT-SO400M-14-SigLIP-384__webli': { dimSize: 1152 },
   'nllb-clip-large-siglip__mrl': { dimSize: 1152 },
   'nllb-clip-large-siglip__v1': { dimSize: 1152 },
@@ -122,6 +127,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-SO400M-16-SigLIP2-256__webli': { dimSize: 1152 },
   'ViT-SO400M-16-SigLIP2-384__webli': { dimSize: 1152 },
   'ViT-SO400M-16-SigLIP2-512__webli': { dimSize: 1152 },
+  1536: { dimSize: 1536 },
   'ViT-gopt-16-SigLIP2-256__webli': { dimSize: 1536 },
   'ViT-gopt-16-SigLIP2-384__webli': { dimSize: 1536 },
 };
