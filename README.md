@@ -33,6 +33,10 @@ Store your photos and videos in any S3-compatible object storage — AWS S3, Min
 
 Create collaborative photo-sharing spaces where multiple users can contribute and browse photos together. Unlike partner sharing (which shares your entire library one-way), Shared Spaces let you create focused groups — "Family", "Friends", "Vacation 2025" — with role-based access (Owner, Editor, Viewer). Photos are linked by reference with zero additional storage cost. Members can optionally merge space assets into their personal timeline. Spaces feature album-style collage cards, cover photos with drag-to-reposition, list and grid views, pinnable favorites, and shared face recognition so people detected across the space are browsable by all members. Full mobile parity — create, manage, and browse spaces from the Flutter app. See the [Shared Spaces documentation](docs/docs/features/shared-spaces.md) for details.
 
+### User Groups
+
+Create named, color-coded groups of users (e.g., "Family", "Close Friends") that you can select with one click when sharing albums or inviting to Spaces. Instead of picking people individually every time, click a group chip and all members are added at once. Groups are personal — each user manages their own. See the [User Groups documentation](docs/docs/features/user-groups.md) for details.
+
 ### Pet Detection
 
 Automatically detect and tag pets in your photos using YOLO11 object detection. Detected animals appear in the People section alongside faces, making it easy to browse all your pet photos. Choose from three model sizes (nano, small, medium) depending on your accuracy vs. speed preference. Configurable from the Admin panel under Machine Learning settings. See the [Pet Detection documentation](docs/docs/features/pet-detection.md) for details.
@@ -182,6 +186,7 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
 | **S3-Compatible Storage**                    | Yes    | Yes |
 | **Google Photos Import**                     | No     | Yes |
 | **Pet Detection**                            | Yes    | Yes |
+| **User Groups**                              | No     | Yes |
 | **Non-destructive Image Editing**            | No     | Yes |
 
 ## Translations
