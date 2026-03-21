@@ -71,8 +71,30 @@ describe(OcrService.name, () => {
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
     });
 
-    it('should process assets without a resize path', async () => {
+    it('should fail for original OCR models without a resize path', async () => {
       const asset = AssetFactory.create();
+      mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
+
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Failed);
+
+      expect(mocks.ocr.upsert).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
+    });
+
+    it('should process assets without a resize path for asset-id-only OCR models', async () => {
+      const asset = AssetFactory.create();
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          ocr: {
+            modelName: 'PP-OCRv5_mobile__asset_id',
+            enabled: true,
+            minDetectionScore: 0.5,
+            minRecognitionScore: 0.8,
+            maxResolution: 736,
+          },
+        },
+      });
       mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
       mockOcrResult();
 
@@ -82,7 +104,7 @@ describe(OcrService.name, () => {
         asset.id,
         null,
         expect.objectContaining({
-          modelName: 'PP-OCRv5_mobile',
+          modelName: 'PP-OCRv5_mobile__asset_id',
         }),
       );
       expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, [], '');

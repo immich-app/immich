@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { isAssetIdOnlyClipModel } from 'src/utils/misc';
+import { isAssetIdOnlyClipModel, isAssetIdOnlyFaceModel, isAssetIdOnlyOcrModel } from 'src/utils/misc';
 
 export interface BoundingBox {
   x1: number;
@@ -192,14 +192,15 @@ export class MachineLearningRepository {
     throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
   }
 
-  async detectFaces(imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+  async detectFaces(assetId: string, imagePath: string | null, { modelName, minScore }: FaceDetectionOptions) {
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
         [ModelType.DETECTION]: { modelName, options: { minScore } },
         [ModelType.RECOGNITION]: { modelName },
       },
     };
-    const response = await this.predict<FacialRecognitionResponse>({ imagePath }, request);
+    const payload = isAssetIdOnlyFaceModel(modelName) ? { imagePath: imagePath ?? '', assetId } : { imagePath: imagePath ?? '' };
+    const response = await this.predict<FacialRecognitionResponse>(payload, request);
     return {
       imageHeight: response.imageHeight,
       imageWidth: response.imageWidth,
@@ -227,7 +228,8 @@ export class MachineLearningRepository {
         [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
       },
     };
-    const response = await this.predict<OcrResponse>({ imagePath: imagePath ?? '', assetId }, request);
+    const payload = isAssetIdOnlyOcrModel(modelName) ? { imagePath: imagePath ?? '', assetId } : { imagePath: imagePath ?? '' };
+    const response = await this.predict<OcrResponse>(payload, request);
     return response[ModelTask.OCR];
   }
 

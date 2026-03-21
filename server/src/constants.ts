@@ -65,6 +65,8 @@ export const FACE_THUMBNAIL_SIZE = 250;
 
 type ModelInfo = { dimSize: number };
 export const ASSET_ID_ONLY_CLIP_MODELS = ['512', '640', '768', '1024', '1152', '1536'] as const;
+export const ASSET_ID_ONLY_FACE_MODELS = ['buffalo_l__asset_id'] as const;
+export const ASSET_ID_ONLY_OCR_MODELS = ['PP-OCRv5_mobile__asset_id', 'PP-OCRv5_server__asset_id'] as const;
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   512: { dimSize: 512 },
   RN101__openai: { dimSize: 512 },

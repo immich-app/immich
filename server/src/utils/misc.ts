@@ -19,6 +19,8 @@ import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import {
   ASSET_ID_ONLY_CLIP_MODELS,
+  ASSET_ID_ONLY_FACE_MODELS,
+  ASSET_ID_ONLY_OCR_MODELS,
   CLIP_MODEL_INFO,
   endpointTags,
   serverVersion,
@@ -131,6 +133,14 @@ function cleanModelName(modelName: string): string {
 
 export function isAssetIdOnlyClipModel(modelName: string) {
   return ASSET_ID_ONLY_CLIP_MODELS.includes(cleanModelName(modelName) as (typeof ASSET_ID_ONLY_CLIP_MODELS)[number]);
+}
+
+export function isAssetIdOnlyFaceModel(modelName: string) {
+  return ASSET_ID_ONLY_FACE_MODELS.includes(cleanModelName(modelName) as (typeof ASSET_ID_ONLY_FACE_MODELS)[number]);
+}
+
+export function isAssetIdOnlyOcrModel(modelName: string) {
+  return ASSET_ID_ONLY_OCR_MODELS.includes(cleanModelName(modelName) as (typeof ASSET_ID_ONLY_OCR_MODELS)[number]);
 }
 
 export function getCLIPModelInfo(modelName: string) {

@@ -6,7 +6,7 @@ import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { tokenizeForSearch } from 'src/utils/database';
-import { isOcrEnabled } from 'src/utils/misc';
+import { isAssetIdOnlyOcrModel, isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class OcrService extends BaseService {
@@ -45,7 +45,8 @@ export class OcrService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForOcr(id);
-    if (!asset) {
+    const assetIdOnlyModel = isAssetIdOnlyOcrModel(machineLearning.ocr.modelName);
+    if (!asset || (!asset.previewFile && !assetIdOnlyModel)) {
       return JobStatus.Failed;
     }
 
