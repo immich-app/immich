@@ -1,6 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -8,25 +8,20 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
-/// Horizontal filmstrip of asset thumbnails shown at the bottom of the viewer.
+/// Filmstrip of thumbnails shown at the bottom of the viewer.
 ///
-/// Tap a thumbnail → jump to that asset.
-/// Swipe/drag the filmstrip → scroll through nearby thumbnails.
+/// Two independent interaction flows:
 ///
-/// Height is controlled by [AppSettingsEnum.filmstripHeight]. Thumbnails are
-/// square, so a taller strip means larger thumbnails, fewer visible at once,
-/// and more finger movement required to reach the next one.
+/// Tapping a thumbnail -> [currentIndex] changes -> filmstrip animates to centre on that item.
+///
+/// Dragging the filmstrip -> pointer event handlers recognize the drag ->
+/// [_onScrollPositionChanged] fires 
 class ViewerFilmstrip extends ConsumerStatefulWidget {
-  /// Called with the absolute asset index when the user taps a thumbnail,
-  /// or when a drag gesture ends (to commit the final position).
+  /// Action to perform when the user taps a thumbnail.
   final void Function(int index) onTap;
-
-  /// Called on every frame during a drag while the index changes.
-  /// Should only update the page position, NOT trigger full asset loading,
-  /// since doing so mid-drag causes video controls to hide the filmstrip.
+  /// Action to perform when the user scrubs the filmstrip (drags to a different index).
   final void Function(int index) onScrub;
-
-  /// The current page index displayed in the main viewer.
+  /// The index of the currently displayed asset. 
   final ValueNotifier<int> currentIndex;
 
   const ViewerFilmstrip({
@@ -42,6 +37,7 @@ class ViewerFilmstrip extends ConsumerStatefulWidget {
 
 class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   static const double _itemGap = 2.0;
+  static const int _bufferWindow = 100;
 
   late double _stripHeight;
   late double _itemExtent;
@@ -51,8 +47,8 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   bool _loading = false;
   int _previousIndex = -1;
-  bool _userDragging = false;
-  int _lastDragIndex = -1;
+  bool _isDragging = false;
+  Offset? _pointerDownPosition;
 
   void _applyHeight(double height) {
     _stripHeight = height;
@@ -65,74 +61,63 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final h = ref.read(appSettingsServiceProvider).getSetting<int>(AppSettingsEnum.filmstripHeight).toDouble();
     _applyHeight(h);
     _scrollController = ScrollController();
+    _scrollController.addListener(_onScrollPositionChanged);
     _timelineService = ref.read(timelineServiceProvider);
     widget.currentIndex.addListener(_onIndexChanged);
     _ensureBuffered(widget.currentIndex.value);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _scrollToCurrentItem(widget.currentIndex.value, animated: false);
+      if (!mounted) return;
+      _scrollToCurrentIndex(animated: false);
+      _scrollController.position.isScrollingNotifier.addListener(_onScrollingChanged);
     });
   }
 
   @override
   void dispose() {
     widget.currentIndex.removeListener(_onIndexChanged);
+    if (_scrollController.hasClients) {
+      _scrollController.position.isScrollingNotifier.removeListener(_onScrollingChanged);
+    }
+    _scrollController.removeListener(_onScrollPositionChanged);
     _scrollController.dispose();
     super.dispose();
   }
 
+  /// Ensures the asset at [idx] and a buffer of assets around it are loaded.
+  Future<void> _ensureBuffered(int idx) async {
+    if (_loading) return; // TODO: consider cancelling in-flight load and starting new one?
+
+    final total = _timelineService.totalAssets;
+    final half = _bufferWindow ~/ 2;
+    final start = (idx - half).clamp(0, total - 1);
+    final count = _bufferWindow.clamp(0, total - start);
+    if (_timelineService.hasRange(start, count)) return;
+
+    _loading = true;
+    await _timelineService.loadAssets(start, count);
+    _loading = false;
+    if (mounted) setState(() {});
+  }
+
+  /// Called when the index of the currently displayed asset changes.
   void _onIndexChanged() {
     final idx = widget.currentIndex.value;
     if (idx == _previousIndex) return;
     _previousIndex = idx;
 
-    if (_userDragging) return;
+    if (_isDragging) return;
 
-    _scrollToCurrentItem(idx);
     _ensureBuffered(idx);
+    _scrollToCurrentIndex();
   }
 
-  /// Triggers a buffer load if [idx] is not already in the TimelineService
-  /// buffer. The service loads ~1024 items per DB query, so this is cheap.
-  Future<void> _ensureBuffered(int idx) async {
-    if (_loading) return;
-    if (_timelineService.getAssetSafe(idx) != null) return;
-    _loading = true;
-    await _timelineService.loadAssets(idx, 1);
-    _loading = false;
-    if (mounted) setState(() {});
-  }
-
-  void _onFilmstripDrag() {
+  /// Updates the scroll position to center on the current index. 
+  void _scrollToCurrentIndex({bool animated = true}) {
     if (!_scrollController.hasClients) return;
-    final offset = _scrollController.offset;
-    // With centering padding (viewportWidth/2 - itemExtent/2) on each side,
-    // item N is centred in the viewport at scroll offset = N * (itemExtent + itemGap).
-    final idx = (offset / (_itemExtent + _itemGap))
-        .round()
-        .clamp(0, _timelineService.totalAssets - 1);
-    if (idx == _lastDragIndex) return;
-    final prevIdx = _lastDragIndex;
-
-    _lastDragIndex = idx;
-    _ensureBuffered(idx);
-    widget.onScrub(idx);
-
-    // Prefetch 100 items ahead in the scroll direction so the SQLite load
-    // happens well before the user reaches unbuffered territory.
-    // Called after _ensureBuffered(idx) so the current item takes priority.
-    if (prevIdx >= 0) {
-      final direction = idx > prevIdx ? 1 : -1;
-      final prefetchIdx = (idx + direction * 100).clamp(0, _timelineService.totalAssets - 1);
-      _ensureBuffered(prefetchIdx);
-    }
-  }
-
-  void _scrollToCurrentItem(int index, {bool animated = true}) {
-    if (!_scrollController.hasClients) return;
+    final index = widget.currentIndex.value;
     if (index < 0 || index >= _timelineService.totalAssets) return;
 
     final targetOffset = index.toDouble() * (_itemExtent + _itemGap);
-
     final clamped = targetOffset.clamp(
       _scrollController.position.minScrollExtent,
       _scrollController.position.maxScrollExtent,
@@ -145,24 +130,56 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     }
   }
 
-  /// Handles scroll notifications to track drag state and fire [onScrub].
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollStartNotification && notification.dragDetails != null) {
-      _userDragging = true;
-      _lastDragIndex = -1;
-    } else if (notification is ScrollUpdateNotification) {
-      // Guard with _userDragging so programmatic animateTo calls don't trigger
-      // onScrub and cause cascading index jumps.
-      if (_userDragging) _onFilmstripDrag();
-    } else if (notification is ScrollEndNotification) {
-      _userDragging = false;
-      _lastDragIndex = -1;
-    }
-    return false;
+  void _onPointerDown(PointerDownEvent e) {
+    _pointerDownPosition = e.position;
   }
 
-  /// Builds a single thumbnail item. Shows a grey placeholder if the asset
-  /// is not yet in the [TimelineService] buffer.
+  void _onPointerMove(PointerMoveEvent e) {
+    if (_isDragging || _pointerDownPosition == null) return;
+    if ((e.position.dx - _pointerDownPosition!.dx).abs() > kTouchSlop) {
+      _isDragging = true;
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent e) {
+    _pointerDownPosition = null;
+    // If dragging, leave _isDragging true.
+    // The scroll may still be in progress due to inertia.
+    // Once finished _onScrollingChanged (`isScrollingNotifier` listener) will set the flag.
+  }
+
+  void _onPointerCancel(PointerCancelEvent e) {
+    _pointerDownPosition = null;
+    _isDragging = false;
+  }
+
+  void _onScrollingChanged() {
+    if (!_scrollController.position.isScrollingNotifier.value) {
+      // Scrolling stopped, consider potential drag finished.
+      _isDragging = false;
+    }
+  }
+
+  void _onScrollPositionChanged() {
+    // The event might be due to user dragging or programmatic animation.
+    // Differentiate and only trigger scrubbing if it's a user drag.
+    if (_isDragging) {
+      _onFilmstripDrag();
+    }
+  }
+
+  void _onFilmstripDrag() {
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
+    final idx = (offset / (_itemExtent + _itemGap))
+        .round()
+        .clamp(0, _timelineService.totalAssets - 1);
+    if (idx == widget.currentIndex.value) return;
+
+    _ensureBuffered(idx);
+    widget.onScrub(idx);
+  }
+
   Widget _buildItem(int idx, int currentIdx) {
     final asset = _timelineService.getAssetSafe(idx);
     final isSelected = idx == currentIdx;
@@ -195,9 +212,6 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     );
   }
 
-  /// Builds the horizontal [ListView] spanning the full timeline.
-  /// Uses [LayoutBuilder] to compute centering padding so the first and last
-  /// items can be scrolled to the centre of the viewport.
   Widget _buildList(int currentIdx, int total) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -216,15 +230,15 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   @override
   Widget build(BuildContext context) {
-    // Keep watching so we rebuild when the asset changes (e.g. after stack change).
     ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
 
-    // React to height setting changes (e.g. user changes it in settings while viewer is open).
     final newHeight = ref.watch(appSettingsServiceProvider).getSetting<int>(AppSettingsEnum.filmstripHeight).toDouble();
     if (newHeight != _stripHeight) {
       _applyHeight(newHeight);
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) { if (mounted) _scrollToCurrentItem(widget.currentIndex.value); },
+        (_) {
+        if (mounted) _scrollToCurrentIndex();
+      },
       );
     }
 
@@ -233,8 +247,11 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
     return SizedBox(
       height: _stripHeight,
-      child: NotificationListener<ScrollNotification>(
-        onNotification: _onScrollNotification,
+      child: Listener(
+        onPointerDown: _onPointerDown,
+        onPointerMove: _onPointerMove,
+        onPointerUp: _onPointerUp,
+        onPointerCancel: _onPointerCancel,
         child: ListenableBuilder(
           listenable: widget.currentIndex,
           builder: (context, _) => _buildList(widget.currentIndex.value, total),

@@ -109,26 +109,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onFilmstripTap(int index) {
+  void _onFilmstripChanged(int index) {
     final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
     if (index < 0 || index > maxPage) return;
     _currentPage = index;
     _pageController.jumpToPage(index);
     _onAssetChanged(index);
-  }
-
-  /// Called on every frame while the user drags the filmstrip.
-  /// Jumps the page and updates [currentAsset] so video controls react instantly,
-  /// but skips [setControls] so the filmstrip is never hidden mid-drag.
-  void _onFilmstripScrub(int index) async {
-    final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
-    if (index < 0 || index > maxPage) return;
-    _currentPage = index;
-    _pageController.jumpToPage(index);
-    final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
-    // Discard stale result if the user has already moved to a different asset.
-    if (!mounted || asset == null || _currentPage != index) return;
-    AssetViewer._setAsset(ref, asset, updateControls: false);
   }
 
   @override
@@ -359,8 +345,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                   ),
                   child: ViewerFilmstrip(
                     currentIndex: _currentPageNotifier,
-                    onTap: _onFilmstripTap,
-                    onScrub: _onFilmstripScrub,
+                    onTap: _onFilmstripChanged,
+                    onScrub: _onFilmstripChanged,
                   ),
                 ),
               ),
