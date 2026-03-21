@@ -32,6 +32,7 @@ class _SpaceDetailPageState extends ConsumerState<SpaceDetailPage> {
   List<RemoteAsset>? _assets;
   String? _error;
   bool _loading = true;
+  bool _isRefreshing = false;
   bool _togglingTimeline = false;
 
   @override
@@ -41,6 +42,8 @@ class _SpaceDetailPageState extends ConsumerState<SpaceDetailPage> {
   }
 
   Future<void> _loadData() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
     try {
       final repo = ref.read(sharedSpaceApiRepositoryProvider);
       final results = await Future.wait([
@@ -64,10 +67,14 @@ class _SpaceDetailPageState extends ConsumerState<SpaceDetailPage> {
           _loading = false;
         });
       }
+    } finally {
+      _isRefreshing = false;
     }
   }
 
   Future<void> _refreshAssets() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
     try {
       final repo = ref.read(sharedSpaceApiRepositoryProvider);
       final assets = await repo.getSpaceAssets(widget.spaceId);
@@ -78,7 +85,10 @@ class _SpaceDetailPageState extends ConsumerState<SpaceDetailPage> {
           _space = space;
         });
       }
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   SharedSpaceMemberResponseDto? get _currentMember {
