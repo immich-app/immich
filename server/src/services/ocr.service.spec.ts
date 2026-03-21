@@ -71,14 +71,21 @@ describe(OcrService.name, () => {
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
     });
 
-    it('should skip assets without a resize path', async () => {
+    it('should process assets without a resize path', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
+      mockOcrResult();
 
-      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Failed);
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Success);
 
-      expect(mocks.ocr.upsert).not.toHaveBeenCalled();
-      expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.ocr).toHaveBeenCalledWith(
+        asset.id,
+        null,
+        expect.objectContaining({
+          modelName: 'PP-OCRv5_mobile',
+        }),
+      );
+      expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, [], '');
     });
 
     it('should save the returned objects', async () => {
@@ -93,6 +100,7 @@ describe(OcrService.name, () => {
       expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.ocr).toHaveBeenCalledWith(
+        asset.id,
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({
           modelName: 'PP-OCRv5_mobile',
@@ -156,6 +164,7 @@ describe(OcrService.name, () => {
       expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.ocr).toHaveBeenCalledWith(
+        asset.id,
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({
           modelName: 'PP-OCRv5_server',

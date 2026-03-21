@@ -220,14 +220,14 @@ export class MachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
-  async ocr(imagePath: string, { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions) {
+  async ocr(assetId: string, imagePath: string | null, { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions) {
     const request = {
       [ModelTask.OCR]: {
         [ModelType.DETECTION]: { modelName, options: { minScore: minDetectionScore, maxResolution } },
         [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
       },
     };
-    const response = await this.predict<OcrResponse>({ imagePath }, request);
+    const response = await this.predict<OcrResponse>({ imagePath: imagePath ?? '', assetId }, request);
     return response[ModelTask.OCR];
   }
 

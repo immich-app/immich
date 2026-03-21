@@ -45,7 +45,7 @@ export class OcrService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForOcr(id);
-    if (!asset || !asset.previewFile) {
+    if (!asset) {
       return JobStatus.Failed;
     }
 
@@ -53,7 +53,7 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const ocrResults = await this.machineLearningRepository.ocr(asset.previewFile, machineLearning.ocr);
+    const ocrResults = await this.machineLearningRepository.ocr(id, asset.previewFile, machineLearning.ocr);
     const { ocrDataList, searchText } = this.parseOcrResults(id, ocrResults);
     await this.ocrRepository.upsert(id, ocrDataList, searchText);
 
