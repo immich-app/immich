@@ -107,6 +107,8 @@ class DriftSearchPage extends HookConsumerWidget {
     searchPreFilter() {
       if (preFilter != null) {
         Future.delayed(Duration.zero, () {
+          filter.value = preFilter;
+          textSearchController.clear();
           searchFilter(preFilter);
 
           if (preFilter.location.city != null) {
