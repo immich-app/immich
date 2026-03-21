@@ -2812,4 +2812,45 @@ describe(SharedSpaceService.name, () => {
       expect(result).toEqual(['a1', 'a2']);
     });
   });
+
+  describe('response mapping', () => {
+    it('should return ISO 8601 strings for member joinedAt', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const joinedDate = new Date('2024-06-15T10:30:00.000Z');
+      const space = factory.sharedSpace({ id: spaceId });
+
+      mocks.sharedSpace.getAllByUserId.mockResolvedValue([space]);
+      mocks.sharedSpace.getMembers.mockResolvedValue([
+        makeMemberResult({ spaceId, userId: auth.user.id, role: SharedSpaceRole.Owner, joinedAt: joinedDate }),
+      ]);
+      mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
+      mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ lastViewedAt: null }));
+
+      const result = await sut.getAll(auth);
+
+      expect(result[0].members[0].joinedAt).toBe('2024-06-15T10:30:00.000Z');
+      expect(typeof result[0].members[0].joinedAt).toBe('string');
+    });
+
+    it('should return ISO 8601 strings for space createdAt', async () => {
+      const auth = factory.auth();
+      const createdDate = new Date('2024-01-01T00:00:00.000Z');
+      const space = factory.sharedSpace({ createdAt: createdDate });
+
+      mocks.sharedSpace.getAllByUserId.mockResolvedValue([space]);
+      mocks.sharedSpace.getMembers.mockResolvedValue([
+        makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Owner }),
+      ]);
+      mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
+      mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ lastViewedAt: null }));
+
+      const result = await sut.getAll(auth);
+
+      expect(result[0].createdAt).toBe('2024-01-01T00:00:00.000Z');
+      expect(typeof result[0].createdAt).toBe('string');
+    });
+  });
 });
