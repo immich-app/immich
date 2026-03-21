@@ -37,8 +37,12 @@ CLI_BIN_NAME=$(jq -r '.cli.bin_name' "$CONFIG")
 # Docs
 DOCS_URL=$(jq -r '.docs.url' "$CONFIG")
 
-# Version — derived from latest git tag
-FORK_VERSION=$(git -C "$REPO_ROOT" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+# Version — from FORK_VERSION env var (set by CI) or latest git tag
+if [[ -n "${FORK_VERSION:-}" ]]; then
+  FORK_VERSION="${FORK_VERSION#v}"
+else
+  FORK_VERSION=$(git -C "$REPO_ROOT" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+fi
 
 echo "=== Applying branding: $NAME ==="
 

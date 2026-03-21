@@ -1,6 +1,11 @@
 name: Apply Branding
 description: Replaces Immich branding with Noodle Gallery before build
 
+inputs:
+  version:
+    description: 'Fork version to stamp (e.g. v4.8.0). Falls back to git describe if not set.'
+    required: false
+
 runs:
   using: composite
   steps:
@@ -11,12 +16,10 @@ runs:
           sudo apt-get update && sudo apt-get install -y jq
         fi
 
-    - name: Fetch tags for version detection
-      shell: bash
-      run: git fetch --tags --no-recurse-submodules 2>/dev/null || true
-
     - name: Apply branding overlay
       shell: bash
+      env:
+        FORK_VERSION: ${{ inputs.version }}
       run: ./branding/scripts/apply-branding.sh
 
     - name: Verify branding applied
