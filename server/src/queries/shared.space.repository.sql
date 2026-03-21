@@ -341,7 +341,6 @@ where
 delete from "shared_space_person"
 where
   "spaceId" = $1
-  and "name" = $2
   and "id" not in (
     select
       "personId"
