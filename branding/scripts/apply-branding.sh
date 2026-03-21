@@ -37,6 +37,9 @@ CLI_BIN_NAME=$(jq -r '.cli.bin_name' "$CONFIG")
 # Docs
 DOCS_URL=$(jq -r '.docs.url' "$CONFIG")
 
+# Version — derived from latest git tag
+FORK_VERSION=$(git -C "$REPO_ROOT" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+
 echo "=== Applying branding: $NAME ==="
 
 #
@@ -423,9 +426,39 @@ patch_dockerfiles() {
 }
 
 #
+# --- Versions ---
+#
+patch_versions() {
+  if [[ -z "${FORK_VERSION:-}" ]]; then
+    echo "--- Skipping version patching (no version in config) ---"
+    return
+  fi
+
+  echo "--- Patching versions to $FORK_VERSION ---"
+
+  for pkg in \
+    "$REPO_ROOT/package.json" \
+    "$REPO_ROOT/server/package.json" \
+    "$REPO_ROOT/web/package.json" \
+    "$REPO_ROOT/cli/package.json" \
+    "$REPO_ROOT/open-api/typescript-sdk/package.json" \
+    "$REPO_ROOT/e2e/package.json" \
+    "$REPO_ROOT/i18n/package.json"; do
+    if [[ -f "$pkg" ]]; then
+      local tmp
+      tmp=$(mktemp)
+      jq --arg v "$FORK_VERSION" '.version = $v' "$pkg" > "$tmp"
+      mv "$tmp" "$pkg"
+      echo "  Patched $(realpath --relative-to="$REPO_ROOT" "$pkg")"
+    fi
+  done
+}
+
+#
 # --- Main ---
 #
 main() {
+  patch_versions
   patch_i18n
   patch_web
   patch_help_modal

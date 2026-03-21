@@ -11,6 +11,10 @@ runs:
           sudo apt-get update && sudo apt-get install -y jq
         fi
 
+    - name: Fetch tags for version detection
+      shell: bash
+      run: git fetch --tags --no-recurse-submodules 2>/dev/null || true
+
     - name: Apply branding overlay
       shell: bash
       run: ./branding/scripts/apply-branding.sh
