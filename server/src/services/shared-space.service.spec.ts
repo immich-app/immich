@@ -1518,7 +1518,11 @@ describe(SharedSpaceService.name, () => {
       const space = factory.sharedSpace({ faceRecognitionEnabled: false });
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['a1', 'a2', 'a3']));
-      mocks.sharedSpace.addAssets.mockResolvedValue([]);
+      mocks.sharedSpace.addAssets.mockResolvedValue([
+        { spaceId: 'space-1', assetId: 'a1', addedById: auth.user.id },
+        { spaceId: 'space-1', assetId: 'a2', addedById: auth.user.id },
+        { spaceId: 'space-1', assetId: 'a3', addedById: auth.user.id },
+      ] as any);
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.update.mockResolvedValue(space);
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
@@ -1531,6 +1535,30 @@ describe(SharedSpaceService.name, () => {
         type: SharedSpaceActivityType.AssetAdd,
         data: { count: 3, assetIds: ['a1', 'a2', 'a3'] },
       });
+    });
+
+    it('should log actual inserted count, not requested count', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
+      const existingAssetId = newUuid();
+      const newAssetId = newUuid();
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAssetId, newAssetId]));
+      // Only 1 row returned — the other was a duplicate (ON CONFLICT DO NOTHING)
+      mocks.sharedSpace.addAssets.mockResolvedValue([{ spaceId, assetId: newAssetId, addedById: auth.user.id }] as any);
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.update.mockResolvedValue(space);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.addAssets(auth, spaceId, { assetIds: [existingAssetId, newAssetId] });
+
+      expect(mocks.sharedSpace.logActivity).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ count: 1 }),
+        }),
+      );
     });
 
     it('should queue SharedSpaceFaceMatch jobs when faceRecognitionEnabled is true', async () => {

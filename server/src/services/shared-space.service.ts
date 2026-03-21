@@ -359,7 +359,7 @@ export class SharedSpaceService extends BaseService {
   async addAssets(auth: AuthDto, spaceId: string, dto: SharedSpaceAssetAddDto): Promise<void> {
     await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: dto.assetIds });
-    await this.sharedSpaceRepository.addAssets(
+    const inserted = await this.sharedSpaceRepository.addAssets(
       dto.assetIds.map((assetId) => ({ spaceId, assetId, addedById: auth.user.id })),
     );
 
@@ -369,7 +369,7 @@ export class SharedSpaceService extends BaseService {
       spaceId,
       userId: auth.user.id,
       type: SharedSpaceActivityType.AssetAdd,
-      data: { count: dto.assetIds.length, assetIds: dto.assetIds.slice(0, 4) },
+      data: { count: inserted.length, assetIds: dto.assetIds.slice(0, 4) },
     });
 
     const space = await this.sharedSpaceRepository.getById(spaceId);
