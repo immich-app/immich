@@ -312,16 +312,14 @@
   };
 
   const onSpaceAddAssets = async () => {
-    await refreshSpace();
-    await loadActivities();
+    await Promise.all([refreshSpace(), loadActivities()]);
     timelineInteraction.clearMultiselect();
     viewMode = 'view';
   };
 
   const onSpaceRemoveAssets = async ({ assetIds }: { assetIds: string[]; spaceId: string }) => {
     timelineManager.removeAssets(assetIds);
-    await refreshSpace();
-    await loadActivities();
+    await Promise.all([refreshSpace(), loadActivities()]);
   };
 
   let searchQuery = $state('');
