@@ -17,7 +17,13 @@ import path from 'node:path';
 import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
+import {
+  CLIP_MODEL_INFO,
+  QWEN_CLIP_BASE_MODEL,
+  QWEN_CLIP_DIMENSIONS,
+  endpointTags,
+  serverVersion,
+} from 'src/constants';
 import { extraSyncModels } from 'src/dtos/sync.dto';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -124,7 +130,35 @@ function cleanModelName(modelName: string): string {
   return token.replaceAll(':', '_');
 }
 
+function parseQwenClipModelInfo(modelName: string) {
+  const token = cleanModelName(modelName);
+  if (token === QWEN_CLIP_BASE_MODEL) {
+    return { dimSize: 1536, assetIdOnly: false };
+  }
+
+  const match = token.match(/^qwen3-vl-embedding(?:[-_](\d+))$/);
+  if (!match) {
+    return;
+  }
+
+  const dimSize = Number.parseInt(match[1], 10);
+  if (!QWEN_CLIP_DIMENSIONS.some((dimension) => dimension === dimSize)) {
+    return;
+  }
+
+  return { dimSize, assetIdOnly: true };
+}
+
+export function isAssetIdOnlyClipModel(modelName: string) {
+  return parseQwenClipModelInfo(modelName)?.assetIdOnly ?? false;
+}
+
 export function getCLIPModelInfo(modelName: string) {
+  const qwenModelInfo = parseQwenClipModelInfo(modelName);
+  if (qwenModelInfo) {
+    return { dimSize: qwenModelInfo.dimSize };
+  }
+
   const modelInfo = CLIP_MODEL_INFO[cleanModelName(modelName)];
   if (!modelInfo) {
     throw new Error(`Unknown CLIP model: ${modelName}`);

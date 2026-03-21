@@ -40,6 +40,15 @@ describe(SmartInfoService.name, () => {
       ).not.toThrow();
     });
 
+    it('should allow Qwen CLIP variants with explicit dimensions', () => {
+      expect(() =>
+        sut.onConfigValidate({
+          newConfig: { machineLearning: { clip: { modelName: 'qwen3-vl-embedding-1024' } } } as SystemConfig,
+          oldConfig: {} as SystemConfig,
+        }),
+      ).not.toThrow();
+    });
+
     it('should fail for an unsupported model', () => {
       expect(() =>
         sut.onConfigValidate({
@@ -205,6 +214,7 @@ describe(SmartInfoService.name, () => {
       expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
+        asset.id,
         asset.files[0].path,
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
@@ -242,6 +252,7 @@ describe(SmartInfoService.name, () => {
 
       expect(mocks.database.wait).toHaveBeenCalledWith(512);
       expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
+        asset.id,
         asset.files[0].path,
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
@@ -257,6 +268,12 @@ describe(SmartInfoService.name, () => {
 
     it('should clean the model name', () => {
       expect(getCLIPModelInfo('ViT-B-32::openai')).toEqual({ dimSize: 512 });
+    });
+
+    it('should resolve Qwen CLIP dimensions from the model name', () => {
+      expect(getCLIPModelInfo('qwen3-vl-embedding')).toEqual({ dimSize: 1536 });
+      expect(getCLIPModelInfo('qwen3-vl-embedding-768')).toEqual({ dimSize: 768 });
+      expect(getCLIPModelInfo('org/qwen3-vl-embedding:1152')).toEqual({ dimSize: 1152 });
     });
 
     it('should throw an error if the model is not present', () => {

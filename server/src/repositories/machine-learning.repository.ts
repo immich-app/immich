@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { isAssetIdOnlyClipModel } from 'src/utils/misc';
 
 export interface BoundingBox {
   x1: number;
@@ -27,7 +28,7 @@ export enum ModelType {
   OCR = 'ocr',
 }
 
-export type ModelPayload = { imagePath: string } | { text: string };
+export type ModelPayload = { imagePath: string; assetId?: string } | { text: string };
 
 type ModelOptions = { modelName: string };
 
@@ -206,9 +207,10 @@ export class MachineLearningRepository {
     };
   }
 
-  async encodeImage(imagePath: string, { modelName }: CLIPConfig) {
+  async encodeImage(assetId: string, imagePath: string, { modelName }: CLIPConfig) {
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
-    const response = await this.predict<ClipVisualResponse>({ imagePath }, request);
+    const payload = isAssetIdOnlyClipModel(modelName) ? { imagePath, assetId } : { imagePath };
+    const response = await this.predict<ClipVisualResponse>(payload, request);
     return response[ModelTask.SEARCH];
   }
 
@@ -234,8 +236,12 @@ export class MachineLearningRepository {
     formData.append('entries', JSON.stringify(config));
 
     if ('imagePath' in payload) {
-      const fileBuffer = await readFile(payload.imagePath);
-      formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
+      if (payload.assetId) {
+        formData.append('assetId', payload.assetId);
+      } else {
+        const fileBuffer = await readFile(payload.imagePath);
+        formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
+      }
     } else if ('text' in payload) {
       formData.append('text', payload.text);
     } else {
