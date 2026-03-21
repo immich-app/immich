@@ -30,13 +30,18 @@ const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
 export const withExifInfo = (eb: ExpressionBuilder<DB, 'asset'>) => {
   return eb
     .selectFrom('asset_exif')
-    .selectAll('asset_exif')
+    .select(columns.exif)
     .whereRef('asset_exif.assetId', '=', 'asset.id')
     .as('exifInfo');
 };
 
 const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) => {
-  return eb.selectFrom('user').whereRef('user.id', '=', 'album.ownerId').where('user.deletedAt', 'is', null);
+  return eb
+    .selectFrom('user')
+    .select(columns.user)
+    .whereRef('user.id', '=', 'album.ownerId')
+    .where('user.deletedAt', 'is', null)
+    .as('owner');
 };
 
 const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
@@ -80,10 +85,7 @@ export class SharedLinkRepository {
                   .as('assets'),
               (join) => join.onTrue(),
             )
-            .innerJoinLateral(
-              (eb) => withAlbumOwner(eb).selectAll('user').as('owner'),
-              (join) => join.onTrue(),
-            )
+            .innerJoinLateral(withAlbumOwner, (join) => join.onTrue())
             .select((eb) =>
               eb.fn
                 .coalesce(
@@ -119,29 +121,7 @@ export class SharedLinkRepository {
       .leftJoinLateral(
         (eb) =>
           withSharedLinkAlbum(eb)
-            .innerJoinLateral(
-              (eb) =>
-                withAlbumOwner(eb)
-                  .select([
-                    'user.id',
-                    'user.email',
-                    'user.createdAt',
-                    'user.profileImagePath',
-                    'user.isAdmin',
-                    'user.shouldChangePassword',
-                    'user.deletedAt',
-                    'user.oauthId',
-                    'user.updatedAt',
-                    'user.storageLabel',
-                    'user.name',
-                    'user.quotaSizeInBytes',
-                    'user.quotaUsageInBytes',
-                    'user.status',
-                    'user.profileChangedAt',
-                  ])
-                  .as('owner'),
-              (join) => join.onTrue(),
-            )
+            .innerJoinLateral(withAlbumOwner, (join) => join.onTrue())
             .select((eb) => eb.fn.toJson('owner').as('owner'))
             .as('album'),
         (join) => join.onTrue(),

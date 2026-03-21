@@ -16,7 +16,36 @@ select
           inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
           inner join lateral (
             select
-              "asset_exif".*
+              "asset_exif"."assetId",
+              "asset_exif"."autoStackId",
+              "asset_exif"."bitsPerSample",
+              "asset_exif"."city",
+              "asset_exif"."colorspace",
+              "asset_exif"."country",
+              "asset_exif"."dateTimeOriginal",
+              "asset_exif"."description",
+              "asset_exif"."exifImageHeight",
+              "asset_exif"."exifImageWidth",
+              "asset_exif"."exposureTime",
+              "asset_exif"."fileSizeInByte",
+              "asset_exif"."fNumber",
+              "asset_exif"."focalLength",
+              "asset_exif"."fps",
+              "asset_exif"."iso",
+              "asset_exif"."latitude",
+              "asset_exif"."lensModel",
+              "asset_exif"."livePhotoCID",
+              "asset_exif"."longitude",
+              "asset_exif"."make",
+              "asset_exif"."model",
+              "asset_exif"."modifyDate",
+              "asset_exif"."orientation",
+              "asset_exif"."profileDescription",
+              "asset_exif"."projectionType",
+              "asset_exif"."rating",
+              "asset_exif"."state",
+              "asset_exif"."tags",
+              "asset_exif"."timeZone"
             from
               "asset_exif"
             where
@@ -58,7 +87,36 @@ from
           "asset"
           inner join lateral (
             select
-              "asset_exif".*
+              "asset_exif"."assetId",
+              "asset_exif"."autoStackId",
+              "asset_exif"."bitsPerSample",
+              "asset_exif"."city",
+              "asset_exif"."colorspace",
+              "asset_exif"."country",
+              "asset_exif"."dateTimeOriginal",
+              "asset_exif"."description",
+              "asset_exif"."exifImageHeight",
+              "asset_exif"."exifImageWidth",
+              "asset_exif"."exposureTime",
+              "asset_exif"."fileSizeInByte",
+              "asset_exif"."fNumber",
+              "asset_exif"."focalLength",
+              "asset_exif"."fps",
+              "asset_exif"."iso",
+              "asset_exif"."latitude",
+              "asset_exif"."lensModel",
+              "asset_exif"."livePhotoCID",
+              "asset_exif"."longitude",
+              "asset_exif"."make",
+              "asset_exif"."model",
+              "asset_exif"."modifyDate",
+              "asset_exif"."orientation",
+              "asset_exif"."profileDescription",
+              "asset_exif"."projectionType",
+              "asset_exif"."rating",
+              "asset_exif"."state",
+              "asset_exif"."tags",
+              "asset_exif"."timeZone"
             from
               "asset_exif"
             where
@@ -72,7 +130,12 @@ from
       ) as "assets" on true
       inner join lateral (
         select
-          "user".*
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt"
         from
           "user"
         where
@@ -129,21 +192,12 @@ from
       "album"
       inner join lateral (
         select
-          "user"."id",
-          "user"."email",
-          "user"."createdAt",
-          "user"."profileImagePath",
-          "user"."isAdmin",
-          "user"."shouldChangePassword",
-          "user"."deletedAt",
-          "user"."oauthId",
-          "user"."updatedAt",
-          "user"."storageLabel",
-          "user"."name",
-          "user"."quotaSizeInBytes",
-          "user"."quotaUsageInBytes",
-          "user"."status",
-          "user"."profileChangedAt"
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt"
         from
           "user"
         where
@@ -260,7 +314,36 @@ from
       "asset"
       inner join lateral (
         select
-          "asset_exif".*
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
         from
           "asset_exif"
         where
