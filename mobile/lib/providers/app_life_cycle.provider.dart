@@ -240,7 +240,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
       } else {
-        _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
+        // Keep uploads running when the app is paused.
       }
 
       _ref.read(websocketProvider.notifier).disconnect();
