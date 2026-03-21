@@ -59,6 +59,25 @@ describe(OcrService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.Ocr, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForOcrJob).toHaveBeenCalledWith(true);
     });
+
+    it('should skip for external OCR model', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          ocr: {
+            modelName: 'other',
+            enabled: true,
+            minDetectionScore: 0.5,
+            minRecognitionScore: 0.8,
+            maxResolution: 736,
+          },
+        },
+      });
+
+      await expect(sut.handleQueueOcr({ force: false })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.assetJob.streamForOcrJob).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleOcr', () => {
@@ -81,7 +100,7 @@ describe(OcrService.name, () => {
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
     });
 
-    it('should process assets without a resize path for asset-id-only OCR models', async () => {
+    it('should skip for external OCR model', async () => {
       const asset = AssetFactory.create();
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: {
@@ -96,18 +115,10 @@ describe(OcrService.name, () => {
         },
       });
       mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
-      mockOcrResult();
 
-      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Success);
-
-      expect(mocks.machineLearning.ocr).toHaveBeenCalledWith(
-        asset.id,
-        null,
-        expect.objectContaining({
-          modelName: 'other',
-        }),
-      );
-      expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, [], '');
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Skipped);
+      expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
+      expect(mocks.ocr.upsert).not.toHaveBeenCalled();
     });
 
     it('should save the returned objects', async () => {

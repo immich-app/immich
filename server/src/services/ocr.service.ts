@@ -17,6 +17,10 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    if (isAssetIdOnlyOcrModel(machineLearning.ocr.modelName)) {
+      return JobStatus.Skipped;
+    }
+
     if (force) {
       await this.ocrRepository.deleteAll();
     }
@@ -44,9 +48,12 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    if (isAssetIdOnlyOcrModel(machineLearning.ocr.modelName)) {
+      return JobStatus.Skipped;
+    }
+
     const asset = await this.assetJobRepository.getForOcr(id);
-    const assetIdOnlyModel = isAssetIdOnlyOcrModel(machineLearning.ocr.modelName);
-    if (!asset || (!asset.previewFile && !assetIdOnlyModel)) {
+    if (!asset || !asset.previewFile) {
       return JobStatus.Failed;
     }
 

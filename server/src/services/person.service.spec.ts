@@ -536,12 +536,12 @@ describe(PersonService.name, () => {
       });
       mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
 
-      await sut.handleQueueDetectFaces({ force: true });
+      await expect(sut.handleQueueDetectFaces({ force: true })).resolves.toBe(JobStatus.Skipped);
 
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
       expect(mocks.person.vacuum).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetDetectFaces, data: { id: asset.id } }]);
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
     it('should delete existing people and faces if forced', async () => {
@@ -833,7 +833,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
     });
 
-    it('should detect faces by asset id for asset-id-only face models without a resize path', async () => {
+    it('should skip detect faces for external face model', async () => {
       const asset = AssetFactory.from().exif().build();
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: {
@@ -847,16 +847,11 @@ describe(PersonService.name, () => {
           },
         },
       });
-      mocks.machineLearning.detectFaces.mockResolvedValue({ imageHeight: 500, imageWidth: 400, faces: [] });
       mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
 
-      await sut.handleDetectFaces({ id: asset.id });
+      await expect(sut.handleDetectFaces({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
 
-      expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
-        asset.id,
-        null,
-        expect.objectContaining({ minScore: 0.7, modelName: 'other' }),
-      );
+      expect(mocks.machineLearning.detectFaces).not.toHaveBeenCalled();
       expect(mocks.person.refreshFaces).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });

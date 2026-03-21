@@ -274,8 +274,11 @@ export class PersonService extends BaseService {
     }
 
     const assetIdOnlyModel = isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName);
+    if (assetIdOnlyModel) {
+      return JobStatus.Skipped;
+    }
 
-    if (force && !assetIdOnlyModel) {
+    if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: true });
@@ -294,7 +297,7 @@ export class PersonService extends BaseService {
 
     await this.jobRepository.queueAll(jobs);
 
-    if (force === undefined && !assetIdOnlyModel) {
+    if (force === undefined) {
       await this.jobRepository.queue({ name: JobName.PersonCleanup });
     }
 
@@ -308,10 +311,14 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    const assetIdOnlyModel = isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName);
+    if (assetIdOnlyModel) {
+      return JobStatus.Skipped;
+    }
+
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
     const previewFile = asset?.files[0];
-    const assetIdOnlyModel = isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName);
-    if (!asset || (!assetIdOnlyModel && (asset.files.length !== 1 || !previewFile))) {
+    if (!asset || asset.files.length !== 1 || !previewFile) {
       return JobStatus.Failed;
     }
 
@@ -325,11 +332,6 @@ export class PersonService extends BaseService {
       machineLearning.facialRecognition,
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile?.path ?? asset.id}`);
-
-    if (assetIdOnlyModel) {
-      await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
-      return JobStatus.Success;
-    }
 
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];
