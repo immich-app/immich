@@ -273,7 +273,9 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    if (force) {
+    const assetIdOnlyModel = isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName);
+
+    if (force && !assetIdOnlyModel) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: true });
@@ -292,7 +294,7 @@ export class PersonService extends BaseService {
 
     await this.jobRepository.queueAll(jobs);
 
-    if (force === undefined) {
+    if (force === undefined && !assetIdOnlyModel) {
       await this.jobRepository.queue({ name: JobName.PersonCleanup });
     }
 
@@ -309,7 +311,7 @@ export class PersonService extends BaseService {
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
     const previewFile = asset?.files[0];
     const assetIdOnlyModel = isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName);
-    if (!asset || asset.files.length !== 1 || (!previewFile && !assetIdOnlyModel)) {
+    if (!asset || (!assetIdOnlyModel && (asset.files.length !== 1 || !previewFile))) {
       return JobStatus.Failed;
     }
 
@@ -323,6 +325,11 @@ export class PersonService extends BaseService {
       machineLearning.facialRecognition,
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile?.path ?? asset.id}`);
+
+    if (assetIdOnlyModel) {
+      await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
+      return JobStatus.Success;
+    }
 
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];
@@ -409,6 +416,10 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    if (isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName)) {
+      return JobStatus.Skipped;
+    }
+
     await this.jobRepository.waitForQueueCompletion(QueueName.ThumbnailGeneration, QueueName.FaceDetection);
 
     if (nightly) {
@@ -464,6 +475,10 @@ export class PersonService extends BaseService {
   async handleRecognizeFaces({ id, deferred }: JobOf<JobName.FacialRecognition>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
+      return JobStatus.Skipped;
+    }
+
+    if (isAssetIdOnlyFaceModel(machineLearning.facialRecognition.modelName)) {
       return JobStatus.Skipped;
     }
 

@@ -87,7 +87,7 @@ describe(OcrService.name, () => {
         machineLearning: {
           enabled: true,
           ocr: {
-            modelName: 'PP-OCRv5_mobile__asset_id',
+            modelName: 'other',
             enabled: true,
             minDetectionScore: 0.5,
             minRecognitionScore: 0.8,
@@ -104,7 +104,7 @@ describe(OcrService.name, () => {
         asset.id,
         null,
         expect.objectContaining({
-          modelName: 'PP-OCRv5_mobile__asset_id',
+          modelName: 'other',
         }),
       );
       expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, [], '');

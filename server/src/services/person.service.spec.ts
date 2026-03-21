@@ -520,6 +520,30 @@ describe(PersonService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.PersonCleanup });
     });
 
+    it('should not cleanup or queue person aggregation for external face model', async () => {
+      const asset = AssetFactory.create();
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          facialRecognition: {
+            enabled: true,
+            modelName: 'other',
+            minScore: 0.7,
+            maxDistance: 0.5,
+            minFaces: 3,
+          },
+        },
+      });
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
+
+      await sut.handleQueueDetectFaces({ force: true });
+
+      expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetDetectFaces, data: { id: asset.id } }]);
+    });
+
     it('should delete existing people and faces if forced', async () => {
       const asset = AssetFactory.create();
       const face = AssetFaceFactory.from().person().build();
@@ -577,6 +601,25 @@ describe(PersonService.name, () => {
       await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.Skipped);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
+    });
+
+    it('should skip for external face model', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          facialRecognition: {
+            enabled: true,
+            modelName: 'other',
+            minScore: 0.7,
+            maxDistance: 0.5,
+            minFaces: 3,
+          },
+        },
+      });
+
+      await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.person.getAllFaces).not.toHaveBeenCalled();
     });
 
     it('should queue missing assets', async () => {
@@ -797,7 +840,7 @@ describe(PersonService.name, () => {
           enabled: true,
           facialRecognition: {
             enabled: true,
-            modelName: 'buffalo_l__asset_id',
+            modelName: 'other',
             minScore: 0.7,
             maxDistance: 0.5,
             minFaces: 3,
@@ -812,8 +855,10 @@ describe(PersonService.name, () => {
       expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
         asset.id,
         null,
-        expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l__asset_id' }),
+        expect.objectContaining({ minScore: 0.7, modelName: 'other' }),
       );
+      expect(mocks.person.refreshFaces).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
     it('should delete an existing face not among the new detected faces', async () => {
@@ -899,6 +944,24 @@ describe(PersonService.name, () => {
   });
 
   describe('handleRecognizeFaces', () => {
+    it('should skip for external face model', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          facialRecognition: {
+            enabled: true,
+            modelName: 'other',
+            minScore: 0.7,
+            maxDistance: 0.5,
+            minFaces: 3,
+          },
+        },
+      });
+
+      expect(await sut.handleRecognizeFaces({ id: 'unknown-face' })).toBe(JobStatus.Skipped);
+      expect(mocks.person.getFaceForFacialRecognitionJob).not.toHaveBeenCalled();
+    });
+
     it('should fail if face does not exist', async () => {
       expect(await sut.handleRecognizeFaces({ id: 'unknown-face' })).toBe(JobStatus.Failed);
 
