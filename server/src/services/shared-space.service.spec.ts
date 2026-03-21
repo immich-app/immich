@@ -1616,7 +1616,7 @@ describe(SharedSpaceService.name, () => {
 
     it('should throw when space is not found after role check', async () => {
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
-      mocks.sharedSpace.getById.mockResolvedValue(undefined);
+      mocks.sharedSpace.getById.mockResolvedValue(void 0);
 
       await expect(sut.removeAssets(factory.auth(), newUuid(), { assetIds: [newUuid()] })).rejects.toThrow(
         'Space not found',
@@ -2540,7 +2540,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.updatePerson.mockResolvedValue(person);
       mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(5);
       mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(3);
-      mocks.sharedSpace.getAlias.mockResolvedValue(null);
+      mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
 
       await sut.updateSpacePerson(auth, spaceId, personId, { name: 'New Name' });
@@ -2669,7 +2669,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getPersonById
         .mockResolvedValueOnce(target)
         .mockResolvedValueOnce(validSource)
-        .mockResolvedValueOnce(undefined);
+        .mockResolvedValueOnce(void 0);
 
       await expect(
         sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [validSourceId, invalidSourceId] }),
@@ -2688,13 +2688,11 @@ describe(SharedSpaceService.name, () => {
       const wrongSpaceSource = factory.sharedSpacePerson({ id: sourceId, spaceId: otherSpaceId });
 
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
-      mocks.sharedSpace.getPersonById
-        .mockResolvedValueOnce(target)
-        .mockResolvedValueOnce(wrongSpaceSource);
+      mocks.sharedSpace.getPersonById.mockResolvedValueOnce(target).mockResolvedValueOnce(wrongSpaceSource);
 
-      await expect(
-        sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [sourceId] }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(sut.mergeSpacePeople(factory.auth(), spaceId, targetId, { ids: [sourceId] })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should log activity when merging people', async () => {
@@ -2705,9 +2703,7 @@ describe(SharedSpaceService.name, () => {
       const source = factory.sharedSpacePerson({ id: sourceId, spaceId });
 
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
-      mocks.sharedSpace.getPersonById
-        .mockResolvedValueOnce(target)
-        .mockResolvedValueOnce(source);
+      mocks.sharedSpace.getPersonById.mockResolvedValueOnce(target).mockResolvedValueOnce(source);
       mocks.sharedSpace.reassignPersonFaces.mockResolvedValue(void 0);
       mocks.sharedSpace.deletePerson.mockResolvedValue(void 0);
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
@@ -2830,8 +2826,8 @@ describe(SharedSpaceService.name, () => {
 
       const result = await sut.getAll(auth);
 
-      expect(result[0].members[0].joinedAt).toBe('2024-06-15T10:30:00.000Z');
-      expect(typeof result[0].members[0].joinedAt).toBe('string');
+      expect(result[0]!.members![0]!.joinedAt).toBe('2024-06-15T10:30:00.000Z');
+      expect(typeof result[0]!.members![0]!.joinedAt).toBe('string');
     });
 
     it('should return ISO 8601 strings for space createdAt', async () => {
@@ -2849,8 +2845,8 @@ describe(SharedSpaceService.name, () => {
 
       const result = await sut.getAll(auth);
 
-      expect(result[0].createdAt).toBe('2024-01-01T00:00:00.000Z');
-      expect(typeof result[0].createdAt).toBe('string');
+      expect(result[0]!.createdAt).toBe('2024-01-01T00:00:00.000Z');
+      expect(typeof result[0]!.createdAt).toBe('string');
     });
   });
 });
