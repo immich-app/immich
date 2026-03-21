@@ -12,6 +12,7 @@
   } from '@immich/sdk';
   import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiCheck } from '@mdi/js';
+  import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -30,7 +31,7 @@
 
   let mergeTargetId = $state<string | null>(null);
 
-  const currentMember = $derived(members.find((m) => m.userId === space.createdById));
+  const currentMember = $derived(members.find((m) => m.userId === $user.id));
   const isEditor = $derived(currentMember?.role === Role.Owner || currentMember?.role === Role.Editor);
 
   const displayName = $derived(person.alias || person.name || '');
