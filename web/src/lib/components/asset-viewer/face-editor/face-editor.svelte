@@ -229,7 +229,7 @@
   $effect(() => {
     const rect = faceRect;
     const cvs = canvas;
-    if (rect) {
+    if (rect && cvs) {
       rect.on('moving', positionFaceSelector);
       rect.on('scaling', positionFaceSelector);
       cvs.on('object:modified', focusSearchInput);
