@@ -10,7 +10,7 @@
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -27,6 +27,7 @@
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
   let scrollableListEl: HTMLDivElement | undefined = $state();
+  let searchContainerEl: HTMLDivElement | undefined = $state();
   let page = $state(1);
   let candidates = $state<PersonResponseDto[]>([]);
 
@@ -78,9 +79,15 @@
     setDefaultFaceRectanglePosition(faceRect);
   };
 
+  const focusSearchInput = () => {
+    searchContainerEl?.querySelector('input')?.focus();
+  };
+
   onMount(async () => {
     setupCanvas();
     await getPeople();
+    await tick();
+    focusSearchInput();
   });
 
   const imageContentMetrics = $derived.by(() => {
@@ -221,12 +228,15 @@
 
   $effect(() => {
     const rect = faceRect;
+    const cvs = canvas;
     if (rect) {
       rect.on('moving', positionFaceSelector);
       rect.on('scaling', positionFaceSelector);
+      cvs.on('object:modified', focusSearchInput);
       return () => {
         rect.off('moving', positionFaceSelector);
         rect.off('scaling', positionFaceSelector);
+        cvs.off('object:modified', focusSearchInput);
       };
     }
   });
@@ -309,7 +319,7 @@
   >
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
-    <div class="my-3 relative">
+    <div class="my-3 relative" bind:this={searchContainerEl}>
       <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
     </div>
 
