@@ -338,6 +338,10 @@ export class StorageCore {
     return StorageCore.getRelativeNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.id}.jpeg`);
   }
 
+  static getRelativeProfileImagePath(userId: string, filename: string): string {
+    return StorageCore.getRelativeNestedPath(StorageFolder.Profile, userId, filename);
+  }
+
   static getNestedFolder(folder: StorageFolder, ownerId: string, filename: string): string {
     return join(StorageCore.getFolderLocation(folder, ownerId), filename.slice(0, 2), filename.slice(2, 4));
   }
