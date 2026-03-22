@@ -84,10 +84,21 @@ make sql                   # Sync SQL query documentation from decorated reposit
 
 ```bash
 pnpm migrations:generate   # Auto-generate migration from schema changes
-pnpm migrations:run        # Apply pending migrations
+pnpm migrations:run        # Apply pending migrations (fresh DB only, see note below)
 pnpm migrations:revert     # Rollback last migration
 pnpm schema:reset          # Drop and recreate schema (destructive)
 ```
+
+**Fork migration layout:** Gallery maintains two migration directories:
+
+- `server/src/schema/migrations/` — upstream Immich migrations (replaced during rebases)
+- `server/src/schema/migrations-gallery/` — fork-only migrations (never touched by rebases)
+
+At runtime, `CompositeMigrationProvider` merges both directories with `allowUnorderedMigrations: true` so interleaved timestamps work correctly. The `postbuild` script copies gallery migrations into `dist/schema/migrations/` so `sql-tools` CLI commands work.
+
+**Important:** `pnpm migrations:run` uses `sql-tools` which hardcodes `allowUnorderedMigrations: false`. This works on fresh databases (CI, initial setup) but will fail on an existing database that already has upstream migrations applied. For existing databases, the server handles migrations automatically on startup via `DatabaseRepository.runMigrations()`.
+
+**Adding new fork migrations:** Create new migration files in `server/src/schema/migrations-gallery/` with a timestamp that doesn't collide with existing migrations. Use round timestamps (e.g., `1775000000000`) for easy identification.
 
 ## Architecture
 
