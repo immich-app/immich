@@ -1,9 +1,8 @@
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
+import { Kysely, Migrator, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import semver from 'semver';
 import {
@@ -19,6 +18,7 @@ import {
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { CompositeMigrationProvider } from 'src/schema/composite-migration-provider';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
 import { DB } from 'src/schema';
@@ -529,14 +529,14 @@ export class DatabaseRepository {
     return new Migrator({
       db: this.db,
       migrationLockTableName: 'kysely_migrations_lock',
-      allowUnorderedMigrations: this.configRepository.isDev(),
+      allowUnorderedMigrations: true,
       migrationTableName: 'kysely_migrations',
-      provider: new FileMigrationProvider({
-        fs: { readdir },
-        path: { join },
+      provider: new CompositeMigrationProvider([
         // eslint-disable-next-line unicorn/prefer-module
-        migrationFolder: join(__dirname, '..', 'schema/migrations'),
-      }),
+        join(__dirname, '..', 'schema/migrations'),
+        // eslint-disable-next-line unicorn/prefer-module
+        join(__dirname, '..', 'schema/migrations-gallery'),
+      ]),
     });
   }
 }
