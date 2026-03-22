@@ -17,6 +17,26 @@
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
+
+  const facialRecognitionModelOptions = [
+    { value: 'antelopev2', text: 'antelopev2' },
+    { value: 'buffalo_l', text: 'buffalo_l' },
+    { value: 'buffalo_m', text: 'buffalo_m' },
+    { value: 'buffalo_s', text: 'buffalo_s' },
+    { value: 'other', text: 'other (external service writes database)' },
+  ];
+
+  const ocrModelOptions = [
+    { text: 'PP-OCRv5_server (Chinese, Japanese and English)', value: 'PP-OCRv5_server' },
+    { text: 'PP-OCRv5_mobile (Chinese, Japanese and English)', value: 'PP-OCRv5_mobile' },
+    { text: 'PP-OCRv5_mobile (English-only)', value: 'EN__PP-OCRv5_mobile' },
+    { text: 'PP-OCRv5_mobile (Greek and English)', value: 'EL__PP-OCRv5_mobile' },
+    { text: 'PP-OCRv5_mobile (Korean and English)', value: 'KOREAN__PP-OCRv5_mobile' },
+    { text: 'PP-OCRv5_mobile (Latin script languages)', value: 'LATIN__PP-OCRv5_mobile' },
+    { text: 'PP-OCRv5_mobile (Russian, Belarusian, Ukrainian and English)', value: 'ESLAV__PP-OCRv5_mobile' },
+    { text: 'PP-OCRv5_mobile (Thai and English)', value: 'TH__PP-OCRv5_mobile' },
+    { text: 'other (external service writes database)', value: 'other' },
+  ];
 </script>
 
 <div class="mt-2">
@@ -140,6 +160,9 @@
                   {/snippet}
                 </FormatMessage>
               </p>
+              <p class="immich-form-label pb-2 text-sm">
+                This fork supports generic numeric CLIP dimensions, for example `256`, `512`, `768`, `1024`, `1536`, `2048`, and `2560` (default).
+              </p>
             {/snippet}
           </SettingInputField>
         </div>
@@ -195,12 +218,7 @@
             desc={$t('admin.machine_learning_facial_recognition_model_description')}
             name="facial-recognition-model"
             bind:value={configToEdit.machineLearning.facialRecognition.modelName}
-            options={[
-              { value: 'antelopev2', text: 'antelopev2' },
-              { value: 'buffalo_l', text: 'buffalo_l' },
-              { value: 'buffalo_m', text: 'buffalo_m' },
-              { value: 'buffalo_s', text: 'buffalo_s' },
-            ]}
+            options={facialRecognitionModelOptions}
             disabled={disabled ||
               !configToEdit.machineLearning.enabled ||
               !configToEdit.machineLearning.facialRecognition.enabled}
@@ -274,16 +292,7 @@
             desc={$t('admin.machine_learning_ocr_model_description')}
             name="ocr-model"
             bind:value={configToEdit.machineLearning.ocr.modelName}
-            options={[
-              { text: 'PP-OCRv5_server (Chinese, Japanese and English)', value: 'PP-OCRv5_server' },
-              { text: 'PP-OCRv5_mobile (Chinese, Japanese and English)', value: 'PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (English-only)', value: 'EN__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Greek and English)', value: 'EL__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Korean and English)', value: 'KOREAN__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Latin script languages)', value: 'LATIN__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Russian, Belarusian, Ukrainian and English)', value: 'ESLAV__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Thai and English)', value: 'TH__PP-OCRv5_mobile' },
-            ]}
+            options={ocrModelOptions}
             disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.ocr.enabled}
             isEdited={configToEdit.machineLearning.ocr.modelName !== config.machineLearning.ocr.modelName}
           />

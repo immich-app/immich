@@ -18,7 +18,6 @@ import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import {
-  ASSET_ID_ONLY_CLIP_MODELS,
   ASSET_ID_ONLY_FACE_MODELS,
   ASSET_ID_ONLY_OCR_MODELS,
   CLIP_MODEL_INFO,
@@ -131,8 +130,22 @@ function cleanModelName(modelName: string): string {
   return token.replaceAll(':', '_');
 }
 
+function getNumericClipDimSize(modelName: string): number | undefined {
+  const cleanedModelName = cleanModelName(modelName);
+  if (!/^\d+$/.test(cleanedModelName)) {
+    return undefined;
+  }
+
+  const dimSize = Number.parseInt(cleanedModelName, 10);
+  if (!Number.isSafeInteger(dimSize) || dimSize <= 0) {
+    return undefined;
+  }
+
+  return dimSize;
+}
+
 export function isAssetIdOnlyClipModel(modelName: string) {
-  return ASSET_ID_ONLY_CLIP_MODELS.includes(cleanModelName(modelName) as (typeof ASSET_ID_ONLY_CLIP_MODELS)[number]);
+  return getNumericClipDimSize(modelName) !== undefined;
 }
 
 export function isAssetIdOnlyFaceModel(modelName: string) {
@@ -144,6 +157,11 @@ export function isAssetIdOnlyOcrModel(modelName: string) {
 }
 
 export function getCLIPModelInfo(modelName: string) {
+  const numericDimSize = getNumericClipDimSize(modelName);
+  if (numericDimSize) {
+    return { dimSize: numericDimSize };
+  }
+
   const modelInfo = CLIP_MODEL_INFO[cleanModelName(modelName)];
   if (modelInfo) {
     return modelInfo;

@@ -271,9 +271,13 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should resolve numeric CLIP model names', () => {
+      expect(getCLIPModelInfo('256')).toEqual({ dimSize: 256 });
       expect(getCLIPModelInfo('768')).toEqual({ dimSize: 768 });
       expect(getCLIPModelInfo('org/1152')).toEqual({ dimSize: 1152 });
       expect(getCLIPModelInfo('1536')).toEqual({ dimSize: 1536 });
+      expect(getCLIPModelInfo('2048')).toEqual({ dimSize: 2048 });
+      expect(getCLIPModelInfo('2560')).toEqual({ dimSize: 2560 });
+      expect(getCLIPModelInfo('org/4096')).toEqual({ dimSize: 4096 });
     });
 
     it('should throw an error if the model is not present', () => {
@@ -283,8 +287,12 @@ describe(SmartInfoService.name, () => {
 
   describe('isAssetIdOnlyClipModel', () => {
     it('should detect numeric asset-id-only models', () => {
+      expect(isAssetIdOnlyClipModel('256')).toBe(true);
       expect(isAssetIdOnlyClipModel('768')).toBe(true);
       expect(isAssetIdOnlyClipModel('org/1152')).toBe(true);
+      expect(isAssetIdOnlyClipModel('2048')).toBe(true);
+      expect(isAssetIdOnlyClipModel('2560')).toBe(true);
+      expect(isAssetIdOnlyClipModel('org/4096')).toBe(true);
     });
 
     it('should not flag built-in CLIP models', () => {

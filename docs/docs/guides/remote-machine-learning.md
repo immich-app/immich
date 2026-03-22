@@ -3,6 +3,10 @@
 To alleviate [performance issues on low-memory systems](/FAQ.mdx#why-is-immich-slow-on-low-memory-systems-like-the-raspberry-pi) like the Raspberry Pi, you may also host Immich's machine learning container on a more powerful system, such as your laptop or desktop computer. The server container will send requests containing the image preview to the remote machine learning container for processing. The machine learning container does not persist this data or associate it with a particular user.
 
 :::info
+If you are using this fork's custom passive external ML flow, where OCR and facial recognition are written directly to PostgreSQL by your own service, see [External ML Database Mode](/guides/external-ml-database-mode). That mode is different from the standard remote ML container setup documented on this page.
+:::
+
+:::info
 Smart Search and Face Detection will use this feature, but Facial Recognition will not. This is because Facial Recognition uses the _outputs_ of these models that have already been saved to the database. As such, its processing is between the server container and the database.
 :::
 
