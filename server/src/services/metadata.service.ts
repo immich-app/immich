@@ -467,7 +467,7 @@ export class MetadataService extends BaseService {
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
-        TagsList: tags?.length ? tags : undefined,
+        TagsList: tags,
       },
       _.isUndefined,
     );

@@ -216,7 +216,7 @@ async function fileUploader({
       uploadAssetsStore.track('success');
     }
 
-    if (albumId) {
+    if (albumId && !authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_adding_to_album') });
       await addAssetsToAlbums([albumId], [responseData.id], { notify: false });
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_added_to_album') });

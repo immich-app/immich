@@ -55,6 +55,13 @@ export class VersionService extends BaseService {
     return this.versionRepository.getAll();
   }
 
+  @OnEvent({ name: 'ConfigUpdate' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
+    if (!oldConfig.newVersionCheck.enabled && newConfig.newVersionCheck.enabled) {
+      await this.handleQueueVersionCheck();
+    }
+  }
+
   async handleQueueVersionCheck() {
     await this.jobRepository.queue({ name: JobName.VersionCheck, data: {} });
   }

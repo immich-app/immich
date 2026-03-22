@@ -1,12 +1,15 @@
 import { Kysely } from 'kysely';
+import { randomBytes } from 'node:crypto';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
@@ -22,7 +25,7 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(AssetMediaService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, AssetRepository, UserRepository],
+    real: [AccessRepository, AlbumRepository, AssetRepository, SharedLinkRepository, UserRepository],
     mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository],
   });
 };
@@ -44,7 +47,6 @@ describe(AssetService.name, () => {
       const { asset } = await ctx.newAsset({ ownerId: user.id });
       await ctx.newExif({ assetId: asset.id, fileSizeInByte: 12_345 });
       const auth = factory.auth({ user: { id: user.id } });
-      const file = mediumFactory.uploadFile();
 
       await expect(
         sut.uploadAsset(
@@ -56,7 +58,7 @@ describe(AssetService.name, () => {
             fileCreatedAt: new Date(),
             assetData: Buffer.from('some data'),
           },
-          file,
+          mediumFactory.uploadFile(),
         ),
       ).resolves.toEqual({
         id: expect.any(String),
@@ -98,6 +100,168 @@ describe(AssetService.name, () => {
         id: expect.any(String),
         status: AssetMediaStatus.CREATED,
       });
+    });
+
+    it('should add to a shared link', async () => {
+      const { sut, ctx } = setup();
+
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      ctx.getMock(StorageRepository).utimes.mockResolvedValue();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Individual,
+        description: 'Shared link description',
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: true,
+      });
+
+      const auth = factory.auth({ user: { id: user.id }, sharedLink });
+      const file = mediumFactory.uploadFile();
+      const uploadDto = {
+        deviceId: 'some-id',
+        deviceAssetId: 'some-id',
+        fileModifiedAt: new Date(),
+        fileCreatedAt: new Date(),
+        assetData: Buffer.from('some data'),
+      };
+
+      const response = await sut.uploadAsset(auth, uploadDto, file);
+      expect(response).toEqual({ id: expect.any(String), status: AssetMediaStatus.CREATED });
+
+      const update = await sharedLinkRepo.get(user.id, sharedLink.id);
+      const assets = update!.assets;
+      expect(assets).toHaveLength(1);
+      expect(assets[0]).toMatchObject({ id: response.id });
+    });
+
+    it('should handle adding a duplicate asset to a shared link', async () => {
+      const { sut, ctx } = setup();
+
+      ctx.getMock(StorageRepository).utimes.mockResolvedValue();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte: 12_345 });
+
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Individual,
+        description: 'Shared link description',
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: true,
+        assetIds: [asset.id],
+      });
+
+      const auth = factory.auth({ user: { id: user.id }, sharedLink });
+      const uploadDto = {
+        deviceId: 'some-id',
+        deviceAssetId: 'some-id',
+        fileModifiedAt: new Date(),
+        fileCreatedAt: new Date(),
+        assetData: Buffer.from('some data'),
+      };
+
+      const response = await sut.uploadAsset(auth, uploadDto, mediumFactory.uploadFile({ checksum: asset.checksum }));
+      expect(response).toEqual({ id: expect.any(String), status: AssetMediaStatus.DUPLICATE });
+
+      const update = await sharedLinkRepo.get(user.id, sharedLink.id);
+      const assets = update!.assets;
+      expect(assets).toHaveLength(1);
+      expect(assets[0]).toMatchObject({ id: response.id });
+    });
+
+    it('should add to an album shared link', async () => {
+      const { sut, ctx } = setup();
+
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      ctx.getMock(StorageRepository).utimes.mockResolvedValue();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Album,
+        albumId: album.id,
+        description: 'Shared link description',
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: true,
+      });
+
+      const auth = factory.auth({ user: { id: user.id }, sharedLink });
+      const uploadDto = {
+        deviceId: 'some-id',
+        deviceAssetId: 'some-id',
+        fileModifiedAt: new Date(),
+        fileCreatedAt: new Date(),
+        assetData: Buffer.from('some data'),
+      };
+
+      const response = await sut.uploadAsset(auth, uploadDto, mediumFactory.uploadFile());
+      expect(response).toEqual({ id: expect.any(String), status: AssetMediaStatus.CREATED });
+
+      const result = await ctx.get(AlbumRepository).getAssetIds(album.id, [response.id]);
+      const assets = [...result];
+      expect(assets).toHaveLength(1);
+      expect(assets[0]).toEqual(response.id);
+    });
+
+    it('should handle adding a duplicate asset to an album shared link', async () => {
+      const { sut, ctx } = setup();
+
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      ctx.getMock(StorageRepository).utimes.mockResolvedValue();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [asset.id]);
+      // await ctx.newExif({ assetId: asset.id, fileSizeInByte: 12_345 });
+
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Album,
+        albumId: album.id,
+        description: 'Shared link description',
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: true,
+      });
+
+      const auth = factory.auth({ user: { id: user.id }, sharedLink });
+      const uploadDto = {
+        deviceId: 'some-id',
+        deviceAssetId: 'some-id',
+        fileModifiedAt: new Date(),
+        fileCreatedAt: new Date(),
+        assetData: Buffer.from('some data'),
+      };
+
+      const response = await sut.uploadAsset(auth, uploadDto, mediumFactory.uploadFile({ checksum: asset.checksum }));
+      expect(response).toEqual({ id: expect.any(String), status: AssetMediaStatus.DUPLICATE });
+
+      const result = await ctx.get(AlbumRepository).getAssetIds(album.id, [response.id]);
+      const assets = [...result];
+      expect(assets).toHaveLength(1);
+      expect(assets[0]).toEqual(response.id);
     });
   });
 

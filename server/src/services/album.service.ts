@@ -165,6 +165,12 @@ export class AlbumService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    if (auth.sharedLink) {
+      this.logger.deprecate(
+        'Assets uploaded to a shared link are automatically added and calling this endpoint is no longer necessary. It will be removed in the next major release.',
+      );
+    }
+
     const album = await this.findOrFail(id, { withAssets: false });
     await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
@@ -195,6 +201,12 @@ export class AlbumService extends BaseService {
   }
 
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
+    if (auth.sharedLink) {
+      this.logger.deprecate(
+        'Assets uploaded to a shared link are automatically added and calling this endpoint is no longer necessary. It will be removed in the next major release.',
+      );
+    }
+
     const results: AlbumsAddAssetsResponseDto = {
       success: false,
       error: BulkIdErrorReason.DUPLICATE,

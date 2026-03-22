@@ -23,10 +23,18 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.IOException
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.net.Authenticator
 import java.net.CookieHandler
 import java.net.PasswordAuthentication
@@ -277,10 +285,13 @@ object HttpClientManager {
     return result
   }
 
-  fun rebuildCronetEngine(): CronetEngine {
-    val old = cronetEngine!!
-    cronetEngine = buildCronetEngine()
-    return old
+  suspend fun rebuildCronetEngine(): Result<Long> {
+    return runCatching {
+      cronetEngine?.shutdown()
+      val deletionResult = deleteFolderAndGetSize(cronetStoragePath.toPath())
+      cronetEngine = buildCronetEngine()
+      deletionResult
+    }
   }
 
   val cronetStoragePath: File get() = cronetStorageDir
@@ -301,7 +312,7 @@ object HttpClientManager {
     }
   }
 
-  private fun buildCronetEngine(): CronetEngine {
+  fun buildCronetEngine(): CronetEngine {
     return CronetEngine.Builder(appContext)
       .enableHttp2(true)
       .enableQuic(true)
@@ -310,6 +321,27 @@ object HttpClientManager {
       .setUserAgent(USER_AGENT)
       .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, MEDIA_CACHE_SIZE_BYTES)
       .build()
+  }
+
+  private suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
+    var totalSize = 0L
+
+    Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
+      override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+        totalSize += attrs.size()
+        Files.delete(file)
+        return FileVisitResult.CONTINUE
+      }
+
+      override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+        if (dir != root) {
+          Files.delete(dir)
+        }
+        return FileVisitResult.CONTINUE
+      }
+    })
+
+    totalSize
   }
 
   private fun build(cacheDir: File): OkHttpClient {

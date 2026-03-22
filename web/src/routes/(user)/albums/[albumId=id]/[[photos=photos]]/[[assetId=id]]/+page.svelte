@@ -287,7 +287,11 @@
     }
   };
 
-  const onAlbumAddAssets = async () => {
+  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+    if (!albumIds.includes(album.id)) {
+      return;
+    }
+
     await refreshAlbum();
     timelineInteraction.clearMultiselect();
     await setModeToView();
