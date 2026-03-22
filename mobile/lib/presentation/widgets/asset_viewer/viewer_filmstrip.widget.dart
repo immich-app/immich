@@ -28,7 +28,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   bool _loading = false;
   int _currentIndex = -1;
-  bool _isDragging = false;
+  bool _isScrubbing = false;
   Offset? _pointerDownPosition;
 
   void _applyHeight(double height) {
@@ -120,30 +120,38 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   }
 
   void _onPointerMove(PointerMoveEvent e) {
-    if (_isDragging || _pointerDownPosition == null) return;
+    if (_isScrubbing || _pointerDownPosition == null) return;
     if ((e.position.dx - _pointerDownPosition!.dx).abs() > kTouchSlop) {
-      _isDragging = true;
+      _isScrubbing = true;
     }
   }
 
   void _onPointerUp(PointerUpEvent e) {
     _pointerDownPosition = null;
-    // If dragging, leave _isDragging true.
+    // If scrubbing, leave _isScrubbing true.
     // The scroll may still be in progress due to inertia.
     // Once finished _onScrollingChanged (`isScrollingNotifier` listener) will set the flag.
   }
 
   void _onPointerCancel(PointerCancelEvent e) {
     _pointerDownPosition = null;
-    _isDragging = false;
+    _isScrubbing = false;
   }
 
+  // TODO: Use ScrollEndNotification?
   void _onScrollingChanged() {
-    if (!_scrollController.position.isScrollingNotifier.value) {
-      _isDragging = false;
-      // Snap to the selected thumbnail once scrolling settles.
-      // Handles both interrupted tap-animations and drags that
-      // didn't cross the threshold to change the index.
+    // Only react to the end of scrolling.
+    if (_scrollController.position.isScrollingNotifier.value) return;
+
+    if (_isScrubbing) {
+      _isScrubbing = false;
+      // TODO: Softly snap to the centered thumbnail (user might have left the scroll in an intermediate position).
+      // Note we could end up here due to exact drag or anm inertia fling.
+      // But the inertia fling should due to simulation always end at exact centered position, so snapping should be a no-op in that case.
+      _scrollToIndex(_currentIndex); // Test the soft snap by simply using animation
+    } else {
+      // Re-center on the selected thumbnail if a tap animation was
+      // interrupted (e.g. double-tap before the first scroll finished).
       _scrollToIndex(_currentIndex, animated: false);
     }
   }
@@ -151,7 +159,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   void _onScrollPositionChanged() {
     // The event might be due to user dragging or programmatic animation.
     // Differentiate and only trigger scrubbing if it's a user drag.
-    if (_isDragging) {
+    if (_isScrubbing) {
       _onFilmstripDrag();
     }
   }
@@ -182,7 +190,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
-            border: isSelected ? Border.all(color: Colors.white, width: 2.0) : null,
+            border: isSelected ? Border.all(color: Colors.white70, width: 2.0) : null,
             borderRadius: BorderRadius.circular(3),
           ),
           child: ClipRRect(
