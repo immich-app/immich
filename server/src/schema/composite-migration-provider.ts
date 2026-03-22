@@ -18,20 +18,6 @@ export class CompositeMigrationProvider implements MigrationProvider {
 
   async getMigrations(): Promise<Record<string, Migration>> {
     const results = await Promise.all(this.providers.map((p) => p.getMigrations()));
-
-    // Warn about duplicate migration names across folders
-    if (results.length > 1) {
-      const seen = new Set<string>();
-      for (const migrations of results) {
-        for (const name of Object.keys(migrations)) {
-          if (seen.has(name)) {
-            console.warn(`Migration name collision detected: "${name}" exists in multiple migration folders`);
-          }
-          seen.add(name);
-        }
-      }
-    }
-
     return Object.assign({}, ...results);
   }
 }

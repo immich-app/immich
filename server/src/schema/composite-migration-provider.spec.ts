@@ -97,7 +97,6 @@ describe('CompositeMigrationProvider', () => {
 
   // Test 5: Duplicate migration name — last folder wins
   it('should use the last folder migration when names collide', async () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const upstreamVersion = mockMigration('upstream-version');
     const forkVersion = mockMigration('fork-version');
     setupMockProviders({
@@ -110,7 +109,6 @@ describe('CompositeMigrationProvider', () => {
 
     expect(Object.keys(result)).toHaveLength(1);
     expect(result['same-name']).toBe(forkVersion);
-    consoleSpy.mockRestore();
   });
 
   // Test 6: Migration functions are callable
@@ -181,7 +179,6 @@ describe('CompositeMigrationProvider', () => {
 
   // Test 10 (design #18): Duplicate timestamps produce only one entry
   it('should silently overwrite when two migrations share the same key', async () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const first = mockMigration('first');
     const second = mockMigration('second');
     setupMockProviders({
@@ -194,7 +191,6 @@ describe('CompositeMigrationProvider', () => {
 
     expect(Object.keys(result)).toHaveLength(1);
     expect(result['1772810000000-AddSharedSpaceActivityTable']).toBe(second);
-    consoleSpy.mockRestore();
   });
 
   // Test 11 (design #23): Single folder
@@ -205,36 +201,6 @@ describe('CompositeMigrationProvider', () => {
     const result = await provider.getMigrations();
 
     expect(Object.keys(result)).toHaveLength(0);
-  });
-
-  it('should log a warning when migration names collide across folders', async () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const upstreamVersion = mockMigration('upstream');
-    const forkVersion = mockMigration('fork');
-    setupMockProviders({
-      upstream: { 'colliding-name': upstreamVersion },
-      fork: { 'colliding-name': forkVersion },
-    });
-
-    const provider = new CompositeMigrationProvider(['upstream', 'fork']);
-    await provider.getMigrations();
-
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('colliding-name'));
-    consoleSpy.mockRestore();
-  });
-
-  it('should not warn when there are no collisions', async () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    setupMockProviders({
-      upstream: { 'upstream-only': mockMigration('a') },
-      fork: { 'fork-only': mockMigration('b') },
-    });
-
-    const provider = new CompositeMigrationProvider(['upstream', 'fork']);
-    await provider.getMigrations();
-
-    expect(consoleSpy).not.toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 
   // Test 12: Migration without down function

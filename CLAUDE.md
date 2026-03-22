@@ -89,14 +89,25 @@ pnpm migrations:revert     # Rollback last migration
 pnpm schema:reset          # Drop and recreate schema (destructive)
 ```
 
-**Fork migration layout:** Gallery maintains two migration directories:
+**Fork migration layout:** Gallery maintains two migration directories in source:
 
 - `server/src/schema/migrations/` — upstream Immich migrations (replaced during rebases)
 - `server/src/schema/migrations-gallery/` — fork-only migrations (never touched by rebases)
 
-At runtime, `CompositeMigrationProvider` merges both directories with `allowUnorderedMigrations: true` so interleaved timestamps work correctly. The `postbuild` script copies gallery migrations into `dist/schema/migrations/` so `sql-tools` CLI commands work.
+**How they come together — the `postbuild` script:**
 
-**Important:** `pnpm migrations:run` uses `sql-tools` which hardcodes `allowUnorderedMigrations: false`. This works on fresh databases (CI, initial setup) but will fail on an existing database that already has upstream migrations applied. For existing databases, the server handles migrations automatically on startup via `DatabaseRepository.runMigrations()`.
+After `nest build` compiles TypeScript to `dist/`, the npm `postbuild` hook (`server/package.json`) copies `dist/schema/migrations-gallery/*.js` into `dist/schema/migrations/`. This means the built `dist/schema/migrations/` folder contains ALL migrations (upstream + fork) in one flat directory.
+
+This merge is needed because:
+
+1. **`sql-tools` CLI** (`migrations:run`, `generate`, `revert`) only reads from one folder (`dist/schema/migrations/`) and cannot be configured for multiple directories
+2. **The server runtime** uses `CompositeMigrationProvider` which reads from both `dist/schema/migrations/` and `dist/schema/migrations-gallery/` — duplicates from the postbuild copy are silently handled via `Object.assign` (last folder wins, identical code)
+
+**Why two source directories?** Keeping fork migrations in `migrations-gallery/` means upstream rebases never conflict with fork migration files. The `migrations/` directory gets replaced wholesale during rebases, while `migrations-gallery/` is untouched.
+
+**Runtime migration behavior:** `DatabaseRepository.createMigrator()` uses `allowUnorderedMigrations: true` so fork migrations with timestamps interleaved between upstream ones apply correctly. This is critical for Immich-to-Gallery migration — users who switch from Immich already have upstream migrations applied, and the fork migrations slot in between them.
+
+**`pnpm migrations:run`** uses `sql-tools` which hardcodes `allowUnorderedMigrations: false`. This works on fresh databases (CI, initial setup) but will fail on an existing database that already has upstream migrations applied. For existing databases, the server handles migrations automatically on startup via `DatabaseRepository.runMigrations()`.
 
 **Adding new fork migrations:** Create new migration files in `server/src/schema/migrations-gallery/` with a timestamp that doesn't collide with existing migrations. Use round timestamps (e.g., `1775000000000`) for easy identification.
 
@@ -152,6 +163,7 @@ At runtime, `CompositeMigrationProvider` merges both directories with `allowUnor
 ## OpenAPI Workflow
 
 When server API endpoints change:
+
 1. Build server: `cd server && pnpm build`
 2. Regenerate specs: `pnpm sync:open-api`
 3. Regenerate clients: `make open-api` (generates both TypeScript SDK and Dart client)
