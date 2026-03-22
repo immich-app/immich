@@ -244,4 +244,6 @@ When S3 is the write backend, uploads follow this path:
 4. The database is updated with the relative path.
 5. A cleanup job deletes the local temp file.
 
+Profile images (both user-uploaded and OAuth-synced) follow the same pattern: the file is written to disk first, then uploaded to S3 if the write backend is S3, and the local temp file is cleaned up.
+
 For operations that require filesystem access (ffmpeg transcoding, exiftool metadata extraction), the S3 backend provides a `downloadToTemp()` method that streams the object to a local temp file and returns a cleanup function.
