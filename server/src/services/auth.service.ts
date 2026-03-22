@@ -4,6 +4,7 @@ import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { join } from 'node:path';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
@@ -26,6 +27,7 @@ import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, StorageFolder } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
+import { StorageService } from 'src/services/storage.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -366,13 +368,27 @@ export class AuthService extends BaseService {
 
       const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
       const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
-      const profileImagePath = join(
+      const filename = `${this.cryptoRepository.randomUUID()}${extensionWithDot}`;
+      const localPath = join(
         StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
-        `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
+        filename,
       );
 
-      this.storageCore.ensureFolders(profileImagePath);
-      await this.storageRepository.createFile(profileImagePath, Buffer.from(data));
+      this.storageCore.ensureFolders(localPath);
+      await this.storageRepository.createFile(localPath, Buffer.from(data));
+
+      let profileImagePath = localPath;
+      const writeBackend = StorageService.getWriteBackend();
+
+      if (!(writeBackend instanceof DiskStorageBackend)) {
+        const relativeKey = StorageCore.getRelativeProfileImagePath(user.id, filename);
+        await writeBackend.put(relativeKey, Buffer.from(data), { contentType: contentType || 'image/jpeg' });
+        profileImagePath = relativeKey;
+
+        // Delete the local temp file
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [localPath] } });
+      }
+
       await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
 
       if (oldPath) {

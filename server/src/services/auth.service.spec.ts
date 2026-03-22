@@ -1,9 +1,12 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { SALT_ROUNDS } from 'src/constants';
+import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, JobName, Permission } from 'src/enum';
+import { StorageService } from 'src/services/storage.service';
 import { AuthService } from 'src/services/auth.service';
 import { UserMetadataItem } from 'src/types';
 import { ApiKeyFactory } from 'test/factories/api-key.factory';
@@ -33,6 +36,10 @@ const dto = {
 describe(AuthService.name, () => {
   let sut: AuthService;
   let mocks: ServiceMocks;
+
+  beforeAll(() => {
+    (StorageService as any).diskBackend = new DiskStorageBackend('/data');
+  });
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AuthService));
@@ -887,6 +894,170 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.oauth.getProfilePicture).not.toHaveBeenCalled();
+    });
+
+    describe('syncProfilePicture with S3 backend', () => {
+      let mockS3Backend: { put: ReturnType<typeof vi.fn>; getServeStrategy: ReturnType<typeof vi.fn> };
+
+      beforeEach(() => {
+        mockS3Backend = {
+          put: vi.fn().mockResolvedValue(void 0),
+          getServeStrategy: vi.fn(),
+        };
+        (StorageService as any).s3Backend = mockS3Backend;
+        (StorageService as any).writeBackendType = 's3';
+      });
+
+      afterEach(() => {
+        (StorageService as any).s3Backend = void 0;
+        (StorageService as any).writeBackendType = 'disk';
+      });
+
+      it('should upload OAuth profile picture to S3 and store relative path', async () => {
+        const fileId = newUuid();
+        const user = UserFactory.create({ oauthId: 'oauth-id' });
+        const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfile.mockResolvedValue(profile);
+        mocks.user.getByOAuthId.mockResolvedValue(user);
+        mocks.crypto.randomUUID.mockReturnValue(fileId);
+        mocks.oauth.getProfilePicture.mockResolvedValue({
+          contentType: 'image/jpeg',
+          data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+        });
+        mocks.user.update.mockResolvedValue(user);
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+        await sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        );
+
+        const expectedRelativeKey = StorageCore.getRelativeProfileImagePath(user.id, `${fileId}.jpg`);
+        expect(mockS3Backend.put).toHaveBeenCalledWith(expectedRelativeKey, expect.any(Buffer), {
+          contentType: 'image/jpeg',
+        });
+        expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+          profileImagePath: expectedRelativeKey,
+          profileChangedAt: expect.any(Date),
+        });
+      });
+
+      it('should use correct content type for non-JPEG OAuth pictures', async () => {
+        const fileId = newUuid();
+        const user = UserFactory.create({ oauthId: 'oauth-id' });
+        const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.png' });
+
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfile.mockResolvedValue(profile);
+        mocks.user.getByOAuthId.mockResolvedValue(user);
+        mocks.crypto.randomUUID.mockReturnValue(fileId);
+        mocks.oauth.getProfilePicture.mockResolvedValue({
+          contentType: 'image/png',
+          data: new Uint8Array([1, 2, 3]).buffer,
+        });
+        mocks.user.update.mockResolvedValue(user);
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+        await sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        );
+
+        expect(mockS3Backend.put).toHaveBeenCalledWith(expect.any(String), expect.any(Buffer), {
+          contentType: 'image/png',
+        });
+      });
+
+      it('should still write to local disk first before S3 upload', async () => {
+        const fileId = newUuid();
+        const user = UserFactory.create({ oauthId: 'oauth-id' });
+        const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfile.mockResolvedValue(profile);
+        mocks.user.getByOAuthId.mockResolvedValue(user);
+        mocks.crypto.randomUUID.mockReturnValue(fileId);
+        mocks.oauth.getProfilePicture.mockResolvedValue({
+          contentType: 'image/jpeg',
+          data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+        });
+        mocks.user.update.mockResolvedValue(user);
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+        await sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        );
+
+        expect(mocks.storage.createFile).toHaveBeenCalledWith(
+          expect.stringContaining(`/data/profile/${user.id}/${fileId}.jpg`),
+          expect.any(Buffer),
+        );
+      });
+
+      it('should queue deletion of local temp file after S3 upload for OAuth picture', async () => {
+        const fileId = newUuid();
+        const user = UserFactory.create({ oauthId: 'oauth-id' });
+        const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfile.mockResolvedValue(profile);
+        mocks.user.getByOAuthId.mockResolvedValue(user);
+        mocks.crypto.randomUUID.mockReturnValue(fileId);
+        mocks.oauth.getProfilePicture.mockResolvedValue({
+          contentType: 'image/jpeg',
+          data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+        });
+        mocks.user.update.mockResolvedValue(user);
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+        await sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        );
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.FileDelete,
+          data: { files: [expect.stringContaining(`/data/profile/${user.id}/${fileId}.jpg`)] },
+        });
+      });
+
+      it('should catch and log S3 upload failure without crashing', async () => {
+        const fileId = newUuid();
+        const user = UserFactory.create({ oauthId: 'oauth-id' });
+        const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfile.mockResolvedValue(profile);
+        mocks.user.getByOAuthId.mockResolvedValue(user);
+        mocks.crypto.randomUUID.mockReturnValue(fileId);
+        mocks.oauth.getProfilePicture.mockResolvedValue({
+          contentType: 'image/jpeg',
+          data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+        });
+        mocks.user.update.mockResolvedValue(user);
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
+        mockS3Backend.put.mockRejectedValue(new Error('S3 upload failed'));
+
+        await expect(
+          sut.callback(
+            { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+            {},
+            loginDetails,
+          ),
+        ).resolves.not.toThrow();
+
+        expect(mocks.user.update).not.toHaveBeenCalledWith(
+          user.id,
+          expect.objectContaining({ profileImagePath: expect.any(String) }),
+        );
+      });
     });
 
     it('should only allow "admin" and "user" for the role claim', async () => {
