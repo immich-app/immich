@@ -180,3 +180,68 @@ Files already stored in S3 will continue to be served from S3. Only new uploads 
 
 **Can I use IAM roles instead of access keys?**
 Yes. If you omit `IMMICH_S3_ACCESS_KEY_ID` and `IMMICH_S3_SECRET_ACCESS_KEY`, the AWS SDK will use the standard credential chain (environment variables, IAM roles, instance metadata, etc.).
+
+## Technical Implementation
+
+### Storage Abstraction
+
+S3 support is built on a `StorageBackend` interface that both the disk and S3 backends implement:
+
+```
+                    StorageBackend interface
+                    ├── put(key, source)
+                    ├── get(key) → stream
+                    ├── exists(key)
+                    ├── delete(key)
+                    ├── getServeStrategy(key) → file | redirect | stream
+                    └── downloadToTemp(key) → tempPath + cleanup
+
+        ┌───────────────────┐         ┌───────────────────┐
+        │ DiskStorageBackend│         │ S3StorageBackend   │
+        ├───────────────────┤         ├───────────────────┤
+        │ Reads/writes to   │         │ AWS SDK v3         │
+        │ local filesystem  │         │ @aws-sdk/client-s3 │
+        │                   │         │ Multipart uploads  │
+        │ getServeStrategy: │         │                    │
+        │  → { type: file } │         │ getServeStrategy:  │
+        └───────────────────┘         │  redirect mode:    │
+                                      │   → presigned URL  │
+                                      │  proxy mode:       │
+                                      │   → S3 stream      │
+                                      └───────────────────┘
+```
+
+The `StorageService` manages both backends as static singletons and routes operations based on the file path format.
+
+### Dual Backend Routing
+
+The key insight is that **file path format determines the backend**:
+
+- **Absolute paths** (e.g., `/usr/src/app/upload/library/user/file.jpg`) — legacy disk files, routed to the disk backend.
+- **Relative paths** (e.g., `library/user/file.jpg`) — S3 files, routed to the S3 backend.
+
+This means no database schema changes were needed. Existing `originalPath`, `path`, `thumbnailPath`, and `profileImagePath` columns store either format, and the `resolveBackendForKey()` function dispatches to the correct backend at runtime. Both backends are always active — the `IMMICH_STORAGE_BACKEND` setting only controls where **new writes** go.
+
+### Serve Modes
+
+When a client requests an asset, `BaseService.serveFromBackend()` asks the resolved backend for a serve strategy and returns one of three response types:
+
+| Backend | Mode       | Response                 | Client Behavior                                     |
+| :------ | :--------- | :----------------------- | :-------------------------------------------------- |
+| Disk    | —          | `ImmichFileResponse`     | Express sends the local file directly               |
+| S3      | `redirect` | `ImmichRedirectResponse` | HTTP 302 to a presigned URL; client fetches from S3 |
+| S3      | `proxy`    | `ImmichStreamResponse`   | Server streams S3 data through to the client        |
+
+Presigned URLs expire after `IMMICH_S3_PRESIGNED_URL_EXPIRY` seconds (default 3600). The S3 backend uses `forcePathStyle: true` when a custom endpoint is configured, which is required for MinIO, DigitalOcean Spaces, and similar providers.
+
+### Upload Flow
+
+When S3 is the write backend, uploads follow this path:
+
+1. File is uploaded to a local temp directory (standard NestJS multipart handling).
+2. The storage template generates a relative key for the S3 object.
+3. The file is uploaded to S3 using the `@aws-sdk/lib-storage` `Upload` class (supports automatic multipart for large files).
+4. The database is updated with the relative path.
+5. A cleanup job deletes the local temp file.
+
+For operations that require filesystem access (ffmpeg transcoding, exiftool metadata extraction), the S3 backend provides a `downloadToTemp()` method that streams the object to a local temp file and returns a cleanup function.

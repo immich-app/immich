@@ -48,3 +48,38 @@ Groups appear as colored chips at the top of the user selection modal whenever y
 - You can create overlapping groups (e.g., "Parents" and "Extended Family" can share some members).
 - Groups with no eligible members for a particular share are automatically hidden.
 - There is no limit on the number of groups or members per group.
+
+## Technical Implementation
+
+### Database Schema
+
+User Groups adds 2 tables:
+
+```
+┌───────────────────────┐         ┌──────────┐
+│     user_group        │         │   user   │
+├───────────────────────┤         └────┬─────┘
+│ id (UUID PK)          │              │
+│ name (text)           │◄─createdById─┘
+│ color (varchar?)      │
+│ origin (varchar)      │   ┌──────────────────────┐
+│ createdAt, updatedAt  │   │  user_group_member   │
+└───────────┬───────────┘   ├──────────────────────┤
+            │               │ groupId (FK) ◄───────┘
+            └──────────────►│ userId  (FK) ────────► user
+                            │ addedAt               │
+                            └──────────────────────┘
+                            PK: (groupId, userId)
+```
+
+The `origin` column tracks how the group was created (`manual` for user-created, `oidc` for future OIDC provider sync).
+
+### Architecture
+
+- **Controller** (`user-group.controller.ts`) — 6 REST endpoints under `/user-groups` for CRUD and member management.
+- **Service** (`user-group.service.ts`) — Enforces ownership (only the creator can modify a group). Member replacement is atomic: the `setMembers` operation deletes all existing members and inserts the new set in a single transaction.
+- **Repository** (`user-group.repository.ts`) — Kysely queries with a join to the `user` table to resolve member profiles (name, email, avatar). Soft-deleted users are filtered out automatically.
+
+### Integration Points
+
+Groups are purely a UI convenience layer — they have no server-side effect on permissions. The web frontend loads the user's groups in the album share modal and space member invite modal, rendering them as colored chips. When a chip is clicked, the client-side logic selects all eligible members (excluding users already in the album/space). The server never receives group IDs during sharing — only individual user IDs are sent in the API calls.

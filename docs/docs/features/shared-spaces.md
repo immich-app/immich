@@ -48,10 +48,9 @@ Shared Spaces are virtual libraries where multiple users can contribute, browse,
 
 ### Mobile
 
-1. Go to the **Library** tab.
-2. Tap **Spaces**.
-3. Tap the **+** button.
-4. Enter a name and tap Create.
+1. Tap the **Spaces** tab in the bottom navigation bar.
+2. Tap the **+** button.
+3. Enter a name and tap Create.
 
 ## Getting Started Banner
 
@@ -258,4 +257,72 @@ Ten colors are available, matching the user avatar color palette.
 
 ## API
 
-Shared Spaces are accessible via the REST API under the `/shared-spaces` endpoint group.
+Shared Spaces are accessible via the REST API under the `/shared-spaces` endpoint group. There are 24 endpoints covering space CRUD, member management, asset management, activity log, map markers, and space-scoped face recognition (people CRUD, merge, aliases, thumbnails).
+
+## Technical Implementation
+
+### Database Schema
+
+Shared Spaces introduces 7 new tables in PostgreSQL:
+
+```
+┌──────────────────────┐       ┌──────────────────────────┐
+│    shared_space       │       │         user             │
+├──────────────────────┤       └──────────┬───────────────┘
+│ id (UUID PK)         │                  │
+│ name (text)          │                  │
+│ description (text?)  │◄─── createdById ─┘
+│ color (varchar?)     │
+│ faceRecognitionEnabled│
+│ thumbnailAssetId ────┼──────► asset
+│ thumbnailCropY (int?)│
+│ lastActivityAt       │
+│ createdAt, updatedAt │
+└──────────┬───────────┘
+           │
+     ┌─────┴──────┬──────────────┬───────────────────┐
+     ▼            ▼              ▼                   ▼
+┌──────────┐ ┌──────────┐ ┌───────────────┐ ┌────────────────────┐
+│  member  │ │  asset   │ │   activity    │ │      person        │
+├──────────┤ ├──────────┤ ├───────────────┤ ├────────────────────┤
+│ spaceId  │ │ spaceId  │ │ id (UUID PK)  │ │ id (UUID PK)       │
+│ userId   │ │ assetId  │ │ spaceId       │ │ spaceId            │
+│ role     │ │ addedById│ │ userId        │ │ name               │
+│ joinedAt │ │ addedAt  │ │ type (varchar)│ │ thumbnailPath      │
+│showIn    │ └──────────┘ │ data (jsonb)  │ │ representativeFace │
+│ Timeline │              │ createdAt     │ │ isHidden, birthDate│
+│lastViewed│              └───────────────┘ │ createdAt,updatedAt│
+│ At       │                                └─────────┬──────────┘
+└──────────┘                                    ┌─────┴─────┐
+                                                ▼           ▼
+                                        ┌────────────┐ ┌──────────┐
+                                        │person_face │ │person_   │
+                                        ├────────────┤ │alias     │
+                                        │ personId   │ ├──────────┤
+                                        │ assetFaceId│ │ personId │
+                                        └────────────┘ │ userId   │
+                                                       │ alias    │
+                                                       └──────────┘
+```
+
+All tables prefixed `shared_space_` in the actual schema. Composite primary keys are used for member (spaceId, userId), asset (spaceId, assetId), person_face (personId, assetFaceId), and alias (personId, userId).
+
+### Architecture
+
+The feature follows the standard NestJS layered architecture:
+
+- **Controller** (`shared-space.controller.ts`) — 24 REST endpoints under `/shared-spaces`, with role-based permission checks.
+- **Service** (`shared-space.service.ts`) — Business logic including role validation (Owner > Editor > Viewer hierarchy), activity logging, and background job orchestration.
+- **Repository** (`shared-space.repository.ts`) — Kysely-based data access with 70+ methods covering all 7 tables.
+
+### Key Mechanisms
+
+**Reference-based sharing** — The `shared_space_asset` table is a pure junction table linking spaces to existing assets. No file duplication occurs; the same asset row is referenced by the space and the owner's library.
+
+**Timeline integration** — Each membership row has a `showInTimeline` boolean. When fetching a user's timeline, the server queries `getSpaceIdsForTimeline(userId)` and includes assets from those spaces in the timeline result set alongside the user's own assets.
+
+**Activity log** — Every mutation (add/remove assets, member changes, metadata updates) inserts a row into `shared_space_activity` with a `type` enum and a `data` JSONB column for event-specific metadata (e.g., asset IDs, old/new values, who invited whom). The feed is paginated with a default page size of 50.
+
+**New since last visit** — The `lastViewedAt` timestamp on each membership is updated via `PATCH /shared-spaces/:id/view` when a user opens a space. The `newAssetCount` and `lastContributor` fields in the response DTO are computed by querying assets added after this timestamp.
+
+**Face recognition (space-scoped)** — Space-scoped people are separate from personal people. When face recognition is enabled and assets are added, the service queues `SharedSpaceFaceMatch` jobs. Each job fetches face embeddings from the asset and runs a vectorchord similarity search (`<=>` operator) against existing space people. Matches within the configured distance threshold are linked; unmatched faces create new person entries. Person aliases allow each member to set their own display names for recognized people.

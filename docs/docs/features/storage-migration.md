@@ -115,3 +115,67 @@ Reverts all path changes from the specified batch.
 - **Start with a low concurrency** (e.g., 3-5) and increase if your system handles it well.
 - **Leave "delete source" off** for the first migration so you can verify everything works before removing source files.
 - **Only one migration can run at a time.** Starting a new migration while one is in progress will return an error.
+
+## Technical Implementation
+
+### Migration Log Table
+
+Migrations are tracked in a dedicated `storage_migration_log` table:
+
+```
+┌─────────────────────────────┐
+│   storage_migration_log     │
+├─────────────────────────────┤
+│ id (UUID PK)                │
+│ entityType (varchar)        │  'asset', 'assetFile', 'person', 'user'
+│ entityId (UUID)             │
+│ fileType (varchar?)         │  'original', 'thumbnail', 'preview', etc.
+│ oldPath (text)              │
+│ newPath (text)              │
+│ direction (varchar)         │  'toS3' or 'toDisk'
+│ batchId (UUID, indexed)     │
+│ migratedAt (timestamp)      │
+└─────────────────────────────┘
+```
+
+Each migrated file gets one log row. The `batchId` groups all files from a single migration run, enabling batch-level rollback.
+
+### Job Architecture
+
+Migration uses BullMQ with a two-phase approach:
+
+```
+Admin clicks "Start"
+        │
+        ▼
+┌───────────────────┐     ┌───────────────────┐
+│ QueueAll job       │     │ Single job (×N)    │
+│                   │     │                   │
+│ Streams files from│────►│ 1. Check source   │
+│ DB in batches of  │     │ 2. Check target   │
+│ 1000, queues      │     │    (idempotency)  │
+│ individual jobs   │     │ 3. Stream copy    │
+│                   │     │ 4. Update DB path │
+│ Sets concurrency  │     │ 5. Log migration  │
+│ on the queue      │     │ 6. Delete source? │
+└───────────────────┘     └───────────────────┘
+```
+
+The orchestrator job streams file records from 8 different sources (assets, asset files by type, person thumbnails, user profile images), batches them, and queues individual migration jobs. The worker concurrency is set dynamically based on the user's input (1-20, default 5).
+
+### Path Transformation
+
+The migration converts between absolute disk paths and relative S3 keys:
+
+- **Disk to S3**: Strip the media location prefix (e.g., `/usr/src/app/upload/library/...` becomes `library/...`)
+- **S3 to Disk**: Prepend the media location prefix
+
+The S3 storage backend uses relative paths while the disk backend uses absolute paths. This convention is what enables the [dual backend routing](/features/s3-storage#dual-backend-routing) to work transparently.
+
+### Concurrency Safety
+
+Each per-file job uses **optimistic concurrency** when updating the database: the UPDATE statement includes a WHERE clause matching the old path. If the path was changed by a concurrent upload or another migration job, the UPDATE affects 0 rows and the job logs a skip rather than corrupting data. This makes migrations safe to run while the system is serving live uploads.
+
+### Rollback
+
+Rollback reads all log entries for a given `batchId` and reverses each path update using the same optimistic concurrency pattern (UPDATE WHERE path = newPath, SET path = oldPath). If all reversals succeed, the log entries for that batch are deleted. If any fail, the log is preserved for debugging. Rollback does not move files — it only reverts database paths. If source files were deleted during migration, a reverse migration in the opposite direction is needed to restore the actual files.
