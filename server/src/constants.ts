@@ -65,6 +65,8 @@ export const FACE_THUMBNAIL_SIZE = 250;
 
 type ModelInfo = { dimSize: number };
 export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
+  '256': { dimSize: 256 },
+  '512': { dimSize: 512 },
   RN101__openai: { dimSize: 512 },
   RN101__yfcc15m: { dimSize: 512 },
   'ViT-B-16__laion400m_e31': { dimSize: 512 },
@@ -97,6 +99,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'XLM-Roberta-Large-Vit-L-14': { dimSize: 768 },
   'nllb-clip-base-siglip__mrl': { dimSize: 768 },
   'nllb-clip-base-siglip__v1': { dimSize: 768 },
+  '768': { dimSize: 768 },
   RN50__cc12m: { dimSize: 1024 },
   RN50__openai: { dimSize: 1024 },
   RN50__yfcc15m: { dimSize: 1024 },
@@ -108,6 +111,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-L-16-SigLIP-384__webli': { dimSize: 1024 },
   'ViT-g-14__laion2b-s12b-b42k': { dimSize: 1024 },
   'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': { dimSize: 1024 },
+  '1024': { dimSize: 1024 },
   'ViT-SO400M-14-SigLIP-384__webli': { dimSize: 1152 },
   'nllb-clip-large-siglip__mrl': { dimSize: 1152 },
   'nllb-clip-large-siglip__v1': { dimSize: 1152 },
@@ -121,6 +125,9 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-SO400M-16-SigLIP2-256__webli': { dimSize: 1152 },
   'ViT-SO400M-16-SigLIP2-384__webli': { dimSize: 1152 },
   'ViT-SO400M-16-SigLIP2-512__webli': { dimSize: 1152 },
+  '1536': { dimSize: 1536 },
+  '2048': { dimSize: 2048 },
+  '2560': { dimSize: 2560 },
   'ViT-gopt-16-SigLIP2-256__webli': { dimSize: 1536 },
   'ViT-gopt-16-SigLIP2-384__webli': { dimSize: 1536 },
 };
