@@ -28,7 +28,9 @@ export async function up(db: Kysely<any>): Promise<void> {
       EXECUTE FUNCTION updated_at();
   `.execute(db);
 
-  await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_user_group_updatedAt', '{"type":"trigger","name":"user_group_updatedAt","sql":"CREATE OR REPLACE TRIGGER \\"user_group_updatedAt\\"\\n  BEFORE UPDATE ON \\"user_group\\"\\n  FOR EACH ROW\\n  EXECUTE FUNCTION updated_at();"}'::jsonb);`.execute(db);
+  await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_user_group_updatedAt', '{"type":"trigger","name":"user_group_updatedAt","sql":"CREATE OR REPLACE TRIGGER \\"user_group_updatedAt\\"\\n  BEFORE UPDATE ON \\"user_group\\"\\n  FOR EACH ROW\\n  EXECUTE FUNCTION updated_at();"}'::jsonb);`.execute(
+    db,
+  );
 
   await sql`
     CREATE TABLE "user_group_member" (
