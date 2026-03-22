@@ -15,11 +15,11 @@ import { userStub } from 'test/fixtures/user.stub';
 import { factory, newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
-vitest.mock('node:fs', async (importOriginal) => {
+vi.mock('node:fs', async (importOriginal) => {
   const original = await importOriginal<typeof import('node:fs')>();
   return {
     ...original,
-    createReadStream: vitest.fn().mockReturnValue(Readable.from(Buffer.from('fake-image-data'))),
+    createReadStream: vi.fn().mockReturnValue(Readable.from(Buffer.from('fake-image-data'))),
   };
 });
 
@@ -310,8 +310,8 @@ describe(UserService.name, () => {
 
       beforeEach(() => {
         mockS3Backend = {
-          put: vitest.fn().mockResolvedValue(void 0),
-          getServeStrategy: vitest.fn(),
+          put: vi.fn().mockResolvedValue(void 0),
+          getServeStrategy: vi.fn(),
         };
         (StorageService as any).s3Backend = mockS3Backend;
         (StorageService as any).writeBackendType = 's3';
@@ -483,6 +483,24 @@ describe(UserService.name, () => {
 
       await expect(sut.deleteProfileImage(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('should queue deletion of S3 profile image (relative path)', async () => {
+      const s3Path = 'profile/user-id/ab/cd/photo.jpg';
+      const user = factory.userAdmin({ profileImagePath: s3Path });
+      mocks.user.get.mockResolvedValue(user);
+
+      await sut.deleteProfileImage(factory.auth({ user }));
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        profileImagePath: '',
+        profileChangedAt: expect.any(Date),
+      });
+      // FileDelete handler uses resolveBackendForKey to route relative paths to S3
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [s3Path] },
+      });
+    });
   });
 
   describe('getUserProfileImage', () => {
@@ -514,6 +532,17 @@ describe(UserService.name, () => {
         }),
       );
 
+      expect(mocks.user.get).toHaveBeenCalledWith(user.id, {});
+    });
+
+    it('should serve profile image from S3 backend when path is relative', async () => {
+      const s3Path = 'profile/user-id/ab/cd/photo.jpg';
+      const user = UserFactory.create({ profileImagePath: s3Path });
+      mocks.user.get.mockResolvedValue(user);
+
+      const result = await sut.getProfileImage(user.id);
+
+      expect(result).toBeDefined();
       expect(mocks.user.get).toHaveBeenCalledWith(user.id, {});
     });
   });
