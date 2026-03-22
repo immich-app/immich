@@ -8,7 +8,9 @@ import { GenericContainer, Wait } from 'testcontainers';
 
 const globalSetup = async () => {
   const templateName = 'mich';
-  const postgresContainer = await new GenericContainer('ghcr.io/immich-app/postgres:14-vectorchord0.4.3')
+  const postgresContainer = await new GenericContainer(
+    'ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:dbf18b3ffea4a81434c65b71e20d27203baf903a0275f4341e4c16dfd901fd67',
+  )
     .withExposedPorts(5432)
     .withEnvironment({
       POSTGRES_PASSWORD: 'postgres',

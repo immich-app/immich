@@ -165,6 +165,12 @@ const onEvent = ({ event, id }: { event: EventType; id: string }) => {
   }
 };
 
+const isRetryableError = (error: any) =>
+  error?.code === '40P01' || // deadlock
+  error?.message?.includes('terminated') ||
+  error?.message?.includes('Connection') ||
+  error?.message?.includes('ECONNREFUSED');
+
 export const utils = {
   connectDatabase: async () => {
     if (!client) {
@@ -223,8 +229,16 @@ export const utils = {
         await client.query(query);
         return;
       } catch (error: any) {
-        if (error?.code === '40P01' && attempt < maxRetries) {
-          await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+        if (isRetryableError(error) && attempt < maxRetries) {
+          // Force reconnect on connection errors
+          try {
+            await client.end();
+          } catch {
+            // ignore cleanup errors
+          }
+          client = null;
+          await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+          client = await utils.connectDatabase();
           continue;
         }
         console.error('Failed to reset database', error);

@@ -18,6 +18,7 @@ const config: PlaywrightTestConfig = {
   testMatch: /.*\.e2e-spec\.ts/,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
+  timeout: process.env.CI ? 60_000 : 30_000,
   retries: process.env.CI ? 4 : 0,
   reporter: process.env.CI ? [['html'], ['github']] : 'html',
   use: {
