@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { createReadStream } from 'node:fs';
+import { basename } from 'node:path';
 import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -101,7 +102,7 @@ export class UserService extends BaseService {
     const writeBackend = StorageService.getWriteBackend();
 
     if (!(writeBackend instanceof DiskStorageBackend)) {
-      const filename = file.path.split('/').pop()!;
+      const filename = basename(file.path);
       const relativeKey = StorageCore.getRelativeProfileImagePath(auth.user.id, filename);
       const stream = createReadStream(file.path);
       await writeBackend.put(relativeKey, stream, { contentType: mimeTypes.lookup(file.path) });
