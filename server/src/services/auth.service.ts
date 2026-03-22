@@ -369,10 +369,7 @@ export class AuthService extends BaseService {
       const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
       const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
       const filename = `${this.cryptoRepository.randomUUID()}${extensionWithDot}`;
-      const localPath = join(
-        StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
-        filename,
-      );
+      const localPath = join(StorageCore.getFolderLocation(StorageFolder.Profile, user.id), filename);
 
       this.storageCore.ensureFolders(localPath);
       await this.storageRepository.createFile(localPath, Buffer.from(data));
