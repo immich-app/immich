@@ -140,8 +140,11 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   void _onScrollingChanged() {
     if (!_scrollController.position.isScrollingNotifier.value) {
-      // Scrolling stopped, consider potential drag finished.
       _isDragging = false;
+      // Snap to the selected thumbnail once scrolling settles.
+      // Handles both interrupted tap-animations and drags that
+      // didn't cross the threshold to change the index.
+      _scrollToIndex(_currentIndex, animated: false);
     }
   }
 
