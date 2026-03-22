@@ -1,5 +1,7 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Readable } from 'node:stream';
 import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
+import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
 import { CacheControl, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { StorageService } from 'src/services/storage.service';
@@ -12,6 +14,14 @@ import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { factory, newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
+
+vitest.mock('node:fs', async (importOriginal) => {
+  const original = await importOriginal<typeof import('node:fs')>();
+  return {
+    ...original,
+    createReadStream: vitest.fn().mockReturnValue(Readable.from(Buffer.from('fake-image-data'))),
+  };
+});
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -292,6 +302,145 @@ describe(UserService.name, () => {
         userId: updatedUser.id,
         profileImagePath: updatedUser.profileImagePath,
         profileChangedAt: updatedUser.profileChangedAt,
+      });
+    });
+
+    describe('with S3 write backend', () => {
+      let mockS3Backend: { put: ReturnType<typeof vitest.fn>; getServeStrategy: ReturnType<typeof vitest.fn> };
+
+      beforeEach(() => {
+        mockS3Backend = {
+          put: vitest.fn().mockResolvedValue(void 0),
+          getServeStrategy: vitest.fn(),
+        };
+        (StorageService as any).s3Backend = mockS3Backend;
+        (StorageService as any).writeBackendType = 's3';
+      });
+
+      afterEach(() => {
+        (StorageService as any).s3Backend = void 0;
+        (StorageService as any).writeBackendType = 'disk';
+      });
+
+      it('should upload profile image to S3 and store relative path', async () => {
+        const user = factory.userAdmin({ profileImagePath: '' });
+        const file = { path: '/data/profile/user-id/temp-file.jpg', originalname: 'avatar.jpg' } as Express.Multer.File;
+        const relativeKey = StorageCore.getRelativeProfileImagePath(user.id, 'temp-file.jpg');
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.user.update.mockResolvedValue({ ...user, profileImagePath: relativeKey, profileChangedAt: new Date() });
+
+        await sut.createProfileImage(factory.auth({ user }), file);
+
+        expect(mockS3Backend.put).toHaveBeenCalledWith(relativeKey, expect.anything(), {
+          contentType: 'image/jpeg',
+        });
+        expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+          profileImagePath: relativeKey,
+          profileChangedAt: expect.any(Date),
+        });
+      });
+
+      it('should use correct content type for non-JPEG uploads', async () => {
+        const user = factory.userAdmin({ profileImagePath: '' });
+        const file = {
+          path: '/data/profile/user-id/temp-file.png',
+          originalname: 'avatar.png',
+        } as Express.Multer.File;
+        const relativeKey = StorageCore.getRelativeProfileImagePath(user.id, 'temp-file.png');
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.user.update.mockResolvedValue({ ...user, profileImagePath: relativeKey, profileChangedAt: new Date() });
+
+        await sut.createProfileImage(factory.auth({ user }), file);
+
+        expect(mockS3Backend.put).toHaveBeenCalledWith(relativeKey, expect.anything(), {
+          contentType: 'image/png',
+        });
+      });
+
+      it('should queue deletion of local temp file after S3 upload', async () => {
+        const user = factory.userAdmin({ profileImagePath: '' });
+        const file = { path: '/data/profile/user-id/temp-file.jpg', originalname: 'avatar.jpg' } as Express.Multer.File;
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.user.update.mockResolvedValue({ ...user, profileImagePath: 'profile/...' });
+
+        await sut.createProfileImage(factory.auth({ user }), file);
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.FileDelete,
+          data: { files: [file.path] },
+        });
+      });
+
+      it('should delete both old profile image and local temp file when replacing on S3', async () => {
+        const user = factory.userAdmin({ profileImagePath: '/data/profile/user-id/old.jpg' });
+        const file = { path: '/data/profile/user-id/new-file.jpg', originalname: 'avatar.jpg' } as Express.Multer.File;
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.user.update.mockResolvedValue({ ...user, profileImagePath: 'profile/...' });
+
+        await sut.createProfileImage(factory.auth({ user }), file);
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.FileDelete,
+          data: { files: ['/data/profile/user-id/old.jpg'] },
+        });
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.FileDelete,
+          data: { files: [file.path] },
+        });
+      });
+
+      it('should clean up old S3 profile image when replacing with a new S3 upload', async () => {
+        const oldRelativeKey = 'profile/user-id/ab/cd/old-file.jpg';
+        const user = factory.userAdmin({ profileImagePath: oldRelativeKey });
+        const file = { path: '/data/profile/user-id/new-file.jpg', originalname: 'avatar.jpg' } as Express.Multer.File;
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.user.update.mockResolvedValue({ ...user, profileImagePath: 'profile/...' });
+
+        await sut.createProfileImage(factory.auth({ user }), file);
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.FileDelete,
+          data: { files: [oldRelativeKey] },
+        });
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.FileDelete,
+          data: { files: [file.path] },
+        });
+      });
+
+      it('should not update DB if S3 upload fails', async () => {
+        const user = factory.userAdmin({ profileImagePath: '' });
+        const file = { path: '/data/profile/user-id/temp-file.jpg', originalname: 'avatar.jpg' } as Express.Multer.File;
+
+        mocks.user.get.mockResolvedValue(user);
+        mockS3Backend.put.mockRejectedValue(new Error('S3 upload failed'));
+
+        await expect(sut.createProfileImage(factory.auth({ user }), file)).rejects.toThrow('S3 upload failed');
+
+        expect(mocks.user.update).not.toHaveBeenCalled();
+      });
+
+      it('should return response with relative S3 path', async () => {
+        const user = factory.userAdmin({ profileImagePath: '' });
+        const file = { path: '/data/profile/user-id/temp-file.jpg', originalname: 'avatar.jpg' } as Express.Multer.File;
+        const relativeKey = StorageCore.getRelativeProfileImagePath(user.id, 'temp-file.jpg');
+        const profileChangedAt = new Date();
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.user.update.mockResolvedValue({ ...user, profileImagePath: relativeKey, profileChangedAt });
+
+        const result = await sut.createProfileImage(factory.auth({ user }), file);
+
+        expect(result).toEqual({
+          userId: user.id,
+          profileImagePath: relativeKey,
+          profileChangedAt,
+        });
       });
     });
   });

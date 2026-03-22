@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
+import { createReadStream } from 'node:fs';
+import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
@@ -14,8 +16,10 @@ import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadat
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
+import { StorageService } from 'src/services/storage.service';
 import { JobOf, UserMetadataItem } from 'src/types';
 import { ImmichMediaResponse } from 'src/utils/file';
+import { mimeTypes } from 'src/utils/mime-types';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -93,8 +97,22 @@ export class UserService extends BaseService {
   async createProfileImage(auth: AuthDto, file: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
     const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
 
+    let profileImagePath = file.path;
+    const writeBackend = StorageService.getWriteBackend();
+
+    if (!(writeBackend instanceof DiskStorageBackend)) {
+      const filename = file.path.split('/').pop()!;
+      const relativeKey = StorageCore.getRelativeProfileImagePath(auth.user.id, filename);
+      const stream = createReadStream(file.path);
+      await writeBackend.put(relativeKey, stream, { contentType: mimeTypes.lookup(file.path) });
+      profileImagePath = relativeKey;
+
+      // Delete the local temp file
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.path] } });
+    }
+
     const user = await this.userRepository.update(auth.user.id, {
-      profileImagePath: file.path,
+      profileImagePath,
       profileChangedAt: new Date(),
     });
 
