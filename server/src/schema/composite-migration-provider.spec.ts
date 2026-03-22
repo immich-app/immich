@@ -207,6 +207,36 @@ describe('CompositeMigrationProvider', () => {
     expect(Object.keys(result)).toHaveLength(0);
   });
 
+  it('should log a warning when migration names collide across folders', async () => {
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const upstreamVersion = mockMigration('upstream');
+    const forkVersion = mockMigration('fork');
+    setupMockProviders({
+      upstream: { 'colliding-name': upstreamVersion },
+      fork: { 'colliding-name': forkVersion },
+    });
+
+    const provider = new CompositeMigrationProvider(['upstream', 'fork']);
+    await provider.getMigrations();
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('colliding-name'));
+    consoleSpy.mockRestore();
+  });
+
+  it('should not warn when there are no collisions', async () => {
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    setupMockProviders({
+      upstream: { 'upstream-only': mockMigration('a') },
+      fork: { 'fork-only': mockMigration('b') },
+    });
+
+    const provider = new CompositeMigrationProvider(['upstream', 'fork']);
+    await provider.getMigrations();
+
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
   // Test 12: Migration without down function
   it('should handle migrations without a down function', async () => {
     const upOnly: Migration = { up: vi.fn().mockResolvedValue(undefined) };
