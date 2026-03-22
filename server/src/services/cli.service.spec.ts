@@ -16,7 +16,7 @@ describe(CliService.name, () => {
 
   describe('schemaReport', () => {
     it('should return applied migrations when files and rows match', async () => {
-      mocks.storage.readdir.mockResolvedValue(['migration1.js', 'migration2.js']);
+      mocks.storage.readdir.mockResolvedValueOnce(['migration1.js', 'migration2.js']).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([
         { name: 'migration1', timestamp: '2024-01-01' },
         { name: 'migration2', timestamp: '2024-01-02' },
@@ -37,7 +37,7 @@ describe(CliService.name, () => {
     });
 
     it('should return missing migrations when file exists but row does not', async () => {
-      mocks.storage.readdir.mockResolvedValue(['migration1.js', 'migration2.js']);
+      mocks.storage.readdir.mockResolvedValueOnce(['migration1.js', 'migration2.js']).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([{ name: 'migration1', timestamp: '2024-01-01' }]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 
@@ -51,7 +51,7 @@ describe(CliService.name, () => {
     });
 
     it('should return deleted migrations when row exists but file does not', async () => {
-      mocks.storage.readdir.mockResolvedValue(['migration1.js']);
+      mocks.storage.readdir.mockResolvedValueOnce(['migration1.js']).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([
         { name: 'migration1', timestamp: '2024-01-01' },
         { name: 'migration2', timestamp: '2024-01-02' },
@@ -68,7 +68,7 @@ describe(CliService.name, () => {
     });
 
     it('should filter out non-.js files from readdir', async () => {
-      mocks.storage.readdir.mockResolvedValue(['migration1.js', 'migration1.ts', 'README.md']);
+      mocks.storage.readdir.mockResolvedValueOnce(['migration1.js', 'migration1.ts', 'README.md']).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([{ name: 'migration1', timestamp: '2024-01-01' }]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 
@@ -81,7 +81,7 @@ describe(CliService.name, () => {
     });
 
     it('should return only missing when file exists but no matching row', async () => {
-      mocks.storage.readdir.mockResolvedValue(['new_migration.js']);
+      mocks.storage.readdir.mockResolvedValueOnce(['new_migration.js']).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 
@@ -91,7 +91,7 @@ describe(CliService.name, () => {
     });
 
     it('should return only deleted when row exists but no matching file', async () => {
-      mocks.storage.readdir.mockResolvedValue([]);
+      mocks.storage.readdir.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([{ name: 'old_migration', timestamp: '2024-01-01' }]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 
@@ -101,7 +101,7 @@ describe(CliService.name, () => {
     });
 
     it('should return empty migrations when no files or rows exist', async () => {
-      mocks.storage.readdir.mockResolvedValue([]);
+      mocks.storage.readdir.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 
@@ -111,7 +111,7 @@ describe(CliService.name, () => {
     });
 
     it('should sort migrations by name', async () => {
-      mocks.storage.readdir.mockResolvedValue(['c_migration.js', 'a_migration.js']);
+      mocks.storage.readdir.mockResolvedValueOnce(['c_migration.js', 'a_migration.js']).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([{ name: 'b_migration', timestamp: '2024-01-01' }]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 
@@ -124,13 +124,70 @@ describe(CliService.name, () => {
       ]);
     });
 
+    it('should read migrations from both upstream and gallery folders', async () => {
+      mocks.storage.readdir.mockResolvedValueOnce(['upstream1.js']).mockResolvedValueOnce(['gallery1.js']);
+      mocks.database.getMigrations.mockResolvedValue([
+        { name: 'upstream1', timestamp: '2024-01-01' },
+        { name: 'gallery1', timestamp: '2024-01-02' },
+      ]);
+      mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
+
+      const result = await sut.schemaReport();
+
+      expect(mocks.storage.readdir).toHaveBeenCalledTimes(2);
+      expect(result.migrations).toEqual(
+        expect.arrayContaining([
+          { name: 'gallery1', status: 'applied' },
+          { name: 'upstream1', status: 'applied' },
+        ]),
+      );
+    });
+
+    it('should show fork migrations as missing for Immich-to-Gallery migration', async () => {
+      mocks.storage.readdir.mockResolvedValueOnce(['upstream1.js']).mockResolvedValueOnce(['gallery1.js']);
+      mocks.database.getMigrations.mockResolvedValue([{ name: 'upstream1', timestamp: '2024-01-01' }]);
+      mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
+
+      const result = await sut.schemaReport();
+
+      expect(result.migrations).toEqual(expect.arrayContaining([{ name: 'gallery1', status: 'missing' }]));
+    });
+
+    it('should show all migrations as applied for existing Gallery user', async () => {
+      mocks.storage.readdir.mockResolvedValueOnce(['upstream1.js']).mockResolvedValueOnce(['gallery1.js']);
+      mocks.database.getMigrations.mockResolvedValue([
+        { name: 'upstream1', timestamp: '2024-01-01' },
+        { name: 'gallery1', timestamp: '2024-01-02' },
+      ]);
+      mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
+
+      const result = await sut.schemaReport();
+
+      const applied = result.migrations.filter((m) => m.status === 'applied');
+      expect(applied.map((m) => m.name)).toContain('upstream1');
+      expect(applied.map((m) => m.name)).toContain('gallery1');
+    });
+
+    it('should show deleted status for migration in DB but not in any folder', async () => {
+      mocks.storage.readdir.mockResolvedValueOnce(['upstream1.js']).mockResolvedValueOnce([]);
+      mocks.database.getMigrations.mockResolvedValue([
+        { name: 'upstream1', timestamp: '2024-01-01' },
+        { name: 'removed_migration', timestamp: '2024-01-02' },
+      ]);
+      mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
+
+      const result = await sut.schemaReport();
+
+      expect(result.migrations).toEqual(expect.arrayContaining([{ name: 'removed_migration', status: 'deleted' }]));
+    });
+
     it('should include schema drift in the report', async () => {
       const drift = {
         items: [{ type: 'table', name: 'new_table' }] as any,
         asSql: () => [],
         asHuman: () => [],
       };
-      mocks.storage.readdir.mockResolvedValue([]);
+      mocks.storage.readdir.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([]);
       mocks.database.getSchemaDrift.mockResolvedValue(drift);
 
