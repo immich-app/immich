@@ -5,7 +5,6 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea
-.claude/settings.local.json
 
 docker/upload
 docker/library
