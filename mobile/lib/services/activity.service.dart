@@ -66,9 +66,8 @@ class ActivityService with ErrorLoggerMixin {
         return null;
       }
 
-      AssetViewer.setAsset(ref, asset);
+      AssetViewer.setAsset(ref, asset, initialIndex: 0);
       return AssetViewerRoute(
-        initialIndex: 0,
         timelineService: _timelineFactory.fromAssets([asset], TimelineOrigin.albumActivities),
         currentAlbum: ref.read(currentRemoteAlbumProvider),
       );

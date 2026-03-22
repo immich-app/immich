@@ -9,27 +9,8 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 /// Filmstrip of thumbnails shown at the bottom of the viewer.
-///
-/// Two independent interaction flows:
-///
-/// Tapping a thumbnail -> [currentIndex] changes -> filmstrip animates to centre on that item.
-///
-/// Dragging the filmstrip -> pointer event handlers recognize the drag ->
-/// [_onScrollPositionChanged] fires 
 class ViewerFilmstrip extends ConsumerStatefulWidget {
-  /// Action to perform when the user taps a thumbnail.
-  final void Function(int index) onTap;
-  /// Action to perform when the user scrubs the filmstrip (drags to a different index).
-  final void Function(int index) onScrub;
-  /// The index of the currently displayed asset. 
-  final ValueNotifier<int> currentIndex;
-
-  const ViewerFilmstrip({
-    super.key,
-    required this.onTap,
-    required this.onScrub,
-    required this.currentIndex,
-  });
+  const ViewerFilmstrip({super.key});
 
   @override
   ConsumerState<ViewerFilmstrip> createState() => _ViewerFilmstripState();
@@ -46,7 +27,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   late TimelineService _timelineService;
 
   bool _loading = false;
-  int _previousIndex = -1;
+  int _currentIndex = -1;
   bool _isDragging = false;
   Offset? _pointerDownPosition;
 
@@ -63,18 +44,18 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _scrollController = ScrollController();
     _scrollController.addListener(_onScrollPositionChanged);
     _timelineService = ref.read(timelineServiceProvider);
-    widget.currentIndex.addListener(_onIndexChanged);
-    _ensureBuffered(widget.currentIndex.value);
+    final initialIndex = ref.read(assetViewerProvider).currentIndex;
+    _currentIndex = initialIndex;
+    _ensureBuffered(initialIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _scrollToCurrentIndex(animated: false);
+      _scrollToIndex(initialIndex, animated: false);
       _scrollController.position.isScrollingNotifier.addListener(_onScrollingChanged);
     });
   }
 
   @override
   void dispose() {
-    widget.currentIndex.removeListener(_onIndexChanged);
     if (_scrollController.hasClients) {
       _scrollController.position.isScrollingNotifier.removeListener(_onScrollingChanged);
     }
@@ -100,22 +81,19 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (mounted) setState(() {});
   }
 
-  /// Called when the index of the currently displayed asset changes.
-  void _onIndexChanged() {
-    final idx = widget.currentIndex.value;
-    if (idx == _previousIndex) return;
-    _previousIndex = idx;
-
-    if (_isDragging) return;
+  /// Called when the provider's currentIndex changes.
+  /// The reaction to taps is also routed through this listener.
+  void _onIndexChanged(int? _, int idx) {
+    if (idx == _currentIndex) return;
+    _currentIndex = idx;
 
     _ensureBuffered(idx);
-    _scrollToCurrentIndex();
+    _scrollToIndex(idx);
   }
 
-  /// Updates the scroll position to center on the current index. 
-  void _scrollToCurrentIndex({bool animated = true}) {
+  /// Updates the scroll position to center on the given index.
+  void _scrollToIndex(int index, {bool animated = true}) {
     if (!_scrollController.hasClients) return;
-    final index = widget.currentIndex.value;
     if (index < 0 || index >= _timelineService.totalAssets) return;
 
     final targetOffset = index.toDouble() * (_itemExtent + _itemGap);
@@ -129,6 +107,12 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     } else {
       _scrollController.jumpTo(clamped);
     }
+  }
+
+  void _onTap(int idx) {
+    // Tapped the already selected thumbnail, no-op.
+    if (idx == _currentIndex) return;
+    ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
   }
 
   void _onPointerDown(PointerDownEvent e) {
@@ -175,17 +159,21 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final idx = (offset / (_itemExtent + _itemGap))
         .round()
         .clamp(0, _timelineService.totalAssets - 1);
-    if (idx == widget.currentIndex.value) return;
+    // The scroll position didn't move enough to change the centered index, ignore.
+    if (idx == _currentIndex) return;
 
+    // Set internal _currentIndex before updating the one in provider
+    // as we don't want the provider listener to trigger a scrollToIndex while dragging.
+    _currentIndex = idx;
     _ensureBuffered(idx);
-    widget.onScrub(idx);
+    ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
   }
 
   Widget _buildItem(int idx, int currentIdx) {
     final asset = _timelineService.getAssetSafe(idx);
     final isSelected = idx == currentIdx;
     return GestureDetector(
-      onTap: () => widget.onTap(idx),
+      onTap: () => _onTap(idx),
       child: Padding(
         padding: const EdgeInsets.only(right: _itemGap),
         child: AnimatedContainer(
@@ -231,14 +219,19 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
+    final currentIndex = ref.watch(assetViewerProvider.select((s) => s.currentIndex));
+
+    ref.listen(
+      assetViewerProvider.select((s) => s.currentIndex),
+      _onIndexChanged,
+    );
 
     final newHeight = ref.watch(appSettingsServiceProvider).getSetting<int>(AppSettingsEnum.filmstripHeight).toDouble();
     if (newHeight != _stripHeight) {
       _applyHeight(newHeight);
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
-        if (mounted) _scrollToCurrentIndex();
+        if (mounted) _scrollToIndex(currentIndex);
       },
       );
     }
@@ -253,10 +246,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
         onPointerMove: _onPointerMove,
         onPointerUp: _onPointerUp,
         onPointerCancel: _onPointerCancel,
-        child: ListenableBuilder(
-          listenable: widget.currentIndex,
-          builder: (context, _) => _buildList(widget.currentIndex.value, total),
-        ),
+        child: _buildList(currentIndex, total),
       ),
     );
   }

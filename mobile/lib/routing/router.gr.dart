@@ -445,7 +445,6 @@ class AssetTroubleshootRouteArgs {
 class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
   AssetViewerRoute({
     Key? key,
-    required int initialIndex,
     required TimelineService timelineService,
     int? heroOffset,
     RemoteAlbum? currentAlbum,
@@ -454,7 +453,6 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
          AssetViewerRoute.name,
          args: AssetViewerRouteArgs(
            key: key,
-           initialIndex: initialIndex,
            timelineService: timelineService,
            heroOffset: heroOffset,
            currentAlbum: currentAlbum,
@@ -470,7 +468,6 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
       final args = data.argsAs<AssetViewerRouteArgs>();
       return AssetViewerPage(
         key: args.key,
-        initialIndex: args.initialIndex,
         timelineService: args.timelineService,
         heroOffset: args.heroOffset,
         currentAlbum: args.currentAlbum,
@@ -482,15 +479,12 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
 class AssetViewerRouteArgs {
   const AssetViewerRouteArgs({
     this.key,
-    required this.initialIndex,
     required this.timelineService,
     this.heroOffset,
     this.currentAlbum,
   });
 
   final Key? key;
-
-  final int initialIndex;
 
   final TimelineService timelineService;
 
@@ -500,7 +494,7 @@ class AssetViewerRouteArgs {
 
   @override
   String toString() {
-    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService, heroOffset: $heroOffset, currentAlbum: $currentAlbum}';
+    return 'AssetViewerRouteArgs{key: $key, timelineService: $timelineService, heroOffset: $heroOffset, currentAlbum: $currentAlbum}';
   }
 }
 

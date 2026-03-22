@@ -11,6 +11,7 @@ class AssetViewerState {
   final bool isZoomed;
   final BaseAsset? currentAsset;
   final int stackIndex;
+  final int currentIndex;
 
   const AssetViewerState({
     this.backgroundOpacity = 1.0,
@@ -19,6 +20,7 @@ class AssetViewerState {
     this.isZoomed = false,
     this.currentAsset,
     this.stackIndex = 0,
+    this.currentIndex = 0,
   });
 
   AssetViewerState copyWith({
@@ -28,6 +30,7 @@ class AssetViewerState {
     bool? isZoomed,
     BaseAsset? currentAsset,
     int? stackIndex,
+    int? currentIndex,
   }) {
     return AssetViewerState(
       backgroundOpacity: backgroundOpacity ?? this.backgroundOpacity,
@@ -36,6 +39,7 @@ class AssetViewerState {
       isZoomed: isZoomed ?? this.isZoomed,
       currentAsset: currentAsset ?? this.currentAsset,
       stackIndex: stackIndex ?? this.stackIndex,
+      currentIndex: currentIndex ?? this.currentIndex,
     );
   }
 
@@ -54,7 +58,8 @@ class AssetViewerState {
         other.showingControls == showingControls &&
         other.isZoomed == isZoomed &&
         other.currentAsset == currentAsset &&
-        other.stackIndex == stackIndex;
+        other.stackIndex == stackIndex &&
+        other.currentIndex == currentIndex;
   }
 
   @override
@@ -64,7 +69,8 @@ class AssetViewerState {
       showingControls.hashCode ^
       isZoomed.hashCode ^
       currentAsset.hashCode ^
-      stackIndex.hashCode;
+      stackIndex.hashCode ^
+      currentIndex.hashCode;
 }
 
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
@@ -131,6 +137,11 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
       return;
     }
     state = state.copyWith(stackIndex: index);
+  }
+
+  void setCurrentIndex(int index) {
+    if (index == state.currentIndex) return;
+    state = state.copyWith(currentIndex: index);
   }
 }
 

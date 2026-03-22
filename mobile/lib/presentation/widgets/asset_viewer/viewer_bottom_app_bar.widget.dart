@@ -4,8 +4,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 
 class ViewerBottomAppBar extends ConsumerWidget {
-  final Widget? filmstrip;
-  const ViewerBottomAppBar({super.key, this.filmstrip});
+  const ViewerBottomAppBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +16,7 @@ class ViewerBottomAppBar extends ConsumerWidget {
       child: AnimatedOpacity(
         opacity: opacity,
         duration: Durations.short2,
-        child: ViewerBottomBar(filmstrip: filmstrip),
+        child: const ViewerBottomBar(),
       ),
     );
   }

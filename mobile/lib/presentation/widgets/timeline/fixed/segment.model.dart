@@ -203,11 +203,10 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
-      AssetViewer.setAsset(ref, asset);
+      AssetViewer.setAsset(ref, asset, initialIndex: assetIndex);
       unawaited(
         ctx.pushRoute(
           AssetViewerRoute(
-            initialIndex: assetIndex,
             timelineService: ref.read(timelineServiceProvider),
             heroOffset: heroOffset,
             currentAlbum: ref.read(currentRemoteAlbumProvider),

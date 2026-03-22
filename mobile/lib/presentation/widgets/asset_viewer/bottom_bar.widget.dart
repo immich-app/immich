@@ -9,15 +9,17 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_act
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_filmstrip.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
 class ViewerBottomBar extends ConsumerWidget {
-  final Widget? filmstrip;
-  const ViewerBottomBar({super.key, this.filmstrip});
+  const ViewerBottomBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,6 +33,8 @@ class ViewerBottomBar extends ConsumerWidget {
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final filmstripEnabled =
+        ref.watch(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.filmstripEnabled);
 
     final originalTheme = context.themeData;
 
@@ -78,7 +82,7 @@ class ViewerBottomBar extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
-                        if (filmstrip != null) filmstrip!,
+                        if (filmstripEnabled) const ViewerFilmstrip(),
                         if (!isReadonlyModeEnabled)
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
