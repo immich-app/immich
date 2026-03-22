@@ -12,9 +12,9 @@ vi.mock('kysely', async () => {
 
 import { FileMigrationProvider } from 'kysely';
 
-const mockMigration = (name: string): Migration => ({
-  up: vi.fn().mockResolvedValue(undefined),
-  down: vi.fn().mockResolvedValue(undefined),
+const mockMigration = (_name: string): Migration => ({
+  up: vi.fn().mockResolvedValue(void 0),
+  down: vi.fn().mockResolvedValue(void 0),
 });
 
 const setupMockProviders = (folders: Record<string, Record<string, Migration>>) => {
@@ -142,7 +142,7 @@ describe('CompositeMigrationProvider', () => {
     const result = await provider.getMigrations();
 
     expect(Object.keys(result)).toHaveLength(5);
-    const sorted = Object.keys(result).sort();
+    const sorted = Object.keys(result).toSorted();
     expect(sorted).toEqual(['100-first', '200-second', '300-third', '400-fourth', '500-fifth']);
   });
 
@@ -239,7 +239,7 @@ describe('CompositeMigrationProvider', () => {
 
   // Test 12: Migration without down function
   it('should handle migrations without a down function', async () => {
-    const upOnly: Migration = { up: vi.fn().mockResolvedValue(undefined) };
+    const upOnly: Migration = { up: vi.fn().mockResolvedValue(void 0) };
     setupMockProviders({ upstream: { 'up-only': upOnly }, fork: {} });
 
     const provider = new CompositeMigrationProvider(['upstream', 'fork']);

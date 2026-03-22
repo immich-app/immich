@@ -68,7 +68,9 @@ describe(CliService.name, () => {
     });
 
     it('should filter out non-.js files from readdir', async () => {
-      mocks.storage.readdir.mockResolvedValueOnce(['migration1.js', 'migration1.ts', 'README.md']).mockResolvedValueOnce([]);
+      mocks.storage.readdir
+        .mockResolvedValueOnce(['migration1.js', 'migration1.ts', 'README.md'])
+        .mockResolvedValueOnce([]);
       mocks.database.getMigrations.mockResolvedValue([{ name: 'migration1', timestamp: '2024-01-01' }]);
       mocks.database.getSchemaDrift.mockResolvedValue({ items: [], asSql: () => [], asHuman: () => [] });
 

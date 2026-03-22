@@ -18,10 +18,10 @@ import {
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
-import { CompositeMigrationProvider } from 'src/schema/composite-migration-provider';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
 import { DB } from 'src/schema';
+import { CompositeMigrationProvider } from 'src/schema/composite-migration-provider';
 import { immich_uuid_v7 } from 'src/schema/functions';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';

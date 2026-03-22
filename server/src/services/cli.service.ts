@@ -23,11 +23,9 @@ type MigrationStatus = {
 export class CliService extends BaseService {
   async schemaReport(): Promise<SchemaReport> {
     // eslint-disable-next-line unicorn/prefer-module
-    const migrationFolders = [
-      join(__dirname, '../schema/migrations'),
-      join(__dirname, '../schema/migrations-gallery'),
-    ];
-    const allFiles = (await Promise.all(migrationFolders.map((f) => this.storageRepository.readdir(f)))).flat();
+    const migrationFolders = [join(__dirname, '../schema/migrations'), join(__dirname, '../schema/migrations-gallery')];
+    const readdirResults = await Promise.all(migrationFolders.map((f) => this.storageRepository.readdir(f)));
+    const allFiles = readdirResults.flat();
     const files = allFiles.filter((file) => file.endsWith('.js')).map((file) => file.slice(0, -3));
     const rows = await this.databaseRepository.getMigrations();
     const filesSet = new Set(files);
