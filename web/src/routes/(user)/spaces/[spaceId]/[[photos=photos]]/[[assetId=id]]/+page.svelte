@@ -110,6 +110,17 @@
   let personNames = $state(new Map<string, string>());
   let tagNames = $state(new Map<string, string>());
 
+  let heroCollapsed = $state(false);
+  let prevFilterCount = 0;
+
+  $effect(() => {
+    const count = getActiveFilterCount(filters);
+    if (count > 0 && prevFilterCount === 0) {
+      heroCollapsed = true;
+    }
+    prevFilterCount = count;
+  });
+
   const filterConfig: FilterPanelConfig = {
     sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'],
     providers: {
@@ -701,6 +712,8 @@
                   peopleCount={spacePeople.length}
                   faceRecognitionEnabled={space.faceRecognitionEnabled}
                   spaceId={space.id}
+                  collapsed={heroCollapsed}
+                  onToggleCollapse={() => (heroCollapsed = !heroCollapsed)}
                 />
 
                 {#if space.faceRecognitionEnabled && spacePeople.length > 0}

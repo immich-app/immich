@@ -6,6 +6,8 @@
     mdiAccountGroupOutline,
     mdiAccountMultipleOutline,
     mdiCameraOutline,
+    mdiChevronDown,
+    mdiChevronUp,
     mdiCursorMove,
     mdiImageEditOutline,
   } from '@mdi/js';
@@ -26,6 +28,8 @@
     faceRecognitionEnabled?: boolean;
     spaceId?: string;
     height?: number;
+    collapsed?: boolean;
+    onToggleCollapse?: () => void;
   }
 
   let {
@@ -43,6 +47,8 @@
     faceRecognitionEnabled,
     spaceId,
     height = 450,
+    collapsed = false,
+    onToggleCollapse,
   }: Props = $props();
 
   let coverUrl = $derived(
@@ -73,6 +79,8 @@
   let displayCropY = $derived(repositioning ? dragCropY : (space.thumbnailCropY ?? 50));
 
   let hasCover = $derived(!!space.thumbnailAssetId);
+  let isCollapsed = $derived(collapsed && !repositioning);
+  let effectiveHeight = $derived(isCollapsed ? 56 : height);
 
   const handlePointerDown = (e: PointerEvent) => {
     if (!repositioning) {
@@ -99,7 +107,11 @@
   };
 </script>
 
-<div class="relative w-full overflow-hidden rounded-xl" style="height: {height}px;" data-testid="space-hero">
+<div
+  class="relative w-full overflow-hidden rounded-xl"
+  style="height: {effectiveHeight}px; transition: height 300ms ease;"
+  data-testid="space-hero"
+>
   {#if coverUrl}
     <img
       src={coverUrl}
@@ -118,7 +130,65 @@
     <div class="absolute inset-0 bg-gradient-to-br {gradientClass}" data-testid="hero-gradient"></div>
   {/if}
 
-  {#if repositioning}
+  {#if isCollapsed}
+    <!-- Collapsed compact bar -->
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative flex h-full items-center gap-3 px-4" data-testid="hero-collapsed-bar">
+      <span
+        class="min-w-0 flex-1 truncate text-base font-semibold text-white drop-shadow-md"
+        data-testid="hero-collapsed-name"
+      >
+        {space.name}
+      </span>
+      <span
+        class="hidden items-center gap-1.5 rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm sm:inline-flex"
+        data-testid="hero-collapsed-photo-count"
+      >
+        <Icon icon={mdiCameraOutline} size="14" />
+        {assetCount}
+        {$t('photos')}
+      </span>
+      <span
+        class="hidden items-center gap-1.5 rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm sm:inline-flex"
+        data-testid="hero-collapsed-member-count"
+      >
+        <Icon icon={mdiAccountMultipleOutline} size="14" />
+        {memberCount}
+        {$t('members')}
+      </span>
+      {#if faceRecognitionEnabled && peopleCount && peopleCount > 0}
+        <a
+          href="/spaces/{spaceId}/people"
+          class="hidden items-center gap-1.5 rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm transition-colors hover:bg-white/30 sm:inline-flex"
+          data-testid="hero-collapsed-people-count"
+        >
+          <Icon icon={mdiAccountGroupOutline} size="14" />
+          {peopleCount}
+          {$t('people')}
+        </a>
+      {/if}
+      {#if currentRole}
+        <span
+          class="hidden items-center rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium capitalize text-white backdrop-blur-sm sm:inline-flex"
+          data-testid="hero-collapsed-role"
+        >
+          {roleLabels[currentRole] ?? currentRole}
+        </span>
+      {/if}
+      {#if onToggleCollapse}
+        <button
+          type="button"
+          class="rounded-full bg-white/20 p-1.5 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+          onclick={onToggleCollapse}
+          aria-expanded="false"
+          aria-label="Expand space header"
+          data-testid="hero-expand-toggle"
+        >
+          <Icon icon={mdiChevronDown} size="16" />
+        </button>
+      {/if}
+    </div>
+  {:else if repositioning}
     <!-- Reposition mode overlay -->
     <div class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/50 to-transparent"></div>
     <div
@@ -245,6 +315,18 @@
           >
             {roleLabels[currentRole] ?? currentRole}
           </span>
+        {/if}
+        {#if onToggleCollapse}
+          <button
+            type="button"
+            class="inline-flex items-center rounded-full bg-white/20 p-1 backdrop-blur-sm transition-colors hover:bg-white/30"
+            onclick={onToggleCollapse}
+            aria-expanded="true"
+            aria-label="Collapse space header"
+            data-testid="hero-collapse-toggle"
+          >
+            <Icon icon={mdiChevronUp} size="16" />
+          </button>
         {/if}
       </div>
     </div>
