@@ -20,19 +20,19 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   static const double _itemGap = 2.0;
   static const int _bufferWindow = 100;
 
-  late double _stripHeight;
+  late double _filmstripHeight;
   late double _itemExtent;
 
   late final ScrollController _scrollController;
   late TimelineService _timelineService;
 
   bool _loading = false;
-  int _currentIndex = -1;
+  late final ValueNotifier<int> _currentIndex;
   bool _isScrubbing = false;
   Offset? _pointerDownPosition;
 
   void _applyHeight(double height) {
-    _stripHeight = height;
+    _filmstripHeight = height;
     _itemExtent = height - 4;
   }
 
@@ -45,7 +45,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _scrollController.addListener(_onScrollPositionChanged);
     _timelineService = ref.read(timelineServiceProvider);
     final initialIndex = ref.read(assetViewerProvider).currentIndex;
-    _currentIndex = initialIndex;
+    _currentIndex = ValueNotifier(initialIndex);
     _ensureBuffered(initialIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -61,10 +61,11 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     }
     _scrollController.removeListener(_onScrollPositionChanged);
     _scrollController.dispose();
+    _currentIndex.dispose();
     super.dispose();
   }
 
-  /// Ensures the asset at [idx] and a buffer of assets around it are loaded.
+  /// Ensures the assets around [idx] are loaded.
   Future<void> _ensureBuffered(int idx) async {
     if (_loading) return; // TODO: consider cancelling in-flight load and starting new one?
 
@@ -78,14 +79,17 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _loading = true;
     await _timelineService.loadAssets(start, count);
     _loading = false;
+
+    // We use placeholders for assets that are not cached in timeline when building filmstrip item.
+    // This will update the thumbnails once the assets are actually loaded.
     if (mounted) setState(() {});
   }
 
   /// Called when the provider's currentIndex changes.
   /// The reaction to taps is also routed through this listener.
   void _onIndexChanged(int? _, int idx) {
-    if (idx == _currentIndex) return;
-    _currentIndex = idx;
+    if (idx == _currentIndex.value) return;
+    _currentIndex.value = idx;
 
     _ensureBuffered(idx);
     _scrollToIndex(idx);
@@ -111,7 +115,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   void _onTap(int idx) {
     // Tapped the already selected thumbnail, no-op.
-    if (idx == _currentIndex) return;
+    if (idx == _currentIndex.value) return;
     ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
   }
 
@@ -148,11 +152,11 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
       // TODO: Softly snap to the centered thumbnail (user might have left the scroll in an intermediate position).
       // Note we could end up here due to exact drag or anm inertia fling.
       // But the inertia fling should due to simulation always end at exact centered position, so snapping should be a no-op in that case.
-      _scrollToIndex(_currentIndex); // Test the soft snap by simply using animation
+      _scrollToIndex(_currentIndex.value); // Test the soft snap by simply using animation
     } else {
       // Re-center on the selected thumbnail if a tap animation was
       // interrupted (e.g. double-tap before the first scroll finished).
-      _scrollToIndex(_currentIndex, animated: false);
+      _scrollToIndex(_currentIndex.value, animated: false);
     }
   }
 
@@ -171,48 +175,53 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
         .round()
         .clamp(0, _timelineService.totalAssets - 1);
     // The scroll position didn't move enough to change the centered index, ignore.
-    if (idx == _currentIndex) return;
+    if (idx == _currentIndex.value) return;
 
     // Set internal _currentIndex before updating the one in provider
     // as we don't want the provider listener to trigger a scrollToIndex while dragging.
-    _currentIndex = idx;
+    _currentIndex.value = idx;
     _ensureBuffered(idx);
     ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
   }
 
-  Widget _buildItem(int idx, int currentIdx) {
+  Widget _buildItem(int idx) {
     final asset = _timelineService.getAssetSafe(idx);
-    final isSelected = idx == currentIdx;
     return GestureDetector(
       onTap: () => _onTap(idx),
-      child: Padding(
-        padding: const EdgeInsets.only(right: _itemGap),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
-            border: isSelected ? Border.all(color: Colors.white70, width: 2.0) : null,
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(2),
-            child: SizedBox(
-              width: _itemExtent,
-              height: _stripHeight,
-              child: asset == null
-                  ? const ColoredBox(color: Colors.black26)
-                  : Thumbnail.fromAsset(
-                      asset: asset,
-                      fit: BoxFit.cover,
-                      size: Size(_itemExtent, _itemExtent),
-                    ),
+      child: ValueListenableBuilder<int>(
+        valueListenable: _currentIndex,
+        builder: (context, currentIdx, child) {
+          return Padding(
+            padding: const EdgeInsets.only(right: _itemGap),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(
+                border: idx == currentIdx ? Border.all(color: Colors.white70, width: 2.0) : null,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: child,
             ),
+          );
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: SizedBox(
+            width: _itemExtent,
+            height: _filmstripHeight,
+            child: asset == null
+                ? const ColoredBox(color: Colors.black26)
+                : Thumbnail.fromAsset(
+                    asset: asset,
+                    fit: BoxFit.cover,
+                    size: Size(_itemExtent, _itemExtent),
+                  ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildList(int currentIdx, int total) {
+  Widget _buildList(int total) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
@@ -222,7 +231,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
           itemCount: total,
           itemExtent: _itemExtent + _itemGap,
           padding: EdgeInsets.symmetric(horizontal: sidePadding),
-          itemBuilder: (context, idx) => _buildItem(idx, currentIdx),
+          itemBuilder: (context, idx) => _buildItem(idx),
         );
       },
     );
@@ -230,19 +239,17 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = ref.watch(assetViewerProvider.select((s) => s.currentIndex));
-
     ref.listen(
       assetViewerProvider.select((s) => s.currentIndex),
       _onIndexChanged,
     );
 
     final newHeight = ref.watch(appSettingsServiceProvider).getSetting<int>(AppSettingsEnum.filmstripHeight).toDouble();
-    if (newHeight != _stripHeight) {
+    if (newHeight != _filmstripHeight) {
       _applyHeight(newHeight);
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
-        if (mounted) _scrollToIndex(currentIndex);
+        if (mounted) _scrollToIndex(_currentIndex.value);
       },
       );
     }
@@ -251,13 +258,13 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (total == 0) return const SizedBox.shrink();
 
     return SizedBox(
-      height: _stripHeight,
+      height: _filmstripHeight,
       child: Listener(
         onPointerDown: _onPointerDown,
         onPointerMove: _onPointerMove,
         onPointerUp: _onPointerUp,
         onPointerCancel: _onPointerCancel,
-        child: _buildList(currentIndex, total),
+        child: _buildList(total),
       ),
     );
   }
