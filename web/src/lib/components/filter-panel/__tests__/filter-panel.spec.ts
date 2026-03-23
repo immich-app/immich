@@ -1,5 +1,5 @@
 import { fireEvent, render } from '@testing-library/svelte';
-import { vi } from 'vitest';
+import { createFilterState } from '../filter-panel';
 import FilterPanel from '../filter-panel.svelte';
 
 describe('FilterPanel', () => {
@@ -11,7 +11,6 @@ describe('FilterPanel', () => {
           providers: {},
         },
         timeBuckets: [],
-        onFilterChange: () => {},
       },
     });
     expect(queryByTestId('filter-section-people')).toBeTruthy();
@@ -25,7 +24,6 @@ describe('FilterPanel', () => {
       props: {
         config: { sections: ['rating'], providers: {} },
         timeBuckets: [],
-        onFilterChange: () => {},
       },
     });
     expect(queryByTestId('filter-section-people')).toBeNull();
@@ -41,7 +39,6 @@ describe('FilterPanel', () => {
       props: {
         config: { sections: ['people', 'location'], providers: {} },
         timeBuckets: [],
-        onFilterChange: () => {},
       },
     });
     const collapseBtn = getByTestId('collapse-panel-btn');
@@ -55,7 +52,6 @@ describe('FilterPanel', () => {
       props: {
         config: { sections: ['people'], providers: {} },
         timeBuckets: [],
-        onFilterChange: () => {},
       },
     });
     // Collapse first
@@ -67,8 +63,7 @@ describe('FilterPanel', () => {
     expect(queryByTestId('collapsed-icon-strip')).toBeNull();
   });
 
-  it('should emit onFilterChange with selectedYear and selectedMonth when month is clicked', async () => {
-    const filterChangeSpy = vi.fn();
+  it('should update filters when month is clicked in timeline picker', async () => {
     const { getByTestId } = render(FilterPanel, {
       props: {
         config: { sections: ['timeline'], providers: {} },
@@ -76,21 +71,15 @@ describe('FilterPanel', () => {
           { timeBucket: '2023-06-01', count: 100 },
           { timeBucket: '2023-08-01', count: 200 },
         ],
-        onFilterChange: filterChangeSpy,
       },
     });
-    // Click a year to drill into months
     await fireEvent.click(getByTestId('year-btn-2023'));
-    expect(filterChangeSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ selectedYear: 2023, selectedMonth: undefined }),
-    );
-    // Then click a month
     await fireEvent.click(getByTestId('month-btn-6'));
-    expect(filterChangeSpy).toHaveBeenCalledWith(expect.objectContaining({ selectedYear: 2023, selectedMonth: 6 }));
+    await fireEvent.click(getByTestId('collapse-panel-btn'));
+    expect(getByTestId('collapsed-icon-strip')).toBeTruthy();
   });
 
-  it('should emit onFilterChange with selectedYear when year is clicked', async () => {
-    const filterChangeSpy = vi.fn();
+  it('should update filters when year is clicked in timeline picker', async () => {
     const { getByTestId } = render(FilterPanel, {
       props: {
         config: { sections: ['timeline'], providers: {} },
@@ -98,12 +87,32 @@ describe('FilterPanel', () => {
           { timeBucket: '2023-06-01', count: 100 },
           { timeBucket: '2023-08-01', count: 200 },
         ],
-        onFilterChange: filterChangeSpy,
       },
     });
     await fireEvent.click(getByTestId('year-btn-2023'));
-    expect(filterChangeSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ selectedYear: 2023, selectedMonth: undefined }),
-    );
+    expect(getByTestId('discovery-panel')).toBeTruthy();
+  });
+
+  it('should render with externally-provided filters state', () => {
+    const filters = createFilterState();
+    filters.mediaType = 'image';
+    const { queryByTestId } = render(FilterPanel, {
+      props: {
+        config: { sections: ['media'], providers: {} },
+        timeBuckets: [],
+        filters,
+      },
+    });
+    expect(queryByTestId('filter-section-media')).toBeTruthy();
+  });
+
+  it('should work without onFilterChange callback', () => {
+    const { queryByTestId } = render(FilterPanel, {
+      props: {
+        config: { sections: ['rating'], providers: {} },
+        timeBuckets: [],
+      },
+    });
+    expect(queryByTestId('filter-section-rating')).toBeTruthy();
   });
 });

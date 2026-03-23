@@ -8,11 +8,11 @@
   interface Props {
     people: SharedSpacePersonResponseDto[];
     spaceId: string;
-    selectedPersonId?: string | null;
+    selectedPersonIds?: string[];
     onPersonClick?: (personId: string) => void;
   }
 
-  let { people, spaceId, selectedPersonId = null, onPersonClick }: Props = $props();
+  let { people, spaceId, selectedPersonIds = [], onPersonClick }: Props = $props();
 
   const SEE_ALL_THRESHOLD = 6;
 
@@ -36,7 +36,7 @@
       >
         <div
           class="size-14 overflow-hidden rounded-full transition-transform duration-150 hover:scale-105
-            {selectedPersonId === person.id ? 'ring-2 ring-offset-2 ring-immich-primary' : ''}"
+            {selectedPersonIds.includes(person.id) ? 'ring-2 ring-offset-2 ring-immich-primary' : ''}"
           data-testid="person-ring-{person.id}"
         >
           <img
@@ -48,7 +48,7 @@
         </div>
         {#if getDisplayName(person)}
           <span
-            class="w-full truncate text-center text-xs {selectedPersonId === person.id
+            class="w-full truncate text-center text-xs {selectedPersonIds.includes(person.id)
               ? 'font-semibold text-immich-primary'
               : 'text-gray-600 dark:text-gray-400'}"
             data-testid="person-label-{person.id}"

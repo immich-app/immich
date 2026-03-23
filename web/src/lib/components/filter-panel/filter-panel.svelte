@@ -25,12 +25,11 @@
   interface Props {
     config: FilterPanelConfig;
     timeBuckets: Array<{ timeBucket: string; count: number }>;
-    onFilterChange: (filters: FilterState) => void;
+    filters?: FilterState;
   }
 
-  let { config, timeBuckets, onFilterChange }: Props = $props();
+  let { config, timeBuckets, filters = $bindable(createFilterState()) }: Props = $props();
   let collapsed = $state(false);
-  let filters = $state(createFilterState());
 
   // Fetched data for filter sections
   let people = $state<PersonOption[]>([]);
@@ -91,53 +90,36 @@
     }
   });
 
-  function notifyFilterChange() {
-    onFilterChange(filters);
-  }
-
   function handlePeopleChange(ids: string[]) {
-    filters.personIds = ids;
-    notifyFilterChange();
+    filters = { ...filters, personIds: ids };
   }
 
   function handleLocationChange(country?: string, city?: string) {
-    filters.country = country;
-    filters.city = city;
-    notifyFilterChange();
+    filters = { ...filters, country, city };
   }
 
   function handleCameraChange(make?: string, model?: string) {
-    filters.make = make;
-    filters.model = model;
-    notifyFilterChange();
+    filters = { ...filters, make, model };
   }
 
   function handleTagsChange(ids: string[]) {
-    filters.tagIds = ids;
-    notifyFilterChange();
+    filters = { ...filters, tagIds: ids };
   }
 
   function handleRatingChange(rating?: number) {
-    filters.rating = rating;
-    notifyFilterChange();
+    filters = { ...filters, rating };
   }
 
   function handleMediaTypeChange(type: 'all' | 'image' | 'video') {
-    filters.mediaType = type;
-    notifyFilterChange();
+    filters = { ...filters, mediaType: type };
   }
 
   function handleYearSelect(year: number | undefined) {
-    filters.selectedYear = year;
-    // Clear month when year changes or is deselected
-    filters.selectedMonth = undefined;
-    notifyFilterChange();
+    filters = { ...filters, selectedYear: year, selectedMonth: undefined };
   }
 
   function handleMonthSelect(year: number, month: number | undefined) {
-    filters.selectedYear = year;
-    filters.selectedMonth = month;
-    notifyFilterChange();
+    filters = { ...filters, selectedYear: year, selectedMonth: month };
   }
 
   function hasActiveFilter(section: string): boolean {

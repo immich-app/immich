@@ -50,18 +50,36 @@ describe('SpacePeopleStrip', () => {
     expect(screen.queryByTestId('person-label-p1')).not.toBeInTheDocument();
   });
 
-  it('should show selected state with ring when selectedPersonId matches', () => {
+  it('should show selected state with ring when person is in selectedPersonIds', () => {
     const people = [makePerson({ id: 'p1', name: 'Alice' })];
-    render(SpacePeopleStrip, { people, spaceId: 'space-1', selectedPersonId: 'p1' });
+    render(SpacePeopleStrip, { people, spaceId: 'space-1', selectedPersonIds: ['p1'] });
     const ring = screen.getByTestId('person-ring-p1');
     expect(ring.className).toContain('ring-2');
   });
 
-  it('should not show ring when not selected', () => {
+  it('should not show ring when person is not in selectedPersonIds', () => {
     const people = [makePerson({ id: 'p1', name: 'Alice' })];
-    render(SpacePeopleStrip, { people, spaceId: 'space-1' });
+    render(SpacePeopleStrip, { people, spaceId: 'space-1', selectedPersonIds: [] });
     const ring = screen.getByTestId('person-ring-p1');
     expect(ring.className).not.toContain('ring-2');
+  });
+
+  it('should highlight multiple selected people', () => {
+    const people = [
+      makePerson({ id: 'p1', name: 'Alice' }),
+      makePerson({ id: 'p2', name: 'Bob' }),
+      makePerson({ id: 'p3', name: 'Carol' }),
+    ];
+    render(SpacePeopleStrip, { people, spaceId: 'space-1', selectedPersonIds: ['p1', 'p3'] });
+    expect(screen.getByTestId('person-ring-p1').className).toContain('ring-2');
+    expect(screen.getByTestId('person-ring-p2').className).not.toContain('ring-2');
+    expect(screen.getByTestId('person-ring-p3').className).toContain('ring-2');
+  });
+
+  it('should not break when selectedPersonIds contains unknown IDs', () => {
+    const people = [makePerson({ id: 'p1', name: 'Alice' })];
+    render(SpacePeopleStrip, { people, spaceId: 'space-1', selectedPersonIds: ['p1', 'unknown-id'] });
+    expect(screen.getByTestId('person-ring-p1').className).toContain('ring-2');
   });
 
   it('should call onPersonClick when a person is clicked', async () => {

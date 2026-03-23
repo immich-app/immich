@@ -101,7 +101,6 @@
   let initializedSpaceId = $state('');
 
   let spacePeople = $state<SharedSpacePersonResponseDto[]>([]);
-  let selectedPersonId = $state<string | null>(null);
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
@@ -194,9 +193,6 @@
       return { visibility: AssetVisibility.Timeline, timelineSpaceId: space.id };
     }
     const base: Record<string, unknown> = { spaceId: space.id };
-    if (selectedPersonId) {
-      base.spacePersonId = selectedPersonId;
-    }
     // Apply filter state — personIds maps to spacePersonIds for Spaces context
     if (filters.personIds.length > 0) {
       base.spacePersonIds = filters.personIds;
@@ -280,7 +276,11 @@
   }
 
   const handlePersonClick = (personId: string) => {
-    selectedPersonId = selectedPersonId === personId ? null : personId;
+    const current = filters.personIds;
+    filters = {
+      ...filters,
+      personIds: current.includes(personId) ? current.filter((id) => id !== personId) : [...current, personId],
+    };
   };
 
   const handleEscape = () => {
@@ -617,13 +617,11 @@
     {#if viewMode === 'view'}
       <FilterPanel
         config={filterConfig}
+        bind:filters
         timeBuckets={timelineManager?.months?.map((m) => ({
           timeBucket: `${m.yearMonth.year}-${String(m.yearMonth.month).padStart(2, '0')}-01T00:00:00.000Z`,
           count: m.assetsCount,
         })) ?? []}
-        onFilterChange={(f) => {
-          filters = { ...f, sortOrder: filters.sortOrder };
-        }}
       />
     {/if}
 
@@ -720,7 +718,7 @@
                   <SpacePeopleStrip
                     people={spacePeople}
                     spaceId={space.id}
-                    {selectedPersonId}
+                    selectedPersonIds={filters.personIds}
                     onPersonClick={handlePersonClick}
                   />
                 {/if}
