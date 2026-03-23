@@ -744,8 +744,8 @@ importers:
         specifier: workspace:*
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.65.3
-        version: 0.65.3(@sveltejs/kit@2.53.4(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.53.13)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)(typescript@5.9.3)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)
+        specifier: ^0.67.2
+        version: 0.67.2(@sveltejs/kit@2.53.4(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.53.13)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)(typescript@5.9.3)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.3.0
         version: 0.3.0
@@ -3038,8 +3038,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.65.3':
-    resolution: {integrity: sha512-jMXzCzMNTcCdWXt9IUP7GkALE5oEvPQk/jCOuI2bfxsxCZFzMkUfUS+AV83Vg1vQ6l+g39PbKSPKBEzv125ATQ==}
+  '@immich/ui@0.67.2':
+    resolution: {integrity: sha512-GsaoJRiRORJ34CT+W3pAOdhbLr61nNlgFaOzDcnVnSWFonu7+HR3CXdCxbSdyU4+r3xEmcawwo6rMuLgRplHfw==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -15123,7 +15123,7 @@ snapshots:
       node-emoji: 2.2.0
       svelte: 5.53.13
 
-  '@immich/ui@0.65.3(@sveltejs/kit@2.53.4(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.53.13)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)(typescript@5.9.3)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)':
+  '@immich/ui@0.67.2(@sveltejs/kit@2.53.4(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.53.13)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)(typescript@5.9.3)(vite@8.0.0(@types/node@25.4.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.53.13)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.2.1(svelte@5.53.13)
       '@internationalized/date': 3.10.0

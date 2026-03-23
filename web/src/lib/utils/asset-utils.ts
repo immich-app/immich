@@ -1,4 +1,3 @@
-import ToastAction from '$lib/components/ToastAction.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -326,16 +325,11 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
   try {
     const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
     if (showNotification) {
-      toastManager.custom({
-        component: ToastAction,
-        props: {
-          title: $t('success'),
-          description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-          color: 'success',
-          button: {
-            text: $t('view_stack'),
-            onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
-          },
+      toastManager.primary({
+        description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
+        button: {
+          label: $t('view_stack'),
+          onclick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
         },
       });
     }
