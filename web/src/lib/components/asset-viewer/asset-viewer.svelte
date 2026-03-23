@@ -14,7 +14,6 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { getAssetActions } from '$lib/services/asset.service';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -89,7 +88,6 @@
     onRandom,
   }: Props = $props();
 
-  const { setAssetId } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -188,7 +186,7 @@
     if (editManager.hasAppliedEdits) {
       const refreshedAsset = await getAssetInfo({ id: asset.id });
       onAssetChange?.(refreshedAsset);
-      assetViewingStore.setAsset(refreshedAsset);
+      assetViewerManager.setAsset(refreshedAsset);
     }
     assetViewerManager.closeEditor();
   };
@@ -239,7 +237,7 @@
       }
 
       if ($slideshowRepeat && slideshowStartAssetId) {
-        await setAssetId(slideshowStartAssetId);
+        await assetViewerManager.setAssetId(slideshowStartAssetId);
         $restartSlideshowProgress = true;
         return;
       }
@@ -255,7 +253,7 @@
   let assetViewerHtmlElement = $state<HTMLElement>();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
-    handlePromiseError(setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
+    handlePromiseError(assetViewerManager.setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
   });
 
   const handleVideoStarted = () => {

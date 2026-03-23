@@ -5,12 +5,12 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { handleDownloadAlbum } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -34,7 +34,6 @@
 
   const album = sharedLink.album as AlbumResponseDto;
 
-  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   const options = $derived({ albumId: album.id, order: album.order });
@@ -55,7 +54,9 @@
         ? await timelineManager.getRandomAsset()
         : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
     if (asset) {
-      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
+      handlePromiseError(
+        assetViewerManager.setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)),
+      );
     }
   };
 
@@ -66,7 +67,7 @@
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
-      if (!$showAssetViewer && assetInteraction.selectionActive) {
+      if (!assetViewerManager.isViewing && assetInteraction.selectionActive) {
         cancelMultiselect(assetInteraction);
       }
     },
