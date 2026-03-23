@@ -95,7 +95,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA']);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
     });
 
     it('should return search suggestions for country (including null)', async () => {
@@ -105,7 +105,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA', null]);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
     });
 
     it('should return search suggestions for state', async () => {
@@ -206,6 +206,37 @@ describe(SearchService.name, () => {
         sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.CAMERA_LENS_MODEL }),
       ).resolves.toEqual(['10-24mm', null]);
       expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
+    });
+
+    it('should pass spaceId to country search suggestions', async () => {
+      const spaceId = newUuid();
+      mocks.search.getCountries.mockResolvedValue(['Germany']);
+      mocks.partner.getAll.mockResolvedValue([]);
+
+      const result = await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.COUNTRY,
+        spaceId,
+      });
+
+      expect(result).toEqual(['Germany']);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], { spaceId });
+    });
+
+    it('should pass spaceId to state search suggestions', async () => {
+      const spaceId = newUuid();
+      mocks.search.getStates.mockResolvedValue(['Bavaria']);
+      mocks.partner.getAll.mockResolvedValue([]);
+
+      const result = await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.STATE,
+        spaceId,
+      });
+
+      expect(result).toEqual(['Bavaria']);
+      expect(mocks.search.getStates).toHaveBeenCalledWith(
+        [authStub.user1.user.id],
+        expect.objectContaining({ spaceId }),
+      );
     });
   });
 

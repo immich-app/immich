@@ -10158,6 +10158,16 @@
             }
           },
           {
+            "name": "spaceId",
+            "required": false,
+            "in": "query",
+            "description": "Scope suggestions to a specific shared space",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "state",
             "required": false,
             "in": "query",
@@ -15232,6 +15242,24 @@
             }
           },
           {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "description": "Filter by city name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "Filter by country name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -15258,6 +15286,24 @@
             }
           },
           {
+            "name": "make",
+            "required": false,
+            "in": "query",
+            "description": "Filter by camera make",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model",
+            "required": false,
+            "in": "query",
+            "description": "Filter by camera model",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "order",
             "required": false,
             "in": "query",
@@ -15274,6 +15320,29 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "personIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "description": "Minimum star rating (>=)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
             }
           },
           {
@@ -15305,12 +15374,54 @@
             }
           },
           {
+            "name": "spacePersonIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
             "description": "Filter assets with a specific tag",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tagIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "description": "Only include assets taken on or after this date (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "description": "Only include assets taken on or before this date (ISO 8601)",
+            "schema": {
               "type": "string"
             }
           },
@@ -15322,6 +15433,15 @@
             "schema": {
               "example": "2024-01-01",
               "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by asset type (IMAGE or VIDEO)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetTypeEnum"
             }
           },
           {
@@ -15447,6 +15567,24 @@
             }
           },
           {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "description": "Filter by city name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "Filter by country name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -15473,6 +15611,24 @@
             }
           },
           {
+            "name": "make",
+            "required": false,
+            "in": "query",
+            "description": "Filter by camera make",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model",
+            "required": false,
+            "in": "query",
+            "description": "Filter by camera model",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "order",
             "required": false,
             "in": "query",
@@ -15489,6 +15645,29 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "personIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "description": "Minimum star rating (>=)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
             }
           },
           {
@@ -15520,6 +15699,18 @@
             }
           },
           {
+            "name": "spacePersonIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -15527,6 +15718,45 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "tagIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "description": "Only include assets taken on or after this date (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "description": "Only include assets taken on or before this date (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by asset type (IMAGE or VIDEO)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetTypeEnum"
             }
           },
           {

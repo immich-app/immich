@@ -1,0 +1,2081 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discovery Page — Independent Panel Options</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4250af;
+        --primary-soft: rgba(66, 80, 175, 0.08);
+        --primary-med: rgba(66, 80, 175, 0.15);
+        --bg: #0e0e10;
+        --bg-surface: #1a1a1e;
+        --bg-elevated: #222226;
+        --bg-nav: #141416;
+        --bg-panel: #131316;
+        --fg: #e4e4e8;
+        --fg-muted: #8e8e9a;
+        --fg-faint: #5a5a66;
+        --border: #2a2a30;
+        --border-hover: #3a3a42;
+        --radius: 8px;
+        --radius-full: 9999px;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        --t: 0.15s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'DM Sans', system-ui, sans-serif;
+        background: #08080a;
+        color: var(--fg);
+        letter-spacing: 0.01em;
+        line-height: 1.5;
+      }
+
+      .page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 32px 24px;
+      }
+
+      .page-header {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+      .page-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+      }
+      .page-header p {
+        font-size: 14px;
+        color: var(--fg-muted);
+      }
+
+      .option-card {
+        margin-bottom: 64px;
+      }
+      .option-header {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 6px;
+      }
+      .option-letter {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: var(--primary-med);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+      .option-title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .option-desc {
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-bottom: 16px;
+        max-width: 720px;
+      }
+
+      .option-pros-cons {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 16px;
+        font-size: 12px;
+      }
+      .pros,
+      .cons {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .pros span::before {
+        content: '✓ ';
+        color: #4ade80;
+        font-weight: 700;
+      }
+      .cons span::before {
+        content: '✗ ';
+        color: #f87171;
+        font-weight: 700;
+      }
+
+      .wireframe {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--bg);
+        box-shadow: var(--shadow);
+      }
+
+      .dim-bottom {
+        display: flex;
+        justify-content: center;
+        padding: 6px 0;
+      }
+      .dim-tag {
+        font-size: 10px;
+        color: #f59e0b;
+        font-weight: 600;
+        background: rgba(245, 158, 11, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px dashed rgba(245, 158, 11, 0.3);
+      }
+
+      .section-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 48px 0;
+      }
+
+      /* ═══ Shared Wireframe Parts ═══ */
+      .w-topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px;
+        height: 48px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+      }
+      .w-logo {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        font-size: 15px;
+        margin-right: 4px;
+        white-space: nowrap;
+      }
+      .w-logo-dots {
+        display: flex;
+        gap: 2px;
+      }
+      .w-logo-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      .w-search-wrap {
+        position: relative;
+        flex: 1;
+        max-width: 440px;
+      }
+      .w-search-wrap svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        color: var(--fg-faint);
+      }
+      .w-search {
+        width: 100%;
+        height: 32px;
+        padding: 0 10px 0 32px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        background: var(--bg-surface);
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .w-topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+      .w-small-btn {
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        background: none;
+        color: var(--fg-muted);
+        font-family: inherit;
+        font-size: 11px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+      }
+      .w-small-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+      .w-small-btn.active-filter {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-soft);
+      }
+      .w-icon-btn {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: none;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+      }
+      .w-icon-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+      .w-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+      }
+
+      /* Nav sidebar (untouched) */
+      .w-nav {
+        background: var(--bg-nav);
+        border-right: 1px solid var(--border);
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        overflow: hidden;
+      }
+      .w-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: var(--fg-muted);
+        white-space: nowrap;
+      }
+      .w-nav-item.active {
+        background: var(--primary-med);
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .w-nav-item svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      .w-nav-spacer {
+        flex: 1;
+      }
+      .w-nav-bottom {
+        padding: 8px;
+        border-top: 1px solid var(--border);
+        margin-top: auto;
+        font-size: 9px;
+        color: var(--fg-faint);
+      }
+
+      /* ═══ Discovery Panel (new component) ═══ */
+      .disc-panel {
+        background: var(--bg-panel);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        position: relative;
+      }
+
+      .disc-panel-left {
+        border-right: 1px solid var(--border);
+      }
+      .disc-panel-right {
+        border-left: 1px solid var(--border);
+      }
+
+      /* Resize handle */
+      .resize-handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        cursor: col-resize;
+        z-index: 10;
+        transition: background var(--t);
+      }
+      .resize-handle:hover {
+        background: var(--primary);
+        opacity: 0.4;
+      }
+      .resize-handle-left {
+        right: 0;
+      }
+      .resize-handle-right {
+        left: 0;
+      }
+
+      /* Panel header */
+      .disc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: var(--bg-panel);
+        z-index: 5;
+      }
+      .disc-header-title {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .disc-header-actions {
+        display: flex;
+        gap: 2px;
+      }
+      .disc-header-btn {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: none;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+        cursor: default;
+      }
+      .disc-header-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Panel sections */
+      .disc-section {
+        border-bottom: 1px solid var(--border);
+      }
+      .disc-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .disc-section-header:hover {
+        background: var(--primary-soft);
+      }
+      .disc-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--fg-muted);
+      }
+      .disc-section-chevron {
+        width: 14px;
+        height: 14px;
+        color: var(--fg-faint);
+      }
+      .disc-section-body {
+        padding: 0 12px 10px;
+      }
+
+      /* Year chips */
+      .d-years {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+      }
+      .d-year {
+        padding: 4px 0;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--fg-muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+      }
+      .d-year.w3 {
+        width: calc(33.33% - 2px);
+      }
+      .d-year.w4 {
+        width: calc(25% - 3px);
+      }
+      .d-year.sel {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+      .d-year-count {
+        font-size: 8px;
+        font-weight: 400;
+        opacity: 0.6;
+      }
+      .d-year-bar {
+        width: calc(100% - 6px);
+        height: 2px;
+        background: var(--border);
+        border-radius: 1px;
+        margin-top: 1px;
+        overflow: hidden;
+      }
+      .d-year-bar-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 1px;
+      }
+      .d-year.sel .d-year-bar {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .d-year.sel .d-year-bar-fill {
+        background: white;
+      }
+
+      /* Month chips */
+      .d-months {
+        display: grid;
+        gap: 3px;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--border);
+      }
+      .d-months.cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .d-months.cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .d-month {
+        padding: 3px 0;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--fg-muted);
+      }
+      .d-month.sel {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
+      /* Filter items */
+      .d-filter-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+        font-size: 11px;
+        color: var(--fg-muted);
+      }
+      .d-filter-item.active {
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .d-checkbox {
+        width: 13px;
+        height: 13px;
+        border: 1.5px solid var(--border);
+        border-radius: 3px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .d-filter-item.active .d-checkbox {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+      .d-checkbox svg {
+        width: 9px;
+        height: 9px;
+        color: white;
+        display: none;
+      }
+      .d-filter-item.active .d-checkbox svg {
+        display: block;
+      }
+      .d-filter-avatar {
+        width: 18px;
+        height: 18px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+      }
+      .d-filter-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .d-stars {
+        display: flex;
+        gap: 2px;
+        padding: 4px 0;
+      }
+      .d-star {
+        width: 14px;
+        height: 14px;
+        color: var(--border);
+      }
+      .d-star.on {
+        color: #f59e0b;
+      }
+
+      .d-media-btns {
+        display: flex;
+        gap: 4px;
+      }
+      .d-media-btn {
+        flex: 1;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 10px;
+        text-align: center;
+        color: var(--fg-muted);
+      }
+      .d-media-btn.active {
+        border-color: var(--primary);
+        color: var(--fg);
+        background: var(--primary-soft);
+      }
+
+      .d-show-more {
+        font-size: 10px;
+        color: var(--primary);
+        padding: 2px 0;
+        font-weight: 500;
+      }
+
+      /* Sidebar search within panel */
+      .d-search-wrap {
+        position: relative;
+        margin-bottom: 6px;
+      }
+      .d-search-wrap svg {
+        position: absolute;
+        left: 7px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 12px;
+        height: 12px;
+        color: var(--fg-faint);
+      }
+      .d-search-input {
+        width: 100%;
+        height: 26px;
+        padding: 0 8px 0 24px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--bg-surface);
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 11px;
+        outline: none;
+      }
+
+      /* ═══ Active Filters Bar ═══ */
+      .w-active-filters {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-surface);
+        font-size: 10px;
+        flex-wrap: wrap;
+      }
+      .w-result-count {
+        color: var(--fg-muted);
+        white-space: nowrap;
+      }
+      .w-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 3px 2px 7px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 10px;
+        color: var(--fg);
+        white-space: nowrap;
+      }
+      .w-chip-x {
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--fg-faint);
+        border-radius: var(--radius-full);
+      }
+      .w-chip-x svg {
+        width: 10px;
+        height: 10px;
+      }
+      .w-clear {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 10px;
+        margin-left: auto;
+        white-space: nowrap;
+      }
+
+      /* ═══ Photo Grid ═══ */
+      .w-grid-area {
+        overflow-y: auto;
+        padding: 0 14px 14px;
+      }
+      .w-month-header {
+        padding: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        z-index: 5;
+      }
+      .w-month-header span {
+        color: var(--fg-faint);
+        font-weight: 400;
+        font-size: 10px;
+        margin-left: 4px;
+      }
+      .w-day-header {
+        font-size: 10px;
+        color: var(--fg-muted);
+        padding: 6px 0 3px;
+      }
+      .w-photos {
+        display: grid;
+        gap: 2px;
+        margin-bottom: 2px;
+      }
+      .w-photos.cols-5 {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      .w-photos.cols-6 {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .w-photos.cols-7 {
+        grid-template-columns: repeat(7, 1fr);
+      }
+      .w-photo {
+        aspect-ratio: 1;
+        border-radius: 2px;
+      }
+      .p1 {
+        background: linear-gradient(145deg, #fef3c7, #fde68a, #fcd34d);
+      }
+      .p2 {
+        background: linear-gradient(145deg, #dbeafe, #bfdbfe, #93c5fd);
+      }
+      .p3 {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0, #6ee7b7);
+      }
+      .p4 {
+        background: linear-gradient(145deg, #ffe4e6, #fecdd3, #fda4af);
+      }
+      .p5 {
+        background: linear-gradient(145deg, #ede9fe, #ddd6fe, #c4b5fd);
+      }
+      .p6 {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd, #7dd3fc);
+      }
+      .p7 {
+        background: linear-gradient(145deg, #ffedd5, #fed7aa, #fdba74);
+      }
+      .p8 {
+        background: linear-gradient(145deg, #fce7f3, #fbcfe8, #f9a8d4);
+      }
+
+      /* ═══ Collapsed state indicator ═══ */
+      .collapsed-indicator {
+        width: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 0;
+        gap: 12px;
+        background: var(--bg-panel);
+      }
+      .collapsed-indicator-left {
+        border-right: 1px solid var(--border);
+      }
+      .collapsed-indicator-right {
+        border-left: 1px solid var(--border);
+      }
+      .collapsed-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--fg-faint);
+        border-radius: 6px;
+        cursor: default;
+      }
+      .collapsed-icon:hover {
+        background: var(--primary-soft);
+        color: var(--fg-muted);
+      }
+      .collapsed-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .collapsed-icon.has-badge {
+        position: relative;
+      }
+      .collapsed-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 8px;
+        height: 8px;
+        border-radius: var(--radius-full);
+        background: var(--primary);
+        border: 1.5px solid var(--bg-panel);
+      }
+
+      /* ═══ Layouts ═══ */
+
+      /* A1: Left panel (next to nav) */
+      .layout-a1 {
+        display: grid;
+        grid-template-columns: 160px 240px 1fr;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+      }
+      .layout-a1 .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-a1 .w-nav {
+        grid-row: 2;
+      }
+      .layout-a1 .disc-panel {
+        grid-row: 2;
+      }
+      .layout-a1 .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* A1 collapsed */
+      .layout-a1c {
+        display: grid;
+        grid-template-columns: 160px 32px 1fr;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+      }
+      .layout-a1c .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-a1c .w-nav {
+        grid-row: 2;
+      }
+      .layout-a1c .collapsed-indicator {
+        grid-row: 2;
+      }
+      .layout-a1c .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* A2: Right panel */
+      .layout-a2 {
+        display: grid;
+        grid-template-columns: 160px 1fr 260px;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+      }
+      .layout-a2 .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-a2 .w-nav {
+        grid-row: 2;
+      }
+      .layout-a2 .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+      .layout-a2 .disc-panel {
+        grid-row: 2;
+      }
+
+      /* A2 collapsed */
+      .layout-a2c {
+        display: grid;
+        grid-template-columns: 160px 1fr 32px;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+      }
+      .layout-a2c .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-a2c .w-nav {
+        grid-row: 2;
+      }
+      .layout-a2c .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+      .layout-a2c .collapsed-indicator {
+        grid-row: 2;
+      }
+
+      /* State labels */
+      .state-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-top: 16px;
+      }
+
+      .state-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--fg-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .state-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: var(--radius-full);
+      }
+      .state-dot.open {
+        background: #4ade80;
+      }
+      .state-dot.closed {
+        background: var(--fg-faint);
+      }
+
+      /* ═══ Shared content blocks ═══ */
+      .nav-content-block,
+      .filter-content-block,
+      .grid-content-block {
+      }
+
+      /* SVG chevron for sections */
+      svg.chev {
+        width: 14px;
+        height: 14px;
+        color: var(--fg-faint);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="page-header">
+        <h1>Discovery Panel — Independent of Nav</h1>
+        <p>The nav sidebar stays untouched. A new collapsible + resizable panel houses all discovery filters.</p>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- OPTION A1: Left Panel (next to nav), expanded       -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="option-card">
+        <div class="option-header">
+          <span class="option-letter">Left</span>
+          <span class="option-title">Discovery Panel — Left Side</span>
+        </div>
+        <div class="option-desc">
+          A new 240px panel sits between the nav sidebar and the photo grid. Collapsible to a 32px icon strip. Resizable
+          via drag handle. Only rendered on the /discover route — zero changes to existing nav.
+        </div>
+        <div class="option-pros-cons">
+          <div class="pros">
+            <span>Zero modifications to existing nav sidebar</span>
+            <span>Natural left-to-right flow: nav → filters → results</span>
+            <span>Collapse to icons when you want more photo space</span>
+            <span>Resize handle lets users find their preferred width</span>
+          </div>
+          <div class="cons">
+            <span>~400px total left-side width (nav + panel) when expanded</span>
+            <span>Two panels side by side on left can feel heavy</span>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <!-- EXPANDED STATE -->
+          <div>
+            <div class="state-label">
+              <div class="state-dot open"></div>
+              Panel expanded (240px)
+            </div>
+            <div class="wireframe layout-a1">
+              <div class="w-topbar">
+                <div class="w-logo">
+                  <div class="w-logo-dots">
+                    <div class="w-logo-dot" style="background: #4285f4"></div>
+                    <div class="w-logo-dot" style="background: #ea4335"></div>
+                    <div class="w-logo-dot" style="background: #fbbc04"></div>
+                    <div class="w-logo-dot" style="background: #34a853"></div>
+                  </div>
+                  gallery
+                </div>
+                <div class="w-search-wrap">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                    /></svg
+                  ><input class="w-search" placeholder="Search photos, people, places..." />
+                </div>
+                <div class="w-topbar-right">
+                  <div class="w-small-btn">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                      /></svg
+                    >Date
+                  </div>
+                  <div class="w-avatar">P</div>
+                </div>
+              </div>
+              <div class="w-nav">
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                    /></svg
+                  >Photos
+                </div>
+                <div class="w-nav-item active">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5Z"
+                    /></svg
+                  >Discover
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11Z"
+                    /></svg
+                  >Spaces
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                    /></svg
+                  >Albums
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                    /></svg
+                  >People
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15,19L9,16.89V5L15,7.11M20.5,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                    /></svg
+                  >Map
+                </div>
+                <div class="w-nav-spacer"></div>
+                <div class="w-nav-bottom">v4.8.3</div>
+              </div>
+              <div class="disc-panel disc-panel-left">
+                <div class="resize-handle resize-handle-left"></div>
+                <div class="disc-header">
+                  <span class="disc-header-title">Filters</span>
+                  <div class="disc-header-actions">
+                    <div class="disc-header-btn" title="Collapse">
+                      <svg viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Timeline</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-years">
+                      <div class="d-year w4">
+                        <span>2019</span><span class="d-year-count">3.4k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 52%"></div></div>
+                      </div>
+                      <div class="d-year w4 sel">
+                        <span>2020</span><span class="d-year-count">6.5k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 100%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2021</span><span class="d-year-count">5.1k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 78%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2022</span><span class="d-year-count">4.8k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 74%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2023</span><span class="d-year-count">3.9k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 60%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2024</span><span class="d-year-count">2.1k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 32%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2025</span><span class="d-year-count">842</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 13%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2026</span><span class="d-year-count">87</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 1%"></div></div>
+                      </div>
+                    </div>
+                    <div class="d-months cols-4">
+                      <div class="d-month">Jan</div>
+                      <div class="d-month">Feb</div>
+                      <div class="d-month">Mar</div>
+                      <div class="d-month">Apr</div>
+                      <div class="d-month">May</div>
+                      <div class="d-month">Jun</div>
+                      <div class="d-month">Jul</div>
+                      <div class="d-month sel">Aug</div>
+                      <div class="d-month">Sep</div>
+                      <div class="d-month">Oct</div>
+                      <div class="d-month">Nov</div>
+                      <div class="d-month">Dec</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">People</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-search-wrap">
+                      <svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3Z"
+                        /></svg
+                      ><input class="d-search-input" placeholder="Find person..." />
+                    </div>
+                    <div class="d-filter-item active">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="d-filter-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2)">S</div>
+                      <span class="d-filter-label">Sarah Chen</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="d-filter-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c)">M</div>
+                      <span class="d-filter-label">Max Chen</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="d-filter-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe)">L</div>
+                      <span class="d-filter-label">Li Wei</span>
+                    </div>
+                    <div class="d-show-more">Show 12 more</div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Location</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-filter-item active">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <span class="d-filter-label">Munich</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <span class="d-filter-label">Berlin</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <span class="d-filter-label">Rome</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Rating</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-stars">
+                      <svg class="d-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="d-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="d-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="d-star" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="d-star" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Media</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-media-btns">
+                      <div class="d-media-btn active">All</div>
+                      <div class="d-media-btn">Photo</div>
+                      <div class="d-media-btn">Video</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="w-main">
+                <div class="w-active-filters">
+                  <span class="w-result-count">2,847 results</span>
+                  <span class="w-chip"
+                    >Sarah Chen
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-chip"
+                    >Munich
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-clear">Clear all</span>
+                </div>
+                <div class="w-grid-area">
+                  <div class="w-month-header">August 2020 <span>· 614</span></div>
+                  <div class="w-day-header">Aug 28</div>
+                  <div class="w-photos cols-5">
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p5"></div>
+                  </div>
+                  <div class="w-day-header">Aug 24</div>
+                  <div class="w-photos cols-5">
+                    <div class="w-photo p6"></div>
+                    <div class="w-photo p7"></div>
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p3"></div>
+                  </div>
+                  <div class="w-month-header">July 2020 <span>· 891</span></div>
+                  <div class="w-day-header">Jul 31</div>
+                  <div class="w-photos cols-5">
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p6"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLLAPSED STATE -->
+          <div>
+            <div class="state-label">
+              <div class="state-dot closed"></div>
+              Panel collapsed (32px icon strip)
+            </div>
+            <div class="wireframe layout-a1c">
+              <div class="w-topbar">
+                <div class="w-logo">
+                  <div class="w-logo-dots">
+                    <div class="w-logo-dot" style="background: #4285f4"></div>
+                    <div class="w-logo-dot" style="background: #ea4335"></div>
+                    <div class="w-logo-dot" style="background: #fbbc04"></div>
+                    <div class="w-logo-dot" style="background: #34a853"></div>
+                  </div>
+                  gallery
+                </div>
+                <div class="w-search-wrap">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                    /></svg
+                  ><input class="w-search" placeholder="Search photos, people, places..." />
+                </div>
+                <div class="w-topbar-right">
+                  <div class="w-small-btn">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                      /></svg
+                    >Date
+                  </div>
+                  <div class="w-avatar">P</div>
+                </div>
+              </div>
+              <div class="w-nav">
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                    /></svg
+                  >Photos
+                </div>
+                <div class="w-nav-item active">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5Z"
+                    /></svg
+                  >Discover
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11Z"
+                    /></svg
+                  >Spaces
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                    /></svg
+                  >Albums
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                    /></svg
+                  >People
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15,19L9,16.89V5L15,7.11M20.5,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                    /></svg
+                  >Map
+                </div>
+                <div class="w-nav-spacer"></div>
+                <div class="w-nav-bottom">v4.8.3</div>
+              </div>
+              <div class="collapsed-indicator collapsed-indicator-left">
+                <div class="collapsed-icon" title="Expand filters">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                  </svg>
+                </div>
+                <div class="collapsed-icon has-badge" title="Timeline">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1"
+                    />
+                  </svg>
+                  <div class="collapsed-badge"></div>
+                </div>
+                <div class="collapsed-icon has-badge" title="People">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                    />
+                  </svg>
+                  <div class="collapsed-badge"></div>
+                </div>
+                <div class="collapsed-icon has-badge" title="Location">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                    />
+                  </svg>
+                  <div class="collapsed-badge"></div>
+                </div>
+                <div class="collapsed-icon" title="Camera">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7Z"
+                    />
+                  </svg>
+                </div>
+                <div class="collapsed-icon" title="Rating">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="w-main">
+                <div class="w-active-filters">
+                  <span class="w-result-count">2,847 results</span>
+                  <span class="w-chip"
+                    >Sarah Chen
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-chip"
+                    >Munich
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-clear">Clear all</span>
+                </div>
+                <div class="w-grid-area">
+                  <div class="w-month-header">August 2020 <span>· 614</span></div>
+                  <div class="w-day-header">Aug 28</div>
+                  <div class="w-photos cols-7">
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p6"></div>
+                    <div class="w-photo p7"></div>
+                  </div>
+                  <div class="w-day-header">Aug 24</div>
+                  <div class="w-photos cols-7">
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p6"></div>
+                  </div>
+                  <div class="w-month-header">July 2020 <span>· 891</span></div>
+                  <div class="w-day-header">Jul 31</div>
+                  <div class="w-photos cols-7">
+                    <div class="w-photo p7"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p4"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dim-bottom">
+          <span class="dim-tag"
+            >Nav (160px, untouched) + Discovery Panel (240px ↔ 32px, new component) + Photo Grid</span
+          >
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- OPTION A2: Right Panel                              -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="option-card">
+        <div class="option-header">
+          <span class="option-letter">Right</span>
+          <span class="option-title">Discovery Panel — Right Side</span>
+        </div>
+        <div class="option-desc">
+          The filter panel sits on the right side of the screen. Mirrors the existing detail-panel pattern (which also
+          opens on the right when viewing an asset). Nav is completely untouched.
+        </div>
+        <div class="option-pros-cons">
+          <div class="pros">
+            <span>Mirrors existing detail panel position — familiar to users</span>
+            <span>Left side stays clean — just nav, no stacking</span>
+            <span>Feels like "inspecting" the timeline rather than "configuring" it</span>
+          </div>
+          <div class="cons">
+            <span>Right side typically reserved for detail/info panels</span>
+            <span>Filters on the right goes against e-commerce convention (left = input)</span>
+            <span>Scrubber already lives on the right edge</span>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <!-- EXPANDED -->
+          <div>
+            <div class="state-label">
+              <div class="state-dot open"></div>
+              Panel expanded (260px)
+            </div>
+            <div class="wireframe layout-a2">
+              <div class="w-topbar">
+                <div class="w-logo">
+                  <div class="w-logo-dots">
+                    <div class="w-logo-dot" style="background: #4285f4"></div>
+                    <div class="w-logo-dot" style="background: #ea4335"></div>
+                    <div class="w-logo-dot" style="background: #fbbc04"></div>
+                    <div class="w-logo-dot" style="background: #34a853"></div>
+                  </div>
+                  gallery
+                </div>
+                <div class="w-search-wrap">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                    /></svg
+                  ><input class="w-search" placeholder="Search photos, people, places..." />
+                </div>
+                <div class="w-topbar-right">
+                  <div class="w-small-btn">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                      /></svg
+                    >Date
+                  </div>
+                  <div class="w-small-btn active-filter">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z"
+                      /></svg
+                    >Filters (2)
+                  </div>
+                  <div class="w-avatar">P</div>
+                </div>
+              </div>
+              <div class="w-nav">
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                    /></svg
+                  >Photos
+                </div>
+                <div class="w-nav-item active">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5Z"
+                    /></svg
+                  >Discover
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11Z"
+                    /></svg
+                  >Spaces
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                    /></svg
+                  >Albums
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                    /></svg
+                  >People
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15,19L9,16.89V5L15,7.11M20.5,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                    /></svg
+                  >Map
+                </div>
+                <div class="w-nav-spacer"></div>
+                <div class="w-nav-bottom">v4.8.3</div>
+              </div>
+              <div class="w-main">
+                <div class="w-active-filters">
+                  <span class="w-result-count">2,847 results</span>
+                  <span class="w-chip"
+                    >Sarah Chen
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-chip"
+                    >Munich
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-clear">Clear all</span>
+                </div>
+                <div class="w-grid-area">
+                  <div class="w-month-header">August 2020 <span>· 614</span></div>
+                  <div class="w-day-header">Aug 28</div>
+                  <div class="w-photos cols-5">
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p5"></div>
+                  </div>
+                  <div class="w-day-header">Aug 24</div>
+                  <div class="w-photos cols-5">
+                    <div class="w-photo p6"></div>
+                    <div class="w-photo p7"></div>
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p3"></div>
+                  </div>
+                  <div class="w-month-header">July 2020 <span>· 891</span></div>
+                  <div class="w-day-header">Jul 31</div>
+                  <div class="w-photos cols-5">
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p6"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="disc-panel disc-panel-right">
+                <div class="resize-handle resize-handle-right"></div>
+                <div class="disc-header">
+                  <span class="disc-header-title">Filters</span>
+                  <div class="disc-header-actions">
+                    <div class="disc-header-btn" title="Collapse">
+                      <svg viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Timeline</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-years">
+                      <div class="d-year w4">
+                        <span>2019</span><span class="d-year-count">3.4k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 52%"></div></div>
+                      </div>
+                      <div class="d-year w4 sel">
+                        <span>2020</span><span class="d-year-count">6.5k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 100%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2021</span><span class="d-year-count">5.1k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 78%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2022</span><span class="d-year-count">4.8k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 74%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2023</span><span class="d-year-count">3.9k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 60%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2024</span><span class="d-year-count">2.1k</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 32%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2025</span><span class="d-year-count">842</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 13%"></div></div>
+                      </div>
+                      <div class="d-year w4">
+                        <span>2026</span><span class="d-year-count">87</span>
+                        <div class="d-year-bar"><div class="d-year-bar-fill" style="width: 1%"></div></div>
+                      </div>
+                    </div>
+                    <div class="d-months cols-4">
+                      <div class="d-month">Jan</div>
+                      <div class="d-month">Feb</div>
+                      <div class="d-month">Mar</div>
+                      <div class="d-month">Apr</div>
+                      <div class="d-month">May</div>
+                      <div class="d-month">Jun</div>
+                      <div class="d-month">Jul</div>
+                      <div class="d-month sel">Aug</div>
+                      <div class="d-month">Sep</div>
+                      <div class="d-month">Oct</div>
+                      <div class="d-month">Nov</div>
+                      <div class="d-month">Dec</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">People</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-filter-item active">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="d-filter-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2)">S</div>
+                      <span class="d-filter-label">Sarah Chen</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="d-filter-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c)">M</div>
+                      <span class="d-filter-label">Max Chen</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="d-filter-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe)">L</div>
+                      <span class="d-filter-label">Li Wei</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Location</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-filter-item active">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <span class="d-filter-label">Munich</span>
+                    </div>
+                    <div class="d-filter-item">
+                      <div class="d-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <span class="d-filter-label">Berlin</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Rating</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-stars">
+                      <svg class="d-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        /></svg
+                      ><svg class="d-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        /></svg
+                      ><svg class="d-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        /></svg
+                      ><svg class="d-star" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        /></svg
+                      ><svg class="d-star" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="disc-section">
+                  <div class="disc-section-header">
+                    <span class="disc-section-title">Media</span
+                    ><svg class="chev" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                    </svg>
+                  </div>
+                  <div class="disc-section-body">
+                    <div class="d-media-btns">
+                      <div class="d-media-btn active">All</div>
+                      <div class="d-media-btn">Photo</div>
+                      <div class="d-media-btn">Video</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLLAPSED -->
+          <div>
+            <div class="state-label">
+              <div class="state-dot closed"></div>
+              Panel collapsed (32px)
+            </div>
+            <div class="wireframe layout-a2c">
+              <div class="w-topbar">
+                <div class="w-logo">
+                  <div class="w-logo-dots">
+                    <div class="w-logo-dot" style="background: #4285f4"></div>
+                    <div class="w-logo-dot" style="background: #ea4335"></div>
+                    <div class="w-logo-dot" style="background: #fbbc04"></div>
+                    <div class="w-logo-dot" style="background: #34a853"></div>
+                  </div>
+                  gallery
+                </div>
+                <div class="w-search-wrap">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                    /></svg
+                  ><input class="w-search" placeholder="Search photos, people, places..." />
+                </div>
+                <div class="w-topbar-right">
+                  <div class="w-small-btn">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                      /></svg
+                    >Date
+                  </div>
+                  <div class="w-small-btn active-filter">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z"
+                      /></svg
+                    >Filters (2)
+                  </div>
+                  <div class="w-avatar">P</div>
+                </div>
+              </div>
+              <div class="w-nav">
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                    /></svg
+                  >Photos
+                </div>
+                <div class="w-nav-item active">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5Z"
+                    /></svg
+                  >Discover
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11Z"
+                    /></svg
+                  >Spaces
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                    /></svg
+                  >Albums
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                    /></svg
+                  >People
+                </div>
+                <div class="w-nav-item">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M15,19L9,16.89V5L15,7.11M20.5,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                    /></svg
+                  >Map
+                </div>
+                <div class="w-nav-spacer"></div>
+                <div class="w-nav-bottom">v4.8.3</div>
+              </div>
+              <div class="w-main">
+                <div class="w-active-filters">
+                  <span class="w-result-count">2,847 results</span>
+                  <span class="w-chip"
+                    >Sarah Chen
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-chip"
+                    >Munich
+                    <span class="w-chip-x"
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        /></svg></span
+                  ></span>
+                  <span class="w-clear">Clear all</span>
+                </div>
+                <div class="w-grid-area">
+                  <div class="w-month-header">August 2020 <span>· 614</span></div>
+                  <div class="w-day-header">Aug 28</div>
+                  <div class="w-photos cols-7">
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p6"></div>
+                    <div class="w-photo p7"></div>
+                  </div>
+                  <div class="w-day-header">Aug 24</div>
+                  <div class="w-photos cols-7">
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p4"></div>
+                    <div class="w-photo p6"></div>
+                  </div>
+                  <div class="w-month-header">July 2020 <span>· 891</span></div>
+                  <div class="w-day-header">Jul 31</div>
+                  <div class="w-photos cols-7">
+                    <div class="w-photo p7"></div>
+                    <div class="w-photo p3"></div>
+                    <div class="w-photo p8"></div>
+                    <div class="w-photo p1"></div>
+                    <div class="w-photo p5"></div>
+                    <div class="w-photo p2"></div>
+                    <div class="w-photo p4"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="collapsed-indicator collapsed-indicator-right">
+                <div class="collapsed-icon" title="Expand filters">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+                  </svg>
+                </div>
+                <div class="collapsed-icon has-badge" title="Timeline">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1"
+                    />
+                  </svg>
+                  <div class="collapsed-badge"></div>
+                </div>
+                <div class="collapsed-icon has-badge" title="People">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                    />
+                  </svg>
+                  <div class="collapsed-badge"></div>
+                </div>
+                <div class="collapsed-icon has-badge" title="Location">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                    />
+                  </svg>
+                  <div class="collapsed-badge"></div>
+                </div>
+                <div class="collapsed-icon" title="Rating">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dim-bottom">
+          <span class="dim-tag">Nav (160px, untouched) + Photo Grid + Discovery Panel (260px ↔ 32px, right side)</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

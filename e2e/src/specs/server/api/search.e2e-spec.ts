@@ -4,6 +4,7 @@ import {
   AssetVisibility,
   deleteAssets,
   LoginResponseDto,
+  SharedSpaceResponseDto,
   updateAsset,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -698,6 +699,232 @@ describe('/search', () => {
         'SM-T970',
       ]);
       expect(status).toBe(200);
+    });
+  });
+
+  // -- Timeline EXIF filter tests --
+  // Note: EXIF data (city, country, make, model) is populated by the server's metadata
+  // extraction and reverse geocoding pipeline during asset upload. The test assets used
+  // in the beforeAll block above have embedded EXIF data and assigned GPS coordinates,
+  // so the server has already populated their exif_info rows by the time tests run.
+
+  describe('GET /timeline/buckets (EXIF filters)', () => {
+    it('should return buckets without any filter', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThan(0);
+      for (const bucket of body) {
+        expect(bucket).toHaveProperty('timeBucket');
+        expect(bucket).toHaveProperty('count');
+        expect(bucket.count).toBeGreaterThan(0);
+      }
+    });
+
+    it('should filter buckets by city', async () => {
+      // Paris is assigned to assetFalcon via reverse geocoding of its coordinates
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?city=Paris')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalFiltered = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      // There should be at least 1 asset in Paris
+      expect(totalFiltered).toBeGreaterThanOrEqual(1);
+
+      // Filtered count should be less than unfiltered
+      const { body: allBuckets } = await request(app)
+        .get('/timeline/buckets')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const totalAll = allBuckets.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalFiltered).toBeLessThan(totalAll);
+    });
+
+    it('should filter buckets by camera make', async () => {
+      // Canon is the make for assetFalcon (Canon EOS R5) and assetDenali (Canon EOS 7D)
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?make=Canon')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalFiltered = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalFiltered).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should filter buckets by camera model', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?model=Canon%20EOS%207D')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalFiltered = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      // Only assetDenali has Canon EOS 7D
+      expect(totalFiltered).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should filter buckets by country', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?country=France')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalFiltered = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalFiltered).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return zero buckets for non-matching city filter', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?city=Timbuktu')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toHaveLength(0);
+    });
+
+    it('should return zero buckets for non-matching make filter', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?make=Hasselblad')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toHaveLength(0);
+    });
+
+    it('should combine city and make filters (AND semantics)', async () => {
+      // Paris + Canon: assetFalcon is in Paris with Canon EOS R5
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?city=Paris&make=Canon')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalFiltered = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalFiltered).toBeGreaterThanOrEqual(1);
+
+      // AND should be ≤ each individual filter
+      const { body: cityOnly } = await request(app)
+        .get('/timeline/buckets?city=Paris')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      const cityCount = cityOnly.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalFiltered).toBeLessThanOrEqual(cityCount);
+    });
+
+    it('should return zero when combined filters match no assets', async () => {
+      // Tokyo + Canon: assetDenali (Canon EOS 7D) is in Tokyo — this should match
+      // But Accra + Canon: no Canon camera in Accra
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?city=Accra&make=Canon')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalFiltered = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalFiltered).toBe(0);
+    });
+
+    it('should accept the rating filter parameter', async () => {
+      // rating filter uses >= semantics; test assets may not have ratings set,
+      // so we just verify the API accepts it and returns a valid response
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?rating=5')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      // With no rated assets, expect empty; with rated ones, expect valid structure
+      for (const bucket of body) {
+        expect(bucket).toHaveProperty('timeBucket');
+        expect(bucket).toHaveProperty('count');
+      }
+    });
+
+    it('should accept the type filter parameter', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets?type=IMAGE')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+
+      const totalImages = body.reduce((sum: number, b: { count: number }) => sum + b.count, 0);
+      expect(totalImages).toBeGreaterThan(0);
+    });
+  });
+
+  describe('GET /search/suggestions (spaceId scoping)', () => {
+    let space: SharedSpaceResponseDto;
+
+    beforeAll(async () => {
+      // Create a space and add only the Paris asset (assetFalcon) to it.
+      // assetFalcon is in Paris, France and was taken with a Canon EOS R5.
+      space = await utils.createSpace(admin.accessToken, { name: 'Paris Photos' });
+      await utils.addSpaceAssets(admin.accessToken, space.id, [assetFalcon.id]);
+    });
+
+    it('should return only countries from the specified space', async () => {
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=country&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      // Only France should appear since only the Paris asset is in the space
+      expect(body).toEqual(['France']);
+    });
+
+    it('should return only cities from the specified space', async () => {
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=city&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toEqual(['Paris']);
+    });
+
+    it('should return only camera makes from the specified space', async () => {
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=camera-make&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toEqual(['Canon']);
+    });
+
+    it('should return only camera models from the specified space', async () => {
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=camera-model&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toEqual(['Canon EOS R5']);
+    });
+
+    it('should return all countries when spaceId is omitted', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=country')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      // Without space scoping, all countries should be returned
+      expect(body.length).toBeGreaterThan(1);
+      expect(body).toContain('France');
+    });
+
+    it('should return empty for space with no matching suggestion type', async () => {
+      // Create a space with only the density_plot asset (PNG, no camera make/model)
+      const emptySpace = await utils.createSpace(admin.accessToken, { name: 'Density Only' });
+      await utils.addSpaceAssets(admin.accessToken, emptySpace.id, [assetDensity.id]);
+
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=camera-make&spaceId=${emptySpace.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      // density_plot.png has no camera make EXIF data
+      expect(body).toEqual([]);
     });
   });
 });

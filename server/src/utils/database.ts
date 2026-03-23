@@ -171,6 +171,21 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
   );
 }
 
+export function hasAnyPerson<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_face')
+        .select('assetId')
+        .where('personId', '=', anyUuid(personIds))
+        .where('deletedAt', 'is', null)
+        .where('isVisible', 'is', true)
+        .groupBy('assetId')
+        .as('has_any_person'),
+    (join) => join.onRef('has_any_person.assetId', '=', 'asset.id'),
+  );
+}
+
 export function hasSpacePerson<O>(qb: SelectQueryBuilder<DB, 'asset', O>, spacePersonId: string) {
   return qb.where((eb) =>
     eb.exists(
@@ -179,6 +194,18 @@ export function hasSpacePerson<O>(qb: SelectQueryBuilder<DB, 'asset', O>, spaceP
         .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
         .whereRef('asset_face.assetId', '=', 'asset.id')
         .where('shared_space_person_face.personId', '=', asUuid(spacePersonId)),
+    ),
+  );
+}
+
+export function hasAnySpacePerson<O>(qb: SelectQueryBuilder<DB, 'asset', O>, spacePersonIds: string[]) {
+  return qb.where((eb) =>
+    eb.exists(
+      eb
+        .selectFrom('shared_space_person_face')
+        .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+        .whereRef('asset_face.assetId', '=', 'asset.id')
+        .where('shared_space_person_face.personId', '=', anyUuid(spacePersonIds)),
     ),
   );
 }
@@ -246,6 +273,18 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
         .innerJoin('tag_asset', 'tag_asset.tagId', 'tag_closure.id_descendant')
         .whereRef('tag_asset.assetId', '=', 'asset.id')
         .where('tag_closure.id_ancestor', '=', tagId),
+    ),
+  );
+}
+
+export function withAnyTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagIds: string[]) {
+  return qb.where((eb) =>
+    eb.exists(
+      eb
+        .selectFrom('tag_closure')
+        .innerJoin('tag_asset', 'tag_asset.tagId', 'tag_closure.id_descendant')
+        .whereRef('tag_asset.assetId', '=', 'asset.id')
+        .where('tag_closure.id_ancestor', '=', anyUuid(tagIds)),
     ),
   );
 }

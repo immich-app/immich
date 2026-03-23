@@ -27,11 +27,12 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   anyUuid,
   asUuid,
-  hasPeople,
-  hasSpacePerson,
+  hasAnyPerson,
+  hasAnySpacePerson,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
+  withAnyTagId,
   withDefaultVisibility,
   withEdits,
   withExif,
@@ -42,7 +43,6 @@ import {
   withLibrary,
   withOwner,
   withSmartSearch,
-  withTagId,
   withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
@@ -79,6 +79,9 @@ interface AssetBuilderOptions {
   tagId?: string;
   personId?: string;
   spacePersonId?: string;
+  personIds?: string[];
+  spacePersonIds?: string[];
+  tagIds?: string[];
   userIds?: string[];
   timelineSpaceIds?: string[];
   withStacked?: boolean;
@@ -88,6 +91,13 @@ interface AssetBuilderOptions {
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
   bbox?: BoundingBox;
+  city?: string;
+  country?: string;
+  make?: string;
+  model?: string;
+  rating?: number;
+  takenAfter?: string;
+  takenBefore?: string;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -707,20 +717,45 @@ export class AssetRepository {
           .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-          .$if(!!options.bbox, (qb) => {
-            const bbox = options.bbox!;
-            const circle = getBoundingCircle(bbox);
+          .$if(
+            !!options.bbox ||
+              !!options.city ||
+              !!options.country ||
+              !!options.make ||
+              !!options.model ||
+              options.rating !== undefined,
+            (qb) => {
+              let q = qb.innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId');
 
-            const withBoundingCircle = qb
-              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-              .where(
-                sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
-                '@>',
-                sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
-              );
+              if (options.bbox) {
+                const circle = getBoundingCircle(options.bbox);
+                q = q.where(
+                  sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+                  '@>',
+                  sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+                ) as any;
+                q = withBoundingBox(q, options.bbox) as any;
+              }
 
-            return withBoundingBox(withBoundingCircle, bbox);
-          })
+              if (options.city) {
+                q = q.where('asset_exif.city', '=', options.city) as any;
+              }
+              if (options.country) {
+                q = q.where('asset_exif.country', '=', options.country) as any;
+              }
+              if (options.make) {
+                q = q.where('asset_exif.make', '=', options.make) as any;
+              }
+              if (options.model) {
+                q = q.where('asset_exif.model', '=', options.model) as any;
+              }
+              if (options.rating !== undefined) {
+                q = q.where('asset_exif.rating', '>=', options.rating) as any;
+              }
+
+              return q;
+            },
+          )
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
@@ -733,8 +768,8 @@ export class AssetRepository {
               .innerJoin('shared_space_asset', 'asset.id', 'shared_space_asset.assetId')
               .where('shared_space_asset.spaceId', '=', asUuid(options.spaceId!)),
           )
-          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.spacePersonId, (qb) => hasSpacePerson(qb, options.spacePersonId!))
+          .$if(!!options.personIds?.length, (qb) => hasAnyPerson(qb, options.personIds!))
+          .$if(!!options.spacePersonIds?.length, (qb) => hasAnySpacePerson(qb, options.spacePersonIds!))
           .$if(!!options.withStacked, (qb) =>
             qb
               .leftJoin('stack', (join) =>
@@ -763,7 +798,9 @@ export class AssetRepository {
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+          .$if(!!options.tagIds?.length, (qb) => withAnyTagId(qb, options.tagIds!))
+          .$if(!!options.takenAfter, (qb) => qb.where('asset.localDateTime', '>=', new Date(options.takenAfter!)))
+          .$if(!!options.takenBefore, (qb) => qb.where('asset.localDateTime', '<=', new Date(options.takenBefore!))),
       )
       .selectFrom('asset')
       .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
@@ -850,8 +887,13 @@ export class AssetRepository {
               ),
             ),
           )
-          .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.spacePersonId, (qb) => hasSpacePerson(qb, options.spacePersonId!))
+          .$if(!!options.personIds?.length, (qb) => hasAnyPerson(qb, options.personIds!))
+          .$if(!!options.spacePersonIds?.length, (qb) => hasAnySpacePerson(qb, options.spacePersonIds!))
+          .$if(!!options.city, (qb) => qb.where('asset_exif.city', '=', options.city!))
+          .$if(!!options.country, (qb) => qb.where('asset_exif.country', '=', options.country!))
+          .$if(!!options.make, (qb) => qb.where('asset_exif.make', '=', options.make!))
+          .$if(!!options.model, (qb) => qb.where('asset_exif.model', '=', options.model!))
+          .$if(options.rating !== undefined, (qb) => qb.where('asset_exif.rating', '>=', options.rating!))
           .$if(!!options.userIds && !options.timelineSpaceIds, (qb) =>
             qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
           )
@@ -900,7 +942,9 @@ export class AssetRepository {
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .$if(!!options.tagIds?.length, (qb) => withAnyTagId(qb, options.tagIds!))
+          .$if(!!options.takenAfter, (qb) => qb.where('asset.localDateTime', '>=', new Date(options.takenAfter!)))
+          .$if(!!options.takenBefore, (qb) => qb.where('asset.localDateTime', '<=', new Date(options.takenBefore!)))
           .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
           .orderBy('asset.fileCreatedAt', order),
       )

@@ -1,0 +1,2178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discovery Page — Layout Options Comparison</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4250af;
+        --primary-soft: rgba(66, 80, 175, 0.08);
+        --bg: #0e0e10;
+        --bg-surface: #1a1a1e;
+        --bg-elevated: #222226;
+        --bg-nav: #141416;
+        --fg: #e4e4e8;
+        --fg-muted: #8e8e9a;
+        --fg-faint: #5a5a66;
+        --border: #2a2a30;
+        --border-hover: #3a3a42;
+        --radius: 8px;
+        --radius-full: 9999px;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        --t: 0.15s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'DM Sans', system-ui, sans-serif;
+        background: #08080a;
+        color: var(--fg);
+        letter-spacing: 0.01em;
+        line-height: 1.5;
+      }
+
+      /* ═══ Page Layout ═══ */
+      .page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 32px 24px;
+      }
+
+      .page-header {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+
+      .page-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+      }
+
+      .page-header p {
+        font-size: 14px;
+        color: var(--fg-muted);
+      }
+
+      /* ═══ Option Card ═══ */
+      .option-card {
+        margin-bottom: 64px;
+      }
+
+      .option-header {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 6px;
+      }
+
+      .option-letter {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: rgba(66, 80, 175, 0.15);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+
+      .option-title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .option-desc {
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-bottom: 16px;
+        max-width: 720px;
+      }
+
+      .option-pros-cons {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 16px;
+        font-size: 12px;
+      }
+
+      .pros,
+      .cons {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .pros span::before {
+        content: '✓ ';
+        color: #4ade80;
+        font-weight: 700;
+      }
+      .cons span::before {
+        content: '✗ ';
+        color: #f87171;
+        font-weight: 700;
+      }
+
+      /* ═══ Wireframe Container ═══ */
+      .wireframe {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--bg);
+        box-shadow: var(--shadow);
+      }
+
+      /* ═══ Shared Components ═══ */
+
+      /* Top bar */
+      .w-topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px;
+        height: 48px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+      }
+
+      .w-logo {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--fg);
+        margin-right: 4px;
+        white-space: nowrap;
+      }
+
+      .w-logo-dots {
+        display: flex;
+        gap: 2px;
+      }
+
+      .w-logo-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      .w-search {
+        flex: 1;
+        max-width: 440px;
+        height: 32px;
+        padding: 0 10px 0 32px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        background: var(--bg-surface);
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .w-search-wrap {
+        position: relative;
+        flex: 1;
+        max-width: 440px;
+      }
+
+      .w-search-wrap svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        color: var(--fg-faint);
+      }
+
+      .w-topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+
+      .w-small-btn {
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        background: none;
+        color: var(--fg-muted);
+        font-family: inherit;
+        font-size: 11px;
+        border-radius: var(--radius-full);
+        cursor: default;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+      }
+
+      .w-small-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .w-icon-btn {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: none;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+        cursor: default;
+      }
+
+      .w-icon-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .w-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+      }
+
+      /* Nav sidebar (full) */
+      .w-nav {
+        background: var(--bg-nav);
+        border-right: 1px solid var(--border);
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        overflow: hidden;
+      }
+
+      .w-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: var(--fg-muted);
+        white-space: nowrap;
+        cursor: default;
+      }
+
+      .w-nav-item.active {
+        background: rgba(66, 80, 175, 0.15);
+        color: var(--fg);
+        font-weight: 500;
+      }
+
+      .w-nav-item svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      .w-nav-section {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--fg-faint);
+        padding: 10px 8px 4px;
+        font-weight: 600;
+      }
+
+      .w-nav-spacer {
+        flex: 1;
+      }
+
+      .w-nav-bottom {
+        padding: 8px;
+        border-top: 1px solid var(--border);
+        margin-top: auto;
+        font-size: 9px;
+        color: var(--fg-faint);
+      }
+
+      /* Nav rail (icon only) */
+      .w-rail {
+        background: var(--bg-nav);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 0;
+        gap: 2px;
+      }
+
+      .w-rail-item {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: var(--fg-muted);
+        cursor: default;
+      }
+
+      .w-rail-item.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .w-rail-item svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .w-rail-spacer {
+        flex: 1;
+      }
+
+      /* Filter sidebar */
+      .w-filters {
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .w-filter-section {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 12px;
+      }
+
+      .w-filter-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: var(--fg-muted);
+        margin-bottom: 8px;
+      }
+
+      /* Year chips */
+      .w-years {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+      }
+
+      .w-year {
+        padding: 4px 0;
+        width: calc(25% - 3px);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--fg-muted);
+        cursor: default;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+      }
+
+      .w-year.sel {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
+      .w-year-count {
+        font-size: 8px;
+        font-weight: 400;
+        opacity: 0.6;
+      }
+
+      .w-year-bar {
+        width: calc(100% - 6px);
+        height: 2px;
+        background: var(--border);
+        border-radius: 1px;
+        overflow: hidden;
+        margin-top: 1px;
+      }
+
+      .w-year-bar-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 1px;
+      }
+
+      .w-year.sel .w-year-bar {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .w-year.sel .w-year-bar-fill {
+        background: white;
+      }
+
+      /* Month chips (smaller) */
+      .w-months {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--border);
+      }
+
+      .w-month {
+        padding: 3px 0;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--fg-muted);
+        cursor: default;
+      }
+
+      .w-month.sel {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
+      /* Filter items */
+      .w-filter-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+        font-size: 11px;
+        color: var(--fg-muted);
+        cursor: default;
+      }
+
+      .w-filter-item.active {
+        color: var(--fg);
+        font-weight: 500;
+      }
+
+      .w-checkbox {
+        width: 13px;
+        height: 13px;
+        border: 1.5px solid var(--border);
+        border-radius: 3px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .w-filter-item.active .w-checkbox {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .w-checkbox svg {
+        width: 9px;
+        height: 9px;
+        color: white;
+        display: none;
+      }
+
+      .w-filter-item.active .w-checkbox svg {
+        display: block;
+      }
+
+      .w-filter-avatar {
+        width: 18px;
+        height: 18px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+      }
+
+      .w-stars {
+        display: flex;
+        gap: 2px;
+      }
+
+      .w-star {
+        width: 14px;
+        height: 14px;
+        color: var(--border);
+      }
+
+      .w-star.on {
+        color: #f59e0b;
+      }
+
+      .w-media-btns {
+        display: flex;
+        gap: 4px;
+      }
+
+      .w-media-btn {
+        flex: 1;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 10px;
+        text-align: center;
+        color: var(--fg-muted);
+        cursor: default;
+      }
+
+      .w-media-btn.active {
+        border-color: var(--primary);
+        color: var(--fg);
+        background: rgba(66, 80, 175, 0.1);
+      }
+
+      /* Active filters bar */
+      .w-active-filters {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-surface);
+        font-size: 10px;
+        flex-wrap: wrap;
+      }
+
+      .w-result-count {
+        color: var(--fg-muted);
+        white-space: nowrap;
+      }
+
+      .w-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 3px 2px 7px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 10px;
+        color: var(--fg);
+        white-space: nowrap;
+      }
+
+      .w-chip-x {
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--fg-faint);
+        border-radius: var(--radius-full);
+        cursor: default;
+      }
+
+      .w-chip-x svg {
+        width: 10px;
+        height: 10px;
+      }
+
+      .w-clear {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 10px;
+        margin-left: auto;
+        white-space: nowrap;
+      }
+
+      /* Photo grid */
+      .w-grid-area {
+        overflow-y: auto;
+        padding: 0 14px 14px;
+      }
+
+      .w-month-header {
+        padding: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        z-index: 5;
+      }
+
+      .w-month-header span {
+        color: var(--fg-faint);
+        font-weight: 400;
+        font-size: 10px;
+        margin-left: 4px;
+      }
+
+      .w-day-header {
+        font-size: 10px;
+        color: var(--fg-muted);
+        padding: 6px 0 3px;
+      }
+
+      .w-photos {
+        display: grid;
+        gap: 2px;
+        margin-bottom: 2px;
+      }
+
+      .w-photos.cols-5 {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      .w-photos.cols-6 {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .w-photos.cols-7 {
+        grid-template-columns: repeat(7, 1fr);
+      }
+      .w-photos.cols-8 {
+        grid-template-columns: repeat(8, 1fr);
+      }
+
+      .w-photo {
+        aspect-ratio: 1;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .p1 {
+        background: linear-gradient(145deg, #fef3c7, #fde68a, #fcd34d);
+      }
+      .p2 {
+        background: linear-gradient(145deg, #dbeafe, #bfdbfe, #93c5fd);
+      }
+      .p3 {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0, #6ee7b7);
+      }
+      .p4 {
+        background: linear-gradient(145deg, #ffe4e6, #fecdd3, #fda4af);
+      }
+      .p5 {
+        background: linear-gradient(145deg, #ede9fe, #ddd6fe, #c4b5fd);
+      }
+      .p6 {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd, #7dd3fc);
+      }
+      .p7 {
+        background: linear-gradient(145deg, #ffedd5, #fed7aa, #fdba74);
+      }
+      .p8 {
+        background: linear-gradient(145deg, #fce7f3, #fbcfe8, #f9a8d4);
+      }
+
+      /* Scrubber */
+      .w-scrubber {
+        position: absolute;
+        right: 4px;
+        top: 40px;
+        bottom: 10px;
+        width: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+      }
+
+      .w-scrub-tick {
+        flex: 1;
+        width: 3px;
+        background: var(--border);
+        border-radius: 1px;
+        min-height: 1px;
+      }
+
+      .w-scrub-tick.on {
+        background: var(--fg-faint);
+      }
+
+      .w-scrub-year {
+        font-size: 7px;
+        color: var(--fg-faint);
+        margin: 2px 0;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+      }
+
+      /* ═══ Layout Specific ═══ */
+
+      /* Option A: Rail + Filter Sidebar */
+      .layout-a {
+        display: grid;
+        grid-template-columns: 48px 260px 1fr;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+      }
+
+      .layout-a .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-a .w-rail {
+        grid-row: 2;
+      }
+      .layout-a .w-filters {
+        grid-row: 2;
+      }
+      .layout-a .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Option B: Slide-out Drawer */
+      .layout-b {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+        position: relative;
+      }
+
+      .layout-b .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-b .w-nav {
+        grid-row: 2;
+        width: 160px;
+      }
+      .layout-b .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .drawer-overlay {
+        position: absolute;
+        inset: 48px 0 0 160px;
+        z-index: 20;
+        display: flex;
+        pointer-events: none;
+      }
+
+      .drawer-backdrop {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.4);
+        pointer-events: auto;
+      }
+
+      .drawer-panel {
+        width: 300px;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        overflow-y: auto;
+        pointer-events: auto;
+      }
+
+      .drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .drawer-close {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: none;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+        cursor: default;
+      }
+
+      .drawer-close svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Option C: Horizontal Panel */
+      .layout-c {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        grid-template-rows: 48px auto 1fr;
+        height: 560px;
+      }
+
+      .layout-c .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-c .w-nav {
+        grid-row: 2 / -1;
+      }
+      .layout-c .w-horiz-filters {
+        grid-column: 2;
+        grid-row: 2;
+      }
+      .layout-c .w-main {
+        grid-column: 2;
+        grid-row: 3;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .w-horiz-filters {
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+        background: var(--bg);
+      }
+
+      .w-horiz-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      .w-horiz-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .w-horiz-section-title {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--fg-faint);
+      }
+
+      .w-horiz-years {
+        display: flex;
+        gap: 2px;
+      }
+
+      .w-horiz-year {
+        padding: 3px 7px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--fg-muted);
+        cursor: default;
+      }
+
+      .w-horiz-year.sel {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
+      .w-horiz-months {
+        display: flex;
+        gap: 2px;
+      }
+
+      .w-horiz-month {
+        padding: 3px 5px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--fg-muted);
+        cursor: default;
+      }
+
+      .w-horiz-month.sel {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
+      .w-horiz-sep {
+        width: 1px;
+        background: var(--border);
+        align-self: stretch;
+        margin: 0 4px;
+      }
+
+      .w-horiz-filter-btns {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+
+      .w-horiz-filter-btn {
+        padding: 3px 8px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 10px;
+        color: var(--fg-muted);
+        cursor: default;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+
+      .w-horiz-filter-btn.active {
+        border-color: var(--primary);
+        color: var(--fg);
+        background: rgba(66, 80, 175, 0.1);
+      }
+
+      .w-horiz-filter-btn svg {
+        width: 10px;
+        height: 10px;
+      }
+
+      /* Option D: Toggled sidebar content */
+      .layout-d {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        grid-template-rows: 48px 1fr;
+        height: 560px;
+      }
+
+      .layout-d .w-topbar {
+        grid-column: 1 / -1;
+      }
+      .layout-d .w-nav-filters {
+        grid-row: 2;
+      }
+      .layout-d .w-main {
+        grid-row: 2;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .w-nav-filters {
+        background: var(--bg-nav);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        width: 160px;
+      }
+
+      .w-nav-mode-toggle {
+        display: flex;
+        margin: 8px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .w-mode-btn {
+        flex: 1;
+        padding: 5px 0;
+        font-size: 10px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--fg-muted);
+        background: none;
+        border: none;
+        cursor: default;
+        border-right: 1px solid var(--border);
+      }
+
+      .w-mode-btn:last-child {
+        border-right: none;
+      }
+
+      .w-mode-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      /* Dimension labels */
+      .dim-label {
+        position: absolute;
+        font-size: 9px;
+        color: #f59e0b;
+        font-weight: 600;
+        background: rgba(245, 158, 11, 0.15);
+        padding: 1px 5px;
+        border-radius: 3px;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        z-index: 30;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      /* Bottom dimension */
+      .dim-bottom {
+        display: flex;
+        justify-content: center;
+        padding: 6px 0;
+      }
+
+      .dim-tag {
+        font-size: 10px;
+        color: #f59e0b;
+        font-weight: 600;
+        background: rgba(245, 158, 11, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px dashed rgba(245, 158, 11, 0.3);
+      }
+
+      /* Divider */
+      .section-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 48px 0;
+      }
+
+      /* Layout wrapper for positioning dims */
+      .layout-wrap {
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="page-header">
+        <h1>Discovery Page — Layout Options</h1>
+        <p>Four approaches to fitting discovery filters alongside Gallery's existing navigation</p>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- OPTION A: Collapsed Rail + Filter Sidebar           -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="option-card">
+        <div class="option-header">
+          <span class="option-letter">A</span>
+          <span class="option-title">Collapsed Nav Rail + Filter Sidebar</span>
+        </div>
+        <div class="option-desc">
+          Nav collapses to a 48px icon rail. A 260px filter sidebar sits next to it with temporal picker, people,
+          location, camera, tags, rating, media type. Photos get the remaining space.
+        </div>
+        <div class="option-pros-cons">
+          <div class="pros">
+            <span>Filters always visible — true faceted browsing</span>
+            <span>Temporal picker + filters in natural vertical flow</span>
+            <span>Photos still get ~1100px on 1440p screen</span>
+          </div>
+          <div class="cons">
+            <span>Nav labels hidden — less discoverable for new users</span>
+            <span>~308px total sidebar width (rail + filters)</span>
+          </div>
+        </div>
+
+        <div class="layout-wrap">
+          <div class="wireframe layout-a">
+            <!-- Top bar -->
+            <div class="w-topbar">
+              <div class="w-logo">
+                <div class="w-logo-dots">
+                  <div class="w-logo-dot" style="background: #4285f4"></div>
+                  <div class="w-logo-dot" style="background: #ea4335"></div>
+                  <div class="w-logo-dot" style="background: #fbbc04"></div>
+                  <div class="w-logo-dot" style="background: #34a853"></div>
+                </div>
+                gallery
+              </div>
+              <div class="w-search-wrap">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                  />
+                </svg>
+                <input class="w-search" placeholder="Search photos, people, places..." />
+              </div>
+              <div class="w-topbar-right">
+                <div class="w-small-btn">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                    />
+                  </svg>
+                  Date captured
+                </div>
+                <div class="w-icon-btn">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M3,11H11V3H3M3,21H11V13H3M13,21H21V13H13M13,3V11H21V3" />
+                  </svg>
+                </div>
+                <div class="w-avatar">P</div>
+              </div>
+            </div>
+
+            <!-- Nav Rail -->
+            <div class="w-rail">
+              <div class="w-rail-item active">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14Z"
+                  />
+                </svg>
+              </div>
+              <div class="w-rail-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"
+                  />
+                </svg>
+              </div>
+              <div class="w-rail-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M11.5,11.67L13.19,13.83L15.67,10.67L19,15H9M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                  />
+                </svg>
+              </div>
+              <div class="w-rail-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                  />
+                </svg>
+              </div>
+              <div class="w-rail-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M15,19L9,16.89V5L15,7.11M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                  />
+                </svg>
+              </div>
+              <div class="w-rail-spacer"></div>
+              <div class="w-rail-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Filter Sidebar -->
+            <div class="w-filters">
+              <div class="w-filter-section">
+                <div class="w-filter-title">Timeline</div>
+                <div class="w-years">
+                  <div class="w-year">
+                    <span class="year-chip-label">2019</span><span class="w-year-count">3.4k</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 52%"></div></div>
+                  </div>
+                  <div class="w-year sel">
+                    <span class="year-chip-label">2020</span><span class="w-year-count">6.5k</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 100%"></div></div>
+                  </div>
+                  <div class="w-year">
+                    <span class="year-chip-label">2021</span><span class="w-year-count">5.1k</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 78%"></div></div>
+                  </div>
+                  <div class="w-year">
+                    <span class="year-chip-label">2022</span><span class="w-year-count">4.8k</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 74%"></div></div>
+                  </div>
+                  <div class="w-year">
+                    <span class="year-chip-label">2023</span><span class="w-year-count">3.9k</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 60%"></div></div>
+                  </div>
+                  <div class="w-year">
+                    <span class="year-chip-label">2024</span><span class="w-year-count">2.1k</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 32%"></div></div>
+                  </div>
+                  <div class="w-year">
+                    <span class="year-chip-label">2025</span><span class="w-year-count">842</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 13%"></div></div>
+                  </div>
+                  <div class="w-year">
+                    <span class="year-chip-label">2026</span><span class="w-year-count">87</span>
+                    <div class="w-year-bar"><div class="w-year-bar-fill" style="width: 1%"></div></div>
+                  </div>
+                </div>
+                <div class="w-months">
+                  <div class="w-month">Jan</div>
+                  <div class="w-month">Feb</div>
+                  <div class="w-month">Mar</div>
+                  <div class="w-month">Apr</div>
+                  <div class="w-month">May</div>
+                  <div class="w-month">Jun</div>
+                  <div class="w-month">Jul</div>
+                  <div class="w-month sel">Aug</div>
+                  <div class="w-month">Sep</div>
+                  <div class="w-month">Oct</div>
+                  <div class="w-month">Nov</div>
+                  <div class="w-month">Dec</div>
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">People</div>
+                <div class="w-filter-item active">
+                  <div class="w-checkbox">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  <div class="w-filter-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2)">S</div>
+                  Sarah Chen
+                </div>
+                <div class="w-filter-item">
+                  <div class="w-checkbox">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  <div class="w-filter-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c)">M</div>
+                  Max Chen
+                </div>
+                <div class="w-filter-item">
+                  <div class="w-checkbox">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  <div class="w-filter-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe)">L</div>
+                  Li Wei
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">Location</div>
+                <div class="w-filter-item active">
+                  <div class="w-checkbox">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  Munich
+                </div>
+                <div class="w-filter-item">
+                  <div class="w-checkbox">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  Berlin
+                </div>
+                <div class="w-filter-item">
+                  <div class="w-checkbox">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  Rome
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">Rating</div>
+                <div class="w-stars">
+                  <svg class="w-star on" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star on" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star on" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">Media</div>
+                <div class="w-media-btns">
+                  <div class="w-media-btn active">All</div>
+                  <div class="w-media-btn">Photo</div>
+                  <div class="w-media-btn">Video</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="w-main">
+              <div class="w-active-filters">
+                <span class="w-result-count">2,847 results</span>
+                <span class="w-chip"
+                  >Sarah Chen
+                  <span class="w-chip-x"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      /></svg></span
+                ></span>
+                <span class="w-chip"
+                  >Munich
+                  <span class="w-chip-x"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      /></svg></span
+                ></span>
+                <span class="w-clear">Clear all</span>
+              </div>
+              <div class="w-grid-area">
+                <div class="w-month-header">August 2020 <span>· 614</span></div>
+                <div class="w-day-header">Aug 28</div>
+                <div class="w-photos cols-6">
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p6"></div>
+                </div>
+                <div class="w-day-header">Aug 24</div>
+                <div class="w-photos cols-6">
+                  <div class="w-photo p7"></div>
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                </div>
+                <div class="w-day-header">Aug 19</div>
+                <div class="w-photos cols-6">
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p6"></div>
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p7"></div>
+                  <div class="w-photo p3"></div>
+                </div>
+                <div class="w-month-header">July 2020 <span>· 891</span></div>
+                <div class="w-day-header">Jul 31</div>
+                <div class="w-photos cols-6">
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p6"></div>
+                  <div class="w-photo p1"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dim-bottom"><span class="dim-tag">48px rail + 260px filters + photo grid</span></div>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- OPTION B: Slide-out Drawer                          -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="option-card">
+        <div class="option-header">
+          <span class="option-letter">B</span>
+          <span class="option-title">Full Nav + Slide-out Filter Drawer</span>
+        </div>
+        <div class="option-desc">
+          Nav sidebar stays at full width (160px). Clicking "Filters" opens a 300px drawer that slides over the photo
+          grid from the left. The drawer has a close button and darkens the grid behind it.
+        </div>
+        <div class="option-pros-cons">
+          <div class="pros">
+            <span>Nav always fully visible — consistent with all other pages</span>
+            <span>Photos get maximum width when filters are closed</span>
+            <span>Familiar drawer pattern (Google Photos uses this)</span>
+          </div>
+          <div class="cons">
+            <span>Filters not persistently visible — must open/close drawer</span>
+            <span>Can't see filter changes reflected in real-time in the grid</span>
+            <span>Extra click to access filters each time</span>
+          </div>
+        </div>
+
+        <div class="layout-wrap">
+          <div class="wireframe layout-b">
+            <div class="w-topbar">
+              <div class="w-logo">
+                <div class="w-logo-dots">
+                  <div class="w-logo-dot" style="background: #4285f4"></div>
+                  <div class="w-logo-dot" style="background: #ea4335"></div>
+                  <div class="w-logo-dot" style="background: #fbbc04"></div>
+                  <div class="w-logo-dot" style="background: #34a853"></div>
+                </div>
+                gallery
+              </div>
+              <div class="w-search-wrap">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                  />
+                </svg>
+                <input class="w-search" placeholder="Search photos, people, places..." />
+              </div>
+              <div class="w-topbar-right">
+                <div
+                  class="w-small-btn"
+                  style="border-color: var(--primary); color: var(--primary); background: rgba(66, 80, 175, 0.1)"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z" />
+                  </svg>
+                  Filters (2)
+                </div>
+                <div class="w-small-btn">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                    />
+                  </svg>
+                  Date captured
+                </div>
+                <div class="w-avatar">P</div>
+              </div>
+            </div>
+
+            <!-- Full Nav -->
+            <div class="w-nav">
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                  /></svg
+                >Photos
+              </div>
+              <div class="w-nav-item active">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5Z"
+                  /></svg
+                >Discover
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11Z"
+                  /></svg
+                >Spaces
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M11.5,11.67L13.19,13.83L15.67,10.67L19,15H9M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                  /></svg
+                >Albums
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                  /></svg
+                >People
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M15,19L9,16.89V5L15,7.11M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                  /></svg
+                >Map
+              </div>
+              <div class="w-nav-spacer"></div>
+              <div class="w-nav-bottom">v4.8.3</div>
+            </div>
+
+            <!-- Main Content (with drawer overlay) -->
+            <div class="w-main">
+              <div class="w-active-filters">
+                <span class="w-result-count">2,847 results</span>
+                <span class="w-chip"
+                  >Sarah Chen
+                  <span class="w-chip-x"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      /></svg></span
+                ></span>
+                <span class="w-chip"
+                  >Munich
+                  <span class="w-chip-x"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      /></svg></span
+                ></span>
+                <span class="w-clear">Clear all</span>
+              </div>
+              <div class="w-grid-area">
+                <div class="w-month-header">August 2020 <span>· 614</span></div>
+                <div class="w-day-header">Aug 28</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p6"></div>
+                  <div class="w-photo p7"></div>
+                </div>
+                <div class="w-day-header">Aug 24</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p6"></div>
+                </div>
+                <div class="w-month-header">July 2020 <span>· 891</span></div>
+                <div class="w-day-header">Jul 31</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p7"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p4"></div>
+                </div>
+              </div>
+
+              <!-- Drawer Overlay -->
+              <div class="drawer-overlay">
+                <div class="drawer-panel">
+                  <div class="drawer-header">
+                    Filters
+                    <div class="drawer-close">
+                      <svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="w-filter-section">
+                    <div class="w-filter-title">Timeline</div>
+                    <div class="w-years">
+                      <div class="w-year"><span>2019</span><span class="w-year-count">3.4k</span></div>
+                      <div class="w-year sel"><span>2020</span><span class="w-year-count">6.5k</span></div>
+                      <div class="w-year"><span>2021</span><span class="w-year-count">5.1k</span></div>
+                      <div class="w-year"><span>2022</span><span class="w-year-count">4.8k</span></div>
+                    </div>
+                    <div class="w-months">
+                      <div class="w-month">Jan</div>
+                      <div class="w-month">Feb</div>
+                      <div class="w-month">Mar</div>
+                      <div class="w-month">Apr</div>
+                      <div class="w-month">May</div>
+                      <div class="w-month">Jun</div>
+                      <div class="w-month">Jul</div>
+                      <div class="w-month sel">Aug</div>
+                      <div class="w-month">Sep</div>
+                      <div class="w-month">Oct</div>
+                      <div class="w-month">Nov</div>
+                      <div class="w-month">Dec</div>
+                    </div>
+                  </div>
+                  <div class="w-filter-section">
+                    <div class="w-filter-title">People</div>
+                    <div class="w-filter-item active">
+                      <div class="w-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="w-filter-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2)">S</div>
+                      Sarah Chen
+                    </div>
+                    <div class="w-filter-item">
+                      <div class="w-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      <div class="w-filter-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c)">M</div>
+                      Max Chen
+                    </div>
+                  </div>
+                  <div class="w-filter-section">
+                    <div class="w-filter-title">Location</div>
+                    <div class="w-filter-item active">
+                      <div class="w-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      Munich
+                    </div>
+                    <div class="w-filter-item">
+                      <div class="w-checkbox">
+                        <svg viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg>
+                      </div>
+                      Berlin
+                    </div>
+                  </div>
+                  <div class="w-filter-section">
+                    <div class="w-filter-title">Rating</div>
+                    <div class="w-stars">
+                      <svg class="w-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="w-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="w-star on" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="w-star" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                      <svg class="w-star" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="drawer-backdrop"></div>
+              </div>
+            </div>
+          </div>
+          <div class="dim-bottom">
+            <span class="dim-tag">160px nav + 300px drawer overlay + photo grid behind</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- OPTION C: Horizontal Panel                          -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="option-card">
+        <div class="option-header">
+          <span class="option-letter">C</span>
+          <span class="option-title">Full Nav + Horizontal Filter Panel</span>
+        </div>
+        <div class="option-desc">
+          Nav stays full-width. Filters live in a collapsible horizontal strip below the search bar. Temporal picker as
+          a row of year/month chips. Other filters as pill toggles. Expands vertically when sections are opened.
+        </div>
+        <div class="option-pros-cons">
+          <div class="pros">
+            <span>Photos get full width below the filter strip</span>
+            <span>Nav untouched — consistent with all other pages</span>
+            <span>Filter strip can collapse to just active chips</span>
+          </div>
+          <div class="cons">
+            <span>Horizontal space limits filter detail (no room for long people lists)</span>
+            <span>Temporal picker cramped in horizontal layout</span>
+            <span>Eats vertical space — fewer photo rows visible</span>
+          </div>
+        </div>
+
+        <div class="layout-wrap">
+          <div class="wireframe layout-c">
+            <div class="w-topbar">
+              <div class="w-logo">
+                <div class="w-logo-dots">
+                  <div class="w-logo-dot" style="background: #4285f4"></div>
+                  <div class="w-logo-dot" style="background: #ea4335"></div>
+                  <div class="w-logo-dot" style="background: #fbbc04"></div>
+                  <div class="w-logo-dot" style="background: #34a853"></div>
+                </div>
+                gallery
+              </div>
+              <div class="w-search-wrap">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                  />
+                </svg>
+                <input class="w-search" placeholder="Search photos, people, places..." />
+              </div>
+              <div class="w-topbar-right">
+                <div class="w-small-btn">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                    /></svg
+                  >Date
+                </div>
+                <div class="w-avatar">P</div>
+              </div>
+            </div>
+
+            <div class="w-nav">
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                  /></svg
+                >Photos
+              </div>
+              <div class="w-nav-item active">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5Z"
+                  /></svg
+                >Discover
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11Z"
+                  /></svg
+                >Spaces
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M11.5,11.67L13.19,13.83L15.67,10.67L19,15H9M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+                  /></svg
+                >Albums
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                  /></svg
+                >People
+              </div>
+              <div class="w-nav-item">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M15,19L9,16.89V5L15,7.11M20.5,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+                  /></svg
+                >Map
+              </div>
+            </div>
+
+            <!-- Horizontal Filters -->
+            <div class="w-horiz-filters">
+              <div class="w-horiz-row">
+                <div class="w-horiz-section">
+                  <div class="w-horiz-section-title">Year</div>
+                  <div class="w-horiz-years">
+                    <div class="w-horiz-year">2019</div>
+                    <div class="w-horiz-year sel">2020</div>
+                    <div class="w-horiz-year">2021</div>
+                    <div class="w-horiz-year">2022</div>
+                    <div class="w-horiz-year">2023</div>
+                    <div class="w-horiz-year">2024</div>
+                  </div>
+                </div>
+                <div class="w-horiz-section">
+                  <div class="w-horiz-section-title">Month</div>
+                  <div class="w-horiz-months">
+                    <div class="w-horiz-month">J</div>
+                    <div class="w-horiz-month">F</div>
+                    <div class="w-horiz-month">M</div>
+                    <div class="w-horiz-month">A</div>
+                    <div class="w-horiz-month">M</div>
+                    <div class="w-horiz-month">J</div>
+                    <div class="w-horiz-month">J</div>
+                    <div class="w-horiz-month sel">A</div>
+                    <div class="w-horiz-month">S</div>
+                    <div class="w-horiz-month">O</div>
+                    <div class="w-horiz-month">N</div>
+                    <div class="w-horiz-month">D</div>
+                  </div>
+                </div>
+                <div class="w-horiz-sep"></div>
+                <div class="w-horiz-section">
+                  <div class="w-horiz-section-title">Filters</div>
+                  <div class="w-horiz-filter-btns">
+                    <div class="w-horiz-filter-btn active">
+                      Sarah Chen
+                      <svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        />
+                      </svg>
+                    </div>
+                    <div class="w-horiz-filter-btn active">
+                      Munich
+                      <svg viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        />
+                      </svg>
+                    </div>
+                    <div class="w-horiz-filter-btn">+ People</div>
+                    <div class="w-horiz-filter-btn">+ Camera</div>
+                    <div class="w-horiz-filter-btn">+ Tags</div>
+                    <div class="w-horiz-filter-btn">+ Rating</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-main">
+              <div class="w-grid-area">
+                <div class="w-month-header">August 2020 <span>· 614</span></div>
+                <div class="w-day-header">Aug 28</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p6"></div>
+                  <div class="w-photo p7"></div>
+                </div>
+                <div class="w-day-header">Aug 24</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p6"></div>
+                </div>
+                <div class="w-month-header">July 2020 <span>· 891</span></div>
+                <div class="w-day-header">Jul 31</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p7"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dim-bottom">
+            <span class="dim-tag">160px nav + horizontal filter strip (~80px tall) + full-width photo grid</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- OPTION D: Toggled Sidebar Content                   -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="option-card">
+        <div class="option-header">
+          <span class="option-letter">D</span>
+          <span class="option-title">Sidebar Switches Between Nav and Filters</span>
+        </div>
+        <div class="option-desc">
+          The left sidebar has a toggle at the top: "Nav" and "Filters". On the Discover page, it defaults to Filters
+          mode. The sidebar shows filter sections instead of nav items. A small toggle lets you switch back to nav when
+          needed.
+        </div>
+        <div class="option-pros-cons">
+          <div class="pros">
+            <span>Same 160px sidebar width — no extra space used</span>
+            <span>Filters visible by default on Discover page</span>
+            <span>No layout shift compared to other pages</span>
+          </div>
+          <div class="cons">
+            <span>160px is tight for filter content (year chips, people names)</span>
+            <span>Nav hidden when filters showing — extra clicks to navigate away</span>
+            <span>Unconventional pattern — may confuse users</span>
+          </div>
+        </div>
+
+        <div class="layout-wrap">
+          <div class="wireframe layout-d">
+            <div class="w-topbar">
+              <div class="w-logo">
+                <div class="w-logo-dots">
+                  <div class="w-logo-dot" style="background: #4285f4"></div>
+                  <div class="w-logo-dot" style="background: #ea4335"></div>
+                  <div class="w-logo-dot" style="background: #fbbc04"></div>
+                  <div class="w-logo-dot" style="background: #34a853"></div>
+                </div>
+                gallery
+              </div>
+              <div class="w-search-wrap">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                  />
+                </svg>
+                <input class="w-search" placeholder="Search photos, people, places..." />
+              </div>
+              <div class="w-topbar-right">
+                <div class="w-small-btn">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                    /></svg
+                  >Date
+                </div>
+                <div class="w-avatar">P</div>
+              </div>
+            </div>
+
+            <!-- Nav/Filters sidebar with toggle -->
+            <div class="w-nav-filters">
+              <div class="w-nav-mode-toggle">
+                <div class="w-mode-btn">Nav</div>
+                <div class="w-mode-btn active">Filters</div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">Timeline</div>
+                <div class="w-years" style="gap: 2px">
+                  <div class="w-year" style="width: calc(33.33% - 2px); font-size: 9px; padding: 3px 0">
+                    <span>2020</span>
+                  </div>
+                  <div class="w-year sel" style="width: calc(33.33% - 2px); font-size: 9px; padding: 3px 0">
+                    <span>2021</span>
+                  </div>
+                  <div class="w-year" style="width: calc(33.33% - 2px); font-size: 9px; padding: 3px 0">
+                    <span>2022</span>
+                  </div>
+                  <div class="w-year" style="width: calc(33.33% - 2px); font-size: 9px; padding: 3px 0">
+                    <span>2023</span>
+                  </div>
+                  <div class="w-year" style="width: calc(33.33% - 2px); font-size: 9px; padding: 3px 0">
+                    <span>2024</span>
+                  </div>
+                  <div class="w-year" style="width: calc(33.33% - 2px); font-size: 9px; padding: 3px 0">
+                    <span>2025</span>
+                  </div>
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">People</div>
+                <div class="w-filter-item active" style="font-size: 10px">
+                  <div class="w-checkbox" style="width: 11px; height: 11px">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  <div
+                    class="w-filter-avatar"
+                    style="
+                      background: linear-gradient(135deg, #667eea, #764ba2);
+                      width: 14px;
+                      height: 14px;
+                      font-size: 7px;
+                    "
+                  >
+                    S
+                  </div>
+                  Sarah
+                </div>
+                <div class="w-filter-item" style="font-size: 10px">
+                  <div class="w-checkbox" style="width: 11px; height: 11px">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  <div
+                    class="w-filter-avatar"
+                    style="
+                      background: linear-gradient(135deg, #f093fb, #f5576c);
+                      width: 14px;
+                      height: 14px;
+                      font-size: 7px;
+                    "
+                  >
+                    M
+                  </div>
+                  Max
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">Location</div>
+                <div class="w-filter-item active" style="font-size: 10px">
+                  <div class="w-checkbox" style="width: 11px; height: 11px">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  Munich
+                </div>
+                <div class="w-filter-item" style="font-size: 10px">
+                  <div class="w-checkbox" style="width: 11px; height: 11px">
+                    <svg viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                  </div>
+                  Berlin
+                </div>
+              </div>
+              <div class="w-filter-section">
+                <div class="w-filter-title">Rating</div>
+                <div class="w-stars">
+                  <svg class="w-star on" viewBox="0 0 24 24" style="width: 12px; height: 12px">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star on" viewBox="0 0 24 24" style="width: 12px; height: 12px">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star on" viewBox="0 0 24 24" style="width: 12px; height: 12px">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star" viewBox="0 0 24 24" style="width: 12px; height: 12px">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                  <svg class="w-star" viewBox="0 0 24 24" style="width: 12px; height: 12px">
+                    <path
+                      fill="currentColor"
+                      d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-main">
+              <div class="w-active-filters">
+                <span class="w-result-count">2,847 results</span>
+                <span class="w-chip"
+                  >Sarah
+                  <span class="w-chip-x"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      /></svg></span
+                ></span>
+                <span class="w-chip"
+                  >Munich
+                  <span class="w-chip-x"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                      /></svg></span
+                ></span>
+                <span class="w-clear">Clear all</span>
+              </div>
+              <div class="w-grid-area">
+                <div class="w-month-header">August 2020 <span>· 614</span></div>
+                <div class="w-day-header">Aug 28</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p6"></div>
+                  <div class="w-photo p7"></div>
+                </div>
+                <div class="w-day-header">Aug 24</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p4"></div>
+                  <div class="w-photo p6"></div>
+                </div>
+                <div class="w-month-header">July 2020 <span>· 891</span></div>
+                <div class="w-day-header">Jul 31</div>
+                <div class="w-photos cols-7">
+                  <div class="w-photo p7"></div>
+                  <div class="w-photo p3"></div>
+                  <div class="w-photo p8"></div>
+                  <div class="w-photo p1"></div>
+                  <div class="w-photo p5"></div>
+                  <div class="w-photo p2"></div>
+                  <div class="w-photo p4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dim-bottom">
+            <span class="dim-tag">160px sidebar (nav or filters) + full-width photo grid</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

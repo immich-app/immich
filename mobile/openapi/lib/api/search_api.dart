@@ -144,9 +144,12 @@ class SearchApi {
   /// * [String] model:
   ///   Filter by camera model
   ///
+  /// * [String] spaceId:
+  ///   Scope suggestions to a specific shared space
+  ///
   /// * [String] state:
   ///   Filter by state/province
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? state, }) async {
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions';
 
@@ -171,6 +174,9 @@ class SearchApi {
     }
     if (model != null) {
       queryParams.addAll(_queryParams('', 'model', model));
+    }
+    if (spaceId != null) {
+      queryParams.addAll(_queryParams('', 'spaceId', spaceId));
     }
     if (state != null) {
       queryParams.addAll(_queryParams('', 'state', state));
@@ -215,10 +221,13 @@ class SearchApi {
   /// * [String] model:
   ///   Filter by camera model
   ///
+  /// * [String] spaceId:
+  ///   Scope suggestions to a specific shared space
+  ///
   /// * [String] state:
   ///   Filter by state/province
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? state, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, state: state, );
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, spaceId: spaceId, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

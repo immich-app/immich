@@ -26,7 +26,23 @@ export class TimelineService extends BaseService {
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const { userId, ...options } = dto;
+    const { userId, personId, spacePersonId, tagId, type, ...options } = dto;
+
+    // Normalize deprecated single-value fields to arrays
+    if (personId && !options.personIds?.length) {
+      options.personIds = [personId];
+    }
+    if (spacePersonId && !options.spacePersonIds?.length) {
+      options.spacePersonIds = [spacePersonId];
+    }
+    if (tagId && !options.tagIds?.length) {
+      options.tagIds = [tagId];
+    }
+    // Map type to assetType
+    if (type) {
+      (options as any).assetType = type;
+    }
+
     let userIds: string[] | undefined = undefined;
     let timelineSpaceIds: string[] | undefined = undefined;
 
@@ -72,8 +88,9 @@ export class TimelineService extends BaseService {
       }
     }
 
-    if (dto.tagId) {
-      await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.tagId] });
+    const allTagIds = dto.tagIds ?? (dto.tagId ? [dto.tagId] : []);
+    if (allTagIds.length > 0) {
+      await this.requireAccess({ auth, permission: Permission.TagRead, ids: allTagIds });
     }
 
     if (dto.withPartners) {

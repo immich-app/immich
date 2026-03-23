@@ -1,0 +1,1749 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery — Discover</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4250af;
+        --primary-soft: rgba(66, 80, 175, 0.08);
+        --primary-medium: rgba(66, 80, 175, 0.15);
+        --bg: #ffffff;
+        --bg-surface: #f5f5f6;
+        --bg-elevated: #ffffff;
+        --fg: #0f0f0f;
+        --fg-muted: #6b6b76;
+        --fg-faint: #a0a0ab;
+        --border: #e8e8ec;
+        --border-hover: #d0d0d6;
+        --sidebar-w: 300px;
+        --topbar-h: 56px;
+        --radius: 8px;
+        --radius-full: 9999px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+        --transition: 0.15s ease;
+      }
+
+      .dark {
+        --primary: #8da4f4;
+        --primary-soft: rgba(141, 164, 244, 0.08);
+        --primary-medium: rgba(141, 164, 244, 0.15);
+        --bg: #0e0e10;
+        --bg-surface: #1a1a1e;
+        --bg-elevated: #222226;
+        --fg: #e4e4e8;
+        --fg-muted: #8e8e9a;
+        --fg-faint: #5a5a66;
+        --border: #2a2a30;
+        --border-hover: #3a3a42;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'DM Sans', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        letter-spacing: 0.01em;
+        line-height: 1.5;
+        overflow: hidden;
+        height: 100vh;
+      }
+
+      /* ═══════════════════════════════════════════ */
+      /* APP SHELL                                   */
+      /* ═══════════════════════════════════════════ */
+      .app-shell {
+        display: grid;
+        grid-template-columns: 64px var(--sidebar-w) 1fr;
+        grid-template-rows: var(--topbar-h) 1fr;
+        height: 100vh;
+      }
+
+      /* ── Nav Rail (Gallery's existing sidebar) ── */
+      .nav-rail {
+        grid-row: 1 / -1;
+        background: var(--bg-surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 0;
+        gap: 4px;
+      }
+
+      .nav-rail-item {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: var(--fg-muted);
+        cursor: pointer;
+        transition: all var(--transition);
+        border: none;
+        background: none;
+        position: relative;
+      }
+
+      .nav-rail-item:hover {
+        background: var(--primary-soft);
+        color: var(--fg);
+      }
+
+      .nav-rail-item.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .nav-rail-item svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .nav-rail-spacer {
+        flex: 1;
+      }
+
+      /* ── Top Bar ── */
+      .top-bar {
+        grid-column: 2 / -1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+        z-index: 10;
+      }
+
+      .page-title {
+        font-size: 18px;
+        font-weight: 600;
+        white-space: nowrap;
+        letter-spacing: -0.01em;
+      }
+
+      .search-wrapper {
+        flex: 1;
+        max-width: 520px;
+        position: relative;
+      }
+
+      .search-input {
+        width: 100%;
+        height: 36px;
+        padding: 0 12px 0 36px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        background: var(--bg-surface);
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+        transition: all var(--transition);
+      }
+
+      .search-input::placeholder {
+        color: var(--fg-faint);
+      }
+
+      .search-input:focus {
+        border-color: var(--primary);
+        background: var(--bg);
+        box-shadow: 0 0 0 3px var(--primary-soft);
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        color: var(--fg-faint);
+        pointer-events: none;
+      }
+
+      .search-type-toggle {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        gap: 2px;
+      }
+
+      .search-type-btn {
+        padding: 3px 8px;
+        border: none;
+        background: none;
+        color: var(--fg-faint);
+        font-family: inherit;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+
+      .search-type-btn:hover {
+        color: var(--fg-muted);
+      }
+
+      .search-type-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+      }
+
+      /* ── Sort Dropdown in Top Bar ── */
+      .sort-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all var(--transition);
+        white-space: nowrap;
+      }
+
+      .sort-trigger:hover {
+        border-color: var(--border-hover);
+        background: var(--bg-surface);
+      }
+
+      .sort-trigger svg {
+        width: 14px;
+        height: 14px;
+        color: var(--fg-muted);
+      }
+
+      .top-icon-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: none;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+
+      .top-icon-btn:hover {
+        background: var(--bg-surface);
+        color: var(--fg);
+      }
+
+      .top-icon-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ═══════════════════════════════════════════ */
+      /* DISCOVERY SIDEBAR                           */
+      /* ═══════════════════════════════════════════ */
+      .discovery-sidebar {
+        grid-row: 2;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+
+      /* ── Sidebar Sections ── */
+      .sidebar-section {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sidebar-section:last-child {
+        border-bottom: none;
+      }
+
+      .sidebar-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background var(--transition);
+        user-select: none;
+      }
+
+      .sidebar-section-header:hover {
+        background: var(--primary-soft);
+      }
+
+      .sidebar-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--fg-muted);
+      }
+
+      .sidebar-section-chevron {
+        width: 16px;
+        height: 16px;
+        color: var(--fg-faint);
+        transition: transform var(--transition);
+      }
+
+      .sidebar-section.collapsed .sidebar-section-chevron {
+        transform: rotate(-90deg);
+      }
+
+      .sidebar-section.collapsed .sidebar-section-body {
+        display: none;
+      }
+
+      .sidebar-section-body {
+        padding: 0 16px 14px;
+      }
+
+      /* ── Temporal Picker (in sidebar) ── */
+      .temporal-years {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .year-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px 0;
+        width: calc(25% - 3px);
+        border: 1px solid var(--border);
+        background: var(--bg);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: inherit;
+      }
+
+      .year-chip:hover {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+      }
+
+      .year-chip.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+      }
+
+      .year-chip-label {
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .year-chip.selected .year-chip-label {
+        color: white;
+      }
+
+      .year-chip-count {
+        font-size: 9px;
+        color: var(--fg-faint);
+        font-weight: 500;
+      }
+
+      .year-chip.selected .year-chip-count {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .year-chip-bar {
+        width: calc(100% - 8px);
+        height: 2px;
+        background: var(--border);
+        border-radius: 1px;
+        margin-top: 3px;
+        overflow: hidden;
+      }
+
+      .year-chip-bar-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 1px;
+      }
+
+      .year-chip.selected .year-chip-bar {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .year-chip.selected .year-chip-bar-fill {
+        background: white;
+      }
+
+      .year-chip.empty {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      /* Month sub-grid */
+      .temporal-months {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+
+      .temporal-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 8px;
+        font-size: 11px;
+      }
+
+      .temporal-breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .temporal-breadcrumb .sep {
+        color: var(--fg-faint);
+      }
+
+      .temporal-breadcrumb .current {
+        color: var(--fg);
+        font-weight: 600;
+      }
+
+      .month-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5px 0;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: inherit;
+      }
+
+      .month-chip:hover {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+      }
+
+      .month-chip.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+      }
+
+      .month-chip-label {
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .month-chip.selected .month-chip-label {
+        color: white;
+      }
+
+      .month-chip-count {
+        font-size: 9px;
+        color: var(--fg-faint);
+      }
+
+      .month-chip.selected .month-chip-count {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .month-chip.empty {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      /* ── Filter Sections ── */
+      .filter-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .filter-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        margin: 0 -8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background var(--transition);
+        border: none;
+        background: none;
+        font-family: inherit;
+        font-size: 13px;
+        color: var(--fg);
+        text-align: left;
+        width: calc(100% + 16px);
+      }
+
+      .filter-option:hover {
+        background: var(--primary-soft);
+      }
+
+      .filter-option.active {
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-weight: 500;
+      }
+
+      .filter-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+      }
+
+      .filter-option-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .filter-check {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid var(--border);
+        border-radius: 4px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition);
+      }
+
+      .filter-option.active .filter-check {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .filter-option.active .filter-check svg {
+        display: block;
+      }
+
+      .filter-check svg {
+        width: 12px;
+        height: 12px;
+        color: white;
+        display: none;
+      }
+
+      /* Location tree */
+      .location-item {
+        padding-left: 0;
+      }
+
+      .location-item.nested {
+        padding-left: 20px;
+      }
+
+      /* Rating filter */
+      .rating-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 0;
+      }
+
+      .rating-star {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        color: var(--border);
+        transition: color var(--transition);
+      }
+
+      .rating-star.filled {
+        color: #f59e0b;
+      }
+
+      .rating-star:hover {
+        color: #fbbf24;
+      }
+
+      .rating-label {
+        font-size: 12px;
+        color: var(--fg-muted);
+        margin-left: 4px;
+      }
+
+      /* Media type toggle */
+      .media-toggle {
+        display: flex;
+        gap: 6px;
+      }
+
+      .media-toggle-btn {
+        flex: 1;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--fg);
+        cursor: pointer;
+        transition: all var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      .media-toggle-btn:hover {
+        border-color: var(--border-hover);
+      }
+
+      .media-toggle-btn.active {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .media-toggle-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Sidebar search (for within filter sections) */
+      .sidebar-search {
+        width: 100%;
+        height: 30px;
+        padding: 0 8px 0 28px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-surface);
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 12px;
+        outline: none;
+        margin-bottom: 8px;
+        transition: all var(--transition);
+        position: relative;
+      }
+
+      .sidebar-search:focus {
+        border-color: var(--primary);
+        background: var(--bg);
+      }
+
+      .sidebar-search-wrapper {
+        position: relative;
+        margin-bottom: 8px;
+      }
+
+      .sidebar-search-wrapper .search-icon {
+        left: 8px;
+        width: 14px;
+        height: 14px;
+      }
+
+      .sidebar-search-wrapper .search-input {
+        height: 30px;
+        font-size: 12px;
+        padding-left: 28px;
+        border-radius: 6px;
+      }
+
+      /* Show more / less */
+      .show-more-btn {
+        font-size: 11px;
+        color: var(--primary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+        padding: 4px 0;
+        margin-top: 2px;
+      }
+
+      .show-more-btn:hover {
+        text-decoration: underline;
+      }
+
+      /* ═══════════════════════════════════════════ */
+      /* MAIN CONTENT AREA                           */
+      /* ═══════════════════════════════════════════ */
+      .main-content {
+        grid-row: 2;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        position: relative;
+      }
+
+      /* ── Active Filters Bar ── */
+      .active-filters {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+        background: var(--bg-surface);
+      }
+
+      .active-filters-count {
+        font-size: 12px;
+        color: var(--fg-muted);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .active-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 4px 3px 9px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--fg);
+        white-space: nowrap;
+      }
+
+      .active-chip-remove {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: none;
+        color: var(--fg-faint);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+
+      .active-chip-remove:hover {
+        background: var(--border);
+        color: var(--fg);
+      }
+
+      .active-chip-remove svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .clear-all {
+        font-size: 11px;
+        color: var(--primary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: var(--radius-full);
+        margin-left: auto;
+        transition: background var(--transition);
+        white-space: nowrap;
+      }
+
+      .clear-all:hover {
+        background: var(--primary-soft);
+      }
+
+      /* ── Photo Grid ── */
+      .timeline-section {
+        padding: 0 20px;
+      }
+
+      .month-label {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: 14px 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--fg);
+        background: var(--bg);
+        letter-spacing: -0.01em;
+      }
+
+      .month-label span {
+        color: var(--fg-faint);
+        font-weight: 400;
+        font-size: 12px;
+        margin-left: 6px;
+      }
+
+      .day-label {
+        font-size: 11px;
+        color: var(--fg-muted);
+        font-weight: 500;
+        padding: 8px 0 4px;
+      }
+
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 3px;
+        margin-bottom: 4px;
+      }
+
+      .photo-cell {
+        aspect-ratio: 1;
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .photo-cell:hover .photo-overlay {
+        opacity: 1;
+      }
+
+      .photo-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transition: opacity var(--transition);
+      }
+
+      .photo-placeholder {
+        width: 100%;
+        height: 100%;
+      }
+
+      .p-warm {
+        background: linear-gradient(145deg, #fef3c7, #fde68a, #fcd34d);
+      }
+      .p-cool {
+        background: linear-gradient(145deg, #dbeafe, #bfdbfe, #93c5fd);
+      }
+      .p-green {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0, #6ee7b7);
+      }
+      .p-rose {
+        background: linear-gradient(145deg, #ffe4e6, #fecdd3, #fda4af);
+      }
+      .p-purple {
+        background: linear-gradient(145deg, #ede9fe, #ddd6fe, #c4b5fd);
+      }
+      .p-amber {
+        background: linear-gradient(145deg, #fef3c7, #fde68a, #fbbf24);
+      }
+      .p-sky {
+        background: linear-gradient(145deg, #e0f2fe, #bae6fd, #7dd3fc);
+      }
+      .p-emerald {
+        background: linear-gradient(145deg, #d1fae5, #a7f3d0, #34d399);
+      }
+      .p-orange {
+        background: linear-gradient(145deg, #ffedd5, #fed7aa, #fdba74);
+      }
+      .p-indigo {
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe, #a5b4fc);
+      }
+
+      /* Video badge */
+      .video-badge {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 9px;
+        font-weight: 600;
+        padding: 1px 5px;
+        border-radius: 3px;
+        letter-spacing: 0.3px;
+      }
+
+      /* Favorite indicator */
+      .fav-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        color: #f43f5e;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+      }
+
+      .fav-badge svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ── Scrubber (right edge) ── */
+      .scrubber {
+        position: fixed;
+        right: 8px;
+        top: calc(var(--topbar-h) + 50px);
+        bottom: 20px;
+        width: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        z-index: 20;
+        opacity: 0.4;
+        transition: opacity var(--transition);
+      }
+
+      .scrubber:hover {
+        opacity: 1;
+      }
+
+      .scrubber-month {
+        flex: 1;
+        width: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        transition: all var(--transition);
+        cursor: pointer;
+        min-height: 2px;
+      }
+
+      .scrubber-month:hover {
+        width: 8px;
+        background: var(--primary);
+      }
+
+      .scrubber-month.has-photos {
+        background: var(--fg-faint);
+      }
+
+      .scrubber-year-label {
+        font-size: 8px;
+        color: var(--fg-faint);
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin: 4px 0;
+      }
+
+      /* ═══════════════════════════════════════════ */
+      /* THEME TOGGLE + SIDEBAR TOGGLE               */
+      /* ═══════════════════════════════════════════ */
+      .controls {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        gap: 6px;
+        z-index: 999;
+      }
+
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--bg-elevated);
+        color: var(--fg);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all var(--transition);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .control-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .control-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Sidebar collapsed state */
+      .app-shell.sidebar-collapsed {
+        grid-template-columns: 64px 0px 1fr;
+      }
+
+      .app-shell.sidebar-collapsed .discovery-sidebar {
+        display: none;
+      }
+
+      /* ═══════════════════════════════════════════ */
+      /* ANNOTATIONS (design doc only)               */
+      /* ═══════════════════════════════════════════ */
+      .annotation-overlay {
+        display: none;
+      }
+
+      body.show-annotations .annotation-overlay {
+        display: block;
+        position: absolute;
+        z-index: 50;
+        background: #fef3c7;
+        border: 2px solid #f59e0b;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 11px;
+        color: #92400e;
+        line-height: 1.5;
+        max-width: 240px;
+        box-shadow: var(--shadow-md);
+        pointer-events: none;
+      }
+
+      .dark body.show-annotations .annotation-overlay {
+        background: #422006;
+        color: #fde68a;
+        border-color: #92400e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell" id="appShell">
+      <!-- ═══ Nav Rail ═══ -->
+      <nav class="nav-rail">
+        <button class="nav-rail-item active" title="Discover">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+            />
+          </svg>
+        </button>
+        <button class="nav-rail-item" title="Spaces">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"
+            />
+          </svg>
+        </button>
+        <button class="nav-rail-item" title="Albums">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M20,4V16H8V4H20M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M11.5,11.67L13.19,13.83L15.67,10.67L19,15H9M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+            />
+          </svg>
+        </button>
+        <button class="nav-rail-item" title="People">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+            />
+          </svg>
+        </button>
+        <button class="nav-rail-item" title="Map">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M15,19L9,16.89V5L15,7.11M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"
+            />
+          </svg>
+        </button>
+        <div class="nav-rail-spacer"></div>
+        <button class="nav-rail-item" title="Settings">
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+            />
+          </svg>
+        </button>
+      </nav>
+
+      <!-- ═══ Top Bar ═══ -->
+      <header class="top-bar">
+        <div class="page-title">Discover</div>
+
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+            />
+          </svg>
+          <input class="search-input" type="text" placeholder="Search photos, people, places..." />
+          <div class="search-type-toggle">
+            <button class="search-type-btn active">Smart</button>
+            <button class="search-type-btn">File</button>
+            <button class="search-type-btn">OCR</button>
+          </div>
+        </div>
+
+        <div class="top-bar-right">
+          <button class="sort-trigger">
+            <svg viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+              />
+            </svg>
+            Date captured
+            <svg viewBox="0 0 24 24" width="12" height="12">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </button>
+          <button class="top-icon-btn" title="Grid size">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M3,11H11V3H3M3,21H11V13H3M13,21H21V13H13M13,3V11H21V3" />
+            </svg>
+          </button>
+          <button class="top-icon-btn" title="Select">
+            <svg viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- ═══ Discovery Sidebar ═══ -->
+      <aside class="discovery-sidebar">
+        <!-- Temporal Navigation -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">Timeline</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="temporal-years">
+              <button class="year-chip">
+                <span class="year-chip-label">2018</span>
+                <span class="year-chip-count">1.2k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 18%"></div></div>
+              </button>
+              <button class="year-chip">
+                <span class="year-chip-label">2019</span>
+                <span class="year-chip-count">3.4k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 52%"></div></div>
+              </button>
+              <button class="year-chip selected">
+                <span class="year-chip-label">2020</span>
+                <span class="year-chip-count">6.5k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 100%"></div></div>
+              </button>
+              <button class="year-chip">
+                <span class="year-chip-label">2021</span>
+                <span class="year-chip-count">5.1k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 78%"></div></div>
+              </button>
+              <button class="year-chip">
+                <span class="year-chip-label">2022</span>
+                <span class="year-chip-count">4.8k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 74%"></div></div>
+              </button>
+              <button class="year-chip">
+                <span class="year-chip-label">2023</span>
+                <span class="year-chip-count">3.9k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 60%"></div></div>
+              </button>
+              <button class="year-chip">
+                <span class="year-chip-label">2024</span>
+                <span class="year-chip-count">2.1k</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 32%"></div></div>
+              </button>
+              <button class="year-chip">
+                <span class="year-chip-label">2025</span>
+                <span class="year-chip-count">842</span>
+                <div class="year-chip-bar"><div class="year-chip-bar-fill" style="width: 13%"></div></div>
+              </button>
+            </div>
+
+            <!-- Month drill-down (shown for selected year) -->
+            <div class="temporal-months">
+              <div class="temporal-breadcrumb" style="grid-column: 1 / -1">
+                <a href="#">All</a>
+                <span class="sep">/</span>
+                <span class="current">2020</span>
+              </div>
+              <button class="month-chip">
+                <span class="month-chip-label">Jan</span>
+                <span class="month-chip-count">312</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Feb</span>
+                <span class="month-chip-count">198</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Mar</span>
+                <span class="month-chip-count">89</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Apr</span>
+                <span class="month-chip-count">145</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">May</span>
+                <span class="month-chip-count">402</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Jun</span>
+                <span class="month-chip-count">523</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Jul</span>
+                <span class="month-chip-count">891</span>
+              </button>
+              <button class="month-chip selected">
+                <span class="month-chip-label">Aug</span>
+                <span class="month-chip-count">1.2k</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Sep</span>
+                <span class="month-chip-count">678</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Oct</span>
+                <span class="month-chip-count">534</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Nov</span>
+                <span class="month-chip-count">389</span>
+              </button>
+              <button class="month-chip">
+                <span class="month-chip-label">Dec</span>
+                <span class="month-chip-count">1.1k</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- People Filter -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">People</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="sidebar-search-wrapper">
+              <svg class="search-icon" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                />
+              </svg>
+              <input class="search-input" type="text" placeholder="Find person..." />
+            </div>
+            <div class="filter-list">
+              <button class="filter-option active">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <div class="filter-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2)">S</div>
+                <span class="filter-option-label">Sarah Chen</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <div class="filter-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c)">M</div>
+                <span class="filter-option-label">Max Chen</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <div class="filter-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe)">L</div>
+                <span class="filter-option-label">Li Wei</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <div class="filter-avatar" style="background: linear-gradient(135deg, #43e97b, #38f9d7)">A</div>
+                <span class="filter-option-label">Anna Mueller</span>
+              </button>
+              <button class="show-more-btn">Show 12 more</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Filter -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">Location</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="filter-list">
+              <button class="filter-option active">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Germany</span>
+              </button>
+              <button class="filter-option active location-item nested">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Munich</span>
+              </button>
+              <button class="filter-option location-item nested">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Berlin</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Italy</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">France</span>
+              </button>
+              <button class="show-more-btn">Show 8 more</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camera Filter -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">Camera</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="filter-list">
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Canon EOS 5D Mark IV</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">iPhone 14 Pro</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Sony A7III</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags Filter -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">Tags</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="filter-list">
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Family</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Vacation</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Christmas</span>
+              </button>
+              <button class="filter-option">
+                <div class="filter-check">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                  </svg>
+                </div>
+                <span class="filter-option-label">Birthday</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rating Filter -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">Rating</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="rating-row">
+              <svg class="rating-star filled" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                />
+              </svg>
+              <svg class="rating-star filled" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                />
+              </svg>
+              <svg class="rating-star filled" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                />
+              </svg>
+              <svg class="rating-star" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                />
+              </svg>
+              <svg class="rating-star" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                />
+              </svg>
+              <span class="rating-label">3+ stars</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Type Filter -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">
+            <span class="sidebar-section-title">Media Type</span>
+            <svg class="sidebar-section-chevron" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+          <div class="sidebar-section-body">
+            <div class="media-toggle">
+              <button class="media-toggle-btn active">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                  />
+                </svg>
+                All
+              </button>
+              <button class="media-toggle-btn">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                  />
+                </svg>
+                Photos
+              </button>
+              <button class="media-toggle-btn">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"
+                  />
+                </svg>
+                Videos
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ═══ Main Content ═══ -->
+      <main class="main-content">
+        <!-- Active Filters Bar -->
+        <div class="active-filters">
+          <span class="active-filters-count">2,847 results</span>
+          <span class="active-chip">
+            Sarah Chen
+            <button class="active-chip-remove">
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                />
+              </svg>
+            </button>
+          </span>
+          <span class="active-chip">
+            Germany › Munich
+            <button class="active-chip-remove">
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                />
+              </svg>
+            </button>
+          </span>
+          <button class="clear-all">Clear all</button>
+        </div>
+
+        <!-- Timeline Grid -->
+        <div class="timeline-section">
+          <div class="month-label">August 2020 <span>· 614 photos</span></div>
+
+          <div class="day-label">August 28</div>
+          <div class="photo-grid">
+            <div class="photo-cell">
+              <div class="photo-placeholder p-warm"></div>
+              <div class="photo-overlay"></div>
+              <div class="fav-badge">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-cool"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-green"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-rose"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-warm"></div>
+              <div class="photo-overlay"></div>
+              <div class="video-badge">0:42</div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-purple"></div>
+              <div class="photo-overlay"></div>
+            </div>
+          </div>
+
+          <div class="day-label">August 24</div>
+          <div class="photo-grid">
+            <div class="photo-cell">
+              <div class="photo-placeholder p-sky"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-amber"></div>
+              <div class="photo-overlay"></div>
+              <div class="fav-badge">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-emerald"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-orange"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-indigo"></div>
+              <div class="photo-overlay"></div>
+              <div class="video-badge">2:15</div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-warm"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-cool"></div>
+              <div class="photo-overlay"></div>
+            </div>
+          </div>
+
+          <div class="day-label">August 19</div>
+          <div class="photo-grid">
+            <div class="photo-cell">
+              <div class="photo-placeholder p-rose"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-green"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-purple"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-sky"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-amber"></div>
+              <div class="photo-overlay"></div>
+            </div>
+          </div>
+
+          <div class="month-label">July 2020 <span>· 891 photos</span></div>
+
+          <div class="day-label">July 31</div>
+          <div class="photo-grid">
+            <div class="photo-cell">
+              <div class="photo-placeholder p-emerald"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-orange"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-cool"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-warm"></div>
+              <div class="photo-overlay"></div>
+              <div class="video-badge">1:08</div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-indigo"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-rose"></div>
+              <div class="photo-overlay"></div>
+            </div>
+            <div class="photo-cell">
+              <div class="photo-placeholder p-green"></div>
+              <div class="photo-overlay"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button
+        class="control-btn"
+        onclick="document.getElementById('appShell').classList.toggle('sidebar-collapsed')"
+        title="Toggle sidebar"
+      >
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+      </button>
+      <button class="control-btn" onclick="document.body.classList.toggle('dark')" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95Z"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <script>
+      // Collapsible sections
+      document.querySelectorAll('.sidebar-section-header').forEach((header) => {
+        header.addEventListener('click', () => {
+          header.parentElement.classList.toggle('collapsed');
+        });
+      });
+    </script>
+  </body>
+</html>

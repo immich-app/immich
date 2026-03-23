@@ -1,5 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
+  import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
+  import SortToggle from '$lib/components/filter-panel/sort-toggle.svelte';
+  import {
+    createFilterState,
+    clearFilters,
+    getActiveFilterCount,
+    type FilterPanelConfig,
+  } from '$lib/components/filter-panel/filter-panel';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -33,14 +42,19 @@
   import LoadingSpinner from '$lib/components/shared-components/LoadingSpinner.svelte';
   import {
     addAssets,
+    AssetOrder,
+    AssetTypeEnum,
     AssetVisibility,
+    getAllTags,
     getMembers,
+    getSearchSuggestions,
     getSpace,
     getSpaceActivities,
     getSpacePeople,
     markSpaceViewed,
     removeSpace,
     Role,
+    SearchSuggestionType,
     searchSmart,
     updateMemberTimeline,
     updateSpace,
@@ -91,6 +105,69 @@
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
+  // Filter state
+  let filters = $state(createFilterState());
+  let personNames = $state(new Map<string, string>());
+  let tagNames = $state(new Map<string, string>());
+
+  const filterConfig: FilterPanelConfig = {
+    sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'],
+    providers: {
+      people: async () => {
+        const people = await getSpacePeople({ id: space.id });
+        for (const p of people) {
+          personNames.set(p.id, p.name || 'Unknown');
+        }
+        return people.map((p) => ({ id: p.id, name: p.name || 'Unknown', thumbnailPath: p.thumbnailPath }));
+      },
+      locations: async () => {
+        const countries = await getSearchSuggestions({ $type: SearchSuggestionType.Country, spaceId: space.id });
+        return countries.filter(Boolean).map((c) => ({ value: c!, type: 'country' as const }));
+      },
+      cameras: async () => {
+        const makes = await getSearchSuggestions({ $type: SearchSuggestionType.CameraMake, spaceId: space.id });
+        return makes.filter(Boolean).map((m) => ({ value: m!, type: 'make' as const }));
+      },
+      tags: async () => {
+        const tags = await getAllTags();
+        for (const t of tags) {
+          tagNames.set(t.id, t.value);
+        }
+        return tags.map((t) => ({ id: t.id, name: t.value }));
+      },
+    },
+  };
+
+  function handleRemoveFilter(type: string, id?: string) {
+    switch (type) {
+      case 'person': {
+        filters = { ...filters, personIds: filters.personIds.filter((p) => p !== id) };
+        break;
+      }
+      case 'location': {
+        filters = { ...filters, city: undefined, country: undefined };
+        break;
+      }
+      case 'camera': {
+        filters = { ...filters, make: undefined, model: undefined };
+        break;
+      }
+      case 'tag': {
+        filters = { ...filters, tagIds: filters.tagIds.filter((t) => t !== id) };
+        break;
+      }
+      case 'rating': {
+        filters = { ...filters, rating: undefined };
+        break;
+      }
+      case 'media':
+      case 'mediaType': {
+        filters = { ...filters, mediaType: 'all' };
+        break;
+      }
+    }
+  }
+
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
 
@@ -98,6 +175,8 @@
   const isOwner = $derived(currentMember?.role === Role.Owner);
   const isEditor = $derived(currentMember?.role === Role.Owner || currentMember?.role === Role.Editor);
   const showInTimeline = $derived(currentMember?.showInTimeline ?? true);
+
+  const totalAssetCount = $derived(timelineManager?.assetCount ?? 0);
 
   const options = $derived.by(() => {
     if (viewMode === 'select-assets') {
@@ -107,6 +186,44 @@
     if (selectedPersonId) {
       base.spacePersonId = selectedPersonId;
     }
+    // Apply filter state — personIds maps to spacePersonIds for Spaces context
+    if (filters.personIds.length > 0) {
+      base.spacePersonIds = filters.personIds;
+    }
+    if (filters.city) {
+      base.city = filters.city;
+    }
+    if (filters.country) {
+      base.country = filters.country;
+    }
+    if (filters.make) {
+      base.make = filters.make;
+    }
+    if (filters.model) {
+      base.model = filters.model;
+    }
+    if (filters.tagIds.length > 0) {
+      base.tagIds = filters.tagIds;
+    }
+    if (filters.rating !== undefined) {
+      base.rating = filters.rating;
+    }
+    if (filters.mediaType !== 'all') {
+      base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
+    }
+    base.order = filters.sortOrder === 'asc' ? AssetOrder.Asc : AssetOrder.Desc;
+
+    // Temporal date-range filtering
+    if (filters.selectedYear && filters.selectedMonth) {
+      const start = new Date(filters.selectedYear, filters.selectedMonth - 1, 1);
+      const end = new Date(filters.selectedYear, filters.selectedMonth, 0, 23, 59, 59, 999);
+      base.takenAfter = start.toISOString();
+      base.takenBefore = end.toISOString();
+    } else if (filters.selectedYear) {
+      base.takenAfter = new Date(filters.selectedYear, 0, 1).toISOString();
+      base.takenBefore = new Date(filters.selectedYear, 11, 31, 23, 59, 59, 999).toISOString();
+    }
+
     return base;
   });
 
@@ -418,6 +535,13 @@
           </div>
         {/if}
 
+        <SortToggle
+          sortOrder={filters.sortOrder}
+          onToggle={(order) => {
+            filters = { ...filters, sortOrder: order };
+          }}
+        />
+
         {#if isEditor}
           <IconButton
             variant="ghost"
@@ -477,101 +601,149 @@
     {/if}
   {/snippet}
 
-  {#if showSearchResults}
-    <section class="px-4 py-4">
-      {#if isSearching}
-        <div class="flex justify-center py-8">
-          <LoadingSpinner />
-        </div>
-      {:else if searchResults.length === 0}
-        <p class="mt-8 text-center text-gray-500 dark:text-gray-400">{$t('search_no_result')}</p>
-      {:else}
-        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          {searchResults.length} results
-        </p>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-1">
-          {#each searchResults as asset (asset.id)}
-            <a
-              href="{Route.viewSpace({ id: space.id })}/photos/{asset.id}"
-              class="aspect-square cursor-pointer overflow-hidden rounded"
-            >
-              <img
-                src="/api/assets/{asset.id}/thumbnail"
-                alt={asset.originalFileName}
-                class="h-full w-full object-cover"
-              />
-            </a>
-          {/each}
-        </div>
+  <div class="flex h-full" data-testid="discovery-timeline">
+    <!-- Filter Panel (left sidebar) -->
+    {#if viewMode === 'view'}
+      <FilterPanel
+        config={filterConfig}
+        timeBuckets={timelineManager?.months?.map((m) => ({
+          timeBucket: `${m.yearMonth.year}-${String(m.yearMonth.month).padStart(2, '0')}-01T00:00:00.000Z`,
+          count: m.assetsCount,
+        })) ?? []}
+        onFilterChange={(f) => {
+          filters = { ...f, sortOrder: filters.sortOrder };
+        }}
+      />
+    {/if}
+
+    <!-- Main Content — pl-4 adds breathing room between filter panel and content -->
+    <div class="flex flex-1 flex-col overflow-hidden pl-4">
+      <!-- Active filter chips -->
+      {#if viewMode === 'view' && getActiveFilterCount(filters) > 0}
+        <ActiveFiltersBar
+          {filters}
+          resultCount={totalAssetCount}
+          {personNames}
+          {tagNames}
+          onRemoveFilter={handleRemoveFilter}
+          onClearAll={() => {
+            filters = clearFilters(filters);
+          }}
+        />
       {/if}
-    </section>
-  {/if}
 
-  {#if !showSearchResults}
-    <Timeline
-      enableRouting={false}
-      bind:timelineManager
-      {options}
-      assetInteraction={currentAssetInteraction}
-      {isSelectionMode}
-      onEscape={handleEscape}
-    >
-      {#if viewMode === 'view'}
-        <section class="px-4 pt-4">
-          <SpaceHero
-            {space}
-            memberCount={members.length}
-            assetCount={space.assetCount ?? 0}
-            currentRole={currentMember?.role}
-            gradientClass={spaceGradient}
-            onSetCover={isEditor ? () => (viewMode = 'select-cover') : undefined}
-            onReposition={isEditor && space.thumbnailAssetId ? handleReposition : undefined}
-            {repositioning}
-            onSavePosition={handleSavePosition}
-            onCancelReposition={handleCancelReposition}
-            peopleCount={spacePeople.length}
-            faceRecognitionEnabled={space.faceRecognitionEnabled}
-            spaceId={space.id}
-          />
-
-          {#if space.faceRecognitionEnabled && spacePeople.length > 0}
-            <SpacePeopleStrip
-              people={spacePeople}
-              spaceId={space.id}
-              {selectedPersonId}
-              onPersonClick={handlePersonClick}
-            />
+      {#if showSearchResults}
+        <section class="px-4 py-4">
+          {#if isSearching}
+            <div class="flex justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          {:else if searchResults.length === 0}
+            <p class="mt-8 text-center text-gray-500 dark:text-gray-400">{$t('search_no_result')}</p>
+          {:else}
+            <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              {searchResults.length} results
+            </p>
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-1">
+              {#each searchResults as asset (asset.id)}
+                <a
+                  href="{Route.viewSpace({ id: space.id })}/photos/{asset.id}"
+                  class="aspect-square cursor-pointer overflow-hidden rounded"
+                >
+                  <img
+                    src="/api/assets/{asset.id}/thumbnail"
+                    alt={asset.originalFileName}
+                    class="h-full w-full object-cover"
+                  />
+                </a>
+              {/each}
+            </div>
           {/if}
         </section>
-
-        {#if isOwner}
-          <SpaceOnboardingBanner
-            {space}
-            gradientClass={spaceGradient}
-            onAddPhotos={() => (viewMode = 'select-assets')}
-            onInviteMembers={() => (panelOpen = true)}
-            onSetCover={() => (viewMode = 'select-cover')}
-          />
-        {/if}
-
-        {#if (space.newAssetCount ?? 0) > 0 && space.lastViewedAt}
-          <SpaceNewAssetsDivider
-            newAssetCount={space.newAssetCount ?? 0}
-            lastViewedAt={space.lastViewedAt}
-            spaceColor={space.color ?? 'primary'}
-          />
-        {/if}
       {/if}
 
-      {#snippet empty()}
-        {#if viewMode === 'view'}
-          <div class="mx-auto max-w-md py-16 text-center">
-            <p class="text-gray-500 dark:text-gray-400">{$t('spaces_no_assets')}</p>
+      {#if !showSearchResults}
+        {#if totalAssetCount === 0 && getActiveFilterCount(filters) > 0}
+          <div class="flex flex-1 flex-col items-center justify-center gap-2" data-testid="empty-state-message">
+            <p class="text-sm text-[var(--fg-muted)]">No photos match your filters</p>
+            <button
+              type="button"
+              class="text-sm text-[var(--primary)]"
+              onclick={() => {
+                filters = clearFilters(filters);
+              }}
+            >
+              Clear all filters
+            </button>
           </div>
+        {:else}
+          <Timeline
+            enableRouting={false}
+            bind:timelineManager
+            {options}
+            assetInteraction={currentAssetInteraction}
+            {isSelectionMode}
+            onEscape={handleEscape}
+          >
+            {#if viewMode === 'view'}
+              <section class="px-4 pt-4">
+                <SpaceHero
+                  {space}
+                  memberCount={members.length}
+                  assetCount={space.assetCount ?? 0}
+                  currentRole={currentMember?.role}
+                  gradientClass={spaceGradient}
+                  onSetCover={isEditor ? () => (viewMode = 'select-cover') : undefined}
+                  onReposition={isEditor && space.thumbnailAssetId ? handleReposition : undefined}
+                  {repositioning}
+                  onSavePosition={handleSavePosition}
+                  onCancelReposition={handleCancelReposition}
+                  peopleCount={spacePeople.length}
+                  faceRecognitionEnabled={space.faceRecognitionEnabled}
+                  spaceId={space.id}
+                />
+
+                {#if space.faceRecognitionEnabled && spacePeople.length > 0}
+                  <SpacePeopleStrip
+                    people={spacePeople}
+                    spaceId={space.id}
+                    {selectedPersonId}
+                    onPersonClick={handlePersonClick}
+                  />
+                {/if}
+              </section>
+
+              {#if isOwner}
+                <SpaceOnboardingBanner
+                  {space}
+                  gradientClass={spaceGradient}
+                  onAddPhotos={() => (viewMode = 'select-assets')}
+                  onInviteMembers={() => (panelOpen = true)}
+                  onSetCover={() => (viewMode = 'select-cover')}
+                />
+              {/if}
+
+              {#if (space.newAssetCount ?? 0) > 0 && space.lastViewedAt}
+                <SpaceNewAssetsDivider
+                  newAssetCount={space.newAssetCount ?? 0}
+                  lastViewedAt={space.lastViewedAt}
+                  spaceColor={space.color ?? 'primary'}
+                />
+              {/if}
+            {/if}
+
+            {#snippet empty()}
+              {#if viewMode === 'view'}
+                <div class="mx-auto max-w-md py-16 text-center">
+                  <p class="text-gray-500 dark:text-gray-400">{$t('spaces_no_assets')}</p>
+                </div>
+              {/if}
+            {/snippet}
+          </Timeline>
         {/if}
-      {/snippet}
-    </Timeline>
-  {/if}
+      {/if}
+    </div>
+  </div>
 </UserPageLayout>
 
 {#if assetInteraction.selectionActive && viewMode === 'view'}

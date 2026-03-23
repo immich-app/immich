@@ -329,6 +329,9 @@ export class SearchSuggestionRequestDto {
   @Optional()
   lensModel?: string;
 
+  @ValidateUUID({ optional: true, description: 'Scope suggestions to a specific shared space' })
+  spaceId?: string;
+
   @ValidateBoolean({
     optional: true,
     description: 'Include null values in suggestions',

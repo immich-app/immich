@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phase 2 — Clickable Metadata Navigation</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4250af;
+        --primary-light: #acdbfa;
+        --primary-hover: #3644a0;
+        --bg: #ffffff;
+        --bg-surface: #f4f4f5;
+        --fg: #111111;
+        --fg-muted: #71717a;
+        --border: #e4e4e7;
+        --radius: 10px;
+        --radius-full: 9999px;
+        --link: #4250af;
+        --link-hover-bg: rgba(66, 80, 175, 0.08);
+      }
+
+      .dark {
+        --primary: #acdbfa;
+        --primary-hover: #90c8f0;
+        --bg: #0a0a0a;
+        --bg-surface: #1a1a1a;
+        --fg: #e5e7eb;
+        --fg-muted: #9ca3af;
+        --border: #2a2a2a;
+        --link: #acdbfa;
+        --link-hover-bg: rgba(172, 203, 250, 0.08);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          'Nunito Sans',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        letter-spacing: 0.1px;
+        line-height: 1.5;
+      }
+
+      .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .mockup-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+
+      .mockup-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .mockup-subtitle {
+        font-size: 15px;
+        color: var(--fg-muted);
+        margin-bottom: 32px;
+      }
+
+      .annotation {
+        background: #fef3c7;
+        border-left: 3px solid #f59e0b;
+        padding: 12px 16px;
+        border-radius: 0 var(--radius) var(--radius) 0;
+        margin: 16px 0;
+        font-size: 13px;
+        color: #92400e;
+        line-height: 1.6;
+      }
+
+      .dark .annotation {
+        background: #422006;
+        color: #fde68a;
+      }
+
+      .demo-section {
+        margin-bottom: 48px;
+      }
+
+      .demo-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .demo-section-desc {
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-bottom: 16px;
+      }
+
+      .section-sep {
+        border: none;
+        border-top: 2px dashed var(--border);
+        margin: 48px 0;
+      }
+
+      /* ── Asset Viewer Layout ── */
+      .asset-viewer {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        min-height: 580px;
+      }
+
+      .asset-main {
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .asset-placeholder {
+        width: 80%;
+        aspect-ratio: 3/2;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 48px;
+      }
+
+      /* ── Detail Panel ── */
+      .detail-panel {
+        background: var(--bg);
+        border-left: 1px solid var(--border);
+        overflow-y: auto;
+        max-height: 580px;
+      }
+
+      .detail-section {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .detail-section:last-child {
+        border-bottom: none;
+      }
+
+      .detail-section-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--fg-muted);
+        margin-bottom: 10px;
+      }
+
+      /* ── Metadata Row (clickable) ── */
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 8px;
+        margin: 0 -8px;
+        border-radius: 8px;
+        transition: background 0.12s;
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--fg);
+      }
+
+      .meta-row:hover {
+        background: var(--link-hover-bg);
+      }
+
+      .meta-row:hover .meta-value {
+        color: var(--link);
+      }
+
+      .meta-row .meta-icon {
+        width: 20px;
+        height: 20px;
+        color: var(--fg-muted);
+        flex-shrink: 0;
+      }
+
+      .meta-row .meta-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .meta-value {
+        font-size: 13px;
+        font-weight: 500;
+        transition: color 0.12s;
+      }
+
+      .meta-detail {
+        font-size: 11px;
+        color: var(--fg-muted);
+      }
+
+      .meta-row .meta-arrow {
+        width: 16px;
+        height: 16px;
+        color: var(--fg-muted);
+        opacity: 0;
+        transition: opacity 0.12s;
+        flex-shrink: 0;
+      }
+
+      .meta-row:hover .meta-arrow {
+        opacity: 1;
+      }
+
+      /* ── People Faces ── */
+      .people-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .person-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px 4px 4px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all 0.12s;
+        text-decoration: none;
+        color: var(--fg);
+      }
+
+      .person-chip:hover {
+        background: var(--link-hover-bg);
+        border-color: var(--link);
+      }
+
+      .person-chip:hover .person-chip-name {
+        color: var(--link);
+      }
+
+      .person-chip-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: white;
+      }
+
+      .person-chip-name {
+        font-size: 12px;
+        font-weight: 500;
+        transition: color 0.12s;
+      }
+
+      /* ── Tags ── */
+      .tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.12s;
+        text-decoration: none;
+        color: var(--fg);
+      }
+
+      .tag-chip:hover {
+        background: var(--link-hover-bg);
+        border-color: var(--link);
+        color: var(--link);
+      }
+
+      .tag-chip svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ── Before / After Comparison ── */
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 16px;
+      }
+
+      .comparison-panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .comparison-header {
+        padding: 10px 14px;
+        background: var(--bg-surface);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--fg-muted);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .comparison-body {
+        padding: 14px;
+      }
+
+      .static-text {
+        font-size: 13px;
+        color: var(--fg-muted);
+        padding: 6px 0;
+      }
+
+      .static-text svg {
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
+
+      /* ── Navigation Flow Diagram ── */
+      .flow-diagram {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px;
+        background: var(--bg-surface);
+        border-radius: var(--radius);
+        overflow-x: auto;
+      }
+
+      .flow-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-width: 120px;
+      }
+
+      .flow-step-box {
+        padding: 10px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .flow-step-box.highlight {
+        border-color: var(--primary);
+        background: var(--link-hover-bg);
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .flow-step-label {
+        font-size: 10px;
+        color: var(--fg-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .flow-arrow {
+        color: var(--fg-muted);
+        flex-shrink: 0;
+      }
+
+      .flow-arrow svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── Theme Toggle ── */
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .icon-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="mockup-label">Phase 2 Mockup</div>
+      <div class="mockup-title">Clickable Metadata Navigation</div>
+      <div class="mockup-subtitle">
+        Every metadata element in the detail panel becomes a navigable link to a filtered timeline
+      </div>
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 1: Asset Viewer Detail Panel       -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">1. Detail Panel — All Metadata Clickable</div>
+        <div class="demo-section-desc">
+          Hovering any metadata row reveals a subtle highlight and arrow, indicating it's navigable. Clicking navigates
+          to the main timeline with the corresponding filter applied.
+        </div>
+
+        <div class="asset-viewer">
+          <div class="asset-main">
+            <div class="asset-placeholder">
+              <svg viewBox="0 0 24 24" width="48" height="48">
+                <path
+                  fill="currentColor"
+                  d="M21,3H3C2,3 1,4 1,5V19A2,2 0 0,0 3,21H21C22,21 23,20 23,19V5C23,4 22,3 21,3M5,17L8.5,12.5L11,15.5L14.5,11L19,17H5Z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="detail-panel">
+            <!-- People Section -->
+            <div class="detail-section">
+              <div class="detail-section-label">People</div>
+              <div class="people-grid">
+                <a
+                  href="/photos?personId=abc"
+                  class="person-chip"
+                  title="View all photos of Sarah Chen → filtered timeline"
+                >
+                  <div class="person-chip-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2)">S</div>
+                  <span class="person-chip-name">Sarah Chen</span>
+                </a>
+                <a
+                  href="/photos?personId=def"
+                  class="person-chip"
+                  title="View all photos of Max Chen → filtered timeline"
+                >
+                  <div class="person-chip-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c)">M</div>
+                  <span class="person-chip-name">Max Chen</span>
+                </a>
+                <a
+                  href="/photos?personId=ghi"
+                  class="person-chip"
+                  title="View all photos of Li Wei → filtered timeline"
+                >
+                  <div class="person-chip-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe)">L</div>
+                  <span class="person-chip-name">Li Wei</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Date Section -->
+            <div class="detail-section">
+              <div class="detail-section-label">Date</div>
+              <a
+                href="/photos?takenAfter=2023-08-14&takenBefore=2023-08-14"
+                class="meta-row"
+                title="Jump to August 14, 2023 in timeline"
+              >
+                <svg class="meta-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"
+                  />
+                </svg>
+                <div class="meta-content">
+                  <div class="meta-value">August 14, 2023</div>
+                  <div class="meta-detail">Monday · 3:42 PM</div>
+                </div>
+                <svg class="meta-arrow" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                </svg>
+              </a>
+            </div>
+
+            <!-- Location Section -->
+            <div class="detail-section">
+              <div class="detail-section-label">Location</div>
+              <a
+                href="/photos?city=Munich&state=Bavaria&country=Germany"
+                class="meta-row"
+                title="View all photos from Munich → filtered timeline"
+              >
+                <svg class="meta-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                  />
+                </svg>
+                <div class="meta-content">
+                  <div class="meta-value">Munich, Bavaria</div>
+                  <div class="meta-detail">Germany · 48.1351° N, 11.5820° E</div>
+                </div>
+                <svg class="meta-arrow" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                </svg>
+              </a>
+            </div>
+
+            <!-- Camera Section -->
+            <div class="detail-section">
+              <div class="detail-section-label">Camera</div>
+              <a
+                href="/photos?make=Canon&model=EOS+5D+Mark+IV"
+                class="meta-row"
+                title="View all photos from Canon EOS 5D Mark IV → filtered timeline"
+              >
+                <svg class="meta-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
+                  />
+                </svg>
+                <div class="meta-content">
+                  <div class="meta-value">Canon EOS 5D Mark IV</div>
+                  <div class="meta-detail">EF 24-70mm f/2.8L II · ISO 400 · f/4.0 · 1/250s</div>
+                </div>
+                <svg class="meta-arrow" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                </svg>
+              </a>
+            </div>
+
+            <!-- Tags Section -->
+            <div class="detail-section">
+              <div class="detail-section-label">Tags</div>
+              <div class="tag-chips">
+                <a
+                  href="/photos?tagId=tag1"
+                  class="tag-chip"
+                  title="View all photos tagged 'Family' → filtered timeline"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M5.5,7A1.5,1.5 0 0,1 4,5.5A1.5,1.5 0 0,1 5.5,4A1.5,1.5 0 0,1 7,5.5A1.5,1.5 0 0,1 5.5,7M21.41,11.58L12.41,2.58C12.05,2.22 11.55,2 11,2H4C2.89,2 2,2.89 2,4V11C2,11.55 2.22,12.05 2.59,12.42L11.59,21.42C11.95,21.78 12.45,22 13,22C13.55,22 14.05,21.78 14.41,21.41L21.41,14.41C21.78,14.05 22,13.55 22,13C22,12.45 21.77,11.94 21.41,11.58Z"
+                    />
+                  </svg>
+                  Family
+                </a>
+                <a
+                  href="/photos?tagId=tag2"
+                  class="tag-chip"
+                  title="View all photos tagged 'Vacation' → filtered timeline"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M5.5,7A1.5,1.5 0 0,1 4,5.5A1.5,1.5 0 0,1 5.5,4A1.5,1.5 0 0,1 7,5.5A1.5,1.5 0 0,1 5.5,7M21.41,11.58L12.41,2.58C12.05,2.22 11.55,2 11,2H4C2.89,2 2,2.89 2,4V11C2,11.55 2.22,12.05 2.59,12.42L11.59,21.42C11.95,21.78 12.45,22 13,22C13.55,22 14.05,21.78 14.41,21.41L21.41,14.41C21.78,14.05 22,13.55 22,13C22,12.45 21.77,11.94 21.41,11.58Z"
+                    />
+                  </svg>
+                  Vacation
+                </a>
+                <a
+                  href="/photos?tagId=tag3"
+                  class="tag-chip"
+                  title="View all photos tagged 'Summer' → filtered timeline"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M5.5,7A1.5,1.5 0 0,1 4,5.5A1.5,1.5 0 0,1 5.5,4A1.5,1.5 0 0,1 7,5.5A1.5,1.5 0 0,1 5.5,7M21.41,11.58L12.41,2.58C12.05,2.22 11.55,2 11,2H4C2.89,2 2,2.89 2,4V11C2,11.55 2.22,12.05 2.59,12.42L11.59,21.42C11.95,21.78 12.45,22 13,22C13.55,22 14.05,21.78 14.41,21.41L21.41,14.41C21.78,14.05 22,13.55 22,13C22,12.45 21.77,11.94 21.41,11.58Z"
+                    />
+                  </svg>
+                  Summer
+                </a>
+              </div>
+            </div>
+
+            <!-- File Info (non-clickable) -->
+            <div class="detail-section">
+              <div class="detail-section-label">File</div>
+              <div style="font-size: 13px; color: var(--fg-muted); padding: 4px 0">
+                <div>IMG_4892.jpg</div>
+                <div>6000 × 4000 · 14.2 MB · JPEG</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> Each metadata row is an <code>&lt;a&gt;</code> tag that navigates to
+          <code>/photos</code> with query params. The hover state shows a subtle background tint and a chevron arrow,
+          signaling "this is navigable." File info (filename, dimensions, size) is <em>not</em> clickable — it has no
+          meaningful navigation target. The person chips follow the existing <code>Badge</code> pattern from Gallery's
+          tag pills.
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 2: Before / After Comparison       -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">2. Before / After — Detail Panel Metadata</div>
+        <div class="demo-section-desc">
+          The current panel shows metadata as static text. Phase 2 makes every structured value interactive.
+        </div>
+
+        <div class="comparison">
+          <div class="comparison-panel">
+            <div class="comparison-header">Current (static)</div>
+            <div class="comparison-body">
+              <div class="static-text">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                  />
+                </svg>
+                Munich, Bavaria, Germany
+              </div>
+              <div class="static-text">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
+                  />
+                </svg>
+                Canon EOS 5D Mark IV
+              </div>
+              <div style="font-size: 12px; color: var(--fg-muted); padding: 8px 0; font-style: italic">
+                Dead end — no way to find other photos from this location or camera
+              </div>
+            </div>
+          </div>
+
+          <div class="comparison-panel">
+            <div class="comparison-header">Phase 2 (navigable)</div>
+            <div class="comparison-body">
+              <a href="#" class="meta-row" style="margin: 0">
+                <svg class="meta-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                  />
+                </svg>
+                <div class="meta-content">
+                  <div class="meta-value">Munich, Bavaria</div>
+                  <div class="meta-detail">Germany</div>
+                </div>
+                <svg class="meta-arrow" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                </svg>
+              </a>
+              <a href="#" class="meta-row" style="margin: 0">
+                <svg class="meta-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
+                  />
+                </svg>
+                <div class="meta-content">
+                  <div class="meta-value">Canon EOS 5D Mark IV</div>
+                  <div class="meta-detail">EF 24-70mm f/2.8L II</div>
+                </div>
+                <svg class="meta-arrow" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                </svg>
+              </a>
+              <div style="font-size: 12px; color: var(--primary); padding: 8px 0; font-weight: 500">
+                Click → opens timeline filtered to that value
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 3: Navigation Flow                 -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">3. Navigation Flow — Image as Junction</div>
+        <div class="demo-section-desc">
+          Every image becomes a navigation node. The user views an image, recognizes a metadata value, clicks it, and
+          arrives at a filtered, sortable timeline.
+        </div>
+
+        <div class="flow-diagram">
+          <div class="flow-step">
+            <div class="flow-step-box">Browsing Timeline</div>
+            <div class="flow-step-label">Entry</div>
+          </div>
+          <div class="flow-arrow">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+            </svg>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-box">Open Photo</div>
+            <div class="flow-step-label">View</div>
+          </div>
+          <div class="flow-arrow">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+            </svg>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-box highlight">Click "Munich"</div>
+            <div class="flow-step-label">Recognize</div>
+          </div>
+          <div class="flow-arrow">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+            </svg>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-box">
+              Timeline<br /><span style="font-size: 10px; color: var(--fg-muted)">city=Munich</span>
+            </div>
+            <div class="flow-step-label">Filtered View</div>
+          </div>
+          <div class="flow-arrow">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+            </svg>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-box">
+              Filter + Sort<br /><span style="font-size: 10px; color: var(--fg-muted)">Phase 1 controls</span>
+            </div>
+            <div class="flow-step-label">Refine</div>
+          </div>
+        </div>
+
+        <div class="annotation" style="margin-top: 16px">
+          <strong>Design notes:</strong> This is the write-up's "image as junction" concept. Phase 2 composes with Phase
+          1 — clicking metadata in the detail panel produces a filtered timeline that has full filtering + sorting
+          controls from Phase 1. No dead ends.
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme toggle -->
+    <div class="theme-toggle">
+      <button
+        class="icon-btn"
+        onclick="document.body.classList.toggle('dark')"
+        style="background: var(--bg-surface); border: 1px solid var(--border)"
+        title="Toggle dark mode"
+      >
+        <svg viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95Z"
+          />
+        </svg>
+      </button>
+    </div>
+  </body>
+</html>

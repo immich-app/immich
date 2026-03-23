@@ -8,7 +8,7 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
+import { anyUuid, asUuid, searchAssetBuilder, withExif } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -164,7 +164,11 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
-export interface GetStatesOptions {
+export interface SpaceScopeOptions {
+  spaceId?: string;
+}
+
+export interface GetStatesOptions extends SpaceScopeOptions {
   country?: string;
 }
 
@@ -172,17 +176,17 @@ export interface GetCitiesOptions extends GetStatesOptions {
   state?: string;
 }
 
-export interface GetCameraModelsOptions {
+export interface GetCameraModelsOptions extends SpaceScopeOptions {
   make?: string;
   lensModel?: string;
 }
 
-export interface GetCameraMakesOptions {
+export interface GetCameraMakesOptions extends SpaceScopeOptions {
   model?: string;
   lensModel?: string;
 }
 
-export interface GetCameraLensModelsOptions {
+export interface GetCameraLensModelsOptions extends SpaceScopeOptions {
   make?: string;
   model?: string;
 }
@@ -454,14 +458,14 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[]): Promise<string[]> {
-    const res = await this.getExifField('country', userIds).execute();
+  async getCountries(userIds: string[], options?: SpaceScopeOptions): Promise<string[]> {
+    const res = await this.getExifField('country', userIds, options).execute();
     return res.map((row) => row.country!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
-    const res = await this.getExifField('state', userIds)
+  async getStates(userIds: string[], { country, spaceId }: GetStatesOptions): Promise<string[]> {
+    const res = await this.getExifField('state', userIds, { spaceId })
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .execute();
 
@@ -469,8 +473,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds)
+  async getCities(userIds: string[], { country, state, spaceId }: GetCitiesOptions): Promise<string[]> {
+    const res = await this.getExifField('city', userIds, { spaceId })
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .$if(!!state, (qb) => qb.where('state', '=', state!))
       .execute();
@@ -479,8 +483,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model, lensModel }: GetCameraMakesOptions): Promise<string[]> {
-    const res = await this.getExifField('make', userIds)
+  async getCameraMakes(userIds: string[], { model, lensModel, spaceId }: GetCameraMakesOptions): Promise<string[]> {
+    const res = await this.getExifField('make', userIds, { spaceId })
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -489,8 +493,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make, lensModel }: GetCameraModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('model', userIds)
+  async getCameraModels(userIds: string[], { make, lensModel, spaceId }: GetCameraModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('model', userIds, { spaceId })
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -499,8 +503,11 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraLensModels(userIds: string[], { make, model }: GetCameraLensModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('lensModel', userIds)
+  async getCameraLensModels(
+    userIds: string[],
+    { make, model, spaceId }: GetCameraLensModelsOptions,
+  ): Promise<string[]> {
+    const res = await this.getExifField('lensModel', userIds, { spaceId })
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .execute();
@@ -508,7 +515,11 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
-  private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
+  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
+    field: K,
+    userIds: string[],
+    options?: SpaceScopeOptions,
+  ) {
     return this.db
       .selectFrom('asset_exif')
       .select(field)
@@ -518,6 +529,16 @@ export class SearchRepository {
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null)
-      .where(field, '!=', '');
+      .where(field, '!=', '')
+      .$if(!!options?.spaceId, (qb) =>
+        qb.where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('shared_space_asset')
+              .whereRef('shared_space_asset.assetId', '=', 'asset.id')
+              .where('shared_space_asset.spaceId', '=', asUuid(options!.spaceId!)),
+          ),
+        ),
+      );
   }
 }

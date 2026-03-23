@@ -1,5 +1,5 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { AssetVisibility } from 'src/enum';
+import { AssetType, AssetVisibility } from 'src/enum';
 import { TimelineService } from 'src/services/timeline.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -283,7 +283,7 @@ describe(TimelineService.name, () => {
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
         'bucket',
         {
-          tagId: 'tag-123',
+          tagIds: ['tag-123'],
           timeBucket: 'bucket',
           userIds: [authStub.admin.user.id],
         },
@@ -502,18 +502,18 @@ describe(TimelineService.name, () => {
   });
 
   describe('spacePersonId filtering', () => {
-    it('should pass spacePersonId through to asset repository for getTimeBuckets', async () => {
+    it('should normalize spacePersonId to spacePersonIds for getTimeBuckets', async () => {
       mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
       mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
 
       await sut.getTimeBuckets(authStub.admin, { spaceId: 'space-id', spacePersonId: 'person-id' });
 
       expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
-        expect.objectContaining({ spaceId: 'space-id', spacePersonId: 'person-id' }),
+        expect.objectContaining({ spaceId: 'space-id', spacePersonIds: ['person-id'] }),
       );
     });
 
-    it('should pass spacePersonId through to asset repository for getTimeBucket', async () => {
+    it('should normalize spacePersonId to spacePersonIds for getTimeBucket', async () => {
       mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
       const json = `[{ id: ['asset-id'] }]`;
       mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
@@ -526,9 +526,80 @@ describe(TimelineService.name, () => {
 
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
         'bucket',
-        expect.objectContaining({ spaceId: 'space-id', spacePersonId: 'person-id' }),
+        expect.objectContaining({ spaceId: 'space-id', spacePersonIds: ['person-id'] }),
         authStub.admin,
       );
+    });
+  });
+
+  describe('multi-select filter passthrough', () => {
+    it('should pass city filter to time bucket options', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { city: 'Munich' });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ city: 'Munich' }));
+    });
+
+    it('should pass rating filter to time bucket options', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { rating: 3 });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ rating: 3 }));
+    });
+
+    it('should accept deprecated personId and normalize to personIds', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { personId: 'person-1' });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ personIds: ['person-1'] }));
+    });
+
+    it('should pass personIds array to time bucket options', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { personIds: ['person-1', 'person-2'] });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({ personIds: ['person-1', 'person-2'] }),
+      );
+    });
+
+    it('should pass type as assetType to time bucket options', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { type: AssetType.Image });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ assetType: AssetType.Image }));
+    });
+
+    it('should check tag access for each tagId in tagIds array', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
+      await sut.getTimeBuckets(authStub.admin, { tagIds: ['tag-1', 'tag-2'] });
+      expect(mocks.access.tag.checkOwnerAccess).toHaveBeenCalled();
+    });
+
+    it('should pass spacePersonIds array through to asset repository for getTimeBuckets', async () => {
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { spaceId: 'space-id', spacePersonIds: ['sp-1', 'sp-2'] });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({ spacePersonIds: ['sp-1', 'sp-2'] }),
+      );
+    });
+
+    it('should pass tagIds array through to asset repository for getTimeBuckets', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
+      await sut.getTimeBuckets(authStub.admin, { tagIds: ['tag-1', 'tag-2'] });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ tagIds: ['tag-1', 'tag-2'] }));
+    });
+
+    it('should accept deprecated spacePersonId and normalize to spacePersonIds', async () => {
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { spaceId: 'space-id', spacePersonId: 'sp-1' });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ spacePersonIds: ['sp-1'] }));
+    });
+
+    it('should accept deprecated tagId and normalize to tagIds', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1']));
+      await sut.getTimeBuckets(authStub.admin, { tagId: 'tag-1' });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ tagIds: ['tag-1'] }));
     });
   });
 
@@ -592,6 +663,60 @@ describe(TimelineService.name, () => {
 
       const calledWith = mocks.asset.getTimeBuckets.mock.calls[0][0];
       expect(calledWith.userIds).toBeUndefined();
+    });
+  });
+
+  describe('takenAfter / takenBefore date range filtering', () => {
+    it('should pass takenAfter to time bucket options for getTimeBuckets', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { takenAfter: '2023-01-01T00:00:00.000Z' });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({ takenAfter: '2023-01-01T00:00:00.000Z' }),
+      );
+    });
+
+    it('should pass takenBefore to time bucket options for getTimeBuckets', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { takenBefore: '2023-12-31T23:59:59.999Z' });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({ takenBefore: '2023-12-31T23:59:59.999Z' }),
+      );
+    });
+
+    it('should pass both takenAfter and takenBefore for getTimeBuckets', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, {
+        takenAfter: '2023-08-01T00:00:00.000Z',
+        takenBefore: '2023-08-31T23:59:59.999Z',
+      });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({
+          takenAfter: '2023-08-01T00:00:00.000Z',
+          takenBefore: '2023-08-31T23:59:59.999Z',
+        }),
+      );
+    });
+
+    it('should pass takenAfter and takenBefore through for getTimeBucket', async () => {
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
+
+      await sut.getTimeBucket(authStub.admin, {
+        timeBucket: '2023-08-01',
+        spaceId: 'space-id',
+        takenAfter: '2023-08-01T00:00:00.000Z',
+        takenBefore: '2023-08-31T23:59:59.999Z',
+      });
+
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        '2023-08-01',
+        expect.objectContaining({
+          takenAfter: '2023-08-01T00:00:00.000Z',
+          takenBefore: '2023-08-31T23:59:59.999Z',
+        }),
+        authStub.admin,
+      );
     });
   });
 });

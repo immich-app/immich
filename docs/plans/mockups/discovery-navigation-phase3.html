@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phase 3 — Hierarchical Temporal Picker</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4250af;
+        --primary-light: #acdbfa;
+        --primary-hover: #3644a0;
+        --bg: #ffffff;
+        --bg-surface: #f4f4f5;
+        --fg: #111111;
+        --fg-muted: #71717a;
+        --border: #e4e4e7;
+        --radius: 10px;
+        --radius-full: 9999px;
+      }
+
+      .dark {
+        --primary: #acdbfa;
+        --primary-hover: #90c8f0;
+        --bg: #0a0a0a;
+        --bg-surface: #1a1a1a;
+        --fg: #e5e7eb;
+        --fg-muted: #9ca3af;
+        --border: #2a2a2a;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          'Nunito Sans',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        letter-spacing: 0.1px;
+        line-height: 1.5;
+      }
+
+      .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .mockup-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+
+      .mockup-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .mockup-subtitle {
+        font-size: 15px;
+        color: var(--fg-muted);
+        margin-bottom: 32px;
+      }
+
+      .annotation {
+        background: #fef3c7;
+        border-left: 3px solid #f59e0b;
+        padding: 12px 16px;
+        border-radius: 0 var(--radius) var(--radius) 0;
+        margin: 16px 0;
+        font-size: 13px;
+        color: #92400e;
+        line-height: 1.6;
+      }
+
+      .dark .annotation {
+        background: #422006;
+        color: #fde68a;
+      }
+
+      .demo-section {
+        margin-bottom: 48px;
+      }
+
+      .demo-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .demo-section-desc {
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-bottom: 16px;
+      }
+
+      .section-sep {
+        border: none;
+        border-top: 2px dashed var(--border);
+        margin: 48px 0;
+      }
+
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .icon-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+
+      .ghost-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .ghost-btn svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      /* ── Timeline Layout ── */
+      .timeline-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      /* ── View Header ── */
+      .view-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .view-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .view-title {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .view-count {
+        font-size: 14px;
+        color: var(--fg-muted);
+        font-weight: 400;
+      }
+
+      .view-header-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .back-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .back-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .person-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      /* ── Temporal Picker ── */
+      .temporal-picker {
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 16px;
+      }
+
+      .temporal-picker-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .temporal-picker-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--fg-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+      }
+
+      .temporal-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--fg-muted);
+      }
+
+      .temporal-breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .temporal-breadcrumb a:hover {
+        text-decoration: underline;
+      }
+
+      .temporal-breadcrumb .sep {
+        color: var(--fg-muted);
+        opacity: 0.5;
+      }
+
+      /* ── Year Grid ── */
+      .year-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .year-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 14px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.12s;
+        font-family: inherit;
+        min-width: 72px;
+      }
+
+      .year-btn:hover {
+        border-color: var(--primary);
+        background: rgba(66, 80, 175, 0.06);
+      }
+
+      .dark .year-btn:hover {
+        background: rgba(172, 203, 250, 0.06);
+      }
+
+      .year-btn.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+      }
+
+      .year-btn.selected .year-btn-count {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .year-btn-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+
+      .year-btn.selected .year-btn-label {
+        color: white;
+      }
+
+      .year-btn-count {
+        font-size: 11px;
+        color: var(--fg-muted);
+        font-weight: 400;
+      }
+
+      .year-btn.empty {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .year-btn.empty:hover {
+        border-color: var(--border);
+        background: var(--bg);
+      }
+
+      /* bar visualization for year */
+      .year-bar-container {
+        width: 100%;
+        height: 3px;
+        background: var(--border);
+        border-radius: 2px;
+        margin-top: 4px;
+        overflow: hidden;
+      }
+
+      .year-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      .year-btn.selected .year-bar-container {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .year-btn.selected .year-bar {
+        background: white;
+      }
+
+      /* ── Month Grid ── */
+      .month-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        margin-top: 12px;
+      }
+
+      .month-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 8px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.12s;
+        font-family: inherit;
+      }
+
+      .month-btn:hover {
+        border-color: var(--primary);
+        background: rgba(66, 80, 175, 0.06);
+      }
+
+      .dark .month-btn:hover {
+        background: rgba(172, 203, 250, 0.06);
+      }
+
+      .month-btn.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+      }
+
+      .month-btn.selected .month-btn-count {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .month-btn.selected .month-btn-label {
+        color: white;
+      }
+
+      .month-btn-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+
+      .month-btn-count {
+        font-size: 11px;
+        color: var(--fg-muted);
+        font-weight: 400;
+      }
+
+      .month-btn.empty {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      .month-btn.empty:hover {
+        border-color: var(--border);
+        background: var(--bg);
+      }
+
+      .month-bar-container {
+        width: 100%;
+        height: 3px;
+        background: var(--border);
+        border-radius: 2px;
+        margin-top: 4px;
+        overflow: hidden;
+      }
+
+      .month-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      .month-btn.selected .month-bar-container {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .month-btn.selected .month-bar {
+        background: white;
+      }
+
+      /* ── Photo Grid ── */
+      .month-header {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg);
+        padding: 16px 16px 8px;
+      }
+
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 4px;
+        padding: 0 16px 16px;
+      }
+
+      .photo-cell {
+        aspect-ratio: 1;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .photo-placeholder {
+        width: 100%;
+        height: 100%;
+      }
+
+      .photo-placeholder.warm {
+        background: linear-gradient(135deg, #fde68a40, #f59e0b30);
+      }
+      .photo-placeholder.cool {
+        background: linear-gradient(135deg, #93c5fd40, #3b82f630);
+      }
+      .photo-placeholder.green {
+        background: linear-gradient(135deg, #86efac40, #22c55e30);
+      }
+      .photo-placeholder.rose {
+        background: linear-gradient(135deg, #fda4af40, #f4364830);
+      }
+      .photo-placeholder.purple {
+        background: linear-gradient(135deg, #c4b5fd40, #8b5cf630);
+      }
+
+      /* ── Active Filters ── */
+      .active-filters-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .active-filters-label {
+        font-size: 12px;
+        color: var(--fg-muted);
+        font-weight: 500;
+      }
+
+      .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 6px 4px 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--fg);
+      }
+
+      .filter-chip .chip-remove {
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+
+      .filter-chip .chip-remove:hover {
+        background: var(--border);
+        color: var(--fg);
+      }
+
+      .filter-chip .chip-remove svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ── Popover Variant ── */
+      .popover-wrapper {
+        position: relative;
+        display: inline-block;
+      }
+
+      .temporal-popover {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 480px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        padding: 16px;
+        z-index: 100;
+      }
+
+      .dark .temporal-popover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      /* ── Comparison Layout ── */
+      .side-by-side {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+
+      .side-panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .side-panel-header {
+        padding: 10px 14px;
+        background: var(--bg-surface);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--fg-muted);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .side-panel-body {
+        padding: 16px;
+      }
+
+      /* ── Scrubber Mock ── */
+      .scrubber-mock {
+        width: 28px;
+        background: var(--bg-surface);
+        border-radius: 14px;
+        padding: 6px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        height: 200px;
+        overflow: hidden;
+      }
+
+      .scrubber-tick {
+        width: 20px;
+        height: 3px;
+        background: var(--border);
+        border-radius: 1px;
+      }
+
+      .scrubber-tick.active {
+        background: var(--primary);
+      }
+
+      .scrubber-label {
+        font-size: 7px;
+        color: var(--fg-muted);
+        transform: rotate(-90deg);
+        white-space: nowrap;
+        margin: 4px 0;
+      }
+
+      /* ── Theme Toggle ── */
+      .theme-toggle {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="mockup-label">Phase 3 Mockup</div>
+      <div class="mockup-title">Hierarchical Temporal Picker</div>
+      <div class="mockup-subtitle">Year → Month navigation with photo counts, available in every timeline view</div>
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 1: Year-Level View (Collapsed)     -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">1. Year Selector — First Level</div>
+        <div class="demo-section-desc">
+          User clicks the calendar icon in the toolbar. A temporal picker appears showing all years with photo counts
+          and relative volume bars. Data is aggregated client-side from existing monthly time buckets.
+        </div>
+
+        <div class="timeline-layout">
+          <div class="view-header">
+            <div class="view-header-left">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path
+                    fill="currentColor"
+                    d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
+                  />
+                </svg>
+              </button>
+              <div class="person-avatar">S</div>
+              <div>
+                <div class="view-title">Sarah Chen <span class="view-count">· 14,832 photos</span></div>
+              </div>
+            </div>
+            <div class="view-header-right">
+              <button class="ghost-btn" title="Filter">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z" />
+                </svg>
+                Filter
+              </button>
+              <button class="ghost-btn" title="Sort">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                  />
+                </svg>
+                Capture Date
+              </button>
+              <button
+                class="icon-btn"
+                style="background: var(--primary); color: white"
+                title="Temporal Navigation (active)"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"
+                  />
+                </svg>
+              </button>
+              <button class="icon-btn" title="Select">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Temporal Picker: Year Level -->
+          <div class="temporal-picker">
+            <div class="temporal-picker-header">
+              <div class="temporal-picker-title">Jump to year</div>
+            </div>
+            <div class="year-grid">
+              <button class="year-btn">
+                <span class="year-btn-label">2016</span>
+                <span class="year-btn-count">284</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 8%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2017</span>
+                <span class="year-btn-count">612</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 18%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2018</span>
+                <span class="year-btn-count">1,204</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 35%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2019</span>
+                <span class="year-btn-count">1,891</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 55%"></div></div>
+              </button>
+              <button class="year-btn selected">
+                <span class="year-btn-label">2020</span>
+                <span class="year-btn-count">3,412</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 100%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2021</span>
+                <span class="year-btn-count">2,847</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 83%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2022</span>
+                <span class="year-btn-count">2,195</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 64%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2023</span>
+                <span class="year-btn-count">1,687</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 49%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2024</span>
+                <span class="year-btn-count">598</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 17%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2025</span>
+                <span class="year-btn-count">87</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 3%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2026</span>
+                <span class="year-btn-count">15</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 1%"></div></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Timeline scrolled to selected year -->
+          <div>
+            <div class="month-header">December 2020</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder purple"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> The year buttons show a relative volume bar — the tallest year gets 100% width,
+          others scale proportionally. This gives immediate visual orientation: "2020 was the peak year for this
+          person." Clicking a year scrolls the timeline to that year's first month. The calendar icon in the toolbar is
+          highlighted when the picker is open.
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 2: Month-Level Drill-Down          -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">2. Month Selector — Second Level</div>
+        <div class="demo-section-desc">
+          After clicking a year, the month grid expands below showing 12 months with counts. A breadcrumb trail allows
+          navigating back to the year level.
+        </div>
+
+        <div class="timeline-layout">
+          <div class="view-header">
+            <div class="view-header-left">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path
+                    fill="currentColor"
+                    d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
+                  />
+                </svg>
+              </button>
+              <div class="person-avatar">S</div>
+              <div>
+                <div class="view-title">Sarah Chen <span class="view-count">· 14,832 photos</span></div>
+              </div>
+            </div>
+            <div class="view-header-right">
+              <button class="ghost-btn">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z" />
+                </svg>
+                Filter
+              </button>
+              <button class="ghost-btn">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                  />
+                </svg>
+                Capture Date
+              </button>
+              <button class="icon-btn" style="background: var(--primary); color: white">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"
+                  />
+                </svg>
+              </button>
+              <button class="icon-btn">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Temporal Picker: Month Level -->
+          <div class="temporal-picker">
+            <div class="temporal-picker-header">
+              <div class="temporal-breadcrumb">
+                <a href="#">All years</a>
+                <span class="sep">/</span>
+                <span style="font-weight: 600; color: var(--fg)">2020</span>
+                <span style="color: var(--fg-muted); font-size: 11px; margin-left: 4px">(3,412 photos)</span>
+              </div>
+            </div>
+            <div class="month-grid">
+              <button class="month-btn">
+                <span class="month-btn-label">Jan</span>
+                <span class="month-btn-count">189</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 30%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Feb</span>
+                <span class="month-btn-count">142</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 23%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Mar</span>
+                <span class="month-btn-count">98</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 16%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Apr</span>
+                <span class="month-btn-count">67</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 11%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">May</span>
+                <span class="month-btn-count">203</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 33%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Jun</span>
+                <span class="month-btn-count">412</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 67%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Jul</span>
+                <span class="month-btn-count">578</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 94%"></div></div>
+              </button>
+              <button class="month-btn selected">
+                <span class="month-btn-label">Aug</span>
+                <span class="month-btn-count">614</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 100%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Sep</span>
+                <span class="month-btn-count">389</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 63%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Oct</span>
+                <span class="month-btn-count">312</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 51%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Nov</span>
+                <span class="month-btn-count">201</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 33%"></div></div>
+              </button>
+              <button class="month-btn">
+                <span class="month-btn-label">Dec</span>
+                <span class="month-btn-count">207</span>
+                <div class="month-bar-container"><div class="month-bar" style="width: 34%"></div></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Timeline scrolled to August 2020 -->
+          <div>
+            <div class="month-header">August 2020</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder purple"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> The breadcrumb "All years / 2020" lets the user go back to the year view.
+          Volume bars within the month grid show the distribution — August was the peak month (summer vacation pattern).
+          Clicking a month scrolls the timeline to that position. The bars provide a visual "heat map" of activity
+          across the year.
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 3: With Active Filters             -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">3. Temporal Picker + Active Filters</div>
+        <div class="demo-section-desc">
+          When filters are active (from Phase 1), the temporal picker shows counts for the filtered result set only.
+          This is the full Phase 1 + Phase 3 combination.
+        </div>
+
+        <div class="timeline-layout">
+          <div class="view-header">
+            <div class="view-header-left">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path
+                    fill="currentColor"
+                    d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
+                  />
+                </svg>
+              </button>
+              <div class="person-avatar">S</div>
+              <div>
+                <div class="view-title">Sarah Chen <span class="view-count">· 342 photos (filtered)</span></div>
+              </div>
+            </div>
+            <div class="view-header-right">
+              <button
+                class="ghost-btn"
+                style="background: rgba(66, 80, 175, 0.1); color: var(--primary); font-weight: 600"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z" />
+                </svg>
+                Filter (3)
+              </button>
+              <button class="ghost-btn">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                  />
+                </svg>
+                Capture Date
+              </button>
+              <button class="icon-btn" style="background: var(--primary); color: white">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"
+                  />
+                </svg>
+              </button>
+              <button class="icon-btn">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Filters -->
+          <div class="active-filters-bar">
+            <span class="active-filters-label">Filtered:</span>
+            <span class="filter-chip">
+              Munich, Germany
+              <button class="chip-remove">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                  />
+                </svg>
+              </button>
+            </span>
+            <span class="filter-chip">
+              Images only
+              <button class="chip-remove">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                  />
+                </svg>
+              </button>
+            </span>
+            <span class="filter-chip">
+              ★ 3+
+              <button class="chip-remove">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                  />
+                </svg>
+              </button>
+            </span>
+          </div>
+
+          <!-- Temporal Picker: Years with filtered counts -->
+          <div class="temporal-picker">
+            <div class="temporal-picker-header">
+              <div class="temporal-picker-title">Jump to year</div>
+              <div style="font-size: 11px; color: var(--fg-muted)">Showing filtered counts</div>
+            </div>
+            <div class="year-grid">
+              <button class="year-btn empty">
+                <span class="year-btn-label">2016</span>
+                <span class="year-btn-count">0</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 0%"></div></div>
+              </button>
+              <button class="year-btn empty">
+                <span class="year-btn-label">2017</span>
+                <span class="year-btn-count">0</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 0%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2018</span>
+                <span class="year-btn-count">12</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 8%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2019</span>
+                <span class="year-btn-count">45</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 30%"></div></div>
+              </button>
+              <button class="year-btn selected">
+                <span class="year-btn-label">2020</span>
+                <span class="year-btn-count">148</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 100%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2021</span>
+                <span class="year-btn-count">89</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 60%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2022</span>
+                <span class="year-btn-count">34</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 23%"></div></div>
+              </button>
+              <button class="year-btn">
+                <span class="year-btn-label">2023</span>
+                <span class="year-btn-count">14</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 9%"></div></div>
+              </button>
+              <button class="year-btn empty">
+                <span class="year-btn-label">2024</span>
+                <span class="year-btn-count">0</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 0%"></div></div>
+              </button>
+              <button class="year-btn empty">
+                <span class="year-btn-label">2025</span>
+                <span class="year-btn-count">0</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 0%"></div></div>
+              </button>
+              <button class="year-btn empty">
+                <span class="year-btn-label">2026</span>
+                <span class="year-btn-count">0</span>
+                <div class="year-bar-container"><div class="year-bar" style="width: 0%"></div></div>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="month-header">August 2020</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> When filters are active, the temporal picker reflects the
+          <em>filtered</em> result set. Years with zero matching photos are greyed out. The volume bars rescale to the
+          filtered maximum. This happens automatically because the <code>GET /timeline/buckets</code> endpoint already
+          supports all filter parameters — the picker just passes the active filters through. The header count also
+          updates to show "342 photos (filtered)" instead of the total.
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 4: Comparison with Scrubber        -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">4. Current Scrubber vs. Temporal Picker</div>
+        <div class="demo-section-desc">
+          The existing scrubber (left) maps the entire archive to a thin vertical bar. The temporal picker (right)
+          provides discrete, countable navigation targets.
+        </div>
+
+        <div class="side-by-side">
+          <div class="side-panel">
+            <div class="side-panel-header">Current: Scrubber</div>
+            <div class="side-panel-body" style="display: flex; gap: 16px; align-items: center">
+              <div class="scrubber-mock">
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick active"></div>
+                <div class="scrubber-tick active"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+                <div class="scrubber-tick"></div>
+              </div>
+              <div style="font-size: 12px; color: var(--fg-muted); line-height: 1.6">
+                <p style="margin-bottom: 8px">Each tick = 1 month</p>
+                <p style="margin-bottom: 8px">20 years = 240 ticks</p>
+                <p style="margin-bottom: 8px">~2.5px per month on screen</p>
+                <p style="font-style: italic">Precise navigation requires sub-pixel accuracy on touch devices</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-panel">
+            <div class="side-panel-header">Phase 3: Temporal Picker</div>
+            <div class="side-panel-body">
+              <div style="font-size: 12px; color: var(--fg-muted); line-height: 1.6">
+                <p style="margin-bottom: 8px"><strong>2 clicks</strong> to any point in a 20-year archive</p>
+                <p style="margin-bottom: 8px">Click targets: <strong>72px+ wide buttons</strong></p>
+                <p style="margin-bottom: 8px">Counts visible <strong>before clicking</strong></p>
+                <p style="margin-bottom: 8px">Volume bars show <strong>activity distribution</strong></p>
+                <p>Works identically on <strong>desktop and mobile</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Implementation note:</strong> The temporal picker does <strong>not replace</strong> the scrubber — it
+          complements it. The scrubber remains available for fine-grained scrolling. The picker provides coarse-grained
+          jumping. Users can use either or both. No server changes needed — year counts are aggregated client-side from
+          existing <code>GET /timeline/buckets</code> monthly data.
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme toggle -->
+    <div class="theme-toggle">
+      <button
+        class="icon-btn"
+        onclick="document.body.classList.toggle('dark')"
+        style="background: var(--bg-surface); border: 1px solid var(--border)"
+        title="Toggle dark mode"
+      >
+        <svg viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95Z"
+          />
+        </svg>
+      </button>
+    </div>
+  </body>
+</html>

@@ -33,6 +33,12 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [String] city:
+  ///   Filter by city name
+  ///
+  /// * [String] country:
+  ///   Filter by country name
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -41,11 +47,22 @@ class TimelineApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] make:
+  ///   Filter by camera make
+  ///
+  /// * [String] model:
+  ///   Filter by camera model
+  ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
+  ///
+  /// * [List<String>] personIds:
+  ///
+  /// * [num] rating:
+  ///   Minimum star rating (>=)
   ///
   /// * [String] slug:
   ///
@@ -55,8 +72,21 @@ class TimelineApi {
   /// * [String] spacePersonId:
   ///   Filter assets containing a specific shared space person (space face recognition)
   ///
+  /// * [List<String>] spacePersonIds:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
+  ///
+  /// * [List<String>] tagIds:
+  ///
+  /// * [String] takenAfter:
+  ///   Only include assets taken on or after this date (ISO 8601)
+  ///
+  /// * [String] takenBefore:
+  ///   Only include assets taken on or before this date (ISO 8601)
+  ///
+  /// * [AssetTypeEnum] type:
+  ///   Filter by asset type (IMAGE or VIDEO)
   ///
   /// * [String] userId:
   ///   Filter assets by specific user ID
@@ -75,7 +105,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? spaceId, String? spacePersonId, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, String? bbox, String? city, String? country, bool? isFavorite, bool? isTrashed, String? key, String? make, String? model, AssetOrder? order, String? personId, List<String>? personIds, num? rating, String? slug, String? spaceId, String? spacePersonId, List<String>? spacePersonIds, String? tagId, List<String>? tagIds, String? takenAfter, String? takenBefore, AssetTypeEnum? type, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -92,6 +122,12 @@ class TimelineApi {
     if (bbox != null) {
       queryParams.addAll(_queryParams('', 'bbox', bbox));
     }
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
+    }
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
+    }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
     }
@@ -101,11 +137,23 @@ class TimelineApi {
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
+    if (make != null) {
+      queryParams.addAll(_queryParams('', 'make', make));
+    }
+    if (model != null) {
+      queryParams.addAll(_queryParams('', 'model', model));
+    }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+    if (personIds != null) {
+      queryParams.addAll(_queryParams('multi', 'personIds', personIds));
+    }
+    if (rating != null) {
+      queryParams.addAll(_queryParams('', 'rating', rating));
     }
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
@@ -116,10 +164,25 @@ class TimelineApi {
     if (spacePersonId != null) {
       queryParams.addAll(_queryParams('', 'spacePersonId', spacePersonId));
     }
+    if (spacePersonIds != null) {
+      queryParams.addAll(_queryParams('multi', 'spacePersonIds', spacePersonIds));
+    }
     if (tagId != null) {
       queryParams.addAll(_queryParams('', 'tagId', tagId));
     }
+    if (tagIds != null) {
+      queryParams.addAll(_queryParams('multi', 'tagIds', tagIds));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
       queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
     }
@@ -168,6 +231,12 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [String] city:
+  ///   Filter by city name
+  ///
+  /// * [String] country:
+  ///   Filter by country name
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -176,11 +245,22 @@ class TimelineApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] make:
+  ///   Filter by camera make
+  ///
+  /// * [String] model:
+  ///   Filter by camera model
+  ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
+  ///
+  /// * [List<String>] personIds:
+  ///
+  /// * [num] rating:
+  ///   Minimum star rating (>=)
   ///
   /// * [String] slug:
   ///
@@ -190,8 +270,21 @@ class TimelineApi {
   /// * [String] spacePersonId:
   ///   Filter assets containing a specific shared space person (space face recognition)
   ///
+  /// * [List<String>] spacePersonIds:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
+  ///
+  /// * [List<String>] tagIds:
+  ///
+  /// * [String] takenAfter:
+  ///   Only include assets taken on or after this date (ISO 8601)
+  ///
+  /// * [String] takenBefore:
+  ///   Only include assets taken on or before this date (ISO 8601)
+  ///
+  /// * [AssetTypeEnum] type:
+  ///   Filter by asset type (IMAGE or VIDEO)
   ///
   /// * [String] userId:
   ///   Filter assets by specific user ID
@@ -210,8 +303,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? spaceId, String? spacePersonId, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, spaceId: spaceId, spacePersonId: spacePersonId, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedSpaces: withSharedSpaces, withStacked: withStacked, );
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, String? bbox, String? city, String? country, bool? isFavorite, bool? isTrashed, String? key, String? make, String? model, AssetOrder? order, String? personId, List<String>? personIds, num? rating, String? slug, String? spaceId, String? spacePersonId, List<String>? spacePersonIds, String? tagId, List<String>? tagIds, String? takenAfter, String? takenBefore, AssetTypeEnum? type, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, bbox: bbox, city: city, country: country, isFavorite: isFavorite, isTrashed: isTrashed, key: key, make: make, model: model, order: order, personId: personId, personIds: personIds, rating: rating, slug: slug, spaceId: spaceId, spacePersonId: spacePersonId, spacePersonIds: spacePersonIds, tagId: tagId, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, type: type, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedSpaces: withSharedSpaces, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -239,6 +332,12 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [String] city:
+  ///   Filter by city name
+  ///
+  /// * [String] country:
+  ///   Filter by country name
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -247,11 +346,22 @@ class TimelineApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] make:
+  ///   Filter by camera make
+  ///
+  /// * [String] model:
+  ///   Filter by camera model
+  ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
+  ///
+  /// * [List<String>] personIds:
+  ///
+  /// * [num] rating:
+  ///   Minimum star rating (>=)
   ///
   /// * [String] slug:
   ///
@@ -261,8 +371,21 @@ class TimelineApi {
   /// * [String] spacePersonId:
   ///   Filter assets containing a specific shared space person (space face recognition)
   ///
+  /// * [List<String>] spacePersonIds:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
+  ///
+  /// * [List<String>] tagIds:
+  ///
+  /// * [String] takenAfter:
+  ///   Only include assets taken on or after this date (ISO 8601)
+  ///
+  /// * [String] takenBefore:
+  ///   Only include assets taken on or before this date (ISO 8601)
+  ///
+  /// * [AssetTypeEnum] type:
+  ///   Filter by asset type (IMAGE or VIDEO)
   ///
   /// * [String] userId:
   ///   Filter assets by specific user ID
@@ -281,7 +404,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? spaceId, String? spacePersonId, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, String? bbox, String? city, String? country, bool? isFavorite, bool? isTrashed, String? key, String? make, String? model, AssetOrder? order, String? personId, List<String>? personIds, num? rating, String? slug, String? spaceId, String? spacePersonId, List<String>? spacePersonIds, String? tagId, List<String>? tagIds, String? takenAfter, String? takenBefore, AssetTypeEnum? type, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/buckets';
 
@@ -298,6 +421,12 @@ class TimelineApi {
     if (bbox != null) {
       queryParams.addAll(_queryParams('', 'bbox', bbox));
     }
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
+    }
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
+    }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
     }
@@ -307,11 +436,23 @@ class TimelineApi {
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
+    if (make != null) {
+      queryParams.addAll(_queryParams('', 'make', make));
+    }
+    if (model != null) {
+      queryParams.addAll(_queryParams('', 'model', model));
+    }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+    if (personIds != null) {
+      queryParams.addAll(_queryParams('multi', 'personIds', personIds));
+    }
+    if (rating != null) {
+      queryParams.addAll(_queryParams('', 'rating', rating));
     }
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
@@ -322,8 +463,23 @@ class TimelineApi {
     if (spacePersonId != null) {
       queryParams.addAll(_queryParams('', 'spacePersonId', spacePersonId));
     }
+    if (spacePersonIds != null) {
+      queryParams.addAll(_queryParams('multi', 'spacePersonIds', spacePersonIds));
+    }
     if (tagId != null) {
       queryParams.addAll(_queryParams('', 'tagId', tagId));
+    }
+    if (tagIds != null) {
+      queryParams.addAll(_queryParams('multi', 'tagIds', tagIds));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
     }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
@@ -370,6 +526,12 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [String] city:
+  ///   Filter by city name
+  ///
+  /// * [String] country:
+  ///   Filter by country name
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -378,11 +540,22 @@ class TimelineApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] make:
+  ///   Filter by camera make
+  ///
+  /// * [String] model:
+  ///   Filter by camera model
+  ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
+  ///
+  /// * [List<String>] personIds:
+  ///
+  /// * [num] rating:
+  ///   Minimum star rating (>=)
   ///
   /// * [String] slug:
   ///
@@ -392,8 +565,21 @@ class TimelineApi {
   /// * [String] spacePersonId:
   ///   Filter assets containing a specific shared space person (space face recognition)
   ///
+  /// * [List<String>] spacePersonIds:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
+  ///
+  /// * [List<String>] tagIds:
+  ///
+  /// * [String] takenAfter:
+  ///   Only include assets taken on or after this date (ISO 8601)
+  ///
+  /// * [String] takenBefore:
+  ///   Only include assets taken on or before this date (ISO 8601)
+  ///
+  /// * [AssetTypeEnum] type:
+  ///   Filter by asset type (IMAGE or VIDEO)
   ///
   /// * [String] userId:
   ///   Filter assets by specific user ID
@@ -412,8 +598,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? spaceId, String? spacePersonId, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
-    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, spaceId: spaceId, spacePersonId: spacePersonId, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedSpaces: withSharedSpaces, withStacked: withStacked, );
+  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, String? bbox, String? city, String? country, bool? isFavorite, bool? isTrashed, String? key, String? make, String? model, AssetOrder? order, String? personId, List<String>? personIds, num? rating, String? slug, String? spaceId, String? spacePersonId, List<String>? spacePersonIds, String? tagId, List<String>? tagIds, String? takenAfter, String? takenBefore, AssetTypeEnum? type, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedSpaces, bool? withStacked, }) async {
+    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, bbox: bbox, city: city, country: country, isFavorite: isFavorite, isTrashed: isTrashed, key: key, make: make, model: model, order: order, personId: personId, personIds: personIds, rating: rating, slug: slug, spaceId: spaceId, spacePersonId: spacePersonId, spacePersonIds: spacePersonIds, tagId: tagId, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, type: type, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedSpaces: withSharedSpaces, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

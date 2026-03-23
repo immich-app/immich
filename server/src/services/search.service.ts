@@ -171,7 +171,7 @@ export class SearchService extends BaseService {
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds);
+        return this.searchRepository.getCountries(userIds, { spaceId: dto.spaceId });
       }
       case SearchSuggestionType.STATE: {
         return this.searchRepository.getStates(userIds, dto);

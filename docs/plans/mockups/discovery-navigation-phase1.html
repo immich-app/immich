@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phase 1 — In-View Filtering + Sorting</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4250af;
+        --primary-light: #acdbfa;
+        --bg: #ffffff;
+        --bg-surface: #f4f4f5;
+        --fg: #111111;
+        --fg-muted: #71717a;
+        --border: #e4e4e7;
+        --radius: 10px;
+        --radius-full: 9999px;
+      }
+
+      .dark {
+        --primary: #acdbfa;
+        --bg: #0a0a0a;
+        --bg-surface: #1a1a1a;
+        --fg: #e5e7eb;
+        --fg-muted: #9ca3af;
+        --border: #2a2a2a;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          'Nunito Sans',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        letter-spacing: 0.1px;
+        line-height: 1.5;
+      }
+
+      .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .mockup-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+
+      .mockup-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .mockup-subtitle {
+        font-size: 15px;
+        color: var(--fg-muted);
+        margin-bottom: 32px;
+      }
+
+      /* ── View Header / Toolbar ── */
+      .view-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+
+      .view-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .view-header-left .back-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .view-header-left .back-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .person-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .view-title {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .view-count {
+        font-size: 14px;
+        color: var(--fg-muted);
+        font-weight: 400;
+      }
+
+      .view-header-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* ── Ghost Button (Toolbar) ── */
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+
+      .ghost-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .ghost-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .ghost-btn svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .icon-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      .icon-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── Sort Dropdown ── */
+      .sort-dropdown-wrapper {
+        position: relative;
+      }
+
+      .sort-dropdown {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        width: 220px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        padding: 6px;
+        z-index: 100;
+      }
+
+      .sort-dropdown-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--fg-muted);
+        padding: 8px 10px 4px;
+      }
+
+      .sort-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border: none;
+        background: transparent;
+        color: var(--fg);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 400;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        transition: background 0.12s;
+      }
+
+      .sort-option:hover {
+        background: var(--bg-surface);
+      }
+
+      .sort-option.selected {
+        background: var(--bg-surface);
+        font-weight: 600;
+      }
+
+      .sort-option .direction {
+        font-size: 12px;
+        color: var(--fg-muted);
+      }
+
+      .sort-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 10px;
+      }
+
+      /* ── Active Filter Chips ── */
+      .active-filters-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0 16px;
+        flex-wrap: wrap;
+      }
+
+      .active-filters-label {
+        font-size: 12px;
+        color: var(--fg-muted);
+        font-weight: 500;
+      }
+
+      .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 6px 4px 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-full);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--fg);
+      }
+
+      .filter-chip .chip-remove {
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--fg-muted);
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+
+      .filter-chip .chip-remove:hover {
+        background: var(--border);
+        color: var(--fg);
+      }
+
+      .filter-chip .chip-remove svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .clear-all-btn {
+        font-size: 12px;
+        color: var(--primary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: var(--radius-full);
+        transition: background 0.12s;
+      }
+
+      .clear-all-btn:hover {
+        background: var(--bg-surface);
+      }
+
+      /* ── Photo Grid ── */
+      .month-header {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg);
+        padding: 16px 0 8px;
+      }
+
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 4px;
+        margin-bottom: 24px;
+      }
+
+      .photo-cell {
+        aspect-ratio: 1;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .photo-cell img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .photo-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--bg-surface) 0%, var(--border) 100%);
+      }
+
+      .photo-placeholder.warm {
+        background: linear-gradient(135deg, #fde68a40, #f59e0b30);
+      }
+      .photo-placeholder.cool {
+        background: linear-gradient(135deg, #93c5fd40, #3b82f630);
+      }
+      .photo-placeholder.green {
+        background: linear-gradient(135deg, #86efac40, #22c55e30);
+      }
+      .photo-placeholder.rose {
+        background: linear-gradient(135deg, #fda4af40, #f4364830);
+      }
+      .photo-placeholder.purple {
+        background: linear-gradient(135deg, #c4b5fd40, #8b5cf630);
+      }
+
+      /* ── Section Separator ── */
+      .section-sep {
+        border: none;
+        border-top: 2px dashed var(--border);
+        margin: 48px 0;
+      }
+
+      /* ── Annotation ── */
+      .annotation {
+        background: #fef3c7;
+        border-left: 3px solid #f59e0b;
+        padding: 12px 16px;
+        border-radius: 0 var(--radius) var(--radius) 0;
+        margin: 16px 0;
+        font-size: 13px;
+        color: #92400e;
+        line-height: 1.6;
+      }
+
+      .dark .annotation {
+        background: #422006;
+        color: #fde68a;
+      }
+
+      /* ── Demo Sections ── */
+      .demo-section {
+        margin-bottom: 48px;
+      }
+
+      .demo-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .demo-section-desc {
+        font-size: 13px;
+        color: var(--fg-muted);
+        margin-bottom: 16px;
+      }
+
+      /* ── Context Badges ── */
+      .context-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-full);
+        font-size: 11px;
+        color: var(--fg-muted);
+        font-weight: 500;
+        margin-left: 8px;
+      }
+
+      /* ── Theme Toggle ── */
+      .theme-toggle {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="mockup-label">Phase 1 Mockup</div>
+      <div class="mockup-title">In-View Filtering + Sorting</div>
+      <div class="mockup-subtitle">Filter and sort controls integrated into person, album, space, and tag views</div>
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 1: Person View with Filter + Sort  -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">1. Person View — Toolbar with Filter + Sort</div>
+        <div class="demo-section-desc">
+          The person view gets a filter icon (opens existing SearchFilterModal) and a sort dropdown. The person filter
+          is hidden from the modal since it's redundant in this context.
+        </div>
+
+        <div style="border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden">
+          <!-- View Header -->
+          <div class="view-header" style="padding: 12px 16px; margin-bottom: 0">
+            <div class="view-header-left">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path
+                    fill="currentColor"
+                    d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
+                  />
+                </svg>
+              </button>
+              <div class="person-avatar">S</div>
+              <div>
+                <div class="view-title">Sarah Chen <span class="view-count">· 14,832 photos</span></div>
+              </div>
+            </div>
+            <div class="view-header-right">
+              <!-- Filter Button -->
+              <button class="ghost-btn" title="Filter">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z" />
+                </svg>
+                Filter
+              </button>
+
+              <!-- Sort Button -->
+              <div class="sort-dropdown-wrapper">
+                <button class="ghost-btn" title="Sort">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                    />
+                  </svg>
+                  Capture Date
+                  <svg viewBox="0 0 24 24" width="14" height="14" style="margin-left: -2px">
+                    <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                  </svg>
+                </button>
+
+                <!-- Sort Dropdown (shown) -->
+                <div class="sort-dropdown">
+                  <div class="sort-dropdown-label">Sort by</div>
+                  <button class="sort-option selected">
+                    <span>Capture Date</span>
+                    <span class="direction">Newest ↓</span>
+                  </button>
+                  <button class="sort-option">
+                    <span>Upload Date</span>
+                  </button>
+                  <button class="sort-option">
+                    <span>Filename</span>
+                  </button>
+                  <div class="sort-divider"></div>
+                  <div class="sort-dropdown-label">Direction</div>
+                  <button class="sort-option selected">
+                    <span>Newest First</span>
+                  </button>
+                  <button class="sort-option">
+                    <span>Oldest First</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Select Button -->
+              <button class="icon-btn" title="Select">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"
+                  />
+                </svg>
+              </button>
+
+              <!-- More Menu -->
+              <button class="icon-btn" title="More">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Filters Bar (shown when filters are applied) -->
+          <div class="active-filters-bar" style="padding: 8px 16px">
+            <span class="active-filters-label">Filtered:</span>
+            <span class="filter-chip">
+              Munich, Germany
+              <button class="chip-remove">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                  />
+                </svg>
+              </button>
+            </span>
+            <span class="filter-chip">
+              2020 – 2022
+              <button class="chip-remove">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                  />
+                </svg>
+              </button>
+            </span>
+            <span class="filter-chip">
+              ★ 4+
+              <button class="chip-remove">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                  />
+                </svg>
+              </button>
+            </span>
+            <button class="clear-all-btn">Clear all</button>
+          </div>
+
+          <!-- Photo Grid -->
+          <div style="padding: 0 16px 16px">
+            <div class="month-header">August 2022</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder purple"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+            </div>
+            <div class="month-header">March 2022</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder purple"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> The Filter and Sort buttons use the existing ghost-button pattern from the
+          Gallery toolbar. The filter modal that opens is the same <code>SearchFilterModal</code> already built — but
+          with the "People" section hidden since we're already inside a person view. Active filters appear as removable
+          chips below the toolbar.
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 2: Album View with Filter + Sort   -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">2. Album View — Same Pattern, Context-Aware</div>
+        <div class="demo-section-desc">
+          Album view gets the same toolbar controls. The "Album" filter is hidden from the modal. Sort defaults to
+          capture date descending.
+        </div>
+
+        <div style="border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden">
+          <div class="view-header" style="padding: 12px 16px; margin-bottom: 0">
+            <div class="view-header-left">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path
+                    fill="currentColor"
+                    d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
+                  />
+                </svg>
+              </button>
+              <div>
+                <div class="view-title">Summer Vacation 2023 <span class="view-count">· 847 photos</span></div>
+              </div>
+            </div>
+            <div class="view-header-right">
+              <button class="ghost-btn" title="Filter">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3,2H21V2H21V4H20.92L14,10.92V22.91L10,18.91V10.91L3.09,4H3V2Z" />
+                </svg>
+                Filter
+              </button>
+              <div class="sort-dropdown-wrapper">
+                <button class="ghost-btn" title="Sort">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z"
+                    />
+                  </svg>
+                  Filename
+                  <svg viewBox="0 0 24 24" width="14" height="14" style="margin-left: -2px">
+                    <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+                  </svg>
+                </button>
+              </div>
+              <button class="icon-btn" title="Select">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"
+                  />
+                </svg>
+              </button>
+              <button class="icon-btn" title="More">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- No active filters — clean state -->
+          <div style="padding: 0 16px 16px">
+            <div class="month-header">July 2023</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder purple"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder green"></div></div>
+            </div>
+            <div class="month-header">June 2023</div>
+            <div class="photo-grid">
+              <div class="photo-cell"><div class="photo-placeholder rose"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder warm"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder cool"></div></div>
+              <div class="photo-cell"><div class="photo-placeholder purple"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> When no filters are active, the chips bar is hidden — the toolbar shows just
+          the Filter and Sort controls alongside existing buttons. Sorting by Filename is useful for scanned photo
+          archives where filenames carry semantic meaning.
+        </div>
+      </div>
+
+      <hr class="section-sep" />
+
+      <!-- ════════════════════════════════════════ -->
+      <!-- DEMO 3: Context-Aware Filter Hiding     -->
+      <!-- ════════════════════════════════════════ -->
+      <div class="demo-section">
+        <div class="demo-section-title">3. Context-Aware Filter Modal</div>
+        <div class="demo-section-desc">
+          The same SearchFilterModal is reused across all views, but the redundant filter section is hidden based on
+          context.
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px">
+          <!-- In Person View -->
+          <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 20px">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px">
+              <span style="font-weight: 600; font-size: 15px">Filter</span>
+              <span class="context-badge">Inside Person View</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div
+                style="
+                  padding: 10px 12px;
+                  background: var(--bg-surface);
+                  border-radius: 8px;
+                  color: var(--fg-muted);
+                  font-size: 13px;
+                  text-decoration: line-through;
+                  opacity: 0.4;
+                "
+              >
+                People — hidden (contextual)
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Location
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Camera
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Date Range
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Rating
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Tags
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Media Type
+              </div>
+            </div>
+          </div>
+
+          <!-- In Album View -->
+          <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 20px">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px">
+              <span style="font-weight: 600; font-size: 15px">Filter</span>
+              <span class="context-badge">Inside Album View</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                People
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Location
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Camera
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Date Range
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Rating
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Tags
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; font-size: 13px">
+                Media Type
+              </div>
+              <div
+                style="
+                  padding: 10px 12px;
+                  background: var(--bg-surface);
+                  border-radius: 8px;
+                  color: var(--fg-muted);
+                  font-size: 13px;
+                  text-decoration: line-through;
+                  opacity: 0.4;
+                "
+              >
+                Album — hidden (contextual)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation">
+          <strong>Design notes:</strong> The struck-through items are shown here for illustration only — in the real UI
+          they are simply not rendered. The filter modal receives a <code>context</code> prop like
+          <code>{ hideSection: 'person' }</code> that suppresses the redundant section.
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme toggle -->
+    <div class="theme-toggle">
+      <button
+        class="icon-btn"
+        onclick="document.body.classList.toggle('dark')"
+        style="background: var(--bg-surface); border: 1px solid var(--border)"
+        title="Toggle dark mode"
+      >
+        <svg viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95Z"
+          />
+        </svg>
+      </button>
+    </div>
+  </body>
+</html>
