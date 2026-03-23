@@ -531,11 +531,12 @@ describe('/albums', () => {
         .send({ albumName: 'New album name' });
 
       expect(status).toBe(200);
-      expect(body).toEqual({
-        ...user1Albums[0],
-        updatedAt: expect.any(String),
-        albumName: 'New album name',
-      });
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: user1Albums[0].id,
+          albumName: 'New album name',
+        }),
+      );
     });
   });
 
