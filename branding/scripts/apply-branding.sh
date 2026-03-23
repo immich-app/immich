@@ -59,6 +59,7 @@ patch_i18n() {
     local tmp
     tmp=$(mktemp)
     jq -s '.[0] * .[1]' "$target" "$overrides" > "$tmp"
+    chmod 644 "$tmp"
     mv "$tmp" "$target"
     echo "  Merged $(jq 'length' "$overrides") override keys into en.json"
   fi
@@ -86,6 +87,7 @@ patch_web() {
     jq --arg name "$NAME" --arg short "$NAME_SHORT" --arg desc "$DESCRIPTION" \
       '.name = $name | .short_name = $short | .description = $desc' \
       "$manifest" > "$tmp"
+    chmod 644 "$tmp"
     mv "$tmp" "$manifest"
     echo "  Patched manifest.json"
   fi
@@ -113,6 +115,7 @@ patch_web() {
     jq --arg name "$NAME" --arg desc "${NAME} API" \
       '.info.title = $name | .info.description = $desc' \
       "$openapi" > "$tmp"
+    chmod 644 "$tmp"
     mv "$tmp" "$openapi"
     # Replace remaining user-facing "Immich" in API descriptions
     sed -i "s/Immich/${NAME}/g" "$openapi"
@@ -142,6 +145,7 @@ patch_help_modal() {
   local tmp
   tmp=$(mktemp)
   awk 'BEGIN{u=0} /BRANDING:UPSTREAM_START/{u=1} /BRANDING:UPSTREAM_END/{u=0; print; next} u==0 && /discord\.immich\.app/{next} {print}' "$help_modal" > "$tmp"
+  chmod 644 "$tmp"
   mv "$tmp" "$help_modal"
 
   echo "  Patched HelpAndFeedbackModal.svelte"
@@ -390,6 +394,7 @@ patch_cli() {
     jq --arg bin "$CLI_BIN_NAME" \
       '.bin = { ($bin): "./bin/immich" } | .description = "Command Line Interface (CLI) for Noodle Gallery"' \
       "$cli_pkg" > "$tmp"
+    chmod 644 "$tmp"
     mv "$tmp" "$cli_pkg"
     echo "  Patched cli/package.json bin name"
   fi
@@ -452,6 +457,7 @@ patch_versions() {
       local tmp
       tmp=$(mktemp)
       jq --arg v "$FORK_VERSION" '.version = $v' "$pkg" > "$tmp"
+      chmod 644 "$tmp"
       mv "$tmp" "$pkg"
       echo "  Patched $(realpath --relative-to="$REPO_ROOT" "$pkg")"
     fi
