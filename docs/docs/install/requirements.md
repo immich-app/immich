@@ -19,6 +19,9 @@ Hardware and software requirements for Immich:
     If you have issues, we recommend that you switch to a supported VM deployment.
 - **RAM**: Minimum 6GB, recommended 8GB.
 - **CPU**: Minimum 2 cores, recommended 4 cores.
+  - Since `v2.6`, the machine learning container requires the `>= x86-64-v2` [microarchitecture level](https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels).
+  Most CPUs released since ~2012 support this microarchitecture.
+  If you are using a virtual machine, ensure you have selected a [supported microarchitecture](https://pve.proxmox.com/pve-docs/chapter-qm.html#_qemu_cpu_types).
 - **Storage**: Recommended Unix-compatible filesystem (EXT4, ZFS, APFS, etc.) with support for user/group ownership and permissions.
   - The generation of thumbnails and transcoded video can increase the size of the photo library by 10-20% on average.
 
