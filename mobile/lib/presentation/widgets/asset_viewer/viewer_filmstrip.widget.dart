@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -39,8 +38,8 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   /// Flag to track if the user is currently scrubbing through the filmstrip.
   bool _isScrubbing = false;
 
-  /// The position where the pointer went down, used to determine if the user is dragging.
-  Offset? _pointerDownPosition;
+  /// Tracks whether the user is currently having their finger on the filmstrip. 
+  bool _isPointerDown = false;
 
   void _applyHeight(double height) {
     _filmstripHeight = height;
@@ -98,7 +97,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _loading = false;
 
     // We use placeholders for assets that are not cached in timeline when building filmstrip item.
-    // This will update the thumbnails once the assets are actually loaded.
+    // This call will update the thumbnails in items once the assets are actually loaded.
     if (mounted) setState(() {});
   }
 
@@ -138,30 +137,20 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   }
 
   void _onPointerDown(PointerDownEvent e) {
-    _pointerDownPosition = e.position;
-  }
-
-  void _onPointerMove(PointerMoveEvent e) {
-    if (_isScrubbing || _pointerDownPosition == null) return;
-    // TODO: Do we need this or can we simply rely on isScrolling
-    if ((e.position.dx - _pointerDownPosition!.dx).abs() > kTouchSlop) {
-      _isScrubbing = true;
-    }
+    _isPointerDown = true;
   }
 
   void _onPointerUp(PointerUpEvent e) {
-    _pointerDownPosition = null;
+    _isPointerDown = false;
     // If scrubbing, leave _isScrubbing true.
     // The scroll may still be in progress due to inertia.
-    // Once finished _onScrollingChanged (`isScrollingNotifier` listener) will set the flag.
   }
 
   void _onPointerCancel(PointerCancelEvent e) {
-    _pointerDownPosition = null;
+    _isPointerDown = false;
     _isScrubbing = false;
   }
 
-  // TODO: Use ScrollEndNotification?
   void _onScrollingChanged() {
     // Only react to the end of scrolling.
     if (_scrollController.position.isScrollingNotifier.value) return;
@@ -169,7 +158,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (_isScrubbing) {
       _isScrubbing = false;
       // Softly snap to the current thumbnail (user might have left the scroll in an intermediate position).
-      // Note we could end up here due to exact drag or anm inertia fling. But the inertia fling should due
+      // Note we could end up here due to exact drag or an inertia fling. But the inertia fling should due
       // to simulation always end at exact centered position, so snapping should be a no-op in that case.
       _scrollToCurrentIndex();
     } else {
@@ -180,8 +169,13 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   }
 
   void _onScrollPositionChanged() {
-    // The event might be due to user dragging or programmatic animation.
-    // Differentiate and only trigger scrubbing if it's a user drag.
+    // Scrolling while pointer down means the user started scrubbing through the filmstrip.
+    // Othwerise, the scrolling is caused by an animation.
+    if (_isPointerDown) {
+      // Keep the flag on until the scrolling fully stops (we'll be notified).
+      _isScrubbing = true;
+    }
+
     if (_isScrubbing) {
       _onFilmstripDrag();
     }
@@ -255,19 +249,15 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(
-      assetViewerProvider.select((s) => s.currentIndex),
-      _onIndexChanged,
-    );
+    ref.listen(assetViewerProvider.select((s) => s.currentIndex), _onIndexChanged);
 
     final newHeight = ref.watch(appSettingsServiceProvider).getSetting<int>(AppSettingsEnum.filmstripHeight).toDouble();
     if (newHeight != _filmstripHeight) {
       _applyHeight(newHeight);
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) {
-        if (mounted) _scrollToCurrentIndex();
-      },
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scrollToCurrentIndex(animated: false);
+      });
     }
 
     final total = _timelineService.totalAssets;
@@ -277,7 +267,6 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
       height: _filmstripHeight,
       child: Listener(
         onPointerDown: _onPointerDown,
-        onPointerMove: _onPointerMove,
         onPointerUp: _onPointerUp,
         onPointerCancel: _onPointerCancel,
         child: _buildList(total),
