@@ -29,8 +29,17 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   late TimelineService _timelineService;
 
   bool _loading = false;
+
+  /// Internal current index to track what asset filmstrip is currently displaying.
+  /// This is in contrast to the currentIndex in provider. Differentiating the two
+  /// allows us to react properly to external vs internal changes.
+  /// It is also notifier to trigger restyling of the currently centered thumbnail.
   late final ValueNotifier<int> _currentIndex;
+
+  /// Flag to track if the user is currently scrubbing through the filmstrip.
   bool _isScrubbing = false;
+
+  /// The position where the pointer went down, used to determine if the user is dragging.
   Offset? _pointerDownPosition;
 
   void _applyHeight(double height) {
@@ -134,6 +143,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   void _onPointerMove(PointerMoveEvent e) {
     if (_isScrubbing || _pointerDownPosition == null) return;
+    // TODO: Do we need this or can we simply rely on isScrolling
     if ((e.position.dx - _pointerDownPosition!.dx).abs() > kTouchSlop) {
       _isScrubbing = true;
     }
@@ -158,10 +168,10 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
     if (_isScrubbing) {
       _isScrubbing = false;
-      // TODO: Softly snap to the centered thumbnail (user might have left the scroll in an intermediate position).
-      // Note we could end up here due to exact drag or anm inertia fling.
-      // But the inertia fling should due to simulation always end at exact centered position, so snapping should be a no-op in that case.
-      _scrollToCurrentIndex(); // Test the soft snap by simply using animation
+      // Softly snap to the current thumbnail (user might have left the scroll in an intermediate position).
+      // Note we could end up here due to exact drag or anm inertia fling. But the inertia fling should due
+      // to simulation always end at exact centered position, so snapping should be a no-op in that case.
+      _scrollToCurrentIndex();
     } else {
       // Re-center on the selected thumbnail if a tap animation was
       // interrupted (e.g. double-tap before the first scroll finished).
