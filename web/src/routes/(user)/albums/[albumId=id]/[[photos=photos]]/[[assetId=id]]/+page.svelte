@@ -476,19 +476,19 @@
             <ChangeDate menuItem />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
-            {#if assetInteraction.selectedAssets.length === 1}
-              <MenuOption
-                text={$t('set_as_album_cover')}
-                icon={mdiImageOutline}
-                onClick={() => updateThumbnailUsingCurrentSelection()}
-              />
-            {/if}
             <ArchiveAction
               menuItem
               unarchive={assetInteraction.isAllArchived}
               onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+          {/if}
+          {#if assetInteraction.selectedAssets.length === 1}
+            <MenuOption
+              text={$t('set_as_album_cover')}
+              icon={mdiImageOutline}
+              onClick={() => updateThumbnailUsingCurrentSelection()}
+            />
           {/if}
 
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
