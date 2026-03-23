@@ -469,6 +469,9 @@ export class SharedSpaceService extends BaseService {
 
     const results: SharedSpacePersonResponseDto[] = [];
     for (const person of persons) {
+      if (!person.thumbnailPath) {
+        continue;
+      }
       const faceCount = await this.sharedSpaceRepository.getPersonFaceCount(person.id);
       const assetCount = await this.sharedSpaceRepository.getPersonAssetCount(person.id);
       results.push(this.mapSpacePerson(person, faceCount, assetCount, aliasMap.get(person.id) ?? null));
@@ -496,15 +499,30 @@ export class SharedSpaceService extends BaseService {
     await this.requireMembership(auth, spaceId);
 
     const person = await this.sharedSpaceRepository.getPersonById(personId);
-    if (!person || person.spaceId !== spaceId || !person.thumbnailPath) {
+    if (!person || person.spaceId !== spaceId) {
       throw new NotFoundException();
     }
 
-    return this.serveFromBackend(
-      person.thumbnailPath,
-      mimeTypes.lookup(person.thumbnailPath),
-      CacheControl.PrivateWithoutCache,
-    );
+    let thumbnailPath = person.thumbnailPath;
+
+    // Fall back to the personal person's thumbnail if the space person's path is missing
+    if (!thumbnailPath && person.representativeFaceId) {
+      const face = await this.personRepository.getFaceById(person.representativeFaceId);
+      if (face?.personId) {
+        const personalPerson = await this.personRepository.getById(face.personId);
+        if (personalPerson?.thumbnailPath) {
+          thumbnailPath = personalPerson.thumbnailPath;
+          // Persist for next time so the fallback isn't needed again
+          await this.sharedSpaceRepository.updatePerson(personId, { thumbnailPath });
+        }
+      }
+    }
+
+    if (!thumbnailPath) {
+      throw new NotFoundException();
+    }
+
+    return this.serveFromBackend(thumbnailPath, mimeTypes.lookup(thumbnailPath), CacheControl.PrivateWithoutCache);
   }
 
   async updateSpacePerson(
@@ -668,12 +686,16 @@ export class SharedSpaceService extends BaseService {
       if (matches.length > 0) {
         personId = matches[0].personId;
       } else {
+        // Only create a new space person if the face has a linked personal person
+        // (faces without one haven't passed the minFaces threshold yet)
+        if (!face.personId) {
+          continue;
+        }
+
         let name = '';
-        if (face.personId) {
-          const personalPerson = await this.personRepository.getById(face.personId);
-          if (personalPerson?.name) {
-            name = personalPerson.name;
-          }
+        const personalPerson = await this.personRepository.getById(face.personId);
+        if (personalPerson?.name) {
+          name = personalPerson.name;
         }
 
         const newPerson = await this.sharedSpaceRepository.createPerson({

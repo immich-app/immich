@@ -1997,18 +1997,21 @@ describe(SharedSpaceService.name, () => {
       const assetId = newUuid();
       const faceId = newUuid();
       const newPersonId = newUuid();
+      const personalPersonId = newUuid();
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
       const embedding = '[1,2,3]';
       const newPerson = factory.sharedSpacePerson({ id: newPersonId, spaceId });
+      const personalPerson = factory.person({ id: personalPersonId, name: '' });
 
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getAssetFacesForMatching.mockResolvedValue([
-        { id: faceId, assetId, personId: null, embedding },
+        { id: faceId, assetId, personId: personalPersonId, embedding },
       ]);
       mocks.sharedSpace.isPersonFaceAssigned.mockResolvedValue(false);
       mocks.sharedSpace.findClosestSpacePerson.mockResolvedValue([]);
       mocks.sharedSpace.createPerson.mockResolvedValue(newPerson);
       mocks.sharedSpace.addPersonFaces.mockResolvedValue([]);
+      mocks.person.getById.mockResolvedValue(personalPerson);
 
       const result = await sut.handleSharedSpaceFaceMatch({ spaceId, assetId });
 
@@ -2030,19 +2033,22 @@ describe(SharedSpaceService.name, () => {
       const assetId = newUuid();
       const faceId = newUuid();
       const newPersonId = newUuid();
+      const personalPersonId = newUuid();
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
       const embedding = '[1,2,3]';
       const newPerson = factory.sharedSpacePerson({ id: newPersonId, spaceId });
+      const personalPerson = factory.person({ id: personalPersonId, name: '' });
 
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getAssetFacesForMatching.mockResolvedValue([
-        { id: faceId, assetId, personId: null, embedding },
+        { id: faceId, assetId, personId: personalPersonId, embedding },
       ]);
       mocks.sharedSpace.isPersonFaceAssigned.mockResolvedValue(false);
       // Returns empty array because the findClosestSpacePerson query already filters by maxDistance
       mocks.sharedSpace.findClosestSpacePerson.mockResolvedValue([]);
       mocks.sharedSpace.createPerson.mockResolvedValue(newPerson);
       mocks.sharedSpace.addPersonFaces.mockResolvedValue([]);
+      mocks.person.getById.mockResolvedValue(personalPerson);
 
       const result = await sut.handleSharedSpaceFaceMatch({ spaceId, assetId });
 
@@ -2070,13 +2076,15 @@ describe(SharedSpaceService.name, () => {
       const faceId2 = newUuid();
       const personId = newUuid();
       const newPersonId = newUuid();
+      const personalPersonId = newUuid();
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
       const newPerson = factory.sharedSpacePerson({ id: newPersonId, spaceId });
+      const personalPerson = factory.person({ id: personalPersonId, name: '' });
 
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getAssetFacesForMatching.mockResolvedValue([
         { id: faceId1, assetId, personId: null, embedding: '[1,2,3]' },
-        { id: faceId2, assetId, personId: null, embedding: '[4,5,6]' },
+        { id: faceId2, assetId, personId: personalPersonId, embedding: '[4,5,6]' },
       ]);
       mocks.sharedSpace.isPersonFaceAssigned.mockResolvedValue(false);
       // First face matches existing person, second face creates new person
@@ -2085,6 +2093,7 @@ describe(SharedSpaceService.name, () => {
         .mockResolvedValueOnce([]);
       mocks.sharedSpace.createPerson.mockResolvedValue(newPerson);
       mocks.sharedSpace.addPersonFaces.mockResolvedValue([]);
+      mocks.person.getById.mockResolvedValue(personalPerson);
 
       const result = await sut.handleSharedSpaceFaceMatch({ spaceId, assetId });
 
@@ -2123,13 +2132,11 @@ describe(SharedSpaceService.name, () => {
       });
     });
 
-    it('should use empty name when face has no personal person', async () => {
+    it('should skip face without personId when creating new person', async () => {
       const spaceId = newUuid();
       const assetId = newUuid();
       const faceId = newUuid();
-      const newPersonId = newUuid();
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-      const newPerson = factory.sharedSpacePerson({ id: newPersonId, spaceId });
 
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getAssetFacesForMatching.mockResolvedValue([
@@ -2137,18 +2144,12 @@ describe(SharedSpaceService.name, () => {
       ]);
       mocks.sharedSpace.isPersonFaceAssigned.mockResolvedValue(false);
       mocks.sharedSpace.findClosestSpacePerson.mockResolvedValue([]);
-      mocks.sharedSpace.createPerson.mockResolvedValue(newPerson);
-      mocks.sharedSpace.addPersonFaces.mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatch({ spaceId, assetId });
 
       expect(result).toBe(JobStatus.Success);
-      expect(mocks.person.getById).not.toHaveBeenCalled();
-      expect(mocks.sharedSpace.createPerson).toHaveBeenCalledWith({
-        spaceId,
-        name: '',
-        representativeFaceId: faceId,
-      });
+      expect(mocks.sharedSpace.createPerson).not.toHaveBeenCalled();
+      expect(mocks.sharedSpace.addPersonFaces).not.toHaveBeenCalled();
     });
 
     it('should use empty name when personal person has no name', async () => {
@@ -2323,7 +2324,12 @@ describe(SharedSpaceService.name, () => {
       const spaceId = newUuid();
       const personId = newUuid();
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-      const person = factory.sharedSpacePerson({ id: personId, spaceId, name: 'Alice' });
+      const person = factory.sharedSpacePerson({
+        id: personId,
+        spaceId,
+        name: 'Alice',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
 
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
       mocks.sharedSpace.getById.mockResolvedValue(space);
@@ -2347,9 +2353,24 @@ describe(SharedSpaceService.name, () => {
     it('should sort people by asset count descending', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
-      const person1 = factory.sharedSpacePerson({ id: newUuid(), spaceId, name: 'Few Photos' });
-      const person2 = factory.sharedSpacePerson({ id: newUuid(), spaceId, name: 'Many Photos' });
-      const person3 = factory.sharedSpacePerson({ id: newUuid(), spaceId, name: 'Some Photos' });
+      const person1 = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'Few Photos',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
+      const person2 = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'Many Photos',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
+      const person3 = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'Some Photos',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
 
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
@@ -2371,6 +2392,36 @@ describe(SharedSpaceService.name, () => {
       expect(result[1].assetCount).toBe(5);
       expect(result[2].name).toBe('Few Photos');
       expect(result[2].assetCount).toBe(2);
+    });
+
+    it('should exclude people without thumbnails', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const personWithThumb = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'Has Thumb',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
+      const personWithoutThumb = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'No Thumb',
+        thumbnailPath: '',
+      });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([personWithThumb, personWithoutThumb]);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(1);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(1);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+
+      const result = await sut.getSpacePeople(auth, spaceId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Has Thumb');
     });
   });
 
@@ -2434,7 +2485,62 @@ describe(SharedSpaceService.name, () => {
     it('should throw NotFoundException when person has no thumbnail', async () => {
       const spaceId = newUuid();
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
-      mocks.sharedSpace.getPersonById.mockResolvedValue(factory.sharedSpacePerson({ spaceId, thumbnailPath: '' }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(
+        factory.sharedSpacePerson({ spaceId, thumbnailPath: '', representativeFaceId: null }),
+      );
+
+      await expect(sut.getSpacePersonThumbnail(factory.auth(), spaceId, 'person-1')).rejects.toThrow('Not Found');
+    });
+
+    it('should fall back to personal person thumbnail when space person has no thumbnail', async () => {
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const faceId = newUuid();
+      const personalPersonId = newUuid();
+      const personalPerson = factory.person({ id: personalPersonId, thumbnailPath: '/path/to/thumbnail.jpg' });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(
+        factory.sharedSpacePerson({ id: personId, spaceId, thumbnailPath: '', representativeFaceId: faceId }),
+      );
+      mocks.person.getFaceById.mockResolvedValue({ id: faceId, personId: personalPersonId } as any);
+      mocks.person.getById.mockResolvedValue(personalPerson);
+      mocks.sharedSpace.updatePerson.mockResolvedValue(
+        factory.sharedSpacePerson({ id: personId, thumbnailPath: '/path/to/thumbnail.jpg' }),
+      );
+      vi.spyOn(sut as any, 'serveFromBackend').mockResolvedValue({} as any);
+
+      await expect(sut.getSpacePersonThumbnail(factory.auth(), spaceId, personId)).resolves.toBeDefined();
+
+      expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personId, {
+        thumbnailPath: '/path/to/thumbnail.jpg',
+      });
+    });
+
+    it('should throw NotFoundException when fallback face has no personId', async () => {
+      const spaceId = newUuid();
+      const faceId = newUuid();
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(
+        factory.sharedSpacePerson({ spaceId, thumbnailPath: '', representativeFaceId: faceId }),
+      );
+      mocks.person.getFaceById.mockResolvedValue({ id: faceId, personId: null } as any);
+
+      await expect(sut.getSpacePersonThumbnail(factory.auth(), spaceId, 'person-1')).rejects.toThrow('Not Found');
+    });
+
+    it('should throw NotFoundException when fallback personal person has no thumbnail', async () => {
+      const spaceId = newUuid();
+      const faceId = newUuid();
+      const personalPersonId = newUuid();
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue(
+        factory.sharedSpacePerson({ spaceId, thumbnailPath: '', representativeFaceId: faceId }),
+      );
+      mocks.person.getFaceById.mockResolvedValue({ id: faceId, personId: personalPersonId } as any);
+      mocks.person.getById.mockResolvedValue(factory.person({ id: personalPersonId, thumbnailPath: '' }));
 
       await expect(sut.getSpacePersonThumbnail(factory.auth(), spaceId, 'person-1')).rejects.toThrow('Not Found');
     });
