@@ -314,7 +314,10 @@
     >
       <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
         <Button
-          class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
+          shape="round"
+          variant={searchStore.isSearchEnabled ? 'filled' : 'outline'}
+          color={searchStore.isSearchEnabled ? 'primary' : 'secondary'}
+          class="px-3 py-1 text-xs {searchStore.isSearchEnabled ? 'border border-transparent' : ''}"
           onclick={toggleSearchTypeDropdown}
           aria-expanded={showSearchTypeDropdown}
           aria-haspopup="listbox"
