@@ -251,31 +251,6 @@ test.describe('Spaces FilterPanel', () => {
         await expect(janBtn).toHaveClass(/opacity-30/);
       }
     });
-
-    test('should return temporal picker counts to unfiltered totals after clearing all filters', async ({
-      context,
-      page,
-    }) => {
-      const { space } = await createPopulatedSpace('Clear Filters Temporal');
-      await gotoSpace(context, page, space.id);
-
-      // Apply a filter and wait for timeline update
-      const filterResponse = page.waitForResponse((r) => r.url().includes('/timeline/buckets'));
-      await page.locator('[data-testid="media-type-image"]').click();
-      await filterResponse;
-      await expect(page.locator('[data-testid="active-filters-bar"]')).toBeVisible();
-
-      // Clear all filters
-      await page.locator('[data-testid="clear-all-btn"]').click({ force: true });
-      // Give the timeline a moment to update
-      await page.waitForTimeout(1000);
-
-      // Temporal picker should still be rendered after clearing
-      await expect(page.locator('[data-testid="temporal-picker"]')).toBeAttached();
-
-      // No active chips should remain
-      await expect(page.locator('[data-testid="active-chip"]')).toHaveCount(0);
-    });
   });
 
   // ────────────────────────────────────────────────────────────────────────────

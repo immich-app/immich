@@ -1140,4 +1140,94 @@ describe('/shared-spaces', () => {
       expect(status).toBe(200);
     });
   });
+
+  describe('space map and timeline for non-owner members', () => {
+    let space: { id: string };
+    let gpsAsset1: AssetMediaResponseDto;
+    let gpsAsset2: AssetMediaResponseDto;
+
+    beforeAll(async () => {
+      // Create assets owned by user1 with GPS coordinates
+      [gpsAsset1, gpsAsset2] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
+
+      // Set GPS coordinates on the assets
+      await Promise.all([
+        request(app)
+          .put(`/assets/${gpsAsset1.id}`)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send({ latitude: 40.7128, longitude: -74.006 }),
+        request(app)
+          .put(`/assets/${gpsAsset2.id}`)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send({ latitude: 48.8566, longitude: 2.3522 }),
+      ]);
+
+      // Create space, add user2 as member, add GPS assets
+      space = await utils.createSpace(user1.accessToken, { name: 'Map Timeline Test' });
+      await utils.addSpaceMember(user1.accessToken, space.id, { userId: user2.userId });
+      await utils.addSpaceAssets(user1.accessToken, space.id, [gpsAsset1.id, gpsAsset2.id]);
+    });
+
+    it('should return map markers for a non-owner member', async () => {
+      const { status, body } = await request(app)
+        .get(`/shared-spaces/${space.id}/map-markers`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: gpsAsset1.id, lat: expect.closeTo(40.7128), lon: expect.closeTo(-74.006) }),
+          expect.objectContaining({ id: gpsAsset2.id, lat: expect.closeTo(48.8566), lon: expect.closeTo(2.3522) }),
+        ]),
+      );
+    });
+
+    it('should return time buckets filtered by spaceId for a non-owner member', async () => {
+      const { status, body } = await request(app)
+        .get('/timeline/buckets')
+        .query({ spaceId: space.id })
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.length).toBeGreaterThan(0);
+
+      const totalCount = body.reduce((sum: number, bucket: { count: number }) => sum + bucket.count, 0);
+      expect(totalCount).toBe(2);
+    });
+
+    it('should return assets in a time bucket filtered by spaceId for a non-owner member', async () => {
+      // First get the buckets to find the correct timeBucket value
+      const { body: buckets } = await request(app)
+        .get('/timeline/buckets')
+        .query({ spaceId: space.id })
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(buckets.length).toBeGreaterThan(0);
+
+      const { status, body } = await request(app)
+        .get('/timeline/bucket')
+        .query({ spaceId: space.id, timeBucket: buckets[0].timeBucket })
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.id.length).toBeGreaterThan(0);
+      // All returned assets should be from the space (owned by user1)
+      for (const ownerId of body.ownerId) {
+        expect(ownerId).toBe(user1.userId);
+      }
+    });
+
+    it('should reject non-member accessing timeline buckets with spaceId', async () => {
+      const { status } = await request(app)
+        .get('/timeline/buckets')
+        .query({ spaceId: space.id })
+        .set('Authorization', `Bearer ${user3.accessToken}`);
+
+      expect(status).not.toBe(200);
+    });
+  });
 });
