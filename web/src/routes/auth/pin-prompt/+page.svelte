@@ -54,7 +54,7 @@
 
         <p class="text-center text-sm" style="text-wrap: pretty;">{$t('enter_your_pin_code_subtitle')}</p>
 
-        <PinInput password bind:value={pinCode} onComplete={handleUnlockSession} />
+        <PinInput password autofocus bind:value={pinCode} onComplete={handleUnlockSession} />
       {:else}
         <div class="text-primary">
           <Icon icon={mdiLockSmart} size="64" />
