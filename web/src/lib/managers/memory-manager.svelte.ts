@@ -21,7 +21,7 @@ export type MemoryAsset = MemoryIndex & {
   nextMemory?: MemoryResponseDto;
 };
 
-class MemoryStoreSvelte {
+class MemoryManager {
   #loading: Promise<void> | undefined;
 
   constructor() {
@@ -135,4 +135,4 @@ class MemoryStoreSvelte {
   }
 }
 
-export const memoryStore = new MemoryStoreSvelte();
+export const memoryManager = new MemoryManager();
