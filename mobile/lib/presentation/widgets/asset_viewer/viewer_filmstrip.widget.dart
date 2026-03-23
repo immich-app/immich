@@ -49,7 +49,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _ensureBuffered(initialIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _scrollToIndex(initialIndex, animated: false);
+      _scrollToCurrentIndex(animated: false);
       _scrollController.position.isScrollingNotifier.addListener(_onScrollingChanged);
     });
   }
@@ -92,12 +92,13 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _currentIndex.value = idx;
 
     _ensureBuffered(idx);
-    _scrollToIndex(idx);
+    _scrollToCurrentIndex();
   }
 
   /// Updates the scroll position to center on the given index.
-  void _scrollToIndex(int index, {bool animated = true}) {
+  void _scrollToCurrentIndex({bool animated = true}) {
     if (!_scrollController.hasClients) return;
+    final index = _currentIndex.value;
     if (index < 0 || index >= _timelineService.totalAssets) return;
 
     final targetOffset = index.toDouble() * (_itemExtent + _itemGap);
@@ -152,11 +153,11 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
       // TODO: Softly snap to the centered thumbnail (user might have left the scroll in an intermediate position).
       // Note we could end up here due to exact drag or anm inertia fling.
       // But the inertia fling should due to simulation always end at exact centered position, so snapping should be a no-op in that case.
-      _scrollToIndex(_currentIndex.value); // Test the soft snap by simply using animation
+      _scrollToCurrentIndex(); // Test the soft snap by simply using animation
     } else {
       // Re-center on the selected thumbnail if a tap animation was
       // interrupted (e.g. double-tap before the first scroll finished).
-      _scrollToIndex(_currentIndex.value, animated: false);
+      _scrollToCurrentIndex(animated: false);
     }
   }
 
@@ -210,11 +211,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
             height: _filmstripHeight,
             child: asset == null
                 ? const ColoredBox(color: Colors.black26)
-                : Thumbnail.fromAsset(
-                    asset: asset,
-                    fit: BoxFit.cover,
-                    size: Size(_itemExtent, _itemExtent),
-                  ),
+                : Thumbnail.fromAsset(asset: asset, fit: BoxFit.cover, size: Size(_itemExtent, _itemExtent)),
           ),
         ),
       ),
@@ -249,7 +246,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
       _applyHeight(newHeight);
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
-        if (mounted) _scrollToIndex(_currentIndex.value);
+        if (mounted) _scrollToCurrentIndex();
       },
       );
     }
