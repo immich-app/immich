@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { isDefined } from '$lib';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
@@ -8,8 +8,10 @@
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import type { LatLng } from '$lib/types';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { setQueryValue } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -19,15 +21,15 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 
   let isLoading = $state(false);
   let assetInteraction = new AssetInteraction();
-  let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
+  let point = $state<LatLng>();
   let locationUpdated = $state(false);
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -39,8 +41,12 @@
   };
 
   const handleUpdate = async () => {
+    if (!point) {
+      return;
+    }
+
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
-      location: location ?? { latitude: 0, longitude: 0 },
+      point,
       assetCount: assetInteraction.selectedAssets.length,
     });
 
@@ -51,8 +57,8 @@
     await updateAssets({
       assetBulkUpdateDto: {
         ids: assetInteraction.selectedAssets.map((asset) => asset.id),
-        latitude: location?.latitude ?? undefined,
-        longitude: location?.longitude ?? undefined,
+        latitude: point.lat,
+        longitude: point.lng,
       },
     });
 
@@ -86,18 +92,13 @@
     cancelMultiselect(assetInteraction);
   };
 
-  const handlePickOnMap = async () => {
-    const point = await modalManager.show(ChangeLocation, {
-      point: {
-        lat: location.latitude,
-        lng: location.longitude,
-      },
-    });
-    if (!point) {
+  const handlePickPoint = async () => {
+    const selected = await modalManager.show(GeolocationPointPickerModal, { point });
+    if (!selected) {
       return;
     }
 
-    location = { latitude: point.lat, longitude: point.lng };
+    point = selected;
   };
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
@@ -106,9 +107,10 @@
     }
   };
 
-  const hasGps = (asset: TimelineAsset) => {
-    return !!asset.latitude && !!asset.longitude;
-  };
+  type AssetPoint = { latitude: number; longitude: number };
+
+  const hasGps = (asset: TimelineAsset | AssetPoint): asset is AssetPoint =>
+    isDefined(asset.latitude) && isDefined(asset.longitude);
 
   const handleThumbnailClick = (
     asset: TimelineAsset,
@@ -126,7 +128,7 @@
       setTimeout(() => {
         locationUpdated = false;
       }, 1500);
-      location = { latitude: asset.latitude!, longitude: asset.longitude! };
+      point = { lat: asset.latitude, lng: asset.longitude };
       void setQueryValue('at', asset.id);
     } else {
       onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
@@ -148,11 +150,17 @@
           title="latitude, longitude"
           class="rounded-3xl font-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
             ? 'bg-primary/90 text-light font-semibold scale-105'
-            : ''}">{location.latitude.toFixed(3)}, {location.longitude.toFixed(3)}</Text
+            : ''}"
         >
+          {#if point}
+            {point.lat.toFixed(3)}, {point.lng.toFixed(3)}
+          {:else}
+            {$t('none')}
+          {/if}
+        </Text>
       </div>
 
-      <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickOnMap}>
+      <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickPoint}>
         <Text class="hidden sm:inline-block">{$t('location_picker_choose_on_map')}</Text>
       </Button>
       <Button
