@@ -160,6 +160,10 @@ export class SearchService extends BaseService {
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
+    if (dto.spaceId) {
+      await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
+    }
+
     const userIds = await this.getUserIdsToSearch(auth);
     const suggestions = await this.getSuggestions(userIds, dto);
     if (dto.includeNull) {

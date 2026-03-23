@@ -226,11 +226,22 @@ class AssetAccess {
       .innerJoin('asset', (join) =>
         join.onRef('asset.id', '=', 'shared_space_asset.assetId').on('asset.deletedAt', 'is', null),
       )
-      .select('asset.id')
+      .select(['asset.id', 'asset.livePhotoVideoId'])
       .where('shared_space_member.userId', '=', userId)
-      .where('asset.id', 'in', [...assetIds])
+      .where((eb) => eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]))
       .execute()
-      .then((assets) => new Set(assets.map((asset) => asset.id)));
+      .then((assets) => {
+        const allowedIds = new Set<string>();
+        for (const asset of assets) {
+          if (asset.id && assetIds.has(asset.id)) {
+            allowedIds.add(asset.id);
+          }
+          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+            allowedIds.add(asset.livePhotoVideoId);
+          }
+        }
+        return allowedIds;
+      });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -246,12 +257,23 @@ class AssetAccess {
       .innerJoin('asset', (join) =>
         join.onRef('asset.id', '=', 'shared_space_asset.assetId').on('asset.deletedAt', 'is', null),
       )
-      .select('asset.id')
+      .select(['asset.id', 'asset.livePhotoVideoId'])
       .where('shared_space_member.userId', '=', userId)
-      .where('asset.id', 'in', [...assetIds])
+      .where((eb) => eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]))
       .where('shared_space_member.role', 'in', ['editor', 'owner'])
       .execute()
-      .then((assets) => new Set(assets.map((asset) => asset.id)));
+      .then((assets) => {
+        const allowedIds = new Set<string>();
+        for (const asset of assets) {
+          if (asset.id && assetIds.has(asset.id)) {
+            allowedIds.add(asset.id);
+          }
+          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+            allowedIds.add(asset.livePhotoVideoId);
+          }
+        }
+        return allowedIds;
+      });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })

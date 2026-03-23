@@ -250,6 +250,23 @@ describe('space asset access via checkOtherAccess', () => {
 
       expect(result).toEqual(new Set());
     });
+
+    it('should grant view access to a live photo motion video via space membership', async () => {
+      const accessMock = newAccessRepositoryMock();
+      const auth = makeAuth();
+      const livePhotoVideoId = newUuid();
+
+      accessMock.asset.checkSpaceAccess.mockResolvedValue(new Set([livePhotoVideoId]));
+
+      const result = await checkAccess(accessMock as any, {
+        auth,
+        permission: Permission.AssetView,
+        ids: new Set([livePhotoVideoId]),
+      });
+
+      expect(result).toEqual(new Set([livePhotoVideoId]));
+      expect(accessMock.asset.checkSpaceAccess).toHaveBeenCalledWith(auth.user.id, new Set([livePhotoVideoId]));
+    });
   });
 
   describe('AssetDownload', () => {
@@ -281,6 +298,23 @@ describe('space asset access via checkOtherAccess', () => {
       });
 
       expect(result).toEqual(new Set());
+    });
+
+    it('should grant download access to a live photo motion video via space membership', async () => {
+      const accessMock = newAccessRepositoryMock();
+      const auth = makeAuth();
+      const livePhotoVideoId = newUuid();
+
+      accessMock.asset.checkSpaceAccess.mockResolvedValue(new Set([livePhotoVideoId]));
+
+      const result = await checkAccess(accessMock as any, {
+        auth,
+        permission: Permission.AssetDownload,
+        ids: new Set([livePhotoVideoId]),
+      });
+
+      expect(result).toEqual(new Set([livePhotoVideoId]));
+      expect(accessMock.asset.checkSpaceAccess).toHaveBeenCalledWith(auth.user.id, new Set([livePhotoVideoId]));
     });
   });
 

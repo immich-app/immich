@@ -857,12 +857,20 @@ describe('/search', () => {
 
   describe('GET /search/suggestions (spaceId scoping)', () => {
     let space: SharedSpaceResponseDto;
+    let nonOwnerUser: LoginResponseDto;
 
     beforeAll(async () => {
       // Create a space and add only the Paris asset (assetFalcon) to it.
       // assetFalcon is in Paris, France and was taken with a Canon EOS R5.
       space = await utils.createSpace(admin.accessToken, { name: 'Paris Photos' });
       await utils.addSpaceAssets(admin.accessToken, space.id, [assetFalcon.id]);
+
+      nonOwnerUser = await utils.userSetup(admin.accessToken, {
+        email: 'space-filter-test@immich.cloud',
+        name: 'Space Filter User',
+        password: 'Password123!',
+      });
+      await utils.addSpaceMember(admin.accessToken, space.id, { userId: nonOwnerUser.userId });
     });
 
     it('should return only countries from the specified space', async () => {
@@ -925,6 +933,35 @@ describe('/search', () => {
       expect(Array.isArray(body)).toBe(true);
       // density_plot.png has no camera make EXIF data
       expect(body).toEqual([]);
+    });
+
+    it('should return suggestions for non-owner space member', async () => {
+      // nonOwnerUser doesn't own the Paris asset, but is a space member
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=country&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${nonOwnerUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(['France']);
+    });
+
+    it('should return camera suggestions for non-owner space member', async () => {
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=camera-make&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${nonOwnerUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(['Canon']);
+    });
+
+    it('should reject non-member requesting space suggestions', async () => {
+      const outsider = await utils.userSetup(admin.accessToken, {
+        email: 'space-outsider@immich.cloud',
+        name: 'Outsider',
+        password: 'Password123!',
+      });
+      const { status } = await request(app)
+        .get(`/search/suggestions?type=country&spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${outsider.accessToken}`);
+      expect(status).toBe(400);
     });
   });
 });

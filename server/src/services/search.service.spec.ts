@@ -210,6 +210,7 @@ describe(SearchService.name, () => {
 
     it('should pass spaceId to country search suggestions', async () => {
       const spaceId = newUuid();
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
       mocks.search.getCountries.mockResolvedValue(['Germany']);
       mocks.partner.getAll.mockResolvedValue([]);
 
@@ -224,6 +225,7 @@ describe(SearchService.name, () => {
 
     it('should pass spaceId to state search suggestions', async () => {
       const spaceId = newUuid();
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
       mocks.search.getStates.mockResolvedValue(['Bavaria']);
       mocks.partner.getAll.mockResolvedValue([]);
 
@@ -237,6 +239,59 @@ describe(SearchService.name, () => {
         [authStub.user1.user.id],
         expect.objectContaining({ spaceId }),
       );
+    });
+
+    describe('shared space access (spaceId)', () => {
+      it('should check shared space access when spaceId is provided', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+        mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+        await sut.getSearchSuggestions(authStub.user1, {
+          type: SearchSuggestionType.COUNTRY,
+          spaceId,
+        });
+
+        expect(mocks.access.sharedSpace.checkMemberAccess).toHaveBeenCalledWith(
+          authStub.user1.user.id,
+          new Set([spaceId]),
+        );
+      });
+
+      it('should pass spaceId through to search repository', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+        mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+        await sut.getSearchSuggestions(authStub.user1, {
+          type: SearchSuggestionType.COUNTRY,
+          spaceId,
+        });
+
+        expect(mocks.search.getCountries).toHaveBeenCalledWith(expect.anything(), { spaceId });
+      });
+
+      it('should not check space access when spaceId is not provided', async () => {
+        mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+        await sut.getSearchSuggestions(authStub.user1, {
+          type: SearchSuggestionType.COUNTRY,
+        });
+
+        expect(mocks.access.sharedSpace.checkMemberAccess).not.toHaveBeenCalled();
+      });
+
+      it('should throw when user is not a space member', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set());
+
+        await expect(
+          sut.getSearchSuggestions(authStub.user1, {
+            type: SearchSuggestionType.COUNTRY,
+            spaceId,
+          }),
+        ).rejects.toThrow();
+      });
     });
   });
 
