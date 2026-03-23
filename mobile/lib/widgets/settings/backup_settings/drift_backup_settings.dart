@@ -44,6 +44,12 @@ class DriftBackupSettings extends ConsumerWidget {
         ],
         const Divider(),
         SettingGroupTitle(
+          title: "upload_options".t(context: context),
+          icon: Icons.upload_rounded,
+        ),
+        const _UploadSlotsSlider(),
+        const Divider(),
+        SettingGroupTitle(
           title: "backup_albums_sync".t(context: context),
           icon: Icons.sync,
         ),
@@ -244,6 +250,90 @@ class _UseWifiForUploadPhotosButton extends ConsumerWidget {
       appSettingsEnum: AppSettingsEnum.useCellularForUploadPhotos,
       titleKey: "photos",
       subtitleKey: "network_requirement_photos_upload",
+    );
+  }
+}
+
+class _UploadSlotsSlider extends ConsumerStatefulWidget {
+  const _UploadSlotsSlider();
+
+  @override
+  ConsumerState<_UploadSlotsSlider> createState() => _UploadSlotsSliderState();
+}
+
+class _UploadSlotsSliderState extends ConsumerState<_UploadSlotsSlider> {
+  late final Stream<int?> valueStream;
+  late final StreamSubscription<int?> subscription;
+  late int currentValue;
+
+  static const int _minSlots = 1;
+  static const int _maxSlots = 25;
+
+  @override
+  void initState() {
+    super.initState();
+    currentValue =
+        Store.tryGet(AppSettingsEnum.uploadSlots.storeKey) ??
+        AppSettingsEnum.uploadSlots.defaultValue;
+
+    valueStream = Store.watch(AppSettingsEnum.uploadSlots.storeKey).asBroadcastStream();
+    subscription = valueStream.listen((value) {
+      if (mounted && value != null) {
+        setState(() {
+          currentValue = value;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    subscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 24.0, top: 8.0),
+          child: Text(
+            'upload_slot_count'.t(
+              context: context,
+              args: {'count': currentValue.toString()},
+            ),
+            style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Text(
+            'upload_slot_count_description'.t(context: context),
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+        Slider(
+          value: currentValue.toDouble(),
+          onChanged: (double v) {
+            setState(() {
+              currentValue = v.toInt();
+            });
+          },
+          onChangeEnd: (double v) async {
+            await ref
+                .read(appSettingsServiceProvider)
+                .setSetting(AppSettingsEnum.uploadSlots, v.toInt());
+          },
+          min: _minSlots.toDouble(),
+          max: _maxSlots.toDouble(),
+          divisions: _maxSlots - _minSlots,
+          label: currentValue.toString(),
+        ),
+      ],
     );
   }
 }

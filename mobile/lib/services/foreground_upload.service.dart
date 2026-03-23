@@ -104,6 +104,7 @@ class ForegroundUploadService {
           return requireWifi && !hasWifi;
         },
         processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+        concurrentWorkers: _appSettingsService.getSetting(AppSettingsEnum.uploadSlots),
       );
     }
   }
@@ -147,6 +148,7 @@ class ForegroundUploadService {
       items: localAssets,
       cancelToken: cancelToken,
       processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      concurrentWorkers: _appSettingsService.getSetting(AppSettingsEnum.uploadSlots),
     );
   }
 
@@ -164,6 +166,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<File>(
       items: files,
       cancelToken: cancelToken,
+      concurrentWorkers: _appSettingsService.getSetting(AppSettingsEnum.uploadSlots),
       processItem: (file) async {
         final fileId = p.hash(file.path).toString();
 

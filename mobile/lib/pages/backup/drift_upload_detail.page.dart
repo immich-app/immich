@@ -2,11 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:path/path.dart' as path;
 
@@ -23,18 +26,21 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   final Set<String> _failedTaskIds = {};
 
   final Map<String, int> _taskSlotAssignments = {};
-  static const int _maxSlots = 3;
+
+  int get _maxSlots =>
+      Store.tryGet(StoreKey.uploadSlots) ?? AppSettingsEnum.uploadSlots.defaultValue;
 
   /// Assigns uploading items to fixed slots to prevent jumping when items complete
   List<DriftUploadStatus?> _assignItemsToSlots(List<DriftUploadStatus> uploadingItems) {
-    final slots = List<DriftUploadStatus?>.filled(_maxSlots, null);
+    final maxSlots = _maxSlots;
+    final slots = List<DriftUploadStatus?>.filled(maxSlots, null);
     final currentTaskIds = uploadingItems.map((e) => e.taskId).toSet();
 
     _taskSlotAssignments.removeWhere((taskId, _) => !currentTaskIds.contains(taskId));
 
     for (final item in uploadingItems) {
       final existingSlot = _taskSlotAssignments[item.taskId];
-      if (existingSlot != null && existingSlot < _maxSlots) {
+      if (existingSlot != null && existingSlot < maxSlots) {
         slots[existingSlot] = item;
       }
     }
@@ -42,7 +48,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     for (final item in uploadingItems) {
       if (_taskSlotAssignments.containsKey(item.taskId)) continue;
 
-      for (int i = 0; i < _maxSlots; i++) {
+      for (int i = 0; i < maxSlots; i++) {
         if (slots[i] == null) {
           slots[i] = item;
           _taskSlotAssignments[item.taskId] = i;
@@ -140,7 +146,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
               } else {
                 return _buildPlaceholderCard(context);
               }
-            }, childCount: 3),
+            }, childCount: _maxSlots),
           ),
         ),
 
