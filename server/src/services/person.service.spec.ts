@@ -525,6 +525,42 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('deleteFace', () => {
+    it('should delete an unnamed person when deleting their last face', async () => {
+      const auth = AuthFactory.create();
+      const face = AssetFaceFactory.from().person({ name: '' }).build();
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.softDeleteAssetFaces.mockResolvedValue();
+      mocks.person.getStatistics.mockResolvedValue({ assets: 0 });
+
+      await expect(sut.deleteFace(auth, face.id, { force: false })).resolves.toBeUndefined();
+
+      expect(mocks.person.softDeleteAssetFaces).toHaveBeenCalledWith(face.id);
+      expect(mocks.person.getStatistics).toHaveBeenCalledWith(face.person!.id);
+      expect(mocks.person.delete).toHaveBeenCalledWith([face.person!.id]);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(face.person!.thumbnailPath);
+    });
+
+    it('should keep a named person when deleting their last face', async () => {
+      const auth = AuthFactory.create();
+      const face = AssetFaceFactory.from().person({ name: 'Alice' }).build();
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.softDeleteAssetFaces.mockResolvedValue();
+      mocks.person.getStatistics.mockResolvedValue({ assets: 0 });
+
+      await expect(sut.deleteFace(auth, face.id, { force: false })).resolves.toBeUndefined();
+
+      expect(mocks.person.softDeleteAssetFaces).toHaveBeenCalledWith(face.id);
+      expect(mocks.person.getStatistics).not.toHaveBeenCalled();
+      expect(mocks.person.delete).not.toHaveBeenCalled();
+      expect(mocks.storage.unlink).not.toHaveBeenCalled();
+    });
+  });
+
   describe('handlePersonCleanup', () => {
     it('should delete people without faces', async () => {
       const person = PersonFactory.create();

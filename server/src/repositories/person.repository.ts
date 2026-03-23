@@ -153,24 +153,22 @@ export class PersonRepository {
     const items = await this.db
       .selectFrom('person')
       .selectAll('person')
-      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
-      .innerJoin('asset', (join) =>
+      .leftJoin('asset_face', (join) =>
+        join
+          .onRef('asset_face.personId', '=', 'person.id')
+          .on('asset_face.deletedAt', 'is', null)
+          .on('asset_face.isVisible', 'is', true),
+      )
+      .leftJoin('asset', (join) =>
         join
           .onRef('asset_face.assetId', '=', 'asset.id')
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
-      .where('asset_face.deletedAt', 'is', null)
-      .where('asset_face.isVisible', 'is', true)
       .orderBy('person.isHidden', 'asc')
       .orderBy('person.isFavorite', 'desc')
-      .having((eb) =>
-        eb.or([
-          eb('person.name', '!=', ''),
-          eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
-        ]),
-      )
+      .having((eb) => eb.or([eb('person.name', '!=', ''), eb(eb.fn.count('asset.id').distinct(), '>=', 1)]))
       .groupBy('person.id')
       .$if(!!options?.closestFaceAssetId, (qb) =>
         qb.orderBy((eb) =>
@@ -192,7 +190,7 @@ export class PersonRepository {
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
           .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
+          .orderBy((eb) => eb.fn.count('asset.id').distinct(), 'desc')
           .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
@@ -361,22 +359,25 @@ export class PersonRepository {
     return this.db
       .selectFrom('person')
       .where((eb) =>
-        eb.exists((eb) =>
-          eb
-            .selectFrom('asset_face')
-            .whereRef('asset_face.personId', '=', 'person.id')
-            .where('asset_face.deletedAt', 'is', null)
-            .where('asset_face.isVisible', '=', true)
-            .where((eb) =>
-              eb.exists((eb) =>
-                eb
-                  .selectFrom('asset')
-                  .whereRef('asset.id', '=', 'asset_face.assetId')
-                  .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-                  .where('asset.deletedAt', 'is', null),
+        eb.or([
+          eb('person.name', '!=', ''),
+          eb.exists((eb) =>
+            eb
+              .selectFrom('asset_face')
+              .whereRef('asset_face.personId', '=', 'person.id')
+              .where('asset_face.deletedAt', 'is', null)
+              .where('asset_face.isVisible', '=', true)
+              .where((eb) =>
+                eb.exists((eb) =>
+                  eb
+                    .selectFrom('asset')
+                    .whereRef('asset.id', '=', 'asset_face.assetId')
+                    .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                    .where('asset.deletedAt', 'is', null),
+                ),
               ),
-            ),
-        ),
+          ),
+        ]),
       )
       .where('person.ownerId', '=', userId)
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))

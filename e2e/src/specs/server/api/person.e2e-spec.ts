@@ -134,6 +134,7 @@ describe('/people', () => {
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ id: nameNullPerson4Assets.id, name: '' }),
           expect.objectContaining({ id: nameNullPerson3Assets.id, name: '' }),
+          expect.objectContaining({ id: nameNullPerson1Asset.id, name: '' }),
           expect.objectContaining({ name: 'hidden_person' }), // Should really be before the null names
         ],
       });
@@ -159,6 +160,7 @@ describe('/people', () => {
         visiblePerson.id, // name: 'visible_person', count: 1
         nameNullPerson4Assets.id, // name: '', count: 4
         nameNullPerson3Assets.id, // name: '', count: 3
+        nameNullPerson1Asset.id, // name: '', count: 1
       ]);
 
       expect(people.some((p) => p.id === hiddenPerson.id)).toBe(false);
@@ -182,8 +184,20 @@ describe('/people', () => {
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ id: nameNullPerson4Assets.id, name: '' }),
           expect.objectContaining({ id: nameNullPerson3Assets.id, name: '' }),
+          expect.objectContaining({ id: nameNullPerson1Asset.id, name: '' }),
         ],
       });
+    });
+
+    it('should include named people even when they have no assets', async () => {
+      const namedWithoutAssets = await utils.createPerson(admin.accessToken, {
+        name: 'named_without_assets',
+      });
+
+      const { status, body } = await request(app).get('/people').set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect((body.people as PersonResponseDto[]).some((person) => person.id === namedWithoutAssets.id)).toBe(true);
     });
 
     it('should support pagination', async () => {
@@ -195,7 +209,7 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: true,
-        total: 11,
+        total: 12,
         hidden: 1,
         people: [expect.objectContaining({ name: 'Alice' })],
       });

@@ -300,6 +300,10 @@
       return;
     }
     timelineManager.removeAssets([assetId]);
+    if (!person.name && numberOfAssets <= 1) {
+      await goto(Route.viewAsset({ id: assetId }), { replaceState: true });
+      return;
+    }
     await updateAssetCount();
   };
 
