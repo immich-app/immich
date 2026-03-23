@@ -1,5 +1,7 @@
 <script lang="ts">
   import { Icon } from '@immich/ui';
+  import { browser } from '$app/environment';
+  import { SvelteSet } from 'svelte/reactivity';
   import {
     mdiChevronLeft,
     mdiChevronRight,
@@ -11,7 +13,13 @@
     mdiStar,
     mdiImage,
   } from '@mdi/js';
-  import type { FilterPanelConfig, FilterState, PersonOption, TagOption } from './filter-panel';
+  import type {
+    FilterPanelConfig,
+    FilterSection as FilterSectionType,
+    FilterState,
+    PersonOption,
+    TagOption,
+  } from './filter-panel';
   import { createFilterState } from './filter-panel';
   import FilterSection from './filter-section.svelte';
   import TemporalPicker from './temporal-picker.svelte';
@@ -56,6 +64,52 @@
     rating: 'Rating',
     media: 'Media Type',
   };
+
+  const STORAGE_KEY = 'gallery-filter-visible-sections';
+
+  function loadVisibleSections(configSections: FilterSectionType[]): SvelteSet<FilterSectionType> {
+    if (browser) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as string[];
+          const valid = parsed.filter((s): s is FilterSectionType => configSections.includes(s as FilterSectionType));
+          if (valid.length > 0) {
+            return new SvelteSet(valid);
+          }
+        }
+      } catch {
+        /* corrupted JSON or localStorage unavailable — fall through to default */
+      }
+    }
+    return new SvelteSet(configSections);
+  }
+
+  let visibleSections = $state(loadVisibleSections(config.sections));
+
+  function toggleSection(section: FilterSectionType) {
+    const next = new SvelteSet(visibleSections);
+    if (next.has(section)) {
+      next.delete(section);
+    } else {
+      next.add(section);
+    }
+    visibleSections = next;
+  }
+
+  function showAllSections() {
+    visibleSections = new SvelteSet(config.sections);
+  }
+
+  $effect(() => {
+    if (browser) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...visibleSections]));
+      } catch {
+        /* localStorage unavailable */
+      }
+    }
+  });
 
   // Fetch data on mount via $effect
   $effect(() => {
@@ -142,6 +196,9 @@
       case 'media': {
         return filters.mediaType !== 'all';
       }
+      case 'timeline': {
+        return filters.selectedYear !== undefined;
+      }
       default: {
         return false;
       }
@@ -196,56 +253,102 @@
       </button>
     </div>
 
+    {#if config.sections.length > 0}
+      <div
+        class="flex items-center justify-center gap-0.5 border-b border-gray-200 px-3 py-2 dark:border-gray-700"
+        data-testid="section-toggle-row"
+      >
+        {#each config.sections as section (section)}
+          <button
+            type="button"
+            class="relative flex h-[30px] w-[30px] items-center justify-center rounded-lg transition-colors
+              {visibleSections.has(section)
+              ? 'bg-primary/10 text-primary'
+              : 'text-gray-400 hover:bg-subtle hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400'}"
+            onclick={() => toggleSection(section)}
+            aria-label={sectionTitles[section]}
+            aria-pressed={visibleSections.has(section)}
+            title={sectionTitles[section]}
+            data-testid="section-toggle-{section}"
+          >
+            <Icon icon={sectionIcons[section]} size="16" />
+            {#if !visibleSections.has(section) && hasActiveFilter(section)}
+              <span
+                class="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-[1.5px] border-light bg-immich-primary dark:bg-immich-dark-primary"
+                data-testid="section-toggle-dot-{section}"
+              ></span>
+            {/if}
+          </button>
+        {/each}
+      </div>
+    {/if}
+
     <div class="pt-4">
       {#each config.sections as section (section)}
-        <FilterSection title={sectionTitles[section]} testId={section}>
-          {#if section === 'timeline'}
-            <TemporalPicker
-              {timeBuckets}
-              selectedYear={filters.selectedYear}
-              selectedMonth={filters.selectedMonth}
-              onYearSelect={handleYearSelect}
-              onMonthSelect={handleMonthSelect}
-            />
-          {:else if section === 'people'}
-            <PeopleFilter {people} selectedIds={filters.personIds} onSelectionChange={handlePeopleChange} />
-          {:else if section === 'location'}
-            <LocationFilter
-              {countries}
-              selectedCity={filters.city}
-              selectedCountry={filters.country}
-              onCityFetch={async (_) => {
-                if (config.providers.locations) {
-                  const result = await config.providers.locations();
-                  return result.filter((l) => l.type === 'city').map((l) => l.value);
-                }
-                return [];
-              }}
-              onSelectionChange={handleLocationChange}
-            />
-          {:else if section === 'camera'}
-            <CameraFilter
-              makes={cameraMakes}
-              selectedMake={filters.make}
-              selectedModel={filters.model}
-              onModelFetch={async (_) => {
-                if (config.providers.cameras) {
-                  const result = await config.providers.cameras();
-                  return result.filter((c) => c.type === 'model').map((c) => c.value);
-                }
-                return [];
-              }}
-              onSelectionChange={handleCameraChange}
-            />
-          {:else if section === 'tags'}
-            <TagsFilter {tags} selectedIds={filters.tagIds} onSelectionChange={handleTagsChange} />
-          {:else if section === 'rating'}
-            <RatingFilter selectedRating={filters.rating} onRatingChange={handleRatingChange} />
-          {:else if section === 'media'}
-            <MediaTypeFilter selected={filters.mediaType} onTypeChange={handleMediaTypeChange} />
-          {/if}
-        </FilterSection>
+        {#if visibleSections.has(section)}
+          <FilterSection title={sectionTitles[section]} testId={section}>
+            {#if section === 'timeline'}
+              <TemporalPicker
+                {timeBuckets}
+                selectedYear={filters.selectedYear}
+                selectedMonth={filters.selectedMonth}
+                onYearSelect={handleYearSelect}
+                onMonthSelect={handleMonthSelect}
+              />
+            {:else if section === 'people'}
+              <PeopleFilter {people} selectedIds={filters.personIds} onSelectionChange={handlePeopleChange} />
+            {:else if section === 'location'}
+              <LocationFilter
+                {countries}
+                selectedCity={filters.city}
+                selectedCountry={filters.country}
+                onCityFetch={async (_) => {
+                  if (config.providers.locations) {
+                    const result = await config.providers.locations();
+                    return result.filter((l) => l.type === 'city').map((l) => l.value);
+                  }
+                  return [];
+                }}
+                onSelectionChange={handleLocationChange}
+              />
+            {:else if section === 'camera'}
+              <CameraFilter
+                makes={cameraMakes}
+                selectedMake={filters.make}
+                selectedModel={filters.model}
+                onModelFetch={async (_) => {
+                  if (config.providers.cameras) {
+                    const result = await config.providers.cameras();
+                    return result.filter((c) => c.type === 'model').map((c) => c.value);
+                  }
+                  return [];
+                }}
+                onSelectionChange={handleCameraChange}
+              />
+            {:else if section === 'tags'}
+              <TagsFilter {tags} selectedIds={filters.tagIds} onSelectionChange={handleTagsChange} />
+            {:else if section === 'rating'}
+              <RatingFilter selectedRating={filters.rating} onRatingChange={handleRatingChange} />
+            {:else if section === 'media'}
+              <MediaTypeFilter selected={filters.mediaType} onTypeChange={handleMediaTypeChange} />
+            {/if}
+          </FilterSection>
+        {/if}
       {/each}
+
+      {#if visibleSections.size === 0}
+        <div class="flex flex-col items-center gap-2 px-4 py-8 text-center">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Click an icon above to show filters</p>
+          <button
+            type="button"
+            class="text-xs font-medium text-primary hover:underline"
+            onclick={showAllSections}
+            data-testid="show-all-sections"
+          >
+            Show all
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}

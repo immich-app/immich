@@ -1,3 +1,30 @@
+# Filter Section Selector Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Add an icon toggle row to FilterPanel so users can show/hide individual filter sections, with visibility persisted in localStorage.
+
+**Architecture:** A horizontal row of icon buttons renders below the panel header (expanded state only). Each icon toggles a filter section's visibility. Visibility is tracked in a `Set<FilterSection>` initialized from localStorage (falling back to all-visible). A write-only `$effect` persists changes. Hidden sections with active filters show a dot indicator on their toggle icon.
+
+**Tech Stack:** Svelte 5, Tailwind CSS 4, Vitest + @testing-library/svelte
+
+**Design doc:** `docs/plans/2026-03-23-filter-selector-design.md`
+
+---
+
+## Task 1: Write failing tests for filter section selector
+
+**Files:**
+
+- Modify: `web/src/lib/components/filter-panel/__tests__/filter-panel.spec.ts`
+
+**Step 1: Add 28 test cases in a new describe block**
+
+Open `web/src/lib/components/filter-panel/__tests__/filter-panel.spec.ts` (currently 118 lines). Add the following `describe('Section Selector', ...)` block after the existing `describe('FilterPanel', ...)` block (after line 118).
+
+The full test file after modification should be:
+
+```typescript
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { createFilterState } from '../filter-panel';
 import FilterPanel from '../filter-panel.svelte';
@@ -418,3 +445,330 @@ describe('Section Selector', () => {
     expect(screen.getByTestId('filter-section-timeline')).toBeTruthy();
   });
 });
+```
+
+Apply this by replacing the entire file content.
+
+**Step 2: Run tests to verify they fail**
+
+```bash
+cd /home/pierre/dev/gallery/web && pnpm test -- --run src/lib/components/filter-panel/__tests__/filter-panel.spec.ts
+```
+
+Expected: All 28 new tests fail (elements like `section-toggle-row`, `section-toggle-people`, etc. do not exist yet). The 8 existing tests should still pass.
+
+**Step 3: Commit**
+
+```bash
+git add web/src/lib/components/filter-panel/__tests__/filter-panel.spec.ts
+git commit -m "test(web): add 28 failing tests for filter section selector"
+```
+
+---
+
+## Task 2: Implement filter section selector
+
+**Files:**
+
+- Modify: `web/src/lib/components/filter-panel/filter-panel.svelte`
+
+All changes are in this single file. The implementation has 6 parts.
+
+### Step 1: Add `browser` import
+
+At line 2 of `filter-panel.svelte`, add the `browser` import from `$app/environment`:
+
+```typescript
+// Add after: import { Icon } from '@immich/ui';
+import { browser } from '$app/environment';
+```
+
+The import block (lines 1-13) becomes:
+
+```typescript
+import { Icon } from '@immich/ui';
+import { browser } from '$app/environment';
+import {
+  mdiChevronLeft,
+  mdiChevronRight,
+  mdiCalendar,
+  mdiAccount,
+  mdiMapMarker,
+  mdiCamera,
+  mdiTag,
+  mdiStar,
+  mdiImage,
+} from '@mdi/js';
+```
+
+### Step 2: Add `loadVisibleSections` function, state, toggle functions, and `$effect`
+
+After line 58 (the `sectionTitles` closing brace+semicolon), add:
+
+```typescript
+const STORAGE_KEY = 'gallery-filter-visible-sections';
+
+function loadVisibleSections(configSections: FilterSection[]): Set<FilterSection> {
+  if (browser) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as string[];
+        const valid = parsed.filter((s): s is FilterSection => configSections.includes(s as FilterSection));
+        if (valid.length > 0) return new Set(valid);
+      }
+    } catch {
+      /* corrupted JSON or localStorage unavailable — fall through to default */
+    }
+  }
+  return new Set(configSections);
+}
+
+let visibleSections = $state(loadVisibleSections(config.sections));
+
+function toggleSection(section: FilterSection) {
+  const next = new Set(visibleSections);
+  if (next.has(section)) {
+    next.delete(section);
+  } else {
+    next.add(section);
+  }
+  visibleSections = next;
+}
+
+function showAllSections() {
+  visibleSections = new Set(config.sections);
+}
+
+$effect(() => {
+  if (browser) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...visibleSections]));
+    } catch {
+      /* localStorage unavailable */
+    }
+  }
+});
+```
+
+This requires importing the `FilterSection` type. Update the existing type import at line 14 (currently):
+
+```typescript
+import type { FilterPanelConfig, FilterState, PersonOption, TagOption } from './filter-panel';
+```
+
+To also include `FilterSection`:
+
+```typescript
+import type { FilterPanelConfig, FilterSection, FilterState, PersonOption, TagOption } from './filter-panel';
+```
+
+### Step 3: Fix `hasActiveFilter` for timeline
+
+In the `hasActiveFilter` function (currently at line 125), add a `case 'timeline'` before the `default`:
+
+```typescript
+function hasActiveFilter(section: string): boolean {
+  switch (section) {
+    case 'people': {
+      return filters.personIds.length > 0;
+    }
+    case 'location': {
+      return !!filters.city || !!filters.country;
+    }
+    case 'camera': {
+      return !!filters.make;
+    }
+    case 'tags': {
+      return filters.tagIds.length > 0;
+    }
+    case 'rating': {
+      return filters.rating !== undefined;
+    }
+    case 'media': {
+      return filters.mediaType !== 'all';
+    }
+    case 'timeline': {
+      return filters.selectedYear !== undefined;
+    }
+    default: {
+      return false;
+    }
+  }
+}
+```
+
+### Step 4: Add icon toggle row in template
+
+In the expanded panel template, after the panel header `</div>` (currently at line 197, closing the sticky header div) and before `<div class="pt-4">` (line 199), add the section toggle row.
+
+This row should only render when `config.sections.length > 0`:
+
+```svelte
+{#if config.sections.length > 0}
+  <div
+    class="flex items-center justify-center gap-0.5 border-b border-gray-200 px-3 py-2 dark:border-gray-700"
+    data-testid="section-toggle-row"
+  >
+    {#each config.sections as section (section)}
+      <button
+        type="button"
+        class="relative flex h-[30px] w-[30px] items-center justify-center rounded-lg transition-colors
+          {visibleSections.has(section)
+            ? 'bg-primary/10 text-primary'
+            : 'text-gray-400 hover:bg-subtle hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400'}"
+        onclick={() => toggleSection(section)}
+        aria-label={sectionTitles[section]}
+        aria-pressed={visibleSections.has(section)}
+        title={sectionTitles[section]}
+        data-testid="section-toggle-{section}"
+      >
+        <Icon icon={sectionIcons[section]} size="16" />
+        {#if !visibleSections.has(section) && hasActiveFilter(section)}
+          <span
+            class="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-[1.5px] border-light bg-immich-primary dark:bg-immich-dark-primary"
+            data-testid="section-toggle-dot-{section}"
+          ></span>
+        {/if}
+      </button>
+    {/each}
+  </div>
+{/if}
+```
+
+### Step 5: Wrap filter sections with visibility gate
+
+Replace the current `<div class="pt-4">` block (lines 199-249) with a version that gates each section on `visibleSections.has(section)`:
+
+```svelte
+<div class="pt-4">
+  {#each config.sections as section (section)}
+    {#if visibleSections.has(section)}
+      <FilterSection title={sectionTitles[section]} testId={section}>
+        {#if section === 'timeline'}
+          <TemporalPicker
+            {timeBuckets}
+            selectedYear={filters.selectedYear}
+            selectedMonth={filters.selectedMonth}
+            onYearSelect={handleYearSelect}
+            onMonthSelect={handleMonthSelect}
+          />
+        {:else if section === 'people'}
+          <PeopleFilter {people} selectedIds={filters.personIds} onSelectionChange={handlePeopleChange} />
+        {:else if section === 'location'}
+          <LocationFilter
+            {countries}
+            selectedCity={filters.city}
+            selectedCountry={filters.country}
+            onCityFetch={async (_) => {
+              if (config.providers.locations) {
+                const result = await config.providers.locations();
+                return result.filter((l) => l.type === 'city').map((l) => l.value);
+              }
+              return [];
+            }}
+            onSelectionChange={handleLocationChange}
+          />
+        {:else if section === 'camera'}
+          <CameraFilter
+            makes={cameraMakes}
+            selectedMake={filters.make}
+            selectedModel={filters.model}
+            onModelFetch={async (_) => {
+              if (config.providers.cameras) {
+                const result = await config.providers.cameras();
+                return result.filter((c) => c.type === 'model').map((c) => c.value);
+              }
+              return [];
+            }}
+            onSelectionChange={handleCameraChange}
+          />
+        {:else if section === 'tags'}
+          <TagsFilter {tags} selectedIds={filters.tagIds} onSelectionChange={handleTagsChange} />
+        {:else if section === 'rating'}
+          <RatingFilter selectedRating={filters.rating} onRatingChange={handleRatingChange} />
+        {:else if section === 'media'}
+          <MediaTypeFilter selected={filters.mediaType} onTypeChange={handleMediaTypeChange} />
+        {/if}
+      </FilterSection>
+    {/if}
+  {/each}
+
+  {#if visibleSections.size === 0}
+    <div class="flex flex-col items-center gap-2 px-4 py-8 text-center">
+      <p class="text-xs text-gray-500 dark:text-gray-400">Click an icon above to show filters</p>
+      <button
+        type="button"
+        class="text-xs font-medium text-primary hover:underline"
+        onclick={showAllSections}
+        data-testid="show-all-sections"
+      >
+        Show all
+      </button>
+    </div>
+  {/if}
+</div>
+```
+
+### Step 6: Run tests to verify they pass
+
+```bash
+cd /home/pierre/dev/gallery/web && pnpm test -- --run src/lib/components/filter-panel/__tests__/filter-panel.spec.ts
+```
+
+Expected: All 36 tests pass (8 existing + 28 new).
+
+### Step 7: Format and lint
+
+```bash
+cd /home/pierre/dev/gallery && make format-web && make lint-web
+```
+
+### Step 8: Commit
+
+```bash
+git add web/src/lib/components/filter-panel/filter-panel.svelte
+git commit -m "feat(web): add filter section selector with icon toggle row
+
+Add icon toggle row to FilterPanel that lets users show/hide individual
+filter sections. Visibility state persists in localStorage. Hidden
+sections with active filters show a dot indicator. All sections visible
+by default. Includes hasActiveFilter fix for timeline section."
+```
+
+---
+
+## Task 3: Final verification
+
+### Step 1: Run full web test suite
+
+```bash
+cd /home/pierre/dev/gallery/web && pnpm test -- --run
+```
+
+Expected: All tests pass.
+
+### Step 2: Run type check
+
+```bash
+cd /home/pierre/dev/gallery && make check-web
+```
+
+Expected: No type errors.
+
+### Step 3: Run lint
+
+```bash
+cd /home/pierre/dev/gallery && make lint-web
+```
+
+Expected: Zero warnings, zero errors.
+
+### Step 4: Commit if any formatting/lint fixes were needed
+
+If Steps 2-3 required changes:
+
+```bash
+git add -u
+git commit -m "fix(web): resolve lint/type issues in filter section selector"
+```
