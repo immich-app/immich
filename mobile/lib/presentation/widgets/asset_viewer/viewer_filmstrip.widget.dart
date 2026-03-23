@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -18,10 +20,10 @@ class ViewerFilmstrip extends ConsumerStatefulWidget {
 
 class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   static const double _itemGap = 2.0;
-  static const int _bufferWindow = 100;
 
   late double _filmstripHeight;
   late double _itemExtent;
+  int _visibleCount = 0;
 
   late final ScrollController _scrollController;
   late TimelineService _timelineService;
@@ -46,7 +48,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _timelineService = ref.read(timelineServiceProvider);
     final initialIndex = ref.read(assetViewerProvider).currentIndex;
     _currentIndex = ValueNotifier(initialIndex);
-    _ensureBuffered(initialIndex);
+    _ensureBuffered();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _scrollToCurrentIndex(animated: false);
@@ -65,16 +67,22 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     super.dispose();
   }
 
-  /// Ensures the assets around [idx] are loaded.
-  Future<void> _ensureBuffered(int idx) async {
-    if (_loading) return; // TODO: consider cancelling in-flight load and starting new one?
-
+  /// Ensures the assets around current index are loaded.
+  Future<void> _ensureBuffered() async {
+    if (_loading || _visibleCount == 0) return;
+    final idx = _currentIndex.value;
     final total = _timelineService.totalAssets;
-    // TODO: Might want to check if _bufferWindow is not more than what cache can hold.
-    final half = _bufferWindow ~/ 2;
-    final start = (idx - half).clamp(0, total - 1);
-    final count = _bufferWindow.clamp(0, total - start);
-    if (_timelineService.hasRange(start, count)) return;
+
+    // Start loading assets early by expanding the number of visible items.
+    final triggerWindow = _visibleCount * 3;
+    final startTriggerWindow = max(idx - triggerWindow ~/ 2, 0);
+    final countTriggerWindow = min(triggerWindow, total - startTriggerWindow);
+    if (_timelineService.hasRange(startTriggerWindow, countTriggerWindow)) return;
+
+    // Load a larger buffer to reduce the frequency of loading during fast scrubbing.
+    final bufferWindow = _visibleCount * 6;
+    final start = max(idx - bufferWindow ~/ 2, 0);
+    final count = min(bufferWindow, total - start);
 
     _loading = true;
     await _timelineService.loadAssets(start, count);
@@ -91,7 +99,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (idx == _currentIndex.value) return;
     _currentIndex.value = idx;
 
-    _ensureBuffered(idx);
+    _ensureBuffered();
     _scrollToCurrentIndex();
   }
 
@@ -181,7 +189,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     // Set internal _currentIndex before updating the one in provider
     // as we don't want the provider listener to trigger a scrollToIndex while dragging.
     _currentIndex.value = idx;
-    _ensureBuffered(idx);
+    _ensureBuffered();
     ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
   }
 
@@ -221,6 +229,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   Widget _buildList(int total) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        _visibleCount = (constraints.maxWidth / (_itemExtent + _itemGap)).ceil();
         final sidePadding = constraints.maxWidth / 2 - _itemExtent / 2;
         return ListView.builder(
           controller: _scrollController,
