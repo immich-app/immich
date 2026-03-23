@@ -231,6 +231,25 @@ delete from "asset"
 where
   "ownerId" = $1
 
+-- AssetRepository.getByLibraryIdWithFaces
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_face" on "asset_face"."assetId" = "asset"."id"
+where
+  "asset"."libraryId" = $1
+  and "asset"."deletedAt" is null
+  and "asset"."isOffline" = $2
+group by
+  "asset"."id"
+order by
+  "asset"."id"
+limit
+  $3
+offset
+  $4
+
 -- AssetRepository.getByLibraryIdAndOriginalPath
 select
   "asset".*

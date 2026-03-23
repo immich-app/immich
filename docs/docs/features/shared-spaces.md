@@ -18,6 +18,7 @@ Gallery enforces strict role-based access on every endpoint. Three roles — Own
 - **New since last visit** — See what changed since you last opened a space, with badges and timeline dividers.
 - **Map view** — Browse geotagged photos from a space on an interactive map.
 - **Search within a space** — Smart search scoped to a single space's assets.
+- **Connected libraries** — Admins can link external libraries to spaces, automatically including all library photos.
 
 ## Roles and Permissions
 
@@ -39,6 +40,9 @@ Gallery enforces strict role-based access on every endpoint. Three roles — Own
 | View space on map           | Yes   | Yes    | Yes    |
 | Manage people (name, merge) | Yes   | Yes    | No     |
 | Toggle timeline integration | Yes   | Yes    | Yes    |
+| Link/unlink libraries\*     | Yes   | Yes    | No     |
+
+\* Requires server admin privileges in addition to the space role.
 
 ## Creating a Space
 
@@ -247,6 +251,52 @@ Each space can have an assigned color, chosen during creation or changed later b
 
 Ten colors are available, matching the user avatar color palette.
 
+## Connected Libraries (Admin)
+
+Server administrators can link external libraries to shared spaces, making all photos from a library automatically appear in the space. This is ideal for sharing large existing photo collections (e.g., tens of thousands of photos from an external hard drive) without manually selecting individual photos.
+
+### How It Works
+
+When a library is linked to a space, all assets from that library are included in the space's timeline, asset count, map, and search results — resolved at query time with no data duplication. New photos imported into the library via future scans automatically appear in the space with zero delay.
+
+Photos from linked libraries can coexist with manually added photos in the same space. If the same photo exists in both a linked library and as a manually added asset, it appears only once (automatic deduplication).
+
+### Requirements
+
+To link or unlink a library, both conditions must be met:
+
+- The user must be a **server administrator** (libraries are an admin-only concept).
+- The user must be an **Editor or Owner** of the target space.
+
+### Linking a Library
+
+1. Open the space and click the **panel icon** to open the side panel.
+2. Switch to the **Libraries** tab (visible only to admins).
+3. Select a library from the dropdown.
+4. Click **Link**.
+
+All assets from the selected library immediately appear in the space.
+
+If face recognition is enabled on the space, a background job will automatically process faces from the library's photos. For large libraries, this may take some time to complete.
+
+### Unlinking a Library
+
+1. Open the **Libraries** tab in the side panel.
+2. Click **Unlink** next to the library you want to remove.
+3. Confirm the removal.
+
+Library assets disappear from the space immediately. Any photos from that library that were also manually added to the space via **Add photos** will remain — unlinking only removes the automatic library link, not individual asset references.
+
+### Permissions for Library Assets
+
+Space members can view, download, and browse library-linked assets just like manually added ones. Editors can update metadata on library-linked assets. The library owner retains full ownership of the underlying files.
+
+### Limitations
+
+- **One-way only** — Photos added to the space by other members are not imported back into the library.
+- **All or nothing** — Linking a library includes all its assets. To share only specific photos, add them manually instead of linking the library.
+- **Admin-only** — Regular users cannot see or manage library links. They simply see the photos in the space.
+
 ## Differences from Partner Sharing
 
 | Feature          | Partner Sharing    | Shared Spaces              |
@@ -261,13 +311,13 @@ Ten colors are available, matching the user avatar color palette.
 
 ## API
 
-Shared Spaces are accessible via the REST API under the `/shared-spaces` endpoint group. There are 24 endpoints covering space CRUD, member management, asset management, activity log, map markers, and space-scoped face recognition (people CRUD, merge, aliases, thumbnails).
+Shared Spaces are accessible via the REST API under the `/shared-spaces` endpoint group. There are 26 endpoints covering space CRUD, member management, asset management, library linking, activity log, map markers, and space-scoped face recognition (people CRUD, merge, aliases, thumbnails).
 
 ## Technical Implementation
 
 ### Database Schema
 
-Shared Spaces introduces 7 new tables in PostgreSQL:
+Shared Spaces introduces 8 new tables in PostgreSQL:
 
 ```
 ┌──────────────────────┐       ┌──────────────────────────┐
@@ -309,19 +359,37 @@ Shared Spaces introduces 7 new tables in PostgreSQL:
                                                        └──────────┘
 ```
 
-All tables prefixed `shared_space_` in the actual schema. Composite primary keys are used for member (spaceId, userId), asset (spaceId, assetId), person_face (personId, assetFaceId), and alias (personId, userId).
+Additionally, the `shared_space_library` table links spaces to external libraries:
+
+```
+┌──────────────────────┐       ┌──────────────────────┐
+│   shared_space       │       │      library          │
+└──────────┬───────────┘       └──────────┬────────────┘
+           │                              │
+           ▼                              ▼
+     ┌─────────────────────────────────────────┐
+     │          shared_space_library            │
+     ├─────────────────────────────────────────┤
+     │ spaceId (FK → shared_space, PK)         │
+     │ libraryId (FK → library, PK)            │
+     │ addedById (FK → user, nullable)         │
+     │ createdAt                               │
+     └─────────────────────────────────────────┘
+```
+
+All tables prefixed `shared_space_` in the actual schema. Composite primary keys are used for member (spaceId, userId), asset (spaceId, assetId), library (spaceId, libraryId), person_face (personId, assetFaceId), and alias (personId, userId).
 
 ### Architecture
 
 The feature follows the standard NestJS layered architecture:
 
-- **Controller** (`shared-space.controller.ts`) — 24 REST endpoints under `/shared-spaces`, with role-based permission checks.
+- **Controller** (`shared-space.controller.ts`) — 26 REST endpoints under `/shared-spaces`, with role-based permission checks.
 - **Service** (`shared-space.service.ts`) — Business logic including role validation (Owner > Editor > Viewer hierarchy), activity logging, and background job orchestration.
-- **Repository** (`shared-space.repository.ts`) — Kysely-based data access with 70+ methods covering all 7 tables.
+- **Repository** (`shared-space.repository.ts`) — Kysely-based data access with 70+ methods covering all 8 tables.
 
 ### Key Mechanisms
 
-**Reference-based sharing** — The `shared_space_asset` table is a pure junction table linking spaces to existing assets. No file duplication occurs; the same asset row is referenced by the space and the owner's library.
+**Reference-based sharing** — The `shared_space_asset` table is a pure junction table linking spaces to existing assets. No file duplication occurs; the same asset row is referenced by the space and the owner's library. For linked libraries, assets are resolved at query time via `shared_space_library` JOIN `asset.libraryId` — no rows are copied into `shared_space_asset`.
 
 **Timeline integration** — Each membership row has a `showInTimeline` boolean. When fetching a user's timeline, the server queries `getSpaceIdsForTimeline(userId)` and includes assets from those spaces in the timeline result set alongside the user's own assets.
 
@@ -330,3 +398,17 @@ The feature follows the standard NestJS layered architecture:
 **New since last visit** — The `lastViewedAt` timestamp on each membership is updated via `PATCH /shared-spaces/:id/view` when a user opens a space. The `newAssetCount` and `lastContributor` fields in the response DTO are computed by querying assets added after this timestamp.
 
 **Face recognition (space-scoped)** — Space-scoped people are separate from personal people. When face recognition is enabled and assets are added, the service queues `SharedSpaceFaceMatch` jobs. Each job fetches face embeddings from the asset and runs a vectorchord similarity search (`<=>` operator) against existing space people. Matches within the configured distance threshold are linked; unmatched faces create new person entries. Person aliases allow each member to set their own display names for recognized people.
+
+**Connected libraries (query-through)** — When an admin links a library to a space via the `shared_space_library` junction table, no asset data is copied. Instead, every query that resolves "assets in this space" uses a SQL `UNION` of two sources:
+
+1. **Manual assets** — `shared_space_asset` (individually added by members)
+2. **Library assets** — `shared_space_library` JOIN `asset` on `libraryId` (all assets belonging to the linked library)
+
+The `UNION` (not `UNION ALL`) automatically deduplicates assets that appear in both sources. This query-through pattern is applied consistently across 14 query sites: asset counts, recent assets, new asset counts, map markers, timeline buckets (both `spaceId` and `timelineSpaceIds` paths), validation helpers (`isAssetInSpace`, `isFaceInSpace`), face-matching helpers (`getAssetIdsInSpace`, `getSpaceIdsForAsset`), and access control (`checkSpaceAccess`, `checkSpaceEditAccess`). All library-side UNION branches filter `asset.deletedAt IS NULL` and `asset.isOffline = false` to exclude deleted and offline assets.
+
+Face recognition for linked libraries uses two mechanisms:
+
+- **On link creation** — A `SharedSpaceLibraryFaceSync` orchestrator job batch-processes all library assets with detected faces (1000 at a time), reusing the extracted `processSpaceFaceMatch` method.
+- **On ongoing library scans** — The `handleSyncFiles` method in `LibraryService` checks if the scanned library is linked to any spaces and queues individual `SharedSpaceFaceMatch` jobs for newly imported assets.
+
+The admin-only "Libraries" tab in the space panel (`SpaceLinkedLibraries` component) provides the UI for linking and unlinking. The `linkedLibraries` field in `SharedSpaceResponseDto` is only populated when the requesting user is an admin.

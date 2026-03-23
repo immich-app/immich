@@ -13,6 +13,8 @@ import {
   SharedSpaceAssetAddDto,
   SharedSpaceAssetRemoveDto,
   SharedSpaceCreateDto,
+  SharedSpaceLibraryLinkDto,
+  SharedSpaceLinkedLibraryDto,
   SharedSpaceMemberCreateDto,
   SharedSpaceMemberResponseDto,
   SharedSpaceMemberTimelineDto,
@@ -84,6 +86,23 @@ export class SharedSpaceService extends BaseService {
         newAssetCount = assetCount;
       }
 
+      let linkedLibraries: SharedSpaceLinkedLibraryDto[] | undefined;
+      if (auth.user.isAdmin) {
+        const links = await this.sharedSpaceRepository.getLinkedLibraries(space.id);
+        linkedLibraries = [];
+        for (const link of links) {
+          const library = await this.libraryRepository.get(link.libraryId);
+          if (library) {
+            linkedLibraries.push({
+              libraryId: link.libraryId,
+              libraryName: library.name,
+              addedById: link.addedById,
+              createdAt: link.createdAt as unknown as Date,
+            });
+          }
+        }
+      }
+
       results.push({
         ...this.mapSpace(space),
         memberCount: members.length,
@@ -95,6 +114,7 @@ export class SharedSpaceService extends BaseService {
         members: members.map((m) => this.mapMember(m)),
         newAssetCount,
         lastContributor,
+        linkedLibraries,
       });
     }
     return results;
@@ -126,6 +146,23 @@ export class SharedSpaceService extends BaseService {
       newAssetCount = await this.sharedSpaceRepository.getNewAssetCount(id, membership.lastViewedAt);
     }
 
+    let linkedLibraries: SharedSpaceLinkedLibraryDto[] | undefined;
+    if (auth.user.isAdmin) {
+      const links = await this.sharedSpaceRepository.getLinkedLibraries(space.id);
+      linkedLibraries = [];
+      for (const link of links) {
+        const library = await this.libraryRepository.get(link.libraryId);
+        if (library) {
+          linkedLibraries.push({
+            libraryId: link.libraryId,
+            libraryName: library.name,
+            addedById: link.addedById,
+            createdAt: link.createdAt as unknown as Date,
+          });
+        }
+      }
+    }
+
     return {
       ...this.mapSpace(space),
       thumbnailAssetId,
@@ -138,6 +175,7 @@ export class SharedSpaceService extends BaseService {
       members: members.map((m) => this.mapMember(m)),
       newAssetCount,
       lastViewedAt: membership.lastViewedAt ? (membership.lastViewedAt as unknown as Date).toISOString() : null,
+      linkedLibraries,
     };
   }
 
@@ -381,6 +419,46 @@ export class SharedSpaceService extends BaseService {
         });
       }
     }
+  }
+
+  async linkLibrary(auth: AuthDto, spaceId: string, dto: SharedSpaceLibraryLinkDto): Promise<void> {
+    if (!auth.user.isAdmin) {
+      throw new ForbiddenException('Only admins can link libraries to spaces');
+    }
+
+    await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
+
+    const library = await this.libraryRepository.get(dto.libraryId);
+    if (!library) {
+      throw new BadRequestException('Library not found');
+    }
+
+    const result = await this.sharedSpaceRepository.addLibrary({
+      spaceId,
+      libraryId: dto.libraryId,
+      addedById: auth.user.id,
+    });
+
+    // Only queue face sync for newly created links (not duplicates)
+    if (result) {
+      const space = await this.sharedSpaceRepository.getById(spaceId);
+      if (space?.faceRecognitionEnabled) {
+        await this.jobRepository.queue({
+          name: JobName.SharedSpaceLibraryFaceSync,
+          data: { spaceId, libraryId: dto.libraryId },
+        });
+      }
+    }
+  }
+
+  async unlinkLibrary(auth: AuthDto, spaceId: string, libraryId: string): Promise<void> {
+    if (!auth.user.isAdmin) {
+      throw new ForbiddenException('Only admins can unlink libraries from spaces');
+    }
+
+    await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
+
+    await this.sharedSpaceRepository.removeLibrary(spaceId, libraryId);
   }
 
   async markSpaceViewed(auth: AuthDto, spaceId: string): Promise<void> {
@@ -667,50 +745,36 @@ export class SharedSpaceService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const { machineLearning } = await this.getConfig({ withCache: true });
-    const maxDistance = machineLearning.facialRecognition.maxDistance;
+    await this.processSpaceFaceMatch(spaceId, assetId);
+    return JobStatus.Success;
+  }
 
-    const faces = await this.sharedSpaceRepository.getAssetFacesForMatching(assetId);
-    for (const face of faces) {
-      const isAssigned = await this.sharedSpaceRepository.isPersonFaceAssigned(face.id, spaceId);
-      if (isAssigned) {
-        continue;
+  @OnJob({ name: JobName.SharedSpaceLibraryFaceSync, queue: QueueName.FacialRecognition })
+  async handleSharedSpaceLibraryFaceSync(job: JobOf<JobName.SharedSpaceLibraryFaceSync>): Promise<JobStatus> {
+    const space = await this.sharedSpaceRepository.getById(job.spaceId);
+    if (!space || !space.faceRecognitionEnabled) {
+      return JobStatus.Skipped;
+    }
+
+    const linkExists = await this.sharedSpaceRepository.hasLibraryLink(job.spaceId, job.libraryId);
+    if (!linkExists) {
+      return JobStatus.Skipped;
+    }
+
+    const batchSize = 1000;
+    let offset = 0;
+
+    while (true) {
+      const assets = await this.assetRepository.getByLibraryIdWithFaces(job.libraryId, batchSize, offset);
+      if (assets.length === 0) {
+        break;
       }
 
-      const matches = await this.sharedSpaceRepository.findClosestSpacePerson(spaceId, face.embedding, {
-        maxDistance,
-        numResults: 1,
-      });
-
-      let personId: string;
-      if (matches.length > 0) {
-        personId = matches[0].personId;
-      } else {
-        // Only create a new space person if the face has a linked personal person
-        // (faces without one haven't passed the minFaces threshold yet)
-        if (!face.personId) {
-          continue;
-        }
-
-        let name = '';
-        const personalPerson = await this.personRepository.getById(face.personId);
-        if (personalPerson?.name) {
-          name = personalPerson.name;
-        }
-
-        const newPerson = await this.sharedSpaceRepository.createPerson({
-          spaceId,
-          name,
-          representativeFaceId: face.id,
-        });
-        personId = newPerson.id;
-        await this.jobRepository.queue({
-          name: JobName.SharedSpacePersonThumbnail,
-          data: { id: newPerson.id },
-        });
+      for (const asset of assets) {
+        await this.processSpaceFaceMatch(job.spaceId, asset.id);
       }
 
-      await this.sharedSpaceRepository.addPersonFaces([{ personId, assetFaceId: face.id }]);
+      offset += assets.length;
     }
 
     return JobStatus.Success;
@@ -759,6 +823,54 @@ export class SharedSpaceService extends BaseService {
     }
 
     return JobStatus.Skipped;
+  }
+
+  private async processSpaceFaceMatch(spaceId: string, assetId: string): Promise<void> {
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    const maxDistance = machineLearning.facialRecognition.maxDistance;
+
+    const faces = await this.sharedSpaceRepository.getAssetFacesForMatching(assetId);
+    for (const face of faces) {
+      const isAssigned = await this.sharedSpaceRepository.isPersonFaceAssigned(face.id, spaceId);
+      if (isAssigned) {
+        continue;
+      }
+
+      const matches = await this.sharedSpaceRepository.findClosestSpacePerson(spaceId, face.embedding, {
+        maxDistance,
+        numResults: 1,
+      });
+
+      let personId: string;
+      if (matches.length > 0) {
+        personId = matches[0].personId;
+      } else {
+        // Only create a new space person if the face has a linked personal person
+        // (faces without one haven't passed the minFaces threshold yet)
+        if (!face.personId) {
+          continue;
+        }
+
+        let name = '';
+        const personalPerson = await this.personRepository.getById(face.personId);
+        if (personalPerson?.name) {
+          name = personalPerson.name;
+        }
+
+        const newPerson = await this.sharedSpaceRepository.createPerson({
+          spaceId,
+          name,
+          representativeFaceId: face.id,
+        });
+        personId = newPerson.id;
+        await this.jobRepository.queue({
+          name: JobName.SharedSpacePersonThumbnail,
+          data: { id: newPerson.id },
+        });
+      }
+
+      await this.sharedSpaceRepository.addPersonFaces([{ personId, assetFaceId: face.id }]);
+    }
   }
 
   private async requireMembership(auth: AuthDto, spaceId: string) {

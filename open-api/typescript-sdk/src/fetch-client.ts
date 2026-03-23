@@ -2359,6 +2359,12 @@ export type AssetIdsResponseDto = {
     /** Whether operation succeeded */
     success: boolean;
 };
+export type SharedSpaceLinkedLibraryDto = {
+    addedById?: string | null;
+    createdAt: string;
+    libraryId: string;
+    libraryName: string;
+};
 export type SharedSpaceMemberResponseDto = {
     /** Avatar color */
     avatarColor?: string;
@@ -2408,6 +2414,7 @@ export type SharedSpaceResponseDto = {
     };
     /** When the current user last viewed this space */
     lastViewedAt?: string | null;
+    linkedLibraries?: SharedSpaceLinkedLibraryDto[];
     /** Number of members */
     memberCount?: number;
     /** Space members (summary) */
@@ -2476,6 +2483,10 @@ export type SharedSpaceAssetRemoveDto = {
 export type SharedSpaceAssetAddDto = {
     /** Asset IDs */
     assetIds: string[];
+};
+export type SharedSpaceLibraryLinkDto = {
+    /** Library ID */
+    libraryId: string;
 };
 export type SharedSpaceMemberCreateDto = {
     /** Member role */
@@ -6453,6 +6464,31 @@ export function addAssets({ id, sharedSpaceAssetAddDto }: {
     })));
 }
 /**
+ * Link a library to a shared space
+ */
+export function linkLibrary({ id, sharedSpaceLibraryLinkDto }: {
+    id: string;
+    sharedSpaceLibraryLinkDto: SharedSpaceLibraryLinkDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/shared-spaces/${encodeURIComponent(id)}/libraries`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: sharedSpaceLibraryLinkDto
+    })));
+}
+/**
+ * Unlink a library from a shared space
+ */
+export function unlinkLibrary({ id, libraryId }: {
+    id: string;
+    libraryId: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/shared-spaces/${encodeURIComponent(id)}/libraries/${encodeURIComponent(libraryId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
  * Get map markers for a shared space
  */
 export function getSpaceMapMarkers({ id }: {
@@ -7825,6 +7861,8 @@ export enum Permission {
     SharedSpaceAssetCreate = "sharedSpaceAsset.create",
     SharedSpaceAssetRead = "sharedSpaceAsset.read",
     SharedSpaceAssetDelete = "sharedSpaceAsset.delete",
+    SharedSpaceLibraryCreate = "sharedSpaceLibrary.create",
+    SharedSpaceLibraryDelete = "sharedSpaceLibrary.delete",
     UserGroupCreate = "userGroup.create",
     UserGroupRead = "userGroup.read",
     UserGroupUpdate = "userGroup.update",
@@ -8072,7 +8110,8 @@ export enum JobName {
     StorageBackendMigrationSingle = "StorageBackendMigrationSingle",
     SharedSpaceFaceMatch = "SharedSpaceFaceMatch",
     SharedSpaceFaceMatchAll = "SharedSpaceFaceMatchAll",
-    SharedSpacePersonThumbnail = "SharedSpacePersonThumbnail"
+    SharedSpacePersonThumbnail = "SharedSpacePersonThumbnail",
+    SharedSpaceLibraryFaceSync = "SharedSpaceLibraryFaceSync"
 }
 export enum SearchSuggestionType {
     Country = "country",

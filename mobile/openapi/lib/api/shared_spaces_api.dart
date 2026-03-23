@@ -846,6 +846,59 @@ class SharedSpacesApi {
     return null;
   }
 
+  /// Link a library to a shared space
+  ///
+  /// Link an external library so its assets appear in the space. Requires admin and space editor/owner.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [SharedSpaceLibraryLinkDto] sharedSpaceLibraryLinkDto (required):
+  Future<Response> linkLibraryWithHttpInfo(String id, SharedSpaceLibraryLinkDto sharedSpaceLibraryLinkDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/libraries'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = sharedSpaceLibraryLinkDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Link a library to a shared space
+  ///
+  /// Link an external library so its assets appear in the space. Requires admin and space editor/owner.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [SharedSpaceLibraryLinkDto] sharedSpaceLibraryLinkDto (required):
+  Future<void> linkLibrary(String id, SharedSpaceLibraryLinkDto sharedSpaceLibraryLinkDto,) async {
+    final response = await linkLibraryWithHttpInfo(id, sharedSpaceLibraryLinkDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Mark space as viewed
   ///
   /// Update the last viewed timestamp for the current user in this space.
@@ -1162,6 +1215,60 @@ class SharedSpacesApi {
   /// * [SharedSpacePersonAliasDto] sharedSpacePersonAliasDto (required):
   Future<void> setSpacePersonAlias(String id, String personId, SharedSpacePersonAliasDto sharedSpacePersonAliasDto,) async {
     final response = await setSpacePersonAliasWithHttpInfo(id, personId, sharedSpacePersonAliasDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Unlink a library from a shared space
+  ///
+  /// Remove a library link. Library assets will no longer appear in the space.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] libraryId (required):
+  Future<Response> unlinkLibraryWithHttpInfo(String id, String libraryId,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/libraries/{libraryId}'
+      .replaceAll('{id}', id)
+      .replaceAll('{libraryId}', libraryId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Unlink a library from a shared space
+  ///
+  /// Remove a library link. Library assets will no longer appear in the space.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] libraryId (required):
+  Future<void> unlinkLibrary(String id, String libraryId,) async {
+    final response = await unlinkLibraryWithHttpInfo(id, libraryId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

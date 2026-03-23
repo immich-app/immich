@@ -577,6 +577,7 @@ describe(LibraryService.name, () => {
         mtime: new Date('2023-01-01'),
         ctime: new Date('2023-01-01'),
       } as Stats);
+      mocks.sharedSpace.getSpacesLinkedToLibrary.mockResolvedValue([]);
     });
 
     it('should import a new asset', async () => {
@@ -629,6 +630,86 @@ describe(LibraryService.name, () => {
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Failed);
 
       expect(mocks.asset.createAll.mock.calls).toEqual([]);
+    });
+
+    describe('space face matching', () => {
+      it('should queue face match jobs for spaces linked to the library', async () => {
+        const libraryId = newUuid();
+        const spaceId = newUuid();
+        const library = factory.library({ id: libraryId });
+        const assetId = newUuid();
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.createAll.mockResolvedValue([{ id: assetId } as any]);
+        mocks.sharedSpace.getSpacesLinkedToLibrary.mockResolvedValue([
+          { spaceId, libraryId, addedById: null, createdAt: newDate(), faceRecognitionEnabled: true },
+        ]);
+
+        await sut.handleSyncFiles({ libraryId, paths: ['/photos/test.jpg'], progressCounter: 1, totalAssets: 1 });
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId, assetId },
+        });
+      });
+
+      it('should queue jobs for multiple spaces if library is linked to more than one', async () => {
+        const libraryId = newUuid();
+        const space1 = newUuid();
+        const space2 = newUuid();
+        const library = factory.library({ id: libraryId });
+        const assetId = newUuid();
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.createAll.mockResolvedValue([{ id: assetId } as any]);
+        mocks.sharedSpace.getSpacesLinkedToLibrary.mockResolvedValue([
+          { spaceId: space1, libraryId, addedById: null, createdAt: newDate(), faceRecognitionEnabled: true },
+          { spaceId: space2, libraryId, addedById: null, createdAt: newDate(), faceRecognitionEnabled: true },
+        ]);
+
+        await sut.handleSyncFiles({ libraryId, paths: ['/photos/test.jpg'], progressCounter: 1, totalAssets: 1 });
+
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: space1, assetId },
+        });
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: space2, assetId },
+        });
+      });
+
+      it('should not queue face match jobs when library is not linked to any space', async () => {
+        const libraryId = newUuid();
+        const library = factory.library({ id: libraryId });
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.createAll.mockResolvedValue([{ id: newUuid() } as any]);
+        mocks.sharedSpace.getSpacesLinkedToLibrary.mockResolvedValue([]);
+
+        await sut.handleSyncFiles({ libraryId, paths: ['/photos/test.jpg'], progressCounter: 1, totalAssets: 1 });
+
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(
+          expect.objectContaining({ name: JobName.SharedSpaceFaceMatch }),
+        );
+      });
+
+      it('should not queue face match jobs when linked space has face recognition disabled', async () => {
+        const libraryId = newUuid();
+        const library = factory.library({ id: libraryId });
+
+        mocks.library.get.mockResolvedValue(library);
+        mocks.asset.createAll.mockResolvedValue([{ id: newUuid() } as any]);
+        mocks.sharedSpace.getSpacesLinkedToLibrary.mockResolvedValue([
+          { spaceId: newUuid(), libraryId, addedById: null, createdAt: newDate(), faceRecognitionEnabled: false },
+        ]);
+
+        await sut.handleSyncFiles({ libraryId, paths: ['/photos/test.jpg'], progressCounter: 1, totalAssets: 1 });
+
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(
+          expect.objectContaining({ name: JobName.SharedSpaceFaceMatch }),
+        );
+      });
     });
   });
 

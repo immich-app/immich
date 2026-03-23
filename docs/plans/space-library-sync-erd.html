@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space-Library Sync - Entity Relationships</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        background: #0d1117;
+        color: #c9d1d9;
+        padding: 40px;
+        min-height: 100vh;
+      }
+      h1 {
+        text-align: center;
+        font-size: 1.4rem;
+        color: #58a6ff;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      .subtitle {
+        text-align: center;
+        color: #8b949e;
+        font-size: 0.85rem;
+        margin-bottom: 40px;
+      }
+      .diagram {
+        position: relative;
+        width: 1400px;
+        height: 900px;
+        margin: 0 auto;
+      }
+      .table-card {
+        position: absolute;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        min-width: 220px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        z-index: 2;
+      }
+      .table-card.new-table {
+        border-color: #f0883e;
+        box-shadow: 0 4px 12px rgba(240, 136, 62, 0.2);
+      }
+      .table-header {
+        background: #21262d;
+        padding: 10px 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #f0f6fc;
+        border-bottom: 1px solid #30363d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .table-card.new-table .table-header {
+        background: #2d1a0e;
+        color: #f0883e;
+      }
+      .badge {
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .badge-new {
+        background: #f0883e;
+        color: #0d1117;
+      }
+      .badge-existing {
+        background: #30363d;
+        color: #8b949e;
+      }
+      .columns {
+        padding: 8px 0;
+      }
+      .col-row {
+        padding: 4px 14px;
+        font-size: 0.78rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .col-row:hover {
+        background: #1c2128;
+      }
+      .col-name {
+        color: #c9d1d9;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .col-type {
+        color: #7d8590;
+        font-size: 0.72rem;
+        white-space: nowrap;
+      }
+      .pk {
+        color: #f0c000;
+      }
+      .fk {
+        color: #58a6ff;
+      }
+      .icon {
+        font-size: 0.7rem;
+      }
+
+      svg.lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .rel-line {
+        fill: none;
+        stroke-width: 1.5;
+      }
+      .rel-existing {
+        stroke: #484f58;
+      }
+      .rel-new {
+        stroke: #f0883e;
+        stroke-dasharray: 6 4;
+      }
+
+      .rel-label {
+        font-family: 'SF Mono', monospace;
+        font-size: 11px;
+        fill: #8b949e;
+      }
+      .rel-label.new-label {
+        fill: #f0883e;
+      }
+      .rel-label-bg {
+        fill: #0d1117;
+        opacity: 0.85;
+      }
+
+      .legend {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 0.75rem;
+        z-index: 3;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 0;
+      }
+      .legend-line {
+        width: 30px;
+        height: 2px;
+      }
+      .legend-line.solid {
+        background: #484f58;
+      }
+      .legend-line.dashed {
+        background: repeating-linear-gradient(90deg, #f0883e 0, #f0883e 6px, transparent 6px, transparent 10px);
+      }
+      .legend-box {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid;
+      }
+      .legend-box.existing {
+        border-color: #30363d;
+        background: #161b22;
+      }
+      .legend-box.new {
+        border-color: #f0883e;
+        background: #2d1a0e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Space-Library Sync - Entity Relationships</h1>
+    <p class="subtitle">Existing tables in gray &middot; Proposed new table in orange</p>
+
+    <div class="diagram">
+      <!-- SVG relationship lines (behind cards) -->
+      <svg class="lines" viewBox="0 0 1400 900">
+        <defs>
+          <marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#484f58" />
+          </marker>
+          <marker id="arrow-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#f0883e" />
+          </marker>
+        </defs>
+
+        <!-- user.id → library.ownerId -->
+        <path class="rel-line rel-existing" d="M 200,200 L 200,290" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="142" y="237" width="55" height="16" rx="3" />
+        <text class="rel-label" x="148" y="249">ownerId</text>
+
+        <!-- user.id → asset.ownerId -->
+        <path class="rel-line rel-existing" d="M 340,170 L 540,170 L 540,290" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="408" y="157" width="55" height="16" rx="3" />
+        <text class="rel-label" x="414" y="169">ownerId</text>
+
+        <!-- library.id → asset.libraryId -->
+        <path class="rel-line rel-existing" d="M 320,390 L 470,390" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="362" y="377" width="55" height="16" rx="3" />
+        <text class="rel-label" x="368" y="389">libraryId</text>
+
+        <!-- user.id → shared_space.createdById -->
+        <path class="rel-line rel-existing" d="M 340,110 L 860,110 L 860,170" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="548" y="97" width="72" height="16" rx="3" />
+        <text class="rel-label" x="554" y="109">createdById</text>
+
+        <!-- user.id → shared_space_member.userId -->
+        <path class="rel-line rel-existing" d="M 340,140 L 1140,140 L 1140,290" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="1148" y="210" width="42" height="16" rx="3" />
+        <text class="rel-label" x="1154" y="222">userId</text>
+
+        <!-- shared_space.id → shared_space_member.spaceId -->
+        <path class="rel-line rel-existing" d="M 1020,310 L 1060,310 L 1060,290" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="1023" y="283" width="50" height="16" rx="3" />
+        <text class="rel-label" x="1029" y="295">spaceId</text>
+
+        <!-- shared_space.id → shared_space_asset.spaceId -->
+        <path class="rel-line rel-existing" d="M 860,390 L 860,530" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="868" y="457" width="50" height="16" rx="3" />
+        <text class="rel-label" x="874" y="469">spaceId</text>
+
+        <!-- asset.id → shared_space_asset.assetId -->
+        <path class="rel-line rel-existing" d="M 680,500 L 680,580 L 770,580" marker-end="url(#arrow-gray)" />
+        <rect class="rel-label-bg" x="695" y="572" width="50" height="16" rx="3" />
+        <text class="rel-label" x="701" y="584">assetId</text>
+
+        <!-- NEW: shared_space.id → shared_space_library.spaceId -->
+        <path class="rel-line rel-new" d="M 920,390 L 920,530 L 460,530 L 460,700" marker-end="url(#arrow-orange)" />
+        <rect class="rel-label-bg" x="690" y="518" width="50" height="16" rx="3" />
+        <text class="rel-label new-label" x="696" y="530">spaceId</text>
+
+        <!-- NEW: library.id → shared_space_library.libraryId -->
+        <path class="rel-line rel-new" d="M 200,510 L 200,740 L 340,740" marker-end="url(#arrow-orange)" />
+        <rect class="rel-label-bg" x="228" y="732" width="55" height="16" rx="3" />
+        <text class="rel-label new-label" x="234" y="744">libraryId</text>
+      </svg>
+
+      <!-- ============ TABLE CARDS ============ -->
+
+      <!-- user (top-left) -->
+      <div class="table-card" style="top: 60px; left: 60px; width: 280px">
+        <div class="table-header">user <span class="badge badge-existing">existing</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span> id</span><span class="col-type">uuid</span>
+          </div>
+          <div class="col-row"><span class="col-name">email</span><span class="col-type">varchar, unique</span></div>
+          <div class="col-row"><span class="col-name">name</span><span class="col-type">varchar</span></div>
+          <div class="col-row"><span class="col-name">isAdmin</span><span class="col-type">boolean</span></div>
+          <div class="col-row"><span class="col-name">status</span><span class="col-type">varchar</span></div>
+        </div>
+      </div>
+
+      <!-- library (left, row 2) -->
+      <div class="table-card" style="top: 290px; left: 40px; width: 280px">
+        <div class="table-header">library <span class="badge badge-existing">existing</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span> id</span><span class="col-type">uuid</span>
+          </div>
+          <div class="col-row"><span class="col-name">name</span><span class="col-type">text</span></div>
+          <div class="col-row">
+            <span class="col-name"><span class="fk icon">FK</span> ownerId</span
+            ><span class="col-type">uuid &rarr; user</span>
+          </div>
+          <div class="col-row"><span class="col-name">importPaths</span><span class="col-type">text[]</span></div>
+          <div class="col-row"><span class="col-name">exclusionPatterns</span><span class="col-type">text[]</span></div>
+          <div class="col-row"><span class="col-name">refreshedAt</span><span class="col-type">timestamptz</span></div>
+        </div>
+      </div>
+
+      <!-- asset (center, row 2) -->
+      <div class="table-card" style="top: 290px; left: 470px; width: 260px">
+        <div class="table-header">asset <span class="badge badge-existing">existing</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span> id</span><span class="col-type">uuid</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="fk icon">FK</span> ownerId</span
+            ><span class="col-type">uuid &rarr; user</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="fk icon">FK</span> libraryId</span
+            ><span class="col-type">uuid? &rarr; library</span>
+          </div>
+          <div class="col-row"><span class="col-name">originalPath</span><span class="col-type">varchar</span></div>
+          <div class="col-row"><span class="col-name">type</span><span class="col-type">enum (image|video)</span></div>
+          <div class="col-row"><span class="col-name">isExternal</span><span class="col-type">boolean</span></div>
+          <div class="col-row"><span class="col-name">visibility</span><span class="col-type">enum</span></div>
+          <div class="col-row"><span class="col-name">checksum</span><span class="col-type">bytea (sha1)</span></div>
+        </div>
+      </div>
+
+      <!-- shared_space (right, row 1) -->
+      <div class="table-card" style="top: 170px; left: 780px; width: 240px">
+        <div class="table-header">shared_space <span class="badge badge-existing">existing</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span> id</span><span class="col-type">uuid</span>
+          </div>
+          <div class="col-row"><span class="col-name">name</span><span class="col-type">text</span></div>
+          <div class="col-row">
+            <span class="col-name"><span class="fk icon">FK</span> createdById</span
+            ><span class="col-type">uuid &rarr; user</span>
+          </div>
+          <div class="col-row"><span class="col-name">color</span><span class="col-type">varchar(20)</span></div>
+          <div class="col-row">
+            <span class="col-name">faceRecognitionEnabled</span><span class="col-type">boolean</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name">lastActivityAt</span><span class="col-type">timestamptz</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- shared_space_member (far right, row 2) -->
+      <div class="table-card" style="top: 290px; left: 1060px; width: 280px">
+        <div class="table-header">shared_space_member <span class="badge badge-existing">existing</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span><span class="fk icon">FK</span> spaceId</span
+            ><span class="col-type">uuid &rarr; shared_space</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span><span class="fk icon">FK</span> userId</span
+            ><span class="col-type">uuid &rarr; user</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name">role</span><span class="col-type">owner | editor | viewer</span>
+          </div>
+          <div class="col-row"><span class="col-name">showInTimeline</span><span class="col-type">boolean</span></div>
+          <div class="col-row"><span class="col-name">lastViewedAt</span><span class="col-type">timestamptz</span></div>
+        </div>
+      </div>
+
+      <!-- shared_space_asset (center-right, row 3) -->
+      <div class="table-card" style="top: 550px; left: 770px; width: 280px">
+        <div class="table-header">shared_space_asset <span class="badge badge-existing">existing</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span><span class="fk icon">FK</span> spaceId</span
+            ><span class="col-type">uuid &rarr; shared_space</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span><span class="fk icon">FK</span> assetId</span
+            ><span class="col-type">uuid &rarr; asset</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="fk icon">FK</span> addedById</span
+            ><span class="col-type">uuid? &rarr; user</span>
+          </div>
+          <div class="col-row"><span class="col-name">addedAt</span><span class="col-type">timestamptz</span></div>
+        </div>
+      </div>
+
+      <!-- NEW: shared_space_library (left, row 3) -->
+      <div class="table-card new-table" style="top: 700px; left: 340px; width: 300px">
+        <div class="table-header">shared_space_library <span class="badge badge-new">new</span></div>
+        <div class="columns">
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span><span class="fk icon">FK</span> spaceId</span
+            ><span class="col-type">uuid &rarr; shared_space</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="pk icon">PK</span><span class="fk icon">FK</span> libraryId</span
+            ><span class="col-type">uuid &rarr; library</span>
+          </div>
+          <div class="col-row">
+            <span class="col-name"><span class="fk icon">FK</span> addedById</span
+            ><span class="col-type">uuid? &rarr; user</span>
+          </div>
+          <div class="col-row"><span class="col-name">syncedAt</span><span class="col-type">timestamptz</span></div>
+          <div class="col-row"><span class="col-name">createdAt</span><span class="col-type">timestamptz</span></div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-box existing"></div>
+          Existing table
+        </div>
+        <div class="legend-item">
+          <div class="legend-box new"></div>
+          Proposed new table
+        </div>
+        <div class="legend-item">
+          <div class="legend-line solid"></div>
+          Existing relationship
+        </div>
+        <div class="legend-item">
+          <div class="legend-line dashed"></div>
+          New relationship
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

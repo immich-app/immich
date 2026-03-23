@@ -368,6 +368,56 @@ describe('space asset access via checkOtherAccess', () => {
   });
 });
 
+describe('library-linked space asset access', () => {
+  it('should grant AssetRead access when asset is in a library linked to a space the user is a member of', async () => {
+    const accessMock = newAccessRepositoryMock();
+    const auth = makeAuth();
+    const assetId = newUuid();
+
+    accessMock.asset.checkSpaceAccess.mockResolvedValue(new Set([assetId]));
+
+    const result = await checkAccess(accessMock as any, {
+      auth,
+      permission: Permission.AssetRead,
+      ids: new Set([assetId]),
+    });
+
+    expect(result).toEqual(new Set([assetId]));
+  });
+
+  it('should grant AssetView access for library-linked assets', async () => {
+    const accessMock = newAccessRepositoryMock();
+    const auth = makeAuth();
+    const assetId = newUuid();
+
+    accessMock.asset.checkSpaceAccess.mockResolvedValue(new Set([assetId]));
+
+    const result = await checkAccess(accessMock as any, {
+      auth,
+      permission: Permission.AssetView,
+      ids: new Set([assetId]),
+    });
+
+    expect(result).toEqual(new Set([assetId]));
+  });
+
+  it('should grant AssetDownload access for library-linked assets', async () => {
+    const accessMock = newAccessRepositoryMock();
+    const auth = makeAuth();
+    const assetId = newUuid();
+
+    accessMock.asset.checkSpaceAccess.mockResolvedValue(new Set([assetId]));
+
+    const result = await checkAccess(accessMock as any, {
+      auth,
+      permission: Permission.AssetDownload,
+      ids: new Set([assetId]),
+    });
+
+    expect(result).toEqual(new Set([assetId]));
+  });
+});
+
 describe('checkOtherAccess default case', () => {
   it('should return an empty set for an unhandled permission', async () => {
     const accessMock = newAccessRepositoryMock();

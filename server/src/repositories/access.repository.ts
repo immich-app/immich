@@ -221,14 +221,37 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('shared_space_asset')
-      .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_asset.spaceId')
-      .innerJoin('asset', (join) =>
-        join.onRef('asset.id', '=', 'shared_space_asset.assetId').on('asset.deletedAt', 'is', null),
+      .selectFrom(
+        this.db
+          .selectFrom('shared_space_asset')
+          .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_asset.spaceId')
+          .innerJoin('asset', (join) =>
+            join.onRef('asset.id', '=', 'shared_space_asset.assetId').on('asset.deletedAt', 'is', null),
+          )
+          .select(['asset.id', 'asset.livePhotoVideoId'])
+          .where('shared_space_member.userId', '=', userId)
+          .where((eb) =>
+            eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]),
+          )
+          .union(
+            this.db
+              .selectFrom('shared_space_library')
+              .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_library.spaceId')
+              .innerJoin('asset', (join) =>
+                join
+                  .onRef('asset.libraryId', '=', 'shared_space_library.libraryId')
+                  .on('asset.deletedAt', 'is', null)
+                  .on('asset.isOffline', '=', false),
+              )
+              .select(['asset.id', 'asset.livePhotoVideoId'])
+              .where('shared_space_member.userId', '=', userId)
+              .where((eb) =>
+                eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]),
+              ),
+          )
+          .as('combined'),
       )
-      .select(['asset.id', 'asset.livePhotoVideoId'])
-      .where('shared_space_member.userId', '=', userId)
-      .where((eb) => eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]))
+      .select(['combined.id', 'combined.livePhotoVideoId'])
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();
@@ -252,15 +275,39 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('shared_space_asset')
-      .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_asset.spaceId')
-      .innerJoin('asset', (join) =>
-        join.onRef('asset.id', '=', 'shared_space_asset.assetId').on('asset.deletedAt', 'is', null),
+      .selectFrom(
+        this.db
+          .selectFrom('shared_space_asset')
+          .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_asset.spaceId')
+          .innerJoin('asset', (join) =>
+            join.onRef('asset.id', '=', 'shared_space_asset.assetId').on('asset.deletedAt', 'is', null),
+          )
+          .select(['asset.id', 'asset.livePhotoVideoId'])
+          .where('shared_space_member.userId', '=', userId)
+          .where((eb) =>
+            eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]),
+          )
+          .where('shared_space_member.role', 'in', ['editor', 'owner'])
+          .union(
+            this.db
+              .selectFrom('shared_space_library')
+              .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_library.spaceId')
+              .innerJoin('asset', (join) =>
+                join
+                  .onRef('asset.libraryId', '=', 'shared_space_library.libraryId')
+                  .on('asset.deletedAt', 'is', null)
+                  .on('asset.isOffline', '=', false),
+              )
+              .select(['asset.id', 'asset.livePhotoVideoId'])
+              .where('shared_space_member.userId', '=', userId)
+              .where((eb) =>
+                eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]),
+              )
+              .where('shared_space_member.role', 'in', ['editor', 'owner']),
+          )
+          .as('combined'),
       )
-      .select(['asset.id', 'asset.livePhotoVideoId'])
-      .where('shared_space_member.userId', '=', userId)
-      .where((eb) => eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]))
-      .where('shared_space_member.role', 'in', ['editor', 'owner'])
+      .select(['combined.id', 'combined.livePhotoVideoId'])
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();

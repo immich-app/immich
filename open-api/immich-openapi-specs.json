@@ -12324,6 +12324,122 @@
         "x-immich-state": "Beta"
       }
     },
+    "/shared-spaces/{id}/libraries": {
+      "put": {
+        "description": "Link an external library so its assets appear in the space. Requires admin and space editor/owner.",
+        "operationId": "linkLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedSpaceLibraryLinkDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Link a library to a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceLibrary.create",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/shared-spaces/{id}/libraries/{libraryId}": {
+      "delete": {
+        "description": "Remove a library link. Library assets will no longer appear in the space.",
+        "operationId": "unlinkLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "libraryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Unlink a library from a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceLibrary.delete",
+        "x-immich-state": "Beta"
+      }
+    },
     "/shared-spaces/{id}/map-markers": {
       "get": {
         "description": "Retrieve map markers for geotagged assets in a shared space.",
@@ -20643,7 +20759,8 @@
           "StorageBackendMigrationSingle",
           "SharedSpaceFaceMatch",
           "SharedSpaceFaceMatchAll",
-          "SharedSpacePersonThumbnail"
+          "SharedSpacePersonThumbnail",
+          "SharedSpaceLibraryFaceSync"
         ],
         "type": "string"
       },
@@ -22223,6 +22340,8 @@
           "sharedSpaceAsset.create",
           "sharedSpaceAsset.read",
           "sharedSpaceAsset.delete",
+          "sharedSpaceLibrary.create",
+          "sharedSpaceLibrary.delete",
           "userGroup.create",
           "userGroup.read",
           "userGroup.update",
@@ -24678,6 +24797,43 @@
         ],
         "type": "object"
       },
+      "SharedSpaceLibraryLinkDto": {
+        "properties": {
+          "libraryId": {
+            "description": "Library ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "libraryId"
+        ],
+        "type": "object"
+      },
+      "SharedSpaceLinkedLibraryDto": {
+        "properties": {
+          "addedById": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "libraryId": {
+            "type": "string"
+          },
+          "libraryName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "libraryId",
+          "libraryName"
+        ],
+        "type": "object"
+      },
       "SharedSpaceMemberCreateDto": {
         "properties": {
           "role": {
@@ -24987,6 +25143,12 @@
             "description": "When the current user last viewed this space",
             "nullable": true,
             "type": "string"
+          },
+          "linkedLibraries": {
+            "items": {
+              "$ref": "#/components/schemas/SharedSpaceLinkedLibraryDto"
+            },
+            "type": "array"
           },
           "memberCount": {
             "description": "Number of members",

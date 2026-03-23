@@ -244,6 +244,11 @@ export interface ISharedSpaceFaceMatchAllJob extends IBaseJob {
   spaceId: string;
 }
 
+export interface ISharedSpaceLibraryFaceSyncJob extends IBaseJob {
+  spaceId: string;
+  libraryId: string;
+}
+
 export type EmailImageAttachment = {
   filename: string;
   cid: string;
@@ -440,7 +445,8 @@ export type JobItem =
   // Shared Space Face Recognition
   | { name: JobName.SharedSpaceFaceMatch; data: ISharedSpaceFaceMatchJob }
   | { name: JobName.SharedSpaceFaceMatchAll; data: ISharedSpaceFaceMatchAllJob }
-  | { name: JobName.SharedSpacePersonThumbnail; data: IEntityJob };
+  | { name: JobName.SharedSpacePersonThumbnail; data: IEntityJob }
+  | { name: JobName.SharedSpaceLibraryFaceSync; data: ISharedSpaceLibraryFaceSyncJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

@@ -23,6 +23,7 @@ class SharedSpaceResponseDto {
     this.lastActivityAt,
     this.lastContributor,
     this.lastViewedAt,
+    this.linkedLibraries = const [],
     this.memberCount,
     this.members = const [],
     required this.name,
@@ -81,6 +82,8 @@ class SharedSpaceResponseDto {
   /// When the current user last viewed this space
   String? lastViewedAt;
 
+  List<SharedSpaceLinkedLibraryDto> linkedLibraries;
+
   /// Number of members
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -132,6 +135,7 @@ class SharedSpaceResponseDto {
     other.lastActivityAt == lastActivityAt &&
     other.lastContributor == lastContributor &&
     other.lastViewedAt == lastViewedAt &&
+    _deepEquality.equals(other.linkedLibraries, linkedLibraries) &&
     other.memberCount == memberCount &&
     _deepEquality.equals(other.members, members) &&
     other.name == name &&
@@ -155,6 +159,7 @@ class SharedSpaceResponseDto {
     (lastActivityAt == null ? 0 : lastActivityAt!.hashCode) +
     (lastContributor == null ? 0 : lastContributor!.hashCode) +
     (lastViewedAt == null ? 0 : lastViewedAt!.hashCode) +
+    (linkedLibraries.hashCode) +
     (memberCount == null ? 0 : memberCount!.hashCode) +
     (members.hashCode) +
     (name.hashCode) +
@@ -166,7 +171,7 @@ class SharedSpaceResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SharedSpaceResponseDto[assetCount=$assetCount, color=$color, createdAt=$createdAt, createdById=$createdById, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, id=$id, lastActivityAt=$lastActivityAt, lastContributor=$lastContributor, lastViewedAt=$lastViewedAt, memberCount=$memberCount, members=$members, name=$name, newAssetCount=$newAssetCount, recentAssetIds=$recentAssetIds, recentAssetThumbhashes=$recentAssetThumbhashes, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY, updatedAt=$updatedAt]';
+  String toString() => 'SharedSpaceResponseDto[assetCount=$assetCount, color=$color, createdAt=$createdAt, createdById=$createdById, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, id=$id, lastActivityAt=$lastActivityAt, lastContributor=$lastContributor, lastViewedAt=$lastViewedAt, linkedLibraries=$linkedLibraries, memberCount=$memberCount, members=$members, name=$name, newAssetCount=$newAssetCount, recentAssetIds=$recentAssetIds, recentAssetThumbhashes=$recentAssetThumbhashes, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -208,6 +213,7 @@ class SharedSpaceResponseDto {
     } else {
     //  json[r'lastViewedAt'] = null;
     }
+      json[r'linkedLibraries'] = this.linkedLibraries;
     if (this.memberCount != null) {
       json[r'memberCount'] = this.memberCount;
     } else {
@@ -257,6 +263,7 @@ class SharedSpaceResponseDto {
         lastActivityAt: mapValueOfType<String>(json, r'lastActivityAt'),
         lastContributor: SharedSpaceResponseDtoLastContributor.fromJson(json[r'lastContributor']),
         lastViewedAt: mapValueOfType<String>(json, r'lastViewedAt'),
+        linkedLibraries: SharedSpaceLinkedLibraryDto.listFromJson(json[r'linkedLibraries']),
         memberCount: json[r'memberCount'] == null
             ? null
             : num.parse('${json[r'memberCount']}'),

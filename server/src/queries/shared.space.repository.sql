@@ -101,17 +101,66 @@ where
 select
   count(*) as "count"
 from
-  "shared_space_asset"
-  inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
-where
-  "shared_space_asset"."spaceId" = $1
-  and "asset"."deletedAt" is null
+  (
+    select
+      "asset"."id"
+    from
+      "shared_space_asset"
+      inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+    where
+      "shared_space_asset"."spaceId" = $1
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $2
+    union
+    select
+      "asset"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $3
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $4
+  ) as "combined"
 
 -- SharedSpaceRepository.removeAssets
 delete from "shared_space_asset"
 where
   "spaceId" = $1
   and "assetId" in ($2)
+
+-- SharedSpaceRepository.removeLibrary
+delete from "shared_space_library"
+where
+  "spaceId" = $1
+  and "libraryId" = $2
+
+-- SharedSpaceRepository.getLinkedLibraries
+select
+  *
+from
+  "shared_space_library"
+where
+  "spaceId" = $1
+
+-- SharedSpaceRepository.getSpacesLinkedToLibrary
+select
+  "shared_space_library".*,
+  "shared_space"."faceRecognitionEnabled"
+from
+  "shared_space_library"
+  inner join "shared_space" on "shared_space"."id" = "shared_space_library"."spaceId"
+where
+  "shared_space_library"."libraryId" = $1
+
+-- SharedSpaceRepository.hasLibraryLink
+select
+  "spaceId"
+from
+  "shared_space_library"
+where
+  "spaceId" = $1
+  and "libraryId" = $2
 
 -- SharedSpaceRepository.getMostRecentAssetId
 select
@@ -129,18 +178,38 @@ limit
 
 -- SharedSpaceRepository.getRecentAssets
 select
-  "asset"."id",
-  "asset"."thumbhash"
+  "combined"."id",
+  "combined"."thumbhash"
 from
-  "shared_space_asset"
-  inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
-where
-  "shared_space_asset"."spaceId" = $1
-  and "asset"."deletedAt" is null
+  (
+    select
+      "asset"."id",
+      "asset"."thumbhash",
+      "asset"."fileCreatedAt"
+    from
+      "shared_space_asset"
+      inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+    where
+      "shared_space_asset"."spaceId" = $1
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $2
+    union
+    select
+      "asset"."id",
+      "asset"."thumbhash",
+      "asset"."fileCreatedAt"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $3
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $4
+  ) as "combined"
 order by
-  "shared_space_asset"."addedAt" desc
+  "combined"."fileCreatedAt" desc
 limit
-  $2
+  $5
 
 -- SharedSpaceRepository.getLastAssetAddedAt
 select
@@ -154,10 +223,29 @@ where
 select
   count(*) as "count"
 from
-  "shared_space_asset"
-where
-  "spaceId" = $1
-  and "addedAt" > $2
+  (
+    select
+      "asset"."id"
+    from
+      "shared_space_asset"
+      inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+    where
+      "shared_space_asset"."spaceId" = $1
+      and "shared_space_asset"."addedAt" > $2
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $3
+    union
+    select
+      "asset"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $4
+      and "asset"."createdAt" > $5
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $6
+  ) as "combined"
 
 -- SharedSpaceRepository.getLastContributor
 select
@@ -227,13 +315,31 @@ select
   "asset_exif"."state",
   "asset_exif"."country"
 from
-  "shared_space_asset"
-  inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+  (
+    select
+      "asset"."id"
+    from
+      "shared_space_asset"
+      inner join "asset" on "asset"."id" = "shared_space_asset"."assetId"
+    where
+      "shared_space_asset"."spaceId" = $1
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $2
+    union
+    select
+      "asset"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $3
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $4
+  ) as "combined"
+  inner join "asset" on "asset"."id" = "combined"."id"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "shared_space_asset"."spaceId" = $1
-  and "asset"."deletedAt" is null
-  and "asset_exif"."latitude" is not null
+  "asset_exif"."latitude" is not null
   and "asset_exif"."longitude" is not null
 
 -- SharedSpaceRepository.getActivities
@@ -417,45 +523,109 @@ where
 
 -- SharedSpaceRepository.isAssetInSpace
 select
-  "assetId"
+  "combined"."id"
 from
-  "shared_space_asset"
-where
-  "spaceId" = $1
-  and "assetId" = $2
+  (
+    select
+      "assetId" as "id"
+    from
+      "shared_space_asset"
+    where
+      "spaceId" = $1
+      and "assetId" = $2
+    union
+    select
+      "asset"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $3
+      and "asset"."id" = $4
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $5
+  ) as "combined"
 limit
-  $3
+  $6
 
 -- SharedSpaceRepository.isFaceInSpace
 select
-  "asset_face"."id"
+  "combined"."id"
 from
-  "shared_space_asset"
-  inner join "asset_face" on "asset_face"."assetId" = "shared_space_asset"."assetId"
-where
-  "shared_space_asset"."spaceId" = $1
-  and "asset_face"."id" = $2
-  and "asset_face"."deletedAt" is null
+  (
+    select
+      "asset_face"."id"
+    from
+      "shared_space_asset"
+      inner join "asset_face" on "asset_face"."assetId" = "shared_space_asset"."assetId"
+    where
+      "shared_space_asset"."spaceId" = $1
+      and "asset_face"."id" = $2
+      and "asset_face"."deletedAt" is null
+    union
+    select
+      "asset_face"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+      inner join "asset_face" on "asset_face"."assetId" = "asset"."id"
+    where
+      "shared_space_library"."spaceId" = $3
+      and "asset_face"."id" = $4
+      and "asset_face"."deletedAt" is null
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $5
+  ) as "combined"
 limit
-  $3
+  $6
 
 -- SharedSpaceRepository.getAssetIdsInSpace
 select
-  "assetId"
+  "combined"."id" as "assetId"
 from
-  "shared_space_asset"
-where
-  "spaceId" = $1
+  (
+    select
+      "assetId" as "id"
+    from
+      "shared_space_asset"
+    where
+      "spaceId" = $1
+    union
+    select
+      "asset"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $2
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $3
+  ) as "combined"
 
 -- SharedSpaceRepository.getSpaceIdsForAsset
 select
-  "shared_space_asset"."spaceId"
+  "combined"."spaceId"
 from
-  "shared_space_asset"
-  inner join "shared_space" on "shared_space"."id" = "shared_space_asset"."spaceId"
-where
-  "shared_space_asset"."assetId" = $1
-  and "shared_space"."faceRecognitionEnabled" = $2
+  (
+    select
+      "shared_space_asset"."spaceId"
+    from
+      "shared_space_asset"
+      inner join "shared_space" on "shared_space"."id" = "shared_space_asset"."spaceId"
+    where
+      "shared_space_asset"."assetId" = $1
+      and "shared_space"."faceRecognitionEnabled" = $2
+    union
+    select
+      "shared_space_library"."spaceId"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+      inner join "shared_space" on "shared_space"."id" = "shared_space_library"."spaceId"
+    where
+      "asset"."id" = $3
+      and "shared_space"."faceRecognitionEnabled" = $4
+  ) as "combined"
 
 -- SharedSpaceRepository.isPersonFaceAssigned
 select

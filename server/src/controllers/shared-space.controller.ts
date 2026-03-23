@@ -30,6 +30,7 @@ import {
   SharedSpaceAssetAddDto,
   SharedSpaceAssetRemoveDto,
   SharedSpaceCreateDto,
+  SharedSpaceLibraryLinkDto,
   SharedSpaceMemberCreateDto,
   SharedSpaceMemberResponseDto,
   SharedSpaceMemberTimelineDto,
@@ -384,5 +385,37 @@ export class SharedSpaceController {
     @Param('personId') personId: string,
   ): Promise<string[]> {
     return this.service.getSpacePersonAssets(auth, id, personId);
+  }
+
+  @Put(':id/libraries')
+  @Authenticated({ permission: Permission.SharedSpaceLibraryCreate })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Link a library to a shared space',
+    description: 'Link an external library so its assets appear in the space. Requires admin and space editor/owner.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  linkLibrary(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: SharedSpaceLibraryLinkDto,
+  ): Promise<void> {
+    return this.service.linkLibrary(auth, id, dto);
+  }
+
+  @Delete(':id/libraries/:libraryId')
+  @Authenticated({ permission: Permission.SharedSpaceLibraryDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Unlink a library from a shared space',
+    description: 'Remove a library link. Library assets will no longer appear in the space.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  unlinkLibrary(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('libraryId') libraryId: string,
+  ): Promise<void> {
+    return this.service.unlinkLibrary(auth, id, libraryId);
   }
 }
