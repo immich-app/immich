@@ -27,7 +27,11 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   late final ScrollController _scrollController;
   late TimelineService _timelineService;
 
-  bool _loading = false;
+  /// Tracks the currently running buffering operation to avoid concurrent loads.
+  Future<void>? _loadTask;
+  /// True when _loadTask is already awaited. We only need one follow-up caller to await the task to
+  /// reflect to most recent state if there were further requests while _loadTask was running.
+  bool _isLoadTaskAwaited = false;
 
   /// Internal current index to track what asset filmstrip is currently displaying.
   /// This is in contrast to the currentIndex in provider. Differentiating the two
@@ -56,9 +60,9 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _timelineService = ref.read(timelineServiceProvider);
     final initialIndex = ref.read(assetViewerProvider).currentIndex;
     _currentIndex = ValueNotifier(initialIndex);
-    _ensureBuffered();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _ensureBuffered();
       _scrollToCurrentIndex(animated: false);
       _scrollController.position.isScrollingNotifier.addListener(_onScrollingChanged);
     });
@@ -77,28 +81,47 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
 
   /// Ensures the assets around current index are loaded.
   Future<void> _ensureBuffered() async {
-    if (_loading || _visibleCount == 0) return;
+    if (_visibleCount == 0) return;
+
+    // Wait for any in-flight load to complete before starting a new one.
+    if (_loadTask != null) {
+      // We need only one caller to reflect the most recent state, the rest can be safely dropped.
+      if (_isLoadTaskAwaited) return;
+      _isLoadTaskAwaited = true;
+      try {
+        await _loadTask;
+      } finally {
+        _isLoadTaskAwaited = false;
+      }
+    }
+
     final idx = _currentIndex.value;
     final total = _timelineService.totalAssets;
 
-    // Start loading assets early by expanding the number of visible items.
+    // Check if the expanded region around the current index is already buffered.
+    // This helps to start buffering assets early before we reach uncached region.
     final triggerWindow = _visibleCount * 3;
     final startTriggerWindow = max(idx - triggerWindow ~/ 2, 0);
     final countTriggerWindow = min(triggerWindow, total - startTriggerWindow);
     if (_timelineService.hasRange(startTriggerWindow, countTriggerWindow)) return;
 
     // Load a larger buffer to reduce the frequency of loading during fast scrubbing.
-    final bufferWindow = _visibleCount * 6;
+    final bufferWindow = _visibleCount * 10;
     final start = max(idx - bufferWindow ~/ 2, 0);
     final count = min(bufferWindow, total - start);
 
-    _loading = true;
-    await _timelineService.loadAssets(start, count);
-    _loading = false;
+    final loadAssetsTask = _timelineService.loadAssets(start, count);
 
-    // We use placeholders for assets that are not cached in timeline when building filmstrip item.
-    // This call will update the thumbnails in items once the assets are actually loaded.
-    if (mounted) setState(() {});
+    // After loading the assets, follow up with further actions.
+    // We only want to allow reentry to _ensureBuffered once all of those are completed,
+    // so we record the Future of those follow-up actions, which can then be awaited.
+    _loadTask = loadAssetsTask.whenComplete(() {
+      // We use placeholders for assets that are not cached in timeline when building filmstrip item.
+      // This call will update the thumbnails in items once the assets are actually loaded.
+      if (mounted) setState(() {});
+
+      _loadTask = null;
+    });    
   }
 
   /// Called when the provider's currentIndex changes.
@@ -185,8 +208,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (!_scrollController.hasClients) return;
     final offset = _scrollController.offset;
     final idx = (offset / (_itemExtent + _itemGap))
-        .round()
-        .clamp(0, _timelineService.totalAssets - 1);
+      .round().clamp(0, _timelineService.totalAssets - 1);
     // The scroll position didn't move enough to change the centered index, ignore.
     if (idx == _currentIndex.value) return;
 
