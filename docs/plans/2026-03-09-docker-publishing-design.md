@@ -1,59 +1,83 @@
-# Docker Publishing Workflow Design
+# Docker Publishing Workflow
 
-## Goal
+## Overview
 
-Re-enable Docker image publishing for the Noodle Gallery fork so users can pull pre-built images from GHCR.
+The Release workflow (`.github/workflows/docker.yml`) builds and publishes multi-arch Docker images to GHCR on every push to `main` or via manual `workflow_dispatch`.
 
-## Design
+## Images
 
-### Trigger
+| Image               | Registry               | Platforms                    | Tags                                             |
+| ------------------- | ---------------------- | ---------------------------- | ------------------------------------------------ |
+| `gallery-server`    | `ghcr.io/open-noodle/` | `linux/amd64`, `linux/arm64` | `<version>`, `<major>`, `release`                |
+| `gallery-ml` (CPU)  | `ghcr.io/open-noodle/` | `linux/amd64`, `linux/arm64` | `<version>`, `<major>`, `release`                |
+| `gallery-ml` (CUDA) | `ghcr.io/open-noodle/` | `linux/amd64` only           | `<version>-cuda`, `<major>-cuda`, `release-cuda` |
 
-- `workflow_dispatch` with a required `version` input (e.g. `v2.5.6-noodle.1`)
-- Commented-out `push: branches: [main]` for easy future auto-publish
+CUDA stays amd64-only because the `nvidia/cuda` base image does not support ARM.
 
-### Images
+## How Multi-Arch Builds Work
 
-| Image                      | Registry               | Tags                            |
-| -------------------------- | ---------------------- | ------------------------------- |
-| `noodle-gallery-server`    | `ghcr.io/open-noodle/` | `<version>`, `latest`           |
-| `noodle-gallery-ml` (CPU)  | `ghcr.io/open-noodle/` | `<version>`, `latest`           |
-| `noodle-gallery-ml` (CUDA) | `ghcr.io/open-noodle/` | `<version>-cuda`, `latest-cuda` |
-
-When auto-publish is enabled later, pushes to main tag as `main` / `main-cuda` instead of a version.
-
-### Workflow structure
+The workflow uses the same pattern as upstream Immich: **per-platform native builds + manifest merge**.
 
 ```
-workflow_dispatch (input: version)
-  ├── build-server (builds & pushes server image)
-  └── build-ml (matrix: [cpu, cuda], builds & pushes ML images)
+version (compute next semver tag)
+  ├── build-server (matrix: amd64 on ubuntu-latest, arm64 on ubuntu-24.04-arm)
+  │     └── pushes single-platform image by digest, uploads digest as artifact
+  ├── build-ml (matrix: device × platform)
+  │     └── same pattern — pushes by digest, uploads artifact
+  ├── merge-server (downloads digests, creates multi-arch manifest with version tags)
+  ├── merge-ml (per device: downloads digests, creates multi-arch manifest)
+  └── tag (creates git tags: vX.Y.Z, vX, release)
 ```
 
-### Actions used
+### Why native runners instead of QEMU?
 
-- `docker/login-action` — login to GHCR with `GITHUB_TOKEN`
-- `docker/setup-buildx-action` — enable BuildKit
-- `docker/build-push-action` — build and push
+- `ubuntu-24.04-arm` runners are free for public repos
+- Native ARM builds are 3-4x faster than QEMU-emulated builds
+- Matches upstream Immich's approach
 
-No `immich-app/devtools` dependencies. No extra secrets.
+### Push-by-digest pattern
 
-### What gets removed from current workflow
+Each platform build uses `docker/build-push-action` with:
 
-- `immich-app/devtools` action references (token creation, pre-job, success-check)
-- Smart change-detection pre-job
-- Re-tag jobs
-- ROCm, OpenVINO, ARMNN, RKNN build variants
-- DockerHub push
+```
+outputs: type=image,"name=ghcr.io/open-noodle/gallery-server",push-by-digest=true,name-resolution=short,push=true
+```
 
-### Testing
+This pushes the image without any tag, returning only a digest (sha256 hash). The digest is saved as an empty file and uploaded as a GitHub Actions artifact. The merge job then downloads all digest artifacts and runs:
 
-Trigger with a test version (e.g. `v0.0.0-test.1`) to validate the workflow without creating a real release.
+```bash
+docker buildx imagetools create -t <tag1> -t <tag2> ... <image>@sha256:<digest1> <image>@sha256:<digest2>
+```
 
-## Implementation steps
+This creates a single manifest list (multi-arch image) pointing to both platform-specific images.
 
-1. Replace `.github/workflows/docker.yml` with self-contained workflow
-2. Re-enable the workflow: `gh workflow enable docker.yml`
-3. Push to a branch, trigger manually with `v0.0.0-test.1`
-4. Verify images appear at `ghcr.io/open-noodle/noodle-gallery-*`
-5. Update `docker/docker-compose.yml` to reference fork images
-6. Update `docker/example.env` with a note about fork versioning
+### Cache scoping
+
+Each platform gets its own GHA cache scope to prevent cross-platform cache pollution:
+
+- `scope=server-linux-amd64`, `scope=server-linux-arm64`
+- `scope=ml-cpu-linux-amd64`, `scope=ml-cpu-linux-arm64`
+- `scope=ml-cuda-linux-amd64`
+
+## Version Computation
+
+When triggered without an explicit version:
+
+1. Finds the latest `v*.*.*` git tag
+2. Checks the merge commit message and PR labels for bump type:
+   - `BREAKING CHANGE` -> major bump
+   - `feat` prefix or `changelog:feat` label -> minor bump
+   - Everything else -> patch bump
+3. Tags the resulting images and creates git tags after all builds succeed
+
+Manual override: pass a `version` input (e.g. `v4.9.0`) to `workflow_dispatch`.
+
+## Triggering a Test Build
+
+To test without affecting the release tag:
+
+```bash
+gh workflow run docker.yml --ref <branch> -f version=v0.0.0-test.1
+```
+
+This builds and pushes images tagged `v0.0.0-test.1` but also creates git tags, so use a throwaway version string.
