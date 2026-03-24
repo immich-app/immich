@@ -357,7 +357,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getMembers.mockResolvedValue([member, makeMemberResult()]);
       mocks.sharedSpace.getAssetCount.mockResolvedValue(5);
-      mocks.sharedSpace.getMostRecentAssetId.mockResolvedValue(void 0);
+
       mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
 
       const result = await sut.get(auth, space.id);
@@ -408,7 +408,6 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.get(auth, space.id);
 
       expect(result.thumbnailAssetId).toBe(thumbnailAssetId);
-      expect(mocks.sharedSpace.getMostRecentAssetId).not.toHaveBeenCalled();
     });
 
     it('should return null thumbnailAssetId when not explicitly set', async () => {
@@ -429,7 +428,6 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.get(auth, space.id);
 
       expect(result.thumbnailAssetId).toBeNull();
-      expect(mocks.sharedSpace.getMostRecentAssetId).not.toHaveBeenCalled();
     });
 
     it('should clear thumbnailAssetId when the cover asset has been deleted', async () => {
@@ -563,7 +561,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getMembers.mockResolvedValue([member]);
       mocks.sharedSpace.getAssetCount.mockResolvedValue(10);
-      mocks.sharedSpace.getMostRecentAssetId.mockResolvedValue(void 0);
+
       mocks.sharedSpace.getRecentAssets.mockResolvedValue(recentAssets);
 
       const result = await sut.get(auth, space.id);
@@ -582,7 +580,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getMembers.mockResolvedValue([member]);
       mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
-      mocks.sharedSpace.getMostRecentAssetId.mockResolvedValue(void 0);
+
       mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
 
       const result = await sut.get(auth, space.id);
@@ -611,7 +609,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getMembers.mockResolvedValue([member]);
       mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
-      mocks.sharedSpace.getMostRecentAssetId.mockResolvedValue(void 0);
+
       mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
 
       const result = await sut.get(auth, space.id);

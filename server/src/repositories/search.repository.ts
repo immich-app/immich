@@ -532,12 +532,20 @@ export class SearchRepository {
       .where(field, '!=', '')
       .$if(!!options?.spaceId, (qb) =>
         qb.where((eb) =>
-          eb.exists(
-            eb
-              .selectFrom('shared_space_asset')
-              .whereRef('shared_space_asset.assetId', '=', 'asset.id')
-              .where('shared_space_asset.spaceId', '=', asUuid(options!.spaceId!)),
-          ),
+          eb.or([
+            eb.exists(
+              eb
+                .selectFrom('shared_space_asset')
+                .whereRef('shared_space_asset.assetId', '=', 'asset.id')
+                .where('shared_space_asset.spaceId', '=', asUuid(options!.spaceId!)),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('shared_space_library')
+                .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
+                .where('shared_space_library.spaceId', '=', asUuid(options!.spaceId!)),
+            ),
+          ]),
         ),
       );
   }

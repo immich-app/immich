@@ -7,6 +7,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
+import { SharedSpaceRepository } from 'src/repositories/shared-space.repository';
 import { DB } from 'src/schema';
 import { SearchService } from 'src/services/search.service';
 import { newMediumService } from 'test/medium.factory';
@@ -23,6 +24,7 @@ const setup = (db?: Kysely<DB>) => {
       AssetRepository,
       DatabaseRepository,
       SearchRepository,
+      SharedSpaceRepository,
       PartnerRepository,
       PersonRepository,
     ],
@@ -87,6 +89,126 @@ describe(SearchService.name, () => {
       const result = await sut.searchStatistics(auth, { personIds: [person.id] });
 
       expect(result).toEqual({ total: 0 });
+    });
+  });
+
+  describe('library-linked space assets', () => {
+    it('should include library-linked assets in searchMetadata when filtering by spaceId', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+
+      // Create a library and an asset belonging to that library
+      const { library } = await ctx.newLibrary({ ownerId: owner.id });
+      const { asset: libraryAsset } = await ctx.newAsset({ ownerId: owner.id, libraryId: library.id });
+
+      // Create a space, add member, link the library
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: 'owner' });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id, role: 'viewer' });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id, addedById: owner.id });
+
+      const auth = factory.auth({ user: { id: member.id } });
+
+      const result = await sut.searchMetadata(auth, { spaceId: space.id });
+
+      expect(result.assets.items).toEqual([expect.objectContaining({ id: libraryAsset.id })]);
+    });
+
+    it('should include library-linked assets in searchLargeAssets when filtering by spaceId', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+
+      const { library } = await ctx.newLibrary({ ownerId: owner.id });
+      const { asset: libraryAsset } = await ctx.newAsset({ ownerId: owner.id, libraryId: library.id });
+      await ctx.newExif({ assetId: libraryAsset.id, fileSizeInByte: 999_999 });
+
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: 'owner' });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id, role: 'viewer' });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id, addedById: owner.id });
+
+      const auth = factory.auth({ user: { id: member.id } });
+
+      const result = await sut.searchLargeAssets(auth, { spaceId: space.id });
+
+      expect(result).toEqual([expect.objectContaining({ id: libraryAsset.id })]);
+    });
+
+    it('should include library-linked assets in getSearchSuggestions for countries', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+
+      const { library } = await ctx.newLibrary({ ownerId: owner.id });
+      const { asset: libraryAsset } = await ctx.newAsset({ ownerId: owner.id, libraryId: library.id });
+      await ctx.newExif({ assetId: libraryAsset.id, country: 'Germany' });
+
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: 'owner' });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id, role: 'viewer' });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id, addedById: owner.id });
+
+      const auth = factory.auth({ user: { id: member.id } });
+
+      const result = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.COUNTRY,
+        spaceId: space.id,
+        includeNull: false,
+      });
+
+      expect(result).toContain('Germany');
+    });
+
+    it('should include library-linked assets in getSearchSuggestions for cities', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+
+      const { library } = await ctx.newLibrary({ ownerId: owner.id });
+      const { asset: libraryAsset } = await ctx.newAsset({ ownerId: owner.id, libraryId: library.id });
+      await ctx.newExif({ assetId: libraryAsset.id, city: 'Berlin', country: 'Germany' });
+
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: 'owner' });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id, role: 'viewer' });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id, addedById: owner.id });
+
+      const auth = factory.auth({ user: { id: member.id } });
+
+      const result = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.CITY,
+        spaceId: space.id,
+        includeNull: false,
+      });
+
+      expect(result).toContain('Berlin');
+    });
+
+    it('should include library-linked assets in getSearchSuggestions for camera makes', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+
+      const { library } = await ctx.newLibrary({ ownerId: owner.id });
+      const { asset: libraryAsset } = await ctx.newAsset({ ownerId: owner.id, libraryId: library.id });
+      await ctx.newExif({ assetId: libraryAsset.id, make: 'Sony' });
+
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: 'owner' });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id, role: 'viewer' });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id, addedById: owner.id });
+
+      const auth = factory.auth({ user: { id: member.id } });
+
+      const result = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.CAMERA_MAKE,
+        spaceId: space.id,
+        includeNull: false,
+      });
+
+      expect(result).toContain('Sony');
     });
   });
 

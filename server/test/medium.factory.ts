@@ -323,6 +323,33 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { member: result, result };
   }
 
+  async newLibrary(dto: { ownerId: string; name?: string }) {
+    const result = await this.database
+      .insertInto('library')
+      .values({
+        name: dto.name ?? 'Test Library',
+        ownerId: dto.ownerId,
+        importPaths: ['/import'],
+        exclusionPatterns: [],
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return { library: result, result };
+  }
+
+  async newSharedSpaceLibrary(dto: { spaceId: string; libraryId: string; addedById?: string | null }) {
+    const result = await this.database
+      .insertInto('shared_space_library')
+      .values({
+        spaceId: dto.spaceId,
+        libraryId: dto.libraryId,
+        addedById: dto.addedById ?? null,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return { spaceLibrary: result, result };
+  }
+
   async newSharedSpaceAsset(dto: { spaceId: string; assetId: string; addedById?: string | null }) {
     const spaceAsset = {
       spaceId: dto.spaceId,

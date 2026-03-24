@@ -85,6 +85,39 @@ Generated 2026-03-23 from codebase analysis.
 | Add assets    | `POST /shared-spaces/:id/assets`   | SharedSpaceAssetCreate (editor) | N      | Y      | Y     | N          |
 | Remove assets | `DELETE /shared-spaces/:id/assets` | SharedSpaceAssetDelete (editor) | N      | Y      | Y     | N          |
 
+## Library Management in Space
+
+| Interaction    | Endpoint                                     | Permission                         | Viewer | Editor | Owner | Non-member |
+| -------------- | -------------------------------------------- | ---------------------------------- | ------ | ------ | ----- | ---------- |
+| Link library   | `PUT /shared-spaces/:id/libraries`           | Admin + SharedSpaceUpdate (editor) | N      | Y      | Y     | N          |
+| Unlink library | `DELETE /shared-spaces/:id/libraries/:libId` | Admin + SharedSpaceUpdate (editor) | N      | Y      | Y     | N          |
+
+### Library-Linked Asset Access
+
+Library-linked assets (assets belonging to a library linked via `shared_space_library`) must be included in all space-scoped queries. The correct pattern uses `OR EXISTS` to check both `shared_space_asset` (direct) and `shared_space_library` (library-linked) paths.
+
+| Query                      | Method                     | Includes Library Assets | Notes                                            |
+| -------------------------- | -------------------------- | ----------------------- | ------------------------------------------------ |
+| Timeline (buckets/detail)  | `getTimeBuckets/Bucket`    | Y                       | OR EXISTS pattern                                |
+| Asset count                | `getAssetCount`            | Y                       | UNION pattern                                    |
+| Recent assets / hero       | `getRecentAssets`          | Y                       | UNION pattern                                    |
+| New asset count            | `getNewAssetCount`         | Y                       | UNION (uses asset.createdAt for lib assets)      |
+| Map markers                | `getMapMarkers`            | Y                       | UNION pattern                                    |
+| Access control (view)      | `checkSpaceAccess`         | Y                       | UNION + livePhotoVideoId handling                |
+| Access control (edit)      | `checkSpaceEditAccess`     | Y                       | UNION + role filter                              |
+| Asset-in-space check       | `isAssetInSpace`           | Y                       | UNION pattern                                    |
+| Face-in-space check        | `isFaceInSpace`            | Y                       | UNION pattern                                    |
+| All asset IDs              | `getAssetIdsInSpace`       | Y                       | UNION pattern                                    |
+| Space IDs for asset        | `getSpaceIdsForAsset`      | Y                       | UNION pattern                                    |
+| People / faces             | `shared_space_person_face` | Y                       | Populated by face sync job                       |
+| Person assets              | `getPersonAssetIds`        | Y                       | Via shared_space_person_face                     |
+| Search (smart/metadata)    | `searchAssetBuilder`       | Y                       | OR EXISTS; skips userIds filter when spaceId set |
+| Filter suggestions         | `getExifField`             | Y                       | OR EXISTS; skips ownerId filter when spaceId set |
+| Contribution counts        | `getContributionCounts`    | N (by design)           | Tracks manual contributions only                 |
+| Member activity            | `getMemberActivity`        | N (by design)           | Tracks manual contributions only                 |
+| Last contributor           | `getLastContributor`       | N (by design)           | Tracks manual contributions only                 |
+| Last asset added timestamp | `getLastAssetAddedAt`      | N (by design)           | Used in removeAssets() only                      |
+
 ## People / Face Recognition
 
 | Interaction          | Endpoint                                            | Permission                 | Viewer | Editor | Owner | Non-member |
@@ -107,16 +140,9 @@ Generated 2026-03-23 from codebase analysis.
 
 ---
 
-## Known Bugs (as of 2026-03-23)
-
-| #   | Bug                                                          | Impact                                                | Status      |
-| --- | ------------------------------------------------------------ | ----------------------------------------------------- | ----------- |
-| 1   | `checkSpaceAccess()` missing `livePhotoVideoId`              | Live photo playback fails for non-owner space members | Fix planned |
-| 2   | `getSearchSuggestions()` missing `requireAccess` for spaceId | Non-members can query filter metadata for any space   | Fix planned |
-| 3   | `getExifField()` filters by `ownerId` even with spaceId      | Non-owner space members see empty filter suggestions  | Fix planned |
-
 ## Known Limitations (not bugs)
 
 - Bulk download by spaceId not supported (must use individual assetIds)
 - Search random/explore/cities not space-scoped
 - Asset edits/delete/copy are owner-only regardless of space role
+- Contribution counts/member activity track manual additions only (library-linked assets excluded by design)
