@@ -137,16 +137,18 @@ test.describe('asset-viewer', () => {
       await page.goto(`/photos/${asset.id}`);
       await assetViewerUtils.waitForViewerLoad(page, asset);
 
-      // Navigate forward 3 times
+      // Navigate forward 3 times, waiting for each navigation to fully complete
       for (let i = 1; i <= 3; i++) {
         await page.keyboard.press('ArrowRight');
         await assetViewerUtils.waitForViewerLoad(page, assets[index + i]);
+        await expect.poll(() => new URL(page.url()).pathname).toBe(`/photos/${assets[index + i].id}`);
       }
 
       // Navigate backward 3 times to return to original
       for (let i = 2; i >= 0; i--) {
         await page.keyboard.press('ArrowLeft');
         await assetViewerUtils.waitForViewerLoad(page, assets[index + i]);
+        await expect.poll(() => new URL(page.url()).pathname).toBe(`/photos/${assets[index + i].id}`);
       }
 
       // Verify we're back at the original asset

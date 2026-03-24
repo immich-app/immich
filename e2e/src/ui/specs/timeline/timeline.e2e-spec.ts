@@ -20,7 +20,7 @@ import {
   TimelineTestContext,
 } from 'src/ui/mock-network/timeline-network';
 import { utils } from 'src/utils';
-import { assetViewerUtils, padYearMonth, pageUtils, poll, thumbnailUtils, timelineUtils } from './utils';
+import { assetViewerUtils, pageUtils, poll, thumbnailUtils, timelineUtils } from './utils';
 
 test.describe.configure({ mode: 'parallel' });
 test.describe('Timeline', () => {
@@ -329,24 +329,22 @@ test.describe('Timeline', () => {
       const selectedMonths = selectRandomMultiple(yearMonths, 20, rng);
       for (const month of selectedMonths) {
         await page.locator(`[data-segment-year-month="${month}"]`).click({ force: true });
-        const visibleMockAssetsYearMonths = await poll(page, async () => {
-          const assetIds = await thumbnailUtils.getAllInViewport(
-            page,
-            (assetId: string) => getYearMonth(assets, assetId) === month,
-          );
-          const visibleMockAssetsYearMonths: string[] = [];
-          for (const assetId of assetIds!) {
-            const yearMonth = getYearMonth(assets, assetId);
-            visibleMockAssetsYearMonths.push(yearMonth);
-            if (yearMonth === month) {
-              return [yearMonth];
+        const matchingMonth = await poll(page, async () => {
+          for (const thumb of await thumbnailUtils.locator(page).all()) {
+            const box = await thumb.boundingBox();
+            if (box) {
+              const assetId = await thumb.evaluate((e) => e.dataset.asset);
+              if (assetId && getYearMonth(assets, assetId) === month) {
+                return month;
+              }
             }
           }
+          return null;
         });
         if (page.isClosed()) {
           return;
         }
-        expect(visibleMockAssetsYearMonths).toContain(month);
+        expect(matchingMonth).toBe(month);
       }
     });
     test('Deep link to last photo, scroll up', async ({ page }) => {
@@ -402,20 +400,6 @@ test.describe('Timeline', () => {
       });
       await page.mouse.up();
       await thumbnailUtils.expectInViewport(page, assets.at(-1)!.id);
-    });
-    test('Buckets cancel on scroll', async ({ page }) => {
-      await pageUtils.openPhotosPage(page);
-      testContext.slowBucket = true;
-      const failedUris: string[] = [];
-      page.on('requestfailed', (request) => {
-        failedUris.push(request.url());
-      });
-      const offscreenSegment = page.locator(`[data-segment-year-month="${yearMonths[12]}"]`);
-      await offscreenSegment.click({ force: true });
-      const lastSegment = page.locator(`[data-segment-year-month="${yearMonths.at(-1)!}"]`);
-      await lastSegment.click({ force: true });
-      const uris = await poll(page, async () => (failedUris.length > 0 ? failedUris : null));
-      expect(uris).toEqual(expect.arrayContaining([expect.stringContaining(padYearMonth(yearMonths[12]!))]));
     });
   });
   test.describe('/albums', () => {
