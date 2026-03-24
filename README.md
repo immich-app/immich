@@ -220,8 +220,9 @@ Images are automatically built and published on every push to `main` via the **R
 
 **How it works:**
 
-1. Every merged PR triggers an automatic build
+1. Every merged PR triggers an automatic build (unless the PR has the `changelog:skip` label)
 2. The version is computed from the latest git tag using semantic versioning:
+   - `changelog:skip` PR label → **no release** (skips build, tag, and push entirely)
    - `feat:` commit or `changelog:feat` PR label → **minor** bump (e.g. `v4.2.6` → `v4.3.0`)
    - `BREAKING CHANGE` in commit body → **major** bump (e.g. `v4.3.0` → `v5.0.0`)
    - Everything else (`fix:`, `docs:`, `chore:`, etc.) → **patch** bump (e.g. `v4.2.6` → `v4.2.7`)
