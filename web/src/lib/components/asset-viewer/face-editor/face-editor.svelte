@@ -27,7 +27,7 @@
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
   let scrollableListEl: HTMLDivElement | undefined = $state();
-  let searchContainerEl: HTMLDivElement | undefined = $state();
+  let searchInputEl: HTMLInputElement | null = $state(null);
   let page = $state(1);
   let candidates = $state<PersonResponseDto[]>([]);
 
@@ -79,15 +79,11 @@
     setDefaultFaceRectanglePosition(faceRect);
   };
 
-  const focusSearchInput = () => {
-    searchContainerEl?.querySelector('input')?.focus();
-  };
-
   onMount(async () => {
     setupCanvas();
     await getPeople();
     await tick();
-    focusSearchInput();
+    searchInputEl?.focus();
   });
 
   const imageContentMetrics = $derived.by(() => {
@@ -232,11 +228,11 @@
     if (rect && cvs) {
       rect.on('moving', positionFaceSelector);
       rect.on('scaling', positionFaceSelector);
-      cvs.on('object:modified', focusSearchInput);
+      cvs.on('object:modified', () => searchInputEl?.focus());
       return () => {
         rect.off('moving', positionFaceSelector);
         rect.off('scaling', positionFaceSelector);
-        cvs.off('object:modified', focusSearchInput);
+        cvs.off('object:modified', () => searchInputEl?.focus());
       };
     }
   });
@@ -319,8 +315,8 @@
   >
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
-    <div class="my-3 relative" bind:this={searchContainerEl}>
-      <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
+    <div class="my-3 relative">
+      <Input placeholder={$t('search_people')} bind:value={searchTerm} bind:ref={searchInputEl} size="tiny" />
     </div>
 
     <div bind:this={scrollableListEl} class="h-62.5 overflow-y-auto mt-2">
