@@ -1225,6 +1225,7 @@
   "failed_to_authenticate": "Failed to authenticate",
   "failed_to_load_assets": "Failed to load assets",
   "failed_to_load_folder": "Failed to load folder",
+  "failed_to_load_spaces": "Failed to load spaces",
   "favorite": "Favorite",
   "favorite_action_prompt": "{count} added to Favorites",
   "favorite_or_unfavorite_photo": "Favorite or unfavorite photo",

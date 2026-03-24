@@ -70,4 +70,7 @@ export class SharedSpacePersonResponseDto {
 
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: string;
+
+  @ApiPropertyOptional({ description: 'Person type (person or pet)' })
+  type?: string;
 }

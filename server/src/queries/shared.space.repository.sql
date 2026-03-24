@@ -638,3 +638,29 @@ where
   and "shared_space_person"."spaceId" = $2
 limit
   $3
+
+-- SharedSpaceRepository.getPetFacesForAsset
+select
+  "asset_face"."id",
+  "asset_face"."assetId",
+  "asset_face"."personId"
+from
+  "asset_face"
+  inner join "person" on "person"."id" = "asset_face"."personId"
+where
+  "asset_face"."assetId" = $1
+  and "asset_face"."deletedAt" is null
+  and "person"."type" = $2
+
+-- SharedSpaceRepository.findSpacePersonByLinkedPersonId
+select
+  "shared_space_person".*
+from
+  "shared_space_person"
+  inner join "shared_space_person_face" on "shared_space_person_face"."personId" = "shared_space_person"."id"
+  inner join "asset_face" on "asset_face"."id" = "shared_space_person_face"."assetFaceId"
+where
+  "shared_space_person"."spaceId" = $1
+  and "asset_face"."personId" = $2
+limit
+  $3

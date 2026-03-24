@@ -61,6 +61,9 @@ export class SharedSpaceUpdateDto {
 
   @ValidateBoolean({ optional: true, description: 'Enable face recognition for this space' })
   faceRecognitionEnabled?: boolean;
+
+  @ValidateBoolean({ optional: true, description: 'Show pets in space people list' })
+  petsEnabled?: boolean;
 }
 
 export class SharedSpaceMemberCreateDto {
@@ -170,6 +173,9 @@ export class SharedSpaceResponseDto {
 
   @ApiPropertyOptional({ description: 'Whether face recognition is enabled for this space' })
   faceRecognitionEnabled?: boolean;
+
+  @ApiPropertyOptional({ description: 'Whether pets are shown in space people list' })
+  petsEnabled?: boolean;
 
   @ApiPropertyOptional({ description: 'Last activity timestamp (most recent asset add)' })
   lastActivityAt?: string | null;

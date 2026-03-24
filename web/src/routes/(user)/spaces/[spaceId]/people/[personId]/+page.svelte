@@ -29,6 +29,19 @@
   let allPeople: SharedSpacePersonResponseDto[] = $state(data.allPeople);
   let action = $state<string | null>(data.action);
 
+  // Sync on space change OR person change (person-to-person nav within same space)
+  $effect(() => {
+    if (data.person.id !== person.id || data.space.id !== space.id) {
+      space = data.space;
+      members = data.members;
+      person = data.person;
+      assetIds = data.assetIds;
+      allPeople = data.allPeople;
+      action = data.action;
+      mergeTargetId = null;
+    }
+  });
+
   let mergeTargetId = $state<string | null>(null);
 
   const currentMember = $derived(members.find((m) => m.userId === $user.id));

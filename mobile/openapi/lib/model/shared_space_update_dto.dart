@@ -17,6 +17,7 @@ class SharedSpaceUpdateDto {
     this.description,
     this.faceRecognitionEnabled,
     this.name,
+    this.petsEnabled,
     this.thumbnailAssetId,
     this.thumbnailCropY,
   });
@@ -57,6 +58,15 @@ class SharedSpaceUpdateDto {
   ///
   String? name;
 
+  /// Show pets in space people list
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? petsEnabled;
+
   /// Thumbnail asset ID
   String? thumbnailAssetId;
 
@@ -72,6 +82,7 @@ class SharedSpaceUpdateDto {
     other.description == description &&
     other.faceRecognitionEnabled == faceRecognitionEnabled &&
     other.name == name &&
+    other.petsEnabled == petsEnabled &&
     other.thumbnailAssetId == thumbnailAssetId &&
     other.thumbnailCropY == thumbnailCropY;
 
@@ -82,11 +93,12 @@ class SharedSpaceUpdateDto {
     (description == null ? 0 : description!.hashCode) +
     (faceRecognitionEnabled == null ? 0 : faceRecognitionEnabled!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
+    (petsEnabled == null ? 0 : petsEnabled!.hashCode) +
     (thumbnailAssetId == null ? 0 : thumbnailAssetId!.hashCode) +
     (thumbnailCropY == null ? 0 : thumbnailCropY!.hashCode);
 
   @override
-  String toString() => 'SharedSpaceUpdateDto[color=$color, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, name=$name, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY]';
+  String toString() => 'SharedSpaceUpdateDto[color=$color, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, name=$name, petsEnabled=$petsEnabled, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -109,6 +121,11 @@ class SharedSpaceUpdateDto {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
+    }
+    if (this.petsEnabled != null) {
+      json[r'petsEnabled'] = this.petsEnabled;
+    } else {
+    //  json[r'petsEnabled'] = null;
     }
     if (this.thumbnailAssetId != null) {
       json[r'thumbnailAssetId'] = this.thumbnailAssetId;
@@ -136,6 +153,7 @@ class SharedSpaceUpdateDto {
         description: mapValueOfType<String>(json, r'description'),
         faceRecognitionEnabled: mapValueOfType<bool>(json, r'faceRecognitionEnabled'),
         name: mapValueOfType<String>(json, r'name'),
+        petsEnabled: mapValueOfType<bool>(json, r'petsEnabled'),
         thumbnailAssetId: mapValueOfType<String>(json, r'thumbnailAssetId'),
         thumbnailCropY: mapValueOfType<int>(json, r'thumbnailCropY'),
       );

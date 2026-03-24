@@ -1,11 +1,12 @@
 <script lang="ts">
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
+  import RecentSpaces from '$lib/components/shared-components/side-bar/recent-spaces.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
+  import { recentAlbumsDropdown, recentSpacesDropdown } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { NavbarGroup, NavbarItem } from '@immich/ui';
   import {
@@ -43,7 +44,19 @@
 <Sidebar ariaLabel={$t('primary')}>
   <NavbarItem title={$t('photos')} href={Route.photos()} icon={mdiImageMultipleOutline} activeIcon={mdiImageMultiple} />
 
-  <NavbarItem title={$t('spaces')} href={Route.spaces()} icon={mdiAccountGroupOutline} activeIcon={mdiAccountGroup} />
+  <NavbarItem
+    title={$t('spaces')}
+    href={Route.spaces()}
+    icon={mdiAccountGroupOutline}
+    activeIcon={mdiAccountGroup}
+    bind:expanded={$recentSpacesDropdown}
+  >
+    {#snippet items()}
+      <span in:fly={{ y: -20 }} class="hidden md:block">
+        <RecentSpaces />
+      </span>
+    {/snippet}
+  </NavbarItem>
 
   {#if featureFlagsManager.value.search}
     <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />

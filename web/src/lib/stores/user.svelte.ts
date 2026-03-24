@@ -4,10 +4,12 @@ import type {
   ServerAboutResponseDto,
   ServerStorageResponseDto,
   ServerVersionHistoryResponseDto,
+  SharedSpaceResponseDto,
 } from '@immich/sdk';
 
 interface UserInteractions {
   recentAlbums?: AlbumResponseDto[];
+  recentSpaces?: SharedSpaceResponseDto[];
   versions?: ServerVersionHistoryResponseDto[];
   aboutInfo?: ServerAboutResponseDto;
   serverInfo?: ServerStorageResponseDto;
@@ -15,6 +17,7 @@ interface UserInteractions {
 
 const defaultUserInteraction: UserInteractions = {
   recentAlbums: undefined,
+  recentSpaces: undefined,
   versions: undefined,
   aboutInfo: undefined,
   serverInfo: undefined,
@@ -26,6 +29,10 @@ const resetRecentAlbums = () => {
   userInteraction.recentAlbums = undefined;
 };
 
+const resetRecentSpaces = () => {
+  userInteraction.recentSpaces = undefined;
+};
+
 const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
@@ -34,5 +41,7 @@ eventManager.on({
   AlbumCreate: () => resetRecentAlbums(),
   AlbumUpdate: () => resetRecentAlbums(),
   AlbumDelete: () => resetRecentAlbums(),
+  SpaceAddAssets: () => resetRecentSpaces(),
+  SpaceRemoveAssets: () => resetRecentSpaces(),
   AuthLogout: () => reset(),
 });

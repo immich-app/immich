@@ -28,6 +28,7 @@ class SharedSpaceResponseDto {
     this.members = const [],
     required this.name,
     this.newAssetCount,
+    this.petsEnabled,
     this.recentAssetIds = const [],
     this.recentAssetThumbhashes = const [],
     this.thumbnailAssetId,
@@ -108,6 +109,15 @@ class SharedSpaceResponseDto {
   ///
   num? newAssetCount;
 
+  /// Whether pets are shown in space people list
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? petsEnabled;
+
   /// Recent asset IDs for collage display (up to 4)
   List<String> recentAssetIds;
 
@@ -140,6 +150,7 @@ class SharedSpaceResponseDto {
     _deepEquality.equals(other.members, members) &&
     other.name == name &&
     other.newAssetCount == newAssetCount &&
+    other.petsEnabled == petsEnabled &&
     _deepEquality.equals(other.recentAssetIds, recentAssetIds) &&
     _deepEquality.equals(other.recentAssetThumbhashes, recentAssetThumbhashes) &&
     other.thumbnailAssetId == thumbnailAssetId &&
@@ -164,6 +175,7 @@ class SharedSpaceResponseDto {
     (members.hashCode) +
     (name.hashCode) +
     (newAssetCount == null ? 0 : newAssetCount!.hashCode) +
+    (petsEnabled == null ? 0 : petsEnabled!.hashCode) +
     (recentAssetIds.hashCode) +
     (recentAssetThumbhashes.hashCode) +
     (thumbnailAssetId == null ? 0 : thumbnailAssetId!.hashCode) +
@@ -171,7 +183,7 @@ class SharedSpaceResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SharedSpaceResponseDto[assetCount=$assetCount, color=$color, createdAt=$createdAt, createdById=$createdById, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, id=$id, lastActivityAt=$lastActivityAt, lastContributor=$lastContributor, lastViewedAt=$lastViewedAt, linkedLibraries=$linkedLibraries, memberCount=$memberCount, members=$members, name=$name, newAssetCount=$newAssetCount, recentAssetIds=$recentAssetIds, recentAssetThumbhashes=$recentAssetThumbhashes, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY, updatedAt=$updatedAt]';
+  String toString() => 'SharedSpaceResponseDto[assetCount=$assetCount, color=$color, createdAt=$createdAt, createdById=$createdById, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, id=$id, lastActivityAt=$lastActivityAt, lastContributor=$lastContributor, lastViewedAt=$lastViewedAt, linkedLibraries=$linkedLibraries, memberCount=$memberCount, members=$members, name=$name, newAssetCount=$newAssetCount, petsEnabled=$petsEnabled, recentAssetIds=$recentAssetIds, recentAssetThumbhashes=$recentAssetThumbhashes, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -226,6 +238,11 @@ class SharedSpaceResponseDto {
     } else {
     //  json[r'newAssetCount'] = null;
     }
+    if (this.petsEnabled != null) {
+      json[r'petsEnabled'] = this.petsEnabled;
+    } else {
+    //  json[r'petsEnabled'] = null;
+    }
       json[r'recentAssetIds'] = this.recentAssetIds;
       json[r'recentAssetThumbhashes'] = this.recentAssetThumbhashes;
     if (this.thumbnailAssetId != null) {
@@ -272,6 +289,7 @@ class SharedSpaceResponseDto {
         newAssetCount: json[r'newAssetCount'] == null
             ? null
             : num.parse('${json[r'newAssetCount']}'),
+        petsEnabled: mapValueOfType<bool>(json, r'petsEnabled'),
         recentAssetIds: json[r'recentAssetIds'] is Iterable
             ? (json[r'recentAssetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

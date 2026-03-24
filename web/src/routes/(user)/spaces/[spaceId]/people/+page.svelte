@@ -31,6 +31,16 @@
   let members: SharedSpaceMemberResponseDto[] = $state(data.members);
   let people = $state<SharedSpacePersonResponseDto[]>(data.people);
 
+  $effect(() => {
+    if (data.space.id !== space.id) {
+      space = data.space;
+      members = data.members;
+      people = data.people;
+      editingName = '';
+      hoveredPersonId = null;
+    }
+  });
+
   // Name editing state
   let editingName = $state('');
 

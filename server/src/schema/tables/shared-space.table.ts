@@ -39,6 +39,9 @@ export class SharedSpaceTable {
   @Column({ type: 'boolean', default: true })
   faceRecognitionEnabled!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: true })
+  petsEnabled!: Generated<boolean>;
+
   @Column({ type: 'timestamp with time zone', nullable: true })
   lastActivityAt!: Timestamp | null;
 

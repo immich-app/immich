@@ -24,6 +24,7 @@ class SharedSpacePersonResponseDto {
     this.representativeFaceId,
     required this.spaceId,
     required this.thumbnailPath,
+    this.type,
     required this.updatedAt,
   });
 
@@ -60,6 +61,15 @@ class SharedSpacePersonResponseDto {
   /// Thumbnail path
   String thumbnailPath;
 
+  /// Person type (person or pet)
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? type;
+
   /// Last update date
   String updatedAt;
 
@@ -76,6 +86,7 @@ class SharedSpacePersonResponseDto {
     other.representativeFaceId == representativeFaceId &&
     other.spaceId == spaceId &&
     other.thumbnailPath == thumbnailPath &&
+    other.type == type &&
     other.updatedAt == updatedAt;
 
   @override
@@ -92,10 +103,11 @@ class SharedSpacePersonResponseDto {
     (representativeFaceId == null ? 0 : representativeFaceId!.hashCode) +
     (spaceId.hashCode) +
     (thumbnailPath.hashCode) +
+    (type == null ? 0 : type!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SharedSpacePersonResponseDto[alias=$alias, assetCount=$assetCount, birthDate=$birthDate, createdAt=$createdAt, faceCount=$faceCount, id=$id, isHidden=$isHidden, name=$name, representativeFaceId=$representativeFaceId, spaceId=$spaceId, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'SharedSpacePersonResponseDto[alias=$alias, assetCount=$assetCount, birthDate=$birthDate, createdAt=$createdAt, faceCount=$faceCount, id=$id, isHidden=$isHidden, name=$name, representativeFaceId=$representativeFaceId, spaceId=$spaceId, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -122,6 +134,11 @@ class SharedSpacePersonResponseDto {
     }
       json[r'spaceId'] = this.spaceId;
       json[r'thumbnailPath'] = this.thumbnailPath;
+    if (this.type != null) {
+      json[r'type'] = this.type;
+    } else {
+    //  json[r'type'] = null;
+    }
       json[r'updatedAt'] = this.updatedAt;
     return json;
   }
@@ -146,6 +163,7 @@ class SharedSpacePersonResponseDto {
         representativeFaceId: mapValueOfType<String>(json, r'representativeFaceId'),
         spaceId: mapValueOfType<String>(json, r'spaceId')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        type: mapValueOfType<String>(json, r'type'),
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
     }

@@ -766,4 +766,29 @@ export class SharedSpaceRepository {
       .executeTakeFirst();
     return !!result;
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getPetFacesForAsset(assetId: string) {
+    return this.db
+      .selectFrom('asset_face')
+      .innerJoin('person', 'person.id', 'asset_face.personId')
+      .select(['asset_face.id', 'asset_face.assetId', 'asset_face.personId'])
+      .where('asset_face.assetId', '=', assetId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('person.type', '=', 'pet')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  findSpacePersonByLinkedPersonId(spaceId: string, personId: string) {
+    return this.db
+      .selectFrom('shared_space_person')
+      .innerJoin('shared_space_person_face', 'shared_space_person_face.personId', 'shared_space_person.id')
+      .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+      .selectAll('shared_space_person')
+      .where('shared_space_person.spaceId', '=', spaceId)
+      .where('asset_face.personId', '=', personId)
+      .limit(1)
+      .executeTakeFirst();
+  }
 }
