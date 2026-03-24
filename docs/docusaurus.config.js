@@ -5,18 +5,16 @@ const prism = require('prism-react-renderer');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Immich',
+  title: 'Gallery',
   tagline: 'Self-hosted photo and video management solution',
-  url: 'https://docs.immich.app',
+  url: 'https://docs.opennoodle.de',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'immich-app', // Usually your GitHub org/user name.
-  projectName: 'immich', // Usually your repo name.
+  organizationName: 'open-noodle',
+  projectName: 'gallery',
   deploymentBranch: 'main',
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -59,7 +57,7 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/immich-app/immich/tree/main/docs/',
+          editUrl: 'https://github.com/open-noodle/gallery/tree/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -82,31 +80,26 @@ const config = {
       },
       navbar: {
         logo: {
-          alt: 'Immich Logo',
-          src: 'img/immich-logo-inline-light.png',
-          srcDark: 'img/immich-logo-inline-dark.png',
+          alt: 'Gallery Logo',
+          src: 'img/gallery-logo-inline-light.svg',
+          srcDark: 'img/gallery-logo-inline-dark.svg',
           className: 'rounded-none',
         },
         items: [
           {
-            type: 'custom-versionSwitcher',
-            position: 'right',
-          },
-          {
-            href: 'https://immich.app/',
+            href: 'https://opennoodle.de/',
             position: 'right',
             label: 'Home',
           },
           {
-            href: 'https://github.com/immich-app/immich',
-            label: 'GitHub',
+            href: 'https://demo.opennoodle.de/',
             position: 'right',
+            label: 'Demo',
           },
           {
-            type: 'html',
+            href: 'https://github.com/open-noodle/gallery',
+            label: 'GitHub',
             position: 'right',
-            value:
-              '<a href="https://buy.immich.app" target="_blank" class="no-underline hover:no-underline"><button class="buy-button bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-black rounded-xl">Buy Immich</button></a>',
           },
         ],
       },
@@ -114,108 +107,50 @@ const config = {
         style: 'light',
         links: [
           {
-            title: 'Download',
-            items: [
-              {
-                label: 'Android',
-                href: 'https://get.immich.app/android',
-              },
-              {
-                label: 'iOS',
-                href: 'https://get.immich.app/ios',
-              },
-              {
-                label: 'Server',
-                href: 'https://immich.app/download',
-              },
-            ],
-          },
-          {
-            title: 'Company',
-            items: [
-              {
-                label: 'FUTO',
-                href: 'https://futo.tech/',
-              },
-              {
-                label: 'Purchase',
-                href: 'https://buy.immich.app/',
-              },
-              {
-                label: 'Merch',
-                href: 'https://immich.store/',
-              },
-            ],
-          },
-          {
-            title: 'Sites',
+            title: 'Product',
             items: [
               {
                 label: 'Home',
-                href: 'https://immich.app',
+                href: 'https://opennoodle.de',
               },
               {
-                label: 'My Immich',
-                href: 'https://my.immich.app/',
+                label: 'Demo',
+                href: 'https://demo.opennoodle.de',
               },
               {
-                label: 'Awesome Immich',
-                href: 'https://awesome.immich.app/',
-              },
-              {
-                label: 'Immich API',
-                href: 'https://api.immich.app/',
-              },
-              {
-                label: 'Immich Data',
-                href: 'https://data.immich.app/',
-              },
-              {
-                label: 'Immich Datasets',
-                href: 'https://datasets.immich.app/',
+                label: 'API Documentation',
+                href: 'https://demo.opennoodle.de/doc',
               },
             ],
           },
           {
-            title: 'Miscellaneous',
-            items: [
-              {
-                label: 'Roadmap',
-                href: 'https://immich.app/roadmap',
-              },
-              {
-                label: 'Cursed Knowledge',
-                href: 'https://immich.app/cursed-knowledge',
-              },
-              {
-                label: 'Privacy Policy',
-                to: '/privacy-policy',
-              },
-            ],
-          },
-          {
-            title: 'Social',
+            title: 'Community',
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/immich-app/immich',
+                href: 'https://github.com/open-noodle/gallery',
               },
               {
-                label: 'YouTube',
-                href: 'https://www.youtube.com/@immich-app',
+                label: 'Discussions',
+                href: 'https://github.com/open-noodle/gallery/discussions',
+              },
+            ],
+          },
+          {
+            title: 'Upstream',
+            items: [
+              {
+                label: 'Immich',
+                href: 'https://immich.app',
               },
               {
-                label: 'Discord',
-                href: 'https://discord.immich.app',
-              },
-              {
-                label: 'Reddit',
-                href: 'https://www.reddit.com/r/immich/',
+                label: 'Immich Docs',
+                href: 'https://docs.immich.app',
               },
             ],
           },
         ],
-        copyright: `Immich is available as open source under the terms of the GNU AGPL v3 License.`,
+        copyright: `Gallery is a fork of Immich, available as open source under the terms of the GNU AGPL v3 License.`,
       },
       prism: {
         theme: prism.themes.github,

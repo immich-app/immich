@@ -135,10 +135,13 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
 > Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
 
 > [!NOTE]
+> You can find the full documentation at https://docs.opennoodle.de/.
+
 ## Links
 
 - [Website](https://opennoodle.de)
-- [Installation](https://opennoodle.de/install)
+- [Documentation](https://docs.opennoodle.de/)
+- [Installation](https://docs.opennoodle.de/install/requirements)
 - [API Documentation](https://demo.opennoodle.de/doc) — interactive Swagger UI with all endpoints including fork-specific ones. Also available on your own instance at `/doc`
 - [Roadmap](https://opennoodle.de/roadmap)
 - [Features](#features)
