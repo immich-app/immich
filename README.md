@@ -135,17 +135,13 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
 > Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
 
 > [!NOTE]
-> You can find the main documentation, including installation guides, at https://immich.app/.
-
 ## Links
 
-- [Documentation](https://docs.immich.app/)
-- [About](https://docs.immich.app/overview/introduction)
-- [Installation](https://docs.immich.app/install/requirements)
-- [Roadmap](https://immich.app/roadmap)
+- [Website](https://opennoodle.de)
+- [Installation](https://opennoodle.de/install)
+- [API Documentation](https://demo.opennoodle.de/doc) — interactive Swagger UI with all endpoints including fork-specific ones. Also available on your own instance at `/doc`
+- [Roadmap](https://opennoodle.de/roadmap)
 - [Features](#features)
-- [Translations](https://docs.immich.app/developer/translations)
-- [Contributing](https://docs.immich.app/overview/support-the-project)
 
 ## Features
 
