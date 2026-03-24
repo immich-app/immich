@@ -16,6 +16,7 @@ class DownloadInfoDto {
     this.albumId,
     this.archiveSize,
     this.assetIds = const [],
+    this.spaceId,
     this.userId,
   });
 
@@ -42,6 +43,15 @@ class DownloadInfoDto {
   /// Asset IDs to download
   List<String> assetIds;
 
+  /// Shared space ID to download all assets from
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? spaceId;
+
   /// User ID to download assets from
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -56,6 +66,7 @@ class DownloadInfoDto {
     other.albumId == albumId &&
     other.archiveSize == archiveSize &&
     _deepEquality.equals(other.assetIds, assetIds) &&
+    other.spaceId == spaceId &&
     other.userId == userId;
 
   @override
@@ -64,10 +75,11 @@ class DownloadInfoDto {
     (albumId == null ? 0 : albumId!.hashCode) +
     (archiveSize == null ? 0 : archiveSize!.hashCode) +
     (assetIds.hashCode) +
+    (spaceId == null ? 0 : spaceId!.hashCode) +
     (userId == null ? 0 : userId!.hashCode);
 
   @override
-  String toString() => 'DownloadInfoDto[albumId=$albumId, archiveSize=$archiveSize, assetIds=$assetIds, userId=$userId]';
+  String toString() => 'DownloadInfoDto[albumId=$albumId, archiveSize=$archiveSize, assetIds=$assetIds, spaceId=$spaceId, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -82,6 +94,11 @@ class DownloadInfoDto {
     //  json[r'archiveSize'] = null;
     }
       json[r'assetIds'] = this.assetIds;
+    if (this.spaceId != null) {
+      json[r'spaceId'] = this.spaceId;
+    } else {
+    //  json[r'spaceId'] = null;
+    }
     if (this.userId != null) {
       json[r'userId'] = this.userId;
     } else {
@@ -104,6 +121,7 @@ class DownloadInfoDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        spaceId: mapValueOfType<String>(json, r'spaceId'),
         userId: mapValueOfType<String>(json, r'userId'),
       );
     }

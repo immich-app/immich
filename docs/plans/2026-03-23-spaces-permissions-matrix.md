@@ -28,13 +28,14 @@ Generated 2026-03-23 from codebase analysis.
 
 ## Search & Filters
 
-| Interaction        | Endpoint                  | Permission      | spaceId support    | Viewer  | Editor  | Owner | Non-member | Notes                                                   |
-| ------------------ | ------------------------- | --------------- | ------------------ | ------- | ------- | ----- | ---------- | ------------------------------------------------------- |
-| Search metadata    | `POST /search/metadata`   | SharedSpaceRead | Yes                | Y       | Y       | Y     | N          | Has requireAccess check                                 |
-| Smart search       | `POST /search/smart`      | SharedSpaceRead | Yes                | Y       | Y       | Y     | N          | Has requireAccess check                                 |
-| Search suggestions | `GET /search/suggestions` | **None**        | Yes (param exists) | **BUG** | **BUG** | Y     | **BUG**    | Missing requireAccess; ownerId filter blocks non-owners |
-| Search random      | `POST /search/random`     | N/A             | No                 | N/A     | N/A     | N/A   | N/A        | Not space-scoped                                        |
-| Explore data       | `GET /search/explore`     | N/A             | No                 | N/A     | N/A     | N/A   | N/A        | Not space-scoped                                        |
+| Interaction        | Endpoint                    | Permission      | spaceId support | Viewer | Editor | Owner | Non-member | Notes                                      |
+| ------------------ | --------------------------- | --------------- | --------------- | ------ | ------ | ----- | ---------- | ------------------------------------------ |
+| Search metadata    | `POST /search/metadata`     | SharedSpaceRead | Yes             | Y      | Y      | Y     | N          | Has requireAccess check                    |
+| Smart search       | `POST /search/smart`        | SharedSpaceRead | Yes             | Y      | Y      | Y     | N          | Has requireAccess check                    |
+| Search suggestions | `GET /search/suggestions`   | SharedSpaceRead | Yes             | Y      | Y      | Y     | N          | Has requireAccess check (fixed in PR #141) |
+| Search random      | `POST /search/random`       | SharedSpaceRead | Yes             | Y      | Y      | Y     | N          | Has requireAccess check                    |
+| Search large       | `POST /search/large-assets` | SharedSpaceRead | Yes             | Y      | Y      | Y     | N          | Has requireAccess check                    |
+| Explore data       | `GET /search/explore`       | N/A             | No              | N/A    | N/A    | N/A   | N/A        | Not space-scoped                           |
 
 ## Asset Modification
 
@@ -47,11 +48,11 @@ Generated 2026-03-23 from codebase analysis.
 
 ## Download & Archives
 
-| Interaction                 | Endpoint                 | Permission    | spaceId support    | Viewer | Editor | Owner | Non-member |
-| --------------------------- | ------------------------ | ------------- | ------------------ | ------ | ------ | ----- | ---------- |
-| Download info (by assetIds) | `POST /download/info`    | AssetDownload | No (assetIds only) | Y      | Y      | Y     | N          |
-| Download archive            | `POST /download/archive` | AssetDownload | No                 | Y      | Y      | Y     | N          |
-| Bulk download by space      | N/A                      | N/A           | **Missing**        | N/A    | N/A    | N/A   | N/A        |
+| Interaction                 | Endpoint                 | Permission      | spaceId support    | Viewer | Editor | Owner | Non-member |
+| --------------------------- | ------------------------ | --------------- | ------------------ | ------ | ------ | ----- | ---------- |
+| Download info (by assetIds) | `POST /download/info`    | AssetDownload   | No (assetIds only) | Y      | Y      | Y     | N          |
+| Download archive            | `POST /download/archive` | AssetDownload   | No                 | Y      | Y      | Y     | N          |
+| Bulk download by space      | `POST /download/info`    | SharedSpaceRead | Yes                | Y      | Y      | Y     | N          |
 
 ## Space Management
 
@@ -142,7 +143,6 @@ Library-linked assets (assets belonging to a library linked via `shared_space_li
 
 ## Known Limitations (not bugs)
 
-- Bulk download by spaceId not supported (must use individual assetIds)
-- Search random/explore/cities not space-scoped
+- Search explore/cities not space-scoped
 - Asset edits/delete/copy are owner-only regardless of space role
 - Contribution counts/member activity track manual additions only (library-linked assets excluded by design)

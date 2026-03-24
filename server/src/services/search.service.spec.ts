@@ -620,6 +620,37 @@ describe(SearchService.name, () => {
         'Elevated permission is required',
       );
     });
+
+    describe('shared space access (spaceId)', () => {
+      it('should check shared space access when spaceId is provided', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+        mocks.search.searchRandom.mockResolvedValue([]);
+
+        await sut.searchRandom(authStub.user1, { spaceId });
+
+        expect(mocks.access.sharedSpace.checkMemberAccess).toHaveBeenCalledWith(
+          authStub.user1.user.id,
+          new Set([spaceId]),
+        );
+        expect(mocks.search.searchRandom).toHaveBeenCalledWith(250, expect.objectContaining({ spaceId }));
+      });
+
+      it('should not check space access when spaceId is not provided', async () => {
+        mocks.search.searchRandom.mockResolvedValue([]);
+
+        await sut.searchRandom(authStub.user1, {});
+
+        expect(mocks.access.sharedSpace.checkMemberAccess).not.toHaveBeenCalled();
+      });
+
+      it('should throw when user is not a space member', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set());
+
+        await expect(sut.searchRandom(authStub.user1, { spaceId })).rejects.toThrow();
+      });
+    });
   });
 
   describe('searchLargeAssets', () => {
@@ -653,6 +684,37 @@ describe(SearchService.name, () => {
       await expect(sut.searchLargeAssets(auth, { visibility: AssetVisibility.Locked })).rejects.toThrow(
         'Elevated permission is required',
       );
+    });
+
+    describe('shared space access (spaceId)', () => {
+      it('should check shared space access when spaceId is provided', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+        mocks.search.searchLargeAssets.mockResolvedValue([]);
+
+        await sut.searchLargeAssets(authStub.user1, { spaceId });
+
+        expect(mocks.access.sharedSpace.checkMemberAccess).toHaveBeenCalledWith(
+          authStub.user1.user.id,
+          new Set([spaceId]),
+        );
+        expect(mocks.search.searchLargeAssets).toHaveBeenCalledWith(250, expect.objectContaining({ spaceId }));
+      });
+
+      it('should not check space access when spaceId is not provided', async () => {
+        mocks.search.searchLargeAssets.mockResolvedValue([]);
+
+        await sut.searchLargeAssets(authStub.user1, {});
+
+        expect(mocks.access.sharedSpace.checkMemberAccess).not.toHaveBeenCalled();
+      });
+
+      it('should throw when user is not a space member', async () => {
+        const spaceId = newUuid();
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set());
+
+        await expect(sut.searchLargeAssets(authStub.user1, { spaceId })).rejects.toThrow();
+      });
     });
   });
 

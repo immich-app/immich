@@ -13,6 +13,9 @@ export class DownloadInfoDto {
   @ValidateUUID({ optional: true, description: 'User ID to download assets from' })
   userId?: string;
 
+  @ValidateUUID({ optional: true, description: 'Shared space ID to download all assets from' })
+  spaceId?: string;
+
   @ApiPropertyOptional({ type: 'integer', description: 'Archive size limit in bytes' })
   @IsInt()
   @IsPositive()

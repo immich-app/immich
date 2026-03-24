@@ -27,8 +27,12 @@ export class DownloadService extends BaseService {
       const userId = dto.userId;
       await this.requireAccess({ auth, permission: Permission.TimelineDownload, ids: [userId] });
       assets = this.downloadRepository.downloadUserId(userId);
+    } else if (dto.spaceId) {
+      const spaceId = dto.spaceId;
+      await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [spaceId] });
+      assets = this.downloadRepository.downloadSpaceId(spaceId);
     } else {
-      throw new BadRequestException('assetIds, albumId, or userId is required');
+      throw new BadRequestException('assetIds, albumId, userId, or spaceId is required');
     }
 
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;

@@ -964,4 +964,73 @@ describe('/search', () => {
       expect(status).toBe(400);
     });
   });
+
+  describe('POST /search/random (spaceId access)', () => {
+    let space: SharedSpaceResponseDto;
+    let outsider: LoginResponseDto;
+
+    beforeAll(async () => {
+      space = await utils.createSpace(admin.accessToken, { name: 'Random Search Space' });
+      await utils.addSpaceAssets(admin.accessToken, space.id, [assetFalcon.id]);
+
+      outsider = await utils.userSetup(admin.accessToken, {
+        email: 'random-search-outsider@immich.cloud',
+        name: 'Random Outsider',
+        password: 'Password123!',
+      });
+    });
+
+    it('should reject non-member', async () => {
+      const { status } = await request(app)
+        .post('/search/random')
+        .set('Authorization', `Bearer ${outsider.accessToken}`)
+        .send({ spaceId: space.id });
+
+      expect(status).toBe(400);
+    });
+
+    it('should return results for space member', async () => {
+      const { status, body } = await request(app)
+        .post('/search/random')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ spaceId: space.id, size: 10 });
+
+      expect(status).toBe(200);
+      expect(body.length).toBeGreaterThan(0);
+      expect(body.map((a: AssetResponseDto) => a.id)).toContain(assetFalcon.id);
+    });
+  });
+
+  describe('POST /search/large-assets (spaceId access)', () => {
+    let space: SharedSpaceResponseDto;
+    let outsider: LoginResponseDto;
+
+    beforeAll(async () => {
+      space = await utils.createSpace(admin.accessToken, { name: 'Large Assets Search Space' });
+      await utils.addSpaceAssets(admin.accessToken, space.id, [assetFalcon.id]);
+
+      outsider = await utils.userSetup(admin.accessToken, {
+        email: 'large-assets-outsider@immich.cloud',
+        name: 'Large Assets Outsider',
+        password: 'Password123!',
+      });
+    });
+
+    it('should reject non-member', async () => {
+      const { status } = await request(app)
+        .post(`/search/large-assets?spaceId=${space.id}`)
+        .set('Authorization', `Bearer ${outsider.accessToken}`);
+
+      expect(status).toBe(400);
+    });
+
+    it('should return results for space member', async () => {
+      const { status, body } = await request(app)
+        .post(`/search/large-assets?spaceId=${space.id}&size=10`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+    });
+  });
 });

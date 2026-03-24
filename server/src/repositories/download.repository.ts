@@ -37,4 +37,17 @@ export class DownloadRepository {
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
+
+  downloadSpaceId(spaceId: string) {
+    const direct = builder(this.db)
+      .innerJoin('shared_space_asset', 'asset.id', 'shared_space_asset.assetId')
+      .where('shared_space_asset.spaceId', '=', spaceId);
+
+    const library = builder(this.db)
+      .innerJoin('shared_space_library', (join) => join.onRef('shared_space_library.libraryId', '=', 'asset.libraryId'))
+      .where('shared_space_library.spaceId', '=', spaceId)
+      .where('asset.isOffline', '=', false);
+
+    return direct.union(library).stream();
+  }
 }
