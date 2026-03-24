@@ -8,7 +8,7 @@ A config file can be provided as an alternative to the UI configuration.
 
 ### Step 1 - Create a new config file
 
-In JSON format, create a new config file (e.g. `immich.json`) and put it in a location mounted in the container that can be accessed by Immich.
+In JSON format, create a new config file (e.g. `immich.json`) and put it in a location mounted in the container that can be accessed by Gallery.
 YAML-formatted config files are also supported.
 The default configuration looks like this:
 

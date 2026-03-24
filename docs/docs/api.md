@@ -1,6 +1,6 @@
 # API
 
-Immich uses the [OpenAPI](https://swagger.io/specification/) standard to generate API documentation. To view the published docs see [here](https://api.immich.app/).
+Gallery uses the [OpenAPI](https://swagger.io/specification/) standard to generate API documentation. To view the published docs see [here](https://demo.opennoodle.de/doc).
 
 ## Generator
 

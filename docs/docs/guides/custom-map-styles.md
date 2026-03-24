@@ -1,7 +1,7 @@
 # Custom Map Styles
 
 You may decide that you'd like to modify the style document which is used to
-draw the maps in Immich. In addition to visual customization, this also allows
+draw the maps in Gallery. In addition to visual customization, this also allows
 you to pick your own map tile provider instead of the default one. The default
 `style.json` for [light theme](https://tiles.immich.cloud/v1/style/light.json)
 and [dark theme](https://tiles.immich.cloud/v1/style/dark.json)
@@ -10,8 +10,8 @@ can be used as a basis for creating your own style.
 There are several sources for already-made `style.json` map themes, as well as
 online generators you can use.
 
-1. In **Immich**, navigate to **Administration --> Settings --> Map & GPS Settings** and expand the **Map Settings** subsection.
-2. Paste the link to your JSON style in either the **Light Style** or **Dark Style**. (You can add different styles which will help make the map style more appropriate depending on whether you set **Immich** to Light or Dark mode.)
+1. In **Gallery**, navigate to **Administration --> Settings --> Map & GPS Settings** and expand the **Map Settings** subsection.
+2. Paste the link to your JSON style in either the **Light Style** or **Dark Style**. (You can add different styles which will help make the map style more appropriate depending on whether you set **Gallery** to Light or Dark mode.)
 3. Save your selections. Reload the map, and enjoy your custom map style!
 
 ## Use MapTiler to build a custom style

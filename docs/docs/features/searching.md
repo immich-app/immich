@@ -3,13 +3,13 @@ import TabItem from '@theme/TabItem';
 
 # Searching
 
-Immich uses Postgres as its search database for both metadata and contextual CLIP search.
+Gallery uses Postgres as its search database for both metadata and contextual CLIP search.
 
 Contextual CLIP search is powered by the [VectorChord](https://github.com/tensorchord/VectorChord) extension, utilizing machine learning models like [CLIP](https://openai.com/research/clip) to provide relevant search results. This allows for freeform searches without requiring specific keywords in the image or video metadata.
 
 ## Advanced Search Filters
 
-In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).
+In addition, Gallery offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.opennoodle.de).
 
 You can search the following types of content:
 
@@ -68,7 +68,7 @@ Please note that memory and execution time values are only _estimates_: actual u
 <details>
 <summary>Reference</summary>
 
-Memory and execution time estimates were obtained without acceleration on a 7800x3D processor running bare metal Linux. All testing and evaluation was done at f32 precision (the default in Immich).
+Memory and execution time estimates were obtained without acceleration on a 7800x3D processor running bare metal Linux. All testing and evaluation was done at f32 precision (the default in Gallery).
 
 **Execution Time (ms)**: After warming up the model with one pass, the mean execution time of 100 passes with the same input.
 

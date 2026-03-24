@@ -7,17 +7,17 @@ import MobileArchitecture from './img/immich_mobile_architecture.svg';
 
 # Architecture
 
-Immich uses a traditional client-server design, with a dedicated database for data persistence. The frontend clients communicate with backend services over HTTP using REST APIs. Below is a high level diagram of the architecture.
+Gallery uses a traditional client-server design, with a dedicated database for data persistence. The frontend clients communicate with backend services over HTTP using REST APIs. Below is a high level diagram of the architecture.
 
 ## High Level Diagram
 
-<img alt="Immich Architecture" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
+<img alt="Gallery Architecture" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
 
 The diagram shows clients communicating with the server's API via REST. The server communicates with downstream systems (i.e. Redis, Postgres, Machine Learning, file system) through repository interfaces. Not shown in the diagram, is that the server is split into two separate containers `immich-server` and `immich-microservices`. The microservices container does not handle API requests or schedule cron jobs, but primarily handles incoming job requests from Redis.
 
 ## Clients
 
-Immich has three main clients:
+Gallery has three main clients:
 
 1. Mobile app - Android, iOS
 2. Web app - Responsive website
@@ -44,20 +44,20 @@ The web app is a [TypeScript](https://www.typescriptlang.org/) project that uses
 
 ### CLI
 
-The Immich CLI is an [npm](https://www.npmjs.com/) package that lets users control their Immich instance from the command line. It uses the API to perform various tasks, especially uploading assets. See the [CLI documentation](/features/command-line-interface.md) for more information.
+The Gallery CLI is an [npm](https://www.npmjs.com/) package that lets users control their Gallery instance from the command line. It uses the API to perform various tasks, especially uploading assets. See the [CLI documentation](/features/command-line-interface.md) for more information.
 
 ## Server
 
-The Immich backend is divided into several services, which are run as individual docker containers.
+The Gallery backend is divided into several services, which are run as individual docker containers.
 
 1. `immich-server` - Handle and respond to REST API requests, execute background jobs (thumbnail generation, metadata extraction, transcoding, etc.)
 1. `immich-machine-learning` - Execute machine learning models
 1. `postgres` - Persistent data storage
 1. `redis`- Queue management for background jobs
 
-### Immich Server
+### Gallery Server
 
-The Immich Server is a [TypeScript](https://www.typescriptlang.org/) project written for [Node.js](https://nodejs.org/). It uses the [Nest.js](https://nestjs.com) framework, [Express](https://expressjs.com/) server, and the query builder [Kysely](https://kysely.dev/). The server codebase also loosely follows the [Hexagonal Architecture](<https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)>). Specifically, we aim to separate technology specific implementations (`src/repositories`) from core business logic (`src/services`).
+The Gallery Server is a [TypeScript](https://www.typescriptlang.org/) project written for [Node.js](https://nodejs.org/). It uses the [Nest.js](https://nestjs.com) framework, [Express](https://expressjs.com/) server, and the query builder [Kysely](https://kysely.dev/). The server codebase also loosely follows the [Hexagonal Architecture](<https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)>). Specifically, we aim to separate technology specific implementations (`src/repositories`) from core business logic (`src/services`).
 
 ### API Endpoints
 
@@ -75,7 +75,7 @@ The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_tra
 
 ### Background Jobs
 
-Immich uses a [worker](https://github.com/immich-app/immich/blob/main/server/src/utils/misc.ts#L266) to run background jobs. These jobs include:
+Gallery uses a [worker](https://github.com/immich-app/immich/blob/main/server/src/utils/misc.ts#L266) to run background jobs. These jobs include:
 
 - Thumbnail Generation
 - Metadata Extraction
@@ -106,7 +106,7 @@ Machine learning models are also quite _large_, requiring _quite a bit_ of memor
 
 ### Postgres
 
-Immich persists data in Postgres, which includes information about access and authorization, users, albums, asset, sharing settings, etc.
+Gallery persists data in Postgres, which includes information about access and authorization, users, albums, asset, sharing settings, etc.
 
 :::info
 See [Database Migrations](./database-migrations.md) for more information about how to modify the database to create an index, modify a table, add a new column, etc.
@@ -114,4 +114,4 @@ See [Database Migrations](./database-migrations.md) for more information about h
 
 ### Redis
 
-Immich uses [Redis](https://redis.com/) via [BullMQ](https://docs.bullmq.io/) to manage job queues. Some jobs trigger subsequent jobs. For example, Smart Search and Facial Recognition relies on thumbnail generation and automatically run after one is generated.
+Gallery uses [Redis](https://redis.com/) via [BullMQ](https://docs.bullmq.io/) to manage job queues. Some jobs trigger subsequent jobs. For example, Smart Search and Facial Recognition relies on thumbnail generation and automatically run after one is generated.

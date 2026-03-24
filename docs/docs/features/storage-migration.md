@@ -23,7 +23,7 @@ Noodle Gallery includes a built-in tool for migrating files between disk and S3-
 
    This ensures that new uploads during migration go to the correct backend.
 
-3. **Restart Immich** after changing environment variables.
+3. **Restart Gallery** after changing environment variables.
 
 ## Using the Admin UI
 

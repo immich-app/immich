@@ -6,7 +6,7 @@ You can request a new language [here](https://hosted.weblate.org/new-lang/immich
 
 ## Weblate
 
-[Weblate](https://weblate.org/) is a "libre software web-based continuous localization system". Immich localization efforts are managed on their [hosted platform](https://hosted.weblate.org/projects/immich/immich/).
+[Weblate](https://weblate.org/) is a "libre software web-based continuous localization system". Gallery localization efforts are managed on their [hosted platform](https://hosted.weblate.org/projects/immich/immich/).
 
 ## International message format
 
@@ -14,7 +14,7 @@ Plurals, numbers, dates and other locale specific message formats can be handled
 
 ## Progress
 
-Immich currently supports the following languages:
+Gallery currently supports the following languages:
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />

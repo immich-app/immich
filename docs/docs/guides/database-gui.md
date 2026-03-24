@@ -1,6 +1,6 @@
 # Database GUI
 
-A short guide on connecting [pgAdmin](https://www.pgadmin.org/) to Immich.
+A short guide on connecting [pgAdmin](https://www.pgadmin.org/) to Gallery.
 
 ## 1. Install pgAdmin
 
@@ -28,7 +28,7 @@ volumes:
 
 Change the values of `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD` in this file.
 
-Run `docker compose -f docker-compose.yml -f docker-compose-pgadmin.yml up` to start immich along with `pgAdmin`.
+Run `docker compose -f docker-compose.yml -f docker-compose-pgadmin.yml up` to start gallery along with `pgAdmin`.
 
 ## 2. Add a Server
 
@@ -46,8 +46,8 @@ The parameters used here match those specified in the example `.env` file. If yo
 | -------------------- | ----------------- |
 | Host name/address    | `immich_postgres` |
 | Port                 | `5432`            |
-| Maintenance database | `immich`          |
+| Maintenance database | `gallery`         |
 | Username             | `postgres`        |
 | Password             | `postgres`        |
 
-Click on "Save" to connect to the Immich database.
+Click on "Save" to connect to the Gallery database.

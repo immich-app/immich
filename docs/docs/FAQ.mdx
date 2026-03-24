@@ -1,40 +1,14 @@
 # FAQ
 
-## Commercial Guidelines
-
-### Are you open to commercial partnerships and collaborations?
-
-We are working to commercialize Immich and we'd love for you to help us by making Immich better. FUTO is dedicated to developing sustainable models for developing open source software for our customers. We want our customers to be delighted by the products our engineers deliver, and we want our engineers to be paid when they succeed.
-
-If you wish to use Immich in a commercial product not owned by FUTO, we have the following requirements:
-
-- Plugin Integrations: Integrations for other platforms are typically approved, provided proper notification is given.
-
-- Reseller Partnerships: Must adhere to the guidelines outlined below regarding trademark usage, and proper representation.
-
-- Strategic Collaborations: We welcome discussions about mutually beneficial partnerships that enhance the value proposition for both organizations.
-
-### What are your guidelines for resellers and trademark usage?
-
-For organizations seeking to resell Immich, we have established the following guidelines to protect our brand integrity and ensure proper representation.
-
-- We request that resellers do not display our trademarks on their websites or marketing materials. If such usage is discovered, we will contact you to request removal.
-
-- Do not misrepresent your reseller site or services as being officially affiliated with or endorsed by Immich or our development team.
-
-- For small resellers who wish to contribute financially to Immich's development, we recommend directing your customers to purchase product keys directly from us rather than attempting to broker revenue-sharing arrangements. We ask that you refrain from misrepresenting reseller activities as directly supporting our development work.
-
-When in doubt or if you have an edge case scenario, we encourage you to contact us directly via email to discuss the use of our trademark. We can provide clear guidance on what is acceptable and what is not. You can reach out at: questions@immich.app
-
 ## User
 
 ### How can I reset the admin password?
 
 The admin password can be reset by running the [reset-admin-password](/administration/server-commands.md) command on the immich-server.
 
-### How can I see a list of all users in Immich?
+### How can I see a list of all users in Gallery?
 
-You can see the list of all users by running [list-users](/administration/server-commands.md) Command on the Immich-server.
+You can see the list of all users by running [list-users](/administration/server-commands.md) Command on the immich-server.
 
 ---
 
@@ -72,12 +46,12 @@ The behaviors differ based on your device manufacturer and operating system, but
 
 ### Why is background backup on iOS not working?
 
-On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
+On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Gallery app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
 
-- Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
+- Enable Background App Refresh for Gallery in the iOS settings at `Settings > General > Background App Refresh`.
 - Disable **Low Power Mode** when not needed, as this can prevent apps from running in the background.
-- Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
-- Use the Immich app more often.
+- Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Gallery.
+- Use the Gallery app more often.
 
 ### Why are features in the mobile app not working with a self-signed certificate, Basic Auth, custom headers, or mutual TLS?
 
@@ -96,15 +70,15 @@ The app stores can take a few days to approve new builds of the app. If you're i
 
 ## Assets
 
-### Does Immich change the file?
+### Does Gallery change the file?
 
-No, Immich does not modify the original files.
+No, Gallery does not modify the original files.
 All edited metadata is saved in companion `.xmp` sidecar files and the database.
-However, Immich will delete original files that have been trashed when the trash is emptied in the Immich UI.
+However, Gallery will delete original files that have been trashed when the trash is emptied in the Gallery UI.
 
 ### Why do my file names appear as a random string in the file manager?
 
-When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names.
+When Storage Template is off (default) Gallery saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names.
 To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
 It is recommended to read about [Storage Template](/administration/storage-template) before activation.
 
@@ -116,9 +90,9 @@ Yes, with an [External Library](/features/libraries.md).
 
 Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/administration/jobs-workers/#jobs) page.
 
-### Why are only photos and not videos being uploaded to Immich?
+### Why are only photos and not videos being uploaded to Gallery?
 
-This often happens when using a reverse proxy in front of Immich.
+This often happens when using a reverse proxy in front of Gallery.
 Make sure to [set your reverse proxy](/administration/reverse-proxy/) to allow large requests.
 Also, check the disk space of your reverse proxy.
 In some cases, proxies cache requests to disk before passing them on, and if disk space runs out, the request fails.
@@ -137,15 +111,15 @@ the job may not have run automatically the first time.
 
 You can _archive_ them. This will hide the asset from the main timeline and folder view, but it will still show up in searches. All archived assets can be found in the _Archive_ view
 
-### How can I backup data from Immich?
+### How can I backup data from Gallery?
 
 See [Backup and Restore](/administration/backup-and-restore.md).
 
-### Does Immich support reading existing face tag metadata?
+### Does Gallery support reading existing face tag metadata?
 
 Yes, it creates new faces and persons from the imported asset metadata. For details see the [feature request #4348](https://github.com/immich-app/immich/discussions/4348) and [PR #6455](https://github.com/immich-app/immich/pull/6455).
 
-### Does Immich support the filtering of NSFW images?
+### Does Gallery support the filtering of NSFW images?
 
 No, it currently does not. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
 
@@ -161,20 +135,20 @@ Also, there are additional jobs for person (face) thumbnails.
 
 ### Why do files from WhatsApp not appear with the correct date?
 
-Files sent on WhatsApp are saved without metadata on the file. Therefore, Immich has no way of knowing the original date of the file when files are uploaded from WhatsApp,
+Files sent on WhatsApp are saved without metadata on the file. Therefore, Gallery has no way of knowing the original date of the file when files are uploaded from WhatsApp,
 not the order of arrival on the device. [See #9116](https://github.com/immich-app/immich/discussions/9116).
 
 ### What happens if an asset exists in more than one account?
 
 There are no requirements for assets to be unique across users. If multiple users upload the same image, it is processed as if it were a distinct asset, and jobs run and thumbnails are generated accordingly.
 
-### Why do HDR videos appear pale in Immich player but look normal after download?
+### Why do HDR videos appear pale in Gallery player but look normal after download?
 
-Immich uses a player with known HDR color display issues. We are experimenting with a different player that provides better color profiles for HDR content for future improvements.
+Gallery uses a player with known HDR color display issues. We are experimenting with a different player that provides better color profiles for HDR content for future improvements.
 
-### Why does Immich transcode my videos to a lower quality?
+### Why does Gallery transcode my videos to a lower quality?
 
-Immich always keeps your original files. Alongside that, it generates a transcoded version for compatibility and performance reasons.
+Gallery always keeps your original files. Alongside that, it generates a transcoded version for compatibility and performance reasons.
 
 ### How can I delete transcoded videos without deleting the original?
 
@@ -223,9 +197,9 @@ volumes:
 
 ## Albums
 
-### Can I keep my existing album structure while importing assets into Immich?
+### Can I keep my existing album structure while importing assets into Gallery?
 
-Yes, by using the [Immich CLI](/features/command-line-interface) along with the `--album` flag.
+Yes, by using the [Gallery CLI](/features/command-line-interface) along with the `--album` flag.
 
 ### Is there a way to reorder photos within an album?
 
@@ -246,15 +220,15 @@ Duplicate checking only exists for upload libraries, using the file hash. Furthe
 ### Why are my edits to files not being saved in read-only external libraries?
 
 Images in read-write external libraries (the default) can be edited as normal.
-In read-only libraries (`:ro` in the `docker-compose.yml`), Immich is unable to create the `.xmp` sidecar files to store edited file metadata.
+In read-only libraries (`:ro` in the `docker-compose.yml`), Gallery is unable to create the `.xmp` sidecar files to store edited file metadata.
 For this reason, the metadata (timestamp, location, description, star rating, etc.) cannot be edited for files in read-only external libraries.
 
 ### How are deletions of files handled in external libraries?
 
-Immich will attempt to delete original files that have been trashed when the trash is emptied.
-In read-write external libraries (the default), Immich will delete the original file.
+Gallery will attempt to delete original files that have been trashed when the trash is emptied.
+In read-write external libraries (the default), Gallery will delete the original file.
 In read-only libraries (`:ro` in the `docker-compose.yml`), files can still be trashed in the UI.
-However, when the trash is emptied, the files will re-appear in the main timeline since Immich is unable to delete the original file.
+However, when the trash is emptied, the files will re-appear in the main timeline since Gallery is unable to delete the original file.
 
 ---
 
@@ -262,7 +236,7 @@ However, when the trash is emptied, the files will re-appear in the main timelin
 
 ### How does smart search work?
 
-Immich uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. As such, there are no "tags", "labels", or "descriptions" generated that you can look at. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
+Gallery uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. As such, there are no "tags", "labels", or "descriptions" generated that you can look at. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 
@@ -290,12 +264,12 @@ No, this is not supported. Only models listed in the [Hugging Face][huggingface]
 
 You can change to a multilingual CLIP model. See [here](/features/searching#clip-models) for instructions.
 
-### Does Immich support Facial Recognition for videos?
+### Does Gallery support Facial Recognition for videos?
 
-Immich's machine learning feature operates on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
+Gallery's machine learning feature operates on the generated thumbnail. If a face is visible in the video's thumbnail it will be picked up by facial recognition.
 Scanning the entire video for faces may be implemented in the future.
 
-### Does Immich have animal recognition?
+### Does Gallery have animal recognition?
 
 No.
 :::tip
@@ -327,9 +301,9 @@ ls clip/ facial-recognition/
 
 ## Performance
 
-### Why is Immich slow on low-memory systems like the Raspberry Pi?
+### Why is Gallery slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses transcoding and machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/guides/remote-machine-learning), or [disable](/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Gallery optionally uses transcoding and machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/FAQ#can-i-lower-cpu-and-ram-usage) this or host Gallery's machine-learning container on a [more powerful system](/guides/remote-machine-learning), or [disable](/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### Can I lower CPU and RAM usage?
 
@@ -389,9 +363,9 @@ You need to [enable WebSockets](/administration/reverse-proxy/) on your reverse 
 
 ## Docker
 
-### How can I see Immich logs?
+### How can I see Gallery logs?
 
-Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/guides/docker-help.md).
+Gallery components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/guides/docker-help.md).
 
 ### How can I reduce the log verbosity of Redis?
 
@@ -399,7 +373,7 @@ To decrease Redis logs, you can add the following line to the `redis:` section o
 
 `    command: redis-server --loglevel warning`
 
-### How can I run Immich as a non-root user?
+### How can I run Gallery as a non-root user?
 
 You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
 
@@ -433,9 +407,9 @@ cap_drop:
 
 </details>
 
-### How can I purge data from Immich?
+### How can I purge data from Gallery?
 
-Data for Immich comes in two forms:
+Data for Gallery comes in two forms:
 
 1. **Metadata** stored in a Postgres database, stored in the `DB_DATA_LOCATION` folder (previously `pg_data` Docker volume).
 2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/administration/backup-and-restore#asset-types-and-storage-locations).
@@ -444,18 +418,18 @@ Data for Immich comes in two forms:
 This will destroy your database and reset your instance, meaning that you start from scratch.
 :::
 
-```bash title="Remove Immich (containers and volumes)"
+```bash title="Remove Gallery (containers and volumes)"
 docker compose down -v
 ```
 
-After removing the containers and volumes, there are a few directories that need to be deleted to reset Immich to a new installation. Once they are deleted, Immich can be started back up and will be a fresh installation.
+After removing the containers and volumes, there are a few directories that need to be deleted to reset Gallery to a new installation. Once they are deleted, Gallery can be started back up and will be a fresh installation.
 
 - `DB_DATA_LOCATION` contains the database, media info, and settings.
-- `UPLOAD_LOCATION` contains all the media uploaded to Immich.
+- `UPLOAD_LOCATION` contains all the media uploaded to Gallery.
 
 :::note Portainer
 If you use portainer, bring down the stack in portainer. Go into the volumes section  
-and remove all the volumes related to immich then restart the stack.
+and remove all the volumes related to gallery then restart the stack.
 :::
 
 ### Why does the machine learning service report workers crashing?
@@ -469,7 +443,7 @@ There are a few reasons why this can happen.
 If the error mentions SIGKILL or error code 137, it most likely means the service is running out of memory.
 Consider either increasing the server's RAM or moving the service to a server with more RAM.
 
-If it mentions SIGILL (note the lack of a K) or error code 132, it most likely means your server's CPU is incompatible with Immich.
+If it mentions SIGILL (note the lack of a K) or error code 132, it most likely means your server's CPU is incompatible with Gallery.
 
 ## Database
 

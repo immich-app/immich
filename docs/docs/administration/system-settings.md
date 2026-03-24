@@ -1,6 +1,6 @@
 # System Settings
 
-The admin user can manage settings for the Immich instance here.
+The admin user can manage settings for the Gallery instance here.
 
 :::tip
 You can always return to the default settings by clicking the `Reset to default` button.
@@ -12,7 +12,7 @@ Manage password, OAuth, and other authentication settings
 
 ### OAuth Authentication
 
-Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/administration/oauth).
+Gallery supports OAuth Authentication. Read more about this feature and its configuration [here](/administration/oauth).
 
 ### Password Authentication
 
@@ -27,7 +27,7 @@ You can always use the [Server CLI](/administration/server-commands) to re-enabl
 - Thumbnails - Used in the main timeline.
 - Previews - Used in the asset viewer.
 
-By default Immich creates 3 thumbnails for each asset,
+By default Gallery creates 3 thumbnails for each asset,
 Blurred (thumbhash) , Small - thumbnails (webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
 
 **Thumbnail format**  
@@ -91,11 +91,11 @@ You can set the scanning interval using the preset or cron format. For more info
 
 ## Logging
 
-The default Immich log level is `Log` (commonly known as `Info`). The Immich administrator can choose a higher or lower log level according to personal preference or as requested by the Immich support team.
+The default Gallery log level is `Log` (commonly known as `Info`). The Gallery administrator can choose a higher or lower log level according to personal preference or as requested by the Gallery support team.
 
 ## Machine Learning Settings
 
-Through this setting, you can manage all the settings related to machine learning in Immich, from the setting of remote machine learning to the model and its parameters
+Through this setting, you can manage all the settings related to machine learning in Gallery, from the setting of remote machine learning to the model and its parameters
 You can choose to disable a certain type of machine learning, for example smart search or facial recognition.
 
 ### URL
@@ -112,7 +112,7 @@ The [smart search](/features/searching) settings allow you to change the [CLIP m
 
 :::info Internet connection
 Changing models requires a connection to the Internet to download the model.
-After downloading, there is no need for Immich to connect to the network
+After downloading, there is no need for Gallery to connect to the network
 Unless version checking has been enabled in the settings.
 :::
 
@@ -154,7 +154,7 @@ The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for
 
 ### Reverse Geocoding Settings
 
-Immich supports [Reverse Geocoding](/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
+Gallery supports [Reverse Geocoding](/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
 ## Notification Settings
 
@@ -176,7 +176,7 @@ The administrator can set a custom message on the login screen (the message will
 
 ## Storage Template
 
-Immich supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).
+Gallery supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).
 
 ## Theme Settings
 

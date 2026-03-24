@@ -1,6 +1,6 @@
 # OAuth Authentication
 
-This page contains details about using OAuth in Immich.
+This page contains details about using OAuth in Gallery.
 
 :::tip
 Unable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobile Redirect URI](#mobile-redirect-uri) for an alternative solution.
@@ -8,7 +8,7 @@ Unable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobil
 
 ## Overview
 
-Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
+Gallery supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
 
 - [Authentik](https://integrations.goauthentik.io/media/immich/)
 - [Authelia](https://www.authelia.com/integration/openid-connect/immich/)
@@ -17,7 +17,7 @@ Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an i
 
 ## Prerequisites
 
-Before enabling OAuth in Immich, a new client application needs to be configured in the 3rd-party authentication server. While the specifics of this setup vary from provider to provider, the general approach should be the same.
+Before enabling OAuth in Gallery, a new client application needs to be configured in the 3rd-party authentication server. While the specifics of this setup vary from provider to provider, the general approach should be the same.
 
 1. Create a new (Client) Application
    1. The **Provider** type should be `OpenID Connect` or `OAuth2`
@@ -32,7 +32,7 @@ Before enabling OAuth in Immich, a new client application needs to be configured
    - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
    - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
 
-   Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:
+   Redirect URIs should contain all the domains you will be using to access Gallery. Some examples include:
 
    Mobile
    - `app.immich:///oauth-callback` (You **MUST** include this for iOS and Android mobile apps to work properly)
@@ -46,12 +46,12 @@ Before enabling OAuth in Immich, a new client application needs to be configured
    - `http://192.168.0.200:2283/user-settings`
 
    Hostname
-   - `https://immich.example.com/auth/login`
-   - `https://immich.example.com/user-settings`
+   - `https://gallery.example.com/auth/login`
+   - `https://gallery.example.com/user-settings`
 
 ## Enable OAuth
 
-Once you have a new OAuth client application configured, Immich can be configured using the Administration Settings page, available on the web (Administration -> Settings).
+Once you have a new OAuth client application configured, Gallery can be configured using the Administration Settings page, available on the web (Administration -> Settings).
 
 | Setting                                              | Type    | Default              | Description                                                                         |
 | ---------------------------------------------------- | ------- | -------------------- | ----------------------------------------------------------------------------------- |
@@ -90,7 +90,7 @@ The `.well-known/openid-configuration` part of the url is optional and will be a
 ## Auto Launch
 
 When Auto Launch is enabled, the login page will automatically redirect the user to the OAuth authorization url, to login with OAuth. To access the login screen again, use the browser's back button, or navigate directly to `/auth/login?autoLaunch=0`.
-Auto Launch can also be enabled on a per-request basis by navigating to `/auth/login?autoLaunch=1`, this can be useful in situations where Immich is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Immich.
+Auto Launch can also be enabled on a per-request basis by navigating to `/auth/login?autoLaunch=1`, this can be useful in situations where Gallery is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Gallery.
 
 ## Mobile Redirect URI
 
@@ -103,7 +103,7 @@ The redirect URI for the mobile app is `app.immich:///oauth-callback`, which is 
 With these steps in place, you should be able to use OAuth from the [Mobile App](/features/mobile-app.mdx) without a custom scheme redirect URI.
 
 :::info
-Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///oauth-callback`, and can be used for step 1.
+Gallery has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///oauth-callback`, and can be used for step 1.
 :::
 
 ## Example Configuration
@@ -115,7 +115,7 @@ Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to 
 
 Here's an example of OAuth configured for Authelia:
 
-This assumes there exist an attribute `immichquota` in the user schema, which is used to set the user's storage quota in Immich.
+This assumes there exist an attribute `immichquota` in the user schema, which is used to set the user's storage quota in Gallery.
 The configuration concerning the quota is optional.
 
 ```yaml
@@ -169,7 +169,7 @@ identity_providers:
         token_endpoint_auth_method: 'client_secret_post'
 ```
 
-Configuration of OAuth in Immich System Settings
+Configuration of OAuth in Gallery System Settings
 
 | Setting                            | Value                                                               |
 | ---------------------------------- | ------------------------------------------------------------------- |
@@ -202,7 +202,7 @@ Configuration of Authorised redirect URIs (Authentik OAuth2/OpenID Provider)
 
 <img src={require('./img/authentik-redirect-uris-example.webp').default} width='70%' title="Authentik authorised redirect URIs" />
 
-Configuration of OAuth in Immich System Settings
+Configuration of OAuth in Gallery System Settings
 
 | Setting                      | Value                                                                              |
 | ---------------------------- | ---------------------------------------------------------------------------------- |
@@ -233,7 +233,7 @@ Configuration of Authorised redirect URIs (Google Console)
 
 <img src={require('./img/google-redirect-uris-example.webp').default} width='50%' title="Google authorised redirect URIs" />
 
-Configuration of OAuth in Immich System Settings
+Configuration of OAuth in Gallery System Settings
 
 | Setting                      | Value                                                                        |
 | ---------------------------- | ---------------------------------------------------------------------------- |

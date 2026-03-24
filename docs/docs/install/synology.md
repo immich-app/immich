@@ -5,16 +5,16 @@ sidebar_position: 85
 # Synology [Community]
 
 :::note
-This is a community contribution and not officially supported by the Immich team, but included here for convenience.
+This is a community contribution and not officially supported by the Gallery team, but included here for convenience.
 
-Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
+Community support can be found in the dedicated channel on the [Discord Server](https://discord.gg/cxBfbuxyG4).
 :::
 
-Immich can easily be installed on a Synology NAS using Container Manager within DSM. If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager.
+Gallery can easily be installed on a Synology NAS using Container Manager within DSM. If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager.
 
 ## Step 1 - Download the required files
 
-Create a directory of your choice (e.g. `./immich-app`) to house Immich. In general, it's best practice to have all Docker-based applications running under the `./docker` directory, so in this case, your directory structure will look like `./docker/immich-app`.
+Create a directory of your choice (e.g. `./immich-app`) to house Gallery. In general, it's best practice to have all Docker-based applications running under the `./docker` directory, so in this case, your directory structure will look like `./docker/immich-app`.
 
 Now create a `./postgres` and `./library` directory as sub-directories of the `./docker/immich-app`.
 
@@ -23,7 +23,7 @@ When you're all done, you should have the following:
 - `./docker/immich-app/postgres`
 - `./docker/immich-app/library`
 
-Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory, and rename `example.env` to `.env`. Note: If you plan to use the Synology Text editor to edit the `.env` file on the NAS within File Station, you will need to rename it to a temporary name (e.g. `example.txt`) in order to see 'Open with Text Editor' in the file context menu. Once saved, rename it back to `.env`.
+Download [`docker-compose.yml`](https://github.com/open-noodle/gallery/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/open-noodle/gallery/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory, and rename `example.env` to `.env`. Note: If you plan to use the Synology Text editor to edit the `.env` file on the NAS within File Station, you will need to rename it to a temporary name (e.g. `example.txt`) in order to see 'Open with Text Editor' in the file context menu. Once saved, rename it back to `.env`.
 
 ## Step 2 - Populate the .env file with custom values
 
@@ -52,7 +52,7 @@ Scroll to the bottom of the "**Details**" section and find the `IP Address` list
 
 ## Step 4 - Configure Firewall Settings
 
-Once your project completes the build process, your containers will start. In order to be able to access Immich from your browser, you need to configure the firewall settings for your Synology NAS.
+Once your project completes the build process, your containers will start. In order to be able to access Gallery from your browser, you need to configure the firewall settings for your Synology NAS.
 
 Open "**Control Panel**" on your Synology NAS, and select "**Security**". Navigate to "**Firewall**"
 
@@ -73,7 +73,7 @@ Click "**Edit Rules**" and add the following firewall rules:
 Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instructions](/install/upgrading.md).
 
 <details>
-  <summary>Updating Immich using Container Manager</summary>
+  <summary>Updating Gallery using Container Manager</summary>
 Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
 ## Step 1. Backup
@@ -86,7 +86,7 @@ Always check the [release notes](https://github.com/immich-app/immich/releases) 
 
 ## Step 3. Stop containers & clean up
 
-Open **Container Manager**. Select **Project** then your Immich app
+Open **Container Manager**. Select **Project** then your Gallery app
 
 ![Select project](../../static/img/synology-select-proj.png)
 

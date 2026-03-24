@@ -1,6 +1,6 @@
 # Pet Detection
 
-Immich can automatically detect pets and other animals in your photos using YOLO11 object detection. Detected animals appear in the **People** section alongside human faces, making it easy to browse all photos of a specific pet.
+Gallery can automatically detect pets and other animals in your photos using YOLO11 object detection. Detected animals appear in the **People** section alongside human faces, making it easy to browse all photos of a specific pet.
 
 ## How It Works
 

@@ -6,9 +6,9 @@ sidebar_position: 1
 
 ## Overview
 
-Immich supports uploading photos and videos from your mobile device to the server automatically.
+Gallery supports uploading photos and videos from your mobile device to the server automatically.
 
-When backup is enabled, Immich will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background.
+When backup is enabled, Gallery will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background.
 
 <img
 src={require('./img/enable-backup-button.webp').default}
@@ -30,11 +30,11 @@ You can select which albums on your mobile device to back up to the server. You 
 
 ### Deduplication
 
-When you first select albums for backup, Immich calculates a checksum for each file's content. This checksum identifies assets already on the server—whether uploaded via CLI, web interface, or another device. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.
+When you first select albums for backup, Gallery calculates a checksum for each file's content. This checksum identifies assets already on the server—whether uploaded via CLI, web interface, or another device. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.
 
 ### Networking requirements
 
-By default, Immich will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.
+By default, Gallery will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.
 
 <img
 src={require('./img/backup-options.webp').default}
@@ -50,7 +50,7 @@ width="400px"
 title="Backup album synchronization option"
 />
 
-When enabled, Immich automatically creates albums on the server that mirror the albums on your mobile device. Photos and videos are organized into these server-side albums to match your device's album structure, making it easy to find and browse your content the same way you do on your phone.
+When enabled, Gallery automatically creates albums on the server that mirror the albums on your mobile device. Photos and videos are organized into these server-side albums to match your device's album structure, making it easy to find and browse your content the same way you do on your phone.
 
 This is a one-way sync from your device to the server. You can enable this feature at any time and use the **Reorganize into album** button to backfill existing uploads into their corresponding albums.
 
@@ -80,6 +80,6 @@ title="Android backup options"
 
 #### iCloud Backup
 
-Local albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.
+Local albums containing assets from iCloud and marked for backup in Gallery will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.
 
 This process may consume additional data and storage space on your device, especially if you have a large number of iCloud photos and videos. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.

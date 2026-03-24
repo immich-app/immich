@@ -2,15 +2,15 @@
 
 ## Overview
 
-Immich provides a variety of performance metrics to allow for local monitoring and insights. This integration is primarily in the form of Prometheus metrics. However, exporting traces is also possible due to the use of OpenTelemetry instrumentation.
+Gallery provides a variety of performance metrics to allow for local monitoring and insights. This integration is primarily in the form of Prometheus metrics. However, exporting traces is also possible due to the use of OpenTelemetry instrumentation.
 
 :::note
-This is an opt-in feature intended for you to monitor immich's performance. This data isn't sent anywhere beyond what you've configured.
+This is an opt-in feature intended for you to monitor gallery's performance. This data isn't sent anywhere beyond what you've configured.
 :::
 
 ## Prometheus
 
-Prometheus is a tool that collects metrics from a number of sources you configure. It operates in a "pull" strategy - that is, it periodically requests metrics from each defined source. This means that the source doesn't send anything until it's requested. It also means that the source -- immich, in this case -- has to expose an endpoint for Prometheus to target when it requests metrics.
+Prometheus is a tool that collects metrics from a number of sources you configure. It operates in a "pull" strategy - that is, it periodically requests metrics from each defined source. This means that the source doesn't send anything until it's requested. It also means that the source -- gallery, in this case -- has to expose an endpoint for Prometheus to target when it requests metrics.
 
 ### Metrics
 
@@ -21,11 +21,11 @@ These metrics come in a variety of forms:
 - Histograms, where each observation is assigned to a certain number of "buckets". Example: response time, where each bucket is a number of milliseconds. This one is a bit more complicated.
   - Buckets in this case are _cumulative_; that is, an observation is placed not only into the smallest bucket that contains it, but also to all buckets larger than this. For example, if a histogram has three buckets for 1ms, 5ms and 10ms, an observation of 3ms will be bucketed into both 5ms and 10ms.
 
-The metrics in immich are grouped into API (endpoint calls and response times), host (memory and CPU utilization), and IO (internal database queries, image processing, and so on). Each group of metrics can be enabled or disabled independently.
+The metrics in gallery are grouped into API (endpoint calls and response times), host (memory and CPU utilization), and IO (internal database queries, image processing, and so on). Each group of metrics can be enabled or disabled independently.
 
 ### Configuration
 
-Immich will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_TELEMETRY_INCLUDE=all` environmental variable to your `.env` file. Note that only the server container currently use this variable.
+Gallery will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_TELEMETRY_INCLUDE=all` environmental variable to your `.env` file. Note that only the server container currently use this variable.
 
 :::tip
 `IMMICH_TELEMETRY_INCLUDE=all` enables all metrics. For a more granular configuration you can enumerate the telemetry metrics that should be included as a comma separated list (e.g. `IMMICH_TELEMETRY_INCLUDE=repo,api`). Alternatively, you can also exclude specific metrics with `IMMICH_TELEMETRY_EXCLUDE`. For more information refer to the [environment section](/install/environment-variables.md#prometheus).
@@ -63,7 +63,7 @@ The last piece is the [configuration file][prom-file]. This file defines (among 
 The provided file is just a starting point. There are a ton of ways to configure Prometheus, so feel free to experiment!
 :::
 
-After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the immich server and microservices containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
+After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the gallery server and microservices containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
 
 :::note
 To see exactly what metrics are made available, you can additionally add `8081:8081` (API metrics) and `8082:8082` (microservices metrics) to the immich_server container's ports.
@@ -114,11 +114,11 @@ You can then make a new panel, specifying Prometheus as the data source for it.
 
 ## Structured Logging
 
-In addition to Prometheus metrics, Immich supports structured JSON logging which is ideal for log aggregation systems like Grafana Loki, ELK Stack, Datadog, Splunk, and others.
+In addition to Prometheus metrics, Gallery supports structured JSON logging which is ideal for log aggregation systems like Grafana Loki, ELK Stack, Datadog, Splunk, and others.
 
 ### Configuration
 
-By default, Immich outputs human-readable console logs. To enable JSON logging, set the `IMMICH_LOG_FORMAT` environment variable:
+By default, Gallery outputs human-readable console logs. To enable JSON logging, set the `IMMICH_LOG_FORMAT` environment variable:
 
 ```bash
 IMMICH_LOG_FORMAT=json
@@ -148,4 +148,4 @@ This format includes:
 
 For more information on log formats, see [`IMMICH_LOG_FORMAT`](/install/environment-variables.md#general).
 
-[prom-file]: https://github.com/immich-app/immich/releases/latest/download/prometheus.yml
+[prom-file]: https://github.com/open-noodle/gallery/releases/latest/download/prometheus.yml

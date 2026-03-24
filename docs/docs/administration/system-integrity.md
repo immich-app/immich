@@ -6,7 +6,7 @@
 The folders considered for these checks include: `upload/`, `library/`, `thumbs/`, `encoded-video/`, `profile/`, `backups/`
 :::
 
-When Immich starts, it performs a series of checks in order to validate that it can read and write files to the volume mounts used by the storage system. If it cannot perform all the required operations, it will fail to start. The checks include:
+When Gallery starts, it performs a series of checks in order to validate that it can read and write files to the volume mounts used by the storage system. If it cannot perform all the required operations, it will fail to start. The checks include:
 
 - Creating an initial hidden file (`.immich`) in each folder
 - Reading a hidden file (`.immich`) in each folder
@@ -20,7 +20,7 @@ The checks are designed to catch the following situations:
 ### Common issues
 
 :::note
-`.immich` files serve as markers and help keep track of volume mounts being used by Immich. Except for the situations listed below, they should never be manually created or deleted.
+`.immich` files serve as markers and help keep track of volume mounts being used by Gallery. Except for the situations listed below, they should never be manually created or deleted.
 :::
 
 #### Missing `.immich` files

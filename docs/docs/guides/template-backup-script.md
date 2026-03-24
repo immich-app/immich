@@ -4,10 +4,10 @@
 
 This script assumes you have a second hard drive connected to your server for on-site backup and ssh access to a remote machine for your third off-site copy. [BorgBase](https://www.borgbase.com/) is an alternative option for off-site backups with a competitive pricing structure. You may choose to skip off-site backups entirely by removing the relevant lines from the template script.
 
-The database is saved to your Immich upload folder in the `database-backup` subdirectory. The database is then backed up and versioned with your assets by Borg. This ensures that the database backup is in sync with your assets in every snapshot.
+The database is saved to your Gallery upload folder in the `database-backup` subdirectory. The database is then backed up and versioned with your assets by Borg. This ensures that the database backup is in sync with your assets in every snapshot.
 
 :::info
-This script makes backups of your database along with your photo/video library. This is redundant with the [automatic database backup tool](/administration/backup-and-restore#automatic-database-dumps) built into Immich. Using this script to backup your database has two advantages over the built-in backup tool:
+This script makes backups of your database along with your photo/video library. This is redundant with the [automatic database backup tool](/administration/backup-and-restore#automatic-database-dumps) built into Gallery. Using this script to backup your database has two advantages over the built-in backup tool:
 
 - This script uses storage more efficiently by versioning your backups instead of making multiple copies.
 - The database backups are performed at the same time as the library backup, ensuring that the backups of your database and the library are always in sync.
@@ -24,7 +24,7 @@ If you are using this script, it is therefore safe to turn off the built-in auto
 To initialize the borg repository, run the following commands once.
 
 ```bash title='Borg set-up'
-UPLOAD_LOCATION="/path/to/immich/directory"       # Immich database location, as set in your .env file
+UPLOAD_LOCATION="/path/to/gallery/directory"       # Gallery database location, as set in your .env file
 BACKUP_PATH="/path/to/local/backup/directory"
 
 mkdir "$UPLOAD_LOCATION/database-backup"
@@ -43,7 +43,7 @@ Edit the following script as necessary and add it to your crontab. Note that thi
 #!/bin/sh
 
 # Paths
-UPLOAD_LOCATION="/path/to/immich/directory"
+UPLOAD_LOCATION="/path/to/gallery/directory"
 BACKUP_PATH="/path/to/local/backup/directory"
 REMOTE_HOST="remote_host@IP"
 REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
@@ -51,7 +51,7 @@ REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
 
 ### Local
 
-# Backup Immich database
+# Backup Gallery database
 docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME> > "$UPLOAD_LOCATION"/database-backup/immich-database.sql
 # For deduplicating backup programs such as Borg or Restic, compressing the content can increase backup size by making it harder to deduplicate. If you are using a different program or still prefer to compress, you can use the following command instead:
 # docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME> | /usr/bin/gzip --rsyncable > "$UPLOAD_LOCATION"/database-backup/immich-database.sql.gz

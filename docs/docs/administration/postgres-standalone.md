@@ -1,8 +1,8 @@
 # Pre-existing Postgres
 
-While not officially recommended, it is possible to run Immich using a pre-existing Postgres server. To use this setup, you should have a baseline level of familiarity with Postgres and the Linux command line. If you do not have these, we recommend using the default setup with a dedicated Postgres container.
+While not officially recommended, it is possible to run Gallery using a pre-existing Postgres server. To use this setup, you should have a baseline level of familiarity with Postgres and the Linux command line. If you do not have these, we recommend using the default setup with a dedicated Postgres container.
 
-By default, Immich expects superuser permission on the Postgres database and requires certain extensions to be installed. This guide outlines the steps required to prepare a pre-existing Postgres server to be used by Immich.
+By default, Gallery expects superuser permission on the Postgres database and requires certain extensions to be installed. This guide outlines the steps required to prepare a pre-existing Postgres server to be used by Gallery.
 
 :::tip
 Running with a pre-existing Postgres server can unlock powerful administrative features, including logical replication and streaming write-ahead log backups using programs like pgBackRest or Barman.
@@ -17,11 +17,11 @@ running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres versio
 You must install VectorChord into your instance of Postgres using their [instructions][vchord-install]. After installation, add `shared_preload_libraries = 'vchord.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vchord.so'`.
 
 :::note Supported versions
-Immich is known to work with Postgres versions `>= 14, < 19`.
+Gallery is known to work with Postgres versions `>= 14, < 19`.
 
 VectorChord is known to work with pgvector versions `>= 0.7, < 0.9`.
 
-The Immich server will check the VectorChord version on startup to ensure compatibility, and refuse to start if a compatible version is not found.
+The Gallery server will check the VectorChord version on startup to ensure compatibility, and refuse to start if a compatible version is not found.
 The current accepted range for VectorChord is `>= 0.3, < 2.0`.
 :::
 
@@ -41,21 +41,21 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 
 ## With superuser permission
 
-Typically Immich expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;` at the `psql` console. If you prefer not to grant superuser permissions, follow the instructions in the next section.
+Typically Gallery expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;` at the `psql` console. If you prefer not to grant superuser permissions, follow the instructions in the next section.
 
 ## Without superuser permission
 
 :::caution
-This method is recommended for **advanced users only** and often requires manual intervention when updating Immich.
+This method is recommended for **advanced users only** and often requires manual intervention when updating Gallery.
 :::
 
 :::danger
 Currently, automated backups require superuser permission due to the usage of `pg_dumpall`.
 :::
 
-Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
+Gallery can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
-```sql title="Set up Postgres for Immich"
+```sql title="Set up Postgres for Gallery"
 CREATE DATABASE <immichdatabasename>;
 \c <immichdatabasename>
 BEGIN;
@@ -67,7 +67,7 @@ COMMIT;
 
 ### Updating VectorChord
 
-When installing a new version of VectorChord, you will need to manually update the extension and reindex by connecting to the Immich database and running:
+When installing a new version of VectorChord, you will need to manually update the extension and reindex by connecting to the Gallery database and running:
 
 ```
 ALTER EXTENSION vchord UPDATE;
@@ -92,9 +92,9 @@ The easiest option is to have both extensions installed during the migration:
 3. [Install VectorChord][vchord-install]
 4. Add `shared_preload_libraries= 'vchord.so, vectors.so'` to your `postgresql.conf`, making sure to include _both_ `vchord.so` and `vectors.so`. You may include other libraries here as well if needed
 5. Restart the Postgres database
-6. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;` using psql or your choice of database client
-7. Start Immich and wait for the logs `Reindexed face_index` and `Reindexed clip_index` to be output
-8. If Immich does not have superuser permissions, run the SQL command `DROP EXTENSION vectors;`
+6. If Gallery does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;` using psql or your choice of database client
+7. Start Gallery and wait for the logs `Reindexed face_index` and `Reindexed clip_index` to be output
+8. If Gallery does not have superuser permissions, run the SQL command `DROP EXTENSION vectors;`
 9. Drop the old schema by running `DROP SCHEMA vectors;`
 10. Remove the `vectors.so` entry from the `shared_preload_libraries` setting
 11. Restart the Postgres database
@@ -136,7 +136,7 @@ ALTER TABLE smart_search ALTER COLUMN embedding SET DATA TYPE vector(<number>);
 ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512);
 ```
 
-5. Start Immich and let it create new indices using VectorChord
+5. Start Gallery and let it create new indices using VectorChord
 
 </details>
 
@@ -146,9 +146,9 @@ ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512);
 <summary>Migration steps</summary>
 1. Ensure you have at least 0.7.0 of pgvector installed. If it is below that, please upgrade it and run the SQL command `ALTER EXTENSION vector UPDATE;` using psql or your choice of database client
 2. Follow the Prerequisites to install VectorChord
-3. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;`
-4. Remove the `DB_VECTOR_EXTENSION=pgvector` environmental variable as it will make Immich still use pgvector if set
-5. Start Immich and let it create new indices using VectorChord
+3. If Gallery does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;`
+4. Remove the `DB_VECTOR_EXTENSION=pgvector` environmental variable as it will make Gallery still use pgvector if set
+5. Start Gallery and let it create new indices using VectorChord
 
 </details>
 

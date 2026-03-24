@@ -1,6 +1,6 @@
 # User Settings
 
-Immich gives each user the ability to manage their own settings. This includes being able to update their profile, toggle certain feature, generate API keys, manage the logged in devices, a view of account usage statistics, and more.
+Gallery gives each user the ability to manage their own settings. This includes being able to update their profile, toggle certain feature, generate API keys, manage the logged in devices, a view of account usage statistics, and more.
 
 <img src={require('./img/user-settings-3.webp').default} width="60%" title='User settings lists' />
 

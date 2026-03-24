@@ -2,7 +2,7 @@
 
 <img src={require('./img/backup-header.webp').default} width='50%' title='Backup button' />
 
-2. You can select which album(s) you want to back up to the Immich server from the backup screen.
+2. You can select which album(s) you want to back up to the Gallery server from the backup screen.
 
 <img src={require('./img/album-selection.webp').default} width='50%' title='Backup button' />
 

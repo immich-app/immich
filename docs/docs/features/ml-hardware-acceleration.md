@@ -95,7 +95,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 You can confirm the device is being recognized and used by checking its utilization. There are many tools to display this, such as `nvtop` for NVIDIA or Intel, `intel_gpu_top` for Intel, and `radeontop` for AMD.
 
-You can also check the logs of the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, or when you search with text in Immich, you should either see a log for `Available ORT providers` containing the relevant provider (e.g. `CUDAExecutionProvider` in the case of CUDA), or a `Loaded ANN model` log entry without errors in the case of ARM NN.
+You can also check the logs of the `immich-machine-learning` container. When a Smart Search or Face Detection job begins, or when you search with text in Gallery, you should either see a log for `Available ORT providers` containing the relevant provider (e.g. `CUDAExecutionProvider` in the case of CUDA), or a `Loaded ANN model` log entry without errors in the case of ARM NN.
 
 #### Single Compose File
 
@@ -156,7 +156,7 @@ This approach can be used to simply specify a particular device as well. For exa
 
 Note that you should increase job concurrencies to increase overall utilization and more effectively distribute work across multiple GPUs. Additionally, each GPU must be able to load all models. It is not possible to distribute a single model to multiple GPUs that individually have insufficient VRAM, or to delegate a specific model to one GPU.
 
-[hw-file]: https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
+[hw-file]: https://github.com/open-noodle/gallery/releases/latest/download/hwaccel.ml.yml
 [nvct]: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
 ## Tips

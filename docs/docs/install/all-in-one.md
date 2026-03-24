@@ -5,7 +5,7 @@ sidebar_position: 70
 # All-In-One [Community]
 
 :::note
-This is a community contribution and not officially supported by the Immich team, but included here for convenience.
+This is a community contribution and not officially supported by the Gallery team, but included here for convenience.
 
 **Please report issues to the corresponding [Github Repository][github].**
 :::

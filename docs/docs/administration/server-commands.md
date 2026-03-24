@@ -12,8 +12,8 @@ The `immich-server` docker image comes preinstalled with an administrative CLI (
 | `enable-maintenance-mode`  | Enable maintenance mode                                       |
 | `enable-oauth-login`       | Enable OAuth login                                            |
 | `disable-oauth-login`      | Disable OAuth login                                           |
-| `list-users`               | List Immich users                                             |
-| `version`                  | Print Immich version                                          |
+| `list-users`               | List Gallery users                                            |
+| `version`                  | Print Gallery version                                         |
 | `change-media-location`    | Change database file paths to align with a new media location |
 
 ## How to run a command
@@ -30,8 +30,8 @@ Found Admin:
 - ID=e65e6f88-2a30-4dbe-8dd9-1885f4889b53
 - OAuth ID=
 - Email=admin@example.com
-- Name=Immich Admin
-? Please choose a new password (optional) immich-is-cool
+- Name=Gallery Admin
+? Please choose a new password (optional) gallery-is-cool
 The admin password has been updated.
 ```
 
@@ -87,8 +87,8 @@ immich-admin list-users
 [
   {
     id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',
-    email: 'immich@example.com.com',
-    name: 'Immich Admin',
+    email: 'gallery@example.com.com',
+    name: 'Gallery Admin',
     storageLabel: 'admin',
     externalPath: null,
     profileImagePath: 'upload/profile/e65e6f88-2a30-4dbe-8dd9-1885f4889b53/e65e6f88-2a30-4dbe-8dd9-1885f4889b53.jpg',
@@ -102,7 +102,7 @@ immich-admin list-users
 ]
 ```
 
-Print Immich Version
+Print Gallery Version
 
 ```
 immich-admin version

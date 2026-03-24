@@ -9,9 +9,9 @@ Make sure to read the [`CONTRIBUTING.md`](https://github.com/immich-app/immich/b
 :::
 
 :::note
-If there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:
+If there's a feature you're planning to work on, just give us a heads up on [our Discord](https://discord.gg/cxBfbuxyG4) so we can:
 
-1. Let you know if it's something we would accept into Immich
+1. Let you know if it's something we would accept into Gallery
 2. Provide any guidance on how something like that would ideally be implemented
 3. Ensure nobody is already working on that issue/feature so we don't duplicate effort
 
@@ -58,7 +58,7 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 
 If you only want to do web development connected to an existing, remote backend, follow these steps:
 
-1. Build the Immich SDK - `cd open-api/typescript-sdk && pnpm i && pnpm run build && cd -`
+1. Build the Gallery SDK - `cd open-api/typescript-sdk && pnpm i && pnpm run build && cd -`
 2. Enter the web directory - `cd web/`
 3. Install web dependencies - `pnpm i`
 4. Start the web development server
@@ -76,9 +76,9 @@ pnpm run dev
 
 #### `@immich/ui`
 
-To see local changes to `@immich/ui` in Immich, do the following:
+To see local changes to `@immich/ui` in Gallery, do the following:
 
-1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`
+1. Install `@immich/ui` as a sibling to `gallery/`, for example `/home/user/gallery` and `/home/user/ui`
 2. Build the `@immich/ui` project via `pnpm run build`
 3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
 4. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
@@ -91,7 +91,7 @@ To see local changes to `@immich/ui` in Immich, do the following:
 #### Setup
 
 1. [Install mise](https://mise.jdx.dev/installing-mise.html).
-2. Change to the immich (root) directory and trust the mise config with `mise trust`.
+2. Change to the gallery (root) directory and trust the mise config with `mise trust`.
 3. Install tools with mise: `mise install`.
 4. Change to the `mobile/` directory.
 5. Run `flutter pub get` to install the dependencies.
@@ -100,7 +100,7 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 #### Translation
 
-To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then, from the `mobile/` directory, run
+To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the gallery project. Then, from the `mobile/` directory, run
 
 ```bash
 make translation

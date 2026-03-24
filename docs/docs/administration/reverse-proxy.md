@@ -1,18 +1,18 @@
 # Reverse Proxy
 
-Users can deploy a custom reverse proxy that forwards requests to Immich. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Real-IP`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
+Users can deploy a custom reverse proxy that forwards requests to Gallery. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. All reverse proxies between Gallery and the user must forward all headers and set the `Host`, `X-Real-IP`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Gallery.
 
 :::caution
-Immich does not support being served on a sub-path such as `location /immich {`. It has to be served on the root path of a (sub)domain.
+Gallery does not support being served on a sub-path such as `location /gallery {`. It has to be served on the root path of a (sub)domain.
 :::
 
 :::info
-If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), you may want to verify that the Immich well-known endpoint (`/.well-known/immich`) gets correctly routed to Immich, otherwise it will likely be routed elsewhere and the mobile app may run into connection issues.
+If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), you may want to verify that the Gallery well-known endpoint (`/.well-known/immich`) gets correctly routed to Gallery, otherwise it will likely be routed elsewhere and the mobile app may run into connection issues.
 :::
 
 ### Nginx example config
 
-Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
+Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Gallery server.
 
 ```nginx
 server {
@@ -60,7 +60,7 @@ server {
 As an alternative to nginx, you can also use [Caddy](https://caddyserver.com/) as a reverse proxy (with automatic HTTPS configuration). Below is an example config.
 
 ```
-immich.example.org {
+gallery.example.org {
     reverse_proxy http://<snip>:2283
 }
 ```
@@ -84,7 +84,7 @@ Below is an example config for Apache2 site configuration.
 
 The example below is for Traefik version 3.
 
-The most important is to increase the `respondingTimeouts` of the entrypoint used by immich. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leeds to videos stop uploading after 1 minute (Error Code 499). With this config it will fail after 10 minutes which is in most cases enough. Increase it if needed.
+The most important is to increase the `respondingTimeouts` of the entrypoint used by gallery. In this example of entrypoint `websecure` for port `443`. Per default it's set to 60s which leeds to videos stop uploading after 1 minute (Error Code 499). With this config it will fail after 10 minutes which is in most cases enough. Increase it if needed.
 
 `traefik.yaml`
 
@@ -100,7 +100,7 @@ entryPoints:
         idleTimeout: 600s
 ```
 
-The second part is in the `docker-compose.yml` file where immich is in. Add the Traefik specific labels like in the example.
+The second part is in the `docker-compose.yml` file where gallery is in. Add the Traefik specific labels like in the example.
 
 `docker-compose.yml`
 
@@ -111,10 +111,10 @@ services:
     labels:
       traefik.enable: true
       # increase readingTimeouts for the entrypoint used here
-      traefik.http.routers.immich.entrypoints: websecure
-      traefik.http.routers.immich.rule: Host(`immich.your-domain.com`)
-      traefik.http.services.immich.loadbalancer.server.port: 2283
+      traefik.http.routers.gallery.entrypoints: websecure
+      traefik.http.routers.gallery.rule: Host(`gallery.your-domain.com`)
+      traefik.http.services.gallery.loadbalancer.server.port: 2283
 ```
 
-Keep in mind, that Traefik needs to communicate with the network where immich is in, usually done
+Keep in mind, that Traefik needs to communicate with the network where gallery is in, usually done
 by adding the Traefik network to the `immich-server`.

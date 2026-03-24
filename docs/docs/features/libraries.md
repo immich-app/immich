@@ -4,13 +4,13 @@
 Currently an external library can only belong to a single user which is selected when the library is initially created.
 :::
 
-External libraries track assets stored in the filesystem outside of Immich. When the external library is scanned, Immich will load videos and photos from disk and create the corresponding assets. These assets will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc. Later, if a file is modified outside of Immich, you need to scan the library for the changes to show up.
+External libraries track assets stored in the filesystem outside of Gallery. When the external library is scanned, Gallery will load videos and photos from disk and create the corresponding assets. These assets will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc. Later, if a file is modified outside of Gallery, you need to scan the library for the changes to show up.
 
-If an external asset is deleted from disk, Immich will move it to trash on rescan. To restore the asset, you need to restore the original file. After 30 days the file will be removed from trash, and any changes to metadata within Immich will be lost.
+If an external asset is deleted from disk, Gallery will move it to trash on rescan. To restore the asset, you need to restore the original file. After 30 days the file will be removed from trash, and any changes to metadata within Gallery will be lost.
 
 :::caution
 
-If you add metadata to an external asset in any way (i.e. add it to an album or edit the description), that metadata is only stored inside Immich and will not be persisted to the external asset file. If you move an asset to another location within the library all such metadata will be lost upon rescan. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
+If you add metadata to an external asset in any way (i.e. add it to an album or edit the description), that metadata is only stored inside Gallery and will not be persisted to the external asset file. If you move an asset to another location within the library all such metadata will be lost upon rescan. This is because the asset is considered a new asset after the move. This is a known issue and will be fixed in a future release.
 
 :::
 
@@ -28,7 +28,7 @@ If the import paths are edited in a way that an external file is no longer in an
 
 ### Troubleshooting
 
-Sometimes, an external library will not scan correctly. This can happen if Immich can't access the files. Here are some things to check:
+Sometimes, an external library will not scan correctly. This can happen if Gallery can't access the files. Here are some things to check:
 
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes also mounted to any worker containers?
@@ -37,7 +37,7 @@ Sometimes, an external library will not scan correctly. This can happen if Immic
 - Are the permissions set correctly?
 - Make sure you are using forward slashes (`/`) and not backward slashes.
 
-To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/mnt/photos`, check it with `ls /mnt/photos`. If you are using a dedicated microservices container, make sure to add the same mount point and check for availability within the microservices container as well.
+To validate that Gallery can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/mnt/photos`, check it with `ls /mnt/photos`. If you are using a dedicated microservices container, make sure to add the same mount point and check for availability within the microservices container as well.
 
 ### Exclusion Patterns
 
@@ -55,24 +55,24 @@ Special characters such as @ should be escaped, for instance:
 - `**/\@eaDir/**` will exclude all files in any directory named `@eaDir`
 
 :::info
-Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package to process exclusion patterns, and sometimes those patterns are translated into [Postgres LIKE patterns](https://www.postgresql.org/docs/current/functions-matching.html). The intention is to support basic folder exclusions but we recommend against advanced usage since those can't reliably be translated to the Postgres syntax. Please refer to the [glob documentation](https://github.com/isaacs/node-glob#glob-primer) for a basic overview on glob patterns.
+Internally, Gallery uses the [glob](https://www.npmjs.com/package/glob) package to process exclusion patterns, and sometimes those patterns are translated into [Postgres LIKE patterns](https://www.postgresql.org/docs/current/functions-matching.html). The intention is to support basic folder exclusions but we recommend against advanced usage since those can't reliably be translated to the Postgres syntax. Please refer to the [glob documentation](https://github.com/isaacs/node-glob#glob-primer) for a basic overview on glob patterns.
 :::
 
 ### Automatic watching (EXPERIMENTAL)
 
-This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
+This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Gallery without needing to rescan.
 
 If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a [periodic library refresh](#set-custom-scan-interval) to pull in your changes.
 
 #### Troubleshooting
 
-If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In sysctl, this key is called `fs.inotify.max_user_watches` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Immich has to watch all files in your import paths including any ignored files.
+If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In sysctl, this key is called `fs.inotify.max_user_watches` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Gallery has to watch all files in your import paths including any ignored files.
 
 ```
 ERROR [LibraryService] Library watcher for library c69faf55-f96d-4aa0-b83b-2d80cbc27d98 encountered error: Error: ENOSPC: System limit for number of file watchers reached, watch '/media/photo.jpg'
 ```
 
-In rare cases, the library watcher can hang, preventing Immich from starting up. In this case, disable the library watcher in the configuration file. If the watcher is enabled from within Immich, the app must be started without the microservices. Disable the microservices in the docker compose file, start Immich, disable the library watcher in the admin settings, close Immich, re-enable the microservices, and then Immich can be started normally.
+In rare cases, the library watcher can hang, preventing Gallery from starting up. In this case, disable the library watcher in the configuration file. If the watcher is enabled from within Gallery, the app must be started without the microservices. Disable the microservices in the docker compose file, start Gallery, disable the library watcher in the admin settings, close Gallery, re-enable the microservices, and then Gallery can be started normally.
 
 ### Nightly job
 
@@ -86,10 +86,10 @@ When deleting an external library, all assets inside are immediately deleted alo
 
 ## Usage
 
-Let's show a concrete example where we add an existing gallery to Immich. Here, we have the following folders we want to add:
+Let's show a concrete example where we add an existing gallery to Gallery. Here, we have the following folders we want to add:
 
 - `/home/user/old-pics`: a folder containing childhood photos.
-- `/mnt/nas/christmas-trip`: photos from a christmas trip. The subfolder `/mnt/nas/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Immich
+- `/mnt/nas/christmas-trip`: photos from a christmas trip. The subfolder `/mnt/nas/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Gallery
 - `/mnt/media/videos`: Videos from the same christmas trip.
 
 First, we need to plan how we want to organize the libraries. The christmas trip photos should belong to its own library since we want to exclude the raw files. The videos and old photos can be in the same library since we want to import all files. We could also add all three folders to the same library if there are no files matching the Raw exclusion pattern in the other folders.
@@ -105,7 +105,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
-+     - /mnt/media/videos2:/mnt/media/videos2 # WARNING: Immich will be able to delete the files in this folder, as it does not end with :ro
++     - /mnt/media/videos2:/mnt/media/videos2 # WARNING: Gallery will be able to delete the files in this folder, as it does not end with :ro
 +     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
@@ -120,7 +120,7 @@ _Remember to run `docker compose up -d` to register the changes. Make sure you c
 
 ### Create A New Library
 
-These actions must be performed by the Immich administrator.
+These actions must be performed by the Gallery administrator.
 
 - Click on your avatar in the upper right corner.
 - Click on `Administration -> External Libraries`.

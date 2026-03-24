@@ -1,6 +1,6 @@
 # S3-Compatible Storage
 
-Immich supports using S3-compatible object storage (such as AWS S3, MinIO, Cloudflare R2, Backblaze B2, or Wasabi) as the storage backend for new uploads. This is useful for scaling storage independently of the server, leveraging cloud durability, or integrating with existing infrastructure.
+Gallery supports using S3-compatible object storage (such as AWS S3, MinIO, Cloudflare R2, Backblaze B2, or Wasabi) as the storage backend for new uploads. This is useful for scaling storage independently of the server, leveraging cloud durability, or integrating with existing infrastructure.
 
 :::tip
 If you have existing files on disk, you can migrate them to S3 using the built-in [Storage Migration](/features/storage-migration) tool.
@@ -14,12 +14,12 @@ When S3 storage is enabled:
 - **Existing files** on disk continue to be served from disk — both backends run simultaneously.
 - The [Storage Template](/administration/storage-template) determines the S3 object key at upload time.
 
-Immich supports two modes for serving files from S3:
+Gallery supports two modes for serving files from S3:
 
-| Mode       | Behavior                                                                                         |
-| :--------- | :----------------------------------------------------------------------------------------------- |
-| `redirect` | Returns a temporary presigned URL — the client downloads directly from S3. Best for performance. |
-| `proxy`    | The Immich server streams the file from S3 to the client. Use when S3 is not directly reachable. |
+| Mode       | Behavior                                                                                          |
+| :--------- | :------------------------------------------------------------------------------------------------ |
+| `redirect` | Returns a temporary presigned URL — the client downloads directly from S3. Best for performance.  |
+| `proxy`    | The Gallery server streams the file from S3 to the client. Use when S3 is not directly reachable. |
 
 ## Environment Variables
 
@@ -48,8 +48,8 @@ All S3 variables are set on the `immich-server` container.
 <summary>AWS S3</summary>
 
 1. Open the [AWS S3 Console](https://s3.console.aws.amazon.com/) and click **Create bucket**.
-2. Choose a bucket name (e.g. `my-immich-storage`) and region.
-3. Leave "Block all public access" **enabled** — Immich uses presigned URLs or proxying, so the bucket does not need to be public.
+2. Choose a bucket name (e.g. `my-gallery-storage`) and region.
+3. Leave "Block all public access" **enabled** — Gallery uses presigned URLs or proxying, so the bucket does not need to be public.
 4. Create the bucket.
 5. Create an IAM user (or use an existing one) with programmatic access. Attach a policy granting access to your bucket:
 
@@ -60,7 +60,7 @@ All S3 variables are set on the `immich-server` container.
     {
       "Effect": "Allow",
       "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket"],
-      "Resource": ["arn:aws:s3:::my-immich-storage", "arn:aws:s3:::my-immich-storage/*"]
+      "Resource": ["arn:aws:s3:::my-gallery-storage", "arn:aws:s3:::my-gallery-storage/*"]
     }
   ]
 }
@@ -74,7 +74,7 @@ All S3 variables are set on the `immich-server` container.
 <summary>MinIO</summary>
 
 1. Install and start MinIO (or add it to your Docker Compose stack).
-2. Open the MinIO Console and create a bucket (e.g. `immich`).
+2. Open the MinIO Console and create a bucket (e.g. `gallery`).
 3. Create an access key pair from the MinIO Console or CLI.
 4. Note the **endpoint URL** (e.g. `http://minio:9000` if running in the same Docker network, or `http://<host-ip>:9000` if external).
 
@@ -96,7 +96,7 @@ Add the S3 variables to your `.env` file:
 
 ```bash title=".env"
 IMMICH_STORAGE_BACKEND=s3
-IMMICH_S3_BUCKET=my-immich-storage
+IMMICH_S3_BUCKET=my-gallery-storage
 IMMICH_S3_REGION=us-east-1
 IMMICH_S3_ACCESS_KEY_ID=your-access-key
 IMMICH_S3_SECRET_ACCESS_KEY=your-secret-key
@@ -113,13 +113,13 @@ IMMICH_S3_ENDPOINT=https://your-s3-endpoint.example.com
 Pick the mode that fits your setup:
 
 - **`redirect`** (default) — Best for performance. The client is redirected to a presigned URL and downloads directly from S3. Requires the client to be able to reach the S3 endpoint.
-- **`proxy`** — The Immich server fetches the file from S3 and streams it to the client. Use this if your S3 endpoint is not reachable by clients (e.g. MinIO on an internal network).
+- **`proxy`** — The Gallery server fetches the file from S3 and streams it to the client. Use this if your S3 endpoint is not reachable by clients (e.g. MinIO on an internal network).
 
 ```bash title=".env"
 IMMICH_S3_SERVE_MODE=proxy
 ```
 
-### 4. Restart Immich
+### 4. Restart Gallery
 
 Recreate the containers to apply the new environment variables:
 
@@ -135,7 +135,7 @@ New uploads will now be stored in your S3 bucket. Existing files on disk will co
 
 ```bash title=".env"
 IMMICH_STORAGE_BACKEND=s3
-IMMICH_S3_BUCKET=my-immich-storage
+IMMICH_S3_BUCKET=my-gallery-storage
 IMMICH_S3_REGION=eu-west-1
 IMMICH_S3_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 IMMICH_S3_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
@@ -145,7 +145,7 @@ IMMICH_S3_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 ```bash title=".env"
 IMMICH_STORAGE_BACKEND=s3
-IMMICH_S3_BUCKET=immich
+IMMICH_S3_BUCKET=gallery
 IMMICH_S3_ENDPOINT=http://minio:9000
 IMMICH_S3_ACCESS_KEY_ID=minioadmin
 IMMICH_S3_SECRET_ACCESS_KEY=minioadmin
@@ -161,7 +161,7 @@ Set `IMMICH_S3_SERVE_MODE=proxy` since clients cannot reach the internal Docker 
 
 ```bash title=".env"
 IMMICH_STORAGE_BACKEND=s3
-IMMICH_S3_BUCKET=my-immich-storage
+IMMICH_S3_BUCKET=my-gallery-storage
 IMMICH_S3_ENDPOINT=https://abc123.r2.cloudflarestorage.com
 IMMICH_S3_ACCESS_KEY_ID=your-r2-access-key
 IMMICH_S3_SECRET_ACCESS_KEY=your-r2-secret-key
@@ -173,7 +173,7 @@ IMMICH_S3_SECRET_ACCESS_KEY=your-r2-secret-key
 Yes! Use the built-in [Storage Migration](/features/storage-migration) tool. It supports bidirectional migration, is resumable and idempotent, and includes rollback support.
 
 **Do I need to make my S3 bucket public?**
-No. Immich uses presigned URLs (in `redirect` mode) or proxies the files through the server (in `proxy` mode). The bucket should remain private.
+No. Gallery uses presigned URLs (in `redirect` mode) or proxies the files through the server (in `proxy` mode). The bucket should remain private.
 
 **What happens if I switch back to disk storage?**
 Files already stored in S3 will continue to be served from S3. Only new uploads will go to disk. Both backends are always active.
