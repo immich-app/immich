@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { SharedSpacePerson } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { mapNotification } from 'src/dtos/notification.dto';
 import {
   SharedSpacePersonAliasDto,
   SharedSpacePersonMergeDto,
@@ -26,6 +27,8 @@ import {
   CacheControl,
   JobName,
   JobStatus,
+  NotificationLevel,
+  NotificationType,
   Permission,
   QueueName,
   SharedSpaceActivityType,
@@ -414,13 +417,22 @@ export class SharedSpaceService extends BaseService {
 
     const space = await this.sharedSpaceRepository.getById(spaceId);
     if (space?.faceRecognitionEnabled) {
-      for (const assetId of dto.assetIds) {
-        await this.jobRepository.queue({
-          name: JobName.SharedSpaceFaceMatch,
+      await this.jobRepository.queueAll(
+        dto.assetIds.map((assetId) => ({
+          name: JobName.SharedSpaceFaceMatch as const,
           data: { spaceId, assetId },
-        });
-      }
+        })),
+      );
     }
+  }
+
+  async queueBulkAdd(auth: AuthDto, spaceId: string): Promise<{ spaceId: string }> {
+    await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
+    await this.jobRepository.queue({
+      name: JobName.SharedSpaceBulkAddAssets,
+      data: { spaceId, userId: auth.user.id },
+    });
+    return { spaceId };
   }
 
   async linkLibrary(auth: AuthDto, spaceId: string, dto: SharedSpaceLibraryLinkDto): Promise<void> {
@@ -801,12 +813,68 @@ export class SharedSpaceService extends BaseService {
     }
 
     const assets = await this.sharedSpaceRepository.getAssetIdsInSpace(spaceId);
-    for (const { assetId } of assets) {
-      await this.jobRepository.queue({
-        name: JobName.SharedSpaceFaceMatch,
+    await this.jobRepository.queueAll(
+      assets.map(({ assetId }) => ({
+        name: JobName.SharedSpaceFaceMatch as const,
         data: { spaceId, assetId },
+      })),
+    );
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.SharedSpaceBulkAddAssets, queue: QueueName.BackgroundTask })
+  async handleSharedSpaceBulkAddAssets({
+    spaceId,
+    userId,
+  }: JobOf<JobName.SharedSpaceBulkAddAssets>): Promise<JobStatus> {
+    const member = await this.sharedSpaceRepository.getMember(spaceId, userId);
+    if (!member || ROLE_HIERARCHY[member.role as SharedSpaceRole] < ROLE_HIERARCHY[SharedSpaceRole.Editor]) {
+      return JobStatus.Skipped;
+    }
+
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space) {
+      return JobStatus.Skipped;
+    }
+
+    let count: number;
+    try {
+      count = await this.sharedSpaceRepository.bulkAddUserAssets(spaceId, userId);
+    } catch (error) {
+      this.logger.error(`Bulk add assets failed for space ${spaceId}: ${error}`);
+      return JobStatus.Failed;
+    }
+
+    if (count === 0) {
+      return JobStatus.Success;
+    }
+
+    await this.sharedSpaceRepository.update(spaceId, { lastActivityAt: new Date() });
+
+    await this.sharedSpaceRepository.logActivity({
+      spaceId,
+      userId,
+      type: SharedSpaceActivityType.AssetAdd,
+      data: { count, bulk: true },
+    });
+
+    if (space.faceRecognitionEnabled) {
+      await this.jobRepository.queue({
+        name: JobName.SharedSpaceFaceMatchAll,
+        data: { spaceId },
       });
     }
+
+    const notification = await this.notificationRepository.create({
+      userId,
+      type: NotificationType.Custom,
+      level: NotificationLevel.Success,
+      title: 'Bulk add complete',
+      description: `${count} photos added to space`,
+      data: JSON.stringify({ spaceId }),
+    });
+    this.websocketRepository.clientSend('on_notification', userId, mapNotification(notification));
 
     return JobStatus.Success;
   }

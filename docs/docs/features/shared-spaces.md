@@ -108,6 +108,31 @@ Editors and Owners can add photos from their personal library into a shared spac
 
 Photos are linked by reference — they remain in your personal library and appear in the space for all members. Removing a photo from a space does not delete it from your library.
 
+## Got a Lot of Photos?
+
+If you want to share a large part of your library with a space, there are two approaches:
+
+### Option 1: Bulk Add All Photos
+
+Use **Add all my photos** from the overflow menu (⋮) in the space toolbar. This queues a background job that adds every photo in your library to the space in one go — no need to select anything manually. You'll get a notification when it's done. This is ideal when you want to share your entire library and don't mind adding everything at once.
+
+- Available to **Editors** and **Owners**
+- Runs in the background — safe for libraries with hundreds of thousands of photos
+- Idempotent — running it again won't create duplicates
+- Only adds non-deleted, non-offline assets
+
+### Option 2: Connect a Library
+
+If you're a server admin, you can [link an external library](#connected-libraries-admin) to the space instead. This keeps the space automatically in sync — new photos imported into the library appear in the space with zero delay. Unlike bulk add, connected libraries stay linked: future imports are included automatically.
+
+|                        | Bulk Add                    | Connected Library                  |
+| ---------------------- | --------------------------- | ---------------------------------- |
+| Who can use it         | Editors, Owners             | Server admins with Editor+ role    |
+| Adds existing photos   | Yes, all at once            | Yes, all at once                   |
+| Future photos included | No — run again to catch up  | Yes, automatically                 |
+| Can disconnect later   | Remove photos manually      | Unlink in one click                |
+| Best for               | One-time "share everything" | Ongoing sync of an external source |
+
 ## Removing Photos from a Space
 
 ### Web

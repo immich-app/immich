@@ -207,6 +207,18 @@ export class SharedSpaceController {
     return this.service.getMapMarkers(auth, id);
   }
 
+  @Post(':id/assets/bulk-add')
+  @Authenticated({ permission: Permission.SharedSpaceAssetCreate })
+  @HttpCode(HttpStatus.ACCEPTED)
+  @Endpoint({
+    summary: 'Add all user assets to a shared space',
+    description: 'Queues a background job to add all assets owned by the authenticated user to the space.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  bulkAddAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<{ spaceId: string }> {
+    return this.service.queueBulkAdd(auth, id);
+  }
+
   @Post(':id/assets')
   @Authenticated({ permission: Permission.SharedSpaceAssetCreate })
   @HttpCode(HttpStatus.NO_CONTENT)

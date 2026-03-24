@@ -612,6 +612,161 @@ describe('/shared-spaces', () => {
     });
   });
 
+  describe('POST /shared-spaces/:id/assets/bulk-add', () => {
+    it('should require authentication', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Auth Test' });
+      const { status, body } = await request(app).post(`/shared-spaces/${space.id}/assets/bulk-add`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should return 202 when called by owner', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Owner' });
+
+      const { status, body } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(202);
+      expect(body).toEqual(expect.objectContaining({ spaceId: space.id }));
+    });
+
+    it('should return 202 when called by editor', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Editor' });
+      await utils.addSpaceMember(user1.accessToken, space.id, {
+        userId: user2.userId,
+        role: SharedSpaceRole.Editor,
+      });
+
+      const { status, body } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(202);
+      expect(body).toEqual(expect.objectContaining({ spaceId: space.id }));
+    });
+
+    it('should reject viewer', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Viewer Reject' });
+      await utils.addSpaceMember(user1.accessToken, space.id, { userId: user2.userId });
+
+      const { status } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(403);
+    });
+
+    it('should reject non-member', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Non-Member' });
+
+      const { status } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user3.accessToken}`);
+
+      expect(status).toBe(403);
+    });
+
+    it('should accept when user has zero assets', async () => {
+      const space = await utils.createSpace(user3.accessToken, { name: 'Bulk No Assets' });
+
+      const { status } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user3.accessToken}`);
+
+      expect(status).toBe(202);
+    });
+
+    it('should be idempotent', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Idempotent' });
+
+      const { status: status1 } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      const { status: status2 } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status1).toBe(202);
+      expect(status2).toBe(202);
+    });
+
+    it('should add all user assets after job completes', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Job Verify' });
+
+      const { status } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(202);
+
+      // Poll until the space asset count reaches the expected value
+      const getSpaceAssetCount = async () => {
+        const { body } = await request(app)
+          .get(`/shared-spaces/${space.id}`)
+          .set('Authorization', `Bearer ${user1.accessToken}`);
+        return body.assetCount as number;
+      };
+
+      // user1 has user1Asset1 and user1Asset2 from beforeAll
+      await expect.poll(getSpaceAssetCount, { interval: 1000, timeout: 30_000 }).toBe(2);
+    }, 35_000);
+
+    it('should not add other users assets', async () => {
+      const space = await utils.createSpace(user2.accessToken, { name: 'Bulk Isolation' });
+
+      const { status } = await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+
+      expect(status).toBe(202);
+
+      const getSpaceAssetCount = async () => {
+        const { body } = await request(app)
+          .get(`/shared-spaces/${space.id}`)
+          .set('Authorization', `Bearer ${user2.accessToken}`);
+        return body.assetCount as number;
+      };
+
+      // user2 has only user2Asset1
+      await expect.poll(getSpaceAssetCount, { interval: 1000, timeout: 30_000 }).toBe(1);
+    }, 35_000);
+
+    it('should be idempotent after job completes', async () => {
+      const space = await utils.createSpace(user1.accessToken, { name: 'Bulk Idempotent Job' });
+
+      // First bulk add
+      await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      const getSpaceAssetCount = async () => {
+        const { body } = await request(app)
+          .get(`/shared-spaces/${space.id}`)
+          .set('Authorization', `Bearer ${user1.accessToken}`);
+        return body.assetCount as number;
+      };
+
+      await expect.poll(getSpaceAssetCount, { interval: 1000, timeout: 30_000 }).toBe(2);
+
+      // Run again — should not duplicate
+      await request(app)
+        .post(`/shared-spaces/${space.id}/assets/bulk-add`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      // Wait a bit for the second job to process, then verify count is still 2
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      const { body: spaceDetail } = await request(app)
+        .get(`/shared-spaces/${space.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(spaceDetail.assetCount).toBe(2);
+    }, 35_000);
+  });
+
   describe('DELETE /shared-spaces/:id/assets', () => {
     it('should require authentication', async () => {
       const space = await utils.createSpace(user1.accessToken, { name: 'Remove Asset Auth' });

@@ -12324,6 +12324,55 @@
         "x-immich-state": "Beta"
       }
     },
+    "/shared-spaces/{id}/assets/bulk-add": {
+      "post": {
+        "description": "Queues a background job to add all assets owned by the authenticated user to the space.",
+        "operationId": "bulkAddAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Add all user assets to a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "sharedSpaceAsset.create",
+        "x-immich-state": "Beta"
+      }
+    },
     "/shared-spaces/{id}/libraries": {
       "put": {
         "description": "Link an external library so its assets appear in the space. Requires admin and space editor/owner.",
@@ -20760,7 +20809,8 @@
           "SharedSpaceFaceMatch",
           "SharedSpaceFaceMatchAll",
           "SharedSpacePersonThumbnail",
-          "SharedSpaceLibraryFaceSync"
+          "SharedSpaceLibraryFaceSync",
+          "SharedSpaceBulkAddAssets"
         ],
         "type": "string"
       },

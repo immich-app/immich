@@ -233,6 +233,9 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.SharedSpaceBulkAddAssets: {
+        return { jobId: `bulk-add-${item.data.spaceId}-${item.data.userId}` };
+      }
       default: {
         return null;
       }

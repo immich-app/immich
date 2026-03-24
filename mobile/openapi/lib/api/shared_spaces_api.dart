@@ -130,6 +130,55 @@ class SharedSpacesApi {
     return null;
   }
 
+  /// Add all user assets to a shared space
+  ///
+  /// Queues a background job to add all assets owned by the authenticated user to the space.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> bulkAddAssetsWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/assets/bulk-add'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Add all user assets to a shared space
+  ///
+  /// Queues a background job to add all assets owned by the authenticated user to the space.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> bulkAddAssets(String id,) async {
+    final response = await bulkAddAssetsWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Create a shared space
   ///
   /// Create a new shared space for collaborative asset management.

@@ -6470,6 +6470,17 @@ export function addAssets({ id, sharedSpaceAssetAddDto }: {
     })));
 }
 /**
+ * Add all user assets to a shared space
+ */
+export function bulkAddAssets({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/shared-spaces/${encodeURIComponent(id)}/assets/bulk-add`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Link a library to a shared space
  */
 export function linkLibrary({ id, sharedSpaceLibraryLinkDto }: {
@@ -8117,7 +8128,8 @@ export enum JobName {
     SharedSpaceFaceMatch = "SharedSpaceFaceMatch",
     SharedSpaceFaceMatchAll = "SharedSpaceFaceMatchAll",
     SharedSpacePersonThumbnail = "SharedSpacePersonThumbnail",
-    SharedSpaceLibraryFaceSync = "SharedSpaceLibraryFaceSync"
+    SharedSpaceLibraryFaceSync = "SharedSpaceLibraryFaceSync",
+    SharedSpaceBulkAddAssets = "SharedSpaceBulkAddAssets"
 }
 export enum SearchSuggestionType {
     Country = "country",

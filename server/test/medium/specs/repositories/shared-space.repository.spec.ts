@@ -272,6 +272,152 @@ describe(SharedSpaceRepository.name, () => {
     });
   });
 
+  describe('bulkAddUserAssets', () => {
+    it('should insert all non-deleted, non-offline assets owned by the user', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(2);
+    });
+
+    it('should return correct inserted row count', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(3);
+    });
+
+    it('should skip soft-deleted assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id, deletedAt: new Date() });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(1);
+    });
+
+    it('should skip offline assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id, isOffline: true });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(1);
+    });
+
+    it('should not insert assets owned by other users', async () => {
+      const { ctx, sut } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: other } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newAsset({ ownerId: other.id });
+
+      const count = await sut.bulkAddUserAssets(space.id, owner.id);
+
+      expect(count).toBe(1);
+    });
+
+    it('should handle ON CONFLICT when some assets already exist', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset: existing } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: existing.id, addedById: user.id });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(1);
+    });
+
+    it('should return 0 when all assets already in space', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: user.id });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(0);
+    });
+
+    it('should return 0 when user has no assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(0);
+    });
+
+    it('should set addedById to the userId', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+
+      await sut.bulkAddUserAssets(space.id, user.id);
+
+      const rows = await ctx.database
+        .selectFrom('shared_space_asset')
+        .selectAll()
+        .where('spaceId', '=', space.id)
+        .execute();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].addedById).toBe(user.id);
+    });
+
+    it('should set spaceId correctly on all inserted rows', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space: space1 } = await ctx.newSharedSpace({ createdById: user.id });
+      const { space: space2 } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id });
+
+      await sut.bulkAddUserAssets(space1.id, user.id);
+
+      const space1Assets = await sut.getAssetIdsInSpace(space1.id);
+      const space2Assets = await sut.getAssetIdsInSpace(space2.id);
+      expect(space1Assets).toHaveLength(1);
+      expect(space2Assets).toHaveLength(0);
+    });
+
+    it('should not affect other spaces assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space: space1 } = await ctx.newSharedSpace({ createdById: user.id });
+      const { space: space2 } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset: existingAsset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space2.id, assetId: existingAsset.id, addedById: user.id });
+
+      await ctx.newAsset({ ownerId: user.id });
+      await sut.bulkAddUserAssets(space1.id, user.id);
+
+      const space2Assets = await sut.getAssetIdsInSpace(space2.id);
+      expect(space2Assets).toHaveLength(1);
+    });
+  });
+
   describe('getAssetCount', () => {
     it('should count non-deleted assets', async () => {
       const { ctx, sut } = setup();

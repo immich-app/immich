@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DummyValue, GenerateSql } from 'src/decorators';
+import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
@@ -161,6 +161,24 @@ export class SharedSpaceRepository {
     return Number(result.count);
   }
 
+  async bulkAddUserAssets(spaceId: string, userId: string): Promise<number> {
+    const result = await this.db
+      .insertInto('shared_space_asset')
+      .columns(['spaceId', 'assetId', 'addedById'])
+      .expression(
+        this.db
+          .selectFrom('asset')
+          .select([sql.lit(spaceId).as('spaceId'), 'asset.id as assetId', sql.lit(userId).as('addedById')])
+          .where('asset.ownerId', '=', userId)
+          .where('asset.deletedAt', 'is', null)
+          .where('asset.isOffline', '=', false),
+      )
+      .onConflict((oc) => oc.doNothing())
+      .executeTakeFirst();
+    return Number(result?.numInsertedOrUpdatedRows ?? 0);
+  }
+
+  @ChunkedArray()
   addAssets(values: Insertable<SharedSpaceAssetTable>[]) {
     if (values.length === 0) {
       return Promise.resolve([]);

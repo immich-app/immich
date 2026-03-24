@@ -42,6 +42,7 @@
   import LoadingSpinner from '$lib/components/shared-components/LoadingSpinner.svelte';
   import {
     addAssets,
+    bulkAddAssets,
     AssetOrder,
     AssetTypeEnum,
     AssetVisibility,
@@ -74,12 +75,14 @@
     mdiEyeOffOutline,
     mdiEyeOutline,
     mdiFaceRecognition,
+    mdiImageMultipleOutline,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiPaw,
     mdiPlus,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
   type ViewMode = 'view' | 'select-assets' | 'select-cover';
@@ -133,8 +136,8 @@
 
   // Filter state
   let filters = $state(createFilterState());
-  let personNames = $state(new Map<string, string>());
-  let tagNames = $state(new Map<string, string>());
+  let personNames = new SvelteMap<string, string>();
+  let tagNames = new SvelteMap<string, string>();
 
   let heroCollapsed = $state(false);
   let prevFilterCount = 0;
@@ -397,6 +400,24 @@
     }
   };
 
+  const handleBulkAddAssets = async () => {
+    const confirmed = await modalManager.showDialog({
+      title: $t('add_all_photos'),
+      prompt: $t('bulk_add_confirmation'),
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await bulkAddAssets({ id: space.id });
+      toastManager.success($t('bulk_add_started'));
+    } catch (error) {
+      handleError(error, $t('errors.error_adding_assets_to_space'));
+    }
+  };
+
   const handleDelete = async () => {
     const confirmed = await modalManager.showDialog({
       prompt: $t('spaces_delete_confirmation', { values: { name: space.name } }),
@@ -624,6 +645,9 @@
             icon={showInTimeline ? mdiEyeOutline : mdiEyeOffOutline}
             onClick={handleToggleTimeline}
           />
+          {#if isEditor}
+            <MenuOption text={$t('add_all_photos')} icon={mdiImageMultipleOutline} onClick={handleBulkAddAssets} />
+          {/if}
           {#if isOwner}
             <hr class="my-1 border-gray-300" />
             <MenuOption
