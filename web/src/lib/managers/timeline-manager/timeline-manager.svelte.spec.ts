@@ -73,6 +73,14 @@ describe('TimelineManager', () => {
       expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
+    it('connects websocket events for main timeline', async () => {
+      const freshManager = new TimelineManager();
+      const connectSpy = vi.spyOn(freshManager, 'connect');
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      await freshManager.updateViewport({ width: 1588, height: 1000 });
+      expect(connectSpy).toHaveBeenCalled();
+    });
+
     it('calculates month height', () => {
       const plainMonths = timelineManager.months.map((month) => ({
         year: month.yearMonth.year,
@@ -807,6 +815,14 @@ describe('TimelineManager', () => {
 
       const nonStackedAsset = assets.find((a) => a.stack === null);
       expect(nonStackedAsset).toBeDefined();
+    });
+
+    it('does not connect websocket events for space timelines', async () => {
+      const connectSpy = vi.spyOn(timelineManager, 'connect');
+      await timelineManager.updateOptions({ spaceId: 'space-1', withStacked: true });
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+
+      expect(connectSpy).not.toHaveBeenCalled();
     });
 
     it('does not pass withStacked when it is not set in options', async () => {
