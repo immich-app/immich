@@ -22,6 +22,7 @@
   } from '$lib/components/spaces/space-asset-limit-warning.svelte';
   import SpacePanel from '$lib/components/spaces/space-panel.svelte';
   import SpacePeopleStrip from '$lib/components/spaces/space-people-strip.svelte';
+  import SpaceLinkedLibrariesModal from '$lib/modals/SpaceLinkedLibrariesModal.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -73,6 +74,7 @@
   import {
     mdiAccountMultipleOutline,
     mdiArrowLeft,
+    mdiBookshelf,
     mdiDeleteOutline,
     mdiDotsVertical,
     mdiEyeOffOutline,
@@ -421,6 +423,14 @@
     }
   };
 
+  const handleLinkLibraries = async () => {
+    const changed = await modalManager.show(SpaceLinkedLibrariesModal, { space });
+    if (changed) {
+      await refreshSpace();
+      await loadActivities();
+    }
+  };
+
   const handleDelete = async () => {
     const confirmed = await modalManager.showDialog({
       prompt: $t('spaces_delete_confirmation', { values: { name: space.name } }),
@@ -648,8 +658,14 @@
             icon={showInTimeline ? mdiEyeOutline : mdiEyeOffOutline}
             onClick={handleToggleTimeline}
           />
+          {#if isEditor || $user?.isAdmin}
+            <hr class="my-1 border-gray-300" />
+          {/if}
           {#if isEditor}
             <MenuOption text={$t('add_all_photos')} icon={mdiImageMultipleOutline} onClick={handleBulkAddAssets} />
+          {/if}
+          {#if $user?.isAdmin}
+            <MenuOption text="Link Libraries" icon={mdiBookshelf} onClick={handleLinkLibraries} />
           {/if}
           {#if isOwner}
             <hr class="my-1 border-gray-300" />
@@ -874,10 +890,6 @@
   onClose={() => (panelOpen = false)}
   onMembersChanged={async () => {
     members = await getMembers({ id: space.id });
-    await refreshSpace();
-    await loadActivities();
-  }}
-  onLibrariesChanged={async () => {
     await refreshSpace();
     await loadActivities();
   }}

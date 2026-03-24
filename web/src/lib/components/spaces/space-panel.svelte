@@ -2,8 +2,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import RoleBadge from '$lib/components/spaces/role-badge.svelte';
   import SpaceActivityFeed from '$lib/components/spaces/space-activity-feed.svelte';
-  import SpaceLinkedLibraries from '$lib/components/spaces/space-linked-libraries.svelte';
-  import { user } from '$lib/stores/user.store';
+
   import { getAssetMediaUrl } from '$lib/utils';
   import { formatTimeAgo } from '$lib/utils/timesince';
   import { handleError } from '$lib/utils/handle-error';
@@ -31,7 +30,7 @@
     open: boolean;
     onClose: () => void;
     onMembersChanged: () => void;
-    onLibrariesChanged?: () => void;
+
     onLoadMoreActivities: () => void;
     hasMoreActivities: boolean;
   }
@@ -45,13 +44,11 @@
     open,
     onClose,
     onMembersChanged,
-    onLibrariesChanged = () => {},
     onLoadMoreActivities,
     hasMoreActivities,
   }: Props = $props();
 
-  let activeTab = $state<'activity' | 'members' | 'libraries'>('activity');
-  let isAdmin = $derived($user?.isAdmin ?? false);
+  let activeTab = $state<'activity' | 'members'>('activity');
 
   const tabBgClasses: Record<string, string> = {
     [UserAvatarColor.Primary]: 'bg-primary text-white',
@@ -170,18 +167,6 @@
       >
         Members ({members.length})
       </button>
-      {#if isAdmin}
-        <button
-          type="button"
-          class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors {activeTab === 'libraries'
-            ? activeTabClass
-            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}"
-          onclick={() => (activeTab = 'libraries')}
-          data-testid="tab-libraries"
-        >
-          Libraries
-        </button>
-      {/if}
     </div>
 
     <IconButton
@@ -204,8 +189,6 @@
         onLoadMore={onLoadMoreActivities}
         hasMore={hasMoreActivities}
       />
-    {:else if activeTab === 'libraries'}
-      <SpaceLinkedLibraries {space} onChanged={onLibrariesChanged} />
     {:else}
       <!-- Members content -->
       {#if isOwner}
