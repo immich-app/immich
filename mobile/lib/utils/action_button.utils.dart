@@ -143,8 +143,7 @@ enum ActionButtonType {
             !context.isInLockedView && //
             context.currentAlbum != null,
       ActionButtonType.setAlbumCover =>
-        context.isOwner && //
-            !context.isInLockedView && //
+        !context.isInLockedView && //
             context.currentAlbum != null && //
             context.selectedCount == 1,
       ActionButtonType.unstack =>

@@ -16,9 +16,15 @@ class SearchDropdown<T> extends StatelessWidget {
   final Widget? label;
   final Widget? leadingIcon;
 
+  static const WidgetStatePropertyAll<EdgeInsetsGeometry> _optionPadding = WidgetStatePropertyAll<EdgeInsetsGeometry>(
+    EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+  );
+
   @override
   Widget build(BuildContext context) {
-    final menuStyle = const MenuStyle(
+    final mediaQuery = MediaQuery.of(context);
+    final maxMenuHeight = mediaQuery.size.height * 0.5 - mediaQuery.viewPadding.bottom;
+    const menuStyle = MenuStyle(
       shape: WidgetStatePropertyAll<OutlinedBorder>(
         RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
       ),
@@ -26,11 +32,26 @@ class SearchDropdown<T> extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final styledEntries = dropdownMenuEntries
+            .map(
+              (entry) => DropdownMenuEntry<T>(
+                value: entry.value,
+                label: entry.label,
+                labelWidget: entry.labelWidget,
+                enabled: entry.enabled,
+                leadingIcon: entry.leadingIcon,
+                trailingIcon: entry.trailingIcon,
+                style: (entry.style ?? const ButtonStyle()).copyWith(padding: _optionPadding),
+              ),
+            )
+            .toList(growable: false);
+
         return DropdownMenu(
           controller: controller,
           leadingIcon: leadingIcon,
           width: constraints.maxWidth,
-          dropdownMenuEntries: dropdownMenuEntries,
+          menuHeight: maxMenuHeight,
+          dropdownMenuEntries: styledEntries,
           label: label,
           menuStyle: menuStyle,
           trailingIcon: const Icon(Icons.arrow_drop_down_rounded),

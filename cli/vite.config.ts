@@ -1,10 +1,12 @@
 import { defineConfig, UserConfig } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  resolve: { alias: { src: '/src' } },
+  resolve: {
+    alias: { src: '/src' },
+    tsconfigPaths: true,
+  },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       input: 'src/index.ts',
       output: {
         dir: 'dist',
@@ -16,7 +18,6 @@ export default defineConfig({
     // bundle everything except for Node built-ins
     noExternal: /^(?!node:).*$/,
   },
-  plugins: [tsconfigPaths()],
   test: {
     name: 'cli:unit',
     globals: true,
