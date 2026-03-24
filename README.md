@@ -25,10 +25,6 @@
 
 This fork builds on top of Immich with the following improvements:
 
-### S3-Compatible Storage
-
-Store your photos and videos in any S3-compatible object storage — AWS S3, MinIO, Cloudflare R2, Backblaze B2, Wasabi, and more. Configure it with a few environment variables and new uploads go straight to your bucket. Choose between `redirect` mode (clients download directly from S3 via presigned URLs) or `proxy` mode (server streams the files). Both disk and S3 backends run simultaneously, so existing files on disk continue to work. A built-in [Storage Migration](docs/docs/features/storage-migration.md) tool lets you migrate existing files between disk and S3 in either direction, with resume, rollback, and configurable concurrency. See the [S3 Storage documentation](docs/docs/features/s3-storage.md) for full setup instructions.
-
 ### Shared Spaces
 
 Create collaborative photo-sharing spaces where multiple users can contribute and browse photos together. Unlike partner sharing (which shares your entire library one-way), Shared Spaces let you create focused groups — "Family", "Friends", "Vacation 2025" — with role-based access (Owner, Editor, Viewer). Photos are linked by reference with zero additional storage cost. Members can optionally merge space assets into their personal timeline. Spaces feature album-style collage cards, cover photos with drag-to-reposition, list and grid views, pinnable favorites, and shared face recognition so people detected across the space are browsable by all members. Full mobile parity — create, manage, and browse spaces from the Flutter app. See the [Shared Spaces documentation](docs/docs/features/shared-spaces.md) for details.
@@ -36,6 +32,10 @@ Create collaborative photo-sharing spaces where multiple users can contribute an
 ### User Groups
 
 Create named, color-coded groups of users (e.g., "Family", "Close Friends") that you can select with one click when sharing albums or inviting to Spaces. Instead of picking people individually every time, click a group chip and all members are added at once. Groups are personal — each user manages their own. See the [User Groups documentation](docs/docs/features/user-groups.md) for details.
+
+### S3-Compatible Storage
+
+Store your photos and videos in any S3-compatible object storage — AWS S3, MinIO, Cloudflare R2, Backblaze B2, Wasabi, and more. Configure it with a few environment variables and new uploads go straight to your bucket. Choose between `redirect` mode (clients download directly from S3 via presigned URLs) or `proxy` mode (server streams the files). Both disk and S3 backends run simultaneously, so existing files on disk continue to work. A built-in [Storage Migration](docs/docs/features/storage-migration.md) tool lets you migrate existing files between disk and S3 in either direction, with resume, rollback, and configurable concurrency. See the [S3 Storage documentation](docs/docs/features/s3-storage.md) for full setup instructions.
 
 ### Pet Detection
 
@@ -131,7 +131,6 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
   <a href="readme_i18n/README_th_TH.md">ภาษาไทย</a>
 </p>
 
-
 > [!WARNING]
 > Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
 
@@ -183,11 +182,11 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
 | Tags                                         | No     | Yes |
 | Folder View                                  | Yes    | Yes |
 | **Shared Spaces**                            | Yes    | Yes |
-| **S3-Compatible Storage**                    | Yes    | Yes |
-| **Google Photos Import**                     | No     | Yes |
-| **Pet Detection**                            | Yes    | Yes |
 | **User Groups**                              | No     | Yes |
+| **Pet Detection**                            | Yes    | Yes |
+| **Google Photos Import**                     | No     | Yes |
 | **Non-destructive Image Editing**            | No     | Yes |
+| **S3-Compatible Storage**                    | Yes    | Yes |
 
 ## Translations
 
@@ -203,10 +202,10 @@ Pre-built Docker images are published to GitHub Container Registry (GHCR) under 
 
 ### Available Images
 
-| Image | Description |
-| :---- | :---------- |
-| `ghcr.io/open-noodle/gallery-server` | Server + web UI + CLI (all-in-one) |
-| `ghcr.io/open-noodle/gallery-ml` | Machine learning service (CPU) |
+| Image                                   | Description                            |
+| :-------------------------------------- | :------------------------------------- |
+| `ghcr.io/open-noodle/gallery-server`    | Server + web UI + CLI (all-in-one)     |
+| `ghcr.io/open-noodle/gallery-ml`        | Machine learning service (CPU)         |
 | `ghcr.io/open-noodle/gallery-ml:*-cuda` | Machine learning service (NVIDIA CUDA) |
 
 ### Tags
@@ -220,6 +219,7 @@ Pre-built Docker images are published to GitHub Container Registry (GHCR) under 
 Images are automatically built and published on every push to `main` via the **Release** GitHub Actions workflow (`.github/workflows/docker.yml`).
 
 **How it works:**
+
 1. Every merged PR triggers an automatic build
 2. The version is computed from the latest git tag using semantic versioning:
    - `feat:` commit or `changelog:feat` PR label → **minor** bump (e.g. `v4.2.6` → `v4.3.0`)
