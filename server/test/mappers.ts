@@ -138,6 +138,7 @@ export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']
   originalPath: asset.originalPath,
   ownerId: asset.ownerId,
   type: asset.type,
+  isEdited: asset.isEdited,
   width: asset.width,
   height: asset.height,
   faces: asset.faces.map((face) => getDehydrated(face)),

@@ -1641,12 +1641,32 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('should not overwrite existing width/height if they already exist', async () => {
-      const asset = AssetFactory.create({ width: 1920, height: 1080 });
+    it('should overwrite existing width/height for unedited assets', async () => {
+      const asset = AssetFactory.create({ width: 1920, height: 1080, isEdited: false });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mockReadTags({ ImageWidth: 1280, ImageHeight: 720 });
 
       await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 1280,
+          height: 720,
+        }),
+      );
+    });
+
+    it('should not overwrite existing width/height for edited assets', async () => {
+      const asset = AssetFactory.create({ width: 1920, height: 1080, isEdited: true });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ ImageWidth: 1280, ImageHeight: 720 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: undefined,
+          height: undefined,
+        }),
+      );
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
         expect.objectContaining({
           width: 1280,
