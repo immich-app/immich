@@ -39,17 +39,21 @@ describe('FilterState utilities', () => {
     expect(getActiveFilterCount(state)).toBe(3);
   });
 
-  it('should not count selectedYear or selectedMonth as active filters', () => {
+  it('should count selectedYear as an active filter', () => {
     const state = createFilterState();
     state.selectedYear = 2023;
-    expect(getActiveFilterCount(state)).toBe(0);
+    expect(getActiveFilterCount(state)).toBe(1);
+  });
 
+  it('should count selectedMonth as an active filter alongside selectedYear', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
     state.selectedMonth = 8;
-    expect(getActiveFilterCount(state)).toBe(0);
+    expect(getActiveFilterCount(state)).toBe(1); // year+month counts as one temporal filter
 
     // Other filters should still count normally
     state.personIds = ['p1'];
-    expect(getActiveFilterCount(state)).toBe(1);
+    expect(getActiveFilterCount(state)).toBe(2);
   });
 
   it('should not double-count country when city is set', () => {
