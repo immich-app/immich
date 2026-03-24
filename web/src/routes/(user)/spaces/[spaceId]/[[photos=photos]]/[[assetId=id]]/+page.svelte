@@ -17,6 +17,9 @@
   import SpaceMap from '$lib/components/spaces/space-map.svelte';
   import SpaceNewAssetsDivider from '$lib/components/spaces/space-new-assets-divider.svelte';
   import SpaceOnboardingBanner from '$lib/components/spaces/space-onboarding-banner.svelte';
+  import SpaceAssetLimitWarning, {
+    MAX_SPACE_ASSETS_PER_REQUEST,
+  } from '$lib/components/spaces/space-asset-limit-warning.svelte';
   import SpacePanel from '$lib/components/spaces/space-panel.svelte';
   import SpacePeopleStrip from '$lib/components/spaces/space-people-strip.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
@@ -388,7 +391,7 @@
 
   const handleAddAssets = async () => {
     const assetIds = timelineInteraction.selectedAssets.map((a) => a.id);
-    if (assetIds.length === 0) {
+    if (assetIds.length === 0 || assetIds.length > MAX_SPACE_ASSETS_PER_REQUEST) {
       return;
     }
     try {
@@ -902,10 +905,12 @@
         aria-label={$t('add_to_space')}
         onclick={handleAddAssets}
         icon={mdiPlus}
-        disabled={!timelineInteraction.selectionActive}
+        disabled={!timelineInteraction.selectionActive ||
+          timelineInteraction.selectedAssets.length > MAX_SPACE_ASSETS_PER_REQUEST}
       />
     {/snippet}
   </ControlAppBar>
+  <SpaceAssetLimitWarning selectedCount={timelineInteraction.selectedAssets.length} />
 {/if}
 
 {#if viewMode === 'select-cover'}

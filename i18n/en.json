@@ -2277,6 +2277,7 @@
   "sort_recent": "Most recent photo",
   "sort_title": "Title",
   "source": "Source",
+  "space_asset_limit_warning": "You are trying to upload too many photos at once. Import your photos as an external library or use the Add All Photos background job. See the <link>documentation</link> for more info.",
   "space_cover_updated": "Space cover updated",
   "spaces": "Spaces",
   "spaces_activity": "Activity",

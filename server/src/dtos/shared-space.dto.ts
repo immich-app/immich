@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { SharedSpaceRole, UserAvatarColor } from 'src/enum';
 import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -213,13 +213,17 @@ export class SharedSpaceLibraryLinkDto {
   libraryId!: string;
 }
 
+export const MAX_SPACE_ASSETS_PER_REQUEST = 10_000;
+
 export class SharedSpaceAssetAddDto {
   @ValidateUUID({ each: true, description: 'Asset IDs' })
+  @ArrayMaxSize(MAX_SPACE_ASSETS_PER_REQUEST)
   assetIds!: string[];
 }
 
 export class SharedSpaceAssetRemoveDto {
   @ValidateUUID({ each: true, description: 'Asset IDs' })
+  @ArrayMaxSize(MAX_SPACE_ASSETS_PER_REQUEST)
   assetIds!: string[];
 }
 
