@@ -159,6 +159,22 @@ describe('/shared-spaces', () => {
       expect(status).toBe(403);
     });
 
+    it('should exclude videos from recentAssetIds', async () => {
+      const space = await utils.createSpace(user3.accessToken, { name: 'Video Exclude' });
+      const videoAsset = await utils.createAsset(user3.accessToken, {
+        assetData: { filename: 'example.mp4' },
+      });
+      const imageAsset = await utils.createAsset(user3.accessToken);
+      await utils.addSpaceAssets(user3.accessToken, space.id, [videoAsset.id, imageAsset.id]);
+
+      const { body } = await request(app)
+        .get(`/shared-spaces/${space.id}`)
+        .set('Authorization', `Bearer ${user3.accessToken}`);
+
+      expect(body.recentAssetIds).toContain(imageAsset.id);
+      expect(body.recentAssetIds).not.toContain(videoAsset.id);
+    });
+
     it('should include asset count and member count', async () => {
       const space = await utils.createSpace(user1.accessToken, { name: 'Counts Space' });
       await utils.addSpaceMember(user1.accessToken, space.id, { userId: user2.userId, role: SharedSpaceRole.Editor });
