@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a bug in Gallery
+body:
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: >-
+        Describe the bug you are experiencing. Include steps to reproduce
+        and what you expected to happen.
+
+  - type: input
+    attributes:
+      label: Gallery version
+      placeholder: e.g. v4.8.10
+
+  - type: dropdown
+    attributes:
+      label: Platform
+      options:
+        - Server
+        - Web
+        - Mobile
+        - CLI
+      multiple: true
+
+  - type: textarea
+    attributes:
+      label: Logs or screenshots
+      description: Paste any relevant logs or attach screenshots.
+      render: shell
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Any other details that might be helpful.
