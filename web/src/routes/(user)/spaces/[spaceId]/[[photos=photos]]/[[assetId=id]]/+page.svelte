@@ -192,7 +192,7 @@
     if (viewMode === 'select-assets') {
       return { visibility: AssetVisibility.Timeline, timelineSpaceId: space.id };
     }
-    const base: Record<string, unknown> = { spaceId: space.id };
+    const base: Record<string, unknown> = { spaceId: space.id, withStacked: true };
     // Apply filter state — personIds maps to spacePersonIds for Spaces context
     if (filters.personIds.length > 0) {
       base.spacePersonIds = filters.personIds;

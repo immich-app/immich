@@ -742,4 +742,80 @@ describe('TimelineManager', () => {
       expect(b.showAssetOwners).toBe(true);
     });
   });
+
+  describe('space timeline with stacked photos', () => {
+    let timelineManager: TimelineManager;
+    const stackedAssets: Record<string, TimelineAsset[]> = {
+      '2024-02-01T00:00:00.000Z': [
+        deriveLocalDateTimeFromFileCreatedAt(
+          timelineAssetFactory.build({
+            fileCreatedAt: fromISODateTimeUTCToObject('2024-02-10T12:00:00.000Z'),
+            stack: { id: 'stack-1', primaryAssetId: 'primary-1', assetCount: 3 },
+          }),
+        ),
+        deriveLocalDateTimeFromFileCreatedAt(
+          timelineAssetFactory.build({
+            fileCreatedAt: fromISODateTimeUTCToObject('2024-02-05T12:00:00.000Z'),
+            stack: null,
+          }),
+        ),
+      ],
+    };
+    const stackedAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
+      Object.entries(stackedAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
+    );
+
+    beforeEach(() => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([{ count: 2, timeBucket: '2024-02-01T00:00:00.000Z' }]);
+      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(stackedAssetsResponse[timeBucket]));
+    });
+
+    it('passes spaceId and withStacked to getTimeBuckets', async () => {
+      await timelineManager.updateOptions({ spaceId: 'space-1', withStacked: true });
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+
+      expect(sdkMock.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({ spaceId: 'space-1', withStacked: true }),
+      );
+    });
+
+    it('passes spaceId and withStacked to getTimeBucket when loading a month', async () => {
+      await timelineManager.updateOptions({ spaceId: 'space-1', withStacked: true });
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+      await timelineManager.loadMonthGroup({ year: 2024, month: 2 });
+
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledWith(
+        expect.objectContaining({ spaceId: 'space-1', withStacked: true }),
+        expect.anything(),
+      );
+    });
+
+    it('loads stacked assets with stack data preserved', async () => {
+      await timelineManager.updateOptions({ spaceId: 'space-1', withStacked: true });
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+      await timelineManager.loadMonthGroup({ year: 2024, month: 2 });
+
+      const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 2 });
+      expect(month).not.toBeUndefined();
+      const assets = month!.getAssets();
+      expect(assets.length).toEqual(2);
+
+      const stackedAsset = assets.find((a) => a.stack !== null);
+      expect(stackedAsset).toBeDefined();
+      expect(stackedAsset!.stack!.assetCount).toEqual(3);
+
+      const nonStackedAsset = assets.find((a) => a.stack === null);
+      expect(nonStackedAsset).toBeDefined();
+    });
+
+    it('does not pass withStacked when it is not set in options', async () => {
+      await timelineManager.updateOptions({ spaceId: 'space-1' });
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+
+      expect(sdkMock.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ spaceId: 'space-1' }));
+      const calledWith = sdkMock.getTimeBuckets.mock.calls[0][0];
+      expect(calledWith.withStacked).toBeUndefined();
+    });
+  });
 });

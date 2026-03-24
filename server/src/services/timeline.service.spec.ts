@@ -128,6 +128,27 @@ describe(TimelineService.name, () => {
           new Set(['space-id']),
         );
       });
+
+      it('should pass withStacked to asset repository when spaceId is provided', async () => {
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+        mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+        await sut.getTimeBuckets(authStub.admin, { spaceId: 'space-id', withStacked: true });
+
+        expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+          expect.objectContaining({ spaceId: 'space-id', withStacked: true }),
+        );
+      });
+
+      it('should not include withStacked when it is not provided with spaceId', async () => {
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+        mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+        await sut.getTimeBuckets(authStub.admin, { spaceId: 'space-id' });
+
+        const calledWith = mocks.asset.getTimeBuckets.mock.calls[0][0];
+        expect(calledWith.withStacked).toBeUndefined();
+      });
     });
 
     describe('withSharedSpaces', () => {
@@ -196,6 +217,24 @@ describe(TimelineService.name, () => {
             isTrashed: true,
           }),
         ).rejects.toThrow(BadRequestException);
+      });
+
+      it('should pass withStacked through to asset repository when combined with withSharedSpaces', async () => {
+        mocks.sharedSpace.getSpaceIdsForTimeline.mockResolvedValue([{ spaceId: 'space-1' }]);
+        mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+        await sut.getTimeBuckets(authStub.admin, {
+          withSharedSpaces: true,
+          withStacked: true,
+          visibility: AssetVisibility.Timeline,
+        });
+
+        expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+          expect.objectContaining({
+            withStacked: true,
+            timelineSpaceIds: ['space-1'],
+          }),
+        );
       });
     });
   });
@@ -497,6 +536,31 @@ describe(TimelineService.name, () => {
 
         expect(mocks.access.album.checkOwnerAccess).not.toHaveBeenCalled();
         expect(mocks.access.album.checkSharedAlbumAccess).not.toHaveBeenCalled();
+      });
+
+      it('should pass withStacked to asset repository when spaceId is provided', async () => {
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+        const json = `[{ id: ['asset-id'] }]`;
+        mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
+
+        await sut.getTimeBucket(authStub.admin, { timeBucket: 'bucket', spaceId: 'space-id', withStacked: true });
+
+        expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+          'bucket',
+          expect.objectContaining({ spaceId: 'space-id', withStacked: true }),
+          authStub.admin,
+        );
+      });
+
+      it('should not include withStacked when it is not provided with spaceId', async () => {
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set(['space-id']));
+        const json = `[{ id: ['asset-id'] }]`;
+        mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
+
+        await sut.getTimeBucket(authStub.admin, { timeBucket: 'bucket', spaceId: 'space-id' });
+
+        const calledWith = mocks.asset.getTimeBucket.mock.calls[0][1];
+        expect(calledWith.withStacked).toBeUndefined();
       });
     });
   });
