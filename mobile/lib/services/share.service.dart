@@ -6,11 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-
-import 'api.service.dart';
 
 final shareServiceProvider = Provider((ref) => ShareService(ref.watch(apiServiceProvider)));
 

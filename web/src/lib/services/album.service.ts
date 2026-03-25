@@ -163,7 +163,7 @@ const notifyAddToAlbums = (
   } else if (results.error) {
     toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
   } else {
-    toastManager.success(
+    toastManager.primary(
       $t('assets_added_to_albums_count', {
         values: { albumTotal: albumIds.length, assetTotal: assetIds.length },
       }),
@@ -269,11 +269,11 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
     await deleteAlbum({ id: album.id });
     eventManager.emit('AlbumDelete', album);
     if (notify) {
-      toastManager.success();
+      toastManager.primary();
     }
     return true;
   } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_album'));
+    handleError(error, $t('errors.unable_to_delete_album'), { notify });
     return false;
   }
 };

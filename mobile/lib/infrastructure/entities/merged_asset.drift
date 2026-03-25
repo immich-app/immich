@@ -26,7 +26,8 @@ SELECT
 	NULL as latitude,
 	NULL as longitude,
 	NULL as adjustmentTime,
-	rae.is_edited
+	rae.is_edited,
+	0 as playback_style
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -63,7 +64,8 @@ SELECT
 	lae.latitude,
 	lae.longitude,
 	lae.adjustment_time,
-	0 as is_edited
+	0 as is_edited,
+	lae.playback_style
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (

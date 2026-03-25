@@ -69,7 +69,7 @@
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
       const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
-      toastManager.success($t('profile_picture_set'));
+      toastManager.primary($t('profile_picture_set'));
       $user.profileImagePath = profileImagePath;
       $user.profileChangedAt = profileChangedAt;
 

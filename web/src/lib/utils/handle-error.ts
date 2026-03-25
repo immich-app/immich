@@ -23,7 +23,8 @@ export function standardizeError(error: unknown) {
   return error instanceof Error ? error : new Error(String(error));
 }
 
-export function handleError(error: unknown, localizedMessage: string) {
+export function handleError(error: unknown, localizedMessage: string, options?: { notify?: boolean }) {
+  const { notify = true } = options ?? {};
   const standardizedError = standardizeError(error);
   if (standardizedError.name === 'AbortError') {
     return;
@@ -39,7 +40,9 @@ export function handleError(error: unknown, localizedMessage: string) {
 
     const errorMessage = serverMessage || localizedMessage;
 
-    toastManager.danger(errorMessage);
+    if (notify) {
+      toastManager.danger(errorMessage);
+    }
 
     return errorMessage;
   } catch (error) {

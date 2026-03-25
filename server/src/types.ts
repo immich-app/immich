@@ -1,3 +1,4 @@
+import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset, AssetFile } from 'src/database';
@@ -548,3 +549,5 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
 }
+
+export type MaybeDehydrated<T> = T | ShallowDehydrateObject<T>;

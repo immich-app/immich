@@ -30,6 +30,7 @@
   import { AlbumPageViewMode } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -192,13 +193,14 @@
 
   const updateThumbnail = async (assetId: string) => {
     try {
-      await updateAlbumInfo({
+      const response = await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumThumbnailAssetId: assetId,
         },
       });
-      toastManager.success($t('album_cover_updated'));
+      eventManager.emit('AlbumUpdate', response);
+      toastManager.primary($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }
@@ -285,7 +287,11 @@
     }
   };
 
-  const onAlbumAddAssets = async () => {
+  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+    if (!albumIds.includes(album.id)) {
+      return;
+    }
+
     await refreshAlbum();
     timelineInteraction.clearMultiselect();
     await setModeToView();
@@ -470,19 +476,19 @@
             <ChangeDate menuItem />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
-            {#if assetInteraction.selectedAssets.length === 1}
-              <MenuOption
-                text={$t('set_as_album_cover')}
-                icon={mdiImageOutline}
-                onClick={() => updateThumbnailUsingCurrentSelection()}
-              />
-            {/if}
             <ArchiveAction
               menuItem
               unarchive={assetInteraction.isAllArchived}
               onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+          {/if}
+          {#if assetInteraction.selectedAssets.length === 1}
+            <MenuOption
+              text={$t('set_as_album_cover')}
+              icon={mdiImageOutline}
+              onClick={() => updateThumbnailUsingCurrentSelection()}
+            />
           {/if}
 
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}

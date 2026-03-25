@@ -591,10 +591,10 @@ describe(PersonService.name, () => {
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: expect.closeTo(25, 1),
-            boundingBoxY1: expect.closeTo(50, 1),
-            boundingBoxX2: expect.closeTo(100, 1),
-            boundingBoxY2: expect.closeTo(100, 1),
+            boundingBoxX1: 25,
+            boundingBoxY1: 49,
+            boundingBoxX2: 99,
+            boundingBoxY2: 100,
           }),
         ]),
       );

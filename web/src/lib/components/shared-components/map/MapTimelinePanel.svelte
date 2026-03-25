@@ -57,7 +57,6 @@
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
-  const isAllUserOwned = $derived($user && selectedAssets.every((asset) => asset.ownerId === $user.id));
 
   const handleLink: OnLink = ({ still, motion }) => {
     timelineManager.removeAssets([motion.id]);
@@ -133,7 +132,7 @@
       <SelectAllAssets {timelineManager} {assetInteraction} />
       <ActionButton action={Actions.AddToAlbum} />
 
-      {#if isAllUserOwned}
+      {#if assetInteraction.isAllUserOwned}
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}

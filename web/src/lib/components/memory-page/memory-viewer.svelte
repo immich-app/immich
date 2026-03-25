@@ -1,8 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
-  import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
   import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
@@ -55,6 +53,7 @@
   import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
 
   let memoryGallery: HTMLElement | undefined = $state();
@@ -64,8 +63,9 @@
   let playerInitialized = $state(false);
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
-  let currentMemoryAssetFull = $derived.by(async () =>
-    current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
+  const currentAssetId = $derived(current?.asset.id);
+  const currentMemoryAssetFull = $derived.by(async () =>
+    currentAssetId ? await getAssetInfo({ ...authManager.params, id: currentAssetId }) : undefined,
   );
   let currentTimelineAssets = $derived(current?.memory.assets ?? []);
   let viewerAssets = $derived([
@@ -206,7 +206,7 @@
     }
 
     await memoryStore.deleteMemory(current.memory.id);
-    toastManager.success($t('removed_memory'));
+    toastManager.primary($t('removed_memory'));
     init(page);
   };
 
@@ -217,7 +217,7 @@
 
     const newSavedState = !current.memory.isSaved;
     await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
-    toastManager.success(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
+    toastManager.primary(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
     init(page);
   };
 
@@ -234,6 +234,22 @@
       handlePromiseError(handleAction('galleryOutOfView', 'play'));
     }
     galleryFirstLoad = false;
+  };
+
+  const galleryObserver: Attachment<HTMLElement> = (element) => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          handleGalleryScrollsIntoView();
+        } else {
+          handleGalleryScrollsOutOfView();
+        }
+      },
+      { rootMargin: '0px 0px -200px 0px' },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
   };
 
   const loadFromParams = (page: Page | NavigationTarget | null) => {
@@ -362,7 +378,8 @@
   id="memory-viewer"
   class="w-full bg-immich-dark-gray"
   bind:this={memoryWrapper}
-  use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
 >
   {#if current}
     <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
@@ -534,14 +551,18 @@
               </div>
 
               <div>
-                <IconButton
-                  href={Route.photos({ at: current.asset.id })}
-                  icon={mdiImageSearch}
-                  aria-label={$t('view_in_timeline')}
-                  color="secondary"
-                  variant="ghost"
-                  shape="round"
-                />
+                {#await currentMemoryAssetFull then asset}
+                  {#if asset}
+                    <IconButton
+                      href={Route.photos({ at: asset.stack?.primaryAssetId ?? asset.id })}
+                      icon={mdiImageSearch}
+                      aria-label={$t('view_in_timeline')}
+                      color="secondary"
+                      variant="ghost"
+                      shape="round"
+                    />
+                  {/if}
+                {/await}
               </div>
             </div>
             <!-- CONTROL BUTTONS -->
@@ -644,15 +665,7 @@
       />
     </div>
 
-    <div
-      id="gallery-memory"
-      use:intersectionObserver={{
-        onIntersect: handleGalleryScrollsIntoView,
-        onSeparate: handleGalleryScrollsOutOfView,
-        bottom: '-200px',
-      }}
-      bind:this={memoryGallery}
-    >
+    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
         {viewerAssets}

@@ -49,7 +49,7 @@ export const tagAssets = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.success($t('tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('tagged_assets', { values: { count: assetIds.length } }));
   }
 
   return assetIds;
@@ -70,7 +70,7 @@ export const removeTag = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.success($t('removed_tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
   }
 
   return assetIds;
@@ -224,19 +224,56 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
-if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif');
-}
+export const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.includes('Firefox');
 
-function checkJxlSupport(): void {
-  const img = new Image();
-  img.addEventListener('load', () => {
+async function addSupportedMimeTypes(): Promise<void> {
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
+  if (isSafari) {
+    const match = navigator.userAgent.match(/Version\/(\d+)/);
+
+    if (!match) {
+      return;
+    }
+
+    const majorVersion = Number.parseInt(match[1]);
+    const MIN_REQUIRED_VERSION = 17;
+
+    if (majorVersion >= MIN_REQUIRED_VERSION) {
+      supportedImageMimeTypes.add('image/jxl').add('image/heic').add('image/heif');
+    }
+
+    return;
+  }
+
+  if (globalThis.isSecureContext && typeof ImageDecoder !== 'undefined') {
+    const dynamicMimeTypes = [{ type: 'image/jxl' }, { type: 'image/heic', aliases: ['image/heif'] }];
+
+    for (const mime of dynamicMimeTypes) {
+      const isMimeTypeSupported = await ImageDecoder.isTypeSupported(mime.type);
+      if (isMimeTypeSupported) {
+        for (const mimeType of [mime.type, ...(mime.aliases || [])]) {
+          supportedImageMimeTypes.add(mimeType);
+        }
+      }
+    }
+
+    return;
+  }
+
+  const jxlImg = new Image();
+  jxlImg.addEventListener('load', () => {
     supportedImageMimeTypes.add('image/jxl');
   });
-  img.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+  jxlImg.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+
+  const heicImg = new Image();
+  heicImg.addEventListener('load', () => {
+    supportedImageMimeTypes.add('image/heic');
+  });
+  heicImg.src =
+    'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
 }
-checkJxlSupport();
+void addSupportedMimeTypes();
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
@@ -327,7 +364,7 @@ export const deleteStack = async (stackIds: string[]) => {
 
     await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
 
-    toastManager.success($t('unstacked_assets_count', { values: { count } }));
+    toastManager.primary($t('unstacked_assets_count', { values: { count } }));
 
     const assets = stacks.flatMap((stack) => stack.assets);
     for (const asset of assets) {
@@ -348,7 +385,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
     await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
     await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
 
-    toastManager.success($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
+    toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
 
     keepAsset.stack = null;
     return keepAsset;
@@ -403,7 +440,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
-    toastManager.success(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
+    toastManager.primary(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
   }
@@ -422,7 +459,7 @@ export const archiveAssets = async (assets: { id: string }[], visibility: AssetV
       });
     }
 
-    toastManager.success(
+    toastManager.primary(
       visibility === AssetVisibility.Archive
         ? $t('archived_count', { values: { count: ids.length } })
         : $t('unarchived_count', { values: { count: ids.length } }),

@@ -36,7 +36,7 @@ class ArchiveBottomSheet extends ConsumerWidget {
           const ShareLinkActionButton(source: ActionSource.timeline),
           const UnArchiveActionButton(source: ActionSource.timeline),
           const FavoriteActionButton(source: ActionSource.timeline),
-          const DownloadActionButton(source: ActionSource.timeline),
+          if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
               : const DeletePermanentActionButton(source: ActionSource.timeline),

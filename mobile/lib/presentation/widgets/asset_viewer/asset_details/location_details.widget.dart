@@ -8,12 +8,14 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class LocationDetails extends ConsumerStatefulWidget {
-  const LocationDetails({super.key});
+  final BaseAsset asset;
+  final ExifInfo? exifInfo;
+
+  const LocationDetails({super.key, required this.asset, this.exifInfo});
 
   @override
   ConsumerState createState() => _LocationDetailsState();
@@ -40,17 +42,15 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
     _mapController = controller;
   }
 
-  void _onExifChanged(AsyncValue<ExifInfo?>? previous, AsyncValue<ExifInfo?> current) {
-    final currentExif = current.valueOrNull;
-    if (currentExif != null && currentExif.hasCoordinates) {
-      _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(currentExif.latitude!, currentExif.longitude!)));
-    }
-  }
-
   @override
-  void initState() {
-    super.initState();
-    ref.listenManual(currentAssetExifProvider, _onExifChanged, fireImmediately: true);
+  void didUpdateWidget(LocationDetails oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.exifInfo != oldWidget.exifInfo) {
+      final exif = widget.exifInfo;
+      if (exif != null && exif.hasCoordinates) {
+        _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(exif.latitude!, exif.longitude!)));
+      }
+    }
   }
 
   void editLocation() async {
@@ -59,8 +59,8 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final asset = ref.watch(currentAssetNotifier);
-    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+    final asset = widget.asset;
+    final exifInfo = widget.exifInfo;
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
     // Guard local assets

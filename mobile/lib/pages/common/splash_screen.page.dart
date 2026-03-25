@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -11,7 +12,8 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -129,11 +131,16 @@ class _BottomPanelState extends State<_BottomPanel> {
       return;
     }
 
-    final db = Drift();
     try {
-      await db.reset();
-    } finally {
-      await db.close();
+      final dir = await getApplicationDocumentsDirectory();
+      for (final suffix in ['', '-wal', '-shm']) {
+        final file = File(path.join(dir.path, 'immich.sqlite$suffix'));
+        if (await file.exists()) {
+          await file.delete();
+        }
+      }
+    } catch (_) {
+      return;
     }
 
     if (mounted) {

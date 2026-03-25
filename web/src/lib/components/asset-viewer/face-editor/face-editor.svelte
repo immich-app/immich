@@ -3,10 +3,13 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { shortcut } from '$lib/actions/shortcut';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
+  import { clamp } from 'lodash-es';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -23,10 +26,12 @@
   let canvas: Canvas | undefined = $state();
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
+  let scrollableListEl: HTMLDivElement | undefined = $state();
   let page = $state(1);
   let candidates = $state<PersonResponseDto[]>([]);
 
   let searchTerm = $state('');
+  let faceBoxPosition = $state({ left: 0, top: 0, width: 0, height: 0 });
 
   let filteredCandidates = $derived(
     searchTerm
@@ -70,6 +75,7 @@
 
     canvas.add(faceRect);
     canvas.setActiveObject(faceRect);
+    setDefaultFaceRectanglePosition(faceRect);
   };
 
   onMount(async () => {
@@ -77,20 +83,31 @@
     await getPeople();
   });
 
+  const imageContentMetrics = $derived.by(() => {
+    const natural = getNaturalSize(htmlElement);
+    const container = { width: containerWidth, height: containerHeight };
+    const { width: contentWidth, height: contentHeight } = scaleToFit(natural, container);
+    return {
+      contentWidth,
+      contentHeight,
+      offsetX: (containerWidth - contentWidth) / 2,
+      offsetY: (containerHeight - contentHeight) / 2,
+    };
+  });
+
+  const setDefaultFaceRectanglePosition = (faceRect: Rect) => {
+    const { offsetX, offsetY } = imageContentMetrics;
+
+    faceRect.set({
+      top: offsetY + 200,
+      left: offsetX + 200,
+    });
+
+    faceRect.setCoords();
+    positionFaceSelector();
+  };
+
   $effect(() => {
-    const { actualWidth, actualHeight } = getContainedSize(htmlElement);
-    const offsetArea = {
-      width: (containerWidth - actualWidth) / 2,
-      height: (containerHeight - actualHeight) / 2,
-    };
-
-    const imageBoundingBox = {
-      top: offsetArea.height,
-      left: offsetArea.width,
-      width: containerWidth - offsetArea.width * 2,
-      height: containerHeight - offsetArea.height * 2,
-    };
-
     if (!canvas) {
       return;
     }
@@ -104,39 +121,19 @@
       return;
     }
 
-    faceRect.set({
-      top: imageBoundingBox.top + 200,
-      left: imageBoundingBox.left + 200,
-    });
-
-    faceRect.setCoords();
-    positionFaceSelector();
+    if (!isFaceRectIntersectingCanvas(faceRect, canvas)) {
+      setDefaultFaceRectanglePosition(faceRect);
+    }
   });
 
-  const getContainedSize = (
-    img: HTMLImageElement | HTMLVideoElement,
-  ): { actualWidth: number; actualHeight: number } => {
-    if (img instanceof HTMLImageElement) {
-      const ratio = img.naturalWidth / img.naturalHeight;
-      let actualWidth = img.height * ratio;
-      let actualHeight = img.height;
-      if (actualWidth > img.width) {
-        actualWidth = img.width;
-        actualHeight = img.width / ratio;
-      }
-      return { actualWidth, actualHeight };
-    } else if (img instanceof HTMLVideoElement) {
-      const ratio = img.videoWidth / img.videoHeight;
-      let actualWidth = img.clientHeight * ratio;
-      let actualHeight = img.clientHeight;
-      if (actualWidth > img.clientWidth) {
-        actualWidth = img.clientWidth;
-        actualHeight = img.clientWidth / ratio;
-      }
-      return { actualWidth, actualHeight };
-    }
-
-    return { actualWidth: 0, actualHeight: 0 };
+  const isFaceRectIntersectingCanvas = (faceRect: Rect, canvas: Canvas) => {
+    const faceBox = faceRect.getBoundingRect();
+    return !(
+      0 > faceBox.left + faceBox.width ||
+      0 > faceBox.top + faceBox.height ||
+      canvas.width < faceBox.left ||
+      canvas.height < faceBox.top
+    );
   };
 
   const cancel = () => {
@@ -157,69 +154,80 @@
     }
   };
 
+  const MAX_LIST_HEIGHT = 250;
+
   const positionFaceSelector = () => {
-    if (!faceRect || !faceSelectorEl) {
+    if (!faceRect || !faceSelectorEl || !scrollableListEl) {
       return;
     }
 
-    const rect = faceRect.getBoundingRect();
+    const gap = 15;
+    const padding = faceRect.padding ?? 0;
+    const rawBox = faceRect.getBoundingRect();
+    const faceBox = {
+      left: rawBox.left - padding,
+      top: rawBox.top - padding,
+      width: rawBox.width + padding * 2,
+      height: rawBox.height + padding * 2,
+    };
     const selectorWidth = faceSelectorEl.offsetWidth;
-    const selectorHeight = faceSelectorEl.offsetHeight;
+    const chromeHeight = faceSelectorEl.offsetHeight - scrollableListEl.offsetHeight;
+    const listHeight = Math.min(MAX_LIST_HEIGHT, containerHeight - gap * 2 - chromeHeight);
+    const selectorHeight = listHeight + chromeHeight;
 
-    const spaceAbove = rect.top;
-    const spaceBelow = containerHeight - (rect.top + rect.height);
-    const spaceLeft = rect.left;
-    const spaceRight = containerWidth - (rect.left + rect.width);
+    const clampTop = (top: number) => clamp(top, gap, containerHeight - selectorHeight - gap);
+    const clampLeft = (left: number) => clamp(left, gap, containerWidth - selectorWidth - gap);
 
-    let top, left;
+    const overlapArea = (position: { top: number; left: number }) => {
+      const selectorRight = position.left + selectorWidth;
+      const selectorBottom = position.top + selectorHeight;
+      const faceRight = faceBox.left + faceBox.width;
+      const faceBottom = faceBox.top + faceBox.height;
 
-    if (
-      spaceBelow >= selectorHeight ||
-      (spaceBelow >= spaceAbove && spaceBelow >= spaceLeft && spaceBelow >= spaceRight)
-    ) {
-      top = rect.top + rect.height + 15;
-      left = rect.left;
-    } else if (
-      spaceAbove >= selectorHeight ||
-      (spaceAbove >= spaceBelow && spaceAbove >= spaceLeft && spaceAbove >= spaceRight)
-    ) {
-      top = rect.top - selectorHeight - 15;
-      left = rect.left;
-    } else if (
-      spaceRight >= selectorWidth ||
-      (spaceRight >= spaceLeft && spaceRight >= spaceAbove && spaceRight >= spaceBelow)
-    ) {
-      top = rect.top;
-      left = rect.left + rect.width + 15;
-    } else {
-      top = rect.top;
-      left = rect.left - selectorWidth - 15;
+      const overlapX = Math.max(0, Math.min(selectorRight, faceRight) - Math.max(position.left, faceBox.left));
+      const overlapY = Math.max(0, Math.min(selectorBottom, faceBottom) - Math.max(position.top, faceBox.top));
+      return overlapX * overlapY;
+    };
+
+    const faceBottom = faceBox.top + faceBox.height;
+    const faceRight = faceBox.left + faceBox.width;
+
+    const positions = [
+      { top: clampTop(faceBottom + gap), left: clampLeft(faceBox.left) },
+      { top: clampTop(faceBox.top - selectorHeight - gap), left: clampLeft(faceBox.left) },
+      { top: clampTop(faceBox.top), left: clampLeft(faceRight + gap) },
+      { top: clampTop(faceBox.top), left: clampLeft(faceBox.left - selectorWidth - gap) },
+    ];
+
+    let bestPosition = positions[0];
+    let leastOverlap = Infinity;
+
+    for (const position of positions) {
+      const overlap = overlapArea(position);
+      if (overlap < leastOverlap) {
+        leastOverlap = overlap;
+        bestPosition = position;
+        if (overlap === 0) {
+          break;
+        }
+      }
     }
 
-    if (left + selectorWidth > containerWidth) {
-      left = containerWidth - selectorWidth - 15;
-    }
-
-    if (left < 0) {
-      left = 15;
-    }
-
-    if (top + selectorHeight > containerHeight) {
-      top = containerHeight - selectorHeight - 15;
-    }
-
-    if (top < 0) {
-      top = 15;
-    }
-
-    faceSelectorEl.style.top = `${top}px`;
-    faceSelectorEl.style.left = `${left}px`;
+    faceSelectorEl.style.top = `${bestPosition.top}px`;
+    faceSelectorEl.style.left = `${bestPosition.left}px`;
+    scrollableListEl.style.height = `${listHeight}px`;
+    faceBoxPosition = { left: faceBox.left, top: faceBox.top, width: faceBox.width, height: faceBox.height };
   };
 
   $effect(() => {
-    if (faceRect) {
-      faceRect.on('moving', positionFaceSelector);
-      faceRect.on('scaling', positionFaceSelector);
+    const rect = faceRect;
+    if (rect) {
+      rect.on('moving', positionFaceSelector);
+      rect.on('scaling', positionFaceSelector);
+      return () => {
+        rect.off('moving', positionFaceSelector);
+        rect.off('scaling', positionFaceSelector);
+      };
     }
   });
 
@@ -229,48 +237,22 @@
     }
 
     const { left, top, width, height } = faceRect.getBoundingRect();
-    const { actualWidth, actualHeight } = getContainedSize(htmlElement);
+    const { offsetX, offsetY, contentWidth, contentHeight } = imageContentMetrics;
+    const natural = getNaturalSize(htmlElement);
 
-    const offsetArea = {
-      width: (containerWidth - actualWidth) / 2,
-      height: (containerHeight - actualHeight) / 2,
+    const scaleX = natural.width / contentWidth;
+    const scaleY = natural.height / contentHeight;
+    const imageX = (left - offsetX) * scaleX;
+    const imageY = (top - offsetY) * scaleY;
+
+    return {
+      imageWidth: natural.width,
+      imageHeight: natural.height,
+      x: Math.floor(imageX),
+      y: Math.floor(imageY),
+      width: Math.floor(width * scaleX),
+      height: Math.floor(height * scaleY),
     };
-
-    const x1Coeff = (left - offsetArea.width) / actualWidth;
-    const y1Coeff = (top - offsetArea.height) / actualHeight;
-    const x2Coeff = (left + width - offsetArea.width) / actualWidth;
-    const y2Coeff = (top + height - offsetArea.height) / actualHeight;
-
-    // transpose to the natural image location
-    if (htmlElement instanceof HTMLImageElement) {
-      const x1 = x1Coeff * htmlElement.naturalWidth;
-      const y1 = y1Coeff * htmlElement.naturalHeight;
-      const x2 = x2Coeff * htmlElement.naturalWidth;
-      const y2 = y2Coeff * htmlElement.naturalHeight;
-
-      return {
-        imageWidth: htmlElement.naturalWidth,
-        imageHeight: htmlElement.naturalHeight,
-        x: Math.floor(x1),
-        y: Math.floor(y1),
-        width: Math.floor(x2 - x1),
-        height: Math.floor(y2 - y1),
-      };
-    } else if (htmlElement instanceof HTMLVideoElement) {
-      const x1 = x1Coeff * htmlElement.videoWidth;
-      const y1 = y1Coeff * htmlElement.videoHeight;
-      const x2 = x2Coeff * htmlElement.videoWidth;
-      const y2 = y2Coeff * htmlElement.videoHeight;
-
-      return {
-        imageWidth: htmlElement.videoWidth,
-        imageHeight: htmlElement.videoHeight,
-        x: Math.floor(x1),
-        y: Math.floor(y1),
-        width: Math.floor(x2 - x1),
-        height: Math.floor(y2 - y1),
-      };
-    }
   };
 
   const tagFace = async (person: PersonResponseDto) => {
@@ -308,13 +290,22 @@
   };
 </script>
 
-<div class="absolute start-0 top-0">
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel }} />
+
+<div
+  id="face-editor-data"
+  class="absolute start-0 top-0 z-5 h-full w-full overflow-hidden"
+  data-face-left={faceBoxPosition.left}
+  data-face-top={faceBoxPosition.top}
+  data-face-width={faceBoxPosition.width}
+  data-face-height={faceBoxPosition.height}
+>
   <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 start-0"></canvas>
 
   <div
     id="face-selector"
     bind:this={faceSelectorEl}
-    class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
+    class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800 transition-[top,left] duration-200 ease-out"
   >
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
@@ -322,7 +313,7 @@
       <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
     </div>
 
-    <div class="h-62.5 overflow-y-auto mt-2">
+    <div bind:this={scrollableListEl} class="h-62.5 overflow-y-auto mt-2">
       {#if filteredCandidates.length > 0}
         <div class="mt-2 rounded-lg">
           {#each filteredCandidates as person (person.id)}

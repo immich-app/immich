@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset } from 'src/database';
+import { Asset, AuthSharedLink } from 'src/database';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -151,6 +151,10 @@ export class AssetMediaService extends BaseService {
         );
       }
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
+
+      if (auth.sharedLink) {
+        await this.addToSharedLink(auth.sharedLink, asset.id);
+      }
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
@@ -323,6 +327,12 @@ export class AssetMediaService extends BaseService {
     };
   }
 
+  private async addToSharedLink(sharedLink: AuthSharedLink, assetId: string) {
+    await (sharedLink.albumId
+      ? this.albumRepository.addAssetIds(sharedLink.albumId, [assetId])
+      : this.sharedLinkRepository.addAssets(sharedLink.id, [assetId]));
+  }
+
   private async handleUploadError(
     error: any,
     auth: AuthDto,
@@ -342,6 +352,11 @@ export class AssetMediaService extends BaseService {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
+
+      if (auth.sharedLink) {
+        await this.addToSharedLink(auth.sharedLink, duplicateId);
+      }
+
       return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
     }
 

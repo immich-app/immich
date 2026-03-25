@@ -123,13 +123,13 @@ with
           ) as "year"
       )
     select
-      "a".*,
-      to_json("asset_exif") as "exifInfo"
+      "a".*
     from
       "today"
       inner join lateral (
         select
-          "asset".*
+          "asset"."id",
+          "asset"."localDateTime"
         from
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
@@ -151,7 +151,6 @@ with
         limit
           $7
       ) as "a" on true
-      inner join "asset_exif" on "a"."id" = "asset_exif"."assetId"
   )
 select
   date_part(
@@ -439,6 +438,7 @@ with
           and "stack"."primaryAssetId" != "asset"."id"
       )
     order by
+      (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
       "asset"."fileCreatedAt" desc
   ),
   "agg" as (
@@ -629,13 +629,21 @@ order by
 
 -- AssetRepository.getForVideo
 select
-  "asset"."encodedVideoPath",
-  "asset"."originalPath"
+  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $1
+  ) as "encodedVideoPath"
 from
   "asset"
 where
-  "asset"."id" = $1
-  and "asset"."type" = $2
+  "asset"."id" = $2
+  and "asset"."type" = $3
 
 -- AssetRepository.getForOcr
 select

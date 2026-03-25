@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, NotNull, sql } from 'kysely';
+import { Kysely, NotNull, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
 
 interface DuplicateSearch {
@@ -39,15 +39,15 @@ export class DuplicateRepository {
                 qb
                   .selectFrom('asset_exif')
                   .selectAll('asset')
-                  .select((eb) => eb.table('asset_exif').as('exifInfo'))
+                  .select((eb) =>
+                    eb.table('asset_exif').$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>().as('exifInfo'),
+                  )
                   .whereRef('asset_exif.assetId', '=', 'asset.id')
                   .as('asset2'),
               (join) => join.onTrue(),
             )
             .select('asset.duplicateId')
-            .select((eb) =>
-              eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-            )
+            .select((eb) => eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').as('assets'))
             .where('asset.ownerId', '=', asUuid(userId))
             .where('asset.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()

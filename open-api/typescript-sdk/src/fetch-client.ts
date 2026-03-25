@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.5.6
+ * 2.6.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -5987,19 +5987,14 @@ export function updateSharedLink({ id, sharedLinkEditDto }: {
 /**
  * Remove assets from a shared link
  */
-export function removeSharedLinkAssets({ id, key, slug, assetIdsDto }: {
+export function removeSharedLinkAssets({ id, assetIdsDto }: {
     id: string;
-    key?: string;
-    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
-    }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key,
-        slug
-    }))}`, oazapfts.json({
+    }>(`/shared-links/${encodeURIComponent(id)}/assets`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetIdsDto
@@ -7324,6 +7319,7 @@ export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
     Libopus = "libopus",
+    Opus = "opus",
     PcmS16Le = "pcm_s16le"
 }
 export enum VideoContainer {

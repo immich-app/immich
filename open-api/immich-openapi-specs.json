@@ -11605,22 +11605,6 @@
               "format": "uuid",
               "type": "string"
             }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
@@ -11677,6 +11661,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "sharedLink.update",
         "x-immich-state": "Stable"
       },
       "put": {
@@ -15181,7 +15166,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.5.6",
+    "version": "2.6.2",
     "contact": {}
   },
   "tags": [
@@ -17260,6 +17245,7 @@
           "mp3",
           "aac",
           "libopus",
+          "opus",
           "pcm_s16le"
         ],
         "type": "string"

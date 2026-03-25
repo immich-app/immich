@@ -55,6 +55,7 @@ class LocalImageApi {
     required int width,
     required int height,
     required bool isVideo,
+    required bool preferEncoded,
   }) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.LocalImageApi.requestImage$pigeonVar_messageChannelSuffix';
@@ -69,6 +70,7 @@ class LocalImageApi {
       width,
       height,
       isVideo,
+      preferEncoded,
     ]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

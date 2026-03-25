@@ -6,6 +6,7 @@ import {
   NotNull,
   Selectable,
   SelectQueryBuilder,
+  ShallowDehydrateObject,
   sql,
   Updateable,
   UpdateResult,
@@ -35,6 +36,7 @@ import {
   withExif,
   withFaces,
   withFacesAndPeople,
+  withFilePath,
   withFiles,
   withLibrary,
   withOwner,
@@ -404,7 +406,7 @@ export class AssetRepository {
             (qb) =>
               qb
                 .selectFrom('asset')
-                .selectAll('asset')
+                .select(['asset.id', 'asset.localDateTime'])
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
@@ -423,9 +425,7 @@ export class AssetRepository {
                 .as('a'),
             (join) => join.onTrue(),
           )
-          .innerJoin('asset_exif', 'a.id', 'asset_exif.assetId')
-          .selectAll('a')
-          .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo')),
+          .selectAll('a'),
       )
       .selectFrom('res')
       .select(sql<number>`date_part('year', ("localDateTime" at time zone 'UTC')::date)::int`.as('year'))
@@ -556,7 +556,11 @@ export class AssetRepository {
                   eb
                     .selectFrom('asset as stacked')
                     .selectAll('stack')
-                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+                    .select((eb) =>
+                      eb
+                        .fn<ShallowDehydrateObject<Selectable<AssetTable>>>('array_agg', [eb.table('stacked')])
+                        .as('assets'),
+                    )
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
@@ -565,7 +569,7 @@ export class AssetRepository {
                     .as('stacked_assets'),
                 (join) => join.on('stack.id', 'is not', null),
               )
-              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack')),
+              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
           ),
       )
       .$if(!!files, (qb) => qb.select(withFiles))
@@ -746,6 +750,7 @@ export class AssetRepository {
     params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
+    const order = options.order ?? 'desc';
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -843,7 +848,8 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('asset.fileCreatedAt', options.order ?? 'desc'),
+          .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
+          .orderBy('asset.fileCreatedAt', order),
       )
       .with('agg', (qb) =>
         qb
@@ -1014,8 +1020,21 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFile({ assetId, type }: { assetId: string; type: AssetFileType }): Promise<void> {
-    await this.db.deleteFrom('asset_file').where('assetId', '=', asUuid(assetId)).where('type', '=', type).execute();
+  async deleteFile({
+    assetId,
+    type,
+    edited,
+  }: {
+    assetId: string;
+    type: AssetFileType;
+    edited?: boolean;
+  }): Promise<void> {
+    await this.db
+      .deleteFrom('asset_file')
+      .where('assetId', '=', asUuid(assetId))
+      .where('type', '=', type)
+      .$if(edited !== undefined, (qb) => qb.where('isEdited', '=', edited!))
+      .execute();
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
@@ -1134,7 +1153,8 @@ export class AssetRepository {
   async getForVideo(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .select(['asset.originalPath'])
+      .select((eb) => withFilePath(eb, AssetFileType.EncodedVideo).as('encodedVideoPath'))
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();

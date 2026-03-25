@@ -95,7 +95,7 @@
     const message = featureFlagsManager.value.trash
       ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
       : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
-    toastManager.success(message);
+    toastManager.primary(message);
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
@@ -167,7 +167,7 @@
 
         duplicates = [];
 
-        toastManager.success($t('resolved_all_duplicates'));
+        toastManager.primary($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
         await goto(Route.duplicatesUtility());
       },
@@ -178,19 +178,7 @@
 
   const handleFirst = () => navigateToIndex(0);
   const handlePrevious = () => navigateToIndex(Math.max(duplicatesIndex - 1, 0));
-  const handlePreviousShortcut = async () => {
-    if ($showAssetViewer) {
-      return;
-    }
-    await handlePrevious();
-  };
   const handleNext = async () => navigateToIndex(Math.min(duplicatesIndex + 1, duplicates.length - 1));
-  const handleNextShortcut = async () => {
-    if ($showAssetViewer) {
-      return;
-    }
-    await handleNext();
-  };
   const handleLast = () => navigateToIndex(duplicates.length - 1);
 
   const navigateToIndex = async (index: number) =>
@@ -198,10 +186,12 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePreviousShortcut },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNextShortcut },
-  ]}
+  use:shortcuts={$showAssetViewer
+    ? []
+    : [
+        { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
+        { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
+      ]}
 />
 
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>

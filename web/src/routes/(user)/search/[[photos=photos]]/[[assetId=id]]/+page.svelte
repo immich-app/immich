@@ -25,7 +25,7 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { lang, locale } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -67,11 +67,7 @@
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
-  let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
-
-  const isAllUserOwned = $derived(
-    $user && assetInteraction.selectedAssets.every((asset) => asset.ownerId === $user.id),
-  );
+  let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -141,15 +137,13 @@
     const searchDto: SearchTerms = {
       page: nextPage,
       withExif: true,
-      isVisible: true,
-      language: $lang,
       ...terms,
     };
 
     try {
       const { albums, assets } =
         ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
-          ? await searchSmart({ smartSearchDto: searchDto })
+          ? await searchSmart({ smartSearchDto: { ...searchDto, language: $lang } })
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
@@ -234,7 +228,7 @@
   const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
     cancelMultiselect(assetInteraction);
 
-    if (terms.isNotInAlbum.toString() == 'true') {
+    if (terms.isNotInAlbum) {
       const assetIdSet = new Set(assetIds);
       searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
@@ -326,7 +320,7 @@
 
   <section>
     {#if assetInteraction.selectionActive}
-      <div class="fixed top-0 start-0 w-full">
+      <div class="fixed top-0 start-0 w-full z-2">
         <AssetSelectControlBar
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -344,7 +338,7 @@
             onclick={handleSelectAll}
           />
           <ActionButton action={Actions.AddToAlbum} />
-          {#if isAllUserOwned}
+          {#if assetInteraction.isAllUserOwned}
             <FavoriteAction
               removeFavorite={assetInteraction.isAllFavorite}
               onFavorite={(ids, isFavorite) => {
@@ -364,10 +358,8 @@
               <ChangeDescription menuItem />
               <ChangeLocation menuItem />
               <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
-              {#if assetInteraction.isAllUserOwned}
-                <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-              {/if}
-              {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+              {#if $preferences.tags.enabled}
                 <TagAction menuItem />
               {/if}
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
@@ -382,7 +374,7 @@
         </AssetSelectControlBar>
       </div>
     {:else}
-      <div class="fixed top-0 start-0 w-full">
+      <div class="fixed top-0 start-0 w-full z-2">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="absolute bg-light"></div>
           <div class="w-full flex-1 ps-4">
