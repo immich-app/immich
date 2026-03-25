@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import '@testing-library/jest-dom';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { createFilterState } from '../filter-panel';
 import FilterPanel from '../filter-panel.svelte';
 
@@ -114,6 +115,69 @@ describe('FilterPanel', () => {
       },
     });
     expect(queryByTestId('filter-section-rating')).toBeTruthy();
+  });
+
+  describe('initialCollapsed prop', () => {
+    it('should start collapsed when initialCollapsed is true', () => {
+      render(FilterPanel, {
+        props: {
+          config: { sections: ['rating', 'media'], providers: {} },
+          timeBuckets: [],
+          initialCollapsed: true,
+        },
+      });
+      expect(screen.getByTestId('collapsed-icon-strip')).toBeInTheDocument();
+      expect(screen.queryByTestId('discovery-panel')).not.toBeInTheDocument();
+    });
+
+    it('should start expanded by default (no prop)', () => {
+      render(FilterPanel, {
+        props: {
+          config: { sections: ['rating', 'media'], providers: {} },
+          timeBuckets: [],
+        },
+      });
+      expect(screen.getByTestId('discovery-panel')).toBeInTheDocument();
+      expect(screen.queryByTestId('collapsed-icon-strip')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('emptyText prop', () => {
+    it('should show generic empty text for people section when no people', async () => {
+      render(FilterPanel, {
+        props: {
+          config: { sections: ['people'], providers: { people: () => Promise.resolve([]) } },
+          timeBuckets: [],
+        },
+      });
+      await waitFor(() => {
+        expect(screen.getByTestId('people-empty')).toHaveTextContent('No people found');
+      });
+    });
+
+    it('should show generic empty text for location section when no locations', async () => {
+      render(FilterPanel, {
+        props: {
+          config: { sections: ['location'], providers: { locations: () => Promise.resolve([]) } },
+          timeBuckets: [],
+        },
+      });
+      await waitFor(() => {
+        expect(screen.getByTestId('location-empty')).toHaveTextContent('No locations found');
+      });
+    });
+
+    it('should show generic empty text for camera section when no cameras', async () => {
+      render(FilterPanel, {
+        props: {
+          config: { sections: ['camera'], providers: { cameras: () => Promise.resolve([]) } },
+          timeBuckets: [],
+        },
+      });
+      await waitFor(() => {
+        expect(screen.getByTestId('camera-empty')).toHaveTextContent('No cameras found');
+      });
+    });
   });
 });
 

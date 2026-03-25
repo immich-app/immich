@@ -36,10 +36,18 @@
     config: FilterPanelConfig;
     timeBuckets: Array<{ timeBucket: string; count: number }>;
     filters?: FilterState;
+    initialCollapsed?: boolean;
+    storageKey?: string;
   }
 
-  let { config, timeBuckets, filters = $bindable(createFilterState()) }: Props = $props();
-  let collapsed = $state(false);
+  let {
+    config,
+    timeBuckets,
+    filters = $bindable(createFilterState()),
+    initialCollapsed = false,
+    storageKey = 'gallery-filter-visible-sections',
+  }: Props = $props();
+  let collapsed = $state(initialCollapsed);
 
   // Fetched data for filter sections
   let people = $state<PersonOption[]>([]);
@@ -200,12 +208,10 @@
     media: 'Media Type',
   };
 
-  const STORAGE_KEY = 'gallery-filter-visible-sections';
-
-  function loadVisibleSections(configSections: FilterSectionType[]): SvelteSet<FilterSectionType> {
+  function loadVisibleSections(configSections: FilterSectionType[], key: string): SvelteSet<FilterSectionType> {
     if (browser) {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(key);
         if (raw) {
           const parsed = JSON.parse(raw) as string[];
           const valid = parsed.filter((s): s is FilterSectionType => configSections.includes(s as FilterSectionType));
@@ -220,7 +226,7 @@
     return new SvelteSet(configSections);
   }
 
-  let visibleSections = $state(loadVisibleSections(config.sections));
+  let visibleSections = $state(loadVisibleSections(config.sections, storageKey));
 
   function toggleSection(section: FilterSectionType) {
     const next = new SvelteSet(visibleSections);
@@ -239,7 +245,7 @@
   $effect(() => {
     if (browser) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([...visibleSections]));
+        localStorage.setItem(storageKey, JSON.stringify([...visibleSections]));
       } catch {
         /* localStorage unavailable */
       }

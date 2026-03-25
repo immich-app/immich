@@ -8,9 +8,18 @@
     context?: FilterContext;
     onCityFetch: (country: string, context?: FilterContext) => Promise<string[]>;
     onSelectionChange: (country?: string, city?: string) => void;
+    emptyText?: string;
   }
 
-  let { countries, selectedCity, selectedCountry, context, onCityFetch, onSelectionChange }: Props = $props();
+  let {
+    countries,
+    selectedCity,
+    selectedCountry,
+    context,
+    onCityFetch,
+    onSelectionChange,
+    emptyText = 'No locations found',
+  }: Props = $props();
 
   let expandedCountry = $state<string | undefined>(undefined);
   let cities = $state<string[]>([]);
@@ -62,7 +71,7 @@
 
 <div data-testid="location-filter">
   {#if countries.length === 0 && !orphanedCountry}
-    <p class="text-sm text-gray-400 dark:text-gray-500" data-testid="location-empty">No locations in this space</p>
+    <p class="text-sm text-gray-400 dark:text-gray-500" data-testid="location-empty">{emptyText}</p>
   {:else}
     <!-- Orphaned country (selected but no longer in suggestions) -->
     {#if orphanedCountry}

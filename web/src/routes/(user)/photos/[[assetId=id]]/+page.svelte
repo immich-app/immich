@@ -1,6 +1,15 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
+  import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
+  import {
+    clearFilters,
+    createFilterState,
+    getActiveFilterCount,
+    type FilterContext,
+    type FilterPanelConfig,
+  } from '$lib/components/filter-panel/filter-panel';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -37,22 +46,83 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { buildPhotosTimelineOptions, handlePhotosRemoveFilter } from '$lib/utils/photos-filter-options';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetVisibility } from '@immich/sdk';
+  import { getAllPeople, getAllTags, getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = {
-    visibility: AssetVisibility.Timeline,
-    withStacked: true,
-    withPartners: true,
-    withSharedSpaces: true,
-  };
 
   const assetInteraction = new AssetInteraction();
+
+  // Filter state
+  let filters = $state(createFilterState());
+  const options = $derived(buildPhotosTimelineOptions(filters));
+  let personNames = new SvelteMap<string, string>();
+  let tagNames = new SvelteMap<string, string>();
+
+  const filterConfig: FilterPanelConfig = {
+    sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'],
+    providers: {
+      people: async () => {
+        const response = await getAllPeople({ withHidden: false });
+        for (const p of response.people) {
+          personNames.set(p.id, p.name || 'Unknown');
+        }
+        return response.people
+          .filter((p) => p.thumbnailPath)
+          .map((p) => ({ id: p.id, name: p.name || 'Unknown', thumbnailPath: p.thumbnailPath }));
+      },
+      locations: async (context?: FilterContext) => {
+        const countries = await getSearchSuggestions({
+          $type: SearchSuggestionType.Country,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
+        return countries.filter(Boolean).map((c) => ({ value: c!, type: 'country' as const }));
+      },
+      cities: async (country: string, context?: FilterContext) => {
+        const cities = await getSearchSuggestions({
+          $type: SearchSuggestionType.City,
+          country,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
+        return cities.filter(Boolean) as string[];
+      },
+      cameras: async (context?: FilterContext) => {
+        const makes = await getSearchSuggestions({
+          $type: SearchSuggestionType.CameraMake,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
+        return makes.filter(Boolean).map((m) => ({ value: m!, type: 'make' as const }));
+      },
+      cameraModels: async (make: string, context?: FilterContext) => {
+        const models = await getSearchSuggestions({
+          $type: SearchSuggestionType.CameraModel,
+          make,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
+        return models.filter(Boolean) as string[];
+      },
+      tags: async () => {
+        const tags = await getAllTags();
+        for (const t of tags) {
+          tagNames.set(t.id, t.value);
+        }
+        return tags.map((t) => ({ id: t.id, name: t.value }));
+      },
+    },
+  };
+
+  const hasActiveFilters = $derived(getActiveFilterCount(filters) > 0);
+  const totalAssetCount = $derived(timelineManager?.assetCount ?? 0);
 
   let selectedAssets = $derived(assetInteraction.selectedAssets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
@@ -107,22 +177,54 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} scrollbar={false}>
-  <Timeline
-    enableRouting={true}
-    bind:timelineManager
-    {options}
-    {assetInteraction}
-    removeAction={AssetAction.ARCHIVE}
-    onEscape={handleEscape}
-    withStacked
-  >
-    {#if $preferences.memories.enabled}
-      <ImageCarousel {items} />
-    {/if}
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
-    {/snippet}
-  </Timeline>
+  <div class="flex h-full">
+    <FilterPanel
+      bind:filters
+      config={filterConfig}
+      timeBuckets={timelineManager?.months?.map((m) => ({
+        timeBucket: `${m.yearMonth.year}-${String(m.yearMonth.month).padStart(2, '0')}-01T00:00:00.000Z`,
+        count: m.assetsCount,
+      })) ?? []}
+      initialCollapsed={true}
+      storageKey="gallery-filter-visible-sections-photos"
+    />
+    <div class="flex-1 overflow-hidden">
+      {#if hasActiveFilters}
+        <ActiveFiltersBar
+          {filters}
+          resultCount={totalAssetCount}
+          {personNames}
+          {tagNames}
+          onRemoveFilter={(type, id) => {
+            filters = handlePhotosRemoveFilter(filters, type, id);
+          }}
+          onClearAll={() => {
+            filters = clearFilters(filters);
+          }}
+        />
+      {/if}
+      <Timeline
+        enableRouting={true}
+        bind:timelineManager
+        {options}
+        {assetInteraction}
+        removeAction={AssetAction.ARCHIVE}
+        onEscape={handleEscape}
+        withStacked
+      >
+        {#if $preferences.memories.enabled && !hasActiveFilters}
+          <ImageCarousel {items} />
+        {/if}
+        {#snippet empty()}
+          <EmptyPlaceholder
+            text={$t('no_assets_message')}
+            onClick={() => openFileUploadDialog()}
+            class="mt-10 mx-auto"
+          />
+        {/snippet}
+      </Timeline>
+    </div>
+  </div>
 </UserPageLayout>
 
 {#if assetInteraction.selectionActive}

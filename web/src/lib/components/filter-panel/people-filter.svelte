@@ -7,9 +7,10 @@
     people: PersonOption[];
     selectedIds: string[];
     onSelectionChange: (ids: string[]) => void;
+    emptyText?: string;
   }
 
-  let { people, selectedIds, onSelectionChange }: Props = $props();
+  let { people, selectedIds, onSelectionChange, emptyText = 'No people found' }: Props = $props();
 
   let searchQuery = $state('');
   let showAll = $state(false);
@@ -63,7 +64,7 @@
 
 <div data-testid="people-filter">
   {#if people.length === 0}
-    <p class="text-sm text-gray-400 dark:text-gray-500" data-testid="people-empty">No people in this space</p>
+    <p class="text-sm text-gray-400 dark:text-gray-500" data-testid="people-empty">{emptyText}</p>
   {:else}
     <!-- Search input -->
     <div class="relative mb-2">
