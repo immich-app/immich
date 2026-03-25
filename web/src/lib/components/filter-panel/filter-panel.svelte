@@ -349,7 +349,7 @@
 
 {#if collapsed}
   <div
-    class="flex w-8 flex-shrink-0 flex-col items-center gap-3 border-r border-gray-200 bg-light py-2 shadow-sm dark:border-gray-700 dark:shadow-none"
+    class="flex h-full w-8 flex-shrink-0 flex-col items-center gap-3 border-r border-gray-200 bg-light py-2 shadow-sm dark:border-gray-700 dark:shadow-none"
     data-testid="collapsed-icon-strip"
   >
     <button
