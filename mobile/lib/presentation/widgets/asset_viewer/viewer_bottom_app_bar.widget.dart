@@ -13,11 +13,7 @@ class ViewerBottomAppBar extends ConsumerWidget {
 
     return IgnorePointer(
       ignoring: opacity < 1.0,
-      child: AnimatedOpacity(
-        opacity: opacity,
-        duration: Durations.short2,
-        child: const ViewerBottomBar(),
-      ),
+      child: AnimatedOpacity(opacity: opacity, duration: Durations.short2, child: const ViewerBottomBar()),
     );
   }
 }
