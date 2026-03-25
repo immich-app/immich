@@ -5,7 +5,6 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
 import type { AssetControlContext } from '$lib/types';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
@@ -229,9 +228,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     icon: mdiFaceRecognition,
     type: $t('assets'),
     $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
-    onAction: () => {
-      isFaceEditMode.value = !isFaceEditMode.value;
-    },
+    onAction: () => assetViewerManager.toggleFaceEditMode(),
     shortcuts: { key: 'p' },
   };
 

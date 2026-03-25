@@ -2,7 +2,6 @@
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -10,7 +9,7 @@
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
-  import { onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -139,8 +138,8 @@
     );
   };
 
-  const cancel = () => {
-    isFaceEditMode.value = false;
+  const onClose = () => {
+    assetViewerManager.closeFaceEditMode();
   };
 
   const getPeople = async () => {
@@ -291,12 +290,16 @@
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
-      isFaceEditMode.value = false;
+      onClose();
     }
   };
+
+  onDestroy(() => {
+    onClose();
+  });
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel, ignoreInputFields: false }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false }} />
 
 <div
   id="face-editor-data"
@@ -350,6 +353,6 @@
       {/if}
     </div>
 
-    <Button size="small" fullWidth onclick={cancel} color="danger" class="mt-2">{$t('cancel')}</Button>
+    <Button size="small" fullWidth onclick={onClose} color="danger" class="mt-2">{$t('cancel')}</Button>
   </div>
 </div>
