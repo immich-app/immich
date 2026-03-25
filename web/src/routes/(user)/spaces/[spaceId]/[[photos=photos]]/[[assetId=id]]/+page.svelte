@@ -261,6 +261,9 @@
   const showInTimeline = $derived(currentMember?.showInTimeline ?? true);
 
   const totalAssetCount = $derived(timelineManager?.assetCount ?? 0);
+  const isTimelineEmpty = $derived(
+    timelineManager?.isInitialized && totalAssetCount === 0 && getActiveFilterCount(filters) === 0,
+  );
 
   const options = $derived.by(() => {
     if (viewMode === 'select-assets') {
@@ -809,6 +812,7 @@
             timeBucket: `${m.yearMonth.year}-${String(m.yearMonth.month).padStart(2, '0')}-01T00:00:00.000Z`,
             count: m.assetsCount,
           })) ?? []}
+          hidden={isTimelineEmpty}
         />
       {/key}
     {/if}

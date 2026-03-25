@@ -122,5 +122,6 @@ jobs:
       #   run: dart run custom_lint
 
       # TODO: Use https://github.com/CQLabs/dcm-action
-      - name: Run DCM
-        run: dcm analyze lib --fatal-style --fatal-warnings
+      # DCM requires a valid license key - skipped on fork
+      # - name: Run DCM
+      #   run: dcm analyze lib --fatal-style --fatal-warnings

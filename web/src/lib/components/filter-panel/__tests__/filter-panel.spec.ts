@@ -181,6 +181,54 @@ describe('FilterPanel', () => {
   });
 });
 
+describe('hidden prop', () => {
+  it('should render nothing when hidden is true', () => {
+    render(FilterPanel, {
+      props: {
+        config: { sections: ['rating', 'media'], providers: {} },
+        timeBuckets: [],
+        hidden: true,
+      },
+    });
+    expect(screen.queryByTestId('discovery-panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('collapsed-icon-strip')).not.toBeInTheDocument();
+  });
+
+  it('should render panel when hidden is false', () => {
+    render(FilterPanel, {
+      props: {
+        config: { sections: ['rating'], providers: {} },
+        timeBuckets: [],
+        hidden: false,
+      },
+    });
+    expect(screen.getByTestId('discovery-panel')).toBeInTheDocument();
+  });
+
+  it('should render panel by default when hidden is not provided', () => {
+    render(FilterPanel, {
+      props: {
+        config: { sections: ['rating'], providers: {} },
+        timeBuckets: [],
+      },
+    });
+    expect(screen.getByTestId('discovery-panel')).toBeInTheDocument();
+  });
+
+  it('should render nothing when hidden and initialCollapsed are both true', () => {
+    render(FilterPanel, {
+      props: {
+        config: { sections: ['rating'], providers: {} },
+        timeBuckets: [],
+        hidden: true,
+        initialCollapsed: true,
+      },
+    });
+    expect(screen.queryByTestId('discovery-panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('collapsed-icon-strip')).not.toBeInTheDocument();
+  });
+});
+
 describe('Section Selector', () => {
   const STORAGE_KEY = 'gallery-filter-visible-sections';
   const allSections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'] as const;

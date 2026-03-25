@@ -1515,16 +1515,14 @@ test.describe('Spaces FilterPanel', () => {
       }
     });
 
-    test('should render filter panel with empty messages for space with no photos', async ({ context, page }) => {
+    test('should hide filter panel for space with no photos', async ({ context, page }) => {
       const space = await utils.createSpace(admin.accessToken, { name: 'Empty Space Filters' });
 
       await gotoSpace(context, page, space.id);
 
-      // Filter panel should render
-      await expect(page.locator('[data-testid="discovery-panel"]')).toBeVisible();
-
-      // People section should show empty message
-      await expect(page.locator('[data-testid="people-empty"]')).toBeVisible();
+      // Filter panel should be hidden when space has no assets
+      await expect(page.locator('[data-testid="discovery-panel"]')).not.toBeVisible();
+      await expect(page.locator('[data-testid="collapsed-icon-strip"]')).not.toBeVisible();
     });
 
     test('should show empty messages in location and camera sections when space has no EXIF data', async ({

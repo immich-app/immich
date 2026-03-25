@@ -38,6 +38,7 @@
     filters?: FilterState;
     initialCollapsed?: boolean;
     storageKey?: string;
+    hidden?: boolean;
   }
 
   let {
@@ -46,6 +47,7 @@
     filters = $bindable(createFilterState()),
     initialCollapsed = false,
     storageKey = 'gallery-filter-visible-sections',
+    hidden = false,
   }: Props = $props();
   let collapsed = $state(initialCollapsed);
 
@@ -347,7 +349,9 @@
   }
 </script>
 
-{#if collapsed}
+{#if hidden}
+  <!-- FilterPanel hidden: no assets to filter -->
+{:else if collapsed}
   <div
     class="flex h-full w-8 flex-shrink-0 flex-col items-center gap-3 border-r border-gray-200 bg-light py-2 shadow-sm dark:border-gray-700 dark:shadow-none"
     data-testid="collapsed-icon-strip"
