@@ -38,7 +38,7 @@ export enum AssetType {
 }
 
 export enum ChecksumAlgorithm {
-  sha1File = 'sha1-file', // sha1 checksum of the whole file contents
+  sha1File = 'sha1', // sha1 checksum of the whole file contents
   sha1Path = 'sha1-path', // sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated
 }
 

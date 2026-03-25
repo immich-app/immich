@@ -125,6 +125,7 @@ export const getForMemory = (memory: ReturnType<MemoryFactory['build']>) => ({
 export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']>) => ({
   id: asset.id,
   checksum: asset.checksum,
+  checksumAlgorithm: asset.checksumAlgorithm,
   deviceAssetId: asset.deviceAssetId,
   deviceId: asset.deviceId,
   fileCreatedAt: asset.fileCreatedAt,
