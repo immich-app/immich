@@ -37,7 +37,6 @@ enum AppSettingsEnum<T> {
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),
   tapToNavigate<bool>(StoreKey.tapToNavigate, "tapToNavigate", false),
   filmstripEnabled<bool>(StoreKey.filmstripEnabled, "filmstripEnabled", true),
-  // Height in logical pixels: 40–120, default 60
   filmstripHeight<int>(StoreKey.filmstripHeight, "filmstripHeight", 60),
   mapThemeMode<int>(StoreKey.mapThemeMode, null, 0),
   mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),

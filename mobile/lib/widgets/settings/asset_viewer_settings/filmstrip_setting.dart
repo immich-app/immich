@@ -26,7 +26,6 @@ class FilmstripSetting extends HookConsumerWidget {
           subtitle: "setting_filmstrip_enable_subtitle".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
-        // Height slider — only interactive when filmstrip is enabled
         SettingsSliderListTile(
           valueNotifier: filmstripHeight,
           enabled: filmstripEnabled.value,
@@ -36,7 +35,7 @@ class FilmstripSetting extends HookConsumerWidget {
           label: '${filmstripHeight.value} px',
           minValue: 40,
           maxValue: 120,
-          // 8 divisions → steps of 10 px: 40, 50, 60, 70, 80, 90, 100, 110, 120
+          // 8 divisions in steps of 10px: 40, 50, ..., 120px
           noDivisons: 8,
           onChangeEnd: (_) => ref.invalidate(appSettingsServiceProvider),
         ),

@@ -63,8 +63,8 @@ class VideoControls extends HookConsumerWidget {
     ref.listen(provider.select((v) => v.status), (_, __) => hideTimer.reset());
     // Also restart the timer whenever controls are shown so that a second tap
     // (or any other controls-show event) still triggers auto-hide.
-    ref.listen(assetViewerProvider.select((v) => v.showingControls), (prev, next) {
-      if (next) hideTimer.reset();
+    ref.listen(assetViewerProvider.select((v) => v.showingControls), (_, showingControls) {
+      if (showingControls) hideTimer.reset();
     });
 
     final notifier = ref.read(provider.notifier);
