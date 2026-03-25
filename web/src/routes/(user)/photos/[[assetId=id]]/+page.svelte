@@ -177,7 +177,7 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} scrollbar={false}>
-  <div class="flex h-full">
+  <div class="ml-4 flex h-full">
     <FilterPanel
       bind:filters
       config={filterConfig}
