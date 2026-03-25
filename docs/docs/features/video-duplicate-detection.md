@@ -24,9 +24,29 @@ This adaptive sampling ensures short clips and corrupt videos are still processe
 - The duplicate detection distance threshold is the same one used for image duplicates, configurable in **Administration > Machine Learning Settings**.
 - Byte-identical uploads per user are already blocked by checksum deduplication. Video duplicate detection catches re-encoded and resized copies that have completely different bytes but the same visual content.
 
-## Using Video Duplicates
+## Configuration
 
-No extra configuration is needed. If Smart Search and Duplicate Detection are already enabled, videos are automatically included the next time the jobs run.
+Video duplicate detection requires two features to be enabled in **Administration > Machine Learning Settings**:
+
+1. **Smart Search (CLIP)** — must be enabled so that video frames can be encoded into CLIP embeddings. This is enabled by default.
+2. **Duplicate Detection** — must be enabled so that embeddings are compared to find matches. This is also enabled by default.
+
+If both are already on, video duplicates work automatically with no additional setup.
+
+### Settings
+
+| Setting                            | Default | Description                                                                                      |
+| ---------------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| Machine Learning > Enabled         | On      | Master toggle for all ML features. Turning this off disables Smart Search, duplicates, and more. |
+| Smart Search > Enabled             | On      | Enables CLIP encoding for both images and videos.                                                |
+| Duplicate Detection > Enabled      | On      | Enables duplicate grouping based on CLIP embedding similarity.                                   |
+| Duplicate Detection > Max Distance | 0.01    | Maximum cosine distance between two embeddings to consider them duplicates. Lower = stricter.    |
+
+### Disabling
+
+To stop detecting video duplicates specifically, there is no video-only toggle — the duplicate detection setting applies to both images and videos. To disable all duplicate detection, turn off **Duplicate Detection > Enabled**. To keep image duplicates but skip videos, disable **Smart Search** (though this also disables image smart search).
+
+## Using Video Duplicates
 
 ### Reviewing Duplicates
 
