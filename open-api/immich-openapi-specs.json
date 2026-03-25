@@ -25241,6 +25241,10 @@
             "description": "Whether face recognition is enabled for this space",
             "type": "boolean"
           },
+          "hasPets": {
+            "description": "Whether any pet-type persons exist in this space",
+            "type": "boolean"
+          },
           "id": {
             "description": "Space ID",
             "type": "string"

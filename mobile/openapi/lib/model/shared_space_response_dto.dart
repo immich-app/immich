@@ -19,6 +19,7 @@ class SharedSpaceResponseDto {
     required this.createdById,
     this.description,
     this.faceRecognitionEnabled,
+    this.hasPets,
     required this.id,
     this.lastActivityAt,
     this.lastContributor,
@@ -65,6 +66,15 @@ class SharedSpaceResponseDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? faceRecognitionEnabled;
+
+  /// Whether any pet-type persons exist in this space
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? hasPets;
 
   /// Space ID
   String id;
@@ -141,6 +151,7 @@ class SharedSpaceResponseDto {
     other.createdById == createdById &&
     other.description == description &&
     other.faceRecognitionEnabled == faceRecognitionEnabled &&
+    other.hasPets == hasPets &&
     other.id == id &&
     other.lastActivityAt == lastActivityAt &&
     other.lastContributor == lastContributor &&
@@ -166,6 +177,7 @@ class SharedSpaceResponseDto {
     (createdById.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (faceRecognitionEnabled == null ? 0 : faceRecognitionEnabled!.hashCode) +
+    (hasPets == null ? 0 : hasPets!.hashCode) +
     (id.hashCode) +
     (lastActivityAt == null ? 0 : lastActivityAt!.hashCode) +
     (lastContributor == null ? 0 : lastContributor!.hashCode) +
@@ -183,7 +195,7 @@ class SharedSpaceResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SharedSpaceResponseDto[assetCount=$assetCount, color=$color, createdAt=$createdAt, createdById=$createdById, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, id=$id, lastActivityAt=$lastActivityAt, lastContributor=$lastContributor, lastViewedAt=$lastViewedAt, linkedLibraries=$linkedLibraries, memberCount=$memberCount, members=$members, name=$name, newAssetCount=$newAssetCount, petsEnabled=$petsEnabled, recentAssetIds=$recentAssetIds, recentAssetThumbhashes=$recentAssetThumbhashes, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY, updatedAt=$updatedAt]';
+  String toString() => 'SharedSpaceResponseDto[assetCount=$assetCount, color=$color, createdAt=$createdAt, createdById=$createdById, description=$description, faceRecognitionEnabled=$faceRecognitionEnabled, hasPets=$hasPets, id=$id, lastActivityAt=$lastActivityAt, lastContributor=$lastContributor, lastViewedAt=$lastViewedAt, linkedLibraries=$linkedLibraries, memberCount=$memberCount, members=$members, name=$name, newAssetCount=$newAssetCount, petsEnabled=$petsEnabled, recentAssetIds=$recentAssetIds, recentAssetThumbhashes=$recentAssetThumbhashes, thumbnailAssetId=$thumbnailAssetId, thumbnailCropY=$thumbnailCropY, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -208,6 +220,11 @@ class SharedSpaceResponseDto {
       json[r'faceRecognitionEnabled'] = this.faceRecognitionEnabled;
     } else {
     //  json[r'faceRecognitionEnabled'] = null;
+    }
+    if (this.hasPets != null) {
+      json[r'hasPets'] = this.hasPets;
+    } else {
+    //  json[r'hasPets'] = null;
     }
       json[r'id'] = this.id;
     if (this.lastActivityAt != null) {
@@ -276,6 +293,7 @@ class SharedSpaceResponseDto {
         createdById: mapValueOfType<String>(json, r'createdById')!,
         description: mapValueOfType<String>(json, r'description'),
         faceRecognitionEnabled: mapValueOfType<bool>(json, r'faceRecognitionEnabled'),
+        hasPets: mapValueOfType<bool>(json, r'hasPets'),
         id: mapValueOfType<String>(json, r'id')!,
         lastActivityAt: mapValueOfType<String>(json, r'lastActivityAt'),
         lastContributor: SharedSpaceResponseDtoLastContributor.fromJson(json[r'lastContributor']),

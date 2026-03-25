@@ -775,16 +775,14 @@
           {#if isOwner}
             <hr class="my-1 border-gray-300" />
             <MenuOption
-              text="People"
+              text={space.faceRecognitionEnabled ? 'Hide people' : 'Show people'}
               icon={mdiFaceRecognition}
-              textColor={space.faceRecognitionEnabled ? 'text-immich-primary' : undefined}
               onClick={handleToggleFaceRecognition}
             />
-            {#if space.faceRecognitionEnabled}
+            {#if space.faceRecognitionEnabled && space.hasPets}
               <MenuOption
-                text="Pets"
+                text={space.petsEnabled ? 'Hide pets' : 'Show pets'}
                 icon={mdiPaw}
-                textColor={space.petsEnabled ? 'text-immich-primary' : undefined}
                 onClick={handleTogglePets}
               />
             {/if}

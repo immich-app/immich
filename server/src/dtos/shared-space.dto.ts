@@ -177,6 +177,9 @@ export class SharedSpaceResponseDto {
   @ApiPropertyOptional({ description: 'Whether pets are shown in space people list' })
   petsEnabled?: boolean;
 
+  @ApiPropertyOptional({ description: 'Whether any pet-type persons exist in this space' })
+  hasPets?: boolean;
+
   @ApiPropertyOptional({ description: 'Last activity timestamp (most recent asset add)' })
   lastActivityAt?: string | null;
 

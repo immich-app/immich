@@ -150,6 +150,11 @@ export class SharedSpaceService extends BaseService {
       newAssetCount = await this.sharedSpaceRepository.getNewAssetCount(id, membership.lastViewedAt);
     }
 
+    let hasPets: boolean | undefined;
+    if (space.faceRecognitionEnabled) {
+      hasPets = await this.sharedSpaceRepository.hasPetsBySpaceId(id);
+    }
+
     let linkedLibraries: SharedSpaceLinkedLibraryDto[] | undefined;
     if (auth.user.isAdmin) {
       const links = await this.sharedSpaceRepository.getLinkedLibraries(space.id);
@@ -180,6 +185,7 @@ export class SharedSpaceService extends BaseService {
       newAssetCount,
       lastViewedAt: membership.lastViewedAt ? (membership.lastViewedAt as unknown as Date).toISOString() : null,
       linkedLibraries,
+      hasPets,
     };
   }
 

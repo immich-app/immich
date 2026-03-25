@@ -353,6 +353,15 @@ limit
 offset
   $3
 
+-- SharedSpaceRepository.hasPetsBySpaceId
+select
+  count(*) as "count"
+from
+  "shared_space_person"
+where
+  "spaceId" = $1
+  and "type" = $2
+
 -- SharedSpaceRepository.getPersonsBySpaceId
 select
   *

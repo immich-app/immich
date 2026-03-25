@@ -19,8 +19,8 @@ test.describe('Spaces FilterPanel', () => {
   ) {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/spaces/${spaceId}`);
-    // Wait for the discovery panel or collapsed strip to be present
-    await page.waitForSelector('[data-testid="discovery-panel"], [data-testid="collapsed-icon-strip"]');
+    // Wait for the timeline container to be present (always rendered, even for empty spaces)
+    await page.waitForSelector('[data-testid="discovery-timeline"]');
   }
 
   // ─── Helper: create a space with diverse test data ───

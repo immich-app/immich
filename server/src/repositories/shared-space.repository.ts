@@ -453,6 +453,17 @@ export class SharedSpaceRepository {
   // ==========================================
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  async hasPetsBySpaceId(spaceId: string): Promise<boolean> {
+    const result = await this.db
+      .selectFrom('shared_space_person')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('spaceId', '=', spaceId)
+      .where('type', '=', 'pet')
+      .executeTakeFirstOrThrow();
+    return result.count > 0;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   getPersonsBySpaceId(spaceId: string) {
     return this.db
       .selectFrom('shared_space_person')

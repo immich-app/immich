@@ -31,6 +31,7 @@ describe(SharedSpaceService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(SharedSpaceService));
+    mocks.sharedSpace.hasPetsBySpaceId.mockResolvedValue(false);
   });
 
   it('should work', () => {
@@ -615,6 +616,57 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.get(auth, space.id);
 
       expect(result.color).toBe('green');
+    });
+
+    it('should include hasPets=true when space has pet-type persons', async () => {
+      const auth = factory.auth();
+      const space = factory.sharedSpace({ faceRecognitionEnabled: true });
+      const member = makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Viewer });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getMembers.mockResolvedValue([member]);
+      mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
+      mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
+      mocks.sharedSpace.hasPetsBySpaceId.mockResolvedValue(true);
+
+      const result = await sut.get(auth, space.id);
+
+      expect(result.hasPets).toBe(true);
+    });
+
+    it('should include hasPets=false when space has no pet-type persons', async () => {
+      const auth = factory.auth();
+      const space = factory.sharedSpace({ faceRecognitionEnabled: true });
+      const member = makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Viewer });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getMembers.mockResolvedValue([member]);
+      mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
+      mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
+      mocks.sharedSpace.hasPetsBySpaceId.mockResolvedValue(false);
+
+      const result = await sut.get(auth, space.id);
+
+      expect(result.hasPets).toBe(false);
+    });
+
+    it('should not query hasPets when face recognition is disabled', async () => {
+      const auth = factory.auth();
+      const space = factory.sharedSpace({ faceRecognitionEnabled: false });
+      const member = makeMemberResult({ spaceId: space.id, userId: auth.user.id, role: SharedSpaceRole.Viewer });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(member);
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getMembers.mockResolvedValue([member]);
+      mocks.sharedSpace.getAssetCount.mockResolvedValue(0);
+      mocks.sharedSpace.getRecentAssets.mockResolvedValue([]);
+
+      const result = await sut.get(auth, space.id);
+
+      expect(result.hasPets).toBeUndefined();
+      expect(mocks.sharedSpace.hasPetsBySpaceId).not.toHaveBeenCalled();
     });
 
     it('should include lastViewedAt in response', async () => {
