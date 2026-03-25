@@ -215,7 +215,7 @@ Pre-built Docker images are published to GitHub Container Registry (GHCR) under 
 
 ### Publishing
 
-Images are automatically built and published on every push to `main` via the **Release** GitHub Actions workflow (`.github/workflows/docker.yml`).
+Images are automatically built and published on every push to `main` via the **Release** GitHub Actions workflow (`.github/workflows/release.yml`).
 
 **How it works:**
 
@@ -233,7 +233,7 @@ Images are automatically built and published on every push to `main` via the **R
 **To manually publish a specific version:**
 
 ```bash
-gh workflow run docker.yml --ref main -f version=v4.2.6
+gh workflow run release.yml --ref main -f version=v4.2.6
 ```
 
 Or use the GitHub Actions UI: Actions > Release > Run workflow > enter version > Run.
