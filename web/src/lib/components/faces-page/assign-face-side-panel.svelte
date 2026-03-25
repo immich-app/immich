@@ -5,11 +5,12 @@
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import { AssetTypeEnum, getAllPeople, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -51,19 +52,25 @@
   let searchedPeople: PersonResponseDto[] = $state([]);
   let searchFaces = $state(false);
   let searchName = $state('');
-
+  let hoveredPersonId = $state<string | null>(null);
   let showPeople = $derived(searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden));
 
+  const focusHighlightClass =
+    'group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary';
+
   onMount(() => {
+    $boundingBoxesArray = [editedFace];
     handlePromiseError(loadPeople());
+  });
+
+  onDestroy(() => {
+    $boundingBoxesArray = [];
   });
 
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
     const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, assetViewerManager.imgRef);
-
-    onCreatePerson(newFeaturePhoto);
 
     clearTimeout(timeout);
     isShowLoadingNewPerson = false;
@@ -153,11 +160,17 @@
         <LoadingSpinner />
       </div>
     {:else}
-      <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
+      <div class="mt-4 flex flex-wrap gap-2">
         {#each showPeople as person (person.id)}
           {#if !editedFace.person || person.id !== editedFace.person.id}
-            <div class="w-fit">
-              <button type="button" class="w-22.5" onclick={() => onReassign(person)}>
+            <div class="h-29 w-24">
+              <button
+                type="button"
+                class="group w-22.5 outline-none"
+                onclick={() => onReassign(person)}
+                onpointerover={() => (hoveredPersonId = person.id)}
+                onpointerleave={() => (hoveredPersonId = null)}
+              >
                 <div class="relative">
                   <ImageThumbnail
                     curve
@@ -168,6 +181,8 @@
                     widthStyle="90px"
                     heightStyle="90px"
                     hidden={person.isHidden}
+                    highlighted={hoveredPersonId === person.id}
+                    class={focusHighlightClass}
                   />
                 </div>
 

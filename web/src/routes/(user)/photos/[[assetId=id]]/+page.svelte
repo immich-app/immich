@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { beforeNavigate } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -25,7 +24,6 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
@@ -85,10 +83,6 @@
     timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
-
-  beforeNavigate(() => {
-    isFaceEditMode.value = false;
-  });
 
   const items = $derived(
     memoryStore.memories.map((memory) => ({

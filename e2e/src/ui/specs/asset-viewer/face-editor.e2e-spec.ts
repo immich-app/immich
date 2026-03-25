@@ -282,4 +282,31 @@ test.describe('face-editor', () => {
     expect(afterDrag.left).toBeGreaterThan(beforeDrag.left + 50);
     expect(afterDrag.top).toBeGreaterThan(beforeDrag.top + 20);
   });
+
+  test('Escape closes face editor with focus inside selector', async ({ page }) => {
+    const asset = selectRandom(fixture.assets, rng);
+    await openFaceEditor(page, asset);
+
+    await page
+      .locator('#face-selector')
+      .getByRole('button', { name: /cancel/i })
+      .focus();
+
+    await page.keyboard.press('Escape');
+
+    await expect(page.locator('#face-selector')).toBeHidden();
+    await expect(page.locator('#face-editor')).toBeHidden();
+  });
+
+  test('Escape closes face editor with focus outside selector', async ({ page }) => {
+    const asset = selectRandom(fixture.assets, rng);
+    await openFaceEditor(page, asset);
+
+    await page.locator('#immich-asset-viewer').click({ position: { x: 10, y: 10 } });
+
+    await page.keyboard.press('Escape');
+
+    await expect(page.locator('#face-selector')).toBeHidden();
+    await expect(page.locator('#face-editor')).toBeHidden();
+  });
 });

@@ -15,14 +15,15 @@
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/set-stack-primary-asset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/set-visibility-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
+  import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { user } from '$lib/stores/user.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -36,8 +37,6 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
-  import LoadingDots from '$lib/components/LoadingDots.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import {
     mdiArrowLeft,
     mdiArrowRight,
@@ -89,7 +88,7 @@
     title: $t('go_back'),
     type: $t('assets'),
     icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
-    $if: () => !!onClose && !isFaceEditMode.value,
+    $if: () => !!onClose && !assetViewerManager.isFaceEditMode && !assetViewerManager.isEditFacesPanelOpen,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
   });
@@ -101,13 +100,16 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
-  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
+  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]"
 >
   <div class="dark">
     <ActionButton action={Close} />
   </div>
 
-  <div class="flex items-center gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+  <div
+    class="flex p-1 -m-1 items-center gap-2 overflow-x-auto *:shrink-0 dark"
+    data-testid="asset-viewer-navbar-actions"
+  >
     {#if assetViewerManager.isImageLoading}
       <Tooltip text={$t('loading')}>
         {#snippet child({ props })}

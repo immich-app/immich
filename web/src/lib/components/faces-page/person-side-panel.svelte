@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -58,6 +59,8 @@
   let automaticRefreshTimeout: ReturnType<typeof setTimeout>;
 
   const thumbnailWidth = '90px';
+  const focusHighlightClass =
+    'group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary';
 
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
@@ -156,6 +159,7 @@
   };
 
   const handleFacePicker = (face: AssetFaceResponseDto) => {
+    $boundingBoxesArray = [face];
     editedFace = face;
     showSelectedFaces = true;
   };
@@ -188,7 +192,21 @@
 
 <OnEvents {onPersonThumbnailReady} />
 
+<svelte:document
+  use:shortcut={{
+    shortcut: { key: 'Escape' },
+    onShortcut: () => {
+      if (showSelectedFaces) {
+        showSelectedFaces = false;
+      } else {
+        onClose();
+      }
+    },
+  }}
+/>
+
 <section
+  inert={showSelectedFaces}
   transition:fly={{ x: 360, duration: 100, easing: linear }}
   class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
 >
@@ -226,14 +244,23 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
-          <div class="relative h-29 w-24">
+          {@const isHighlighted = $boundingBoxesArray.some((f) => f.id === face.id)}
+          <div
+            role="group"
+            class={[
+              'relative h-29 w-24 transition-opacity',
+              $boundingBoxesArray.length > 0 && !isHighlighted && 'opacity-40',
+            ]}
+            onpointerover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+            onpointerleave={() => !showSelectedFaces && ($boundingBoxesArray = [])}
+          >
             <div
               role="button"
-              tabindex={index}
-              class="absolute start-0 top-0 h-22.5 w-22.5 cursor-default"
+              tabindex={0}
+              data-testid="face-thumbnail"
+              class="group absolute inset-s-0 top-0 h-22.5 w-22.5 cursor-default outline-none"
               onfocus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              onmouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              onmouseleave={() => ($boundingBoxesArray = [])}
+              onblur={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
                 {#if selectedPersonToCreate[face.id]}
@@ -245,6 +272,8 @@
                     title={$t('new_person')}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
+                    highlighted={isHighlighted}
+                    class={focusHighlightClass}
                   />
                 {:else if selectedPersonToReassign[face.id]}
                   <ImageThumbnail
@@ -259,6 +288,8 @@
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                     hidden={selectedPersonToReassign[face.id].isHidden}
+                    highlighted={isHighlighted}
+                    class={focusHighlightClass}
                   />
                 {:else if face.person}
                   <ImageThumbnail
@@ -270,6 +301,8 @@
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}
                     hidden={face.person.isHidden}
+                    highlighted={isHighlighted}
+                    class={focusHighlightClass}
                   />
                 {:else}
                   {#await zoomImageToBase64(face, assetId, assetType, assetViewerManager.imgRef)}
@@ -281,6 +314,8 @@
                       title={$t('face_unassigned')}
                       widthStyle="90px"
                       heightStyle="90px"
+                      highlighted={isHighlighted}
+                      class={focusHighlightClass}
                     />
                   {:then data}
                     <ImageThumbnail
@@ -291,6 +326,8 @@
                       title={$t('face_unassigned')}
                       widthStyle="90px"
                       heightStyle="90px"
+                      highlighted={isHighlighted}
+                      class={focusHighlightClass}
                     />
                   {/await}
                 {/if}
@@ -310,12 +347,11 @@
                 {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
                   <IconButton
                     shape="round"
-                    variant="ghost"
-                    color="primary"
+                    color="secondary"
                     icon={mdiRestart}
                     aria-label={$t('reset')}
                     size="small"
-                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform hover:bg-dark! hover:brightness-110"
                     onclick={() => handleReset(face.id)}
                   />
                 {:else}
@@ -325,7 +361,7 @@
                     icon={mdiPencil}
                     aria-label={$t('select_new_face')}
                     size="small"
-                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform hover:bg-primary! hover:brightness-110"
                     onclick={() => handleFacePicker(face)}
                   />
                 {/if}
@@ -347,7 +383,7 @@
                     icon={mdiTrashCan}
                     aria-label={$t('delete_face')}
                     size="small"
-                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform hover:bg-danger! hover:brightness-125"
                     onclick={() => deleteAssetFace(face)}
                   />
                 </div>

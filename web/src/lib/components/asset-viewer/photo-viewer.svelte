@@ -8,7 +8,6 @@
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -83,6 +82,18 @@
     };
   });
 
+  const highlightedBoxes = $derived(getBoundingBox($boundingBoxesArray, overlayMetrics));
+  const isHighlighting = $derived(highlightedBoxes.length > 0);
+
+  let visibleBoxes = $state<ReturnType<typeof getBoundingBox>>([]);
+  let visibleBoundingBoxes = $state<Faces[]>([]);
+  $effect(() => {
+    if (isHighlighting) {
+      visibleBoxes = highlightedBoxes;
+      visibleBoundingBoxes = $boundingBoxesArray;
+    }
+  });
+
   const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
 
   const onCopy = async () => {
@@ -106,7 +117,7 @@
   const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
   $effect(() => {
-    if (isFaceEditMode.value && assetViewerManager.zoom > 1) {
+    if (assetViewerManager.isFaceEditMode && assetViewerManager.zoom > 1) {
       onZoom();
     }
   });
@@ -151,22 +162,42 @@
     $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground && !!asset.thumbhash,
   );
 
-  const faceToNameMap = $derived.by(() => {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const map = new Map<Faces, string>();
+  const { faceToNameMap, faceToPersonFaces, faces } = $derived.by(() => {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- maps are recreated each derivation, not mutated reactively
+    const faceToNameMap = new Map<Faces, string | undefined>();
     for (const person of asset.people ?? []) {
+      if (person.isHidden && !assetViewerManager.isEditFacesPanelOpen && !assetViewerManager.showingHiddenPeople) {
+        continue;
+      }
       for (const face of person.faces ?? []) {
-        map.set(face, person.name);
+        faceToNameMap.set(face, person.name);
       }
     }
-    return map;
-  });
+    if (assetViewerManager.isEditFacesPanelOpen) {
+      for (const face of asset.unassignedFaces ?? []) {
+        faceToNameMap.set(face, undefined);
+      }
+    }
 
-  const faces = $derived(Array.from(faceToNameMap.keys()));
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- same as above
+    const faceToPersonFaces = new Map<string, Faces[]>();
+    for (const person of asset.people ?? []) {
+      const personFaces = person.faces ?? [];
+      for (const face of personFaces) {
+        faceToPersonFaces.set(face.id, personFaces);
+      }
+    }
+
+    return {
+      faceToNameMap,
+      faceToPersonFaces,
+      faces: Array.from(faceToNameMap.keys()),
+    };
+  });
 
   const handleImageMouseMove = (event: MouseEvent) => {
     $boundingBoxesArray = [];
-    if (!assetViewerManager.imgRef || !element || isFaceEditMode.value || ocrManager.showOverlay) {
+    if (!assetViewerManager.imgRef || !element || assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
       return;
     }
 
@@ -182,10 +213,19 @@
     const mouseY = (event.clientY - containerRect.top - contentOffsetY * currentZoom - currentPositionY) / currentZoom;
 
     const faceBoxes = getBoundingBox(faces, overlayMetrics);
+    // don't use SvelteSet here since - this is a local variable for deduplication
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const seen = new Set<string>();
 
     for (const [index, box] of faceBoxes.entries()) {
       if (mouseX >= box.left && mouseX <= box.left + box.width && mouseY >= box.top && mouseY <= box.top + box.height) {
-        $boundingBoxesArray.push(faces[index]);
+        const siblingFaces = faceToPersonFaces.get(faces[index].id);
+        for (const face of siblingFaces ?? [faces[index]]) {
+          if (!seen.has(face.id)) {
+            seen.add(face.id);
+            $boundingBoxesArray.push(face);
+          }
+        }
       }
     }
   };
@@ -215,7 +255,7 @@
   ondblclick={onZoom}
   onmousemove={handleImageMouseMove}
   onmouseleave={handleImageMouseLeave}
-  use:zoomImageAction={{ disabled: isFaceEditMode.value || ocrManager.showOverlay }}
+  use:zoomImageAction={{ disabled: assetViewerManager.isFaceEditMode || ocrManager.showOverlay }}
   {...useSwipe((event) => onSwipe?.(event))}
 >
   <AdaptiveImage
@@ -243,21 +283,38 @@
       {/if}
     {/snippet}
     {#snippet overlays()}
-      {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox, index (boundingbox.id)}
-        <div
-          class="absolute border-solid border-white border-3 rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        ></div>
-        {#if faceToNameMap.get($boundingBoxesArray[index])}
+      <div
+        class="absolute inset-0 pointer-events-none transition-opacity duration-150"
+        style:opacity={isHighlighting ? 1 : 0}
+      >
+        <svg class="absolute inset-0 w-full h-full">
+          <defs>
+            <mask id="face-dim-mask">
+              <rect width="100%" height="100%" fill="white" />
+              {#each visibleBoxes as box (box.id)}
+                <rect x={box.left} y={box.top} width={box.width} height={box.height} fill="black" rx="8" />
+              {/each}
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="rgba(0,0,0,0.4)" mask="url(#face-dim-mask)" />
+        </svg>
+        <!-- visibleBoxes and visibleBoundingBoxes are index-aligned (getBoundingBox preserves order) -->
+        {#each visibleBoxes as boundingbox, index (boundingbox.id)}
           <div
-            class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
-            style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
-              boundingbox.width}px; transform: translateX(-100%);"
-          >
-            {faceToNameMap.get($boundingBoxesArray[index])}
-          </div>
-        {/if}
-      {/each}
+            class="absolute border-solid border-white border-3 rounded-lg"
+            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          ></div>
+          {#if faceToNameMap.get(visibleBoundingBoxes[index])}
+            <div
+              class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
+              style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
+                boundingbox.width}px; transform: translateX(-100%);"
+            >
+              {faceToNameMap.get(visibleBoundingBoxes[index])}
+            </div>
+          {/if}
+        {/each}
+      </div>
 
       {#each ocrBoxes as ocrBox (ocrBox.id)}
         <OcrBoundingBox {ocrBox} />
@@ -265,7 +322,7 @@
     {/snippet}
   </AdaptiveImage>
 
-  {#if isFaceEditMode.value && assetViewerManager.imgRef}
+  {#if assetViewerManager.isFaceEditMode && assetViewerManager.imgRef}
     <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
   {/if}
 </div>

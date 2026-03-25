@@ -16,6 +16,7 @@
     circle?: boolean;
     hidden?: boolean;
     border?: boolean;
+    highlighted?: boolean;
     hiddenIconClass?: string;
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
@@ -34,6 +35,7 @@
     circle = false,
     hidden = false,
     border = false,
+    highlighted = false,
     hiddenIconClass = 'text-white',
     onComplete = undefined,
     class: imageClass = '',
@@ -60,6 +62,8 @@
     shadow && 'shadow-lg',
     (circle || !heightStyle) && 'aspect-square',
     border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
+    'transition-shadow duration-150',
+    highlighted && 'ring-4 ring-immich-primary dark:ring-immich-dark-primary',
   ]);
 
   let style = $derived(
@@ -67,25 +71,27 @@
   );
 </script>
 
-{#if errored}
-  <BrokenAsset class={[sharedClasses, brokenAssetClass]} width={widthStyle} height={heightStyle} />
-{:else}
-  <Image
-    src={url}
-    onLoad={setLoaded}
-    onError={setErrored}
-    class={['object-cover bg-gray-300 dark:bg-gray-700', sharedClasses, imageClass]}
-    {style}
-    alt={loaded || errored ? altText : ''}
-    draggable={false}
-    title={title ?? undefined}
-    loading={preload ? 'eager' : 'lazy'}
-  />
-{/if}
+<div class="relative" style:width={widthStyle} style:height={heightStyle}>
+  {#if errored}
+    <BrokenAsset class={[sharedClasses, brokenAssetClass]} width={widthStyle} height={heightStyle} />
+  {:else}
+    <Image
+      src={url}
+      onLoad={setLoaded}
+      onError={setErrored}
+      class={['object-cover bg-gray-300 dark:bg-gray-700', sharedClasses, imageClass]}
+      {style}
+      alt={loaded || errored ? altText : ''}
+      draggable={false}
+      title={title ?? undefined}
+      loading={preload ? 'eager' : 'lazy'}
+    />
+  {/if}
 
-{#if hidden}
-  <div class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <!-- TODO fix `title` type -->
-    <Icon title={title ?? undefined} icon={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
-  </div>
-{/if}
+  {#if hidden}
+    <div class="pointer-events-none absolute inset-s-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+      <!-- TODO fix `title` type -->
+      <Icon title={title ?? undefined} icon={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
+    </div>
+  {/if}
+</div>
