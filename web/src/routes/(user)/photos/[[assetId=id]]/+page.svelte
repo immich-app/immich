@@ -188,7 +188,7 @@
       initialCollapsed={true}
       storageKey="gallery-filter-visible-sections-photos"
     />
-    <div class="flex-1 overflow-hidden">
+    <div class="flex-1 overflow-hidden pl-4">
       {#if hasActiveFilters}
         <ActiveFiltersBar
           {filters}
