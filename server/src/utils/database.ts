@@ -171,6 +171,22 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
   );
 }
 
+export function excludeAssetsWithPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
+  return qb.where((eb) =>
+    eb.not(
+      eb.exists((eb) =>
+        eb
+          .selectFrom('asset_face')
+          .select('asset_face.assetId')
+          .whereRef('asset_face.assetId', '=', 'asset.id')
+          .where('asset_face.deletedAt', 'is', null)
+          .where('asset_face.isVisible', 'is', true)
+          .where('asset_face.personId', 'is not', null),
+      ),
+    ),
+  );
+}
+
 export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
   return qb.innerJoin(
     (eb) =>
@@ -306,6 +322,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetId', '=', 'asset.id')))),
     )
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
+    .$if(options.withPeople === false && !options.personIds?.length, (qb) => excludeAssetsWithPeople(qb))
     .$if(!!options.createdBefore, (qb) => qb.where('asset.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('asset.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('asset.updatedAt', '<=', options.updatedBefore!))
@@ -407,7 +424,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
     .$if(!!options.withExif, withExifInner)
-    .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
+    .$if(!!options.withFaces || !!options.personIds, (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
