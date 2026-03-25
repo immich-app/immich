@@ -20,6 +20,26 @@ class SettingsNotifier extends Notifier<SettingsService> {
 
 final settingsProvider = NotifierProvider<SettingsNotifier, SettingsService>(SettingsNotifier.new);
 
+final tilesPerRowSettingProvider = StreamProvider<int>((ref) {
+  final store = ref.watch(storeServiceProvider);
+  return store.watch(StoreKey.tilesPerRow).map((value) => value ?? Setting.tilesPerRow.defaultValue);
+}, dependencies: [storeServiceProvider]);
+
+final groupAssetsBySettingProvider = StreamProvider<int>((ref) {
+  final store = ref.watch(storeServiceProvider);
+  return store.watch(StoreKey.groupAssetsBy).map((value) => value ?? Setting.groupAssetsBy.defaultValue);
+}, dependencies: [storeServiceProvider]);
+
+final storageIndicatorSettingProvider = StreamProvider<bool>((ref) {
+  final store = ref.watch(storeServiceProvider);
+  return store.watch(StoreKey.storageIndicator).map((value) => value ?? Setting.showStorageIndicator.defaultValue);
+}, dependencies: [storeServiceProvider]);
+
+final dynamicLayoutSettingProvider = StreamProvider<bool>((ref) {
+  final store = ref.watch(storeServiceProvider);
+  return store.watch(StoreKey.dynamicLayout).map((value) => value ?? Setting.dynamicLayout.defaultValue);
+}, dependencies: [storeServiceProvider]);
+
 final timelineDynamicLayoutThresholdProvider = StreamProvider<int?>((ref) {
   final store = ref.watch(storeServiceProvider);
   return store.watch(StoreKey.timelineDynamicLayoutThreshold);

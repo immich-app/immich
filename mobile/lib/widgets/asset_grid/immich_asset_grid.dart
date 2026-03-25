@@ -5,13 +5,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid_view.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
@@ -58,11 +58,25 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var settings = ref.watch(appSettingsServiceProvider);
+    final configuredPerRow = ref.watch(tilesPerRowSettingProvider).valueOrNull ?? Setting.tilesPerRow.defaultValue;
+    final configuredDynamicLayout = ref.watch(dynamicLayoutSettingProvider).valueOrNull ?? false;
+    final configuredStorageIndicator =
+        ref.watch(storageIndicatorSettingProvider).valueOrNull ?? Setting.showStorageIndicator.defaultValue;
 
-    final perRow = useState(assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!);
+    final perRow = useState(assetsPerRow ?? configuredPerRow);
     final scaleFactor = useState(7.0 - perRow.value);
     final baseScaleFactor = useState(7.0 - perRow.value);
+
+    useEffect(() {
+      if (assetsPerRow != null || perRow.value == configuredPerRow) {
+        return null;
+      }
+
+      perRow.value = configuredPerRow;
+      scaleFactor.value = 7.0 - configuredPerRow;
+      baseScaleFactor.value = 7.0 - configuredPerRow;
+      return null;
+    }, [assetsPerRow, configuredPerRow]);
 
     /// assets need different hero tags across tabs / modals
     /// otherwise, hero animations are performed across tabs (looks buggy!)
@@ -90,7 +104,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
                 scaleFactor.value = max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
                 if (7 - scaleFactor.value.toInt() != perRow.value) {
                   perRow.value = 7 - scaleFactor.value.toInt();
-                  settings.setSetting(AppSettingsEnum.tilesPerRow, perRow.value);
+                  ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, perRow.value);
                 }
               };
             },
@@ -100,13 +114,13 @@ class ImmichAssetGrid extends HookConsumerWidget {
           onRefresh: onRefresh,
           assetsPerRow: perRow.value,
           listener: listener,
-          showStorageIndicator: showStorageIndicator ?? settings.getSetting(AppSettingsEnum.storageIndicator),
+          showStorageIndicator: showStorageIndicator ?? configuredStorageIndicator,
           renderList: renderList,
           margin: margin,
           selectionActive: selectionActive,
           preselectedAssets: preselectedAssets,
           canDeselect: canDeselect,
-          dynamicLayout: dynamicLayout ?? settings.getSetting(AppSettingsEnum.dynamicLayout),
+          dynamicLayout: dynamicLayout ?? configuredDynamicLayout,
           showMultiSelectIndicator: showMultiSelectIndicator,
           visibleItemsListener: visibleItemsListener,
           topWidget: topWidget,

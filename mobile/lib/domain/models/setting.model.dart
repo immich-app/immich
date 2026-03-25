@@ -2,6 +2,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 
 enum Setting<T> {
   tilesPerRow<int>(StoreKey.tilesPerRow, 4),
+  dynamicLayout<bool>(StoreKey.dynamicLayout, false),
   groupAssetsBy<int>(StoreKey.groupAssetsBy, 0),
   showStorageIndicator<bool>(StoreKey.storageIndicator, true),
   loadOriginal<bool>(StoreKey.loadOriginal, false),

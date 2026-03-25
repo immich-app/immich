@@ -359,6 +359,13 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   Widget build(BuildContext _) {
+    final configuredTilesPerRow = ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow)));
+    if (configuredTilesPerRow != _perRow) {
+      _perRow = configuredTilesPerRow;
+      _scaleFactor = 7.0 - _perRow;
+      _baseScaleFactor = _scaleFactor;
+    }
+
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
