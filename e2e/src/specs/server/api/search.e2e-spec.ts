@@ -1033,4 +1033,145 @@ describe('/search', () => {
       expect(Array.isArray(body)).toBe(true);
     });
   });
+
+  describe('GET /search/suggestions (temporal scoping)', () => {
+    // Upload assets with specific fileCreatedAt dates and different countries/cameras
+    // so we can test that temporal params narrow suggestions correctly.
+    let temporalUser: LoginResponseDto;
+    let temporalSpace: SharedSpaceResponseDto;
+    let temporalWebsocket: Socket;
+
+    // Dates: asset1 = 2020-06-15, asset2 = 2022-03-10, asset3 = 2024-01-20
+    const date1 = '2020-06-15T12:00:00.000Z';
+    const date2 = '2022-03-10T12:00:00.000Z';
+    const date3 = '2024-01-20T12:00:00.000Z';
+
+    let asset1: AssetMediaResponseDto;
+    let asset2: AssetMediaResponseDto;
+    let asset3: AssetMediaResponseDto;
+
+    beforeAll(async () => {
+      temporalUser = await utils.userSetup(admin.accessToken, {
+        email: 'temporal-suggest@immich.cloud',
+        name: 'Temporal Suggest User',
+        password: 'Password123!',
+      });
+      temporalWebsocket = await utils.connectWebsocket(temporalUser.accessToken);
+
+      // Upload three assets with distinct dates — they'll use random PNG images with no EXIF,
+      // so we assign GPS coords afterwards to get country/city populated by reverse geocoding.
+      asset1 = await utils.createAsset(temporalUser.accessToken, {
+        deviceAssetId: 'temporal-1',
+        fileCreatedAt: date1,
+        fileModifiedAt: date1,
+      });
+      asset2 = await utils.createAsset(temporalUser.accessToken, {
+        deviceAssetId: 'temporal-2',
+        fileCreatedAt: date2,
+        fileModifiedAt: date2,
+      });
+      asset3 = await utils.createAsset(temporalUser.accessToken, {
+        deviceAssetId: 'temporal-3',
+        fileCreatedAt: date3,
+        fileModifiedAt: date3,
+      });
+
+      for (const a of [asset1, asset2, asset3]) {
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: a.id });
+      }
+
+      // Assign different GPS coordinates so reverse geocoding gives distinct countries
+      const updates = [
+        { id: asset1.id, latitude: 48.8534, longitude: 2.3488 }, // Paris, France
+        { id: asset2.id, latitude: 35.6895, longitude: 139.6917 }, // Tokyo, Japan
+        { id: asset3.id, latitude: 52.5244, longitude: 13.4105 }, // Berlin, Germany
+      ];
+      await Promise.all(
+        updates.map((u) =>
+          updateAsset(
+            { id: u.id, updateAssetDto: { latitude: u.latitude, longitude: u.longitude } },
+            { headers: asBearerAuth(temporalUser.accessToken) },
+          ),
+        ),
+      );
+      for (const u of updates) {
+        await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: u.id });
+      }
+
+      // Create a space with all three assets for combined testing
+      temporalSpace = await utils.createSpace(temporalUser.accessToken, { name: 'Temporal Test Space' });
+      await utils.addSpaceAssets(temporalUser.accessToken, temporalSpace.id, [asset1.id, asset2.id, asset3.id]);
+    }, 30_000);
+
+    afterAll(() => {
+      utils.disconnectWebsocket(temporalWebsocket);
+    });
+
+    it('should return only countries from assets in the date range', async () => {
+      // Range covers only asset1 (2020-06-15) and asset2 (2022-03-10)
+      const { status, body } = await request(app)
+        .get(
+          '/search/suggestions?type=country&takenAfter=2020-01-01T00:00:00.000Z&takenBefore=2023-01-01T00:00:00.000Z',
+        )
+        .set('Authorization', `Bearer ${temporalUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toContain('France');
+      expect(body).toContain('Japan');
+      expect(body).not.toContain('Germany');
+    });
+
+    it('should return only cities from assets in the date range', async () => {
+      // Range covers only asset3 (2024-01-20)
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=city&takenAfter=2023-01-01T00:00:00.000Z&takenBefore=2025-01-01T00:00:00.000Z')
+        .set('Authorization', `Bearer ${temporalUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toContain('Berlin');
+      expect(body).not.toContain('Paris');
+      expect(body).not.toContain('Tokyo');
+    });
+
+    it('should return empty when date range contains no assets', async () => {
+      const { status, body } = await request(app)
+        .get(
+          '/search/suggestions?type=country&takenAfter=2000-01-01T00:00:00.000Z&takenBefore=2001-01-01T00:00:00.000Z',
+        )
+        .set('Authorization', `Bearer ${temporalUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+    });
+
+    it('should apply strict < for takenBefore boundary', async () => {
+      // takenBefore is the exact fileCreatedAt of asset1 — should NOT include it (strict <)
+      const { status, body } = await request(app)
+        .get(`/search/suggestions?type=country&takenAfter=2020-01-01T00:00:00.000Z&takenBefore=${date1}`)
+        .set('Authorization', `Bearer ${temporalUser.accessToken}`);
+      expect(status).toBe(200);
+      // asset1 fileCreatedAt is exactly date1, strict < means it's excluded
+      expect(body).not.toContain('France');
+    });
+
+    it('should combine spaceId with temporal params', async () => {
+      // All three assets are in the space, but date range only covers asset2 (2022)
+      const { status, body } = await request(app)
+        .get(
+          `/search/suggestions?type=country&spaceId=${temporalSpace.id}&takenAfter=2021-01-01T00:00:00.000Z&takenBefore=2023-01-01T00:00:00.000Z`,
+        )
+        .set('Authorization', `Bearer ${temporalUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(['Japan']);
+    });
+
+    it('should return all suggestions when no temporal params are provided (backward compat)', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=country')
+        .set('Authorization', `Bearer ${temporalUser.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toContain('France');
+      expect(body).toContain('Japan');
+      expect(body).toContain('Germany');
+    });
+  });
 });

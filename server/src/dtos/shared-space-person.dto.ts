@@ -1,6 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+
+export class SpacePeopleQueryDto {
+  @ValidateDate({ optional: true })
+  takenAfter?: Date;
+
+  @ValidateDate({ optional: true })
+  takenBefore?: Date;
+}
 
 export class SharedSpacePersonUpdateDto {
   @ApiPropertyOptional({ description: 'Person name' })

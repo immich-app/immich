@@ -24,9 +24,11 @@ export interface TagOption {
 export interface FilterPanelConfig {
   sections: FilterSection[];
   providers: {
-    people?: () => Promise<PersonOption[]>;
-    locations?: () => Promise<LocationOption[]>;
-    cameras?: () => Promise<CameraOption[]>;
+    people?: (context?: FilterContext) => Promise<PersonOption[]>;
+    locations?: (context?: FilterContext) => Promise<LocationOption[]>;
+    cities?: (country: string, context?: FilterContext) => Promise<string[]>;
+    cameras?: (context?: FilterContext) => Promise<CameraOption[]>;
+    cameraModels?: (make: string, context?: FilterContext) => Promise<string[]>;
     tags?: () => Promise<TagOption[]>;
   };
 }
@@ -70,6 +72,27 @@ export function getActiveFilterCount(state: FilterState): number {
     (state.mediaType === 'all' ? 0 : 1) +
     (state.selectedYear === undefined ? 0 : 1)
   );
+}
+
+export type FilterContext = {
+  takenAfter?: string;
+  takenBefore?: string;
+};
+
+export function buildFilterContext(state: FilterState): FilterContext | undefined {
+  if (!state.selectedYear) {
+    return undefined;
+  }
+  if (state.selectedMonth) {
+    return {
+      takenAfter: new Date(Date.UTC(state.selectedYear, state.selectedMonth - 1, 1)).toISOString(),
+      takenBefore: new Date(Date.UTC(state.selectedYear, state.selectedMonth, 1)).toISOString(),
+    };
+  }
+  return {
+    takenAfter: new Date(Date.UTC(state.selectedYear, 0, 1)).toISOString(),
+    takenBefore: new Date(Date.UTC(state.selectedYear + 1, 0, 1)).toISOString(),
+  };
 }
 
 export function clearFilters(state: FilterState): FilterState {

@@ -7,6 +7,7 @@
     createFilterState,
     clearFilters,
     getActiveFilterCount,
+    type FilterContext,
     type FilterPanelConfig,
   } from '$lib/components/filter-panel/filter-panel';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -158,20 +159,54 @@
   const filterConfig: FilterPanelConfig = {
     sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'],
     providers: {
-      people: async () => {
-        const people = await getSpacePeople({ id: space.id });
+      people: async (context?: FilterContext) => {
+        const people = await getSpacePeople({
+          id: space.id,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
         for (const p of people) {
           personNames.set(p.id, p.name || 'Unknown');
         }
         return people.map((p) => ({ id: p.id, name: p.name || 'Unknown', thumbnailPath: p.thumbnailPath }));
       },
-      locations: async () => {
-        const countries = await getSearchSuggestions({ $type: SearchSuggestionType.Country, spaceId: space.id });
+      locations: async (context?: FilterContext) => {
+        const countries = await getSearchSuggestions({
+          $type: SearchSuggestionType.Country,
+          spaceId: space.id,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
         return countries.filter(Boolean).map((c) => ({ value: c!, type: 'country' as const }));
       },
-      cameras: async () => {
-        const makes = await getSearchSuggestions({ $type: SearchSuggestionType.CameraMake, spaceId: space.id });
+      cities: async (country: string, context?: FilterContext) => {
+        const cities = await getSearchSuggestions({
+          $type: SearchSuggestionType.City,
+          spaceId: space.id,
+          country,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
+        return cities.filter(Boolean) as string[];
+      },
+      cameras: async (context?: FilterContext) => {
+        const makes = await getSearchSuggestions({
+          $type: SearchSuggestionType.CameraMake,
+          spaceId: space.id,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
         return makes.filter(Boolean).map((m) => ({ value: m!, type: 'make' as const }));
+      },
+      cameraModels: async (make: string, context?: FilterContext) => {
+        const models = await getSearchSuggestions({
+          $type: SearchSuggestionType.CameraModel,
+          spaceId: space.id,
+          make,
+          takenAfter: context?.takenAfter,
+          takenBefore: context?.takenBefore,
+        });
+        return models.filter(Boolean) as string[];
       },
       tags: async () => {
         const tags = await getAllTags();

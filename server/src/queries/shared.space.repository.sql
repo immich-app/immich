@@ -363,6 +363,27 @@ where
 order by
   "name" asc
 
+-- SharedSpaceRepository.getPersonsBySpaceIdWithTemporalFilter
+select
+  "shared_space_person".*
+from
+  "shared_space_person"
+where
+  "shared_space_person"."spaceId" = $1
+  and exists (
+    select
+    from
+      "shared_space_person_face"
+      inner join "asset_face" on "asset_face"."id" = "shared_space_person_face"."assetFaceId"
+      inner join "asset" on "asset"."id" = "asset_face"."assetId"
+    where
+      "shared_space_person_face"."personId" = "shared_space_person"."id"
+      and "asset"."fileCreatedAt" >= $2
+      and "asset"."fileCreatedAt" < $3
+  )
+order by
+  "name" asc
+
 -- SharedSpaceRepository.getPersonById
 select
   *

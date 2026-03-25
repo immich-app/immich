@@ -8,6 +8,7 @@ import {
   SharedSpacePersonMergeDto,
   SharedSpacePersonResponseDto,
   SharedSpacePersonUpdateDto,
+  SpacePeopleQueryDto,
 } from 'src/dtos/shared-space-person.dto';
 import {
   SharedSpaceActivityResponseDto,
@@ -547,7 +548,11 @@ export class SharedSpaceService extends BaseService {
     }));
   }
 
-  async getSpacePeople(auth: AuthDto, spaceId: string): Promise<SharedSpacePersonResponseDto[]> {
+  async getSpacePeople(
+    auth: AuthDto,
+    spaceId: string,
+    query?: SpacePeopleQueryDto,
+  ): Promise<SharedSpacePersonResponseDto[]> {
     await this.requireMembership(auth, spaceId);
 
     const space = await this.sharedSpaceRepository.getById(spaceId);
@@ -555,7 +560,10 @@ export class SharedSpaceService extends BaseService {
       return [];
     }
 
-    const persons = await this.sharedSpaceRepository.getPersonsBySpaceId(spaceId);
+    const hasTemporal = query?.takenAfter || query?.takenBefore;
+    const persons = hasTemporal
+      ? await this.sharedSpaceRepository.getPersonsBySpaceIdWithTemporalFilter(spaceId, query)
+      : await this.sharedSpaceRepository.getPersonsBySpaceId(spaceId);
     const aliases = await this.sharedSpaceRepository.getAliasesBySpaceAndUser(spaceId, auth.user.id);
     const aliasMap = new Map(aliases.map((a) => [a.personId, a.alias]));
 

@@ -149,7 +149,13 @@ class SearchApi {
   ///
   /// * [String] state:
   ///   Filter by state/province
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, }) async {
+  ///
+  /// * [DateTime] takenAfter:
+  ///   Filter suggestions by taken date (after)
+  ///
+  /// * [DateTime] takenBefore:
+  ///   Filter suggestions by taken date (before)
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions';
 
@@ -180,6 +186,12 @@ class SearchApi {
     }
     if (state != null) {
       queryParams.addAll(_queryParams('', 'state', state));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
     }
       queryParams.addAll(_queryParams('', 'type', type));
 
@@ -226,8 +238,14 @@ class SearchApi {
   ///
   /// * [String] state:
   ///   Filter by state/province
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, spaceId: spaceId, state: state, );
+  ///
+  /// * [DateTime] takenAfter:
+  ///   Filter suggestions by taken date (after)
+  ///
+  /// * [DateTime] takenBefore:
+  ///   Filter suggestions by taken date (before)
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, spaceId: spaceId, state: state, takenAfter: takenAfter, takenBefore: takenBefore, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

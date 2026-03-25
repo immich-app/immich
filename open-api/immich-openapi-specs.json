@@ -10177,6 +10177,26 @@
             }
           },
           {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "description": "Filter suggestions by taken date (after)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "description": "Filter suggestions by taken date (before)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
             "name": "type",
             "required": true,
             "in": "query",
@@ -12874,6 +12894,24 @@
             "in": "path",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
               "type": "string"
             }
           }

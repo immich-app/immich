@@ -329,6 +329,12 @@ export class SearchSuggestionRequestDto {
   @Optional()
   lensModel?: string;
 
+  @ValidateDate({ optional: true, description: 'Filter suggestions by taken date (after)' })
+  takenAfter?: Date;
+
+  @ValidateDate({ optional: true, description: 'Filter suggestions by taken date (before)' })
+  takenBefore?: Date;
+
   @ValidateUUID({ optional: true, description: 'Scope suggestions to a specific shared space' })
   spaceId?: string;
 

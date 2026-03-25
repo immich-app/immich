@@ -23,6 +23,7 @@ import {
   SharedSpacePersonMergeDto,
   SharedSpacePersonResponseDto,
   SharedSpacePersonUpdateDto,
+  SpacePeopleQueryDto,
 } from 'src/dtos/shared-space-person.dto';
 import {
   SharedSpaceActivityQueryDto,
@@ -265,8 +266,12 @@ export class SharedSpaceController {
     description: 'Retrieve all people detected in a shared space.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
-  getSpacePeople(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedSpacePersonResponseDto[]> {
-    return this.service.getSpacePeople(auth, id);
+  getSpacePeople(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() query: SpacePeopleQueryDto,
+  ): Promise<SharedSpacePersonResponseDto[]> {
+    return this.service.getSpacePeople(auth, id, query);
   }
 
   @Get(':id/people/:personId')

@@ -1,24 +1,36 @@
 <script lang="ts">
+  import type { FilterContext } from './filter-panel';
+
   interface Props {
     countries: string[];
     selectedCity?: string;
     selectedCountry?: string;
-    onCityFetch: (country: string) => Promise<string[]>;
+    context?: FilterContext;
+    onCityFetch: (country: string, context?: FilterContext) => Promise<string[]>;
     onSelectionChange: (country?: string, city?: string) => void;
   }
 
-  let { countries, selectedCity, selectedCountry, onCityFetch, onSelectionChange }: Props = $props();
+  let { countries, selectedCity, selectedCountry, context, onCityFetch, onSelectionChange }: Props = $props();
 
   let expandedCountry = $state<string | undefined>(undefined);
   let cities = $state<string[]>([]);
   let loadingCities = $state(false);
 
+  // Orphaned country: selected but not in current results
+  let orphanedCountry = $derived(selectedCountry && !countries.includes(selectedCountry) ? selectedCountry : undefined);
+
   $effect(() => {
     if (expandedCountry) {
+      const _context = context;
       loadingCities = true;
-      void onCityFetch(expandedCountry).then((result) => {
+      void onCityFetch(expandedCountry, _context).then((result) => {
         cities = result;
         loadingCities = false;
+
+        // Cascade child auto-clear: if selected city is not in new results, clear it
+        if (selectedCity && result.length > 0 && !result.includes(selectedCity)) {
+          onSelectionChange(expandedCountry, undefined);
+        }
       });
     } else {
       cities = [];
@@ -49,9 +61,33 @@
 </script>
 
 <div data-testid="location-filter">
-  {#if countries.length === 0}
+  {#if countries.length === 0 && !orphanedCountry}
     <p class="text-sm text-gray-400 dark:text-gray-500" data-testid="location-empty">No locations in this space</p>
   {:else}
+    <!-- Orphaned country (selected but no longer in suggestions) -->
+    {#if orphanedCountry}
+      {@const isCountrySelected = true}
+      <button
+        type="button"
+        class="-mx-2 flex w-[calc(100%+1rem)] items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium opacity-50 hover:bg-subtle"
+        onclick={() => handleCountryClick(orphanedCountry!)}
+        aria-pressed="true"
+        data-testid="location-country-{orphanedCountry}"
+      >
+        <div
+          class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 {isCountrySelected &&
+          !selectedCity
+            ? 'border-immich-primary bg-immich-primary dark:border-immich-dark-primary dark:bg-immich-dark-primary'
+            : 'border-gray-300 dark:border-gray-600'}"
+        >
+          {#if isCountrySelected && !selectedCity}
+            <div class="h-1.5 w-1.5 rounded-full bg-white dark:bg-black"></div>
+          {/if}
+        </div>
+        <span class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">{orphanedCountry}</span>
+      </button>
+    {/if}
+
     {#each countries as country (country)}
       {@const isCountrySelected = selectedCountry === country}
       <!-- Country row -->

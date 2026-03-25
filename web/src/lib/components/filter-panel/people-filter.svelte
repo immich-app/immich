@@ -16,6 +16,13 @@
 
   const INITIAL_SHOW_COUNT = 5;
 
+  // Orphaned people: selected but not in current results
+  let orphanedPeople = $derived(
+    selectedIds
+      .filter((id) => !people.some((p) => p.id === id))
+      .map((id) => ({ id, name: id, isOrphaned: true }) as PersonOption & { isOrphaned: boolean }),
+  );
+
   let filteredPeople = $derived(
     searchQuery.trim() ? people.filter((p) => p.name.toLowerCase().includes(searchQuery.trim().toLowerCase())) : people,
   );
@@ -74,6 +81,36 @@
         data-testid="people-search-input"
       />
     </div>
+
+    <!-- Orphaned people (selected but no longer in suggestions) -->
+    {#each orphanedPeople as person (person.id)}
+      <button
+        type="button"
+        class="-mx-2 flex w-[calc(100%+1rem)] items-center gap-2 rounded-lg px-2 py-1.5 text-sm opacity-50 hover:bg-subtle"
+        onclick={() => togglePerson(person.id)}
+        aria-pressed="true"
+        data-testid="people-item-{person.id}"
+      >
+        <!-- Checkbox (always checked for orphaned) -->
+        <div
+          class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-immich-primary dark:bg-immich-dark-primary"
+        >
+          <svg viewBox="0 0 24 24" class="h-3 w-3 text-white dark:text-black">
+            <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+          </svg>
+        </div>
+
+        <!-- Avatar -->
+        <div
+          class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 text-[9px] font-semibold text-white dark:bg-gray-600"
+        >
+          {getInitial(person.name)}
+        </div>
+
+        <!-- Label -->
+        <span class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left font-medium">{person.name}</span>
+      </button>
+    {/each}
 
     <!-- People list -->
     {#each visiblePeople as person (person.id)}

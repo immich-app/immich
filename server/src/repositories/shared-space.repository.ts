@@ -462,6 +462,29 @@ export class SharedSpaceRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { takenAfter: DummyValue.DATE, takenBefore: DummyValue.DATE }] })
+  getPersonsBySpaceIdWithTemporalFilter(spaceId: string, options?: { takenAfter?: Date; takenBefore?: Date }) {
+    return this.db
+      .selectFrom('shared_space_person')
+      .selectAll('shared_space_person')
+      .where('shared_space_person.spaceId', '=', spaceId)
+      .$if(!!options?.takenAfter || !!options?.takenBefore, (qb) =>
+        qb.where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('shared_space_person_face')
+              .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+              .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+              .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
+              .$if(!!options?.takenAfter, (qb2) => qb2.where('asset.fileCreatedAt', '>=', options!.takenAfter!))
+              .$if(!!options?.takenBefore, (qb2) => qb2.where('asset.fileCreatedAt', '<', options!.takenBefore!)),
+          ),
+        ),
+      )
+      .orderBy('name', 'asc')
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getPersonById(id: string) {
     return this.db.selectFrom('shared_space_person').selectAll().where('id', '=', id).executeTakeFirst();

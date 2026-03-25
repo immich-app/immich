@@ -655,7 +655,11 @@ class SharedSpacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getSpacePeopleWithHttpInfo(String id,) async {
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  Future<Response> getSpacePeopleWithHttpInfo(String id, { DateTime? takenAfter, DateTime? takenBefore, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-spaces/{id}/people'
       .replaceAll('{id}', id);
@@ -666,6 +670,13 @@ class SharedSpacesApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
 
     const contentTypes = <String>[];
 
@@ -688,8 +699,12 @@ class SharedSpacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<List<SharedSpacePersonResponseDto>?> getSpacePeople(String id,) async {
-    final response = await getSpacePeopleWithHttpInfo(id,);
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  Future<List<SharedSpacePersonResponseDto>?> getSpacePeople(String id, { DateTime? takenAfter, DateTime? takenBefore, }) async {
+    final response = await getSpacePeopleWithHttpInfo(id,  takenAfter: takenAfter, takenBefore: takenBefore, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

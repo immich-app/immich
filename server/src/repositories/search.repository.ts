@@ -166,6 +166,8 @@ export interface AssetDuplicateResult {
 
 export interface SpaceScopeOptions {
   spaceId?: string;
+  takenAfter?: Date;
+  takenBefore?: Date;
 }
 
 export interface GetStatesOptions extends SpaceScopeOptions {
@@ -464,52 +466,49 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country, spaceId }: GetStatesOptions): Promise<string[]> {
-    const res = await this.getExifField('state', userIds, { spaceId })
-      .$if(!!country, (qb) => qb.where('country', '=', country!))
+  async getStates(userIds: string[], options: GetStatesOptions): Promise<string[]> {
+    const res = await this.getExifField('state', userIds, options)
+      .$if(!!options.country, (qb) => qb.where('country', '=', options.country!))
       .execute();
 
     return res.map((row) => row.state!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state, spaceId }: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds, { spaceId })
-      .$if(!!country, (qb) => qb.where('country', '=', country!))
-      .$if(!!state, (qb) => qb.where('state', '=', state!))
+  async getCities(userIds: string[], options: GetCitiesOptions): Promise<string[]> {
+    const res = await this.getExifField('city', userIds, options)
+      .$if(!!options.country, (qb) => qb.where('country', '=', options.country!))
+      .$if(!!options.state, (qb) => qb.where('state', '=', options.state!))
       .execute();
 
     return res.map((row) => row.city!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model, lensModel, spaceId }: GetCameraMakesOptions): Promise<string[]> {
-    const res = await this.getExifField('make', userIds, { spaceId })
-      .$if(!!model, (qb) => qb.where('model', '=', model!))
-      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
+  async getCameraMakes(userIds: string[], options: GetCameraMakesOptions): Promise<string[]> {
+    const res = await this.getExifField('make', userIds, options)
+      .$if(!!options.model, (qb) => qb.where('model', '=', options.model!))
+      .$if(!!options.lensModel, (qb) => qb.where('lensModel', '=', options.lensModel!))
       .execute();
 
     return res.map((row) => row.make!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make, lensModel, spaceId }: GetCameraModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('model', userIds, { spaceId })
-      .$if(!!make, (qb) => qb.where('make', '=', make!))
-      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
+  async getCameraModels(userIds: string[], options: GetCameraModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('model', userIds, options)
+      .$if(!!options.make, (qb) => qb.where('make', '=', options.make!))
+      .$if(!!options.lensModel, (qb) => qb.where('lensModel', '=', options.lensModel!))
       .execute();
 
     return res.map((row) => row.model!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraLensModels(
-    userIds: string[],
-    { make, model, spaceId }: GetCameraLensModelsOptions,
-  ): Promise<string[]> {
-    const res = await this.getExifField('lensModel', userIds, { spaceId })
-      .$if(!!make, (qb) => qb.where('make', '=', make!))
-      .$if(!!model, (qb) => qb.where('model', '=', model!))
+  async getCameraLensModels(userIds: string[], options: GetCameraLensModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('lensModel', userIds, options)
+      .$if(!!options.make, (qb) => qb.where('make', '=', options.make!))
+      .$if(!!options.model, (qb) => qb.where('model', '=', options.model!))
       .execute();
 
     return res.map((row) => row.lensModel!);
@@ -547,6 +546,8 @@ export class SearchRepository {
             ),
           ]),
         ),
-      );
+      )
+      .$if(!!options?.takenAfter, (qb) => qb.where('asset.fileCreatedAt', '>=', options!.takenAfter!))
+      .$if(!!options?.takenBefore, (qb) => qb.where('asset.fileCreatedAt', '<', options!.takenBefore!));
   }
 }

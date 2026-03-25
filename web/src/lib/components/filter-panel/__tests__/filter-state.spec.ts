@@ -1,4 +1,4 @@
-import { clearFilters, createFilterState, getActiveFilterCount } from '../filter-panel';
+import { buildFilterContext, clearFilters, createFilterState, getActiveFilterCount } from '../filter-panel';
 
 describe('FilterState utilities', () => {
   it('should create default state', () => {
@@ -89,5 +89,64 @@ describe('FilterState utilities', () => {
     expect(cleared.selectedYear).toBeUndefined();
     expect(cleared.selectedMonth).toBeUndefined();
     expect(cleared.personIds).toEqual([]);
+  });
+});
+
+describe('buildFilterContext', () => {
+  it('should return undefined when no year is selected', () => {
+    const state = createFilterState();
+    expect(buildFilterContext(state)).toBeUndefined();
+  });
+
+  it('should return year range when only year is selected', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
+    const ctx = buildFilterContext(state);
+    expect(ctx).toEqual({
+      takenAfter: '2023-01-01T00:00:00.000Z',
+      takenBefore: '2024-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should return month range when year and month are selected', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
+    state.selectedMonth = 6;
+    const ctx = buildFilterContext(state);
+    expect(ctx).toEqual({
+      takenAfter: '2023-06-01T00:00:00.000Z',
+      takenBefore: '2023-07-01T00:00:00.000Z',
+    });
+  });
+
+  it('should handle December correctly (rolls over to next year)', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
+    state.selectedMonth = 12;
+    const ctx = buildFilterContext(state);
+    expect(ctx).toEqual({
+      takenAfter: '2023-12-01T00:00:00.000Z',
+      takenBefore: '2024-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should handle January correctly', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
+    state.selectedMonth = 1;
+    const ctx = buildFilterContext(state);
+    expect(ctx).toEqual({
+      takenAfter: '2023-01-01T00:00:00.000Z',
+      takenBefore: '2023-02-01T00:00:00.000Z',
+    });
+  });
+
+  it('should use UTC dates (no timezone offset)', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
+    state.selectedMonth = 8;
+    const ctx = buildFilterContext(state)!;
+    expect(ctx.takenAfter).toContain('T00:00:00.000Z');
+    expect(ctx.takenBefore).toContain('T00:00:00.000Z');
   });
 });

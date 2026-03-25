@@ -220,7 +220,10 @@ describe(SearchService.name, () => {
       });
 
       expect(result).toEqual(['Germany']);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], { spaceId });
+      expect(mocks.search.getCountries).toHaveBeenCalledWith(
+        [authStub.user1.user.id],
+        expect.objectContaining({ spaceId }),
+      );
     });
 
     it('should pass spaceId to state search suggestions', async () => {
@@ -239,6 +242,140 @@ describe(SearchService.name, () => {
         [authStub.user1.user.id],
         expect.objectContaining({ spaceId }),
       );
+    });
+
+    it('should pass temporal fields to country search suggestions', async () => {
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.COUNTRY,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getCountries).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ takenAfter, takenBefore }),
+      );
+    });
+
+    it('should pass temporal fields to state search suggestions', async () => {
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.search.getStates.mockResolvedValue(['Bavaria']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.STATE,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getStates).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ takenAfter, takenBefore }),
+      );
+    });
+
+    it('should pass temporal fields to city search suggestions', async () => {
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.search.getCities.mockResolvedValue(['Munich']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.CITY,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getCities).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ takenAfter, takenBefore }),
+      );
+    });
+
+    it('should pass temporal fields to camera make search suggestions', async () => {
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.search.getCameraMakes.mockResolvedValue(['Nikon']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.CAMERA_MAKE,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getCameraMakes).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ takenAfter, takenBefore }),
+      );
+    });
+
+    it('should pass temporal fields to camera model search suggestions', async () => {
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.search.getCameraModels.mockResolvedValue(['X100VI']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.CAMERA_MODEL,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getCameraModels).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ takenAfter, takenBefore }),
+      );
+    });
+
+    it('should pass temporal fields to camera lens model search suggestions', async () => {
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.search.getCameraLensModels.mockResolvedValue(['10-24mm']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.CAMERA_LENS_MODEL,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ takenAfter, takenBefore }),
+      );
+    });
+
+    it('should pass spaceId and temporal fields together', async () => {
+      const spaceId = newUuid();
+      const takenAfter = new Date('2024-01-01');
+      const takenBefore = new Date('2024-12-31');
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+      mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.COUNTRY,
+        spaceId,
+        takenAfter,
+        takenBefore,
+      });
+
+      expect(mocks.search.getCountries).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ spaceId, takenAfter, takenBefore }),
+      );
+    });
+
+    it('should not pass temporal fields when not provided', async () => {
+      mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        type: SearchSuggestionType.COUNTRY,
+      });
+
+      const callArg = mocks.search.getCountries.mock.calls[0][1] as Record<string, unknown>;
+      expect(callArg).not.toHaveProperty('takenAfter');
+      expect(callArg).not.toHaveProperty('takenBefore');
     });
 
     describe('shared space access (spaceId)', () => {
@@ -268,7 +405,7 @@ describe(SearchService.name, () => {
           spaceId,
         });
 
-        expect(mocks.search.getCountries).toHaveBeenCalledWith(expect.anything(), { spaceId });
+        expect(mocks.search.getCountries).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ spaceId }));
       });
 
       it('should not check space access when spaceId is not provided', async () => {

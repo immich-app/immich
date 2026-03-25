@@ -2621,6 +2621,90 @@ describe(SharedSpaceService.name, () => {
       expect(result).toHaveLength(2);
       expect(result.map((r) => r.type)).toEqual(expect.arrayContaining(['person', 'pet']));
     });
+
+    it('should filter people by temporal range', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const person = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'Temporal Person',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
+      const takenAfter = new Date('2025-01-01');
+      const takenBefore = new Date('2025-12-31');
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter.mockResolvedValue([person]);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(3);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(2);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+
+      const result = await sut.getSpacePeople(auth, spaceId, { takenAfter, takenBefore });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Temporal Person');
+      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).toHaveBeenCalledWith(spaceId, {
+        takenAfter,
+        takenBefore,
+      });
+      expect(mocks.sharedSpace.getPersonsBySpaceId).not.toHaveBeenCalled();
+    });
+
+    it('should return all people when no temporal params provided', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const person = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'All People',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([person]);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(1);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(1);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+
+      const result = await sut.getSpacePeople(auth, spaceId);
+
+      expect(result).toHaveLength(1);
+      expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId);
+      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).not.toHaveBeenCalled();
+    });
+
+    it('should exclude person with zero face assets in date range', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const personInRange = factory.sharedSpacePerson({
+        id: newUuid(),
+        spaceId,
+        name: 'In Range',
+        thumbnailPath: '/path/to/thumb.jpg',
+      });
+      // The temporal filter query naturally excludes persons with zero faces in range,
+      // so only personInRange is returned by the repository
+      const takenAfter = new Date('2025-06-01');
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter.mockResolvedValue([personInRange]);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(1);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(1);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+
+      const result = await sut.getSpacePeople(auth, spaceId, { takenAfter });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('In Range');
+      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).toHaveBeenCalledWith(spaceId, { takenAfter });
+    });
   });
 
   describe('getSpacePerson', () => {

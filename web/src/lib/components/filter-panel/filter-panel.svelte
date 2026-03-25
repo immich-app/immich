@@ -13,14 +13,16 @@
     mdiStar,
     mdiImage,
   } from '@mdi/js';
+  import { untrack } from 'svelte';
   import type {
+    FilterContext,
     FilterPanelConfig,
     FilterSection as FilterSectionType,
     FilterState,
     PersonOption,
     TagOption,
   } from './filter-panel';
-  import { createFilterState } from './filter-panel';
+  import { buildFilterContext, createFilterState } from './filter-panel';
   import FilterSection from './filter-section.svelte';
   import TemporalPicker from './temporal-picker.svelte';
   import PeopleFilter from './people-filter.svelte';
@@ -44,6 +46,139 @@
   let countries = $state<string[]>([]);
   let cameraMakes = $state<string[]>([]);
   let tags = $state<TagOption[]>([]);
+
+  // Stable filterContext that only updates when temporal values actually change.
+  // Derived directly from selectedYear/selectedMonth (not the full filters object)
+  // to prevent $effect blocks in LocationFilter/CameraFilter from re-triggering
+  // on non-temporal filter changes.
+  let filterContext: FilterContext | undefined = $state();
+  $effect(() => {
+    const year = filters.selectedYear;
+    const month = filters.selectedMonth;
+    const next = buildFilterContext({ selectedYear: year, selectedMonth: month } as FilterState);
+    if (filterContext?.takenAfter !== next?.takenAfter || filterContext?.takenBefore !== next?.takenBefore) {
+      filterContext = next;
+    }
+  });
+
+  let prevTakenAfter: string | undefined = $state();
+  let prevTakenBefore: string | undefined = $state();
+  let abortController: AbortController | undefined = $state();
+  let isRefetching = $state(false);
+
+  // Debounced re-fetch when temporal filter changes.
+  // We track filters.selectedYear and filters.selectedMonth directly instead of
+  // filterContext to avoid re-triggering when non-temporal filters change.
+  $effect(() => {
+    // Track only the two temporal fields — this is what determines re-fetch
+    const year = filters.selectedYear;
+    const month = filters.selectedMonth;
+    // Build context from tracked values (not from filterContext which would track all of filters)
+    const currentContext = buildFilterContext({ selectedYear: year, selectedMonth: month } as FilterState);
+    const currentTakenAfter = currentContext?.takenAfter;
+    const currentTakenBefore = currentContext?.takenBefore;
+
+    // Read prev values without tracking to avoid re-trigger loops
+    const prevAfter = untrack(() => prevTakenAfter);
+    const prevBefore = untrack(() => prevTakenBefore);
+
+    // Skip initial load (both undefined)
+    if (
+      prevAfter === undefined &&
+      prevBefore === undefined &&
+      currentTakenAfter === undefined &&
+      currentTakenBefore === undefined
+    ) {
+      return;
+    }
+
+    // Skip if context hasn't actually changed
+    if (prevAfter === currentTakenAfter && prevBefore === currentTakenBefore) {
+      return;
+    }
+
+    const isClear = (prevAfter !== undefined || prevBefore !== undefined) && currentContext === undefined;
+    const delay = isClear ? 0 : 200;
+
+    // Capture config providers to avoid stale closure warning
+    const providers = config.providers;
+    const sections = config.sections;
+
+    const timeout = setTimeout(() => {
+      // Abort previous in-flight requests
+      abortController?.abort();
+      const controller = new AbortController();
+      abortController = controller;
+      isRefetching = true;
+
+      const promises: Promise<void>[] = [];
+
+      if (providers.people && sections.includes('people')) {
+        promises.push(
+          providers
+            .people(currentContext)
+            .then((result) => {
+              if (!controller.signal.aborted) {
+                people = result;
+              }
+            })
+            .catch((error: unknown) => {
+              console.error('Failed to re-fetch people:', error);
+            }),
+        );
+      }
+
+      if (providers.locations && sections.includes('location')) {
+        promises.push(
+          providers
+            .locations(currentContext)
+            .then((result) => {
+              if (!controller.signal.aborted) {
+                countries = result.filter((l) => l.type === 'country').map((l) => l.value);
+              }
+            })
+            .catch((error: unknown) => {
+              console.error('Failed to re-fetch locations:', error);
+            }),
+        );
+      }
+
+      if (providers.cameras && sections.includes('camera')) {
+        promises.push(
+          providers
+            .cameras(currentContext)
+            .then((result) => {
+              if (!controller.signal.aborted) {
+                cameraMakes = result.filter((c) => c.type === 'make').map((c) => c.value);
+              }
+            })
+            .catch((error: unknown) => {
+              console.error('Failed to re-fetch cameras:', error);
+            }),
+        );
+      }
+
+      void Promise.allSettled(promises).then(() => {
+        if (!controller.signal.aborted) {
+          isRefetching = false;
+        }
+      });
+    }, delay);
+
+    prevTakenAfter = currentTakenAfter;
+    prevTakenBefore = currentTakenBefore;
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  });
+
+  // Cleanup on unmount
+  $effect(() => {
+    return () => {
+      abortController?.abort();
+    };
+  });
 
   const sectionIcons: Record<string, string> = {
     timeline: mdiCalendar,
@@ -286,7 +421,22 @@
     <div class="pt-4">
       {#each config.sections as section (section)}
         {#if visibleSections.has(section)}
-          <FilterSection title={sectionTitles[section]} testId={section}>
+          <FilterSection
+            title={sectionTitles[section]}
+            testId={section}
+            refetching={isRefetching && section !== 'timeline'}
+            count={filterContext
+              ? section === 'people'
+                ? people.length
+                : section === 'location'
+                  ? countries.length
+                  : section === 'camera'
+                    ? cameraMakes.length
+                    : section === 'tags'
+                      ? tags.length
+                      : undefined
+              : undefined}
+          >
             {#if section === 'timeline'}
               <TemporalPicker
                 {timeBuckets}
@@ -302,10 +452,10 @@
                 {countries}
                 selectedCity={filters.city}
                 selectedCountry={filters.country}
-                onCityFetch={async (_) => {
-                  if (config.providers.locations) {
-                    const result = await config.providers.locations();
-                    return result.filter((l) => l.type === 'city').map((l) => l.value);
+                context={filterContext}
+                onCityFetch={async (country, ctx) => {
+                  if (config.providers.cities) {
+                    return config.providers.cities(country, ctx);
                   }
                   return [];
                 }}
@@ -316,10 +466,10 @@
                 makes={cameraMakes}
                 selectedMake={filters.make}
                 selectedModel={filters.model}
-                onModelFetch={async (_) => {
-                  if (config.providers.cameras) {
-                    const result = await config.providers.cameras();
-                    return result.filter((c) => c.type === 'model').map((c) => c.value);
+                context={filterContext}
+                onModelFetch={async (make, ctx) => {
+                  if (config.providers.cameraModels) {
+                    return config.providers.cameraModels(make, ctx);
                   }
                   return [];
                 }}
