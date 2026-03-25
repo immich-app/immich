@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202603031112@sha256:837536db5fd9e432f0f474ef9b61712fe3b3815821c3e4edf5e5b0b1f1ed30ad AS dev
+FROM ghcr.io/immich-app/base-server-dev:202603251709@sha256:2bf3053c732fcb87ec90c3c614632ac44847423468ccc57fd935bff771828d9d AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
