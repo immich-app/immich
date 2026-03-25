@@ -143,6 +143,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
+  ProviderSubscription<int>? _tilesPerRowSubscription;
 
   // Drag selection state
   bool _dragging = false;
@@ -154,6 +155,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
   int? _restoreAssetIndex;
+  int? _pendingTilesPerRowWrite;
 
   @override
   void initState() {
@@ -167,6 +169,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _baseScaleFactor = _scaleFactor;
 
     ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
+    _tilesPerRowSubscription = ref.listenManual<int>(
+      settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
+      _onTilesPerRowChanged,
+    );
   }
 
   @override
@@ -226,6 +232,32 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
   }
 
+  void _onTilesPerRowChanged(int? previous, int next) {
+    if (next == _pendingTilesPerRowWrite) {
+      _pendingTilesPerRowWrite = null;
+      return;
+    }
+
+    if (next == _perRow || !mounted) {
+      return;
+    }
+
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      if (!mounted || next == _perRow) {
+        return;
+      }
+
+      final targetAssetIndex = _getCurrentAssetIndex(segments);
+      setState(() {
+        _perRow = next;
+        _scaleFactor = 7.0 - _perRow;
+        _baseScaleFactor = _scaleFactor;
+        _restoreAssetIndex = targetAssetIndex;
+      });
+    });
+  }
+
   int? _getCurrentAssetIndex(List<Segment> segments) {
     final currentOffset = _scrollController.offset.clamp(0.0, _scrollController.position.maxScrollExtent);
     final segment = segments.findByOffset(currentOffset) ?? segments.lastOrNull;
@@ -248,6 +280,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void dispose() {
     _scrollController.dispose();
     _eventSubscription?.cancel();
+    _tilesPerRowSubscription?.close();
     super.dispose();
   }
 
@@ -359,12 +392,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   Widget build(BuildContext _) {
-    final configuredTilesPerRow = ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow)));
-    if (configuredTilesPerRow != _perRow) {
-      _perRow = configuredTilesPerRow;
-      _scaleFactor = 7.0 - _perRow;
-      _baseScaleFactor = _scaleFactor;
-    }
+    ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow)));
 
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
@@ -460,6 +488,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                           _restoreAssetIndex = targetAssetIndex;
                         });
 
+                        _pendingTilesPerRowWrite = _perRow;
                         ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
                       }
                     };
