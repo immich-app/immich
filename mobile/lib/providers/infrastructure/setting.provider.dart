@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 
@@ -18,3 +19,8 @@ class SettingsNotifier extends Notifier<SettingsService> {
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, SettingsService>(SettingsNotifier.new);
+
+final timelineDynamicLayoutThresholdProvider = StreamProvider<int?>((ref) {
+  final store = ref.watch(storeServiceProvider);
+  return store.watch(StoreKey.timelineDynamicLayoutThreshold);
+}, dependencies: [storeServiceProvider]);
