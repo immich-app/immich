@@ -3,6 +3,7 @@ import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
@@ -272,6 +273,33 @@ export class MediaRepository {
           bitrate: this.parseInt(stream.bit_rate),
         })),
     };
+  }
+
+  async extractVideoFrames(input: string, timestamps: number[], outputDir: string): Promise<string[]> {
+    const results: string[] = [];
+    for (const timestamp of timestamps) {
+      const output = path.join(outputDir, `frame-${timestamp.toFixed(3)}.jpg`);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          ffmpeg(input)
+            .inputOptions([`-ss ${timestamp}`])
+            .outputOptions(['-frames:v 1', '-q:v 2'])
+            .output(output)
+            .on('error', reject)
+            .on('end', () => resolve())
+            .run();
+        });
+        results.push(output);
+      } catch (error) {
+        this.logger.warn(`Failed to extract frame at ${timestamp}s from ${input}: ${error}`);
+      }
+    }
+
+    if (results.length === 0) {
+      throw new Error(`Failed to extract any frames from ${input}`);
+    }
+
+    return results;
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {

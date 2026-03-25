@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { CLIPConfig } from 'src/dtos/model-config.dto';
+import { AssetType, AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf, VideoInfo } from 'src/types';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
+import { elementWiseMean } from 'src/utils/vector';
 
 @Injectable()
 export class SmartInfoService extends BaseService {
@@ -108,7 +113,16 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
+    let embedding: string;
+    if (asset.type === AssetType.Video) {
+      const result = await this.encodeVideoClip(asset.originalPath, machineLearning.clip);
+      if (!result) {
+        return JobStatus.Failed;
+      }
+      embedding = result;
+    } else {
+      embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
+    }
 
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
       this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
@@ -124,5 +138,54 @@ export class SmartInfoService extends BaseService {
     await this.searchRepository.upsert(asset.id, embedding);
 
     return JobStatus.Success;
+  }
+
+  private async encodeVideoClip(originalPath: string, clipConfig: CLIPConfig): Promise<string | null> {
+    let videoInfo: VideoInfo;
+    try {
+      videoInfo = await this.mediaRepository.probe(originalPath);
+    } catch (error) {
+      this.logger.error(`Failed to probe video: ${originalPath}`, error);
+      return null;
+    }
+
+    const duration = videoInfo.format.duration;
+    let timestamps: number[];
+    if (!duration || duration <= 0 || !Number.isFinite(duration)) {
+      timestamps = [0];
+    } else if (duration < 2) {
+      timestamps = [duration / 2];
+    } else {
+      const count = 8;
+      timestamps = Array.from({ length: count }, (_, i) => duration * (0.05 + (0.9 * i) / (count - 1)));
+    }
+
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-video-clip-'));
+    try {
+      let framePaths: string[];
+      try {
+        framePaths = await this.mediaRepository.extractVideoFrames(originalPath, timestamps, tempDir);
+      } catch (error) {
+        this.logger.error(`Failed to extract video frames: ${originalPath}`, error);
+        return null;
+      }
+
+      let embeddings: number[][];
+      try {
+        embeddings = [];
+        for (const framePath of framePaths) {
+          const raw = await this.machineLearningRepository.encodeImage(framePath, clipConfig);
+          embeddings.push(JSON.parse(raw));
+        }
+      } catch (error) {
+        this.logger.error(`Failed to encode video frames: ${originalPath}`, error);
+        return null;
+      }
+
+      const averaged = elementWiseMean(embeddings);
+      return JSON.stringify(averaged);
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
   }
 }

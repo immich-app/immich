@@ -11,6 +11,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
     extract: vitest.fn().mockResolvedValue(null),
     probe: vitest.fn(),
+    extractVideoFrames: vitest.fn().mockResolvedValue([]),
     transcode: vitest.fn(),
     getImageMetadata: vitest.fn(),
   };
