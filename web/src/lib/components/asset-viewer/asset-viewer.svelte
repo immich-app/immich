@@ -587,13 +587,9 @@
       translate="yes"
     >
       {#if showDetailPanel}
-        <div class="h-full">
-          <DetailPanel {asset} currentAlbum={album} />
-        </div>
+        <DetailPanel {asset} currentAlbum={album} />
       {:else if assetViewerManager.isShowEditor}
-        <div class="h-full">
-          <EditorPanel {asset} onClose={closeEditor} />
-        </div>
+        <EditorPanel {asset} onClose={closeEditor} />
       {/if}
     </div>
   {/if}
