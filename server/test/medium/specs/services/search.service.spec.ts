@@ -108,4 +108,44 @@ describe(SearchService.name, () => {
       expect(response.assets.items[0].id).toBe(unstackedAsset.id);
     });
   });
+
+  describe('withPeople option', () => {
+    it('should not include assets with people when withPeople is false', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: assetWithPeople } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: assetWithoutPeople } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      await ctx.newAssetFace({ assetId: assetWithPeople.id, personId: person.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const response = await sut.searchMetadata(auth, { withPeople: false });
+
+      expect(response.assets.items.length).toBe(1);
+      expect(response.assets.items[0].id).toBe(assetWithoutPeople.id);
+    });
+
+    it('should include assets with people when withPeople is true', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: assetWithPeople } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: assetWithoutPeople } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      await ctx.newAssetFace({ assetId: assetWithPeople.id, personId: person.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const response = await sut.searchMetadata(auth, { withPeople: true });
+
+      expect(response.assets.items.length).toBe(2);
+      const assetIds = response.assets.items.map((item) => item.id);
+      expect(assetIds).toContain(assetWithPeople.id);
+      expect(assetIds).toContain(assetWithoutPeople.id);
+    });
+  });
 });
