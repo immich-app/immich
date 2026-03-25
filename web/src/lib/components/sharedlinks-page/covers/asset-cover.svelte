@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
 
   interface Props {
@@ -8,7 +9,7 @@
     class?: string;
   }
 
-  let { alt, preload = false, src, class: className = '' }: Props = $props();
+  let { alt, preload = false, src, class: className }: Props = $props();
 
   let isBroken = $state(false);
 </script>
@@ -19,7 +20,7 @@
   <img
     {alt}
     onerror={() => (isBroken = true)}
-    class="size-full rounded-xl object-cover aspect-square {className}"
+    class={cleanClass('size-full rounded-xl object-cover aspect-square', className)}
     data-testid="album-image"
     draggable="false"
     loading={preload ? 'eager' : 'lazy'}

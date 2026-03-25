@@ -2,11 +2,11 @@
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Checkbox, Icon, Label, Text } from '@immich/ui';
-  import { mdiClose } from '@mdi/js';
+  import { Checkbox, Label, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import TagPill from '../tag-pill.svelte';
 
   interface Props {
     selectedTags: SvelteSet<string> | null;
@@ -73,24 +73,7 @@
       {#each selectedTags ?? [] as tagId (tagId)}
         {@const tag = tagMap[tagId]}
         {#if tag}
-          <div class="flex group transition-all">
-            <span
-              class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary roudned-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-            >
-              <p class="text-sm">
-                {tag.value}
-              </p>
-            </span>
-
-            <button
-              type="button"
-              class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-e-full place-items-center place-content-center pe-2 ps-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-              title={$t('remove_tag')}
-              onclick={() => handleRemove(tagId)}
-            >
-              <Icon icon={mdiClose} />
-            </button>
-          </div>
+          <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
         {/if}
       {/each}
     </section>

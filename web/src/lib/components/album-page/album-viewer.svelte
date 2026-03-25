@@ -1,6 +1,5 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
@@ -20,7 +19,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { ActionButton, IconButton } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';

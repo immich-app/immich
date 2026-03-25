@@ -3,23 +3,27 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/utils/hooks/timer_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/center_play_button.dart';
 import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
 
 class CustomVideoPlayerControls extends HookConsumerWidget {
+  final String videoId;
   final Duration hideTimerDuration;
 
-  const CustomVideoPlayerControls({super.key, this.hideTimerDuration = const Duration(seconds: 5)});
+  const CustomVideoPlayerControls({
+    super.key,
+    required this.videoId,
+    this.hideTimerDuration = const Duration(seconds: 5),
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetIsVideo = ref.watch(currentAssetProvider.select((asset) => asset != null && asset.isVideo));
     final showControls = ref.watch(showControlsProvider);
-    final VideoPlaybackState state = ref.watch(videoPlaybackValueProvider.select((value) => value.state));
+    final status = ref.watch(videoPlayerProvider(videoId).select((value) => value.status));
 
     final cast = ref.watch(castProvider);
 
@@ -28,14 +32,14 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      final state = ref.read(videoPlaybackValueProvider).state;
+      final s = ref.read(videoPlayerProvider(videoId)).status;
 
       // Do not hide on paused
-      if (state != VideoPlaybackState.paused && state != VideoPlaybackState.completed && assetIsVideo) {
+      if (s != VideoPlaybackStatus.paused && s != VideoPlaybackStatus.completed && assetIsVideo) {
         ref.read(showControlsProvider.notifier).show = false;
       }
     });
-    final showBuffering = state == VideoPlaybackState.buffering && !cast.isCasting;
+    final showBuffering = status == VideoPlaybackStatus.buffering && !cast.isCasting;
 
     /// Shows the controls and starts the timer to hide them
     void showControlsAndStartHideTimer() {
@@ -43,9 +47,11 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
       ref.read(showControlsProvider.notifier).show = true;
     }
 
-    // When we change position, show or hide timer
-    ref.listen(videoPlayerControlsProvider.select((v) => v.position), (previous, next) {
-      showControlsAndStartHideTimer();
+    // When playback starts, reset the hide timer
+    ref.listen(videoPlayerProvider(videoId).select((v) => v.status), (previous, next) {
+      if (next == VideoPlaybackStatus.playing) {
+        hideTimer.reset();
+      }
     });
 
     /// Toggles between playing and pausing depending on the state of the video
@@ -68,12 +74,13 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
         return;
       }
 
-      if (state == VideoPlaybackState.playing) {
-        ref.read(videoPlayerControlsProvider.notifier).pause();
-      } else if (state == VideoPlaybackState.completed) {
-        ref.read(videoPlayerControlsProvider.notifier).restart();
+      final notifier = ref.read(videoPlayerProvider(videoId).notifier);
+      if (status == VideoPlaybackStatus.playing) {
+        notifier.pause();
+      } else if (status == VideoPlaybackStatus.completed) {
+        notifier.restart();
       } else {
-        ref.read(videoPlayerControlsProvider.notifier).play();
+        notifier.play();
       }
     }
 
@@ -92,9 +99,9 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
                 child: CenterPlayButton(
                   backgroundColor: Colors.black54,
                   iconColor: Colors.white,
-                  isFinished: state == VideoPlaybackState.completed,
+                  isFinished: status == VideoPlaybackStatus.completed,
                   isPlaying:
-                      state == VideoPlaybackState.playing || (cast.isCasting && cast.castState == CastState.playing),
+                      status == VideoPlaybackStatus.playing || (cast.isCasting && cast.castState == CastState.playing),
                   show: assetIsVideo && showControls,
                   onPressed: togglePlay,
                 ),

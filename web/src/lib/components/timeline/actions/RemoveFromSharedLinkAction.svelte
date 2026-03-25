@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import { handleRemoveSharedLinkAssets } from '$lib/services/shared-link.service';
   import { getAssetControlContext } from '$lib/utils/context';
   import { type SharedLinkResponseDto } from '@immich/sdk';
@@ -22,6 +23,8 @@
     }
   };
 </script>
+
+<svelte:document use:shortcut={{ shortcut: { key: 'Delete' }, onShortcut: handleSelect }} />
 
 <IconButton
   shape="round"

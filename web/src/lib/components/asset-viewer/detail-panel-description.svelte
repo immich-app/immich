@@ -13,16 +13,16 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let currentDescription = $derived(asset.exifInfo?.description ?? '');
-  let description = $derived(currentDescription);
+  let description = $derived(asset.exifInfo?.description ?? '');
 
   const handleFocusOut = async () => {
+    const currentDescription = asset.exifInfo?.description ?? '';
     if (description === currentDescription) {
       return;
     }
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { description } });
-      toastManager.success($t('asset_description_updated'));
+      toastManager.primary($t('asset_description_updated'));
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));
     }

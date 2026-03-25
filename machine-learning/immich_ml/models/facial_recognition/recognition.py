@@ -29,7 +29,7 @@ class FaceRecognizer(InferenceModel):
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
         super().__init__(model_name, **model_kwargs)
-        max_batch_size = settings.max_batch_size.facial_recognition if settings.max_batch_size else None
+        max_batch_size = settings.max_batch_size and settings.max_batch_size.facial_recognition
         self.batch_size = max_batch_size if max_batch_size else self._batch_size_default
 
     def _load(self) -> ModelSession:

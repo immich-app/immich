@@ -134,7 +134,7 @@ export class NotificationService extends BaseService {
       }
     } catch (error: Error | any) {
       this.logger.error(`Failed to validate SMTP configuration: ${error}`, error?.stack);
-      throw new Error(`Invalid SMTP configuration: ${error}`);
+      throw new Error('Invalid SMTP configuration', { cause: error });
     }
   }
 

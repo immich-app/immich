@@ -42,7 +42,7 @@
 
   const handlePicker = async () => {
     if (isAlbum) {
-      const albums = await modalManager.show(AlbumPickerModal, { shared: false });
+      const albums = await modalManager.show(AlbumPickerModal);
       if (albums && albums.length > 0) {
         const newValue = multiple ? albums.map((album) => album.id) : albums[0].id;
         onchange(newValue);

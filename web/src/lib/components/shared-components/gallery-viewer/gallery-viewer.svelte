@@ -34,6 +34,7 @@
 
   type Props = {
     assets: AssetResponseDto[];
+    viewerAssets?: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -44,10 +45,12 @@
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
     arrowNavigation?: boolean;
+    allowDeletion?: boolean;
   };
 
   let {
     assets = $bindable(),
+    viewerAssets,
     assetInteraction,
     disableAssetSelect = false,
     showArchiveIcon = false,
@@ -58,9 +61,11 @@
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
     arrowNavigation = true,
+    allowDeletion = true,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset } = assetViewingStore;
+  const navigationAssets = $derived(viewerAssets ?? assets);
 
   const geometry = $derived(
     getJustifiedLayoutFromAssets(assets, {
@@ -270,11 +275,15 @@
       if (assetInteraction.selectionActive) {
         shortcuts.push(
           { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
-          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+          { shortcut: { key: 'D', ctrl: true }, onShortcut: deselectAllAssets },
         );
+        if (allowDeletion) {
+          shortcuts.push(
+            { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+            { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+            { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+          );
+        }
       }
 
       return shortcuts;
@@ -282,12 +291,12 @@
   );
 
   const handleRandom = async (): Promise<{ id: string } | undefined> => {
-    if (assets.length === 0) {
+    if (navigationAssets.length === 0) {
       return;
     }
     try {
-      const randomIndex = Math.floor(Math.random() * assets.length);
-      const asset = assets[randomIndex];
+      const randomIndex = Math.floor(Math.random() * navigationAssets.length);
+      const asset = navigationAssets[randomIndex];
 
       await navigateToAsset(asset);
       return asset;
@@ -344,8 +353,8 @@
 
   const assetCursor = $derived({
     current: $viewingAsset,
-    nextAsset: getNextAsset(assets, $viewingAsset),
-    previousAsset: getPreviousAsset(assets, $viewingAsset),
+    nextAsset: getNextAsset(navigationAssets, $viewingAsset),
+    previousAsset: getPreviousAsset(navigationAssets, $viewingAsset),
   });
 </script>
 

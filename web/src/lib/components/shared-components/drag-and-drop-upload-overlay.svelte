@@ -13,6 +13,7 @@
   let isInLockedFolder = $derived(isLockedFolderRoute(page.route.id));
 
   let dragStartTarget: EventTarget | null = $state(null);
+  let isInternalDrag = false;
 
   const onDragEnter = (e: DragEvent) => {
     if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
@@ -133,7 +134,19 @@
     }
   };
 
+  const ondragstart = () => {
+    isInternalDrag = true;
+  };
+
+  const ondragend = () => {
+    isInternalDrag = false;
+  };
+
   const ondragenter = (e: DragEvent) => {
+    if (isInternalDrag) {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     onDragEnter(e);
@@ -146,6 +159,10 @@
   };
 
   const ondrop = async (e: DragEvent) => {
+    if (isInternalDrag) {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     await onDrop(e);
@@ -159,7 +176,7 @@
 
 <svelte:window onpaste={onPaste} />
 
-<svelte:body {ondragenter} {ondragleave} {ondrop} />
+<svelte:body {ondragstart} {ondragend} {ondragenter} {ondragleave} {ondrop} />
 
 {#if dragStartTarget}
   <!-- svelte-ignore a11y_no_static_element_interactions -->

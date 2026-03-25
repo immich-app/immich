@@ -157,7 +157,7 @@
             break;
           }
         }
-        toastManager.success($t('change_name_successfully'));
+        toastManager.primary($t('change_name_successfully'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -178,7 +178,7 @@
         return person;
       });
 
-      toastManager.success($t('changed_visibility_successfully'));
+      toastManager.primary($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -198,7 +198,7 @@
         return person;
       });
 
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
+      toastManager.primary(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
     }

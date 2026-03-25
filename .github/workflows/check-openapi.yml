@@ -1,0 +1,31 @@
+name: Check OpenAPI
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'open-api/**'
+      - '.github/workflows/check-openapi.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  check-openapi:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Check for breaking API changes
+        uses: oasdiff/oasdiff-action/breaking@748daafaf3aac877a36307f842a48d55db938ac8 # v0.0.31
+        with:
+          base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
+          revision: open-api/immich-openapi-specs.json
+          fail-on: ERR

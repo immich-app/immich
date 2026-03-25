@@ -1,131 +1,201 @@
 import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import type { ZoomImageWheelState } from '@zoom-image/core';
+import type { ContentMetrics } from '$lib/utils/container-utils';
+import { clamp } from 'lodash-es';
 
-const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
-  const ratio = img.naturalWidth / img.naturalHeight;
-  let width = img.height * ratio;
-  let height = img.height;
-  if (width > img.width) {
-    width = img.width;
-    height = img.width / ratio;
-  }
-  return { width, height };
+export type Point = {
+  x: number;
+  y: number;
 };
+
+const distance = (p1: Point, p2: Point) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+export type VerticalMode = 'none' | 'cjk' | 'rotated';
 
 export interface OcrBox {
   id: string;
-  points: { x: number; y: number }[];
+  points: Point[];
   text: string;
   confidence: number;
+  verticalMode: VerticalMode;
 }
 
-export interface BoundingBoxDimensions {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-  rotation: number;
-  skewX: number;
-  skewY: number;
-}
+const CJK_PATTERN =
+  /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uAC00-\uD7AF\uFF00-\uFFEF]/;
 
-/**
- * Calculate bounding box dimensions and properties from OCR points
- * @param points - Array of 4 corner points of the bounding box
- * @returns Dimensions, rotation, and skew values for the bounding box
- */
-export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[]): BoundingBoxDimensions => {
-  const [topLeft, topRight, bottomRight, bottomLeft] = points;
-  const minX = Math.min(...points.map(({ x }) => x));
-  const maxX = Math.max(...points.map(({ x }) => x));
-  const minY = Math.min(...points.map(({ y }) => y));
-  const maxY = Math.max(...points.map(({ y }) => y));
-  const width = maxX - minX;
-  const height = maxY - minY;
-  const centerX = (minX + maxX) / 2;
-  const centerY = (minY + maxY) / 2;
+const VERTICAL_ASPECT_RATIO = 1.5;
 
-  // Calculate rotation angle from the bottom edge (bottomLeft to bottomRight)
-  const rotation = Math.atan2(bottomRight.y - bottomLeft.y, bottomRight.x - bottomLeft.x) * (180 / Math.PI);
+const containsCjk = (text: string): boolean => CJK_PATTERN.test(text);
 
-  // Calculate skew angles to handle perspective distortion
-  // SkewX: compare left and right edges
-  const leftEdgeAngle = Math.atan2(bottomLeft.y - topLeft.y, bottomLeft.x - topLeft.x);
-  const rightEdgeAngle = Math.atan2(bottomRight.y - topRight.y, bottomRight.x - topRight.x);
-  const skewX = (rightEdgeAngle - leftEdgeAngle) * (180 / Math.PI);
-
-  // SkewY: compare top and bottom edges
-  const topEdgeAngle = Math.atan2(topRight.y - topLeft.y, topRight.x - topLeft.x);
-  const bottomEdgeAngle = Math.atan2(bottomRight.y - bottomLeft.y, bottomRight.x - bottomLeft.x);
-  const skewY = (bottomEdgeAngle - topEdgeAngle) * (180 / Math.PI);
-
-  return {
-    minX,
-    maxX,
-    minY,
-    maxY,
-    width,
-    height,
-    centerX,
-    centerY,
-    rotation,
-    skewX,
-    skewY,
-  };
+const getVerticalMode = (width: number, height: number, text: string): VerticalMode => {
+  if (height / width < VERTICAL_ASPECT_RATIO) {
+    return 'none';
+  }
+  return containsCjk(text) ? 'cjk' : 'rotated';
 };
 
 /**
- * Convert normalized OCR coordinates to screen coordinates
- * OCR coordinates are normalized (0-1) and represent the 4 corners of a rotated rectangle
+ * Calculate bounding box transform from OCR points. Result matrix can be used as input for css matrix3d.
+ * @param points - Array of 4 corner points of the bounding box
+ * @returns 4x4 matrix to transform the div with text onto the polygon defined by the corner points, and size to set on the source div.
  */
-export const getOcrBoundingBoxes = (
-  ocrData: OcrBoundingBox[],
-  zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | null,
-): OcrBox[] => {
-  const boxes: OcrBox[] = [];
+export const calculateBoundingBoxMatrix = (points: Point[]): { matrix: number[]; width: number; height: number } => {
+  const [topLeft, topRight, bottomRight, bottomLeft] = points;
 
-  if (photoViewer === null || !photoViewer.naturalWidth || !photoViewer.naturalHeight) {
-    return boxes;
+  const width = Math.max(distance(topLeft, topRight), distance(bottomLeft, bottomRight));
+  const height = Math.max(distance(topLeft, bottomLeft), distance(topRight, bottomRight));
+
+  const dx1 = topRight.x - bottomRight.x;
+  const dx2 = bottomLeft.x - bottomRight.x;
+  const dx3 = topLeft.x - topRight.x + bottomRight.x - bottomLeft.x;
+
+  const dy1 = topRight.y - bottomRight.y;
+  const dy2 = bottomLeft.y - bottomRight.y;
+  const dy3 = topLeft.y - topRight.y + bottomRight.y - bottomLeft.y;
+
+  const det = dx1 * dy2 - dx2 * dy1;
+  const a13 = (dx3 * dy2 - dx2 * dy3) / det;
+  const a23 = (dx1 * dy3 - dx3 * dy1) / det;
+
+  const a11 = (1 + a13) * topRight.x - topLeft.x;
+  const a21 = (1 + a23) * bottomLeft.x - topLeft.x;
+
+  const a12 = (1 + a13) * topRight.y - topLeft.y;
+  const a22 = (1 + a23) * bottomLeft.y - topLeft.y;
+
+  // prettier-ignore
+  const matrix = [
+    a11 / width, a12 / width, 0, a13 / width,
+    a21 / height, a22 / height, 0, a23 / height,
+    0, 0, 1, 0,
+    topLeft.x, topLeft.y, 0, 1,
+  ];
+
+  return { matrix, width, height };
+};
+
+const BORDER_SIZE = 4;
+const HORIZONTAL_PADDING = 16 + BORDER_SIZE;
+const VERTICAL_PADDING = 8 + BORDER_SIZE;
+const REFERENCE_FONT_SIZE = 100;
+const MIN_FONT_SIZE = 8;
+const MAX_FONT_SIZE = 96;
+const FALLBACK_FONT = `${REFERENCE_FONT_SIZE}px sans-serif`;
+
+let sharedCanvasContext: CanvasRenderingContext2D | null = null;
+let resolvedFont: string | undefined;
+
+const getCanvasContext = (): CanvasRenderingContext2D | null => {
+  if (sharedCanvasContext !== null) {
+    return sharedCanvasContext;
+  }
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  if (!context) {
+    return null;
+  }
+  sharedCanvasContext = context;
+  return sharedCanvasContext;
+};
+
+const getReferenceFont = (): string => {
+  if (resolvedFont !== undefined) {
+    return resolvedFont;
+  }
+  const fontFamily = globalThis.getComputedStyle?.(document.documentElement).getPropertyValue('--font-sans').trim();
+  resolvedFont = fontFamily ? `${REFERENCE_FONT_SIZE}px ${fontFamily}` : FALLBACK_FONT;
+  return resolvedFont;
+};
+
+export const calculateFittedFontSize = (
+  text: string,
+  boxWidth: number,
+  boxHeight: number,
+  verticalMode: VerticalMode,
+): number => {
+  const isVertical = verticalMode === 'cjk' || verticalMode === 'rotated';
+  const availableWidth = boxWidth - (isVertical ? VERTICAL_PADDING : HORIZONTAL_PADDING);
+  const availableHeight = boxHeight - (isVertical ? HORIZONTAL_PADDING : VERTICAL_PADDING);
+
+  const context = getCanvasContext();
+
+  if (verticalMode === 'cjk') {
+    if (!context) {
+      const fontSize = Math.min(availableWidth, availableHeight / text.length);
+      return clamp(fontSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
+    }
+
+    // eslint-disable-next-line tscompat/tscompat
+    context.font = getReferenceFont();
+
+    let maxCharWidth = 0;
+    let totalCharHeight = 0;
+    for (const character of text) {
+      const metrics = context.measureText(character);
+      const charWidth = metrics.width;
+      const charHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      maxCharWidth = Math.max(maxCharWidth, charWidth);
+      totalCharHeight += Math.max(charWidth, charHeight);
+    }
+
+    const scaleFromWidth = (availableWidth / maxCharWidth) * REFERENCE_FONT_SIZE;
+    const scaleFromHeight = (availableHeight / totalCharHeight) * REFERENCE_FONT_SIZE;
+    return clamp(Math.min(scaleFromWidth, scaleFromHeight), MIN_FONT_SIZE, MAX_FONT_SIZE);
   }
 
-  const clientHeight = photoViewer.clientHeight;
-  const clientWidth = photoViewer.clientWidth;
-  const { width, height } = getContainedSize(photoViewer);
+  const fitWidth = verticalMode === 'rotated' ? availableHeight : availableWidth;
+  const fitHeight = verticalMode === 'rotated' ? availableWidth : availableHeight;
 
-  const imageWidth = photoViewer.naturalWidth;
-  const imageHeight = photoViewer.naturalHeight;
+  if (!context) {
+    return clamp((1.4 * fitWidth) / text.length, MIN_FONT_SIZE, MAX_FONT_SIZE);
+  }
 
+  // Unsupported in Safari iOS <16.6; falls back to default canvas font, giving less accurate but functional sizing
+  // eslint-disable-next-line tscompat/tscompat
+  context.font = getReferenceFont();
+
+  const metrics = context.measureText(text);
+  const measuredWidth = metrics.width;
+  const measuredHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+  const scaleFromWidth = (fitWidth / measuredWidth) * REFERENCE_FONT_SIZE;
+  const scaleFromHeight = (fitHeight / measuredHeight) * REFERENCE_FONT_SIZE;
+
+  return clamp(Math.min(scaleFromWidth, scaleFromHeight), MIN_FONT_SIZE, MAX_FONT_SIZE);
+};
+
+export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], metrics: ContentMetrics): OcrBox[] => {
+  const boxes: OcrBox[] = [];
   for (const ocr of ocrData) {
-    // Convert normalized coordinates (0-1) to actual pixel positions
-    // OCR provides 4 corners of a potentially rotated rectangle
     const points = [
       { x: ocr.x1, y: ocr.y1 },
       { x: ocr.x2, y: ocr.y2 },
       { x: ocr.x3, y: ocr.y3 },
       { x: ocr.x4, y: ocr.y4 },
     ].map((point) => ({
-      x:
-        (width / imageWidth) * zoom.currentZoom * point.x * imageWidth +
-        ((clientWidth - width) / 2) * zoom.currentZoom +
-        zoom.currentPositionX,
-      y:
-        (height / imageHeight) * zoom.currentZoom * point.y * imageHeight +
-        ((clientHeight - height) / 2) * zoom.currentZoom +
-        zoom.currentPositionY,
+      x: point.x * metrics.contentWidth + metrics.offsetX,
+      y: point.y * metrics.contentHeight + metrics.offsetY,
     }));
+
+    const boxWidth = Math.max(distance(points[0], points[1]), distance(points[3], points[2]));
+    const boxHeight = Math.max(distance(points[0], points[3]), distance(points[1], points[2]));
 
     boxes.push({
       id: ocr.id,
       points,
       text: ocr.text,
       confidence: ocr.textScore,
+      verticalMode: getVerticalMode(boxWidth, boxHeight, ocr.text),
     });
   }
+
+  const rowThreshold = metrics.contentHeight * 0.02;
+  boxes.sort((a, b) => {
+    const yDifference = a.points[0].y - b.points[0].y;
+    if (Math.abs(yDifference) < rowThreshold) {
+      return a.points[0].x - b.points[0].x;
+    }
+    return yDifference;
+  });
 
   return boxes;
 };

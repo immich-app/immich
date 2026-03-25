@@ -239,7 +239,7 @@ describe('/shared-links', () => {
       const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithPassword.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorDto.invalidSharePassword);
+      expect(body).toEqual(errorDto.passwordRequired);
     });
 
     it('should get data for correct password protected link', async () => {
@@ -436,6 +436,16 @@ describe('/shared-links', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
+    });
+
+    it('should reject guests removing assets from an individual shared link', async () => {
+      const { status, body } = await request(app)
+        .delete(`/shared-links/${linkWithAssets.id}/assets`)
+        .query({ key: linkWithAssets.key })
+        .send({ assetIds: [asset1.id] });
+
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.forbidden);
     });
 
     it('should remove assets from a shared link (individual)', async () => {

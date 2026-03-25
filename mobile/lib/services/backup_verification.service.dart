@@ -74,7 +74,6 @@ class BackupVerificationService {
       final lower = compute(_computeSaveToDelete, (
         deleteCandidates: deleteCandidates.slice(0, half),
         originals: originals.slice(0, half),
-        auth: Store.get(StoreKey.accessToken),
         endpoint: Store.get(StoreKey.serverEndpoint),
         rootIsolateToken: isolateToken,
         fileMediaRepository: _fileMediaRepository,
@@ -82,7 +81,6 @@ class BackupVerificationService {
       final upper = compute(_computeSaveToDelete, (
         deleteCandidates: deleteCandidates.slice(half),
         originals: originals.slice(half),
-        auth: Store.get(StoreKey.accessToken),
         endpoint: Store.get(StoreKey.serverEndpoint),
         rootIsolateToken: isolateToken,
         fileMediaRepository: _fileMediaRepository,
@@ -92,7 +90,6 @@ class BackupVerificationService {
       toDelete = await compute(_computeSaveToDelete, (
         deleteCandidates: deleteCandidates,
         originals: originals,
-        auth: Store.get(StoreKey.accessToken),
         endpoint: Store.get(StoreKey.serverEndpoint),
         rootIsolateToken: isolateToken,
         fileMediaRepository: _fileMediaRepository,
@@ -105,7 +102,6 @@ class BackupVerificationService {
     ({
       List<Asset> deleteCandidates,
       List<Asset> originals,
-      String auth,
       String endpoint,
       RootIsolateToken rootIsolateToken,
       FileMediaRepository fileMediaRepository,
@@ -120,7 +116,6 @@ class BackupVerificationService {
     await tuple.fileMediaRepository.enableBackgroundAccess();
     final ApiService apiService = ApiService();
     apiService.setEndpoint(tuple.endpoint);
-    await apiService.setAccessToken(tuple.auth);
     for (int i = 0; i < tuple.deleteCandidates.length; i++) {
       if (await _compareAssets(tuple.deleteCandidates[i], tuple.originals[i], apiService)) {
         result.add(tuple.deleteCandidates[i]);

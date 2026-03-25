@@ -42,16 +42,7 @@
   }
 
   function ratioSelected(ratio: AspectRatioOption): boolean {
-    let currentRatioRotated;
-    if (ratio.value === 'original') {
-      const { width, height } = transformManager.cropImageSize;
-      // Account for rotation when comparing to original
-      if (isRotated) {
-        currentRatioRotated = `${height}:${width}`;
-      }
-      currentRatioRotated = `${width}:${height}`;
-    }
-    currentRatioRotated = rotatedRatio(ratio);
+    const currentRatioRotated = rotatedRatio(ratio);
 
     return transformManager.cropAspectRatio === currentRatioRotated;
   }
@@ -143,7 +134,7 @@
             ></div>
           {/if}
         </Button>
-        <span class="text-sm text-white text-left">{ratio.label}</span>
+        <span class="text-sm text-white">{ratio.label}</span>
       </HStack>
     {/each}
   </div>

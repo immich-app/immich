@@ -11,7 +11,7 @@
     class?: string;
   }
 
-  let { album, preload = false, class: className = '' }: Props = $props();
+  let { album, preload = false, class: className }: Props = $props();
 
   let alt = $derived(album.albumName || $t('unnamed_album'));
   let thumbnailUrl = $derived(

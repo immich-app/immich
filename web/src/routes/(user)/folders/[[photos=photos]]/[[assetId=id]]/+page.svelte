@@ -8,7 +8,6 @@
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -27,11 +26,10 @@
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
-  import { IconButton, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -119,8 +117,8 @@
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
-      {@const Actions = getAssetBulkActions($t, getAssetControlContext())}
-
+      {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />
       <IconButton
         shape="round"
@@ -130,10 +128,7 @@
         icon={mdiSelectAll}
         onclick={handleSelectAllAssets}
       />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
-      </ButtonContextMenu>
+      <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
         onFavorite={function handleFavoriteUpdate(ids, isFavorite) {

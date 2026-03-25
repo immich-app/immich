@@ -32,3 +32,7 @@ If you would like to migrate from one media location to another, simply successf
 4. Start up Immich
 
 After version `1.136.0`, Immich can detect when a media location has moved and will automatically update the database paths to keep them in sync.
+
+## Schema drift
+
+Schema drift is when the database schema is out of sync with the code. This could be the result of manual database tinkering, issues during a database restore, or something else. Schema drift can lead to data corruption, application bugs, and other unpredictable behavior. Please reconcile the differences as soon as possible. Specifically, missing `CONSTRAINT`s can result in duplicate assets being uploaded, since the server relies on a checksum `CONSTRAINT` to prevent duplicates.

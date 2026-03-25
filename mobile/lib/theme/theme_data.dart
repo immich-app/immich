@@ -62,8 +62,6 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
     ),
     chipTheme: const ChipThemeData(side: BorderSide.none),
     sliderTheme: const SliderThemeData(
-      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
-      trackHeight: 2.0,
       // ignore: deprecated_member_use
       year2023: false,
     ),
@@ -73,7 +71,9 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
-      labelTextStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      labelTextStyle: const WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(

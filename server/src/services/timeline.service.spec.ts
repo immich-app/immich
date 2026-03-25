@@ -23,6 +23,24 @@ describe(TimelineService.name, () => {
         userIds: [authStub.admin.user.id],
       });
     });
+
+    it('should pass bbox options to repository when all bbox fields are provided', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+      await sut.getTimeBuckets(authStub.admin, {
+        bbox: {
+          west: -70,
+          south: -30,
+          east: 120,
+          north: 55,
+        },
+      });
+
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
+        userIds: [authStub.admin.user.id],
+        bbox: { west: -70, south: -30, east: 120, north: 55 },
+      });
+    });
   });
 
   describe('getTimeBucket', () => {

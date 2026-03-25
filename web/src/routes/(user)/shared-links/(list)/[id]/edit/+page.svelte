@@ -69,6 +69,5 @@
     bind:allowUpload
     bind:showMetadata
     bind:expiresAt
-    createdAt={sharedLink.createdAt}
   />
 </FormModal>

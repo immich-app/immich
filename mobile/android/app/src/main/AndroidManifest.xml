@@ -117,7 +117,7 @@
           android:pathPrefix="/albums/" />
         <data
           android:host="my.immich.app"
-          android:pathPrefix="/memories/" />
+          android:pathPrefix="/people/" />
         <data
           android:host="my.immich.app"
           android:path="/memory" />

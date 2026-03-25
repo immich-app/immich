@@ -2,24 +2,22 @@ import { ProjectionType } from '$lib/constants';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
 import type { AssetControlContext } from '$lib/types';
-import { getSharedLink, sleep } from '$lib/utils';
+import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-import { asQueryString } from '$lib/utils/shared-links';
 import {
   AssetJobName,
+  AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
-  copyAsset,
-  deleteAssets,
   getAssetInfo,
-  getBaseUrl,
   runAssetJobs,
   updateAsset,
   type AssetJobsDto,
@@ -33,6 +31,7 @@ import {
   mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
+  mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
@@ -42,6 +41,7 @@ import {
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
+  mdiPlus,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
@@ -57,6 +57,13 @@ export const getAssetBulkActions = ($t: MessageFormatter, ctx: AssetControlConte
   const onAction = async (name: AssetJobName) => {
     await handleRunAssetJob({ name, assetIds });
     ctx.clearSelect();
+  };
+
+  const AddToAlbum: ActionItem = {
+    title: $t('add_to_album'),
+    icon: mdiPlus,
+    shortcuts: [{ key: 'l' }],
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -84,7 +91,7 @@ export const getAssetBulkActions = ($t: MessageFormatter, ctx: AssetControlConte
     $if: () => isAllVideos,
   };
 
-  return { RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
+  return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
 };
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
@@ -97,7 +104,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('share'),
     icon: mdiShareVariantOutline,
     type: $t('assets'),
-    $if: () => !!(get(authUser) && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
+    $if: () => !!(currentAuthUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
 
@@ -120,7 +127,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
 
   const SharedLinkDownload: ActionItem = {
     ...Download,
-    $if: () => !currentAuthUser && sharedLink && sharedLink.allowDownload,
+    $if: () => isOwner || !!sharedLink?.allowDownload,
   };
 
   const PlayMotionPhoto: ActionItem = {
@@ -159,6 +166,14 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     $if: () => isOwner && asset.isFavorite,
     onAction: () => handleUnfavorite(asset),
     shortcuts: [{ key: 'f' }],
+  };
+
+  const AddToAlbum: ActionItem = {
+    title: $t('add_to_album'),
+    icon: mdiPlus,
+    shortcuts: [{ key: 'l' }],
+    $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
   };
 
   const Offline: ActionItem = {
@@ -207,6 +222,17 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     $if: () => userPreferences.tags.enabled,
     onAction: () => modalManager.show(AssetTagModal, { assetIds: [asset.id] }),
     shortcuts: { key: 't' },
+  };
+
+  const TagPeople: ActionItem = {
+    title: $t('tag_people'),
+    icon: mdiFaceRecognition,
+    type: $t('assets'),
+    $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
+    onAction: () => {
+      isFaceEditMode.value = !isFaceEditMode.value;
+    },
+    shortcuts: { key: 'p' },
   };
 
   const Edit: ActionItem = {
@@ -260,10 +286,12 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    AddToAlbum,
     ZoomIn,
     ZoomOut,
     Copy,
     Tag,
+    TagPeople,
     Edit,
     RefreshFacesJob,
     RefreshMetadataJob,
@@ -279,7 +307,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     {
       filename: asset.originalFileName,
       id: asset.id,
-      size: asset.exifInfo?.fileSizeInByte || 0,
+      cacheKey: asset.thumbhash,
     },
   ];
 
@@ -293,27 +321,20 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
       assets.push({
         filename: motionAsset.originalFileName,
         id: asset.livePhotoVideoId,
-        size: motionAsset.exifInfo?.fileSizeInByte || 0,
+        cacheKey: motionAsset.thumbhash,
       });
     }
   }
 
-  const queryParams = asQueryString(authManager.params);
-
-  for (const [i, { filename, id }] of assets.entries()) {
+  for (const [i, { filename, id, cacheKey }] of assets.entries()) {
     if (i !== 0) {
       // play nice with Safari
       await sleep(500);
     }
 
     try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
-      downloadUrl(
-        getBaseUrl() +
-          `/assets/${id}/original` +
-          (queryParams ? `?${queryParams}&edited=${edited}` : `?edited=${edited}`),
-        filename,
-      );
+      toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
+      downloadUrl(getAssetMediaUrl({ id, size: AssetMediaSize.Original, edited, cacheKey }), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }
@@ -325,7 +346,7 @@ const handleFavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.success($t('added_to_favorites'));
+    toastManager.primary($t('added_to_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
@@ -337,19 +358,11 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.success($t('removed_from_favorites'));
+    toastManager.primary($t('removed_from_favorites'));
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
   }
-};
-
-export const handleReplaceAsset = async (oldAssetId: string) => {
-  const [newAssetId] = await openFileUploadDialog({ multiple: false });
-  await copyAsset({ assetCopyDto: { sourceId: oldAssetId, targetId: newAssetId } });
-  await deleteAssets({ assetBulkDeleteDto: { ids: [oldAssetId], force: true } });
-
-  eventManager.emit('AssetReplace', { oldAssetId, newAssetId });
 };
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
@@ -368,7 +381,7 @@ const handleRunAssetJob = async (dto: AssetJobsDto) => {
 
   try {
     await runAssetJobs({ assetJobsDto: dto });
-    toastManager.success(getAssetJobMessage($t, dto.name));
+    toastManager.primary(getAssetJobMessage($t, dto.name));
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
   }

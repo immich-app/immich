@@ -1,0 +1,143 @@
+name: Auto-close PRs
+
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened, edited, labeled]
+
+permissions: {}
+
+jobs:
+  parse_template:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.action != 'labeled' && github.event.pull_request.head.repo.fork == true }}
+    permissions:
+      contents: read
+    outputs:
+      uses_template: ${{ steps.check.outputs.uses_template }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: .github/pull_request_template.md
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Check required sections
+        id: check
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          OK=true
+          while IFS= read -r header; do
+            printf '%s\n' "$BODY" | grep -qF "$header" || OK=false
+          done < <(sed '/<!--/,/-->/d' .github/pull_request_template.md | grep "^## ")
+          echo "uses_template=$OK" >> "$GITHUB_OUTPUT"
+
+  close_template:
+    runs-on: ubuntu-latest
+    needs: parse_template
+    if: ${{ needs.parse_template.outputs.uses_template == 'false' && github.event.pull_request.state != 'closed' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment and close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          gh api graphql \
+            -f prId="$NODE_ID" \
+            -f body="This PR has been automatically closed as the description doesn't follow our template. After you edit it to match the template, the PR will automatically be reopened." \
+            -f query='
+              mutation CommentAndClosePR($prId: ID!, $body: String!) {
+                addComment(input: {
+                  subjectId: $prId,
+                  body: $body
+                }) {
+                  __typename
+                }
+                closePullRequest(input: {
+                  pullRequestId: $prId
+                }) {
+                  __typename
+                }
+              }'
+
+      - name: Add label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --add-label "auto-closed:template"
+
+  close_llm:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'auto-closed:llm' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment and close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          gh api graphql \
+            -f prId="$NODE_ID" \
+            -f body="Thank you for your interest in contributing to Immich! Unfortunately this PR looks like it was generated using an LLM. As noted in our [CONTRIBUTING.md](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md#use-of-generative-ai), we request that you don't use LLMs to generate PRs as those are not a good use of maintainer time." \
+            -f query='
+              mutation CommentAndClosePR($prId: ID!, $body: String!) {
+                addComment(input: {
+                  subjectId: $prId,
+                  body: $body
+                }) {
+                  __typename
+                }
+                closePullRequest(input: {
+                  pullRequestId: $prId
+                }) {
+                  __typename
+                }
+              }'
+
+  reopen:
+    runs-on: ubuntu-latest
+    needs: parse_template
+    if: >-
+      ${{
+        needs.parse_template.outputs.uses_template == 'true'
+        && github.event.pull_request.state == 'closed'
+        && contains(github.event.pull_request.labels.*.name, 'auto-closed:template')
+      }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove template label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --remove-label "auto-closed:template" || true
+
+      - name: Check for remaining auto-closed labels
+        id: check_labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          REMAINING=$(gh pr view "$PR_NUMBER" --json labels \
+            --jq '[.labels[].name | select(startswith("auto-closed:"))] | length')
+          echo "remaining=$REMAINING" >> "$GITHUB_OUTPUT"
+
+      - name: Reopen PR
+        if: ${{ steps.check_labels.outputs.remaining == '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          gh api graphql \
+            -f prId="$NODE_ID" \
+            -f query='
+              mutation ReopenPR($prId: ID!) {
+                reopenPullRequest(input: {
+                  pullRequestId: $prId
+                }) {
+                  __typename
+                }
+              }'

@@ -1710,3 +1710,15 @@ i0.Index get idxRemoteAssetChecksum => i0.Index(
   'idx_remote_asset_checksum',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
 );
+i0.Index get idxRemoteAssetStackId => i0.Index(
+  'idx_remote_asset_stack_id',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
+);
+i0.Index get idxRemoteAssetLocalDateTimeDay => i0.Index(
+  'idx_remote_asset_local_date_time_day',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
+);
+i0.Index get idxRemoteAssetLocalDateTimeMonth => i0.Index(
+  'idx_remote_asset_local_date_time_month',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+);

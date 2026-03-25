@@ -5,9 +5,11 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
@@ -26,8 +28,8 @@ import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey;
-import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey;
+import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey, AssetEditAction;
+import 'package:openapi/api.dart' hide AlbumUserRole, UserMetadataKey, AssetEditAction, AssetVisibility;
 
 class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
@@ -58,6 +60,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           await _db.userEntity.deleteAll();
           await _db.userMetadataEntity.deleteAll();
           await _db.remoteAssetCloudIdEntity.deleteAll();
+          await _db.assetEditEntity.deleteAll();
         });
         await _db.customStatement('PRAGMA foreign_keys = ON');
       });
@@ -318,6 +321,63 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsMetadataV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetEditsV1(Iterable<SyncAssetEditV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final edit in data) {
+          final companion = AssetEditEntityCompanion(
+            id: Value(edit.id),
+            assetId: Value(edit.assetId),
+            action: Value(edit.action.toAssetEditAction()),
+            parameters: Value(edit.parameters as Map<String, Object?>),
+            sequence: Value(edit.sequence),
+          );
+
+          batch.insert(_db.assetEditEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetEditsV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> replaceAssetEditsV1(String assetId, Iterable<SyncAssetEditV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        batch.deleteWhere(_db.assetEditEntity, (row) => row.assetId.equals(assetId));
+
+        for (final edit in data) {
+          final companion = AssetEditEntityCompanion(
+            id: Value(edit.id),
+            assetId: Value(edit.assetId),
+            action: Value(edit.action.toAssetEditAction()),
+            parameters: Value(edit.parameters as Map<String, Object?>),
+            sequence: Value(edit.sequence),
+          );
+
+          batch.insert(_db.assetEditEntity, companion);
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: replaceAssetEditsV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetEditsV1(Iterable<SyncAssetEditDeleteV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final edit in data) {
+          batch.deleteWhere(_db.assetEditEntity, (row) => row.id.equals(edit.editId));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetEditsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -652,6 +712,37 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> updateAssetFacesV2(Iterable<SyncAssetFaceV2> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          final companion = AssetFaceEntityCompanion(
+            assetId: Value(assetFace.assetId),
+            personId: Value(assetFace.personId),
+            imageWidth: Value(assetFace.imageWidth),
+            imageHeight: Value(assetFace.imageHeight),
+            boundingBoxX1: Value(assetFace.boundingBoxX1),
+            boundingBoxY1: Value(assetFace.boundingBoxY1),
+            boundingBoxX2: Value(assetFace.boundingBoxX2),
+            boundingBoxY2: Value(assetFace.boundingBoxY2),
+            sourceType: Value(assetFace.sourceType),
+            deletedAt: Value(assetFace.deletedAt),
+            isVisible: Value(assetFace.isVisible),
+          );
+
+          batch.insert(
+            _db.assetFaceEntity,
+            companion.copyWith(id: Value(assetFace.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetFacesV2', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteAssetFacesV1(Iterable<SyncAssetFaceDeleteV1> data) async {
     try {
       await _db.batch((batch) {
@@ -766,4 +857,13 @@ extension on String {
 
 extension on UserAvatarColor {
   AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == value);
+}
+
+extension on api.AssetEditAction {
+  AssetEditAction toAssetEditAction() => switch (this) {
+    api.AssetEditAction.crop => AssetEditAction.crop,
+    api.AssetEditAction.rotate => AssetEditAction.rotate,
+    api.AssetEditAction.mirror => AssetEditAction.mirror,
+    _ => AssetEditAction.other,
+  };
 }

@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/asset_grid/permanent_delete_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 /// This delete action has the following behavior:
@@ -25,12 +26,21 @@ class DeletePermanentActionButton extends ConsumerWidget {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
-    ref.read(multiSelectProvider.notifier).reset();
+    final count = source == ActionSource.viewer ? 1 : ref.read(multiSelectProvider).selectedAssets.length;
+    final confirm =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => PermanentDeleteDialog(count: count),
+        ) ??
+        false;
+    if (!confirm) return;
 
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
+
+    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
+    ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'delete_permanently_action_prompt'.t(
       context: context,

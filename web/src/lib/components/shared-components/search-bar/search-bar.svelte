@@ -14,11 +14,11 @@
   import { t } from 'svelte-i18n';
   import SearchHistoryBox from './search-history-box.svelte';
 
-  interface Props {
+  type Props = {
     value?: string;
     grayTheme: boolean;
     searchQuery?: MetadataSearchDto | SmartSearchDto;
-  }
+  };
 
   let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
 
@@ -242,7 +242,6 @@
 
 <svelte:document
   use:shortcuts={[
-    { shortcut: { key: 'Escape' }, onShortcut: onEscape },
     { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() },
     { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
   ]}

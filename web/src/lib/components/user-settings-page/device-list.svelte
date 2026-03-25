@@ -25,7 +25,7 @@
 
     try {
       await deleteSession({ id: device.id });
-      toastManager.success($t('logged_out_device'));
+      toastManager.primary($t('logged_out_device'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_log_out_device'));
     } finally {
@@ -41,7 +41,7 @@
 
     try {
       await deleteAllSessions();
-      toastManager.success($t('logged_out_all_devices'));
+      toastManager.primary($t('logged_out_all_devices'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_log_out_all_devices'));
     } finally {

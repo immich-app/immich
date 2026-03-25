@@ -4,7 +4,6 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -36,13 +35,12 @@
     type OnLink,
     type OnUnlink,
   } from '$lib/utils/actions';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
-  import { ImageCarousel } from '@immich/ui';
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
+  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -62,8 +60,6 @@
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
-
-  const isAllUserOwned = $derived($user && selectedAssets.every((asset) => asset.ownerId === $user.id));
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -130,16 +126,14 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
-    {@const Actions = getAssetBulkActions($t, getAssetControlContext())}
+    {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+    <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
+    <ActionButton action={Actions.AddToAlbum} />
 
-    {#if isAllUserOwned}
+    {#if assetInteraction.isAllUserOwned}
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}

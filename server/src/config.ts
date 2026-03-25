@@ -206,7 +206,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.Opus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     targetResolution: '720',
     maxBitrate: '0',

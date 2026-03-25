@@ -1,21 +1,14 @@
-<script lang="ts" module>
-  export interface SearchCameraFilter {
-    make?: string;
-    model?: string;
-    lensModel?: string;
-  }
-</script>
-
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
+  import type { SearchCameraFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     filters: SearchCameraFilter;
-  }
+  };
 
   let { filters = $bindable() }: Props = $props();
 

@@ -2,7 +2,14 @@ import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
-import { ApiTag, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+import { ApiTag, AudioCodec, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+
+export const ErrorMessages = {
+  InconsistentMediaLocation:
+    'Detected an inconsistent media location. For more information, see https://docs.immich.app/errors#inconsistent-media-location',
+  SchemaDrift: `Detected schema drift. For more information, see https://docs.immich.app/errors#schema-drift`,
+  TypeOrmUpgrade: 'Invalid upgrade path. For more information, see https://docs.immich.app/errors/#typeorm-upgrade',
+};
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
@@ -193,4 +200,12 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
   [ApiTag.Workflows]:
     'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
+};
+
+export const AUDIO_ENCODER: Record<AudioCodec, string> = {
+  [AudioCodec.Aac]: 'aac',
+  [AudioCodec.Mp3]: 'mp3',
+  [AudioCodec.Libopus]: 'libopus',
+  [AudioCodec.Opus]: 'libopus',
+  [AudioCodec.PcmS16le]: 'pcm_s16le',
 };

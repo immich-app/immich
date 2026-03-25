@@ -51,6 +51,20 @@ describe(MemoryController.name, () => {
         errorDto.badRequest(['data.year must be a positive number', 'data.year must be an integer number']),
       );
     });
+
+    it('should accept showAt and hideAt', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/memories')
+        .send({
+          type: 'on_this_day',
+          data: { year: 2020 },
+          memoryAt: new Date(2021).toISOString(),
+          showAt: new Date(2022).toISOString(),
+          hideAt: new Date(2023).toISOString(),
+        });
+
+      expect(status).toBe(201);
+    });
   });
 
   describe('GET /memories/statistics', () => {
