@@ -295,10 +295,15 @@ To link or unlink a library, both conditions must be met:
 
 ### Linking a Library
 
-1. Open the space and click the **panel icon** to open the side panel.
-2. Switch to the **Libraries** tab (visible only to admins).
-3. Select a library from the dropdown.
+1. Open the space and click the **three-dot menu** (⋮) in the top-right corner.
+   <img src={require('./img/space-more-button.png').default} width="50%" title="Three-dot menu button" />
+
+2. Select **Link Libraries** (visible only to admins).
+   <img src={require('./img/space-link-libraries-menu.png').default} width="30%" title="Link Libraries menu item" />
+
+3. In the modal that opens, select a library from the dropdown.
 4. Click **Link**.
+   <img src={require('./img/space-connected-libraries-modal.png').default} width="50%" title="Connected Libraries modal" />
 
 All assets from the selected library immediately appear in the space.
 
@@ -306,7 +311,7 @@ If face recognition is enabled on the space, a background job will automatically
 
 ### Unlinking a Library
 
-1. Open the **Libraries** tab in the side panel.
+1. Open the **Link Libraries** modal from the three-dot menu (⋮).
 2. Click **Unlink** next to the library you want to remove.
 3. Confirm the removal.
 
