@@ -866,6 +866,7 @@
   "crop_aspect_ratio_fixed": "Fixed",
   "crop_aspect_ratio_free": "Free",
   "crop_aspect_ratio_original": "Original",
+  "crop_aspect_ratio_square": "Square",
   "curated_object_page_title": "Things",
   "current_device": "Current device",
   "current_pin_code": "Current PIN code",
