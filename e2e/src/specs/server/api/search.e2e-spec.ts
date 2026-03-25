@@ -1034,6 +1034,57 @@ describe('/search', () => {
     });
   });
 
+  describe('POST /search/smart with spacePersonIds', () => {
+    it('should return 400 when spacePersonIds sent without spaceId', async () => {
+      const { status } = await request(app)
+        .post('/search/smart')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ query: 'test', spacePersonIds: [admin.userId] });
+
+      expect(status).toBe(400);
+    });
+
+    it('should not reject spacePersonIds when spaceId is provided', async () => {
+      const space = await utils.createSpace(admin.accessToken, { name: 'Search PersonIds Test' });
+      const asset = await utils.createAsset(admin.accessToken);
+      await utils.addSpaceAssets(admin.accessToken, space.id, [asset.id]);
+
+      const { status, body } = await request(app)
+        .post('/search/smart')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ query: 'test', spaceId: space.id, spacePersonIds: [admin.userId] });
+
+      // 200 if ML enabled, 400 "Smart search is not enabled" if ML disabled
+      // but never 400 "spacePersonIds requires spaceId" — that's the validation we're testing
+      if (status === 400) {
+        expect(body.message).toBe('Smart search is not enabled');
+      } else {
+        expect(status).toBe(200);
+      }
+    });
+
+    it('should not reject structured filters within a space', async () => {
+      const space = await utils.createSpace(admin.accessToken, { name: 'Filter Test Space' });
+      const asset = await utils.createAsset(admin.accessToken);
+      await utils.addSpaceAssets(admin.accessToken, space.id, [asset.id]);
+
+      const { status, body } = await request(app)
+        .post('/search/smart')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          query: 'test',
+          spaceId: space.id,
+          city: 'NonexistentCity',
+          rating: 5,
+        });
+
+      if (status === 400) {
+        expect(body.message).toBe('Smart search is not enabled');
+      } else {
+        expect(status).toBe(200);
+      }
+    });
+  });
   describe('GET /search/suggestions (temporal scoping)', () => {
     // Upload assets with specific fileCreatedAt dates and different countries/cameras
     // so we can test that temporal params narrow suggestions correctly.

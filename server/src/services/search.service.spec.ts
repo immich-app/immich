@@ -600,6 +600,44 @@ describe(SearchService.name, () => {
 
         await expect(sut.searchSmart(authStub.user1, { query: 'test', spaceId })).rejects.toThrow();
       });
+
+      it('should reject spacePersonIds when spaceId is not set', async () => {
+        await expect(sut.searchSmart(authStub.user1, { query: 'test', spacePersonIds: [newUuid()] })).rejects.toThrow(
+          BadRequestException,
+        );
+      });
+
+      it('should pass spacePersonIds through to repository', async () => {
+        const spaceId = newUuid();
+        const spacePersonIds = [newUuid(), newUuid()];
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+
+        await sut.searchSmart(authStub.user1, { query: 'test', spaceId, spacePersonIds });
+
+        expect(mocks.search.searchSmart).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({ spaceId, spacePersonIds }),
+        );
+      });
+
+      it('should pass combined filters through to repository', async () => {
+        const spaceId = newUuid();
+        const spacePersonIds = [newUuid()];
+        mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+
+        await sut.searchSmart(authStub.user1, {
+          query: 'test',
+          spaceId,
+          spacePersonIds,
+          city: 'Paris',
+          rating: 4,
+        });
+
+        expect(mocks.search.searchSmart).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({ spaceId, spacePersonIds, city: 'Paris', rating: 4 }),
+        );
+      });
     });
   });
 

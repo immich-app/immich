@@ -33,6 +33,7 @@ class StatisticsSearchDto {
     this.personIds = const [],
     this.rating,
     this.spaceId,
+    this.spacePersonIds = const [],
     this.state,
     this.tagIds = const [],
     this.takenAfter,
@@ -180,6 +181,9 @@ class StatisticsSearchDto {
   ///
   String? spaceId;
 
+  /// Shared space person IDs to filter by
+  List<String> spacePersonIds;
+
   /// Filter by state/province name
   String? state;
 
@@ -280,6 +284,7 @@ class StatisticsSearchDto {
     _deepEquality.equals(other.personIds, personIds) &&
     other.rating == rating &&
     other.spaceId == spaceId &&
+    _deepEquality.equals(other.spacePersonIds, spacePersonIds) &&
     other.state == state &&
     _deepEquality.equals(other.tagIds, tagIds) &&
     other.takenAfter == takenAfter &&
@@ -314,6 +319,7 @@ class StatisticsSearchDto {
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (spaceId == null ? 0 : spaceId!.hashCode) +
+    (spacePersonIds.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (tagIds == null ? 0 : tagIds!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
@@ -326,7 +332,7 @@ class StatisticsSearchDto {
     (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, spaceId=$spaceId, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
+  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, spaceId=$spaceId, spacePersonIds=$spacePersonIds, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -422,6 +428,7 @@ class StatisticsSearchDto {
     } else {
     //  json[r'spaceId'] = null;
     }
+      json[r'spacePersonIds'] = this.spacePersonIds;
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
@@ -510,6 +517,9 @@ class StatisticsSearchDto {
             ? null
             : num.parse('${json[r'rating']}'),
         spaceId: mapValueOfType<String>(json, r'spaceId'),
+        spacePersonIds: json[r'spacePersonIds'] is Iterable
+            ? (json[r'spacePersonIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)

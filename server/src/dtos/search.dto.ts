@@ -15,6 +15,9 @@ class BaseSearchDto {
   @ValidateUUID({ optional: true, description: 'Shared space ID to filter by' })
   spaceId?: string;
 
+  @ValidateUUID({ each: true, optional: true, description: 'Shared space person IDs to filter by' })
+  spacePersonIds?: string[];
+
   @ApiPropertyOptional({ description: 'Device ID to filter by' })
   @IsString()
   @IsNotEmpty()

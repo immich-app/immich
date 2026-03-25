@@ -123,6 +123,10 @@ export class SearchService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
     }
 
+    if (dto.spacePersonIds?.length && !dto.spaceId) {
+      throw new BadRequestException('spacePersonIds requires spaceId');
+    }
+
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       throw new BadRequestException('Smart search is not enabled');

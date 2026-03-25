@@ -8,9 +8,20 @@
     tagNames?: Map<string, string>;
     onRemoveFilter: (type: string, id?: string) => void;
     onClearAll: () => void;
+    searchQuery?: string;
+    onClearSearch?: () => void;
   }
 
-  let { filters, resultCount, personNames, tagNames, onRemoveFilter, onClearAll }: Props = $props();
+  let {
+    filters,
+    resultCount,
+    personNames,
+    tagNames,
+    onRemoveFilter,
+    onClearAll,
+    searchQuery = '',
+    onClearSearch,
+  }: Props = $props();
 
   interface Chip {
     type: string;
@@ -62,7 +73,7 @@
     return result;
   });
 
-  let hasActiveFilters = $derived(chips.length > 0);
+  let hasActiveFilters = $derived(chips.length > 0 || searchQuery.trim().length > 0);
 </script>
 
 <div
@@ -72,6 +83,24 @@
   {#if resultCount !== undefined}
     <span class="text-xs text-gray-400 dark:text-gray-500" data-testid="result-count">
       {resultCount.toLocaleString()} result{resultCount === 1 ? '' : 's'}
+    </span>
+  {/if}
+
+  {#if searchQuery.trim()}
+    <span
+      class="inline-flex items-center gap-1 rounded-full bg-immich-primary/10 px-2.5 py-0.5 text-xs text-immich-primary dark:bg-immich-dark-primary/10 dark:text-immich-dark-primary"
+      data-testid="search-chip"
+    >
+      <span>{searchQuery}</span>
+      <button
+        type="button"
+        class="flex h-4 w-4 items-center justify-center rounded-full text-immich-primary/60 hover:text-immich-primary dark:text-immich-dark-primary/60 dark:hover:text-immich-dark-primary"
+        onclick={() => onClearSearch?.()}
+        aria-label="Clear search"
+        data-testid="search-chip-close"
+      >
+        &times;
+      </button>
     </span>
   {/if}
 
