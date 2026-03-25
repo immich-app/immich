@@ -296,14 +296,17 @@ To link or unlink a library, both conditions must be met:
 ### Linking a Library
 
 1. Open the space and click the **three-dot menu** (⋮) in the top-right corner.
-   <img src={require('./img/space-more-button.png').default} width="50%" title="Three-dot menu button" />
+
+   ![Three-dot menu button](./img/space-more-button.png)
 
 2. Select **Link Libraries** (visible only to admins).
-   <img src={require('./img/space-link-libraries-menu.png').default} width="30%" title="Link Libraries menu item" />
+
+   ![Link Libraries menu item](./img/space-link-libraries-menu.png)
 
 3. In the modal that opens, select a library from the dropdown.
 4. Click **Link**.
-   <img src={require('./img/space-connected-libraries-modal.png').default} width="50%" title="Connected Libraries modal" />
+
+   ![Connected Libraries modal](./img/space-connected-libraries-modal.png)
 
 All assets from the selected library immediately appear in the space.
 
