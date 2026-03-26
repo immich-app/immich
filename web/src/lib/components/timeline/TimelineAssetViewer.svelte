@@ -232,6 +232,7 @@
     }}
     onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
+    onRemoveFromAlbum={(assetIds) => timelineManager.removeAssets(assetIds)}
     onClose={handleClose}
   />
 {/await}

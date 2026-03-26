@@ -61,6 +61,7 @@
     onUndoDelete?: OnUndoDelete;
     onPlaySlideshow: () => void;
     onClose?: () => void;
+    onRemoveFromAlbum?: (assetIds: string[]) => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
   }
@@ -76,6 +77,7 @@
     onUndoDelete = undefined,
     onPlaySlideshow,
     onClose,
+    onRemoveFromAlbum,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
@@ -157,7 +159,15 @@
 
         <ActionMenuItem action={Actions.AddToAlbum} />
         {#if album && (isOwner || isAlbumOwner)}
-          <RemoveFromAlbumAction {album} onRemove={() => onClose?.()} assetIds={[asset.id]} menuItem />
+          <RemoveFromAlbumAction
+            {album}
+            onRemove={(assetIds) => {
+              onRemoveFromAlbum?.(assetIds);
+              onClose?.();
+            }}
+            assetIds={[asset.id]}
+            menuItem
+          />
         {/if}
 
         {#if isOwner}

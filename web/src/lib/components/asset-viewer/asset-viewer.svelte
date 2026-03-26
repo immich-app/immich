@@ -71,6 +71,7 @@
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
     onClose?: (asset: AssetResponseDto) => void;
+    onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
 
@@ -86,6 +87,7 @@
     onAction,
     onUndoDelete,
     onClose,
+    onRemoveFromAlbum,
     onRandom,
   }: Props = $props();
 
@@ -478,6 +480,7 @@
         {onUndoDelete}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
+        {onRemoveFromAlbum}
         {playOriginalVideo}
         {setPlayOriginalVideo}
       />
