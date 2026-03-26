@@ -1,5 +1,6 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
+import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { preferences as preferencesStore, resetSavedUser, user as userStore } from '$lib/stores/user.store';
 import { renderWithTooltips } from '$tests/helpers';
 import { updateAsset } from '@immich/sdk';
@@ -41,6 +42,7 @@ describe('AssetViewer', () => {
   });
 
   afterEach(() => {
+    slideshowStore.slideshowState.set(SlideshowState.None);
     resetSavedUser();
     vi.clearAllMocks();
   });

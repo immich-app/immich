@@ -485,7 +485,7 @@
   {/if}
 
   {#if $slideshowState != SlideshowState.None}
-    <div class="absolute w-full flex justify-center">
+    <div class="absolute inset-s-0 top-0 flex w-full justify-start">
       <SlideshowBar
         {isFullScreen}
         assetType={previewStackedAsset?.type ?? asset.type}
