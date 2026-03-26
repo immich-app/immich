@@ -103,6 +103,20 @@
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
   };
 
+  const handleRemoveFromAlbum = async (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+
+    if (!assetIds.includes(assetCursor.current.id)) {
+      return;
+    }
+
+    // keep the cleanup workflow in viewer by moving to adjacent asset first
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    (await navigateToAsset(assetCursor?.nextAsset)) ||
+      (await navigateToAsset(assetCursor?.previousAsset)) ||
+      (await handleClose(assetCursor.current));
+  };
+
   const handlePreAction = async (action: Action) => {
     switch (action.type) {
       case removeAction:
@@ -232,6 +246,7 @@
     }}
     onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
+    onRemoveFromAlbum={handleRemoveFromAlbum}
     onClose={handleClose}
   />
 {/await}
