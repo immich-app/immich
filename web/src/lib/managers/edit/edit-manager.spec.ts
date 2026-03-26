@@ -34,6 +34,19 @@ vi.mock('$lib/managers/edit/transform-manager.svelte', () => ({
 vi.mock('$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte', () => ({
   default: {},
 }));
+vi.mock('$lib/managers/edit/trim-manager.svelte', () => ({
+  trimManager: {
+    onActivate: vi.fn(),
+    onDeactivate: vi.fn(),
+    resetAllChanges: vi.fn(),
+    hasChanges: false,
+    canReset: false,
+    edits: [],
+  },
+}));
+vi.mock('$lib/components/asset-viewer/editor/trim-tool/trim-tool.svelte', () => ({
+  default: {},
+}));
 
 describe('EditManager', () => {
   let editManager: EditManager;

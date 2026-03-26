@@ -1474,6 +1474,99 @@ describe(MediaService.name, () => {
 
       expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ thumbhash: thumbhashBuffer }));
     });
+
+    it('should trim video when edits contain Trim action', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .exif()
+        .edit({ action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } as any })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.noAudioStreams,
+        format: { ...probeStub.noAudioStreams.format, duration: 20 },
+      });
+      mocks.media.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo as OutputInfo });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1920, height: 1080, isTransparent: false });
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.media.trim).toHaveBeenCalledWith(expect.any(String), expect.any(String), 5, 20);
+    });
+
+    it('should update asset duration after trimming', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .exif()
+        .edit({ action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } as any })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.noAudioStreams,
+        format: { ...probeStub.noAudioStreams.format, duration: 19.5 },
+      });
+      mocks.media.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo as OutputInfo });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1920, height: 1080, isTransparent: false });
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({ id: asset.id, duration: expect.any(String) }),
+      );
+    });
+
+    it('should generate thumbnails from extracted frame after trim', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .exif()
+        .edit({ action: AssetEditAction.Trim, parameters: { startTime: 0, endTime: 10 } as any })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.noAudioStreams,
+        format: { ...probeStub.noAudioStreams.format, duration: 10 },
+      });
+      mocks.media.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo as OutputInfo });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1920, height: 1080, isTransparent: false });
+
+      await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(mocks.media.extractFrame).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('.frame.jpg'),
+        expect.any(Number),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should return failed when trim ffmpeg errors', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .exif()
+        .edit({ action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } as any })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.trim.mockRejectedValue(new Error('FFmpeg error'));
+
+      const result = await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(result).toBe(JobStatus.Failed);
+    });
+
+    it('should handle video undo by cleaning up edited files', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .exif()
+        .files([
+          { type: AssetFileType.EncodedVideo, isEdited: true, path: '/edited-video.mp4' },
+          { type: AssetFileType.Preview, isEdited: true, path: '/edited-preview.jpg' },
+        ])
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      const result = await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id },
+      });
+    });
   });
 
   describe('handleGeneratePersonThumbnail', () => {

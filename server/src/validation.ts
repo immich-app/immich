@@ -449,3 +449,25 @@ export class IsGreaterThanOrEqualToConstraint implements ValidatorConstraintInte
 export const IsGreaterThanOrEqualTo = (property: string, validationOptions?: ValidationOptions) => {
   return Validate(IsGreaterThanOrEqualToConstraint, [property], validationOptions);
 };
+
+@ValidatorConstraint({ name: 'isGreaterThanProperty' })
+export class IsGreaterThanPropertyConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown, args: ValidationArguments) {
+    const relatedPropertyName = args.constraints?.[0] as string;
+    const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
+    if (!Number.isFinite(value) || !Number.isFinite(relatedValue)) {
+      return true;
+    }
+
+    return Number(value) > Number(relatedValue);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    const relatedPropertyName = args.constraints?.[0] as string;
+    return `${args.property} must be greater than ${relatedPropertyName}`;
+  }
+}
+
+export const IsGreaterThanProperty = (property: string, validationOptions?: ValidationOptions) => {
+  return Validate(IsGreaterThanPropertyConstraint, [property], validationOptions);
+};

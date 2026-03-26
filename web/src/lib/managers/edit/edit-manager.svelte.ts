@@ -1,9 +1,12 @@
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
+import TrimTool from '$lib/components/asset-viewer/editor/trim-tool/trim-tool.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
+import { trimManager } from '$lib/managers/edit/trim-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { getFormatter } from '$lib/utils/i18n';
 import {
+  AssetTypeEnum,
   editAsset,
   getAssetInfo,
   removeAssetEdits,
@@ -11,7 +14,7 @@ import {
   type AssetResponseDto,
 } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
-import { mdiCropRotate } from '@mdi/js';
+import { mdiContentCut, mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
 
 export type EditAction = AssetEditsCreateDto['edits'][number];
@@ -28,6 +31,7 @@ export interface EditToolManager {
 
 export enum EditToolType {
   Transform = 'transform',
+  Trim = 'trim',
 }
 
 export interface EditTool {
@@ -44,6 +48,12 @@ export class EditManager {
       icon: mdiCropRotate,
       component: TransformTool,
       manager: transformManager,
+    },
+    {
+      type: EditToolType.Trim,
+      icon: mdiContentCut,
+      component: TrimTool,
+      manager: trimManager,
     },
   ];
 
@@ -123,7 +133,7 @@ export class EditManager {
   async applyEdits(): Promise<boolean> {
     this.isApplyingEdits = true;
 
-    const edits = this.tools.flatMap((tool) => tool.manager.edits);
+    const edits = this.selectedTool ? this.selectedTool.manager.edits : [];
     if (!this.currentAsset) {
       return false;
     }
@@ -133,7 +143,8 @@ export class EditManager {
 
     try {
       // Setup the websocket listener before sending the edit request
-      const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === assetId, 10_000);
+      const timeout = this.currentAsset?.type === AssetTypeEnum.Video ? 30_000 : 10_000;
+      const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === assetId, timeout);
 
       await (edits.length === 0
         ? removeAssetEdits({ id: assetId })

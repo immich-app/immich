@@ -2,7 +2,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
+  import { AssetTypeEnum, getAssetEdits, type AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -23,7 +23,8 @@
 
   onMount(async () => {
     const edits = await getAssetEdits({ id: asset.id });
-    await editManager.activateTool(EditToolType.Transform, asset, edits);
+    const toolType = asset.type === AssetTypeEnum.Video ? EditToolType.Trim : EditToolType.Transform;
+    await editManager.activateTool(toolType, asset, edits);
   });
 
   onDestroy(() => {

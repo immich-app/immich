@@ -8,7 +8,7 @@ import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
+import { AssetEditAction, CropParameters, TrimParameters } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
@@ -45,6 +45,7 @@ import {
   VideoStreamInfo,
 } from 'src/types';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util';
+import { formatSecondsToDuration } from 'src/utils/duration';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -222,6 +223,22 @@ export class MediaService extends BaseService {
     const { localPath, cleanup } = await this.ensureLocalFile(asset.originalPath);
 
     try {
+      const trimEdit = asset.edits.find((e) => e.action === AssetEditAction.Trim);
+
+      if (asset.type === AssetType.Video && trimEdit) {
+        return await this.handleVideoTrim(asset, config, trimEdit, localPath);
+      }
+
+      if (asset.type === AssetType.Video && asset.edits.length === 0) {
+        // Video undo path — clean up edited files and regenerate thumbnails from original
+        await this.syncFiles(
+          asset.files.filter((file) => file.isEdited),
+          [],
+        );
+        await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: { id } });
+        return JobStatus.Success;
+      }
+
       const generated = await this.generateEditedThumbnails(asset, config, localPath);
 
       // Persist output files to S3 if needed
@@ -265,6 +282,87 @@ export class MediaService extends BaseService {
     } finally {
       await cleanup();
     }
+  }
+
+  private async handleVideoTrim(
+    asset: ThumbnailAsset,
+    config: SystemConfig,
+    trimEdit: ThumbnailAsset['edits'][number],
+    localPath: string,
+  ): Promise<JobStatus> {
+    const params = trimEdit.parameters as TrimParameters & { originalDuration: number };
+    const duration = params.endTime - params.startTime;
+
+    // Select input: prefer non-edited encoded video, fall back to original
+    const existingEncoded = asset.files.find((f) => f.type === AssetFileType.EncodedVideo && !f.isEdited);
+    const inputPath = existingEncoded?.path || localPath;
+
+    // Output path for edited encoded video in EncodedVideo directory
+    const outputPath = StorageCore.getNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}_edited.mp4`);
+    this.storageCore.ensureFolders(outputPath);
+
+    try {
+      await this.mediaRepository.trim(inputPath, outputPath, params.startTime, duration);
+    } catch (error) {
+      this.logger.error(`FFmpeg trim failed for asset ${asset.id}: ${error}`);
+      await unlink(outputPath).catch(() => {});
+      return JobStatus.Failed;
+    }
+
+    // Re-probe for actual duration and update asset
+    const probeResult = await this.mediaRepository.probe(outputPath);
+    const probedDuration = probeResult.format.duration;
+    if (probedDuration && probedDuration > 0) {
+      const newDuration = formatSecondsToDuration(probedDuration);
+      this.logger.debug(`Trim: updating duration from probe: ${newDuration} (${probedDuration}s)`);
+      await this.assetRepository.update({ id: asset.id, duration: newDuration });
+    } else {
+      // Probe didn't return duration — use calculated duration from trim parameters
+      const calculatedDuration = formatSecondsToDuration(params.endTime - params.startTime);
+      this.logger.debug(`Trim: probe duration unavailable, using calculated: ${calculatedDuration}`);
+      await this.assetRepository.update({ id: asset.id, duration: calculatedDuration });
+    }
+
+    // Extract a frame at ~10% into the trimmed video for thumbnail generation
+    const frameTime = duration * 0.1;
+    const framePath = `${outputPath}.frame.jpg`;
+    await this.mediaRepository.extractFrame(outputPath, framePath, frameTime);
+
+    // Generate thumbnail/preview/fullsize from extracted frame
+    const thumbnailResult = await this.generateImageThumbnails(
+      { ...asset, originalPath: framePath },
+      config,
+      true,
+      framePath,
+    );
+
+    // Clean up temp frame
+    await unlink(framePath).catch(() => {});
+
+    // Sync both edited encoded video and edited thumbnail files
+    const editedVideoFile: UpsertFileOptions = {
+      assetId: asset.id,
+      type: AssetFileType.EncodedVideo,
+      path: outputPath,
+      isEdited: true,
+      isProgressive: false,
+      isTransparent: false,
+    };
+    const newFiles = [editedVideoFile, ...thumbnailResult.files];
+
+    await this.syncFiles(
+      asset.files.filter((file) => file.isEdited),
+      newFiles,
+    );
+
+    if (
+      thumbnailResult.thumbhash &&
+      (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbnailResult.thumbhash) !== 0)
+    ) {
+      await this.assetRepository.update({ id: asset.id, thumbhash: thumbnailResult.thumbhash });
+    }
+
+    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })

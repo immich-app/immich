@@ -1,12 +1,19 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
-import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateEnum, ValidateUUID } from 'src/validation';
+import { ArrayMinSize, IsEnum, IsInt, IsNumber, Min, ValidateNested } from 'class-validator';
+import {
+  IsAxisAlignedRotation,
+  IsGreaterThanProperty,
+  IsUniqueEditActions,
+  ValidateEnum,
+  ValidateUUID,
+} from 'src/validation';
 
 export enum AssetEditAction {
   Crop = 'crop',
   Rotate = 'rotate',
   Mirror = 'mirror',
+  Trim = 'trim',
 }
 
 export enum MirrorAxis {
@@ -48,7 +55,20 @@ export class MirrorParameters {
   axis!: MirrorAxis;
 }
 
-export type AssetEditParameters = CropParameters | RotateParameters | MirrorParameters;
+export class TrimParameters {
+  @IsNumber()
+  @Min(0)
+  @ApiProperty({ description: 'Start time in seconds' })
+  startTime!: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsGreaterThanProperty('startTime')
+  @ApiProperty({ description: 'End time in seconds' })
+  endTime!: number;
+}
+
+export type AssetEditParameters = CropParameters | RotateParameters | MirrorParameters | TrimParameters;
 export type AssetEditActionItem =
   | {
       action: AssetEditAction.Crop;
@@ -61,16 +81,20 @@ export type AssetEditActionItem =
   | {
       action: AssetEditAction.Mirror;
       parameters: MirrorParameters;
+    }
+  | {
+      action: AssetEditAction.Trim;
+      parameters: TrimParameters;
     };
 
-@ApiExtraModels(CropParameters, RotateParameters, MirrorParameters)
+@ApiExtraModels(CropParameters, RotateParameters, MirrorParameters, TrimParameters)
 export class AssetEditActionItemDto {
   @ValidateEnum({ name: 'AssetEditAction', enum: AssetEditAction, description: 'Type of edit action to perform' })
   action!: AssetEditAction;
 
   @ApiProperty({
     description: 'List of edit actions to apply (crop, rotate, or mirror)',
-    anyOf: [CropParameters, RotateParameters, MirrorParameters].map((type) => ({
+    anyOf: [CropParameters, RotateParameters, MirrorParameters, TrimParameters].map((type) => ({
       $ref: getSchemaPath(type),
     })),
   })
@@ -89,6 +113,7 @@ const actionParameterMap = {
   [AssetEditAction.Crop]: CropParameters,
   [AssetEditAction.Rotate]: RotateParameters,
   [AssetEditAction.Mirror]: MirrorParameters,
+  [AssetEditAction.Trim]: TrimParameters,
 };
 
 export class AssetEditsCreateDto {

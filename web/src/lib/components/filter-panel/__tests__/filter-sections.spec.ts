@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import CameraFilter from '../camera-filter.svelte';
 import type { PersonOption } from '../filter-panel';

@@ -1,16 +1,44 @@
 # Editing
 
-Gallery supports non-destructive editing of photos. This means that any edits you make to an asset do not modify the original file, but instead create a new version of the asset with the edits applied. You can always revert back to the original asset if needed.
+Gallery supports non-destructive editing of photos and videos. Edits never modify the original file — a new version is created with the edits applied, and you can always revert back to the original.
 
-## Supported Edits
+## Photo Editing
 
-Currently, Gallery supports the following types of edits:
+Gallery supports the following photo edits:
 
 - Cropping
 - Rotation
 - Mirroring
 
 <img src={require('./img/web-edit-interface.webp').default} title="Web edit interface" />
+
+## Video Trimming
+
+Gallery supports non-destructive trimming of video assets. When you open the editor on a video, a trim-specific interface replaces the standard photo editor:
+
+- **Timeline scrubber** — a horizontal bar below the video with draggable **in** and **out** handles to select the portion of the video to keep
+- **Sidebar controls** — displays the trimmed duration, in/out time inputs, and set in/out buttons
+- **Keyboard shortcuts** — press **I** to set the in point and **O** to set the out point at the current playback position. **Space** toggles play/pause within the trimmed region.
+
+### How It Works
+
+Trimming uses FFmpeg **stream copy** (`-c copy`), which means:
+
+- **Near-instant** — no re-encoding, so trimming completes in seconds regardless of video length
+- **Lossless** — video and audio quality are identical to the original
+- **Keyframe-aligned** — cut points land on the nearest keyframe, so the actual start/end may differ by a few frames from the exact position you selected
+
+After saving, the video player serves the trimmed version. The thumbnail and displayed duration update automatically.
+
+### Re-trimming
+
+You can re-open the editor on a previously trimmed video and adjust the trim range. The timeline shows the full **original** duration, so you can widen the trim back toward the original length — you're never locked into a shorter version.
+
+### Limitations
+
+- **Local storage only** — trimming is not available for videos stored on S3/cloud storage
+- **Stream copy only** — no frame-accurate cuts (depends on keyframe spacing)
+- **No spatial edits on video** — crop, rotate, and mirror are image-only
 
 ## Quick Rotate
 
@@ -55,6 +83,8 @@ The asset will be restored to its original state and the thumbnail will update a
 Edited assets are fully integrated throughout Gallery:
 
 - **Thumbnails** update automatically after edits — no page refresh needed
+- **Video playback** serves the trimmed version when a trim edit exists
+- **Duration display** on video thumbnails reflects the trimmed length
 - **Album thumbnails** use the edited version of an asset when available
 - **Person thumbnails** correctly display the original (unedited) preview for face recognition accuracy
 - **Downloads** serve the edited version by default, with an option to download the original

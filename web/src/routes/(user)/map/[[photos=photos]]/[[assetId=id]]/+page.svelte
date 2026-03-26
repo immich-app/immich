@@ -170,7 +170,11 @@
       {/if}
       {#if isMobile && showMobileFilters}
         <div class="fixed inset-0 z-30">
-          <button type="button" class="absolute inset-0 bg-black/50" onclick={() => (showMobileFilters = false)}
+          <button
+            type="button"
+            class="absolute inset-0 bg-black/50"
+            aria-label="Close filters"
+            onclick={() => (showMobileFilters = false)}
           ></button>
           <div class="absolute inset-y-0 left-0 w-72 bg-light shadow-xl dark:bg-immich-dark-bg">
             <FilterPanel

@@ -1372,6 +1372,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/video.mp4',
         originalFileName: 'video.mp4',
+        duration: null,
         exifImageWidth: 1920,
         exifImageHeight: 1080,
         orientation: null,
@@ -1393,6 +1394,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: newUuid(),
         originalPath: '/data/image.jpg',
         originalFileName: 'image.jpg',
+        duration: null,
         exifImageWidth: 1920,
         exifImageHeight: 1080,
         orientation: null,
@@ -1414,6 +1416,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/pano.jpg',
         originalFileName: 'pano.jpg',
+        duration: null,
         exifImageWidth: 1920,
         exifImageHeight: 1080,
         orientation: null,
@@ -1435,6 +1438,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/image.gif',
         originalFileName: 'image.gif',
+        duration: null,
         exifImageWidth: 1920,
         exifImageHeight: 1080,
         orientation: null,
@@ -1456,6 +1460,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/image.svg',
         originalFileName: 'image.svg',
+        duration: null,
         exifImageWidth: 1920,
         exifImageHeight: 1080,
         orientation: null,
@@ -1477,6 +1482,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/image.jpg',
         originalFileName: 'image.jpg',
+        duration: null,
         exifImageWidth: null,
         exifImageHeight: null,
         orientation: null,
@@ -1498,6 +1504,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/image.jpg',
         originalFileName: 'image.jpg',
+        duration: null,
         exifImageWidth: 100,
         exifImageHeight: 100,
         orientation: null,
@@ -1520,6 +1527,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/image.jpg',
         originalFileName: 'image.jpg',
+        duration: null,
         exifImageWidth: 1920,
         exifImageHeight: 1080,
         orientation: null,
@@ -1552,6 +1560,7 @@ describe(AssetService.name, () => {
         livePhotoVideoId: null,
         originalPath: '/data/image.jpg',
         originalFileName: 'image.jpg',
+        duration: null,
         exifImageWidth: 100,
         exifImageHeight: 100,
         orientation: null,
@@ -1562,6 +1571,290 @@ describe(AssetService.name, () => {
       const result = await sut.editAsset(authStub.admin, assetId, { edits: editActions as any });
 
       expect(result).toEqual({ assetId, edits: returnedEdits });
+    });
+
+    it('should accept trim on video assets', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:30.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [{ width: 1920, height: 1080 }],
+        audioStreams: [{}],
+        format: {},
+      } as any);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await sut.editAsset(authStub.admin, assetId, {
+        edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } }],
+      });
+
+      expect(mocks.assetEdit.replaceAll).toHaveBeenCalled();
+    });
+
+    it('should allow re-trimming wider than current trimmed duration using originalDuration', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      // Current duration is the trimmed duration (10s), not the original (30s)
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:10.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [{ width: 1920, height: 1080 }],
+        audioStreams: [{}],
+        format: {},
+      } as any);
+      // Existing trim edit has originalDuration of 30s
+      mocks.assetEdit.getAll.mockResolvedValue([
+        {
+          id: 'edit-1',
+          action: AssetEditAction.Trim,
+          parameters: { startTime: 10, endTime: 20, originalDuration: 30 },
+        },
+      ] as any);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      // Re-trim to 5-25 (wider than current 10s duration, but within original 30s)
+      await sut.editAsset(authStub.admin, assetId, {
+        edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } }],
+      });
+
+      expect(mocks.assetEdit.replaceAll).toHaveBeenCalled();
+    });
+
+    it('should reject trim on image assets', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Image,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/photo.jpg',
+        originalFileName: 'photo.jpg',
+        duration: null,
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 0, endTime: 10 } }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject trim with endTime exceeding duration', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:30.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [{ width: 1920, height: 1080 }],
+        audioStreams: [{}],
+        format: {},
+      } as any);
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 0, endTime: 60 } }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject mixed spatial and trim edits', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:30.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [
+            { action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } },
+            { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject trim on cloud-stored videos', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: 's3://bucket/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:30.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 5, endTime: 25 } }],
+        }),
+      ).rejects.toThrow('Video trimming is not available for cloud-stored videos');
+    });
+
+    it('should reject trim on audio-only files', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/audio.mp3',
+        originalFileName: 'audio.mp3',
+        duration: '0:03:00.000000',
+        exifImageWidth: null,
+        exifImageHeight: null,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [],
+        audioStreams: [{}],
+        format: {},
+      } as any);
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 10, endTime: 60 } }],
+        }),
+      ).rejects.toThrow('Cannot trim audio-only files');
+    });
+
+    it('should reject trim on very short videos', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:01.500000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [{ width: 1920, height: 1080 }],
+        audioStreams: [],
+        format: {},
+      } as any);
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 0, endTime: 1 } }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject full-duration trim (no-op)', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:30.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [{ width: 1920, height: 1080 }],
+        audioStreams: [],
+        format: {},
+      } as any);
+
+      await expect(
+        sut.editAsset(authStub.admin, assetId, {
+          edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 0, endTime: 30 } }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should allow full-duration trim when undoing an existing trim', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      // Existing trim with originalDuration — user is dragging handles back to full range
+      mocks.assetEdit.getAll.mockResolvedValue([
+        {
+          id: 'edit-1',
+          action: AssetEditAction.Trim,
+          parameters: { startTime: 10, endTime: 20, originalDuration: 30 },
+        },
+      ] as any);
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: AssetType.Video,
+        livePhotoVideoId: null,
+        originalPath: '/data/library/video.mp4',
+        originalFileName: 'video.mp4',
+        duration: '0:00:10.000000',
+        exifImageWidth: 1920,
+        exifImageHeight: 1080,
+        orientation: null,
+        projectionType: null,
+      });
+      mocks.media.probe.mockResolvedValue({
+        videoStreams: [{ width: 1920, height: 1080 }],
+        audioStreams: [{}],
+        format: {},
+      } as any);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      // Full-range trim (start=0, end=originalDuration) should succeed when undoing
+      await sut.editAsset(authStub.admin, assetId, {
+        edits: [{ action: AssetEditAction.Trim, parameters: { startTime: 0, endTime: 30 } }],
+      });
+
+      expect(mocks.assetEdit.replaceAll).toHaveBeenCalled();
     });
   });
 
@@ -1582,6 +1875,7 @@ describe(AssetService.name, () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.asset.getById.mockResolvedValue(asset as any);
+      mocks.assetEdit.getAll.mockResolvedValue([]);
       mocks.assetEdit.replaceAll.mockResolvedValue([]);
 
       await sut.removeAssetEdits(authStub.admin, asset.id);
@@ -1591,6 +1885,62 @@ describe(AssetService.name, () => {
         name: JobName.AssetEditThumbnailGeneration,
         data: { id: asset.id },
       });
+    });
+
+    it('should restore original duration when removing trim edits', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(asset as any);
+      mocks.assetEdit.getAll.mockResolvedValue([
+        {
+          id: newUuid(),
+          action: AssetEditAction.Trim,
+          parameters: { startTime: 5, endTime: 25, originalDuration: 30 } as any,
+        },
+      ]);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await sut.removeAssetEdits(authStub.admin, asset.id);
+
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: asset.id,
+        duration: expect.any(String),
+      });
+      expect(mocks.assetEdit.replaceAll).toHaveBeenCalledWith(asset.id, []);
+    });
+
+    it('should handle missing originalDuration gracefully on undo', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(asset as any);
+      mocks.assetEdit.getAll.mockResolvedValue([
+        {
+          id: newUuid(),
+          action: AssetEditAction.Trim,
+          parameters: { startTime: 5, endTime: 25 },
+        },
+      ]);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await sut.removeAssetEdits(authStub.admin, asset.id);
+
+      // Should not crash, should not update duration
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.assetEdit.replaceAll).toHaveBeenCalledWith(asset.id, []);
+    });
+
+    it('should not update duration when removing non-trim edits', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(asset as any);
+      mocks.assetEdit.getAll.mockResolvedValue([
+        { id: newUuid(), action: AssetEditAction.Rotate, parameters: { angle: 90 } },
+      ]);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await sut.removeAssetEdits(authStub.admin, asset.id);
+
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
   });
 });

@@ -340,6 +340,38 @@ export class MediaRepository {
     });
   }
 
+  trim(input: string, output: string, startTime: number, duration: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      ffmpeg(input, { niceness: 10 })
+        .inputOptions([`-ss`, `${startTime}`])
+        .outputOptions(['-t', `${duration}`, '-c', 'copy', '-avoid_negative_ts', 'make_zero'])
+        .output(output)
+        .on('start', (command: string) => this.logger.debug(command))
+        .on('error', (error, _, stderr) => {
+          this.logger.error(stderr || error);
+          reject(error);
+        })
+        .on('end', () => resolve())
+        .run();
+    });
+  }
+
+  extractFrame(input: string, output: string, timeSeconds: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      ffmpeg(input, { niceness: 10 })
+        .inputOptions([`-ss`, `${timeSeconds}`])
+        .outputOptions(['-frames:v', '1', '-q:v', '2'])
+        .output(output)
+        .on('start', (command: string) => this.logger.debug(command))
+        .on('error', (error, _, stderr) => {
+          this.logger.error(stderr || error);
+          reject(error);
+        })
+        .on('end', () => resolve())
+        .run();
+    });
+  }
+
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
     const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
     return { width, height, isTransparent: hasAlpha };

@@ -233,7 +233,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: { key: 't' },
   };
 
-  const canEdit = () =>
+  const canEditImage = () =>
     !sharedLink &&
     isOwner &&
     asset.type === AssetTypeEnum.Image &&
@@ -242,6 +242,24 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     !asset.originalPath.toLowerCase().endsWith('.insp') &&
     !asset.originalPath.toLowerCase().endsWith('.gif') &&
     !asset.originalPath.toLowerCase().endsWith('.svg');
+
+  const canEditVideo = () => {
+    if (sharedLink || !isOwner || asset.type !== AssetTypeEnum.Video || asset.livePhotoVideoId) {
+      return false;
+    }
+    // Duration must be known and >= 2 seconds
+    if (!asset.duration) {
+      return false;
+    }
+    const match = asset.duration.match(/^(\d+):(\d{2}):(\d{2})/);
+    if (!match) {
+      return false;
+    }
+    const totalSeconds = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+    return totalSeconds >= 2;
+  };
+
+  const canEdit = () => canEditImage() || canEditVideo();
 
   const TagPeople: ActionItem = {
     title: $t('tag_people'),
@@ -265,21 +283,21 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const RotateRight: ActionItem = {
     title: $t('rotate_right'),
     icon: mdiRotateRight,
-    $if: canEdit,
+    $if: canEditImage,
     onAction: () => handleQuickRotate(asset, 90),
   };
 
   const RotateLeft: ActionItem = {
     title: $t('rotate_left'),
     icon: mdiRotateLeft,
-    $if: canEdit,
+    $if: canEditImage,
     onAction: () => handleQuickRotate(asset, 270),
   };
 
   const Rotate180: ActionItem = {
     title: $t('rotate_180'),
     icon: mdiRotateRight,
-    $if: canEdit,
+    $if: canEditImage,
     onAction: () => handleQuickRotate(asset, 180),
   };
 
