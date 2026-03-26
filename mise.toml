@@ -14,9 +14,9 @@ config_roots = [
 ]
 
 [tools]
-node = "24.13.1"
+node = "24.14.0"
 flutter = "3.35.7"
-pnpm = "10.30.3"
+pnpm = "10.32.1"
 terragrunt = "0.99.4"
 opentofu = "1.11.5"
 java = "21.0.2"

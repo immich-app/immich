@@ -46,7 +46,6 @@
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -86,14 +85,9 @@
   }
 
   let { data = $bindable() }: Props = $props();
-
-  let { isViewing: showAssetViewer, setAssetId, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
-
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
-
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
-
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
@@ -114,7 +108,9 @@
         ? await timelineManager.getRandomAsset()
         : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
     if (asset) {
-      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
+      handlePromiseError(
+        assetViewerManager.setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)),
+      );
     }
   };
 
@@ -128,7 +124,7 @@
       await handleCloseSelectAssets();
       return;
     }
-    if ($showAssetViewer) {
+    if (assetViewerManager.isViewing) {
       return;
     }
     if (assetInteraction.selectionActive) {
@@ -240,7 +236,7 @@
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
 
   $effect(() => {
-    if ($showAssetViewer || !isShared) {
+    if (assetViewerManager.isViewing || !isShared) {
       return;
     }
 
@@ -252,7 +248,9 @@
   let isOwned = $derived($user.id == album.ownerId);
 
   let showActivityStatus = $derived(
-    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || activityManager.commentCount > 0),
+    album.albumUsers.length > 0 &&
+      !assetViewerManager.isViewing &&
+      (album.isActivityEnabled || activityManager.commentCount > 0),
   );
   let isEditor = $derived(
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -322,7 +320,7 @@
     type: $t('command'),
     icon: mdiArrowLeft,
     onAction: handleEscape,
-    $if: () => !$showAssetViewer,
+    $if: () => !assetViewerManager.isViewing,
     shortcuts: { key: 'Escape' },
   });
 </script>
@@ -518,7 +516,7 @@
                 onclick={async () => {
                   timelineManager.suspendTransitions = true;
                   viewMode = AlbumPageViewMode.SELECT_ASSETS;
-                  oldAt = { at: $gridScrollTarget?.at };
+                  oldAt = { at: assetViewerManager.gridScrollTarget?.at };
                   await navigate(
                     { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
                     { replaceState: true },
@@ -621,7 +619,7 @@
       {/if}
     {/if}
   </div>
-  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && $user && !assetViewerManager.isViewing}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}

@@ -4,11 +4,11 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { stackAssets } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
@@ -57,7 +57,6 @@
   };
 
   let duplicates = $state(data.duplicates);
-  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -186,7 +185,7 @@
 </script>
 
 <svelte:document
-  use:shortcuts={$showAssetViewer
+  use:shortcuts={assetViewerManager.isViewing
     ? []
     : [
         { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },

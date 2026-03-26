@@ -1,4 +1,3 @@
-import ToastAction from '$lib/components/ToastAction.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { StackResponse } from '$lib/utils/asset-utils';
@@ -32,24 +31,15 @@ export const deleteAssets = async (
     await deleteBulk({ assetBulkDeleteDto: { ids, force } });
     onAssetDelete(ids);
 
-    toastManager.custom(
+    toastManager.primary(
       {
-        component: ToastAction,
-        props: {
-          title: $t('success'),
-          description: force
-            ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
-            : $t('assets_trashed_count', { values: { count: ids.length } }),
-          color: 'success',
-          button:
-            onUndoDelete && !force
-              ? {
-                  color: 'secondary',
-                  text: $t('undo'),
-                  onClick: () => undoDeleteAssets(onUndoDelete, assets),
-                }
-              : undefined,
-        },
+        description: force
+          ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
+          : $t('assets_trashed_count', { values: { count: ids.length } }),
+        button:
+          onUndoDelete && !force
+            ? { label: $t('undo'), color: 'secondary', onclick: () => undoDeleteAssets(onUndoDelete, assets) }
+            : undefined,
       },
       { timeout: 5000 },
     );

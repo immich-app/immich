@@ -1,16 +1,16 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { shortcut } from '$lib/actions/shortcut';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -27,6 +27,7 @@
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
   let scrollableListEl: HTMLDivElement | undefined = $state();
+  let searchInputEl: HTMLInputElement | null = $state(null);
   let page = $state(1);
   let candidates = $state<PersonResponseDto[]>([]);
 
@@ -81,6 +82,8 @@
   onMount(async () => {
     setupCanvas();
     await getPeople();
+    await tick();
+    searchInputEl?.focus();
   });
 
   const imageContentMetrics = $derived.by(() => {
@@ -221,12 +224,15 @@
 
   $effect(() => {
     const rect = faceRect;
-    if (rect) {
+    const cvs = canvas;
+    if (rect && cvs) {
       rect.on('moving', positionFaceSelector);
       rect.on('scaling', positionFaceSelector);
+      cvs.on('object:modified', () => searchInputEl?.focus());
       return () => {
         rect.off('moving', positionFaceSelector);
         rect.off('scaling', positionFaceSelector);
+        cvs.off('object:modified', () => searchInputEl?.focus());
       };
     }
   });
@@ -281,7 +287,7 @@
         },
       });
 
-      await assetViewingStore.setAssetId(assetId);
+      await assetViewerManager.setAssetId(assetId);
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
@@ -290,7 +296,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel, ignoreInputFields: false }} />
 
 <div
   id="face-editor-data"
@@ -310,7 +316,7 @@
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
     <div class="my-3 relative">
-      <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
+      <Input placeholder={$t('search_people')} bind:value={searchTerm} bind:ref={searchInputEl} size="tiny" />
     </div>
 
     <div bind:this={scrollableListEl} class="h-62.5 overflow-y-auto mt-2">

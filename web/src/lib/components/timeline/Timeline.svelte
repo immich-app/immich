@@ -11,6 +11,7 @@
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
@@ -18,7 +19,6 @@
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -88,10 +88,7 @@
   onDestroy(() => timelineManager.destroy());
   $effect(() => options && void timelineManager.updateOptions(options));
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
-
   let scrollableElement: HTMLElement | undefined = $state();
-
   let timelineElement: HTMLElement | undefined = $state();
   let invisible = $state(true);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
@@ -209,7 +206,7 @@
         timelineManager.viewportWidth = rect.width;
       }
     }
-    const scrollTarget = $gridScrollTarget?.at;
+    const scrollTarget = assetViewerManager.gridScrollTarget?.at;
     let scrolled = false;
     if (scrollTarget) {
       scrolled = await scrollAndLoadAsset(scrollTarget);
@@ -518,8 +515,8 @@
   });
 
   $effect(() => {
-    if ($showAssetViewer) {
-      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
+    if (assetViewerManager.asset && assetViewerManager.isViewing) {
+      const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
       void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }
   });
@@ -565,7 +562,7 @@
   onAfterUpdate={() => {
     const asset = page.url.searchParams.get('at');
     if (asset) {
-      $gridScrollTarget = { at: asset };
+      assetViewerManager.gridScrollTarget = { at: asset };
     }
     void scrollAfterNavigate();
   }}
@@ -722,7 +719,7 @@
 </section>
 
 <Portal target="body">
-  {#if $showAssetViewer}
+  {#if assetViewerManager.isViewing}
     <TimelineAssetViewer bind:invisible {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>

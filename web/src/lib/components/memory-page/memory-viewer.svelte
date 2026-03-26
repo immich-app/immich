@@ -19,13 +19,13 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { QueryParameter } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { memoryManager, type MemoryAsset } from '$lib/managers/memory-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
@@ -77,7 +77,6 @@
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
 
-  const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   // need to include padding in the viewport for gallery
   const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
@@ -87,7 +86,7 @@
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
 
   const handleNavigate = async (asset?: { id: string }) => {
-    if ($isViewing) {
+    if (assetViewerManager.isViewing) {
       return asset;
     }
 
@@ -187,7 +186,7 @@
     if (!current) {
       return;
     }
-    memoryStore.hideAssetsFromMemory(ids);
+    memoryManager.hideAssetsFromMemory(ids);
     init(page);
   };
 
@@ -196,7 +195,7 @@
       return;
     }
 
-    await memoryStore.deleteAssetFromMemory(current.asset.id);
+    await memoryManager.deleteAssetFromMemory(current.asset.id);
     init(page);
   };
 
@@ -205,7 +204,7 @@
       return;
     }
 
-    await memoryStore.deleteMemory(current.memory.id);
+    await memoryManager.deleteMemory(current.memory.id);
     toastManager.primary($t('removed_memory'));
     init(page);
   };
@@ -216,7 +215,7 @@
     }
 
     const newSavedState = !current.memory.isSaved;
-    await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
+    await memoryManager.updateMemorySaved(current.memory.id, newSavedState);
     toastManager.primary(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
     init(page);
   };
@@ -254,11 +253,11 @@
 
   const loadFromParams = (page: Page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
-    return memoryStore.getMemoryAsset(assetId);
+    return memoryManager.getMemoryAsset(assetId);
   };
 
   const init = (target: Page | NavigationTarget | null) => {
-    if (memoryStore.memories.length === 0) {
+    if (memoryManager.memories.length === 0) {
       return handlePromiseError(goto(Route.photos()));
     }
 
@@ -281,7 +280,7 @@
     if (playerInitialized || isVideoAssetButPlayerHasNotLoadedYet) {
       return;
     }
-    if ($isViewing) {
+    if (assetViewerManager.isViewing) {
       handlePromiseError(handleAction('initPlayer[AssetViewOpen]', 'pause'));
     } else if (isVideo) {
       // Image assets will start playing when the image is loaded. Only autostart video assets.
@@ -291,7 +290,7 @@
   };
 
   afterNavigate(({ from, to }) => {
-    memoryStore.ready().then(
+    memoryManager.ready().then(
       () => {
         let target;
         if (to?.params?.assetId) {
@@ -326,7 +325,7 @@
 </script>
 
 <svelte:document
-  use:shortcuts={$isViewing
+  use:shortcuts={assetViewerManager.isViewing
     ? []
     : [
         { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNextAsset() },
