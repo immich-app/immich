@@ -3,7 +3,7 @@ export type FilterSection = 'timeline' | 'people' | 'location' | 'camera' | 'tag
 export interface PersonOption {
   id: string;
   name: string;
-  thumbnailPath?: string;
+  thumbnailUrl?: string;
 }
 
 export interface LocationOption {

@@ -450,7 +450,6 @@ export type JobItem =
   // Shared Space Face Recognition
   | { name: JobName.SharedSpaceFaceMatch; data: ISharedSpaceFaceMatchJob }
   | { name: JobName.SharedSpaceFaceMatchAll; data: ISharedSpaceFaceMatchAllJob }
-  | { name: JobName.SharedSpacePersonThumbnail; data: IEntityJob }
   | { name: JobName.SharedSpaceLibraryFaceSync; data: ISharedSpaceLibraryFaceSyncJob }
 
   // Shared Space Bulk Operations

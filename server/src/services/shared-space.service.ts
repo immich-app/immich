@@ -613,7 +613,7 @@ export class SharedSpaceService extends BaseService {
       if (!space.petsEnabled && person.type === 'pet') {
         continue;
       }
-      if (!person.thumbnailPath) {
+      if (!person.personalThumbnailPath) {
         continue;
       }
       const faceCount = await this.sharedSpaceRepository.getPersonFaceCount(person.id);
@@ -652,21 +652,7 @@ export class SharedSpaceService extends BaseService {
       throw new NotFoundException();
     }
 
-    let thumbnailPath = person.thumbnailPath;
-
-    // Fall back to the personal person's thumbnail if the space person's path is missing
-    if (!thumbnailPath && person.representativeFaceId) {
-      const face = await this.personRepository.getFaceById(person.representativeFaceId);
-      if (face?.personId) {
-        const personalPerson = await this.personRepository.getById(face.personId);
-        if (personalPerson?.thumbnailPath) {
-          thumbnailPath = personalPerson.thumbnailPath;
-          // Persist for next time so the fallback isn't needed again
-          await this.sharedSpaceRepository.updatePerson(personId, { thumbnailPath });
-        }
-      }
-    }
-
+    const thumbnailPath = person.personalThumbnailPath;
     if (!thumbnailPath) {
       throw new NotFoundException();
     }
@@ -694,7 +680,7 @@ export class SharedSpaceService extends BaseService {
       }
     }
 
-    const updated = await this.sharedSpaceRepository.updatePerson(personId, {
+    await this.sharedSpaceRepository.updatePerson(personId, {
       name: dto.name,
       isHidden: dto.isHidden,
       birthDate: dto.birthDate,
@@ -712,7 +698,12 @@ export class SharedSpaceService extends BaseService {
       data: { personId },
     });
 
-    return this.mapSpacePerson(updated, faceCount, assetCount, alias?.alias ?? null);
+    const enriched = await this.sharedSpaceRepository.getPersonById(personId);
+    if (!enriched) {
+      throw new BadRequestException('Person not found');
+    }
+
+    return this.mapSpacePerson(enriched, faceCount, assetCount, alias?.alias ?? null);
   }
 
   async deleteSpacePerson(auth: AuthDto, spaceId: string, personId: string): Promise<void> {
@@ -729,7 +720,7 @@ export class SharedSpaceService extends BaseService {
       spaceId,
       userId: auth.user.id,
       type: SharedSpaceActivityType.PersonDelete,
-      data: { personId, personName: person.name },
+      data: { personId, personName: person.name || person.personalName || '' },
     });
   }
 
@@ -928,33 +919,6 @@ export class SharedSpaceService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.SharedSpacePersonThumbnail, queue: QueueName.ThumbnailGeneration })
-  async handleSharedSpacePersonThumbnail({ id }: JobOf<JobName.SharedSpacePersonThumbnail>): Promise<JobStatus> {
-    const person = await this.sharedSpaceRepository.getPersonById(id);
-    if (!person || !person.representativeFaceId) {
-      return JobStatus.Skipped;
-    }
-
-    // Look up the actual face to find the personal person ID for thumbnail generation
-    const face = await this.personRepository.getFaceById(person.representativeFaceId);
-    if (!face) {
-      return JobStatus.Skipped;
-    }
-
-    // If the face's personal person has a thumbnail, copy its path
-    if (face.personId) {
-      const personalPerson = await this.personRepository.getById(face.personId);
-      if (personalPerson?.thumbnailPath) {
-        await this.sharedSpaceRepository.updatePerson(id, {
-          thumbnailPath: personalPerson.thumbnailPath,
-        });
-        return JobStatus.Success;
-      }
-    }
-
-    return JobStatus.Skipped;
-  }
-
   private async processSpaceFaceMatch(spaceId: string, assetId: string): Promise<void> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     const maxDistance = machineLearning.facialRecognition.maxDistance;
@@ -981,23 +945,13 @@ export class SharedSpaceService extends BaseService {
           continue;
         }
 
-        let name = '';
-        const personalPerson = await this.personRepository.getById(face.personId);
-        if (personalPerson?.name) {
-          name = personalPerson.name;
-        }
-
         const newPerson = await this.sharedSpaceRepository.createPerson({
           spaceId,
-          name,
+          name: '',
           representativeFaceId: face.id,
           type: 'person',
         });
         personId = newPerson.id;
-        await this.jobRepository.queue({
-          name: JobName.SharedSpacePersonThumbnail,
-          data: { id: newPerson.id },
-        });
       }
 
       await this.sharedSpaceRepository.addPersonFaces([{ personId, assetFaceId: face.id }]);
@@ -1025,23 +979,13 @@ export class SharedSpaceService extends BaseService {
       if (existingSpacePerson) {
         personId = existingSpacePerson.id;
       } else {
-        let name = '';
-        const personalPerson = await this.personRepository.getById(petFace.personId);
-        if (personalPerson?.name) {
-          name = personalPerson.name;
-        }
-
         const newPerson = await this.sharedSpaceRepository.createPerson({
           spaceId,
-          name,
+          name: '',
           representativeFaceId: petFace.id,
           type: 'pet',
         });
         personId = newPerson.id;
-        await this.jobRepository.queue({
-          name: JobName.SharedSpacePersonThumbnail,
-          data: { id: newPerson.id },
-        });
       }
 
       await this.sharedSpaceRepository.addPersonFaces([{ personId, assetFaceId: petFace.id }]);
@@ -1127,8 +1071,8 @@ export class SharedSpaceService extends BaseService {
     return {
       id: person.id,
       spaceId: person.spaceId,
-      name: person.name,
-      thumbnailPath: person.thumbnailPath,
+      name: person.name || person.personalName || '',
+      thumbnailPath: person.personalThumbnailPath || '',
       isHidden: person.isHidden,
       birthDate: person.birthDate,
       representativeFaceId: person.representativeFaceId,

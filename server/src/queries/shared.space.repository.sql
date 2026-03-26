@@ -382,42 +382,54 @@ where
 
 -- SharedSpaceRepository.getPersonsBySpaceId
 select
-  *
+  "shared_space_person".*,
+  "person"."name" as "personalName",
+  "person"."thumbnailPath" as "personalThumbnailPath"
 from
   "shared_space_person"
+  left join "asset_face" on "asset_face"."id" = "shared_space_person"."representativeFaceId"
+  left join "person" on "person"."id" = "asset_face"."personId"
 where
-  "spaceId" = $1
+  "shared_space_person"."spaceId" = $1
 order by
-  "name" asc
+  "shared_space_person"."name" asc
 
 -- SharedSpaceRepository.getPersonsBySpaceIdWithTemporalFilter
 select
-  "shared_space_person".*
+  "shared_space_person".*,
+  "person"."name" as "personalName",
+  "person"."thumbnailPath" as "personalThumbnailPath"
 from
   "shared_space_person"
+  left join "asset_face" on "asset_face"."id" = "shared_space_person"."representativeFaceId"
+  left join "person" on "person"."id" = "asset_face"."personId"
 where
   "shared_space_person"."spaceId" = $1
   and exists (
     select
     from
       "shared_space_person_face"
-      inner join "asset_face" on "asset_face"."id" = "shared_space_person_face"."assetFaceId"
-      inner join "asset" on "asset"."id" = "asset_face"."assetId"
+      inner join "asset_face" as "af2" on "af2"."id" = "shared_space_person_face"."assetFaceId"
+      inner join "asset" on "asset"."id" = "af2"."assetId"
     where
       "shared_space_person_face"."personId" = "shared_space_person"."id"
       and "asset"."fileCreatedAt" >= $2
       and "asset"."fileCreatedAt" < $3
   )
 order by
-  "name" asc
+  "shared_space_person"."name" asc
 
 -- SharedSpaceRepository.getPersonById
 select
-  *
+  "shared_space_person".*,
+  "person"."name" as "personalName",
+  "person"."thumbnailPath" as "personalThumbnailPath"
 from
   "shared_space_person"
+  left join "asset_face" on "asset_face"."id" = "shared_space_person"."representativeFaceId"
+  left join "person" on "person"."id" = "asset_face"."personId"
 where
-  "id" = $1
+  "shared_space_person"."id" = $1
 
 -- SharedSpaceRepository.updatePerson
 update "shared_space_person"

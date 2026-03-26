@@ -44,6 +44,7 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { createUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { buildSmartSearchParams, SEARCH_FILTER_DEBOUNCE_MS } from '$lib/utils/space-search';
   import {
@@ -172,7 +173,13 @@
         for (const p of people) {
           personNames.set(p.id, p.name || 'Unknown');
         }
-        return people.map((p) => ({ id: p.id, name: p.name || 'Unknown', thumbnailPath: p.thumbnailPath }));
+        return people.map((p) => ({
+          id: p.id,
+          name: p.name || 'Unknown',
+          thumbnailUrl: p.thumbnailPath
+            ? createUrl(`/shared-spaces/${space.id}/people/${p.id}/thumbnail`, { updatedAt: p.updatedAt })
+            : undefined,
+        }));
       },
       locations: async (context?: FilterContext) => {
         const countries = await getSearchSuggestions({

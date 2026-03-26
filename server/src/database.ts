@@ -367,13 +367,15 @@ export type SharedSpacePerson = {
   spaceId: string;
   name: string;
   representativeFaceId: string | null;
-  thumbnailPath: string;
   isHidden: boolean;
   type: string;
   birthDate: string | null;
   createdAt: Date;
   updatedAt: Date;
   updateId: string;
+  // Populated via LEFT JOIN to asset_face → person in repository queries
+  personalName: string | null;
+  personalThumbnailPath: string | null;
 };
 
 export type SharedSpacePersonFace = {

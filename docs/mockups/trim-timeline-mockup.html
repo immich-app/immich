@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrimTimeline Mockup — Gallery Video Trimming</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0a0a0a;
+        color: #e5e7eb;
+        font-family: 'Inter', system-ui, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .editor-layout {
+        width: 100%;
+        max-width: 960px;
+        display: flex;
+        gap: 0;
+      }
+
+      /* ── Video area + timeline ── */
+      .video-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .video-player {
+        aspect-ratio: 16/9;
+        background: #1a1a1a;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .video-player::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at 30% 40%, rgba(66, 80, 175, 0.08) 0%, transparent 60%),
+          radial-gradient(ellipse at 70% 60%, rgba(172, 203, 250, 0.05) 0%, transparent 50%);
+      }
+
+      .video-placeholder {
+        color: #555;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        z-index: 1;
+      }
+
+      /* ── Timeline ── */
+      .timeline-container {
+        background: #141414;
+        border-radius: 0 0 8px 8px;
+        padding: 12px 16px 16px;
+        user-select: none;
+      }
+
+      .timeline-track {
+        position: relative;
+        height: 48px;
+        background: #1e1e1e;
+        border-radius: 6px;
+        overflow: visible;
+        cursor: pointer;
+      }
+
+      /* Dimmed regions */
+      .dimmed-left,
+      .dimmed-right {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background: rgba(10, 10, 10, 0.7);
+        backdrop-filter: saturate(0.3);
+        z-index: 2;
+        border-radius: 6px;
+      }
+
+      .dimmed-left {
+        left: 0;
+        border-radius: 6px 0 0 6px;
+      }
+
+      .dimmed-right {
+        right: 0;
+        border-radius: 0 6px 6px 0;
+      }
+
+      /* Kept region */
+      .trim-region {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        border-top: 2px solid rgba(172, 203, 250, 0.6);
+        border-bottom: 2px solid rgba(172, 203, 250, 0.6);
+        z-index: 1;
+        background: linear-gradient(
+          90deg,
+          rgba(66, 80, 175, 0.12) 0%,
+          rgba(66, 80, 175, 0.06) 50%,
+          rgba(66, 80, 175, 0.12) 100%
+        );
+      }
+
+      /* Waveform-like texture in the track */
+      .track-texture {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 8px 4px;
+        overflow: hidden;
+      }
+
+      .track-bar {
+        flex: 1;
+        background: rgba(172, 203, 250, 0.12);
+        border-radius: 1px;
+        min-width: 2px;
+      }
+
+      /* Handles */
+      .handle {
+        position: absolute;
+        top: -2px;
+        width: 14px;
+        height: calc(100% + 4px);
+        z-index: 4;
+        cursor: col-resize;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s ease;
+      }
+
+      .handle-in {
+        border-radius: 4px 0 0 4px;
+        background: rgba(172, 203, 250, 0.85);
+      }
+
+      .handle-out {
+        border-radius: 0 4px 4px 0;
+        background: rgba(172, 203, 250, 0.85);
+      }
+
+      .handle:hover {
+        background: rgba(172, 203, 250, 1);
+      }
+
+      .handle-grip {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .handle-grip span {
+        display: block;
+        width: 6px;
+        height: 1.5px;
+        background: rgba(10, 10, 10, 0.7);
+        border-radius: 1px;
+      }
+
+      /* Playhead */
+      .playhead {
+        position: absolute;
+        top: -4px;
+        width: 2px;
+        height: calc(100% + 8px);
+        background: #fff;
+        z-index: 5;
+        pointer-events: none;
+        border-radius: 1px;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+      }
+
+      .playhead::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 8px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+      }
+
+      /* Time labels */
+      .time-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 0.7rem;
+        color: #666;
+        font-variant-numeric: tabular-nums;
+        padding: 0 2px;
+      }
+
+      .trim-time-labels {
+        position: absolute;
+        top: -22px;
+        z-index: 6;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        pointer-events: none;
+      }
+
+      .trim-time-label {
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: rgba(172, 203, 250, 0.9);
+        font-variant-numeric: tabular-nums;
+        background: #141414;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+
+      /* ── Sidebar ── */
+      .sidebar {
+        width: 220px;
+        background: #141414;
+        border-left: 1px solid #222;
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .sidebar-section {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .sidebar-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #555;
+        font-weight: 600;
+      }
+
+      .duration-display {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+      }
+
+      .time-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .time-input-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .time-input-group label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #555;
+        font-weight: 500;
+      }
+
+      .time-input {
+        background: #1e1e1e;
+        border: 1px solid #2a2a2a;
+        border-radius: 4px;
+        color: #e5e7eb;
+        font-size: 0.8rem;
+        padding: 6px 8px;
+        font-family: 'Inter', monospace;
+        font-variant-numeric: tabular-nums;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .time-input:focus {
+        border-color: rgba(172, 203, 250, 0.5);
+      }
+
+      .set-buttons {
+        display: flex;
+        gap: 6px;
+      }
+
+      .set-btn {
+        flex: 1;
+        background: #1e1e1e;
+        border: 1px solid #2a2a2a;
+        border-radius: 4px;
+        color: #999;
+        font-size: 0.7rem;
+        font-weight: 500;
+        padding: 7px 0;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .set-btn:hover {
+        background: #252525;
+        border-color: #333;
+        color: #ccc;
+      }
+
+      .set-btn kbd {
+        font-size: 0.6rem;
+        background: #2a2a2a;
+        border-radius: 2px;
+        padding: 1px 4px;
+        color: #666;
+        font-family: 'Inter', monospace;
+      }
+
+      .original-duration {
+        font-size: 0.8rem;
+        color: #555;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sidebar-divider {
+        height: 1px;
+        background: #222;
+        margin: 0;
+      }
+
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: auto;
+      }
+
+      .btn-primary {
+        background: rgba(66, 80, 175, 0.9);
+        border: none;
+        border-radius: 6px;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 10px 0;
+        cursor: pointer;
+        transition: background 0.15s;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .btn-primary:hover {
+        background: rgba(66, 80, 175, 1);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid #2a2a2a;
+        border-radius: 6px;
+        color: #888;
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 8px 0;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .btn-secondary:hover {
+        border-color: #444;
+        color: #bbb;
+      }
+
+      .btn-reset {
+        background: transparent;
+        border: none;
+        color: #555;
+        font-size: 0.7rem;
+        cursor: pointer;
+        padding: 4px 0;
+        transition: color 0.15s;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .btn-reset:hover {
+        color: #999;
+      }
+
+      /* ── Annotations (mockup only) ── */
+      .annotation {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e1e1e;
+        border: 1px solid #2a2a2a;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 0.7rem;
+        color: #666;
+        display: flex;
+        gap: 20px;
+        white-space: nowrap;
+      }
+
+      .annotation span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .dot-playhead {
+        background: #fff;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+      }
+      .dot-handle {
+        background: rgba(172, 203, 250, 0.85);
+      }
+      .dot-kept {
+        background: rgba(66, 80, 175, 0.4);
+        border: 1px solid rgba(172, 203, 250, 0.6);
+      }
+      .dot-dimmed {
+        background: rgba(10, 10, 10, 0.7);
+        border: 1px solid #333;
+      }
+
+      /* ── Interactive drag (mockup) ── */
+      .timeline-track {
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="editor-layout">
+      <!-- Video + Timeline -->
+      <div class="video-area">
+        <div class="video-player">
+          <div class="video-placeholder">Video Player — 0:45 duration</div>
+        </div>
+
+        <div class="timeline-container">
+          <div class="timeline-track" id="track">
+            <!-- Waveform texture -->
+            <div class="track-texture" id="texture"></div>
+
+            <!-- Dimmed regions (trimmed out) -->
+            <div class="dimmed-left" id="dimmedLeft" style="width: 18%"></div>
+            <div class="dimmed-right" id="dimmedRight" style="width: 22%"></div>
+
+            <!-- Kept region -->
+            <div class="trim-region" id="trimRegion" style="left: 18%; right: 22%">
+              <div class="trim-time-labels">
+                <span class="trim-time-label" id="labelIn">0:08.1</span>
+                <span class="trim-time-label" id="labelOut">0:35.2</span>
+              </div>
+            </div>
+
+            <!-- Handles -->
+            <div class="handle handle-in" id="handleIn" style="left: calc(18% - 14px)">
+              <div class="handle-grip"><span></span><span></span><span></span></div>
+            </div>
+            <div class="handle handle-out" id="handleOut" style="left: 78%">
+              <div class="handle-grip"><span></span><span></span><span></span></div>
+            </div>
+
+            <!-- Playhead -->
+            <div class="playhead" id="playhead" style="left: 42%"></div>
+          </div>
+
+          <!-- Full duration labels -->
+          <div class="time-labels">
+            <span>0:00</span>
+            <span>0:11</span>
+            <span>0:22</span>
+            <span>0:33</span>
+            <span>0:45</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <span class="sidebar-label">Trimmed Duration</span>
+          <span class="duration-display" id="durationDisplay">0:27.1</span>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="time-input-row">
+            <div class="time-input-group">
+              <label>In</label>
+              <input class="time-input" id="inputIn" type="text" value="0:08.1" />
+            </div>
+            <div class="time-input-group">
+              <label>Out</label>
+              <input class="time-input" id="inputOut" type="text" value="0:35.2" />
+            </div>
+          </div>
+          <div class="set-buttons">
+            <button class="set-btn" id="setInBtn">Set In <kbd>I</kbd></button>
+            <button class="set-btn" id="setOutBtn">Set Out <kbd>O</kbd></button>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section">
+          <span class="sidebar-label">Original</span>
+          <span class="original-duration">0:45.0</span>
+        </div>
+
+        <button class="btn-reset" id="resetBtn">Reset to full duration</button>
+
+        <div class="action-buttons">
+          <button class="btn-primary">Save Trim</button>
+          <button class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="annotation">
+      <span><span class="dot dot-playhead"></span> Playhead</span>
+      <span><span class="dot dot-handle"></span> Trim handles (drag)</span>
+      <span><span class="dot dot-kept"></span> Kept region</span>
+      <span><span class="dot dot-dimmed"></span> Trimmed out</span>
+    </div>
+
+    <script>
+      // Generate waveform texture bars
+      const texture = document.getElementById('texture');
+      for (let i = 0; i < 120; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'track-bar';
+        const h = 20 + Math.random() * 60 + Math.sin(i * 0.15) * 15;
+        bar.style.height = h + '%';
+        texture.appendChild(bar);
+      }
+
+      // Interactive drag logic
+      const track = document.getElementById('track');
+      const handleIn = document.getElementById('handleIn');
+      const handleOut = document.getElementById('handleOut');
+      const dimmedLeft = document.getElementById('dimmedLeft');
+      const dimmedRight = document.getElementById('dimmedRight');
+      const trimRegion = document.getElementById('trimRegion');
+      const playhead = document.getElementById('playhead');
+      const labelIn = document.getElementById('labelIn');
+      const labelOut = document.getElementById('labelOut');
+      const inputIn = document.getElementById('inputIn');
+      const inputOut = document.getElementById('inputOut');
+      const durationDisplay = document.getElementById('durationDisplay');
+
+      const DURATION = 45; // seconds
+      const MIN_GAP = 1 / DURATION; // 1 second minimum
+      let inPct = 0.18;
+      let outPct = 0.78;
+      let dragging = null;
+
+      function formatTime(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = (seconds % 60).toFixed(1);
+        return `${m}:${s.padStart(4, '0')}`;
+      }
+
+      function updateUI() {
+        dimmedLeft.style.width = inPct * 100 + '%';
+        dimmedRight.style.width = (1 - outPct) * 100 + '%';
+        trimRegion.style.left = inPct * 100 + '%';
+        trimRegion.style.right = (1 - outPct) * 100 + '%';
+        handleIn.style.left = `calc(${inPct * 100}% - 14px)`;
+        handleOut.style.left = outPct * 100 + '%';
+
+        const inTime = inPct * DURATION;
+        const outTime = outPct * DURATION;
+        const trimmed = outTime - inTime;
+
+        labelIn.textContent = formatTime(inTime);
+        labelOut.textContent = formatTime(outTime);
+        inputIn.value = formatTime(inTime);
+        inputOut.value = formatTime(outTime);
+        durationDisplay.textContent = formatTime(trimmed);
+      }
+
+      function onPointerDown(handle, type) {
+        return (e) => {
+          e.preventDefault();
+          dragging = type;
+          handle.style.background = 'rgba(172, 203, 250, 1)';
+
+          const onMove = (e) => {
+            const rect = track.getBoundingClientRect();
+            let pct = (e.clientX - rect.left) / rect.width;
+            pct = Math.max(0, Math.min(1, pct));
+
+            if (dragging === 'in') {
+              inPct = Math.min(pct, outPct - MIN_GAP);
+              inPct = Math.max(0, inPct);
+              // Move playhead to in point
+              playhead.style.left = inPct * 100 + '%';
+            } else {
+              outPct = Math.max(pct, inPct + MIN_GAP);
+              outPct = Math.min(1, outPct);
+              // Move playhead to out point
+              playhead.style.left = outPct * 100 + '%';
+            }
+            updateUI();
+          };
+
+          const onUp = () => {
+            dragging = null;
+            handle.style.background = '';
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+          };
+
+          window.addEventListener('pointermove', onMove);
+          window.addEventListener('pointerup', onUp);
+        };
+      }
+
+      handleIn.addEventListener('pointerdown', onPointerDown(handleIn, 'in'));
+      handleOut.addEventListener('pointerdown', onPointerDown(handleOut, 'out'));
+
+      // Click to seek playhead
+      track.addEventListener('click', (e) => {
+        if (dragging) return;
+        const rect = track.getBoundingClientRect();
+        const pct = (e.clientX - rect.left) / rect.width;
+        playhead.style.left = Math.max(0, Math.min(1, pct)) * 100 + '%';
+      });
+
+      // Animate playhead
+      let playing = false;
+      let animFrame;
+      let playheadPct = 0.42;
+
+      function animatePlayhead() {
+        if (!playing) return;
+        playheadPct += 0.0008;
+        if (playheadPct >= outPct) {
+          playheadPct = inPct;
+        }
+        playhead.style.left = playheadPct * 100 + '%';
+        animFrame = requestAnimationFrame(animatePlayhead);
+      }
+
+      // Space to toggle playback
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          playing = !playing;
+          if (playing) {
+            const rect = track.getBoundingClientRect();
+            playheadPct = parseFloat(playhead.style.left) / 100;
+            if (playheadPct < inPct || playheadPct >= outPct) playheadPct = inPct;
+            animatePlayhead();
+          } else {
+            cancelAnimationFrame(animFrame);
+          }
+        }
+        if (e.key === 'i' || e.key === 'I') {
+          const pct = parseFloat(playhead.style.left) / 100;
+          if (pct < outPct - MIN_GAP) {
+            inPct = pct;
+            updateUI();
+          }
+        }
+        if (e.key === 'o' || e.key === 'O') {
+          const pct = parseFloat(playhead.style.left) / 100;
+          if (pct > inPct + MIN_GAP) {
+            outPct = pct;
+            updateUI();
+          }
+        }
+      });
+
+      // Reset button
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        inPct = 0;
+        outPct = 1;
+        playhead.style.left = '0%';
+        updateUI();
+      });
+
+      // Set In / Set Out buttons
+      document.getElementById('setInBtn').addEventListener('click', () => {
+        const pct = parseFloat(playhead.style.left) / 100;
+        if (pct < outPct - MIN_GAP) {
+          inPct = pct;
+          updateUI();
+        }
+      });
+      document.getElementById('setOutBtn').addEventListener('click', () => {
+        const pct = parseFloat(playhead.style.left) / 100;
+        if (pct > inPct + MIN_GAP) {
+          outPct = pct;
+          updateUI();
+        }
+      });
+    </script>
+  </body>
+</html>

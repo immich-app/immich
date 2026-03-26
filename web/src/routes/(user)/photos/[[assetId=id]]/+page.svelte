@@ -75,7 +75,11 @@
         }
         return response.people
           .filter((p) => p.thumbnailPath)
-          .map((p) => ({ id: p.id, name: p.name || 'Unknown', thumbnailPath: p.thumbnailPath }));
+          .map((p) => ({
+            id: p.id,
+            name: p.name || 'Unknown',
+            thumbnailUrl: `/people/${p.id}/thumbnail`,
+          }));
       },
       locations: async (context?: FilterContext) => {
         const countries = await getSearchSuggestions({

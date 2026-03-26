@@ -154,6 +154,29 @@ describe('PeopleFilter', () => {
     expect(queryByTestId('people-item-p7')).toBeTruthy();
   });
 
+  it('should render thumbnail images when thumbnailUrl is provided', async () => {
+    const people: PersonOption[] = [
+      { id: '1', name: 'Alice', thumbnailUrl: '/shared-spaces/s1/people/1/thumbnail' },
+      { id: '2', name: 'Bob', thumbnailUrl: '/shared-spaces/s1/people/2/thumbnail' },
+    ];
+    const { container } = render(PeopleFilter, {
+      props: { people, selectedIds: [], onSelectionChange: vi.fn() },
+    });
+    const images = container.querySelectorAll('img');
+    expect(images).toHaveLength(2);
+    expect(images[0]).toHaveAttribute('src', '/shared-spaces/s1/people/1/thumbnail');
+    expect(images[1]).toHaveAttribute('src', '/shared-spaces/s1/people/2/thumbnail');
+  });
+
+  it('should render gradient avatar when thumbnailUrl is not provided', async () => {
+    const people: PersonOption[] = [{ id: '1', name: 'Alice' }];
+    const { container, getByText } = render(PeopleFilter, {
+      props: { people, selectedIds: [], onSelectionChange: vi.fn() },
+    });
+    expect(container.querySelector('img')).toBeNull();
+    expect(getByText('A')).toBeTruthy();
+  });
+
   it('should show empty message when no people', () => {
     const { getByTestId } = render(PeopleFilter, {
       props: {

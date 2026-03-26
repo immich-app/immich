@@ -29,9 +29,6 @@ export class SharedSpacePersonTable {
   @ForeignKeyColumn(() => AssetFaceTable, { onDelete: 'SET NULL', nullable: true })
   representativeFaceId!: string | null;
 
-  @Column({ default: '', type: 'character varying' })
-  thumbnailPath!: Generated<string>;
-
   @Column({ type: 'boolean', default: false })
   isHidden!: Generated<boolean>;
 
