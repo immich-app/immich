@@ -5,6 +5,7 @@
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -14,7 +15,6 @@
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -31,8 +31,6 @@
   };
 
   let { timelineManager = $bindable(), assetInteraction, onEscape, scrollToAsset }: Props = $props();
-
-  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const trashOrDelete = async (forceRequested?: boolean) => {
     const force = forceRequested || !featureFlagsManager.value.trash;
@@ -142,7 +140,7 @@
   };
 
   const shortcutList = $derived.by(() => {
-    if (searchStore.isSearchEnabled || $showAssetViewer || isModalOpen()) {
+    if (searchStore.isSearchEnabled || assetViewerManager.isViewing || isModalOpen()) {
       return [];
     }
 

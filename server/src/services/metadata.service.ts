@@ -327,10 +327,9 @@ export class MetadataService extends BaseService {
           fileCreatedAt: dates.dateTimeOriginal ?? undefined,
           fileModifiedAt: stats.mtime,
 
-          // only update the dimensions if they don't already exist
-          // we don't want to overwrite width/height that are modified by edits
-          width: asset.width == null ? assetWidth : undefined,
-          height: asset.height == null ? assetHeight : undefined,
+          // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
+          width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
+          height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
         }),
       async () => {
         await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });

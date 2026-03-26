@@ -264,6 +264,7 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
+  "asset"."isEdited",
   (
     select
       coalesce(json_agg(agg), '[]')

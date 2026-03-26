@@ -8,7 +8,7 @@ Hardware and software requirements for Immich:
 
 ## Hardware
 
-- **OS**: Recommended Linux or \*nix operating system (Ubuntu, Debian, etc).
+- **OS**: Recommended Linux or \*nix 64-bit operating system (Ubuntu, Debian, etc).
   - Non-Linux OSes tend to provide a poor Docker experience and are strongly discouraged.
     Our ability to assist with setup or troubleshooting on non-Linux OSes will be severely reduced.
     If you still want to try to use a non-Linux OS, you can set it up as follows:
@@ -19,6 +19,10 @@ Hardware and software requirements for Immich:
     If you have issues, we recommend that you switch to a supported VM deployment.
 - **RAM**: Minimum 6GB, recommended 8GB.
 - **CPU**: Minimum 2 cores, recommended 4 cores.
+  - Immich runs on the `amd64` and `arm64` platforms.
+    Since `v2.6`, the machine learning container on `amd64` requires the `>= x86-64-v2` [microarchitecture level](https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels).
+    Most CPUs released since ~2012 support this microarchitecture.
+    If you are using a virtual machine, ensure you have selected a [supported microarchitecture](https://pve.proxmox.com/pve-docs/chapter-qm.html#_qemu_cpu_types).
 - **Storage**: Recommended Unix-compatible filesystem (EXT4, ZFS, APFS, etc.) with support for user/group ownership and permissions.
   - The generation of thumbnails and transcoded video can increase the size of the photo library by 10-20% on average.
 

@@ -15225,7 +15225,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.6.1",
+    "version": "2.6.3",
     "contact": {}
   },
   "tags": [
@@ -19248,7 +19248,7 @@
             "type": "boolean"
           },
           "withPeople": {
-            "description": "Include assets with people",
+            "description": "Include people data in response",
             "type": "boolean"
           },
           "withStacked": {
@@ -20987,7 +20987,7 @@
             "type": "boolean"
           },
           "withPeople": {
-            "description": "Include assets with people",
+            "description": "Include people data in response",
             "type": "boolean"
           },
           "withStacked": {

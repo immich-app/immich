@@ -2,16 +2,17 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
@@ -64,7 +65,6 @@
     allowDeletion = true,
   }: Props = $props();
 
-  let { isViewing: isViewerOpen, asset: viewingAsset } = assetViewingStore;
   const navigationAssets = $derived(viewerAssets ?? assets);
 
   const geometry = $derived(
@@ -256,7 +256,7 @@
 
   const shortcutList = $derived(
     (() => {
-      if ($isViewerOpen) {
+      if (assetViewerManager.isViewing) {
         return [];
       }
 
@@ -351,10 +351,10 @@
     }
   });
 
-  const assetCursor = $derived({
-    current: $viewingAsset,
-    nextAsset: getNextAsset(navigationAssets, $viewingAsset),
-    previousAsset: getPreviousAsset(navigationAssets, $viewingAsset),
+  const assetCursor = $derived<AssetCursor>({
+    current: assetViewerManager.asset!,
+    nextAsset: getNextAsset(navigationAssets, assetViewerManager.asset),
+    previousAsset: getPreviousAsset(navigationAssets, assetViewerManager.asset),
   });
 </script>
 
@@ -408,7 +408,7 @@
 {/if}
 
 <!-- Overlay Asset Viewer -->
-{#if $isViewerOpen}
+{#if assetViewerManager.isViewing}
   <Portal target="body">
     {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
@@ -417,7 +417,7 @@
         onRandom={handleRandom}
         onAssetChange={updateCurrentAsset}
         onClose={() => {
-          assetViewingStore.showAssetViewer(false);
+          assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}
       />

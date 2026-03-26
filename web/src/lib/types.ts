@@ -5,6 +5,8 @@ import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
 
+export type LatLng = { lng: number; lat: number };
+
 export interface ReleaseEvent {
   isAvailable: boolean;
   /** ISO8601 */
