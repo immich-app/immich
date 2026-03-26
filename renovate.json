@@ -28,6 +28,10 @@
       "enabled": false
     },
     {
+      "matchPackageNames": ["ghcr.io/immich-app/base-server-*"],
+      "maxMajorIncrement": 0
+    },
+    {
       "matchPackageNames": ["ruby"],
       "groupName": "ruby",
       "matchCurrentVersion": "< 3.4",
