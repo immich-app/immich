@@ -696,6 +696,7 @@
                   void onSelectAssets(asset);
                 }}
                 onMouseEvent={() => handleSelectAssetCandidates(asset)}
+                onPreview={(isSelectionMode || assetInteraction.selectionActive) ? (asset) => void navigate({ targetRoute: 'current', assetId: asset.id }) : undefined}
                 selected={isAssetSelected}
                 selectionCandidate={isAssetSelectionCandidate}
                 disabled={isAssetDisabled}

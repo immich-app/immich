@@ -21,6 +21,7 @@
     mdiHeart,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
+    mdiMagnifyPlusOutline,
     mdiRotate360,
   } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -46,6 +47,7 @@
     dimmed?: boolean;
     albumUsers?: UserResponseDto[];
     onClick?: (asset: TimelineAsset) => void;
+    onPreview?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
   }
@@ -65,6 +67,7 @@
     showStackedIcon = true,
     albumUsers = [],
     onClick = undefined,
+    onPreview = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
     imageClass = '',
@@ -427,6 +430,23 @@
         {:else}
           <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
+      </button>
+    {/if}
+
+    <!-- Preview asset button (visible on hover when any asset is selected) -->
+    {#if mouseOver && onPreview}
+      <button
+        type="button"
+        onclick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onPreview?.($state.snapshot(asset));
+        }}
+        class="absolute z-2 bottom-1 end-1 rounded-full bg-black/50 p-1.5 hover:bg-black/70 focus:outline-none transition-colors"
+        tabindex={-1}
+        aria-label="Preview asset"
+      >
+        <Icon icon={mdiMagnifyPlusOutline} size="20" class="text-white" />
       </button>
     {/if}
 
