@@ -27,7 +27,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   late final ScrollController _scrollController;
   late TimelineService _timelineService;
 
-  /// Tracks the currently running buffering operation to avoid concurrent loads.
+  /// Tracks the currently running assets loading operation to avoid concurrent loads.
   Future<void>? _loadTask;
   /// True when _loadTask is already awaited. We only need one follow-up caller to await the task to
   /// reflect to most recent state if there were further requests while _loadTask was running.
@@ -62,7 +62,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     _currentIndex = ValueNotifier(initialIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _ensureBuffered();
+      _ensureLoaded();
       _scrollToCurrentIndex(animated: false);
       _scrollController.position.isScrollingNotifier.addListener(_onScrollingChanged);
     });
@@ -80,7 +80,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
   }
 
   /// Ensures the assets around current index are loaded.
-  Future<void> _ensureBuffered() async {
+  Future<void> _ensureLoaded() async {
     if (_visibleCount == 0) return;
 
     // Wait for any in-flight load to complete before starting a new one.
@@ -98,8 +98,8 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final idx = _currentIndex.value;
     final total = _timelineService.totalAssets;
 
-    // Check if the expanded region around the current index is already buffered.
-    // This helps to start buffering assets early before we reach uncached region.
+    // Check if the expanded region around the current index is already cached.
+    // This helps to start loading assets early before we reach uncached region.
     final triggerWindow = _visibleCount * 3;
     final startTriggerWindow = max(idx - triggerWindow ~/ 2, 0);
     final countTriggerWindow = min(triggerWindow, total - startTriggerWindow);
@@ -113,7 +113,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     final loadAssetsTask = _timelineService.loadAssets(start, count);
 
     // After loading the assets, follow up with further actions.
-    // We only want to allow reentry to _ensureBuffered once all of those are completed,
+    // We only want to allow reentry to _ensureLoaded once all of those are completed,
     // so we record the Future of those follow-up actions, which can then be awaited.
     _loadTask = loadAssetsTask.whenComplete(() {
       // We use placeholders for assets that are not cached in timeline when building filmstrip item.
@@ -130,7 +130,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (idx == _currentIndex.value) return;
     _currentIndex.value = idx;
 
-    _ensureBuffered();
+    _ensureLoaded();
     _scrollToCurrentIndex();
   }
 
@@ -215,7 +215,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     // Set internal _currentIndex before updating the one in provider
     // as we don't want the provider listener to trigger a scrollToIndex while dragging.
     _currentIndex.value = idx;
-    _ensureBuffered();
+    _ensureLoaded();
     ref.read(assetViewerProvider.notifier).setCurrentIndex(idx);
   }
 
