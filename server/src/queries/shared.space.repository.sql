@@ -391,6 +391,7 @@ from
   left join "person" on "person"."id" = "asset_face"."personId"
 where
   "shared_space_person"."spaceId" = $1
+  and "shared_space_person"."isHidden" = $2
 order by
   "shared_space_person"."name" asc
 
@@ -405,6 +406,7 @@ from
   left join "person" on "person"."id" = "asset_face"."personId"
 where
   "shared_space_person"."spaceId" = $1
+  and "shared_space_person"."isHidden" = $2
   and exists (
     select
     from
@@ -413,8 +415,8 @@ where
       inner join "asset" on "asset"."id" = "af2"."assetId"
     where
       "shared_space_person_face"."personId" = "shared_space_person"."id"
-      and "asset"."fileCreatedAt" >= $2
-      and "asset"."fileCreatedAt" < $3
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" < $4
   )
 order by
   "shared_space_person"."name" asc

@@ -2585,6 +2585,28 @@ describe(SharedSpaceService.name, () => {
       expect(result[0].type).toBe('person');
     });
 
+    it('should exclude hidden persons', async () => {
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const visiblePerson = factory.sharedSpacePerson({ spaceId, isHidden: false });
+      const hiddenPerson = factory.sharedSpacePerson({ spaceId, isHidden: true });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([
+        { ...visiblePerson, personalName: 'Visible', personalThumbnailPath: '/thumb.jpg' },
+        { ...hiddenPerson, personalName: 'Hidden', personalThumbnailPath: '/thumb.jpg' },
+      ]);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(1);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(1);
+
+      const result = await sut.getSpacePeople(factory.auth(), spaceId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Visible');
+    });
+
     it('should include pets when petsEnabled is true', async () => {
       const spaceId = newUuid();
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true, petsEnabled: true });

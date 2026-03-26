@@ -610,6 +610,9 @@ export class SharedSpaceService extends BaseService {
 
     const results: SharedSpacePersonResponseDto[] = [];
     for (const person of persons) {
+      if (person.isHidden) {
+        continue;
+      }
       if (!space.petsEnabled && person.type === 'pet') {
         continue;
       }

@@ -494,6 +494,7 @@ export class SharedSpaceRepository {
       .selectAll('shared_space_person')
       .select(['person.name as personalName', 'person.thumbnailPath as personalThumbnailPath'])
       .where('shared_space_person.spaceId', '=', spaceId)
+      .where('shared_space_person.isHidden', '=', false)
       .orderBy('shared_space_person.name', 'asc')
       .execute();
   }
@@ -507,6 +508,7 @@ export class SharedSpaceRepository {
       .selectAll('shared_space_person')
       .select(['person.name as personalName', 'person.thumbnailPath as personalThumbnailPath'])
       .where('shared_space_person.spaceId', '=', spaceId)
+      .where('shared_space_person.isHidden', '=', false)
       .$if(!!options?.takenAfter || !!options?.takenBefore, (qb) =>
         qb.where((eb) =>
           eb.exists(
