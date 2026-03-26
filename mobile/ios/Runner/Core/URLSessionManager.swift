@@ -150,7 +150,6 @@ class URLSessionManager: NSObject {
     config.httpCookieStorage = cookieStorage
     config.httpMaximumConnectionsPerHost = 64
     config.timeoutIntervalForRequest = 60
-    config.timeoutIntervalForResource = 300
 
     var headers = UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] ?? [:]
     headers["User-Agent"] = headers["User-Agent"] ?? userAgent

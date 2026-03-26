@@ -24,20 +24,22 @@ class SimilarPhotosActionButton extends ConsumerWidget {
     }
 
     ref.invalidate(assetViewerProvider);
-    ref
-        .read(searchPreFilterProvider.notifier)
-        .setFilter(
-          SearchFilter(
-            assetId: assetId,
-            people: {},
-            location: SearchLocationFilter(),
-            camera: SearchCameraFilter(),
-            date: SearchDateFilter(),
-            display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
-            rating: SearchRatingFilter(),
-            mediaType: AssetType.image,
-          ),
-        );
+    ref.invalidate(paginatedSearchProvider);
+
+    ref.read(searchPreFilterProvider.notifier)
+      ..clear()
+      ..setFilter(
+        SearchFilter(
+          assetId: assetId,
+          people: {},
+          location: SearchLocationFilter(),
+          camera: SearchCameraFilter(),
+          date: SearchDateFilter(),
+          display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+          rating: SearchRatingFilter(),
+          mediaType: AssetType.image,
+        ),
+      );
 
     unawaited(context.navigateTo(const DriftSearchRoute()));
   }

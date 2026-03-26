@@ -146,7 +146,7 @@ export class RandomSearchDto extends BaseSearchWithResultsDto {
   @ValidateBoolean({ optional: true, description: 'Include stacked assets' })
   withStacked?: boolean;
 
-  @ValidateBoolean({ optional: true, description: 'Include assets with people' })
+  @ValidateBoolean({ optional: true, description: 'Include people data in response' })
   withPeople?: boolean;
 }
 
