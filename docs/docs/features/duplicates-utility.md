@@ -17,12 +17,12 @@ When using "Deduplicate All" or viewing suggestions, Immich automatically presel
 
 When resolving duplicates, metadata from trashed assets is automatically synchronized to the kept assets. The following metadata is synchronized:
 
-| Name        | Description                                                                                                                          |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Album       | The kept assets will be added to _every_ album that the other assets in the group belong to.                                         |
-| Favorite    | If any of the assets in the group have been added to favorites, every kept asset will also be added to favorites.                    |
-| Rating      | If one or more assets in the duplicate group have a rating, the highest rating is selected and synchronized to the kept assets.      |
-| Description | Descriptions from each asset are combined together and synchronized to all the kept assets.                                          |
-| Visibility  | The most restrictive visibility is applied to the kept assets.                                                                       |
-| Location    | Latitude and longitude are copied if all assets with geolocation data in the group share the same coordinates.                       |
-| Tag         | Tags from all assets in the group are merged and applied to every kept asset.                                                        |
+| Name        | Description                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Album       | The kept assets will be added to _every_ album that the other assets in the group belong to.                                    |
+| Favorite    | If any of the assets in the group have been added to favorites, every kept asset will also be added to favorites.               |
+| Rating      | If one or more assets in the duplicate group have a rating, the highest rating is selected and synchronized to the kept assets. |
+| Description | Descriptions from each asset are combined together and synchronized to all the kept assets.                                     |
+| Visibility  | The most restrictive visibility is applied to the kept assets.                                                                  |
+| Location    | Latitude and longitude are copied if all assets with geolocation data in the group share the same coordinates.                  |
+| Tag         | Tags from all assets in the group are merged and applied to every kept asset.                                                   |
