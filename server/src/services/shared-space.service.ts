@@ -2,6 +2,8 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { SharedSpacePerson } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import type { FilteredMapMarkerDto } from 'src/dtos/gallery-map.dto';
+import type { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { mapNotification } from 'src/dtos/notification.dto';
 import {
   SharedSpacePersonAliasDto,
@@ -25,6 +27,8 @@ import {
   SharedSpaceUpdateDto,
 } from 'src/dtos/shared-space.dto';
 import {
+  AssetType,
+  AssetVisibility,
   CacheControl,
   JobName,
   JobStatus,
@@ -548,6 +552,37 @@ export class SharedSpaceService extends BaseService {
       id: marker.id,
       lat: marker.latitude!,
       lon: marker.longitude!,
+      city: marker.city ?? null,
+      state: marker.state ?? null,
+      country: marker.country ?? null,
+    }));
+  }
+
+  async getFilteredMapMarkers(auth: AuthDto, dto: FilteredMapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    if (dto.spaceId) {
+      await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
+    }
+
+    const markers = await this.sharedSpaceRepository.getFilteredMapMarkers({
+      userIds: dto.spaceId ? undefined : [auth.user.id],
+      spaceId: dto.spaceId,
+      personIds: dto.spaceId ? undefined : dto.personIds,
+      spacePersonIds: dto.spaceId ? dto.personIds : undefined,
+      tagIds: dto.tagIds,
+      make: dto.make,
+      model: dto.model,
+      rating: dto.rating,
+      type: dto.type === 'IMAGE' ? AssetType.Image : dto.type === 'VIDEO' ? AssetType.Video : undefined,
+      takenAfter: dto.takenAfter,
+      takenBefore: dto.takenBefore,
+      isFavorite: dto.isFavorite,
+      visibility: AssetVisibility.Timeline,
+    });
+
+    return markers.map((marker) => ({
+      id: marker.id,
+      lat: marker.lat,
+      lon: marker.lon,
       city: marker.city ?? null,
       state: marker.state ?? null,
       country: marker.country ?? null,

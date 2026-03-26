@@ -1,4 +1,4 @@
-export type FilterSection = 'timeline' | 'people' | 'location' | 'camera' | 'tags' | 'rating' | 'media';
+export type FilterSection = 'timeline' | 'people' | 'location' | 'camera' | 'tags' | 'rating' | 'media' | 'favorites';
 
 export interface PersonOption {
   id: string;
@@ -42,6 +42,7 @@ export interface FilterState {
   tagIds: string[];
   rating?: number;
   mediaType: 'all' | 'image' | 'video';
+  isFavorite?: boolean;
   sortOrder: 'asc' | 'desc';
   selectedYear?: number;
   selectedMonth?: number;
@@ -70,6 +71,7 @@ export function getActiveFilterCount(state: FilterState): number {
     (state.tagIds.length > 0 ? 1 : 0) +
     (state.rating === undefined ? 0 : 1) +
     (state.mediaType === 'all' ? 0 : 1) +
+    (state.isFavorite === undefined ? 0 : 1) +
     (state.selectedYear === undefined ? 0 : 1)
   );
 }
@@ -106,6 +108,7 @@ export function clearFilters(state: FilterState): FilterState {
     tagIds: [],
     rating: undefined,
     mediaType: 'all',
+    isFavorite: undefined,
     selectedYear: undefined,
     selectedMonth: undefined,
     // sortOrder is NOT cleared — it's a view preference

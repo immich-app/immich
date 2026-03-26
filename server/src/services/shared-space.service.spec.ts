@@ -4224,4 +4224,66 @@ describe(SharedSpaceService.name, () => {
       expect(result).toBe(JobStatus.Success);
     });
   });
+
+  describe('getFilteredMapMarkers', () => {
+    it('should return filtered map markers for the authenticated user', async () => {
+      const auth = factory.auth();
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([
+        { id: 'asset-1', lat: 48.8566, lon: 2.3522, city: 'Paris', state: 'Île-de-France', country: 'France' },
+      ] as any);
+
+      const result = await sut.getFilteredMapMarkers(auth, { personIds: ['person-1'] });
+
+      expect(result).toEqual([
+        { id: 'asset-1', lat: 48.8566, lon: 2.3522, city: 'Paris', state: 'Île-de-France', country: 'France' },
+      ]);
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userIds: [auth.user.id],
+          personIds: ['person-1'],
+          visibility: expect.anything(),
+        }),
+      );
+    });
+
+    it('should scope to space when spaceId is provided', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([]);
+
+      await sut.getFilteredMapMarkers(auth, { spaceId });
+
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          spaceId,
+          userIds: undefined,
+        }),
+      );
+    });
+
+    it('should throw when user lacks space access', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set());
+
+      await expect(sut.getFilteredMapMarkers(auth, { spaceId })).rejects.toThrow();
+    });
+
+    it('should map undefined city/state/country to null', async () => {
+      const auth = factory.auth();
+
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([
+        { id: 'asset-1', lat: 0, lon: 0, city: null, state: null, country: null },
+      ] as any);
+
+      const result = await sut.getFilteredMapMarkers(auth, {});
+
+      expect(result[0].city).toBeNull();
+      expect(result[0].state).toBeNull();
+      expect(result[0].country).toBeNull();
+    });
+  });
 });

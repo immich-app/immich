@@ -5681,6 +5681,162 @@
         "x-immich-state": "Stable"
       }
     },
+    "/gallery/map/markers": {
+      "get": {
+        "description": "Retrieve map markers with rich content filtering (people, camera, tags, etc.)",
+        "operationId": "getFilteredMapMarkers",
+        "parameters": [
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "description": "Filter by favorite status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "make",
+            "required": false,
+            "in": "query",
+            "description": "Camera make",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model",
+            "required": false,
+            "in": "query",
+            "description": "Camera model",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by person IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "description": "Minimum star rating",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "spaceId",
+            "required": false,
+            "in": "query",
+            "description": "Scope to a shared space",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tagIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by tag IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets taken after this date",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets taken before this date",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by media type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IMAGE",
+                "VIDEO"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get filtered map markers",
+        "tags": [
+          "Gallery Map"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
     "/jobs": {
       "get": {
         "deprecated": true,

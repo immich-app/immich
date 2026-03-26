@@ -330,6 +330,24 @@ where
   "asset_exif"."latitude" is not null
   and "asset_exif"."longitude" is not null
 
+-- SharedSpaceRepository.getFilteredMapMarkers
+select
+  "asset"."id",
+  "asset_exif"."latitude" as "lat",
+  "asset_exif"."longitude" as "lon",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."visibility" = $1
+  and "asset"."ownerId" = any ($2::uuid[])
+  and "asset"."deletedAt" is null
+  and "asset_exif"."latitude" is not null
+  and "asset_exif"."longitude" is not null
+
 -- SharedSpaceRepository.getActivities
 select
   "shared_space_activity"."id",

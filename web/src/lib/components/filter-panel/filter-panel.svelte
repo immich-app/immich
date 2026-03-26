@@ -12,6 +12,7 @@
     mdiTag,
     mdiStar,
     mdiImage,
+    mdiHeart,
   } from '@mdi/js';
   import { untrack } from 'svelte';
   import type {
@@ -31,6 +32,7 @@
   import TagsFilter from './tags-filter.svelte';
   import RatingFilter from './rating-filter.svelte';
   import MediaTypeFilter from './media-type-filter.svelte';
+  import FavoritesFilter from './favorites-filter.svelte';
 
   interface Props {
     config: FilterPanelConfig;
@@ -198,6 +200,7 @@
     tags: mdiTag,
     rating: mdiStar,
     media: mdiImage,
+    favorites: mdiHeart,
   };
 
   const sectionTitles: Record<string, string> = {
@@ -208,6 +211,7 @@
     tags: 'Tags',
     rating: 'Rating',
     media: 'Media Type',
+    favorites: 'Favorites',
   };
 
   function loadVisibleSections(configSections: FilterSectionType[], key: string): SvelteSet<FilterSectionType> {
@@ -338,6 +342,9 @@
       }
       case 'media': {
         return filters.mediaType !== 'all';
+      }
+      case 'favorites': {
+        return filters.isFavorite !== undefined;
       }
       case 'timeline': {
         return filters.selectedYear !== undefined;
@@ -491,6 +498,13 @@
               <RatingFilter selectedRating={filters.rating} onRatingChange={handleRatingChange} />
             {:else if section === 'media'}
               <MediaTypeFilter selected={filters.mediaType} onTypeChange={handleMediaTypeChange} />
+            {:else if section === 'favorites'}
+              <FavoritesFilter
+                selected={filters.isFavorite}
+                onToggle={(value) => {
+                  filters = { ...filters, isFavorite: value };
+                }}
+              />
             {/if}
           </FilterSection>
         {/if}

@@ -84,7 +84,6 @@ select
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."visibility" = $1
   and "asset"."fileCreatedAt" >= $2

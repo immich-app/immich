@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetType, VectorIndex } from 'src/enum';
+import { AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import type { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { SharedSpaceAssetTable } from 'src/schema/tables/shared-space-asset.table';
 import { SharedSpaceLibraryTable } from 'src/schema/tables/shared-space-library.table';
@@ -12,6 +13,7 @@ import { SharedSpacePersonAliasTable } from 'src/schema/tables/shared-space-pers
 import { SharedSpacePersonFaceTable } from 'src/schema/tables/shared-space-person-face.table';
 import { SharedSpacePersonTable } from 'src/schema/tables/shared-space-person.table';
 import { SharedSpaceTable } from 'src/schema/tables/shared-space.table';
+import { searchAssetBuilder } from 'src/utils/database';
 
 @Injectable()
 export class SharedSpaceRepository {
@@ -410,6 +412,26 @@ export class SharedSpaceRepository {
         'asset_exif.state',
         'asset_exif.country',
       ])
+      .execute();
+  }
+
+  @GenerateSql({
+    params: [{ userIds: [DummyValue.UUID], visibility: AssetVisibility.Timeline }],
+  })
+  getFilteredMapMarkers(options: AssetSearchBuilderOptions) {
+    return searchAssetBuilder(this.db, options)
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .where('asset_exif.latitude', 'is not', null)
+      .where('asset_exif.longitude', 'is not', null)
+      .select([
+        'asset.id',
+        'asset_exif.latitude as lat',
+        'asset_exif.longitude as lon',
+        'asset_exif.city',
+        'asset_exif.state',
+        'asset_exif.country',
+      ])
+      .$narrowType<{ lat: NotNull; lon: NotNull }>()
       .execute();
   }
 
