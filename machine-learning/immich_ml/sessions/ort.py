@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,16 @@ from immich_ml.models.constants import SUPPORTED_PROVIDERS
 from immich_ml.schemas import ModelPrecision, SessionNode
 
 from ..config import log, settings
+
+# Models that should be forced to CPU-only execution.
+# Set via MACHINE_LEARNING_CPU_MODELS env var (comma-separated model names).
+# Useful when GPU acceleration crashes for specific models (e.g. face detection
+# on AMD iGPUs with MIGraphX) while working fine for others (e.g. CLIP).
+_CPU_ONLY_MODELS: set[str] = set(
+    name.strip()
+    for name in os.environ.get("MACHINE_LEARNING_CPU_MODELS", "").split(",")
+    if name.strip()
+)
 
 
 class OrtSession:
@@ -24,7 +35,13 @@ class OrtSession:
         sess_options: ort.SessionOptions | None = None,
     ):
         self.model_path = Path(model_path)
-        self.providers = providers if providers is not None else self._providers_default
+        if providers is not None:
+            self.providers = providers
+        elif self._should_force_cpu():
+            log.info(f"Forcing CPU execution for '{self.model_path}' (matched MACHINE_LEARNING_CPU_MODELS)")
+            self.providers = ["CPUExecutionProvider"]
+        else:
+            self.providers = self._providers_default
         self.provider_options = provider_options if provider_options is not None else self._provider_options_default
         self.sess_options = sess_options if sess_options is not None else self._sess_options_default
         self.session = ort.InferenceSession(
@@ -59,6 +76,15 @@ class OrtSession:
     def providers(self, providers: list[str]) -> None:
         log.info(f"Setting execution providers to {providers}, in descending order of preference")
         self._providers = providers
+
+    def _should_force_cpu(self) -> bool:
+        if not _CPU_ONLY_MODELS:
+            return False
+        model_path_str = self.model_path.as_posix().lower()
+        for model_name in _CPU_ONLY_MODELS:
+            if model_name.lower() in model_path_str:
+                return True
+        return False
 
     @property
     def _providers_default(self) -> list[str]:
