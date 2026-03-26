@@ -332,7 +332,7 @@ importers:
         specifier: ^1.0.1
         version: 1.1.1
       esbuild:
-        specifier: ^0.27.4
+        specifier: ^0.27.0
         version: 0.27.4
       typescript:
         specifier: ^5.3.2
