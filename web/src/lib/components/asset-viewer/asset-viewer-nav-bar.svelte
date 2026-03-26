@@ -157,7 +157,7 @@
 
         <ActionMenuItem action={Actions.AddToAlbum} />
         {#if album && (isOwner || isAlbumOwner)}
-          <RemoveFromAlbumAction {album} onRemove={undefined} assetIds={[asset.id]} menuItem />
+          <RemoveFromAlbumAction {album} onRemove={() => onClose?.()} assetIds={[asset.id]} menuItem />
         {/if}
 
         {#if isOwner}
