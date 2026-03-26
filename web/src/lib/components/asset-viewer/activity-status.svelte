@@ -25,7 +25,7 @@
     size="large"
     variant="ghost"
     color={isLiked ? 'primary' : 'secondary'}
-    class="p-3"
+    class="p-3 text-base"
   >
     {#if numberOfLikes}
       {numberOfLikes.toLocaleString($locale)}
@@ -38,7 +38,7 @@
     size="large"
     variant="ghost"
     color="secondary"
-    class="p-3"
+    class="p-3 text-base"
   >
     {#if numberOfComments}
       {numberOfComments.toLocaleString($locale)}
