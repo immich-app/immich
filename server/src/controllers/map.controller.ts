@@ -1,7 +1,12 @@
-import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import {
+  CreateFavoriteLocationDto,
+  FavoriteLocationResponseDto,
+  UpdateFavoriteLocationDto,
+} from 'src/dtos/favorite-location.dto';
 import {
   MapMarkerDto,
   MapMarkerResponseDto,
@@ -38,5 +43,60 @@ export class MapController {
   })
   reverseGeocode(@Query() dto: MapReverseGeocodeDto): Promise<MapReverseGeocodeResponseDto[]> {
     return this.service.reverseGeocode(dto);
+  }
+
+  @Authenticated()
+  @Get('favorite-locations')
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Get favorite locations',
+    description: "Retrieve a list of user's favorite locations.",
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  getFavoriteLocations(@Auth() auth: AuthDto): Promise<FavoriteLocationResponseDto[]> {
+    return this.service.getFavoriteLocations(auth);
+  }
+
+  @Authenticated()
+  @Post('favorite-locations')
+  @HttpCode(HttpStatus.CREATED)
+  @Endpoint({
+    summary: 'Create favorite location',
+    description: 'Create a new favorite location for the user.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  createFavoriteLocation(
+    @Auth() auth: AuthDto,
+    @Body() dto: CreateFavoriteLocationDto,
+  ): Promise<FavoriteLocationResponseDto> {
+    return this.service.createFavoriteLocation(auth, dto);
+  }
+
+  @Authenticated()
+  @Put('favorite-locations/:id')
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Update favorite location',
+    description: 'Update an existing favorite location.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  updateFavoriteLocation(
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Body() dto: UpdateFavoriteLocationDto,
+  ): Promise<FavoriteLocationResponseDto> {
+    return this.service.updateFavoriteLocation(auth, id, dto);
+  }
+
+  @Authenticated()
+  @Delete('favorite-locations/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Delete favorite location',
+    description: 'Delete a favorite location by its ID.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  deleteFavoriteLocation(@Param('id') id: string) {
+    return this.service.deleteFavoriteLocation(id);
   }
 }

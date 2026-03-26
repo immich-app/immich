@@ -8,9 +8,18 @@
   import { lastChosenLocation } from '$lib/stores/asset-editor.store';
   import { delay } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
-  import { ConfirmModal, LoadingSpinner } from '@immich/ui';
-  import { mdiMapMarkerMultipleOutline } from '@mdi/js';
+  import {
+    createFavoriteLocation,
+    deleteFavoriteLocation,
+    getFavoriteLocations,
+    searchPlaces,
+    type AssetResponseDto,
+    type FavoriteLocationResponseDto,
+    type PlacesResponseDto,
+  } from '@immich/sdk';
+  import { Button, ConfirmModal, IconButton, Input, LoadingSpinner } from '@immich/ui';
+  import { mdiDelete, mdiMapMarkerMultipleOutline } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
   interface Point {
@@ -45,6 +54,22 @@
 
   let zoom = $derived(mapLat && mapLng ? 12.5 : 1);
 
+  let favoriteLocations: FavoriteLocationResponseDto[] = $state([]);
+  let newFavoriteName = $state('');
+  let savingFavorite = $state(false);
+
+  const loadFavoriteLocations = async () => {
+    try {
+      favoriteLocations = await getFavoriteLocations();
+    } catch (error) {
+      handleError(error, 'Failed to load favorite locations');
+    }
+  };
+
+  onMount(async () => {
+    await loadFavoriteLocations();
+  });
+
   $effect(() => {
     if (mapElement && initialPoint) {
       mapElement.addClipMapMarker(initialPoint.lng, initialPoint.lat);
@@ -65,6 +90,39 @@
       onClose(point);
     } else {
       onClose();
+    }
+  };
+
+  const handleSaveFavorite = async () => {
+    if (newFavoriteName.trim() === '') {
+      return;
+    }
+
+    savingFavorite = true;
+    try {
+      const newLocation: FavoriteLocationResponseDto = await createFavoriteLocation({
+        createFavoriteLocationDto: {
+          name: newFavoriteName,
+          latitude: point!.lat,
+          longitude: point!.lng,
+        },
+      });
+      favoriteLocations = [...favoriteLocations, newLocation];
+      favoriteLocations = favoriteLocations.sort((a, b) => a.name.localeCompare(b.name));
+      newFavoriteName = '';
+    } catch (error) {
+      handleError(error, 'Failed to save favorite location');
+    } finally {
+      savingFavorite = false;
+    }
+  };
+
+  const handleDeleteFavorite = async (locationId: string) => {
+    try {
+      await deleteFavoriteLocation({ id: locationId });
+      favoriteLocations = favoriteLocations.filter((loc) => loc.id !== locationId);
+    } catch (error) {
+      handleError(error, 'Failed to delete favorite location');
     }
   };
 
@@ -127,10 +185,13 @@
     latestSearchTimeout = searchTimeout;
   };
 
-  const handleUseSuggested = (latitude: number, longitude: number) => {
+  const handleUseSuggested = (latitude: number, longitude: number, setZoom?: number) => {
     hideSuggestion = true;
     point = { lng: longitude, lat: latitude };
     mapElement?.addClipMapMarker(longitude, latitude);
+    if (setZoom) {
+      zoom = setZoom;
+    }
   };
 
   const onUpdate = (lat: number, lng: number) => {
@@ -226,6 +287,58 @@
 
       <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
         <CoordinatesInput lat={point ? point.lat : assetLat} lng={point ? point.lng : assetLng} {onUpdate} />
+      </div>
+
+      <div class="mt-4">
+        <div class="flex justify-between items-center gap-2 mb-2">
+          <p>{$t('favorite_locations')}</p>
+          <div class="flex gap-2 items-center justify-end">
+            <Input placeholder={$t('name')} size="tiny" bind:value={newFavoriteName} />
+            <Button
+              onclick={handleSaveFavorite}
+              disabled={newFavoriteName.trim() === '' || savingFavorite || point === null}
+              variant="outline"
+              size="tiny"
+              class="shrink-0">{$t('save')}</Button
+            >
+          </div>
+        </div>
+
+        <div class="max-h-40 overflow-y-auto border border-gray-300 dark:border-immich-dark-gray rounded-md p-2">
+          {#if favoriteLocations.length === 0}
+            <p class="text-sm text-gray-500 dark:text-gray-400">{$t('favorite_locations_not_found')}</p>
+          {:else}
+            <ul class="space-y-2">
+              {#each favoriteLocations as location (location.id)}
+                <li>
+                  <button
+                    type="button"
+                    class="w-full"
+                    onclick={() => handleUseSuggested(location.latitude!, location.longitude!, 14)}
+                  >
+                    <div
+                      class="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 hover:dark:bg-gray-700"
+                    >
+                      {location.name}
+                      <IconButton
+                        icon={mdiDelete}
+                        shape="round"
+                        variant="outline"
+                        size="medium"
+                        color="danger"
+                        aria-label={$t('delete')}
+                        onclick={async (e: Event) => {
+                          e.stopPropagation();
+                          await handleDeleteFavorite(location.id);
+                        }}
+                      />
+                    </div>
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
       </div>
     </div>
   {/snippet}
