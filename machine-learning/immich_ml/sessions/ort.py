@@ -18,9 +18,7 @@ from ..config import log, settings
 # Useful when GPU acceleration crashes for specific models (e.g. face detection
 # on AMD iGPUs with MIGraphX) while working fine for others (e.g. CLIP).
 _CPU_ONLY_MODELS: set[str] = set(
-    name.strip()
-    for name in os.environ.get("MACHINE_LEARNING_CPU_MODELS", "").split(",")
-    if name.strip()
+    name.strip() for name in os.environ.get("MACHINE_LEARNING_CPU_MODELS", "").split(",") if name.strip()
 )
 
 
