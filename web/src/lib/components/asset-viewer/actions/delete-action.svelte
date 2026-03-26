@@ -48,6 +48,13 @@
       return;
     }
 
+    const isConfirmed = await modalManager.showDialog({
+      prompt: $t('are_you_sure_to_do_this'),
+    });
+    if (!isConfirmed) {
+      return;
+    }
+
     preAction({ type: AssetAction.TRASH, asset: timelineAsset });
     await deleteAssetsUtil(
       false,
