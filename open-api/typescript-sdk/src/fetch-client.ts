@@ -1741,7 +1741,7 @@ export type MetadataSearchDto = {
     withDeleted?: boolean;
     /** Include EXIF data in response */
     withExif?: boolean;
-    /** Include assets with people */
+    /** Include people data in response */
     withPeople?: boolean;
     /** Include stacked assets */
     withStacked?: boolean;
@@ -1855,7 +1855,7 @@ export type RandomSearchDto = {
     withDeleted?: boolean;
     /** Include EXIF data in response */
     withExif?: boolean;
-    /** Include assets with people */
+    /** Include people data in response */
     withPeople?: boolean;
     /** Include stacked assets */
     withStacked?: boolean;

@@ -120,10 +120,10 @@
     <ActionButton action={Cast} />
     <ActionButton action={Actions.Share} />
     <ActionButton action={Actions.Offline} />
-    <ActionButton action={Actions.PlayMotionPhoto} />
-    <ActionButton action={Actions.StopMotionPhoto} />
     <ActionButton action={Actions.ZoomIn} />
     <ActionButton action={Actions.ZoomOut} />
+    <ActionButton action={Actions.PlayMotionPhoto} />
+    <ActionButton action={Actions.StopMotionPhoto} />
     <ActionButton action={Actions.Copy} />
     <ActionButton action={Actions.SharedLinkDownload} />
     <ActionButton action={Actions.Info} />

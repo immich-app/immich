@@ -23,7 +23,7 @@
     { label: '2:3', value: '2:3', width: 16, height: 24 },
     { label: '16:9', value: '16:9', width: 24, height: 14 },
     { label: '9:16', value: '9:16', width: 14, height: 24 },
-    { label: 'Square', value: '1:1', width: 20, height: 20 },
+    { label: $t('crop_aspect_ratio_square'), value: '1:1', width: 20, height: 20 },
   ];
 
   let isRotated = $derived(transformManager.normalizedRotation % 180 !== 0);

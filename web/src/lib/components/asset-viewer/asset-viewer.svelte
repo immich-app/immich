@@ -580,17 +580,16 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
+      class={[
+        'row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light',
+        showDetailPanel ? 'w-90' : 'w-100',
+      ]}
       translate="yes"
     >
       {#if showDetailPanel}
-        <div class="w-90 h-full">
-          <DetailPanel {asset} currentAlbum={album} />
-        </div>
+        <DetailPanel {asset} currentAlbum={album} />
       {:else if assetViewerManager.isShowEditor}
-        <div class="w-100 h-full">
-          <EditorPanel {asset} onClose={closeEditor} />
-        </div>
+        <EditorPanel {asset} onClose={closeEditor} />
       {/if}
     </div>
   {/if}
