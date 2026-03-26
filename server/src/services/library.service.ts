@@ -26,6 +26,21 @@ import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 
+const createMatchers = (exclusionPatterns: string[]) => {
+  const supportedExtensions = mimeTypes.getSupportedFileExtensions().map((extension) => extension.toLowerCase());
+  const expandedPatterns = exclusionPatterns.flatMap((pattern) =>
+    pattern.endsWith('/**') ? [pattern, pattern.slice(0, -3)] : [pattern],
+  );
+  const excludeMatcher = picomatch(expandedPatterns, { nocase: true });
+  return {
+    isExcluded: (path: string) => excludeMatcher(path.replaceAll('\\', '/')),
+    isSupported: (path: string) => {
+      const normalizedPath = path.toLowerCase();
+      return supportedExtensions.some((extension) => normalizedPath.endsWith(extension));
+    },
+  };
+};
+
 @Injectable()
 export class LibraryService extends BaseService {
   private watchLibraries = false;
@@ -90,24 +105,24 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting to watch library ${library.id} with import path(s) ${library.importPaths}`);
 
-    const matcher = picomatch(`**/*{${mimeTypes.getSupportedFileExtensions().join(',')}}`, {
-      nocase: true,
-      ignore: library.exclusionPatterns,
-    });
+    const { isExcluded, isSupported } = createMatchers(library.exclusionPatterns);
 
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
     const handler = async (event: string, path: string) => {
-      if (matcher(path)) {
-        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncFiles,
-          data: { libraryId: library.id, paths: [path] },
-        });
-      } else {
+      const ignored = !isSupported(path);
+
+      if (ignored) {
         this.logger.verbose(`Ignoring file ${event} event for ${path} in library ${library.id}`);
+        return;
       }
+
+      this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
+      await this.jobRepository.queue({
+        name: JobName.LibrarySyncFiles,
+        data: { libraryId: library.id, paths: [path] },
+      });
     };
 
     const deletionHandler = async (path: string) => {
@@ -123,6 +138,7 @@ export class LibraryService extends BaseService {
       {
         usePolling: false,
         ignoreInitial: true,
+        ignored: isExcluded,
         awaitWriteFinish: {
           stabilityThreshold: 5000,
           pollInterval: 1000,
