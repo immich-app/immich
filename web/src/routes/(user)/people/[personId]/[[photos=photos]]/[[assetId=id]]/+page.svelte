@@ -459,7 +459,7 @@
 <header>
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
+      {@const Actions = getAssetBulkActions($t)}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
