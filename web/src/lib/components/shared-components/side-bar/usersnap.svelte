@@ -18,7 +18,7 @@
     };
     const script = document.createElement('script');
     script.defer = true;
-    script.src = 'https://widget.usersnap.com/global/load/4a7a8305-93fa-4660-8b05-483b71823074?onload=onUsersnapLoad';
+    script.src = 'https://widget.usersnap.com/global/load/31ff0595-9181-4691-b60a-e6e069537661?onload=onUsersnapLoad';
     document.head.append(script);
 
     return () => {
