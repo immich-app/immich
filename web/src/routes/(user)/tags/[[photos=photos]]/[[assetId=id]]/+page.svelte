@@ -27,7 +27,7 @@
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getTagActions } from '$lib/services/tag.service';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
@@ -113,11 +113,7 @@
 <section>
   {#if assetMultiSelectManager.selectionActive}
     <div class="fixed top-0 start-0 w-full">
-      <AssetSelectControlBar
-        ownerId={$user.id}
-        assets={assetMultiSelectManager.assets}
-        clearSelect={() => assetMultiSelectManager.clear()}
-      >
+      <AssetSelectControlBar>
         {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
         <CreateSharedLink />

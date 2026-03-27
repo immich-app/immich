@@ -110,7 +110,7 @@
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="fixed top-0 start-0 w-full">
-    <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
+    <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />

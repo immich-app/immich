@@ -336,11 +336,7 @@
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="sticky top-0 z-1 dark">
-    <AssetSelectControlBar
-      forceDark
-      assets={assetMultiSelectManager.assets}
-      clearSelect={() => assetMultiSelectManager.clear()}
-    >
+    <AssetSelectControlBar forceDark>
       {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CreateSharedLink />
       <IconButton

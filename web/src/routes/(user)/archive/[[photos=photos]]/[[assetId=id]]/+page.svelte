@@ -59,7 +59,7 @@
 </UserPageLayout>
 
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
+  <AssetSelectControlBar>
     {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
     <ArchiveAction

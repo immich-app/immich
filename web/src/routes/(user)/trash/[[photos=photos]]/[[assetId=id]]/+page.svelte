@@ -68,7 +68,7 @@
 {/if}
 
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
+  <AssetSelectControlBar>
     <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <DeleteAssets force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <RestoreAssets onRestore={(assetIds) => timelineManager.removeAssets(assetIds)} />

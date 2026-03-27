@@ -22,7 +22,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -122,11 +122,7 @@
   <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
   <Portal target="body">
-    <AssetSelectControlBar
-      ownerId={$user.id}
-      assets={assetMultiSelectManager.assets}
-      clearSelect={() => assetMultiSelectManager.clear()}
-    >
+    <AssetSelectControlBar>
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />

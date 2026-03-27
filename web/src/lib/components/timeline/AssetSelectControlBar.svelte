@@ -1,32 +1,26 @@
-<script lang="ts" module>
-  import { setAssetControlContext } from '$lib/utils/context';
-  import { t } from 'svelte-i18n';
-</script>
-
 <script lang="ts">
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { setAssetControlContext } from '$lib/utils/context';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import { t } from 'svelte-i18n';
 
   type Props = {
-    assets: TimelineAsset[];
-    clearSelect: () => void;
-    ownerId?: string | undefined;
     children?: Snippet;
     forceDark?: boolean;
   };
 
-  let { assets, clearSelect, ownerId = undefined, children, forceDark }: Props = $props();
+  let { children, forceDark }: Props = $props();
 
-  setAssetControlContext({
-    getAssets: () => assets,
-    getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
-    clearSelect: () => clearSelect(),
-  });
+  setAssetControlContext(assetMultiSelectManager.asControlContext());
+
+  const onClose = () => assetMultiSelectManager.clear();
+
+  const assets = $derived(assetMultiSelectManager.assets);
 </script>
 
-<ControlAppBar onClose={clearSelect} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+<ControlAppBar {onClose} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   {#snippet leading()}
     <div class="font-medium {forceDark ? 'text-immich-dark-primary' : 'text-primary'}">
       <p class="block sm:hidden">{assets.length}</p>

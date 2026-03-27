@@ -74,7 +74,7 @@
 
 <!-- Multi-selection mode app bar -->
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
+  <AssetSelectControlBar>
     <SelectAllAssets withText {timelineManager} assetInteraction={assetMultiSelectManager} />
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>

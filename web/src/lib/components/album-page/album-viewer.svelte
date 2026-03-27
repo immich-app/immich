@@ -16,7 +16,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
+  import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { ActionButton, IconButton, Logo } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -26,10 +26,9 @@
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
-    user?: UserResponseDto | undefined;
   }
 
-  let { sharedLink, user = undefined }: Props = $props();
+  let { sharedLink }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
 
@@ -97,11 +96,7 @@
 
 <header>
   {#if assetMultiSelectManager.selectionActive}
-    <AssetSelectControlBar
-      ownerId={user?.id}
-      assets={assetMultiSelectManager.assets}
-      clearSelect={() => assetMultiSelectManager.clear()}
-    >
+    <AssetSelectControlBar>
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" />

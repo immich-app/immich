@@ -80,10 +80,7 @@
 
   <header class="fixed top-0 inset-s-0 w-full">
     {#if assetMultiSelectManager.selectionActive}
-      <AssetSelectControlBar
-        assets={assetMultiSelectManager.assets}
-        clearSelect={() => assetMultiSelectManager.clear()}
-      >
+      <AssetSelectControlBar>
         <IconButton
           shape="round"
           color="secondary"

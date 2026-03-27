@@ -25,7 +25,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
     updateStackedAssetInTimeline,
@@ -112,11 +112,7 @@
 </UserPageLayout>
 
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar
-    ownerId={$user.id}
-    assets={assetMultiSelectManager.assets}
-    clearSelect={() => assetMultiSelectManager.clear()}
-  >
+  <AssetSelectControlBar>
     {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 

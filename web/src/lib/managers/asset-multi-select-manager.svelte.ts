@@ -43,7 +43,8 @@ export class AssetMultiSelectManager {
 
   asControlContext(): AssetControlContext {
     return {
-      getOwnedAssets: () => this.assets.filter((asset) => asset.ownerId === this.#userId),
+      getOwnedAssets: () =>
+        this.#userId ? this.assets.filter((asset) => asset.ownerId === this.#userId) : this.assets,
       getAssets: () => this.assets,
       clearSelect: () => this.clear(),
     };
