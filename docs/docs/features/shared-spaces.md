@@ -39,6 +39,7 @@ Gallery enforces strict role-based access on every endpoint. Three roles — Own
 | View activity log           | Yes   | Yes    | Yes    |
 | View space on map           | Yes   | Yes    | Yes    |
 | Manage people (name, merge) | Yes   | Yes    | No     |
+| Show/hide people            | Yes   | Yes    | No     |
 | Toggle timeline integration | Yes   | Yes    | Yes    |
 | Link/unlink libraries\*     | Yes   | Yes    | No     |
 
@@ -255,13 +256,44 @@ When enabled, face recognition runs across all photos in the space. Detected peo
 
 The Owner can toggle face recognition on or off from the space detail page header. When disabled, existing face data is preserved but hidden.
 
+### Space People vs Personal People
+
+Space people are **separate** from the people in your personal library. When face recognition is enabled on a space, Gallery creates independent person entries scoped to that space. This means:
+
+- A person named "Alice" in your personal library is a different entity from "Alice" in a shared space.
+- Naming, merging, and hiding people in a space does not affect your personal people, and vice versa.
+- Each space maintains its own set of people, built from faces detected across all members' contributed photos.
+
+This separation ensures that members' personal libraries remain private while allowing collaborative face management within the space.
+
 ### People Page
 
-Click the people count in the space hero banner to open the full People page, which shows a grid of all recognized people in the space. From here:
+There are two ways to open the People page for a space:
+
+1. Click the **people count** in the space hero banner.
+2. Open the **three-dot menu** (&#8942;) in the top-right corner of the space page and select **People**.
+
+<div style={{display: 'flex', gap: '1rem', alignItems: 'start'}}>
+  <img src="/img/space-menu-button.png" alt="Space menu button" width="300" />
+  <img src="/img/space-menu-people.png" alt="People menu item" width="200" />
+</div>
+
+The People page shows a grid of all recognized people in the space. From here:
 
 - **Editors** can rename a person by clicking their name.
 - **Editors** can merge duplicate people via the hover context menu.
 - Clicking a person opens their detail page with all their photos from the space.
+
+### Show and Hide People
+
+Editors can manage which people appear in the space by clicking **Show & hide people** in the top-right corner of the People page. This opens a full-screen modal where you can:
+
+- Click individual people to toggle their visibility.
+- Use the **bulk toggle** button to cycle through: show all, hide unnamed, hide all.
+- Use the **reset** button to undo unsaved changes.
+- Click **Done** to save.
+
+Hidden people are excluded from the people strip on the space cover, the filter panel, and search results. They can be unhidden at any time by returning to the Show & hide people modal.
 
 ### Face Matching
 

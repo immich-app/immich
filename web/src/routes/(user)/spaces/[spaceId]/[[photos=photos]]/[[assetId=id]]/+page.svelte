@@ -78,6 +78,7 @@
     mdiAccountMultipleOutline,
     mdiArrowLeft,
     mdiBookshelf,
+    mdiAccountSupervisorCircleOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
     mdiEyeOffOutline,
@@ -779,6 +780,13 @@
           {/if}
           {#if $user?.isAdmin}
             <MenuOption text="Link Libraries" icon={mdiBookshelf} onClick={handleLinkLibraries} />
+          {/if}
+          {#if space.faceRecognitionEnabled}
+            <MenuOption
+              text={$t('people')}
+              icon={mdiAccountSupervisorCircleOutline}
+              onClick={() => goto(`/spaces/${space.id}/people`)}
+            />
           {/if}
           {#if isOwner}
             <hr class="my-1 border-gray-300" />
