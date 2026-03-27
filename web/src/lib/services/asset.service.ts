@@ -5,7 +5,6 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
@@ -483,7 +482,7 @@ const handleQuickRotate = async (asset: AssetResponseDto, angle: number) => {
     await editCompleted;
 
     const refreshedAsset = await getAssetInfo({ id: asset.id });
-    assetViewingStore.setAsset(refreshedAsset);
+    assetViewerManager.setAsset(refreshedAsset);
     eventManager.emit('AssetUpdate', refreshedAsset);
     eventManager.emit('AssetEditsApplied', asset.id);
   } catch (error) {
