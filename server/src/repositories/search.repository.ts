@@ -535,7 +535,7 @@ export class SearchRepository {
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null)
-      .where(field, '!=', '')
+      .where(field, '!=', '' as any)
       .$if(!!options?.spaceId, (qb) =>
         qb.where((eb) =>
           eb.or([
