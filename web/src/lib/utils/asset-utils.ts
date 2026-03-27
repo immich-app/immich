@@ -1,8 +1,8 @@
+import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
@@ -388,7 +388,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetInteraction) => {
+export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetMultiSelectManager) => {
   if (assetInteraction.selectAll) {
     // Selection is already ongoing
     return;
@@ -418,7 +418,7 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   }
 };
 
-export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
+export const cancelMultiselect = (assetInteraction: AssetMultiSelectManager) => {
   assetInteraction.selectAll = false;
   assetInteraction.clearMultiselect();
 };

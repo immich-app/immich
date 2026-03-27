@@ -29,6 +29,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -45,7 +46,6 @@
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -91,8 +91,7 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
-  const assetInteraction = new AssetInteraction();
-  const timelineInteraction = new AssetInteraction();
+  const timelineMultiSelectManager = new AssetMultiSelectManager();
 
   const handleFavorite = async () => {
     try {
@@ -127,8 +126,8 @@
     if (assetViewerManager.isViewing) {
       return;
     }
-    if (assetInteraction.selectionActive) {
-      cancelMultiselect(assetInteraction);
+    if (assetMultiSelectManager.selectionActive) {
+      cancelMultiselect(assetMultiSelectManager);
       return;
     }
     await goto(Route.albums());
@@ -149,13 +148,13 @@
   };
 
   const handleCloseSelectAssets = async () => {
-    timelineInteraction.clearMultiselect();
+    timelineMultiSelectManager.clearMultiselect();
     await setModeToView();
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clearMultiselect();
   };
 
   const handleRemoveAssets = async (assetIds: string[]) => {
@@ -176,13 +175,13 @@
     await updateThumbnail(assetId);
 
     viewMode = AlbumPageViewMode.VIEW;
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clearMultiselect();
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
-    if (assetInteraction.selectedAssets.length === 1) {
-      const [firstAsset] = assetInteraction.selectedAssets;
-      assetInteraction.clearMultiselect();
+    if (assetMultiSelectManager.selectedAssets.length === 1) {
+      const [firstAsset] = assetMultiSelectManager.selectedAssets;
+      assetMultiSelectManager.clearMultiselect();
       await updateThumbnail(firstAsset.id);
     }
   };
@@ -271,7 +270,7 @@
     }
   };
   const currentAssetIntersection = $derived(
-    viewMode === AlbumPageViewMode.SELECT_ASSETS ? timelineInteraction : assetInteraction,
+    viewMode === AlbumPageViewMode.SELECT_ASSETS ? timelineMultiSelectManager : assetMultiSelectManager,
   );
 
   const onSharedLinkCreate = async () => {
@@ -291,7 +290,7 @@
     }
 
     await refreshAlbum();
-    timelineInteraction.clearMultiselect();
+    timelineMultiSelectManager.clearMultiselect();
     await setModeToView();
   };
 
@@ -313,7 +312,7 @@
 
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
-  const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineInteraction.selectedAssets));
+  const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.selectedAssets));
 
   const Close = $derived({
     title: $t('go_back'),
@@ -452,36 +451,36 @@
       {/if}
     </main>
 
-    {#if assetInteraction.selectionActive}
+    {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar
-        assets={assetInteraction.selectedAssets}
-        clearSelect={() => assetInteraction.clearMultiselect()}
+        assets={assetMultiSelectManager.selectedAssets}
+        clearSelect={() => assetMultiSelectManager.clearMultiselect()}
       >
-        {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+        {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
         <CreateSharedLink />
-        <SelectAllAssets {timelineManager} {assetInteraction} />
+        <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
         <ActionButton action={Actions.AddToAlbum} />
-        {#if assetInteraction.isAllUserOwned}
+        {#if assetMultiSelectManager.isAllUserOwned}
           <FavoriteAction
-            removeFavorite={assetInteraction.isAllFavorite}
+            removeFavorite={assetMultiSelectManager.isAllFavorite}
             onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
           ></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
-          {#if assetInteraction.isAllUserOwned}
+          {#if assetMultiSelectManager.isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             <ArchiveAction
               menuItem
-              unarchive={assetInteraction.isAllArchived}
+              unarchive={assetMultiSelectManager.isAllArchived}
               onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
-          {#if assetInteraction.selectedAssets.length === 1}
+          {#if assetMultiSelectManager.selectedAssets.length === 1}
             <MenuOption
               text={$t('set_as_album_cover')}
               icon={mdiImageOutline}
@@ -489,14 +488,14 @@
             />
           {/if}
 
-          {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
             <TagAction menuItem />
           {/if}
 
-          {#if isOwned || assetInteraction.isAllUserOwned}
+          {#if isOwned || assetMultiSelectManager.isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
-          {#if assetInteraction.isAllUserOwned}
+          {#if assetMultiSelectManager.isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
           {/if}
         </ButtonContextMenu>
@@ -595,10 +594,10 @@
         <ControlAppBar onClose={handleCloseSelectAssets}>
           {#snippet leading()}
             <p class="text-lg dark:text-immich-dark-fg">
-              {#if !timelineInteraction.selectionActive}
+              {#if !timelineMultiSelectManager.selectionActive}
                 {$t('add_to_album')}
               {:else}
-                {$t('selected_count', { values: { count: timelineInteraction.selectedAssets.length } })}
+                {$t('selected_count', { values: { count: timelineMultiSelectManager.selectedAssets.length } })}
               {/if}
             </p>
           {/snippet}

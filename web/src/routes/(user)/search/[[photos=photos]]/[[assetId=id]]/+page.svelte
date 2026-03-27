@@ -23,7 +23,7 @@
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -61,8 +61,6 @@
   let isLoading = $state(true);
   let scrollY = $state(0);
   let scrollYHistory = 0;
-
-  const assetInteraction = new AssetInteraction();
 
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
@@ -112,12 +110,12 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clearMultiselect();
     onAssetDelete(assetIds);
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(searchResultAssets.map((asset) => toTimelineAsset(asset)));
+    assetMultiSelectManager.selectAssets(searchResultAssets.map((asset) => toTimelineAsset(asset)));
   };
 
   async function onSearchQueryUpdate() {
@@ -226,7 +224,7 @@
   }
 
   const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
-    cancelMultiselect(assetInteraction);
+    cancelMultiselect(assetMultiSelectManager);
 
     if (terms.isNotInAlbum) {
       const assetIdSet = new Set(assetIds);
@@ -294,7 +292,7 @@
     {#if searchResultAssets.length > 0}
       <GalleryViewer
         assets={searchResultAssets}
-        {assetInteraction}
+        assetInteraction={assetMultiSelectManager}
         onIntersected={loadNextPage}
         showArchiveIcon={true}
         {viewport}
@@ -319,13 +317,13 @@
   </section>
 
   <section>
-    {#if assetInteraction.selectionActive}
+    {#if assetMultiSelectManager.selectionActive}
       <div class="fixed top-0 start-0 w-full z-2">
         <AssetSelectControlBar
-          assets={assetInteraction.selectedAssets}
-          clearSelect={() => cancelMultiselect(assetInteraction)}
+          assets={assetMultiSelectManager.selectedAssets}
+          clearSelect={() => cancelMultiselect(assetMultiSelectManager)}
         >
-          {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+          {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
           <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
           <CreateSharedLink />
@@ -338,9 +336,9 @@
             onclick={handleSelectAll}
           />
           <ActionButton action={Actions.AddToAlbum} />
-          {#if assetInteraction.isAllUserOwned}
+          {#if assetMultiSelectManager.isAllUserOwned}
             <FavoriteAction
-              removeFavorite={assetInteraction.isAllFavorite}
+              removeFavorite={assetMultiSelectManager.isAllFavorite}
               onFavorite={(ids, isFavorite) => {
                 for (const id of ids) {
                   const asset = searchResultAssets.find((asset) => asset.id === id);
@@ -357,7 +355,7 @@
               <ChangeDate menuItem />
               <ChangeDescription menuItem />
               <ChangeLocation menuItem />
-              <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+              <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
               <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
               {#if $preferences.tags.enabled}
                 <TagAction menuItem />

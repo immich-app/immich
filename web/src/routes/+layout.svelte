@@ -99,6 +99,9 @@
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
+
+    eventManager.emit('AppNavigate');
+
     showNavigationLoadingBar = true;
   });
 
