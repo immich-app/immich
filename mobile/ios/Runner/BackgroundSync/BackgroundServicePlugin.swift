@@ -348,13 +348,13 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             }
         }
         
-        // If we have required Wi-Fi, we can check the isExpensive property
+        // If we have required Wi-Fi, only continue on an unmetered connection.
         let requireWifi = defaults.value(forKey: "require_wifi") as? Bool ?? false
         if (requireWifi) {
-            let wifiMonitor = NWPathMonitor(requiredInterfaceType: .wifi)
-            let isExpensive = wifiMonitor.currentPath.isExpensive
-            if (isExpensive) {
-                // The network is expensive and we have required Wi-Fi
+            let isUnmetered = (try? ConnectivityApiImpl().getCapabilities())?.contains(.unmetered) ?? false
+            if (!isUnmetered) {
+                // The network does not satisfy the unmetered requirement,
+                // which includes Ethernet but excludes cellular.
                 // Therefore, we will simply complete the task without
                 // running it
                 task.setTaskCompleted(success: true)

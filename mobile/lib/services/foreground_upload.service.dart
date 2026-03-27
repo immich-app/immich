@@ -90,18 +90,23 @@ class ForegroundUploadService {
     }
 
     final networkCapabilities = await _connectivityApi.getCapabilities();
-    final hasWifi = networkCapabilities.isUnmetered;
-    _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
+    final hasUnmeteredConnection = networkCapabilities.isUnmetered;
+    _logger.info('Network capabilities: $networkCapabilities, hasUnmeteredConnection: $hasUnmeteredConnection');
 
     if (useSequentialUpload) {
-      await _uploadSequentially(items: candidates, cancelToken: cancelToken, hasWifi: hasWifi, callbacks: callbacks);
+      await _uploadSequentially(
+        items: candidates,
+        cancelToken: cancelToken,
+        hasUnmeteredConnection: hasUnmeteredConnection,
+        callbacks: callbacks,
+      );
     } else {
       await _executeWithWorkerPool<LocalAsset>(
         items: candidates,
         cancelToken: cancelToken,
         shouldSkip: (asset) {
           final requireWifi = _shouldRequireWiFi(asset);
-          return requireWifi && !hasWifi;
+          return requireWifi && !hasUnmeteredConnection;
         },
         processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
@@ -112,7 +117,7 @@ class ForegroundUploadService {
   Future<void> _uploadSequentially({
     required List<LocalAsset> items,
     required Completer<void> cancelToken,
-    required bool hasWifi,
+    required bool hasUnmeteredConnection,
     required UploadCallbacks callbacks,
   }) async {
     await _storageRepository.clearCache();
@@ -124,8 +129,8 @@ class ForegroundUploadService {
       }
 
       final requireWifi = _shouldRequireWiFi(asset);
-      if (requireWifi && !hasWifi) {
-        _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+      if (requireWifi && !hasUnmeteredConnection) {
+        _logger.warning('Skipping upload for ${asset.id} because it requires an unmetered connection');
         continue;
       }
 
