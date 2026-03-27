@@ -8,6 +8,16 @@ import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 
+export interface Faces {
+  id: string;
+  imageHeight: number;
+  imageWidth: number;
+  boundingBoxX1: number;
+  boundingBoxX2: number;
+  boundingBoxY1: number;
+  boundingBoxY2: number;
+}
+
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
 const isShowAssetPath = new PersistedLocalStorage<boolean>('asset-viewer-show-path', false);
 
@@ -48,6 +58,8 @@ class AssetViewerManager extends BaseEventManager<Events> {
   #isEditFacesPanelOpen = $state(false);
   #viewingAssetStoreState = $state<AssetResponseDto>();
   #viewState = $state<boolean>(false);
+  #highlightedFaces = $state<Faces[]>([]);
+  #showingHiddenPeople = $state(false);
   gridScrollTarget = $state<AssetGridRouteSearchParams | null | undefined>();
 
   get asset() {
@@ -209,6 +221,31 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.closeFaceEditMode();
     this.closeEditFacesPanel();
   }
+
+  get highlightedFaces() {
+    return this.#highlightedFaces;
+  }
+
+  setHighlightedFaces(faces: Faces[]) {
+    this.#highlightedFaces = faces;
+  }
+
+  clearHighlightedFaces() {
+    this.#highlightedFaces = [];
+  }
+
+  get isShowingHiddenPeople() {
+    return this.#showingHiddenPeople;
+  }
+
+  toggleHiddenPeople() {
+    this.#showingHiddenPeople = !this.#showingHiddenPeople;
+  }
+
+  hideHiddenPeople() {
+    this.#showingHiddenPeople = false;
+  }
+
   setAsset(asset: AssetResponseDto) {
     this.#viewingAssetStoreState = asset;
     this.#viewState = true;
