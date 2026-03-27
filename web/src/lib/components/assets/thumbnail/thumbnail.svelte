@@ -19,9 +19,9 @@
     mdiCheckCircle,
     mdiFileGifBox,
     mdiHeart,
+    mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
-    mdiMagnifyPlusOutline,
     mdiRotate360,
   } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -442,7 +442,8 @@
           e.preventDefault();
           onPreview?.($state.snapshot(asset));
         }}
-        class="absolute z-2 bottom-1 end-1 rounded-full bg-black/50 p-1.5 hover:bg-black/70 focus:outline-none transition-colors"
+        class="absolute z-2 bottom-1 end-1 rounded-full bg-black/25 p-1.5 hover:bg-black/50 focus:outline-none transition-colors"
+        in:fade={{ duration: 100 }}
         tabindex={-1}
         aria-label="Preview asset"
       >
