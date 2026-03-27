@@ -29,6 +29,10 @@ This fork builds on top of Immich with the following improvements:
 
 Create collaborative photo-sharing spaces where multiple users can contribute and browse photos together. Unlike partner sharing (which shares your entire library one-way), Shared Spaces let you create focused groups — "Family", "Friends", "Vacation 2025" — with role-based access (Owner, Editor, Viewer). Photos are linked by reference with zero additional storage cost. Members can optionally merge space assets into their personal timeline. Spaces feature album-style collage cards, cover photos with drag-to-reposition, list and grid views, pinnable favorites, and shared face recognition so people detected across the space are browsable by all members. Full mobile parity — create, manage, and browse spaces from the Flutter app. [Feature page](https://opennoodle.de/features/shared-spaces) · [Documentation](docs/docs/features/shared-spaces.md)
 
+### [Smart Search & Filters](https://opennoodle.de/features/smart-search-filters)
+
+A unified FilterPanel available on the Photos timeline, Shared Spaces, and Map view. Filter by people, location, camera, tags, rating, media type, and favorites — with a temporal picker for year/month scoping. Filters are contextual: narrowing the time range automatically refreshes suggestions so you only see cameras, locations, and people that actually appear in that period. Combine filters with CLIP-powered smart search in Spaces for natural language queries scoped to your filtered results. Collapsible section selector lets you show only the filter categories you care about. [Feature page](https://opennoodle.de/features/smart-search-filters) · [Spaces filtering](https://opennoodle.de/features/spaces-filtering) · [Map filtering](https://opennoodle.de/features/map-filtering) · [Documentation](docs/docs/features/map-filtering.md)
+
 ### [User Groups](https://opennoodle.de/features/user-groups)
 
 Create named, color-coded groups of users (e.g., "Family", "Close Friends") that you can select with one click when sharing albums or inviting to Spaces. Instead of picking people individually every time, click a group chip and all members are added at once. Groups are personal — each user manages their own. [Feature page](https://opennoodle.de/features/user-groups) · [Documentation](docs/docs/features/user-groups.md)
@@ -37,25 +41,29 @@ Create named, color-coded groups of users (e.g., "Family", "Close Friends") that
 
 Store your photos and videos in any S3-compatible object storage — AWS S3, MinIO, Cloudflare R2, Backblaze B2, Wasabi, and more. Configure it with a few environment variables and new uploads go straight to your bucket. Choose between `redirect` mode (clients download directly from S3 via presigned URLs) or `proxy` mode (server streams the files). Both disk and S3 backends run simultaneously, so existing files on disk continue to work. A built-in [Storage Migration](docs/docs/features/storage-migration.md) tool lets you migrate existing files between disk and S3 in either direction, with resume, rollback, and configurable concurrency. [Feature page](https://opennoodle.de/features/s3-storage) · [Documentation](docs/docs/features/s3-storage.md)
 
+### [Auto-Classification](https://opennoodle.de/features/auto-classification)
+
+Define categories like "Screenshots", "Memes", or "Receipts" with text prompts, and Gallery uses CLIP AI to automatically tag and optionally archive matching photos. Each category has a tunable similarity threshold and can either tag-only or tag-and-archive. Runs on the same CLIP pipeline as smart search — no extra processing. Scan your entire existing library in seconds or let it classify new uploads automatically. Per-user categories so everyone can define their own clutter rules. [Feature page](https://opennoodle.de/features/auto-classification)
+
+### [Video Duplicate Detection](https://opennoodle.de/features/video-duplicate-detection)
+
+Extends upstream's photo duplicate detection to videos. Extracts multiple frames from each video, generates CLIP embeddings for each, and averages them into a single vector. This captures the visual content of the entire video, not just a single thumbnail. Uses the same deduplication UI and configurable similarity threshold as photo duplicates. [Feature page](https://opennoodle.de/features/video-duplicate-detection) · [Documentation](docs/docs/features/video-duplicate-detection.md)
+
 ### [Pet Detection](https://opennoodle.de/features/pet-detection)
 
-Automatically detect and tag pets in your photos using YOLO11 object detection. Detected animals appear in the People section alongside faces, making it easy to browse all your pet photos. Choose from three model sizes (nano, small, medium) depending on your accuracy vs. speed preference. Configurable from the Admin panel under Machine Learning settings. [Feature page](https://opennoodle.de/features/pet-detection) · [Documentation](docs/docs/features/pet-detection.md)
+Automatically detect and tag pets in your photos using YOLO11 object detection. Detected animals appear in the People section alongside faces, making it easy to browse all your pet photos. Per-space toggle to show or hide pets. Choose from three model sizes (nano, small, medium) depending on your accuracy vs. speed preference. [Feature page](https://opennoodle.de/features/pet-detection) · [Documentation](docs/docs/features/pet-detection.md)
 
 ### [Google Photos Import](https://opennoodle.de/features/google-photos-import)
 
 Import your Google Takeout archive directly from the web UI — no command-line tools needed. A guided 5-step wizard walks you through selecting your Takeout zip or folder, scanning and extracting photos, reviewing metadata, and uploading. The importer preserves original dates, GPS coordinates, descriptions, favorite and archived status, and album structure. Everything runs client-side in the browser using zip.js for extraction and the existing upload API, so no additional server configuration is required. [Feature page](https://opennoodle.de/features/google-photos-import)
 
-### [Image Editing](https://opennoodle.de/features/image-editing)
+### [Image Editing & Video Trimming](https://opennoodle.de/features/image-editing)
 
-Non-destructive quick-rotate from the asset viewer toolbar, batch rotate for multiple selected images, and automatic timeline thumbnail refresh after edits. Rotations are cumulative and full 360° rotations auto-revert to the original. [Feature page](https://opennoodle.de/features/image-editing) · [Documentation](docs/docs/features/editing.mdx)
-
-### Improved Test Coverage
-
-Server unit test coverage has been increased from **74% to 94%**, providing significantly better reliability and confidence in code changes.
+Non-destructive image rotation from the asset viewer toolbar or via keyboard shortcuts (`[` / `]`), batch rotate for multiple selected images, and automatic timeline thumbnail refresh after edits. Rotations are cumulative and full 360° rotations auto-revert to the original. Video trimming lets you cut clips in the browser with a timeline scrubber — FFmpeg stream copy means instant, lossless results. Re-trim or restore the original at any time. [Feature page](https://opennoodle.de/features/image-editing) · [Video trimming](https://opennoodle.de/features/video-trimming) · [Documentation](docs/docs/features/editing.mdx)
 
 ### Structured JSON Logging
 
-Added support for structured JSON log output (`IMMICH_LOG_FORMAT=json`), making it easy to integrate Immich with log aggregation systems like Grafana Loki, ELK Stack, Datadog, or Splunk.
+Added support for structured JSON log output (`IMMICH_LOG_FORMAT=json`), making it easy to integrate with log aggregation systems like Grafana Loki, ELK Stack, Datadog, or Splunk.
 
 ---
 
@@ -181,10 +189,13 @@ That's it. To switch back to upstream Immich, reverse the image names and restor
 | Tags                                         | No     | Yes |
 | Folder View                                  | Yes    | Yes |
 | **Shared Spaces**                            | Yes    | Yes |
+| **Smart Search & Filters**                   | No     | Yes |
 | **User Groups**                              | No     | Yes |
+| **Auto-Classification**                      | No     | Yes |
+| **Video Duplicate Detection**                | No     | Yes |
 | **Pet Detection**                            | Yes    | Yes |
 | **Google Photos Import**                     | No     | Yes |
-| **Non-destructive Image Editing**            | No     | Yes |
+| **Image Editing & Video Trimming**           | No     | Yes |
 | **S3-Compatible Storage**                    | Yes    | Yes |
 
 ## Translations
