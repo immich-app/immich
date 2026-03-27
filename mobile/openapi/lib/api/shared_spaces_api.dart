@@ -659,7 +659,9 @@ class SharedSpacesApi {
   /// * [DateTime] takenAfter:
   ///
   /// * [DateTime] takenBefore:
-  Future<Response> getSpacePeopleWithHttpInfo(String id, { DateTime? takenAfter, DateTime? takenBefore, }) async {
+  ///
+  /// * [bool] withHidden:
+  Future<Response> getSpacePeopleWithHttpInfo(String id, { DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-spaces/{id}/people'
       .replaceAll('{id}', id);
@@ -676,6 +678,9 @@ class SharedSpacesApi {
     }
     if (takenBefore != null) {
       queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
     }
 
     const contentTypes = <String>[];
@@ -703,8 +708,10 @@ class SharedSpacesApi {
   /// * [DateTime] takenAfter:
   ///
   /// * [DateTime] takenBefore:
-  Future<List<SharedSpacePersonResponseDto>?> getSpacePeople(String id, { DateTime? takenAfter, DateTime? takenBefore, }) async {
-    final response = await getSpacePeopleWithHttpInfo(id,  takenAfter: takenAfter, takenBefore: takenBefore, );
+  ///
+  /// * [bool] withHidden:
+  Future<List<SharedSpacePersonResponseDto>?> getSpacePeople(String id, { DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
+    final response = await getSpacePeopleWithHttpInfo(id,  takenAfter: takenAfter, takenBefore: takenBefore, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

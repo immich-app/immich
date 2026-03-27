@@ -24,6 +24,12 @@ class GalleryMapApi {
   ///
   /// Parameters:
   ///
+  /// * [String] city:
+  ///   Filter by city
+  ///
+  /// * [String] country:
+  ///   Filter by country
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status
   ///
@@ -53,7 +59,7 @@ class GalleryMapApi {
   ///
   /// * [String] type:
   ///   Filter by media type
-  Future<Response> getFilteredMapMarkersWithHttpInfo({ bool? isFavorite, String? make, String? model, List<String>? personIds, num? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, String? type, }) async {
+  Future<Response> getFilteredMapMarkersWithHttpInfo({ String? city, String? country, bool? isFavorite, String? make, String? model, List<String>? personIds, num? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, String? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/gallery/map/markers';
 
@@ -64,6 +70,12 @@ class GalleryMapApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
+    }
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
+    }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
     }
@@ -115,6 +127,12 @@ class GalleryMapApi {
   ///
   /// Parameters:
   ///
+  /// * [String] city:
+  ///   Filter by city
+  ///
+  /// * [String] country:
+  ///   Filter by country
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status
   ///
@@ -144,8 +162,8 @@ class GalleryMapApi {
   ///
   /// * [String] type:
   ///   Filter by media type
-  Future<List<MapMarkerResponseDto>?> getFilteredMapMarkers({ bool? isFavorite, String? make, String? model, List<String>? personIds, num? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, String? type, }) async {
-    final response = await getFilteredMapMarkersWithHttpInfo( isFavorite: isFavorite, make: make, model: model, personIds: personIds, rating: rating, spaceId: spaceId, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, type: type, );
+  Future<List<MapMarkerResponseDto>?> getFilteredMapMarkers({ String? city, String? country, bool? isFavorite, String? make, String? model, List<String>? personIds, num? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, String? type, }) async {
+    final response = await getFilteredMapMarkersWithHttpInfo( city: city, country: country, isFavorite: isFavorite, make: make, model: model, personIds: personIds, rating: rating, spaceId: spaceId, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

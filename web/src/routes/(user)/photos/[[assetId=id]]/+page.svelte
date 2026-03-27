@@ -70,14 +70,15 @@
     providers: {
       people: async () => {
         const response = await getAllPeople({ withHidden: false });
-        for (const p of response.people) {
-          personNames.set(p.id, p.name || 'Unknown');
+        const named = response.people.filter((p) => p.name);
+        for (const p of named) {
+          personNames.set(p.id, p.name);
         }
-        return response.people
+        return named
           .filter((p) => p.thumbnailPath)
           .map((p) => ({
             id: p.id,
-            name: p.name || 'Unknown',
+            name: p.name,
             thumbnailUrl: `/people/${p.id}/thumbnail`,
           }));
       },

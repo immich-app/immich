@@ -170,12 +170,13 @@
           takenAfter: context?.takenAfter,
           takenBefore: context?.takenBefore,
         });
-        for (const p of people) {
-          personNames.set(p.id, p.name || 'Unknown');
+        const named = people.filter((p) => !p.isHidden && p.name);
+        for (const p of named) {
+          personNames.set(p.id, p.name);
         }
-        return people.map((p) => ({
+        return named.map((p) => ({
           id: p.id,
-          name: p.name || 'Unknown',
+          name: p.name,
           thumbnailUrl: p.thumbnailPath
             ? createUrl(`/shared-spaces/${space.id}/people/${p.id}/thumbnail`, { updatedAt: p.updatedAt })
             : undefined,

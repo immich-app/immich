@@ -78,7 +78,7 @@
   let fetchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   $effect(() => {
-    const { personIds, make, model, tagIds, rating, mediaType, isFavorite } = filters;
+    const { personIds, make, model, tagIds, rating, mediaType, isFavorite, city, country } = filters;
     const currentSpaceId = spaceId;
     const context = buildFilterContext(filters);
 
@@ -93,6 +93,8 @@
         ...(rating !== undefined && { rating }),
         ...(mediaType !== 'all' && { $type: mediaType === 'image' ? 'IMAGE' : 'VIDEO' }),
         ...(isFavorite !== undefined && { isFavorite }),
+        ...(city && { city }),
+        ...(country && { country }),
         ...(context?.takenAfter && { takenAfter: context.takenAfter }),
         ...(context?.takenBefore && { takenBefore: context.takenBefore }),
       })

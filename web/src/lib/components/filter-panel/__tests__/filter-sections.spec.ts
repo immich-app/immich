@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import CameraFilter from '../camera-filter.svelte';
 import type { PersonOption } from '../filter-panel';
@@ -155,7 +154,7 @@ describe('PeopleFilter', () => {
     expect(queryByTestId('people-item-p7')).toBeTruthy();
   });
 
-  it('should render thumbnail images when thumbnailUrl is provided', async () => {
+  it('should render thumbnail images when thumbnailUrl is provided', () => {
     const people: PersonOption[] = [
       { id: '1', name: 'Alice', thumbnailUrl: '/shared-spaces/s1/people/1/thumbnail' },
       { id: '2', name: 'Bob', thumbnailUrl: '/shared-spaces/s1/people/2/thumbnail' },
@@ -169,7 +168,7 @@ describe('PeopleFilter', () => {
     expect(images[1]).toHaveAttribute('src', '/shared-spaces/s1/people/2/thumbnail');
   });
 
-  it('should render gradient avatar when thumbnailUrl is not provided', async () => {
+  it('should render gradient avatar when thumbnailUrl is not provided', () => {
     const people: PersonOption[] = [{ id: '1', name: 'Alice' }];
     const { container, getByText } = render(PeopleFilter, {
       props: { people, selectedIds: [], onSelectionChange: vi.fn() },

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import { IsEnum, Max, Min } from 'class-validator';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
@@ -9,9 +10,15 @@ export enum MapMediaType {
 
 export class FilteredMapMarkerDto {
   @ValidateUUID({ each: true, optional: true, description: 'Filter by person IDs' })
+  @Transform(({ value }) => (value === undefined ? undefined : Array.isArray(value) ? value : [value]), {
+    toClassOnly: true,
+  })
   personIds?: string[];
 
   @ValidateUUID({ each: true, optional: true, description: 'Filter by tag IDs' })
+  @Transform(({ value }) => (value === undefined ? undefined : Array.isArray(value) ? value : [value]), {
+    toClassOnly: true,
+  })
   tagIds?: string[];
 
   @ValidateUUID({ optional: true, description: 'Scope to a shared space' })
@@ -29,6 +36,7 @@ export class FilteredMapMarkerDto {
   @Optional()
   @Min(1)
   @Max(5)
+  @Type(() => Number)
   rating?: number;
 
   @ApiProperty({ enum: MapMediaType, required: false, description: 'Filter by media type' })
@@ -44,4 +52,12 @@ export class FilteredMapMarkerDto {
 
   @ValidateBoolean({ optional: true, description: 'Filter by favorite status' })
   isFavorite?: boolean;
+
+  @ApiProperty({ type: String, required: false, description: 'Filter by city' })
+  @Optional()
+  city?: string;
+
+  @ApiProperty({ type: String, required: false, description: 'Filter by country' })
+  @Optional()
+  country?: string;
 }

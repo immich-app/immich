@@ -14,6 +14,10 @@
 
   let { people, spaceId, selectedPersonIds = [], onPersonClick }: Props = $props();
 
+  const namedPeople = $derived(
+    [...people].filter((p) => !p.isHidden && (p.alias || p.name)).sort((a, b) => b.assetCount - a.assetCount),
+  );
+
   const SEE_ALL_THRESHOLD = 6;
 
   const getDisplayName = (person: SharedSpacePersonResponseDto): string => {
@@ -25,9 +29,9 @@
   };
 </script>
 
-{#if people.length > 0}
+{#if namedPeople.length > 0}
   <div class="flex items-start gap-3 overflow-x-auto pt-4 pb-2 immich-scrollbar" data-testid="people-strip">
-    {#each people as person (person.id)}
+    {#each namedPeople as person (person.id)}
       <button
         type="button"
         class="flex w-16 shrink-0 flex-col items-center gap-1"
@@ -59,13 +63,13 @@
       </button>
     {/each}
 
-    {#if people.length > SEE_ALL_THRESHOLD}
+    {#if namedPeople.length > SEE_ALL_THRESHOLD}
       <a
         href="/spaces/{spaceId}/people"
         class="flex shrink-0 items-center gap-0.5 whitespace-nowrap py-4 text-xs font-medium text-immich-primary hover:underline"
         data-testid="see-all-people"
       >
-        {$t('spaces_see_all_people', { values: { count: people.length } })}
+        {$t('spaces_see_all_people', { values: { count: namedPeople.length } })}
         <Icon icon={mdiChevronRight} size="14" />
       </a>
     {/if}

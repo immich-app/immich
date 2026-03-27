@@ -90,10 +90,12 @@ export interface SearchOcrOptions {
 
 export interface SearchPeopleOptions {
   personIds?: string[];
+  personMatchAny?: boolean;
 }
 
 export interface SearchTagOptions {
   tagIds?: string[] | null;
+  tagMatchAny?: boolean;
 }
 
 export interface SearchAlbumOptions {

@@ -2654,10 +2654,11 @@ describe(SharedSpaceService.name, () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('Temporal Person');
-      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).toHaveBeenCalledWith(spaceId, {
-        takenAfter,
-        takenBefore,
-      });
+      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).toHaveBeenCalledWith(
+        spaceId,
+        { takenAfter, takenBefore },
+        false,
+      );
       expect(mocks.sharedSpace.getPersonsBySpaceId).not.toHaveBeenCalled();
     });
 
@@ -2683,7 +2684,7 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.getSpacePeople(auth, spaceId);
 
       expect(result).toHaveLength(1);
-      expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId);
+      expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, false);
       expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).not.toHaveBeenCalled();
     });
 
@@ -2713,7 +2714,11 @@ describe(SharedSpaceService.name, () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('In Range');
-      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).toHaveBeenCalledWith(spaceId, { takenAfter });
+      expect(mocks.sharedSpace.getPersonsBySpaceIdWithTemporalFilter).toHaveBeenCalledWith(
+        spaceId,
+        { takenAfter },
+        false,
+      );
     });
 
     it('should resolve name from personal person when space person has no name override', async () => {
@@ -2823,6 +2828,42 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.getSpacePeople(auth, spaceId);
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('Custom Name');
+    });
+
+    it('should include hidden persons when withHidden is true', async () => {
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const hiddenPerson = factory.sharedSpacePerson({ spaceId, isHidden: true });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ spaceId }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([
+        { ...hiddenPerson, personalName: 'Hidden', personalThumbnailPath: '/thumb.jpg' },
+      ]);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+      mocks.sharedSpace.getPersonFaceCount.mockResolvedValue(1);
+      mocks.sharedSpace.getPersonAssetCount.mockResolvedValue(1);
+
+      const result = await sut.getSpacePeople(factory.auth(), spaceId, { withHidden: true });
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should exclude hidden persons by default', async () => {
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const hiddenPerson = factory.sharedSpacePerson({ spaceId, isHidden: true });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ spaceId }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([
+        { ...hiddenPerson, personalName: 'Hidden', personalThumbnailPath: '/thumb.jpg' },
+      ]);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+
+      const result = await sut.getSpacePeople(factory.auth(), spaceId);
+
+      expect(result).toHaveLength(0);
     });
   });
 
@@ -4388,6 +4429,83 @@ describe(SharedSpaceService.name, () => {
       mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set());
 
       await expect(sut.getFilteredMapMarkers(auth, { spaceId })).rejects.toThrow();
+    });
+
+    it('should pass personMatchAny and tagMatchAny flags to repository', async () => {
+      const auth = factory.auth();
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([]);
+
+      await sut.getFilteredMapMarkers(auth, {
+        personIds: ['person-1'],
+        tagIds: ['tag-1'],
+      });
+
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          personIds: ['person-1'],
+          tagIds: ['tag-1'],
+          personMatchAny: true,
+          tagMatchAny: true,
+        }),
+      );
+    });
+
+    it('should pass personMatchAny for space person IDs', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([]);
+
+      await sut.getFilteredMapMarkers(auth, { spaceId, personIds: ['person-1'] });
+
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          spacePersonIds: ['person-1'],
+          personMatchAny: true,
+          tagMatchAny: true,
+        }),
+      );
+    });
+
+    it('should pass city and country to repository', async () => {
+      const auth = factory.auth();
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([]);
+
+      await sut.getFilteredMapMarkers(auth, { city: 'Paris', country: 'France' });
+
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          city: 'Paris',
+          country: 'France',
+        }),
+      );
+    });
+
+    it('should pass all filters together to repository', async () => {
+      const auth = factory.auth();
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([]);
+
+      await sut.getFilteredMapMarkers(auth, {
+        personIds: ['person-1'],
+        tagIds: ['tag-1'],
+        city: 'Paris',
+        country: 'France',
+        rating: 4,
+        make: 'Canon',
+      });
+
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          personIds: ['person-1'],
+          tagIds: ['tag-1'],
+          city: 'Paris',
+          country: 'France',
+          rating: 4,
+          make: 'Canon',
+          personMatchAny: true,
+          tagMatchAny: true,
+        }),
+      );
     });
 
     it('should map undefined city/state/country to null', async () => {

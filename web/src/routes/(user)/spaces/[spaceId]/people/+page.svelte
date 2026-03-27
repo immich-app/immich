@@ -3,6 +3,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ManageSpacePeopleVisibility from '$lib/components/spaces/manage-space-people-visibility.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { user } from '$lib/stores/user.store';
@@ -16,8 +17,16 @@
     type SharedSpacePersonResponseDto,
     type SharedSpaceResponseDto,
   } from '@immich/sdk';
-  import { Icon, IconButton } from '@immich/ui';
-  import { mdiAccountGroupOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
+  import { Button, Icon, IconButton } from '@immich/ui';
+  import {
+    mdiAccountGroupOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiDotsVertical,
+    mdiEyeOutline,
+  } from '@mdi/js';
+  import { fly } from 'svelte/transition';
+  import { quintOut } from 'svelte/easing';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -41,6 +50,21 @@
     }
   });
 
+  let selectHidden = $state(false);
+  const visiblePeople = $derived(
+    [...people]
+      .filter((p) => !p.isHidden)
+      .sort((a, b) => {
+        const aHasName = a.name ? 0 : 1;
+        const bHasName = b.name ? 0 : 1;
+        if (aHasName !== bHasName) {
+          return aHasName - bHasName;
+        }
+        return b.assetCount - a.assetCount;
+      }),
+  );
+  let allPeople = $state<SharedSpacePersonResponseDto[]>([]);
+
   // Name editing state
   let editingName = $state('');
 
@@ -61,6 +85,16 @@
     } catch (error) {
       handleError(error, $t('spaces_error_loading_people'));
     }
+  }
+
+  async function openVisibilityModal() {
+    try {
+      allPeople = await getSpacePeople({ id: space.id, withHidden: true });
+    } catch (error) {
+      handleError(error, $t('spaces_error_loading_people'));
+      return;
+    }
+    selectHidden = true;
   }
 
   const onNameFocus = (person: SharedSpacePersonResponseDto) => {
@@ -105,8 +139,15 @@
       icon={mdiArrowLeft}
     />
   {/snippet}
+  {#snippet buttons()}
+    {#if isEditor}
+      <Button leadingIcon={mdiEyeOutline} onclick={openVisibilityModal} size="small" variant="ghost" color="secondary"
+        >{$t('show_and_hide_people')}</Button
+      >
+    {/if}
+  {/snippet}
 
-  {#if people.length === 0}
+  {#if visiblePeople.length === 0}
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon icon={mdiAccountGroupOutline} size="3.5em" />
@@ -120,7 +161,7 @@
     <div
       class="grid grid-cols-2 gap-4 px-4 pt-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8"
     >
-      {#each people as person (person.id)}
+      {#each visiblePeople as person (person.id)}
         <div
           class="relative rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm dark:hover:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"
           onmouseenter={() => (hoveredPersonId = person.id)}
@@ -179,3 +220,19 @@
     </div>
   {/if}
 </UserPageLayout>
+
+{#if selectHidden}
+  <dialog
+    transition:fly={{ y: 500, duration: 150, easing: quintOut, opacity: 0 }}
+    class="fixed inset-0 h-full w-full max-w-none max-h-none bg-light"
+    aria-labelledby="manage-visibility-title"
+    {@attach (dialog) => dialog.showModal()}
+  >
+    <ManageSpacePeopleVisibility
+      people={allPeople}
+      spaceId={space.id}
+      onClose={() => (selectHidden = false)}
+      onUpdate={() => refreshPeople()}
+    />
+  </dialog>
+{/if}

@@ -1,4 +1,5 @@
 import type { FilterContext, FilterPanelConfig } from '$lib/components/filter-panel/filter-panel';
+import { createUrl } from '$lib/utils';
 import { getAllPeople, getAllTags, getSearchSuggestions, getSpacePeople, SearchSuggestionType } from '@immich/sdk';
 
 export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
@@ -13,7 +14,17 @@ export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
             id: spaceId,
             ...(context?.takenAfter && { takenAfter: context.takenAfter }),
             ...(context?.takenBefore && { takenBefore: context.takenBefore }),
-          }).then((people) => people.map((p) => ({ id: p.id, name: p.name, thumbnailPath: p.thumbnailPath }))),
+          }).then((people) =>
+            people
+              .filter((p) => !p.isHidden && p.name)
+              .map((p) => ({
+                id: p.id,
+                name: p.name,
+                thumbnailUrl: createUrl(`/shared-spaces/${spaceId}/people/${p.id}/thumbnail`, {
+                  updatedAt: p.updatedAt,
+                }),
+              })),
+          ),
         cameras: (context?: FilterContext) =>
           getSearchSuggestions({
             $type: SearchSuggestionType.CameraMake,
@@ -41,7 +52,11 @@ export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
         getAllPeople({ withHidden: false }).then((response) =>
           response.people
             .filter((p) => p.name)
-            .map((p) => ({ id: p.id, name: p.name, thumbnailPath: p.thumbnailPath })),
+            .map((p) => ({
+              id: p.id,
+              name: p.name,
+              thumbnailUrl: createUrl(`/people/${p.id}/thumbnail`, { updatedAt: p.updatedAt }),
+            })),
         ),
       cameras: (context?: FilterContext) =>
         getSearchSuggestions({

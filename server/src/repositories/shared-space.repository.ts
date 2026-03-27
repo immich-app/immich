@@ -485,8 +485,8 @@ export class SharedSpaceRepository {
     return result.count > 0;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getPersonsBySpaceId(spaceId: string) {
+  @GenerateSql({ params: [DummyValue.UUID, false] })
+  getPersonsBySpaceId(spaceId: string, withHidden = false) {
     return this.db
       .selectFrom('shared_space_person')
       .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
@@ -494,13 +494,17 @@ export class SharedSpaceRepository {
       .selectAll('shared_space_person')
       .select(['person.name as personalName', 'person.thumbnailPath as personalThumbnailPath'])
       .where('shared_space_person.spaceId', '=', spaceId)
-      .where('shared_space_person.isHidden', '=', false)
+      .$if(!withHidden, (qb) => qb.where('shared_space_person.isHidden', '=', false))
       .orderBy('shared_space_person.name', 'asc')
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { takenAfter: DummyValue.DATE, takenBefore: DummyValue.DATE }] })
-  getPersonsBySpaceIdWithTemporalFilter(spaceId: string, options?: { takenAfter?: Date; takenBefore?: Date }) {
+  @GenerateSql({ params: [DummyValue.UUID, { takenAfter: DummyValue.DATE, takenBefore: DummyValue.DATE }, false] })
+  getPersonsBySpaceIdWithTemporalFilter(
+    spaceId: string,
+    options?: { takenAfter?: Date; takenBefore?: Date },
+    withHidden = false,
+  ) {
     return this.db
       .selectFrom('shared_space_person')
       .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
@@ -508,7 +512,7 @@ export class SharedSpaceRepository {
       .selectAll('shared_space_person')
       .select(['person.name as personalName', 'person.thumbnailPath as personalThumbnailPath'])
       .where('shared_space_person.spaceId', '=', spaceId)
-      .where('shared_space_person.isHidden', '=', false)
+      .$if(!withHidden, (qb) => qb.where('shared_space_person.isHidden', '=', false))
       .$if(!!options?.takenAfter || !!options?.takenBefore, (qb) =>
         qb.where((eb) =>
           eb.exists(

@@ -44,10 +44,43 @@ describe('SpacePeopleStrip', () => {
     expect(screen.getByTestId('person-label-p1')).toHaveTextContent('Alice Johnson');
   });
 
-  it('should not show label when no name or alias', () => {
-    const people = [makePerson({ id: 'p1', name: '', alias: null })];
+  it('should exclude unnamed people entirely', () => {
+    const people = [
+      makePerson({ id: 'p1', name: 'Alice' }),
+      makePerson({ id: 'p2', name: '', alias: null }),
+      makePerson({ id: 'p3', name: '', alias: null }),
+      makePerson({ id: 'p4', name: 'Bob' }),
+    ];
     render(SpacePeopleStrip, { people, spaceId: 'space-1' });
-    expect(screen.queryByTestId('person-label-p1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('person-thumb-p1')).toBeInTheDocument();
+    expect(screen.queryByTestId('person-thumb-p2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('person-thumb-p3')).not.toBeInTheDocument();
+    expect(screen.getByTestId('person-thumb-p4')).toBeInTheDocument();
+  });
+
+  it('should render nothing when all people are unnamed', () => {
+    const people = [makePerson({ id: 'p1', name: '', alias: null }), makePerson({ id: 'p2', name: '', alias: null })];
+    render(SpacePeopleStrip, { people, spaceId: 'space-1' });
+    expect(screen.queryByTestId('people-strip')).not.toBeInTheDocument();
+  });
+
+  it('should exclude hidden people', () => {
+    const people = [
+      makePerson({ id: 'p1', name: 'Alice', isHidden: false }),
+      makePerson({ id: 'p2', name: 'Bob', isHidden: true }),
+      makePerson({ id: 'p3', name: 'Carol', isHidden: false }),
+    ];
+    render(SpacePeopleStrip, { people, spaceId: 'space-1' });
+    expect(screen.getByTestId('person-thumb-p1')).toBeInTheDocument();
+    expect(screen.queryByTestId('person-thumb-p2')).not.toBeInTheDocument();
+    expect(screen.getByTestId('person-thumb-p3')).toBeInTheDocument();
+  });
+
+  it('should keep people with alias even if name is empty', () => {
+    const people = [makePerson({ id: 'p1', name: '', alias: 'Mom' })];
+    render(SpacePeopleStrip, { people, spaceId: 'space-1' });
+    expect(screen.getByTestId('person-thumb-p1')).toBeInTheDocument();
+    expect(screen.getByTestId('person-label-p1')).toHaveTextContent('Mom');
   });
 
   it('should show selected state with ring when person is in selectedPersonIds', () => {
@@ -88,6 +121,20 @@ describe('SpacePeopleStrip', () => {
     render(SpacePeopleStrip, { people, spaceId: 'space-1', onPersonClick });
     await fireEvent.click(screen.getByTestId('person-thumb-p1'));
     expect(onPersonClick).toHaveBeenCalledWith('p1');
+  });
+
+  it('should display named people sorted by assetCount descending', () => {
+    const people = [
+      makePerson({ id: 'named-few', name: 'Alice', assetCount: 2 }),
+      makePerson({ id: 'named-many', name: 'Bob', assetCount: 50 }),
+      makePerson({ id: 'unnamed-many', name: '', assetCount: 100 }),
+    ];
+    render(SpacePeopleStrip, { people, spaceId: 'space-1' });
+
+    const buttons = screen.getAllByTestId(/^person-thumb-/);
+    // Named only (unnamed filtered out), sorted by assetCount desc
+    expect(buttons[0]).toHaveAttribute('data-testid', 'person-thumb-named-many');
+    expect(buttons[1]).toHaveAttribute('data-testid', 'person-thumb-named-few');
   });
 
   it('should show "See all" link when people count exceeds threshold', () => {

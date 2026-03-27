@@ -8,6 +8,9 @@ export class SpacePeopleQueryDto {
 
   @ValidateDate({ optional: true })
   takenBefore?: Date;
+
+  @ValidateBoolean({ optional: true })
+  withHidden?: boolean;
 }
 
 export class SharedSpacePersonUpdateDto {
