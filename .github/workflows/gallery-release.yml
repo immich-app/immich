@@ -380,7 +380,16 @@ jobs:
               --jq '.body' 2>/dev/null || true)
           fi
 
+          # Build commit log between tags
+          commits=""
+          if [[ -n "$prev_tag" ]]; then
+            commits=$(git log --pretty=format:'- %s' "${prev_tag}..HEAD" 2>/dev/null || true)
+          fi
+
           notes="Based on [Immich v${upstream_version}](https://github.com/immich-app/immich/releases/tag/v${upstream_version})"
+          if [[ -n "$commits" ]]; then
+            printf -v notes '%s\n\n## Changes\n\n%s' "$notes" "$commits"
+          fi
           if [[ -n "$changelog" ]]; then
             printf -v notes '%s\n\n%s' "$notes" "$changelog"
           fi
