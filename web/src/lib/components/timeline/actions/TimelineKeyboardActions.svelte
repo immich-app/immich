@@ -5,6 +5,7 @@
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
+  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -14,7 +15,6 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -25,7 +25,7 @@
 
   type Props = {
     timelineManager: TimelineManager;
-    assetInteraction: AssetInteraction;
+    assetInteraction: AssetMultiSelectManager;
     onEscape?: () => void;
     scrollToAsset: (asset: TimelineAsset) => boolean;
   };

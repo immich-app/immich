@@ -1,11 +1,11 @@
 <script lang="ts">
   import AssetLayout from '$lib/components/timeline/AssetLayout.svelte';
+  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot, filterIsInOrNearViewport } from '$lib/managers/timeline-manager/utils.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
@@ -26,7 +26,7 @@
     >;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
     singleSelect: boolean;
-    assetInteraction: AssetInteraction;
+    assetInteraction: AssetMultiSelectManager;
     monthGroup: MonthGroup;
     manager: VirtualScrollManager;
     onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;

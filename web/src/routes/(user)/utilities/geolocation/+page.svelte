@@ -10,7 +10,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { LatLng } from '$lib/types';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { setQueryValue } from '$lib/utils/navigation';
@@ -28,7 +28,6 @@
   let { data }: Props = $props();
 
   let isLoading = $state(false);
-  let assetInteraction = new AssetInteraction();
   let point = $state<LatLng>();
   let locationUpdated = $state(false);
 
@@ -47,7 +46,7 @@
 
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
       point,
-      assetCount: assetInteraction.selectedAssets.length,
+      assetCount: assetMultiSelectManager.selectedAssets.length,
     });
 
     if (!confirmed) {
@@ -56,14 +55,14 @@
 
     await updateAssets({
       assetBulkUpdateDto: {
-        ids: assetInteraction.selectedAssets.map((asset) => asset.id),
+        ids: assetMultiSelectManager.selectedAssets.map((asset) => asset.id),
         latitude: point.lat,
         longitude: point.lng,
       },
     });
 
     const updatedAssets = await Promise.all(
-      assetInteraction.selectedAssets.map(async (asset) => {
+      assetMultiSelectManager.selectedAssets.map(async (asset) => {
         const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
         return toTimelineAsset(updatedAsset);
       }),
@@ -78,8 +77,8 @@
     if (event.key === 'Shift') {
       event.preventDefault();
     }
-    if (event.key === 'Escape' && assetInteraction.selectionActive) {
-      cancelMultiselect(assetInteraction);
+    if (event.key === 'Escape' && assetMultiSelectManager.selectionActive) {
+      cancelMultiselect(assetMultiSelectManager);
     }
   };
   const onKeyUp = (event: KeyboardEvent) => {
@@ -89,7 +88,7 @@
   };
 
   const handleDeselectAll = () => {
-    cancelMultiselect(assetInteraction);
+    cancelMultiselect(assetMultiSelectManager);
   };
 
   const handlePickPoint = async () => {
@@ -101,8 +100,8 @@
     point = selected;
   };
   const handleEscape = () => {
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
+    if (assetMultiSelectManager.selectionActive) {
+      assetMultiSelectManager.clearMultiselect();
       return;
     }
   };
@@ -168,7 +167,7 @@
         size="small"
         color="secondary"
         variant="ghost"
-        disabled={!assetInteraction.selectionActive}
+        disabled={!assetMultiSelectManager.selectionActive}
         onclick={handleDeselectAll}
       >
         {$t('unselect_all')}
@@ -177,11 +176,11 @@
         leadingIcon={mdiMapMarkerMultipleOutline}
         size="small"
         color="primary"
-        disabled={assetInteraction.selectedAssets.length === 0}
+        disabled={assetMultiSelectManager.selectedAssets.length === 0}
         onclick={() => handleUpdate()}
       >
         <Text class="hidden sm:inline-block">
-          {$t('apply_count', { values: { count: assetInteraction.selectedAssets.length } })}
+          {$t('apply_count', { values: { count: assetMultiSelectManager.selectedAssets.length } })}
         </Text>
       </Button>
     </div>
@@ -198,7 +197,7 @@
     enableRouting={true}
     bind:timelineManager
     {options}
-    {assetInteraction}
+    assetInteraction={assetMultiSelectManager}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked

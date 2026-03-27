@@ -13,7 +13,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getTrashActions } from '$lib/services/trash.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -27,15 +27,13 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { isTrashed: true };
 
-  const assetInteraction = new AssetInteraction();
-
   if (!featureFlagsManager.value.trash) {
     handlePromiseError(goto(Route.photos()));
   }
 
   const handleEscape = () => {
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
+    if (assetMultiSelectManager.selectionActive) {
+      assetMultiSelectManager.clearMultiselect();
       return;
     }
   };
@@ -45,12 +43,18 @@
 
 {#if featureFlagsManager.value.trash}
   <UserPageLayout
-    hideNavbar={assetInteraction.selectionActive}
-    actions={assetInteraction.selectionActive ? [] : [Empty, RestoreAll]}
+    hideNavbar={assetMultiSelectManager.selectionActive}
+    actions={assetMultiSelectManager.selectionActive ? [] : [Empty, RestoreAll]}
     title={data.meta.title}
     scrollbar={false}
   >
-    <Timeline enableRouting={true} bind:timelineManager {options} {assetInteraction} onEscape={handleEscape}>
+    <Timeline
+      enableRouting={true}
+      bind:timelineManager
+      {options}
+      assetInteraction={assetMultiSelectManager}
+      onEscape={handleEscape}
+    >
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', {
           values: { days: serverConfigManager.value.trashDays },
@@ -63,12 +67,12 @@
   </UserPageLayout>
 {/if}
 
-{#if assetInteraction.selectionActive}
+{#if assetMultiSelectManager.selectionActive}
   <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
+    assets={assetMultiSelectManager.selectedAssets}
+    clearSelect={() => assetMultiSelectManager.clearMultiselect()}
   >
-    <SelectAllAssets {timelineManager} {assetInteraction} />
+    <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <DeleteAssets force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <RestoreAssets onRestore={(assetIds) => timelineManager.removeAssets(assetIds)} />
   </AssetSelectControlBar>
