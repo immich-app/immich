@@ -66,9 +66,9 @@ class VideoControls extends HookConsumerWidget {
     final isLoaded = duration != Duration.zero;
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
       child: Column(
-        spacing: 16,
+        spacing: 4,
         children: [
           Row(
             children: [
@@ -77,8 +77,8 @@ class VideoControls extends HookConsumerWidget {
                 padding: const EdgeInsets.all(12),
                 constraints: const BoxConstraints(),
                 icon: isFinished
-                    ? const Icon(Icons.replay, color: Colors.white, size: 32, shadows: _controlShadows)
-                    : AnimatedPlayPause(color: Colors.white, size: 32, playing: isPlaying, shadows: _controlShadows),
+                    ? const Icon(Icons.replay, color: Colors.white, shadows: _controlShadows)
+                    : AnimatedPlayPause(color: Colors.white, playing: isPlaying, shadows: _controlShadows),
                 onPressed: () => _toggle(ref, isCasting),
               ),
               const Spacer(),
@@ -91,7 +91,7 @@ class VideoControls extends HookConsumerWidget {
                   shadows: _controlShadows,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
             ],
           ),
           Slider(

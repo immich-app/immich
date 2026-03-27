@@ -71,16 +71,13 @@ class ViewerBottomBar extends ConsumerWidget {
                 ),
                 child: SafeArea(
                   top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
-                        if (!isReadonlyModeEnabled)
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
-                      ],
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
+                      if (!isReadonlyModeEnabled)
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                    ],
                   ),
                 ),
               ),
