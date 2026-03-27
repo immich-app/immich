@@ -11,7 +11,7 @@ Gallery uses **git tags as the single source of truth** for versioning. Every pu
    - `changelog:fix` PR label or `fix:` commit prefix → **patch** bump
    - `BREAKING CHANGE` in commit body → **major** bump
    - No indicators → **patch** bump by default
-4. The [branding script](/developer/branding) stamps the computed version into all packages
+4. The branding script (`branding/scripts/apply-branding.sh`) stamps the computed version into all packages
 5. Multi-arch Docker images are built and pushed to `ghcr.io/open-noodle/`
 6. Three git tags are created:
    - `vX.Y.Z` — the specific version (e.g., `v4.20.0`)
