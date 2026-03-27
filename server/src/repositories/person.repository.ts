@@ -9,7 +9,7 @@ import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { removeUndefinedKeys } from 'src/utils/database';
+import { removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -282,15 +282,7 @@ export class PersonRepository {
         'asset.originalPath',
         'asset_exif.orientation as exifOrientation',
       ])
-      .select((eb) =>
-        eb
-          .selectFrom('asset_file')
-          .select('asset_file.path')
-          .whereRef('asset_file.assetId', '=', 'asset.id')
-          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
-          .where('asset_file.isEdited', '=', false)
-          .as('previewPath'),
-      )
+      .select((eb) => withFilePath(eb, AssetFileType.Preview).as('previewPath'))
       .where('person.id', '=', id)
       .where('asset_face.deletedAt', 'is', null)
       .executeTakeFirst();
