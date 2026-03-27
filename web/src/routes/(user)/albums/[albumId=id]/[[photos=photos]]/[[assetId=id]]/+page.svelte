@@ -49,7 +49,6 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
@@ -127,7 +126,7 @@
       return;
     }
     if (assetMultiSelectManager.selectionActive) {
-      cancelMultiselect(assetMultiSelectManager);
+      assetMultiSelectManager.clear();
       return;
     }
     await goto(Route.albums());
@@ -148,13 +147,13 @@
   };
 
   const handleCloseSelectAssets = async () => {
-    timelineMultiSelectManager.clearMultiselect();
+    timelineMultiSelectManager.clear();
     await setModeToView();
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const handleRemoveAssets = async (assetIds: string[]) => {
@@ -175,13 +174,13 @@
     await updateThumbnail(assetId);
 
     viewMode = AlbumPageViewMode.VIEW;
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
-    if (assetMultiSelectManager.selectedAssets.length === 1) {
-      const [firstAsset] = assetMultiSelectManager.selectedAssets;
-      assetMultiSelectManager.clearMultiselect();
+    if (assetMultiSelectManager.assets.length === 1) {
+      const [firstAsset] = assetMultiSelectManager.assets;
+      assetMultiSelectManager.clear();
       await updateThumbnail(firstAsset.id);
     }
   };
@@ -290,7 +289,7 @@
     }
 
     await refreshAlbum();
-    timelineMultiSelectManager.clearMultiselect();
+    timelineMultiSelectManager.clear();
     await setModeToView();
   };
 
@@ -312,7 +311,7 @@
 
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
-  const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.selectedAssets));
+  const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
 
   const Close = $derived({
     title: $t('go_back'),
@@ -453,8 +452,8 @@
 
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar
-        assets={assetMultiSelectManager.selectedAssets}
-        clearSelect={() => assetMultiSelectManager.clearMultiselect()}
+        assets={assetMultiSelectManager.assets}
+        clearSelect={() => assetMultiSelectManager.clear()}
       >
         {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
@@ -480,7 +479,7 @@
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
-          {#if assetMultiSelectManager.selectedAssets.length === 1}
+          {#if assetMultiSelectManager.assets.length === 1}
             <MenuOption
               text={$t('set_as_album_cover')}
               icon={mdiImageOutline}
@@ -597,7 +596,7 @@
               {#if !timelineMultiSelectManager.selectionActive}
                 {$t('add_to_album')}
               {:else}
-                {$t('selected_count', { values: { count: timelineMultiSelectManager.selectedAssets.length } })}
+                {$t('selected_count', { values: { count: timelineMultiSelectManager.assets.length } })}
               {/if}
             </p>
           {/snippet}

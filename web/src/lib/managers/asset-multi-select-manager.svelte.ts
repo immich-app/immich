@@ -19,21 +19,21 @@ export class AssetMultiSelectManager {
 
   selectedGroup = new SvelteSet<string>();
 
-  assetSelectionCandidates = $state<TimelineAsset[]>([]);
+  candidates = $state<TimelineAsset[]>([]);
 
   selectionActive = $derived(this.#selectedMap.size > 0);
-  selectedAssets = $derived(Array.from(this.#selectedMap.values()));
-  isAllTrashed = $derived(this.selectedAssets.every((asset) => asset.isTrashed));
-  isAllArchived = $derived(this.selectedAssets.every((asset) => asset.visibility === AssetVisibility.Archive));
-  isAllFavorite = $derived(this.selectedAssets.every((asset) => asset.isFavorite));
-  isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.#userId));
+  assets = $derived(Array.from(this.#selectedMap.values()));
+  isAllTrashed = $derived(this.assets.every((asset) => asset.isTrashed));
+  isAllArchived = $derived(this.assets.every((asset) => asset.visibility === AssetVisibility.Archive));
+  isAllFavorite = $derived(this.assets.every((asset) => asset.isFavorite));
+  isAllUserOwned = $derived(this.assets.every((asset) => asset.ownerId === this.#userId));
 
   #unsubscribe?: () => void;
 
   constructor(options?: AssetMultiSelectOptions) {
     const { resetOnNavigate = false } = options ?? {};
     if (resetOnNavigate) {
-      this.#unsubscribe = eventManager.on({ AppNavigate: () => this.clearMultiselect() });
+      this.#unsubscribe = eventManager.on({ AppNavigate: () => this.clear() });
     }
   }
 
@@ -43,9 +43,9 @@ export class AssetMultiSelectManager {
 
   asControlContext(): AssetControlContext {
     return {
-      getOwnedAssets: () => this.selectedAssets.filter((asset) => asset.ownerId === this.#userId),
-      getAssets: () => this.selectedAssets,
-      clearSelect: () => this.clearMultiselect(),
+      getOwnedAssets: () => this.assets.filter((asset) => asset.ownerId === this.#userId),
+      getAssets: () => this.assets,
+      clearSelect: () => this.clear(),
     };
   }
 
@@ -54,7 +54,7 @@ export class AssetMultiSelectManager {
   }
 
   hasSelectionCandidate(assetId: string) {
-    return this.assetSelectionCandidates.some((asset) => asset.id === assetId);
+    return this.candidates.some((asset) => asset.id === assetId);
   }
 
   selectAsset(asset: TimelineAsset) {
@@ -84,14 +84,14 @@ export class AssetMultiSelectManager {
   }
 
   setAssetSelectionCandidates(assets: TimelineAsset[]) {
-    this.assetSelectionCandidates = assets;
+    this.candidates = assets;
   }
 
-  clearAssetSelectionCandidates() {
-    this.assetSelectionCandidates = [];
+  clearCandidates() {
+    this.candidates = [];
   }
 
-  clearMultiselect() {
+  clear() {
     this.selectAll = false;
 
     // Multi-selection
@@ -99,7 +99,7 @@ export class AssetMultiSelectManager {
     this.selectedGroup.clear();
 
     // Range selection
-    this.assetSelectionCandidates = [];
+    this.candidates = [];
     this.startAsset = null;
   }
 }

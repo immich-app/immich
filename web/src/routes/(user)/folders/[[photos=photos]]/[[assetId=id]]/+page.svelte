@@ -25,7 +25,6 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
@@ -45,30 +44,29 @@
 
   const getLinkForPath = (path: string) => Route.folders({ path });
 
-  afterNavigate(function clearAssetSelection() {
-    // Clear the asset selection when we navigate (like going to another folder)
-    cancelMultiselect(assetMultiSelectManager);
+  afterNavigate(() => {
+    assetMultiSelectManager.clear();
   });
 
-  function navigateToView(path: string) {
+  const navigateToView = (path: string) => {
     return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
-  }
+  };
 
-  async function triggerAssetUpdate() {
-    cancelMultiselect(assetMultiSelectManager);
+  const triggerAssetUpdate = async () => {
+    assetMultiSelectManager.clear();
     if (data.tree.path) {
       await foldersStore.refreshAssetsByPath(data.tree.path);
     }
     await invalidateAll();
-  }
+  };
 
-  function handleSelectAllAssets() {
+  const handleSelectAllAssets = () => {
     if (!data.pathAssets) {
       return;
     }
 
     assetMultiSelectManager.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
-  }
+  };
 </script>
 
 <UserPageLayout title={data.meta.title}>
@@ -112,10 +110,7 @@
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="fixed top-0 start-0 w-full">
-    <AssetSelectControlBar
-      assets={assetMultiSelectManager.selectedAssets}
-      clearSelect={() => cancelMultiselect(assetMultiSelectManager)}
-    >
+    <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
       {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />

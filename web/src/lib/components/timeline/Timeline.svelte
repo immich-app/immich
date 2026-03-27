@@ -404,7 +404,7 @@
       }
     }
 
-    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.selectedAssets.length;
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
   const onSelectAssets = async (asset: TimelineAsset) => {
@@ -413,23 +413,23 @@
     }
     onSelect(asset);
 
-    const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
+    const rangeSelection = assetInteraction.candidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);
 
     // Select/deselect already loaded assets
     if (deselect) {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
+      for (const candidate of assetInteraction.candidates) {
         assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
       assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
+      for (const candidate of assetInteraction.candidates) {
         handleSelectAsset(candidate);
       }
       handleSelectAsset(asset);
     }
 
-    assetInteraction.clearAssetSelectionCandidates();
+    assetInteraction.clearCandidates();
 
     if (assetInteraction.startAsset && rangeSelection) {
       const startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.startAsset.id);
@@ -498,13 +498,13 @@
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
-      assetInteraction.clearAssetSelectionCandidates();
+      assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
     if (!shiftKeyIsDown) {
-      assetInteraction.clearAssetSelectionCandidates();
+      assetInteraction.clearCandidates();
     }
   });
 
@@ -539,7 +539,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.selectedAssets.length;
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
   const _onClick = (

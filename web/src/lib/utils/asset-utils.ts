@@ -402,7 +402,7 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
       }
 
       if (!assetInteraction.selectAll) {
-        assetInteraction.clearMultiselect();
+        assetInteraction.clear();
         break; // Cancelled
       }
       assetInteraction.selectAssets([...monthGroup.assetsIterator()]);
@@ -416,11 +416,6 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
     handleError(error, $t('errors.error_selecting_all_assets'));
     assetInteraction.selectAll = false;
   }
-};
-
-export const cancelMultiselect = (assetInteraction: AssetMultiSelectManager) => {
-  assetInteraction.selectAll = false;
-  assetInteraction.clearMultiselect();
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {

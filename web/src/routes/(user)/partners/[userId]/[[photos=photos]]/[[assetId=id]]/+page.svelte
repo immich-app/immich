@@ -28,7 +28,7 @@
 
   const handleEscape = () => {
     if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clearMultiselect();
+      assetMultiSelectManager.clear();
       return;
     }
   };
@@ -39,10 +39,7 @@
 </main>
 
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar
-    assets={assetMultiSelectManager.selectedAssets}
-    clearSelect={() => assetMultiSelectManager.clearMultiselect()}
-  >
+  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
     {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
     <CreateSharedLink />

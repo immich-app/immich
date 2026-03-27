@@ -15,7 +15,6 @@
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { ActionButton, IconButton, Logo } from '@immich/ui';
@@ -66,7 +65,7 @@
     shortcut: { key: 'Escape' },
     onShortcut: () => {
       if (!assetViewerManager.isViewing && assetMultiSelectManager.selectionActive) {
-        cancelMultiselect(assetMultiSelectManager);
+        assetMultiSelectManager.clear();
       }
     },
   }}
@@ -100,8 +99,8 @@
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar
       ownerId={user?.id}
-      assets={assetMultiSelectManager.selectedAssets}
-      clearSelect={() => assetMultiSelectManager.clearMultiselect()}
+      assets={assetMultiSelectManager.assets}
+      clearSelect={() => assetMultiSelectManager.clear()}
     >
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       {#if sharedLink.allowDownload}

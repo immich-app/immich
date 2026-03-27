@@ -45,7 +45,7 @@
   let { bbox, selectedClusterIds, assetCount, onClose }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  let selectedAssets = $derived(assetMultiSelectManager.selectedAssets);
+  let selectedAssets = $derived(assetMultiSelectManager.assets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
   let isLinkActionAvailable = $derived.by(() => {
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
@@ -69,11 +69,11 @@
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const handleEscape = () => {
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const timelineBoundingBox = $derived(
@@ -90,7 +90,7 @@
 
   $effect.pre(() => {
     void timelineOptions;
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   });
 </script>
 
@@ -124,8 +124,8 @@
   <Portal target="body">
     <AssetSelectControlBar
       ownerId={$user.id}
-      assets={assetMultiSelectManager.selectedAssets}
-      clearSelect={() => assetMultiSelectManager.clearMultiselect()}
+      assets={assetMultiSelectManager.assets}
+      clearSelect={() => assetMultiSelectManager.clear()}
     >
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
@@ -139,7 +139,7 @@
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
-          {#if assetMultiSelectManager.selectedAssets.length > 1 || isAssetStackSelected}
+          {#if assetMultiSelectManager.assets.length > 1 || isAssetStackSelected}
             <StackAction
               unstack={isAssetStackSelected}
               onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
@@ -149,7 +149,7 @@
           {#if isLinkActionAvailable}
             <LinkLivePhotoAction
               menuItem
-              unlink={assetMultiSelectManager.selectedAssets.length === 1}
+              unlink={assetMultiSelectManager.assets.length === 1}
               onLink={handleLink}
               onUnlink={handleUnlink}
             />

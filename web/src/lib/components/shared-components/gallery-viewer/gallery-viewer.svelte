@@ -16,13 +16,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import {
-    archiveAssets,
-    cancelMultiselect,
-    getNextAsset,
-    getPreviousAsset,
-    navigateToAsset,
-  } from '$lib/utils/asset-utils';
+  import { archiveAssets, getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
@@ -126,10 +120,6 @@
     assetInteraction.selectAssets(assets.map((a) => toTimelineAsset(a)));
   };
 
-  const deselectAllAssets = () => {
-    cancelMultiselect(assetInteraction);
-  };
-
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Shift') {
       event.preventDefault();
@@ -153,18 +143,18 @@
 
     // Select/deselect already loaded assets
     if (deselect) {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
+      for (const candidate of assetInteraction.candidates) {
         assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
       assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
+      for (const candidate of assetInteraction.candidates) {
         assetInteraction.selectAsset(candidate);
       }
       assetInteraction.selectAsset(asset);
     }
 
-    assetInteraction.clearAssetSelectionCandidates();
+    assetInteraction.clearCandidates();
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
@@ -202,13 +192,13 @@
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.assets.some((asset) => asset.isTrashed);
     handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
   const trashOrDelete = async (force: boolean = false) => {
     const forceOrNoTrash = force || !featureFlagsManager.value.trash;
-    const selectedAssets = assetInteraction.selectedAssets;
+    const selectedAssets = assetInteraction.assets;
 
     if ($showDeleteModal && forceOrNoTrash) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
@@ -224,17 +214,17 @@
       onReload,
     );
 
-    assetInteraction.clearMultiselect();
+    assetInteraction.clear();
   };
 
   const toggleArchive = async () => {
     const ids = await archiveAssets(
-      assetInteraction.selectedAssets,
+      assetInteraction.assets,
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
       assets = assets.filter((asset) => !ids.includes(asset.id));
-      deselectAllAssets();
+      assetInteraction.clear();
     }
   };
 
@@ -274,8 +264,8 @@
 
       if (assetInteraction.selectionActive) {
         shortcuts.push(
-          { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
-          { shortcut: { key: 'D', ctrl: true }, onShortcut: deselectAllAssets },
+          { shortcut: { key: 'Escape' }, onShortcut: () => assetInteraction.clear() },
+          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         );
         if (allowDeletion) {
           shortcuts.push(
@@ -335,13 +325,13 @@
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
-      assetInteraction.clearAssetSelectionCandidates();
+      assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
     if (!shiftKeyIsDown) {
-      assetInteraction.clearAssetSelectionCandidates();
+      assetInteraction.clearCandidates();
     }
   });
 

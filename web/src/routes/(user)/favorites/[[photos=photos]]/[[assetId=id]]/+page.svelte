@@ -35,14 +35,14 @@
 
   const handleEscape = () => {
     if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clearMultiselect();
+      assetMultiSelectManager.clear();
       return;
     }
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 </script>
 
@@ -63,10 +63,7 @@
 
 <!-- Multiselection mode app bar -->
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar
-    assets={assetMultiSelectManager.selectedAssets}
-    clearSelect={() => assetMultiSelectManager.clearMultiselect()}
-  >
+  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
     {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
     <FavoriteAction removeFavorite onFavorite={(assetIds) => timelineManager.removeAssets(assetIds)} />

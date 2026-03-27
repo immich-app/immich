@@ -26,13 +26,13 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getPersonActions } from '$lib/services/person.service';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -106,7 +106,7 @@
 
   const handleEscape = async () => {
     if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clearMultiselect();
+      assetMultiSelectManager.clear();
       return;
     }
 
@@ -126,8 +126,8 @@
   });
 
   const handleUnmerge = () => {
-    timelineManager.removeAssets(assetMultiSelectManager.selectedAssets.map((a) => a.id));
-    assetMultiSelectManager.clearMultiselect();
+    timelineManager.removeAssets(assetMultiSelectManager.assets.map((a) => a.id));
+    assetMultiSelectManager.clear();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
 
@@ -153,7 +153,7 @@
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }
 
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
 
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -282,7 +282,7 @@
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const onPersonUpdate = async (response: PersonResponseDto) => {
@@ -458,10 +458,7 @@
 
 <header>
   {#if assetMultiSelectManager.selectionActive}
-    <AssetSelectControlBar
-      assets={assetMultiSelectManager.selectedAssets}
-      clearSelect={() => assetMultiSelectManager.clearMultiselect()}
-    >
+    <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
       {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />
@@ -521,7 +518,7 @@
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={assetMultiSelectManager.selectedAssets.map((a) => a.id)}
+    assetIds={assetMultiSelectManager.assets.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}

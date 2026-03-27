@@ -19,12 +19,12 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
@@ -44,7 +44,7 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true };
 
-  let selectedAssets = $derived(assetMultiSelectManager.selectedAssets);
+  let selectedAssets = $derived(assetMultiSelectManager.assets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
   let isLinkActionAvailable = $derived.by(() => {
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
@@ -61,7 +61,7 @@
       return;
     }
     if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clearMultiselect();
+      assetMultiSelectManager.clear();
       return;
     }
   };
@@ -78,7 +78,7 @@
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const items = $derived(
@@ -114,8 +114,8 @@
 {#if assetMultiSelectManager.selectionActive}
   <AssetSelectControlBar
     ownerId={$user.id}
-    assets={assetMultiSelectManager.selectedAssets}
-    clearSelect={() => assetMultiSelectManager.clearMultiselect()}
+    assets={assetMultiSelectManager.assets}
+    clearSelect={() => assetMultiSelectManager.clear()}
   >
     {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
@@ -132,7 +132,7 @@
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
-        {#if assetMultiSelectManager.selectedAssets.length > 1 || isAssetStackSelected}
+        {#if assetMultiSelectManager.assets.length > 1 || isAssetStackSelected}
           <StackAction
             unstack={isAssetStackSelected}
             onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
@@ -142,7 +142,7 @@
         {#if isLinkActionAvailable}
           <LinkLivePhotoAction
             menuItem
-            unlink={assetMultiSelectManager.selectedAssets.length === 1}
+            unlink={assetMultiSelectManager.assets.length === 1}
             onLink={handleLink}
             onUnlink={handleUnlink}
           />

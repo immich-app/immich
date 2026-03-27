@@ -22,11 +22,11 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import { AssetAction } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getTagActions } from '$lib/services/tag.service';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
@@ -56,7 +56,7 @@
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const onRefresh = async () => {
@@ -115,8 +115,8 @@
     <div class="fixed top-0 start-0 w-full">
       <AssetSelectControlBar
         ownerId={$user.id}
-        assets={assetMultiSelectManager.selectedAssets}
-        clearSelect={() => assetMultiSelectManager.clearMultiselect()}
+        assets={assetMultiSelectManager.assets}
+        clearSelect={() => assetMultiSelectManager.clear()}
       >
         {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />

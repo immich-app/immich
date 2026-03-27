@@ -8,12 +8,12 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getTrashActions } from '$lib/services/trash.service';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -33,7 +33,7 @@
 
   const handleEscape = () => {
     if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clearMultiselect();
+      assetMultiSelectManager.clear();
       return;
     }
   };
@@ -68,10 +68,7 @@
 {/if}
 
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar
-    assets={assetMultiSelectManager.selectedAssets}
-    clearSelect={() => assetMultiSelectManager.clearMultiselect()}
-  >
+  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
     <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <DeleteAssets force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <RestoreAssets onRestore={(assetIds) => timelineManager.removeAssets(assetIds)} />

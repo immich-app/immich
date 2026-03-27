@@ -33,13 +33,13 @@
 
   const handleEscape = () => {
     if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clearMultiselect();
+      assetMultiSelectManager.clear();
       return;
     }
   };
 
   const handleMoveOffLockedFolder = (assetIds: string[]) => {
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
     timelineManager.removeAssets(assetIds);
   };
 
@@ -74,10 +74,7 @@
 
 <!-- Multi-selection mode app bar -->
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar
-    assets={assetMultiSelectManager.selectedAssets}
-    clearSelect={() => assetMultiSelectManager.clearMultiselect()}
-  >
+  <AssetSelectControlBar assets={assetMultiSelectManager.assets} clearSelect={() => assetMultiSelectManager.clear()}>
     <SelectAllAssets withText {timelineManager} assetInteraction={assetMultiSelectManager} />
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>

@@ -19,7 +19,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 
@@ -34,7 +34,7 @@
 
   const trashOrDelete = async (forceRequested?: boolean) => {
     const force = forceRequested || !featureFlagsManager.value.trash;
-    const selectedAssets = assetInteraction.selectedAssets;
+    const selectedAssets = assetInteraction.assets;
 
     if ($showDeleteModal && force) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
@@ -52,16 +52,16 @@
       selectedAssets,
       force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
-    assetInteraction.clearMultiselect();
+    assetInteraction.clear();
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.assets.some((asset) => asset.isTrashed);
     handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
   const onStackAssets = async () => {
-    const result = await stackAssets(assetInteraction.selectedAssets);
+    const result = await stackAssets(assetInteraction.assets);
 
     updateStackedAssetInTimeline(timelineManager, result);
 
@@ -70,17 +70,13 @@
 
   const toggleArchive = async () => {
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
-    const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
+    const ids = await archiveAssets(assetInteraction.assets, visibility);
     timelineManager.update(ids, (asset) => (asset.visibility = visibility));
     eventManager.emit('AssetsArchive', ids);
-    deselectAllAssets();
+    assetInteraction.clear();
   };
 
   let shiftKeyIsDown = $state(false);
-
-  const deselectAllAssets = () => {
-    cancelMultiselect(assetInteraction);
-  };
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (searchStore.isSearchEnabled) {
@@ -125,7 +121,7 @@
 
   $effect(() => {
     if (isEmpty) {
-      assetInteraction.clearMultiselect();
+      assetInteraction.clear();
     }
   });
 
@@ -166,7 +162,7 @@
       shortcuts.push(
         { shortcut: { key: 'Delete' }, onShortcut: onDelete },
         { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
         { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
       );

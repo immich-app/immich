@@ -19,15 +19,14 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { QueryParameter } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
@@ -110,7 +109,7 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetMultiSelectManager.clearMultiselect();
+    assetMultiSelectManager.clear();
     onAssetDelete(assetIds);
   };
 
@@ -224,7 +223,7 @@
   }
 
   const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
-    cancelMultiselect(assetMultiSelectManager);
+    assetMultiSelectManager.clear();
 
     if (terms.isNotInAlbum) {
       const assetIdSet = new Set(assetIds);
@@ -320,8 +319,8 @@
     {#if assetMultiSelectManager.selectionActive}
       <div class="fixed top-0 start-0 w-full z-2">
         <AssetSelectControlBar
-          assets={assetMultiSelectManager.selectedAssets}
-          clearSelect={() => cancelMultiselect(assetMultiSelectManager)}
+          assets={assetMultiSelectManager.assets}
+          clearSelect={() => assetMultiSelectManager.clear()}
         >
           {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
           <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />

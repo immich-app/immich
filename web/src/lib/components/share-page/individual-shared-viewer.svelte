@@ -12,7 +12,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
+  import { downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -81,8 +81,8 @@
   <header class="fixed top-0 inset-s-0 w-full">
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar
-        assets={assetMultiSelectManager.selectedAssets}
-        clearSelect={() => cancelMultiselect(assetMultiSelectManager)}
+        assets={assetMultiSelectManager.assets}
+        clearSelect={() => assetMultiSelectManager.clear()}
       >
         <IconButton
           shape="round"

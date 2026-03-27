@@ -29,7 +29,6 @@
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
   import { ActionButton, IconButton, toastManager } from '@immich/ui';
@@ -339,8 +338,8 @@
   <div class="sticky top-0 z-1 dark">
     <AssetSelectControlBar
       forceDark
-      assets={assetMultiSelectManager.selectedAssets}
-      clearSelect={() => cancelMultiselect(assetMultiSelectManager)}
+      assets={assetMultiSelectManager.assets}
+      clearSelect={() => assetMultiSelectManager.clear()}
     >
       {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CreateSharedLink />
