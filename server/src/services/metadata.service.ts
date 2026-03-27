@@ -356,10 +356,9 @@ export class MetadataService extends BaseService {
               fileCreatedAt: dates.dateTimeOriginal ?? undefined,
               fileModifiedAt: stats.mtime,
 
-              // only update the dimensions if they don't already exist
-              // we don't want to overwrite width/height that are modified by edits
-              width: asset.width == null ? assetWidth : undefined,
-              height: asset.height == null ? assetHeight : undefined,
+              // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
+              width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
+              height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
             }),
           async () => {
             await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
@@ -394,103 +393,6 @@ export class MetadataService extends BaseService {
     } finally {
       await cleanupOriginal();
     }
-
-    const tags = this.getTagList(exifTags);
-
-    const exifData: Insertable<AssetExifTable> = {
-      assetId: asset.id,
-
-      // dates
-      dateTimeOriginal: dates.dateTimeOriginal,
-      modifyDate: stats.mtime,
-      timeZone: dates.timeZone,
-
-      // gps
-      latitude,
-      longitude,
-      country: geo.country,
-      state: geo.state,
-      city: geo.city,
-
-      // image/file
-      fileSizeInByte: stats.size,
-      exifImageHeight: validate(height),
-      exifImageWidth: validate(width),
-      orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
-      bitsPerSample: this.getBitsPerSample(exifTags),
-      colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
-
-      // camera
-      make:
-        exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
-      model:
-        exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
-      fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
-      iso: validate(exifTags.ISO) as number,
-      exposureTime: exifTags.ExposureTime ?? null,
-      lensModel: getLensModel(exifTags),
-      fNumber: validate(exifTags.FNumber),
-      focalLength: validate(exifTags.FocalLength),
-
-      // comments
-      description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
-      profileDescription: exifTags.ProfileDescription || null,
-      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
-
-      // grouping
-      livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
-      autoStackId: this.getAutoStackId(exifTags),
-
-      tags: tags.length > 0 ? tags : null,
-    };
-
-    const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
-    const assetWidth = isSidewards ? validate(height) : validate(width);
-    const assetHeight = isSidewards ? validate(width) : validate(height);
-
-    const tasks = new Tasks();
-
-    tasks.push(
-      () =>
-        this.assetRepository.update({
-          id: asset.id,
-          duration: this.getDuration(exifTags),
-          localDateTime: dates.localDateTime,
-          fileCreatedAt: dates.dateTimeOriginal ?? undefined,
-          fileModifiedAt: stats.mtime,
-
-          // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
-          width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
-          height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
-        }),
-      async () => {
-        await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
-        await this.applyTagList(asset);
-      },
-    );
-
-    if (this.isMotionPhoto(asset, exifTags)) {
-      tasks.push(() => this.applyMotionPhotos(asset, exifTags, dates, stats));
-    }
-
-    if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      tasks.push(() => this.applyTaggedFaces(asset, exifTags));
-    }
-
-    await tasks.all();
-
-    if (exifData.livePhotoCID) {
-      await this.linkLivePhotos(asset, exifData);
-    }
-
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
-
-    await this.eventRepository.emit('AssetMetadataExtracted', {
-      assetId: asset.id,
-      userId: asset.ownerId,
-      source: data.source,
-    });
   }
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })
