@@ -14,12 +14,21 @@ class BulkIdResponseDto {
   /// Returns a new [BulkIdResponseDto] instance.
   BulkIdResponseDto({
     this.error,
+    this.errorMessage,
     required this.id,
     required this.success,
   });
 
   /// Error reason if failed
   BulkIdResponseDtoErrorEnum? error;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? errorMessage;
 
   /// ID
   String id;
@@ -30,6 +39,7 @@ class BulkIdResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is BulkIdResponseDto &&
     other.error == error &&
+    other.errorMessage == errorMessage &&
     other.id == id &&
     other.success == success;
 
@@ -37,11 +47,12 @@ class BulkIdResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (error == null ? 0 : error!.hashCode) +
+    (errorMessage == null ? 0 : errorMessage!.hashCode) +
     (id.hashCode) +
     (success.hashCode);
 
   @override
-  String toString() => 'BulkIdResponseDto[error=$error, id=$id, success=$success]';
+  String toString() => 'BulkIdResponseDto[error=$error, errorMessage=$errorMessage, id=$id, success=$success]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -49,6 +60,11 @@ class BulkIdResponseDto {
       json[r'error'] = this.error;
     } else {
     //  json[r'error'] = null;
+    }
+    if (this.errorMessage != null) {
+      json[r'errorMessage'] = this.errorMessage;
+    } else {
+    //  json[r'errorMessage'] = null;
     }
       json[r'id'] = this.id;
       json[r'success'] = this.success;
@@ -65,6 +81,7 @@ class BulkIdResponseDto {
 
       return BulkIdResponseDto(
         error: BulkIdResponseDtoErrorEnum.fromJson(json[r'error']),
+        errorMessage: mapValueOfType<String>(json, r'errorMessage'),
         id: mapValueOfType<String>(json, r'id')!,
         success: mapValueOfType<bool>(json, r'success')!,
       );
@@ -136,6 +153,7 @@ class BulkIdResponseDtoErrorEnum {
   static const noPermission = BulkIdResponseDtoErrorEnum._(r'no_permission');
   static const notFound = BulkIdResponseDtoErrorEnum._(r'not_found');
   static const unknown = BulkIdResponseDtoErrorEnum._(r'unknown');
+  static const validation = BulkIdResponseDtoErrorEnum._(r'validation');
 
   /// List of all possible values in this [enum][BulkIdResponseDtoErrorEnum].
   static const values = <BulkIdResponseDtoErrorEnum>[
@@ -143,6 +161,7 @@ class BulkIdResponseDtoErrorEnum {
     noPermission,
     notFound,
     unknown,
+    validation,
   ];
 
   static BulkIdResponseDtoErrorEnum? fromJson(dynamic value) => BulkIdResponseDtoErrorEnumTypeTransformer().decode(value);
@@ -185,6 +204,7 @@ class BulkIdResponseDtoErrorEnumTypeTransformer {
         case r'no_permission': return BulkIdResponseDtoErrorEnum.noPermission;
         case r'not_found': return BulkIdResponseDtoErrorEnum.notFound;
         case r'unknown': return BulkIdResponseDtoErrorEnum.unknown;
+        case r'validation': return BulkIdResponseDtoErrorEnum.validation;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

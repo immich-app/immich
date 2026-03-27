@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -32,7 +32,7 @@
     "@playwright/test": "^1.44.1",
     "@socket.io/component-emitter": "^3.1.2",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^24.11.0",
+    "@types/node": "^24.12.0",
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^6.0.2",
@@ -58,6 +58,6 @@
     "vitest": "^4.0.0"
   },
   "volta": {
-    "node": "24.13.1"
+    "node": "24.14.0"
   }
 }

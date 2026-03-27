@@ -249,6 +249,7 @@ where
 select
   "asset"."id",
   "asset"."checksum",
+  "asset"."checksumAlgorithm",
   "asset"."deviceAssetId",
   "asset"."deviceId",
   "asset"."fileCreatedAt",
@@ -264,6 +265,7 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
+  "asset"."isEdited",
   (
     select
       coalesce(json_agg(agg), '[]')

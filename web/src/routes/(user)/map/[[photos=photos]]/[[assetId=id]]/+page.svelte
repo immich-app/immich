@@ -5,9 +5,9 @@
   import type { SelectionBBox } from '$lib/components/shared-components/map/types';
   import { timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -20,9 +20,6 @@
   }
 
   let { data }: Props = $props();
-
-  let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
-
   let selectedClusterIds = $state.raw(new Set<string>());
   let selectedClusterBBox = $state.raw<SelectionBBox>();
   let isTimelinePanelVisible = $state(false);
@@ -34,7 +31,7 @@
   }
 
   onDestroy(() => {
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
   });
 
   if (!featureFlagsManager.value.map) {
@@ -42,7 +39,7 @@
   }
 
   async function onViewAssets(assetIds: string[]) {
-    await setAssetId(assetIds[0]);
+    await assetViewerManager.setAssetId(assetIds[0]);
     closeTimelinePanel();
   }
 
@@ -50,7 +47,7 @@
     selectedClusterIds = new Set(assetIds);
     selectedClusterBBox = bbox;
     isTimelinePanelVisible = true;
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
     handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
   }
 </script>
@@ -89,13 +86,13 @@
     </div>
   </UserPageLayout>
   <Portal target="body">
-    {#if $showAssetViewer}
+    {#if assetViewerManager.isViewing}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
-          cursor={{ current: $viewingAsset }}
+          cursor={{ current: assetViewerManager.asset! }}
           showNavigation={false}
           onClose={() => {
-            assetViewingStore.showAssetViewer(false);
+            assetViewerManager.showAssetViewer(false);
             handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
           }}
           isShared={false}

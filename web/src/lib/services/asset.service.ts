@@ -248,6 +248,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
       !asset.originalPath.toLowerCase().endsWith('.gif') &&
       !asset.originalPath.toLowerCase().endsWith('.svg'),
     onAction: () => assetViewerManager.openEditor(),
+    shortcuts: [{ key: 'e' }],
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -318,8 +319,14 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
     if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
+      const motionFilename = motionAsset.originalFileName;
+      const lastDotIndex = motionFilename.lastIndexOf('.');
+      const motionDownloadFilename =
+        lastDotIndex > 0
+          ? `${motionFilename.slice(0, lastDotIndex)}-motion${motionFilename.slice(lastDotIndex)}`
+          : `${motionFilename}-motion`;
       assets.push({
-        filename: motionAsset.originalFileName,
+        filename: motionDownloadFilename,
         id: asset.livePhotoVideoId,
         cacheKey: motionAsset.thumbhash,
       });

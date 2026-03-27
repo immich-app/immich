@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
@@ -14,8 +15,8 @@
 
   let { album }: Props = $props();
   let abortController: AbortController;
-  let { setAssetId } = assetViewingStore;
 
+  let returnToMap = $state(false);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
   onMount(async () => {
@@ -24,7 +25,14 @@
 
   onDestroy(() => {
     abortController?.abort();
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
+  });
+
+  $effect(() => {
+    if (!assetViewerManager.isViewing && returnToMap) {
+      returnToMap = false;
+      void onClick();
+    }
   });
 
   async function loadMapMarkers() {
@@ -52,13 +60,15 @@
     return markers;
   }
 
-  async function openMap() {
+  const onClick = async () => {
     const assetIds = await modalManager.show(MapModal, { mapMarkers });
-
     if (assetIds) {
-      await setAssetId(assetIds[0]);
+      await navigate({ targetRoute: 'current', assetId: assetIds[0] });
+      returnToMap = true;
+    } else {
+      returnToMap = false;
     }
-  }
+  };
 </script>
 
 <IconButton
@@ -66,6 +76,6 @@
   shape="round"
   color="secondary"
   icon={mdiMapOutline}
-  onclick={openMap}
+  onclick={onClick}
   aria-label={$t('map')}
 />

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcuts } from '$lib/actions/shortcut';
   import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
   import { Button, HStack, IconButton } from '@immich/ui';
   import { mdiFlipHorizontal, mdiFlipVertical, mdiRotateLeft, mdiRotateRight } from '@mdi/js';
@@ -67,6 +68,13 @@
     transformManager.mirror(axis);
   }
 </script>
+
+<svelte:document
+  use:shortcuts={[
+    { shortcut: { key: ']' }, onShortcut: () => rotateImage(90) },
+    { shortcut: { key: '[' }, onShortcut: () => rotateImage(-90) },
+  ]}
+/>
 
 <div class="mt-3 px-4">
   <div class="flex h-10 w-full items-center justify-between text-sm mt-2">

@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { StackTable } from 'src/schema/tables/stack.table';
 import { AssetEditFactory } from 'test/factories/asset-edit.factory';
@@ -53,6 +53,7 @@ export class AssetFactory {
       updateId: newUuidV7(),
       status: AssetStatus.Active,
       checksum: newSha1(),
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       deviceAssetId: '',
       deviceId: '',
       duplicateId: null,

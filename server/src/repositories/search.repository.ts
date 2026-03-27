@@ -502,10 +502,7 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
-  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
-    field: K,
-    userIds: string[],
-  ) {
+  private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
     return this.db
       .selectFrom('asset_exif')
       .select(field)
@@ -514,6 +511,7 @@ export class SearchRepository {
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
-      .where(field, 'is not', null);
+      .where(field, 'is not', null)
+      .where(field, '!=', '');
   }
 }

@@ -1,30 +1,28 @@
 <script lang="ts">
   import { page } from '$app/state';
   import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
-
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import type { Snippet } from 'svelte';
   interface Props {
     children?: Snippet;
   }
 
   let { children }: Props = $props();
-  let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
 
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
   $effect.pre(() => {
     if (page.data.asset) {
-      setAsset(page.data.asset);
+      assetViewerManager.setAsset(page.data.asset);
     } else {
-      $showAssetViewer = false;
+      assetViewerManager.showAssetViewer(false);
     }
     const asset = page.url.searchParams.get('at');
-    $gridScrollTarget = { at: asset };
+    assetViewerManager.gridScrollTarget = { at: asset };
   });
 </script>
 
-<div class:display-none={$showAssetViewer}>
+<div class:display-none={assetViewerManager.isViewing}>
   {@render children?.()}
 </div>
 <UploadCover />

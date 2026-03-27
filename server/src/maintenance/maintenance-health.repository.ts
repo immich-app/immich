@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
+import { IMMICH_SERVER_START } from 'src/constants';
 
 @Injectable()
 export class MaintenanceHealthRepository {
@@ -20,45 +21,27 @@ export class MaintenanceHealthRepository {
         stdio: ['ignore', 'pipe', 'ignore', 'ipc'],
       });
 
-      async function checkHealth() {
-        try {
-          const response = await fetch('http://127.0.0.1:33001/api/server/config');
-          const { isOnboarded } = await response.json();
-          if (isOnboarded) {
-            resolve();
-          } else {
-            reject(new Error('Server health check failed, no admin exists.'));
-          }
-        } catch (error) {
-          reject(error);
-        } finally {
-          if (worker.exitCode === null) {
-            worker.kill('SIGTERM');
-          }
-        }
-      }
-
-      let output = '',
-        alive = false;
+      let output = '';
 
       worker.stdout?.on('data', (data) => {
-        if (alive) {
+        if (worker.exitCode !== null) {
           return;
         }
 
         output += data;
 
-        if (output.includes('Immich Server is listening')) {
-          alive = true;
-          void checkHealth();
+        if (output.includes(IMMICH_SERVER_START)) {
+          resolve();
+          worker.kill('SIGTERM');
         }
       });
 
-      worker.on('exit', reject);
-      worker.on('error', reject);
+      worker.on('exit', (code, signal) => reject(`Server health check failed, server exited with ${signal ?? code}`));
+      worker.on('error', (error) => reject(`Server health check failed, process threw: ${error}`));
 
       setTimeout(() => {
         if (worker.exitCode === null) {
+          reject('Server health check failed, took too long to start.');
           worker.kill('SIGTERM');
         }
       }, 20_000);

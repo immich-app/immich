@@ -368,6 +368,10 @@ class ApiClient {
           return DownloadUpdate.fromJson(value);
         case 'DuplicateDetectionConfig':
           return DuplicateDetectionConfig.fromJson(value);
+        case 'DuplicateResolveDto':
+          return DuplicateResolveDto.fromJson(value);
+        case 'DuplicateResolveGroupDto':
+          return DuplicateResolveGroupDto.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
         case 'EmailNotificationsResponse':

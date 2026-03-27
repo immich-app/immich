@@ -29,6 +29,7 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
@@ -111,6 +112,7 @@ export class ApiModule extends BaseModule {}
     StorageRepository,
     ProcessRepository,
     DatabaseRepository,
+    UserRepository,
     SystemMetadataRepository,
     AppRepository,
     MaintenanceHealthRepository,

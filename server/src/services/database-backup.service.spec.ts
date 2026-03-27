@@ -27,6 +27,7 @@ describe(DatabaseBackupService.name, () => {
       mocks.systemMetadata as never,
       mocks.process,
       mocks.database as never,
+      mocks.user as never,
       mocks.cron as never,
       mocks.job as never,
       maintenanceHealthRepositoryMock as never,
@@ -187,6 +188,7 @@ describe(DatabaseBackupService.name, () => {
         mocks.systemMetadata as never,
         mocks.process,
         mocks.database as never,
+        mocks.user as never,
         mocks.cron as never,
         mocks.job as never,
         void 0 as never,
@@ -400,6 +402,7 @@ describe(DatabaseBackupService.name, () => {
           mocks.systemMetadata as never,
           mocks.process,
           mocks.database as never,
+          mocks.user as never,
           mocks.cron as never,
           mocks.job as never,
           void 0 as never,
@@ -474,6 +477,7 @@ describe(DatabaseBackupService.name, () => {
           mocks.systemMetadata as never,
           mocks.process,
           mocks.database as never,
+          mocks.user as never,
           mocks.cron as never,
           mocks.job as never,
           void 0 as never,
@@ -536,6 +540,7 @@ describe(DatabaseBackupService.name, () => {
           mocks.systemMetadata as never,
           mocks.process,
           mocks.database as never,
+          mocks.user as never,
           mocks.cron as never,
           mocks.job as never,
           void 0 as never,
@@ -663,6 +668,7 @@ describe(DatabaseBackupService.name, () => {
         mocks.systemMetadata as never,
         mocks.process,
         mocks.database as never,
+        mocks.user as never,
         mocks.cron as never,
         mocks.job as never,
         maintenanceHealthRepositoryMock,
@@ -677,6 +683,8 @@ describe(DatabaseBackupService.name, () => {
 
     it('should successfully restore a backup', async () => {
       let writtenToPsql = '';
+
+      mocks.user.hasAdmin.mockResolvedValue(true);
 
       mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
       mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
@@ -739,6 +747,8 @@ describe(DatabaseBackupService.name, () => {
 
     it('should generate pg_dumpall specific SQL instructions', async () => {
       let writtenToPsql = '';
+
+      mocks.user.hasAdmin.mockResolvedValue(true);
 
       mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
       mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
@@ -834,7 +844,24 @@ describe(DatabaseBackupService.name, () => {
       expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
     });
 
+    it('should rollback if there is no admin user', async () => {
+      mocks.user.hasAdmin.mockResolvedValue(false);
+
+      const progress = vitest.fn();
+      await expect(
+        sut.restoreDatabaseBackup('development-filename.sql', progress),
+      ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: Server health check failed, no admin exists.]`);
+
+      expect(progress).toHaveBeenCalledWith('backup', 0.05);
+      expect(progress).toHaveBeenCalledWith('migrations', 0.9);
+      expect(progress).toHaveBeenCalledWith('rollback', 0);
+
+      expect(mocks.user.hasAdmin).toHaveBeenCalled();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
+    });
+
     it('should rollback if API healthcheck fails', async () => {
+      mocks.user.hasAdmin.mockResolvedValue(true);
       maintenanceHealthRepositoryMock.checkApiHealth.mockRejectedValue(new Error('Health Error'));
 
       const progress = vitest.fn();
@@ -846,6 +873,7 @@ describe(DatabaseBackupService.name, () => {
       expect(progress).toHaveBeenCalledWith('migrations', 0.9);
       expect(progress).toHaveBeenCalledWith('rollback', 0);
 
+      expect(mocks.user.hasAdmin).toHaveBeenCalled();
       expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
       expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
     });
