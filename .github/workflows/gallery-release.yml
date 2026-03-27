@@ -1,0 +1,388 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v3.0.5) — overrides auto-version'
+        required: false
+        type: string
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  version:
+    name: Compute Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      skip: ${{ steps.version.outputs.skip }}
+      version: ${{ steps.version.outputs.version }}
+      major: ${{ steps.version.outputs.major }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute next version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          # Check for changelog:skip label on the merged PR (skip for manual dispatch)
+          if [[ -z "$INPUT_VERSION" ]]; then
+            commit_msg_check=$(git log -1 --pretty=%B)
+            pr_num=$(echo "$commit_msg_check" | grep -oP '#\K[0-9]+' | head -1)
+            if [[ -n "$pr_num" ]]; then
+              pr_labels=$(gh pr view "$pr_num" --json labels --jq '.labels[].name' 2>/dev/null || true)
+              if echo "$pr_labels" | grep -q 'changelog:skip'; then
+                echo "skip=true" >> "$GITHUB_OUTPUT"
+                echo "Skipping release — changelog:skip label found on PR #${pr_num}"
+                exit 0
+              fi
+            fi
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$INPUT_VERSION" ]]; then
+            echo "version=$INPUT_VERSION" >> "$GITHUB_OUTPUT"
+          else
+            # Find the latest vX.Y.Z tag by semver sort
+            latest=$(git tag --list 'v*.*.*' --sort=-version:refname | head -n1)
+            if [[ -z "$latest" ]]; then
+              echo "::error::No existing version tags found. Run a manual release first."
+              exit 1
+            fi
+
+            major=$(echo "$latest" | sed 's/^v//' | cut -d. -f1)
+            minor=$(echo "$latest" | sed 's/^v//' | cut -d. -f2)
+            patch=$(echo "$latest" | sed 's/^v//' | cut -d. -f3)
+
+            # Determine bump type from merge commit message or PR labels
+            commit_msg=$(git log -1 --pretty=%B)
+            bump="patch"
+
+            # Check for PR labels (changelog:feat, changelog:fix, etc.)
+            pr_number=$(echo "$commit_msg" | grep -oP '#\K[0-9]+' | head -1)
+            if [[ -n "$pr_number" ]]; then
+              labels=$(gh pr view "$pr_number" --json labels --jq '.labels[].name' 2>/dev/null || true)
+              if echo "$labels" | grep -q 'changelog:feat'; then
+                bump="minor"
+              fi
+            fi
+
+            # Also check conventional commit prefix as fallback
+            if echo "$commit_msg" | head -1 | grep -qP '^feat(\(.+\))?!?:'; then
+              bump="minor"
+            fi
+            if echo "$commit_msg" | grep -q 'BREAKING CHANGE'; then
+              bump="major"
+            fi
+
+            case "$bump" in
+              major) echo "version=v$((major + 1)).0.0" >> "$GITHUB_OUTPUT" ;;
+              minor) echo "version=v${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT" ;;
+              patch) echo "version=v${major}.${minor}.$((patch + 1))" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+          version=$(grep version "$GITHUB_OUTPUT" | cut -d= -f2)
+          major=$(echo "$version" | sed 's/^v//' | cut -d. -f1)
+          echo "major=v${major}" >> "$GITHUB_OUTPUT"
+          echo "Version: $version (major: v${major})"
+
+  build-server:
+    name: Build Server (${{ matrix.platform }})
+    if: needs.version.outputs.skip != 'true'
+    needs: version
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply branding
+        uses: ./.github/actions/apply-branding
+        with:
+          version: ${{ needs.version.outputs.version }}
+
+      - name: Prepare platform pair
+        id: prepare
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform-pair=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: server/Dockerfile
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            DEVICE=cpu
+            BUILD_ID=${{ github.run_id }}
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}
+          outputs: type=image,"name=ghcr.io/open-noodle/gallery-server",push-by-digest=true,name-resolution=short,push=true
+          cache-from: type=gha,scope=server-${{ steps.prepare.outputs.platform-pair }}
+          cache-to: type=gha,scope=server-${{ steps.prepare.outputs.platform-pair }},mode=max
+
+      - name: Export digest
+        run: | # zizmor: ignore[template-injection]
+          mkdir -p "${{ runner.temp }}/digests"
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: server-digests-${{ steps.prepare.outputs.platform-pair }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge-server:
+    name: Merge Server Manifest
+    if: needs.version.outputs.skip != 'true'
+    needs: [version, build-server]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: server-digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ghcr.io/open-noodle/gallery-server
+          VERSION: ${{ needs.version.outputs.version }}
+          MAJOR: ${{ needs.version.outputs.major }}
+        run: |
+          tags="-t ${IMAGE}:${VERSION} -t ${IMAGE}:${MAJOR} -t ${IMAGE}:release"
+          sources=$(printf "${IMAGE}@sha256:%s " *)
+          docker buildx imagetools create ${tags} ${sources}
+
+  build-ml:
+    name: Build ML ${{ matrix.device }} (${{ matrix.platform }})
+    if: needs.version.outputs.skip != 'true'
+    needs: version
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: cpu
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - device: cpu
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          - device: cuda
+            platform: linux/amd64
+            runner: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply branding
+        uses: ./.github/actions/apply-branding
+        with:
+          version: ${{ needs.version.outputs.version }}
+
+      - name: Prepare platform pair
+        id: prepare
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform-pair=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: machine-learning
+          file: machine-learning/Dockerfile
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            DEVICE=${{ matrix.device }}
+          outputs: type=image,"name=ghcr.io/open-noodle/gallery-ml",push-by-digest=true,name-resolution=short,push=true
+          cache-from: type=gha,scope=ml-${{ matrix.device }}-${{ steps.prepare.outputs.platform-pair }}
+          cache-to: type=gha,scope=ml-${{ matrix.device }}-${{ steps.prepare.outputs.platform-pair }},mode=max
+
+      - name: Export digest
+        run: | # zizmor: ignore[template-injection]
+          mkdir -p "${{ runner.temp }}/digests"
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: ml-${{ matrix.device }}-digests-${{ steps.prepare.outputs.platform-pair }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge-ml:
+    name: Merge ML Manifest (${{ matrix.device }})
+    if: needs.version.outputs.skip != 'true'
+    needs: [version, build-ml]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - device: cpu
+            suffix: ''
+          - device: cuda
+            suffix: '-cuda'
+            # CUDA only builds for linux/amd64 — nvidia/cuda base image is amd64-only
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: ml-${{ matrix.device }}-digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ghcr.io/open-noodle/gallery-ml
+          VERSION: ${{ needs.version.outputs.version }}
+          MAJOR: ${{ needs.version.outputs.major }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: |
+          tags="-t ${IMAGE}:${VERSION}${SUFFIX} -t ${IMAGE}:${MAJOR}${SUFFIX} -t ${IMAGE}:release${SUFFIX}"
+          sources=$(printf "${IMAGE}@sha256:%s " *)
+          docker buildx imagetools create ${tags} ${sources}
+
+  tag:
+    name: Create Git Tag
+    if: needs.version.outputs.skip != 'true'
+    needs: [version, merge-server, merge-ml]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: true
+
+      - name: Create tags
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          major=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f1)
+
+          # Create version tag (e.g. v3.0.1)
+          git tag "$VERSION"
+
+          # Update major version tag (e.g. v3) — floats to latest release
+          git tag -f "v${major}"
+
+          # Update release tag — always points to latest build
+          git tag -f "release"
+
+          git push origin "$VERSION" "v${major}" "release" --force
+
+      - name: Create GitHub Release
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          upstream_version=$(jq -r '.upstream.version' branding/config.json)
+          prev_tag=$(git tag --list 'v*.*.*' --sort=-version:refname | sed -n '2p')
+
+          # Generate changelog via API, prepend upstream version
+          changelog=""
+          if [[ -n "$prev_tag" ]]; then
+            changelog=$(gh api "repos/${REPO}/releases/generate-notes" \
+              -f tag_name="$VERSION" \
+              -f previous_tag_name="$prev_tag" \
+              --jq '.body' 2>/dev/null || true)
+          fi
+
+          notes="Based on [Immich v${upstream_version}](https://github.com/immich-app/immich/releases/tag/v${upstream_version})"
+          if [[ -n "$changelog" ]]; then
+            printf -v notes '%s\n\n%s' "$notes" "$changelog"
+          fi
+
+          gh release create "$VERSION" --title "$VERSION" --latest -n "$notes"

@@ -462,6 +462,21 @@ patch_versions() {
       echo "  Patched $(realpath --relative-to="$REPO_ROOT" "$pkg")"
     fi
   done
+
+  # Patch mobile/pubspec.yaml (format: version: X.Y.Z+BUILD)
+  local pubspec="$REPO_ROOT/mobile/pubspec.yaml"
+  if [[ -f "$pubspec" ]]; then
+    local build_number="${BUILD_NUMBER:-1}"
+    sed -i "s/^version: .*$/version: ${FORK_VERSION}+${build_number}/" "$pubspec"
+    echo "  Patched mobile/pubspec.yaml (${FORK_VERSION}+${build_number})"
+  fi
+
+  # Patch machine-learning/pyproject.toml (format: version = "X.Y.Z")
+  local pyproject="$REPO_ROOT/machine-learning/pyproject.toml"
+  if [[ -f "$pyproject" ]]; then
+    sed -i "s/^version = \".*\"/version = \"${FORK_VERSION}\"/" "$pyproject"
+    echo "  Patched machine-learning/pyproject.toml"
+  fi
 }
 
 #

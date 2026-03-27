@@ -15,6 +15,7 @@
 
   "upstream": {
     "name": "Immich",
+    "version": "2.6.3",
     "url": "https://github.com/immich-app/immich",
     "docs_url": "https://docs.immich.app",
     "discord_url": "https://discord.immich.app"

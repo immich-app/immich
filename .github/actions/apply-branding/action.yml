@@ -5,6 +5,9 @@ inputs:
   version:
     description: 'Fork version to stamp (e.g. v4.8.0). Falls back to git describe if not set.'
     required: false
+  build_number:
+    description: 'Mobile build number (versionCode). Falls back to 1 if not set.'
+    required: false
 
 runs:
   using: composite
@@ -20,6 +23,7 @@ runs:
       shell: bash
       env:
         FORK_VERSION: ${{ inputs.version }}
+        BUILD_NUMBER: ${{ inputs.build_number }}
       run: ./branding/scripts/apply-branding.sh
 
     - name: Verify branding applied
