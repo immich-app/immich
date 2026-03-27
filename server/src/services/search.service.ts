@@ -30,7 +30,7 @@ export class SearchService extends BaseService {
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     const people = await this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
-    return people.map((person) => mapPerson(person));
+    return people.filter((person) => person.faceAssetId !== null).map((person) => mapPerson(person));
   }
 
   async searchPlaces(dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {
