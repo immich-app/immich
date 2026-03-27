@@ -5064,6 +5064,226 @@
         "x-immich-state": "Stable"
       }
     },
+    "/classification/categories": {
+      "get": {
+        "operationId": "getCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClassificationCategoryResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get classification categories",
+        "tags": [
+          "Classification"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createCategory",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassificationCategoryCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassificationCategoryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a classification category",
+        "tags": [
+          "Classification"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/classification/categories/scan": {
+      "post": {
+        "operationId": "scanClassification",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Scan library for classification",
+        "tags": [
+          "Classification"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/classification/categories/{id}": {
+      "delete": {
+        "operationId": "deleteCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a classification category",
+        "tags": [
+          "Classification"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassificationCategoryUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassificationCategoryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a classification category",
+        "tags": [
+          "Classification"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/download/archive": {
       "post": {
         "description": "Download a ZIP archive containing the specified assets. The assets must have been previously requested via the \"getDownloadInfo\" endpoint.",
@@ -18098,6 +18318,10 @@
     {
       "name": "Workflows",
       "description": "A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution."
+    },
+    {
+      "name": "Classification",
+      "description": "Endpoints for managing auto-classification categories that automatically tag and archive photos based on CLIP similarity."
     }
   ],
   "servers": [
@@ -20248,6 +20472,128 @@
         ],
         "type": "object"
       },
+      "ClassificationCategoryCreateDto": {
+        "properties": {
+          "action": {
+            "description": "Action on match",
+            "enum": [
+              "tag",
+              "tag_and_archive"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "Category name",
+            "type": "string"
+          },
+          "prompts": {
+            "description": "Text prompts for CLIP matching",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "similarity": {
+            "default": 0.28,
+            "description": "Similarity threshold (0-1, higher = stricter)",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "prompts"
+        ],
+        "type": "object"
+      },
+      "ClassificationCategoryResponseDto": {
+        "properties": {
+          "action": {
+            "enum": [
+              "tag",
+              "tag_and_archive"
+            ],
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prompts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "similarity": {
+            "type": "number"
+          },
+          "tagId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "createdAt",
+          "enabled",
+          "id",
+          "name",
+          "prompts",
+          "similarity",
+          "tagId",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ClassificationCategoryUpdateDto": {
+        "properties": {
+          "action": {
+            "description": "Action on match",
+            "enum": [
+              "tag",
+              "tag_and_archive"
+            ],
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enable or disable category",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Category name",
+            "type": "string"
+          },
+          "prompts": {
+            "description": "Text prompts for CLIP matching",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "similarity": {
+            "description": "Similarity threshold (0-1, higher = stricter)",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
       "Colorspace": {
         "description": "Colorspace",
         "enum": [
@@ -21054,7 +21400,9 @@
           "SharedSpaceFaceMatch",
           "SharedSpaceFaceMatchAll",
           "SharedSpaceLibraryFaceSync",
-          "SharedSpaceBulkAddAssets"
+          "SharedSpaceBulkAddAssets",
+          "AssetClassifyQueueAll",
+          "AssetClassify"
         ],
         "type": "string"
       },
@@ -23437,7 +23785,8 @@
           "petDetection",
           "workflow",
           "editor",
-          "storageBackendMigration"
+          "storageBackendMigration",
+          "classification"
         ],
         "type": "string"
       },
@@ -23552,6 +23901,9 @@
           "backupDatabase": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "classification": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "duplicateDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -23610,6 +23962,7 @@
         "required": [
           "backgroundTask",
           "backupDatabase",
+          "classification",
           "duplicateDetection",
           "editor",
           "faceDetection",
@@ -27849,6 +28202,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "classification": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "editor": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -27894,6 +28250,7 @@
         },
         "required": [
           "backgroundTask",
+          "classification",
           "editor",
           "faceDetection",
           "library",

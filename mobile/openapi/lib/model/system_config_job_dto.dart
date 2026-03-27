@@ -14,6 +14,7 @@ class SystemConfigJobDto {
   /// Returns a new [SystemConfigJobDto] instance.
   SystemConfigJobDto({
     required this.backgroundTask,
+    required this.classification,
     required this.editor,
     required this.faceDetection,
     required this.library_,
@@ -31,6 +32,8 @@ class SystemConfigJobDto {
   });
 
   JobSettingsDto backgroundTask;
+
+  JobSettingsDto classification;
 
   JobSettingsDto editor;
 
@@ -63,6 +66,7 @@ class SystemConfigJobDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
     other.backgroundTask == backgroundTask &&
+    other.classification == classification &&
     other.editor == editor &&
     other.faceDetection == faceDetection &&
     other.library_ == library_ &&
@@ -82,6 +86,7 @@ class SystemConfigJobDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
+    (classification.hashCode) +
     (editor.hashCode) +
     (faceDetection.hashCode) +
     (library_.hashCode) +
@@ -98,11 +103,12 @@ class SystemConfigJobDto {
     (workflow.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, editor=$editor, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, petDetection=$petDetection, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, classification=$classification, editor=$editor, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, petDetection=$petDetection, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'classification'] = this.classification;
       json[r'editor'] = this.editor;
       json[r'faceDetection'] = this.faceDetection;
       json[r'library'] = this.library_;
@@ -130,6 +136,7 @@ class SystemConfigJobDto {
 
       return SystemConfigJobDto(
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
+        classification: JobSettingsDto.fromJson(json[r'classification'])!,
         editor: JobSettingsDto.fromJson(json[r'editor'])!,
         faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
         library_: JobSettingsDto.fromJson(json[r'library'])!,
@@ -192,6 +199,7 @@ class SystemConfigJobDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'backgroundTask',
+    'classification',
     'editor',
     'faceDetection',
     'library',

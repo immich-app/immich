@@ -243,6 +243,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.PetDetection]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.Editor]: { concurrency: 2 },
+    [QueueName.Classification]: { concurrency: 1 },
   },
   logging: {
     enabled: true,

@@ -43,6 +43,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.PetDetection]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.Editor]: { concurrency: 2 },
+    [QueueName.Classification]: { concurrency: 1 },
   },
   backup: {
     database: {

@@ -316,6 +316,7 @@ export class AssetRepository {
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
               petsDetectedAt: eb.ref('excluded.petsDetectedAt'),
+              classifiedAt: eb.ref('excluded.classifiedAt'),
             } satisfies Record<JobStatusColumns, unknown>,
             values[0],
           ),

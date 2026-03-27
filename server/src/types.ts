@@ -453,7 +453,11 @@ export type JobItem =
   | { name: JobName.SharedSpaceLibraryFaceSync; data: ISharedSpaceLibraryFaceSyncJob }
 
   // Shared Space Bulk Operations
-  | { name: JobName.SharedSpaceBulkAddAssets; data: ISharedSpaceBulkAddAssetsJob };
+  | { name: JobName.SharedSpaceBulkAddAssets; data: ISharedSpaceBulkAddAssetsJob }
+
+  // Classification
+  | { name: JobName.AssetClassifyQueueAll; data: { userId?: string } }
+  | { name: JobName.AssetClassify; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

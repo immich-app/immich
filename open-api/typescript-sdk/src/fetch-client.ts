@@ -1141,6 +1141,39 @@ export type ValidateAccessTokenResponseDto = {
     /** Authentication status */
     authStatus: boolean;
 };
+export type ClassificationCategoryResponseDto = {
+    action: Action2;
+    createdAt: string;
+    enabled: boolean;
+    id: string;
+    name: string;
+    prompts: string[];
+    similarity: number;
+    tagId: string | null;
+    updatedAt: string;
+};
+export type ClassificationCategoryCreateDto = {
+    /** Action on match */
+    action?: Action2;
+    /** Category name */
+    name: string;
+    /** Text prompts for CLIP matching */
+    prompts: string[];
+    /** Similarity threshold (0-1, higher = stricter) */
+    similarity?: number;
+};
+export type ClassificationCategoryUpdateDto = {
+    /** Action on match */
+    action?: Action2;
+    /** Enable or disable category */
+    enabled?: boolean;
+    /** Category name */
+    name?: string;
+    /** Text prompts for CLIP matching */
+    prompts?: string[];
+    /** Similarity threshold (0-1, higher = stricter) */
+    similarity?: number;
+};
 export type DownloadArchiveDto = {
     /** Asset IDs */
     assetIds: string[];
@@ -1299,6 +1332,7 @@ export type QueueResponseLegacyDto = {
 export type QueuesResponseLegacyDto = {
     backgroundTask: QueueResponseLegacyDto;
     backupDatabase: QueueResponseLegacyDto;
+    classification: QueueResponseLegacyDto;
     duplicateDetection: QueueResponseLegacyDto;
     editor: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
@@ -2747,6 +2781,7 @@ export type JobSettingsDto = {
 };
 export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
+    classification: JobSettingsDto;
     editor: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
@@ -4804,6 +4839,68 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+/**
+ * Get classification categories
+ */
+export function getCategories(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ClassificationCategoryResponseDto[];
+    }>("/classification/categories", {
+        ...opts
+    }));
+}
+/**
+ * Create a classification category
+ */
+export function createCategory({ classificationCategoryCreateDto }: {
+    classificationCategoryCreateDto: ClassificationCategoryCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ClassificationCategoryResponseDto;
+    }>("/classification/categories", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: classificationCategoryCreateDto
+    })));
+}
+/**
+ * Scan library for classification
+ */
+export function scanClassification(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/classification/categories/scan", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Delete a classification category
+ */
+export function deleteCategory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/classification/categories/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Update a classification category
+ */
+export function updateCategory({ id, classificationCategoryUpdateDto }: {
+    id: string;
+    classificationCategoryUpdateDto: ClassificationCategoryUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ClassificationCategoryResponseDto;
+    }>(`/classification/categories/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: classificationCategoryUpdateDto
+    })));
 }
 /**
  * Download asset archive
@@ -8067,6 +8164,10 @@ export enum AssetMediaSize {
     Preview = "preview",
     Thumbnail = "thumbnail"
 }
+export enum Action2 {
+    Tag = "tag",
+    TagAndArchive = "tag_and_archive"
+}
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",
     TagCleanup = "tag-cleanup",
@@ -8095,7 +8196,8 @@ export enum QueueName {
     PetDetection = "petDetection",
     Workflow = "workflow",
     Editor = "editor",
-    StorageBackendMigration = "storageBackendMigration"
+    StorageBackendMigration = "storageBackendMigration",
+    Classification = "classification"
 }
 export enum QueueCommand {
     Start = "start",
@@ -8197,7 +8299,9 @@ export enum JobName {
     SharedSpaceFaceMatch = "SharedSpaceFaceMatch",
     SharedSpaceFaceMatchAll = "SharedSpaceFaceMatchAll",
     SharedSpaceLibraryFaceSync = "SharedSpaceLibraryFaceSync",
-    SharedSpaceBulkAddAssets = "SharedSpaceBulkAddAssets"
+    SharedSpaceBulkAddAssets = "SharedSpaceBulkAddAssets",
+    AssetClassifyQueueAll = "AssetClassifyQueueAll",
+    AssetClassify = "AssetClassify"
 }
 export enum SearchSuggestionType {
     Country = "country",

@@ -523,7 +523,7 @@ describe(SearchService.name, () => {
     it('should search by queryAssetId instead of query', async () => {
       const assetId = newUuid();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
-      mocks.search.getEmbedding.mockResolvedValue({ assetId, embedding: '[4, 5, 6]' });
+      mocks.search.getEmbedding.mockResolvedValue('[4, 5, 6]');
 
       await sut.searchSmart(authStub.user1, { queryAssetId: assetId });
 
@@ -538,8 +538,7 @@ describe(SearchService.name, () => {
     it('should throw if queryAssetId has no embedding', async () => {
       const assetId = newUuid();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      mocks.search.getEmbedding.mockResolvedValue(undefined);
+      mocks.search.getEmbedding.mockResolvedValue(null);
 
       await expect(sut.searchSmart(authStub.user1, { queryAssetId: assetId })).rejects.toThrow(
         `Asset ${assetId} has no embedding`,

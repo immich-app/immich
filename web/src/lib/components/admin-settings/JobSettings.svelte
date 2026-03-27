@@ -52,6 +52,7 @@
     [QueueName.Workflow]: $t('workflows'),
     [QueueName.Editor]: $t('editor'),
     [QueueName.StorageBackendMigration]: 'Storage Backend Migration',
+    [QueueName.Classification]: 'Auto-Classification',
   });
 </script>
 

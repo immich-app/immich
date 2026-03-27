@@ -15,6 +15,7 @@ class QueuesResponseLegacyDto {
   QueuesResponseLegacyDto({
     required this.backgroundTask,
     required this.backupDatabase,
+    required this.classification,
     required this.duplicateDetection,
     required this.editor,
     required this.faceDetection,
@@ -38,6 +39,8 @@ class QueuesResponseLegacyDto {
   QueueResponseLegacyDto backgroundTask;
 
   QueueResponseLegacyDto backupDatabase;
+
+  QueueResponseLegacyDto classification;
 
   QueueResponseLegacyDto duplicateDetection;
 
@@ -79,6 +82,7 @@ class QueuesResponseLegacyDto {
   bool operator ==(Object other) => identical(this, other) || other is QueuesResponseLegacyDto &&
     other.backgroundTask == backgroundTask &&
     other.backupDatabase == backupDatabase &&
+    other.classification == classification &&
     other.duplicateDetection == duplicateDetection &&
     other.editor == editor &&
     other.faceDetection == faceDetection &&
@@ -103,6 +107,7 @@ class QueuesResponseLegacyDto {
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
     (backupDatabase.hashCode) +
+    (classification.hashCode) +
     (duplicateDetection.hashCode) +
     (editor.hashCode) +
     (faceDetection.hashCode) +
@@ -123,12 +128,13 @@ class QueuesResponseLegacyDto {
     (workflow.hashCode);
 
   @override
-  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, petDetection=$petDetection, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageBackendMigration=$storageBackendMigration, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, classification=$classification, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, petDetection=$petDetection, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageBackendMigration=$storageBackendMigration, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'backupDatabase'] = this.backupDatabase;
+      json[r'classification'] = this.classification;
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'editor'] = this.editor;
       json[r'faceDetection'] = this.faceDetection;
@@ -161,6 +167,7 @@ class QueuesResponseLegacyDto {
       return QueuesResponseLegacyDto(
         backgroundTask: QueueResponseLegacyDto.fromJson(json[r'backgroundTask'])!,
         backupDatabase: QueueResponseLegacyDto.fromJson(json[r'backupDatabase'])!,
+        classification: QueueResponseLegacyDto.fromJson(json[r'classification'])!,
         duplicateDetection: QueueResponseLegacyDto.fromJson(json[r'duplicateDetection'])!,
         editor: QueueResponseLegacyDto.fromJson(json[r'editor'])!,
         faceDetection: QueueResponseLegacyDto.fromJson(json[r'faceDetection'])!,
@@ -228,6 +235,7 @@ class QueuesResponseLegacyDto {
   static const requiredKeys = <String>{
     'backgroundTask',
     'backupDatabase',
+    'classification',
     'duplicateDetection',
     'editor',
     'faceDetection',
