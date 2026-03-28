@@ -127,7 +127,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
       if (localAsset != null) {
         final file = localAsset.isMotionPhoto
-            ? await StorageRepository().getMotionFileForAsset(localAsset.id)
+            ? await StorageRepository().getMotionFileForAsset(localAsset)
             : await StorageRepository().getFileForAsset(localAsset.id);
 
         if (!mounted) {

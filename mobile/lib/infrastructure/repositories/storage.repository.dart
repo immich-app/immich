@@ -33,25 +33,32 @@ class StorageRepository {
     return file;
   }
 
-  Future<File?> getMotionFileForAsset(String assetId) async {
+  // TODO(agg23): Unify these methods
+  Future<File?> getMotionFileForAsset(LocalAsset asset) async {
     File? file;
     final log = Logger('StorageRepository');
 
     try {
-      final entity = await AssetEntity.fromId(assetId);
+      final entity = await AssetEntity.fromId(asset.id);
       file = await entity?.originFileWithSubtype;
       if (file == null) {
-        log.warning("Cannot get motion file for asset $assetId");
+        log.warning(
+          "Cannot get motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
+        );
         return null;
       }
 
       final exists = await file.exists();
       if (!exists) {
-        log.warning("Motion file for asset $assetId does not exist");
+        log.warning("Motion file for asset ${asset.id} does not exist");
         return null;
       }
     } catch (error, stackTrace) {
-      log.warning("Error getting motion file for asset $assetId", error, stackTrace);
+      log.warning(
+        "Error getting motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
+        error,
+        stackTrace,
+      );
     }
     return file;
   }

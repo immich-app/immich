@@ -109,7 +109,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getMotionFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => mockFile);
       when(
         () => mockAssetMediaRepository.getOriginalFilename(asset.id),
       ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
