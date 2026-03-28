@@ -113,6 +113,8 @@ export class SyncService extends BaseService {
       return throwSessionRequired();
     }
 
+    this.logger.log(`[sync-debug] setAcks session=${sessionId} acks=${JSON.stringify(dto.acks)}`);
+
     const checkpoints: Record<string, Insertable<SessionSyncCheckpointTable>> = {};
     for (const ack of dto.acks) {
       const { type } = fromAck(ack);
@@ -153,6 +155,7 @@ export class SyncService extends BaseService {
 
     const isPendingSyncReset = await this.sessionRepository.isPendingSyncReset(session.id);
     if (isPendingSyncReset) {
+      this.logger.log(`[sync-debug] session=${session.id} isPendingSyncReset=true, sending SyncResetV1`);
       send(response, { type: SyncEntityType.SyncResetV1, ids: ['reset'], data: {} });
       response.end();
       return;
@@ -161,7 +164,12 @@ export class SyncService extends BaseService {
     const checkpoints = await this.syncCheckpointRepository.getAll(session.id);
     const checkpointMap: CheckpointMap = Object.fromEntries(checkpoints.map(({ type, ack }) => [type, fromAck(ack)]));
 
+    this.logger.log(
+      `[sync-debug] session=${session.id} userId=${auth.user.id} types=${JSON.stringify(dto.types)} checkpoints=${JSON.stringify(checkpointMap)}`,
+    );
+
     if (this.needsFullSync(checkpointMap)) {
+      this.logger.log(`[sync-debug] session=${session.id} needsFullSync=true, sending SyncResetV1`);
       send(response, { type: SyncEntityType.SyncResetV1, ids: ['reset'], data: {} });
       response.end();
       return;
@@ -169,6 +177,8 @@ export class SyncService extends BaseService {
 
     const { nowId } = await this.syncCheckpointRepository.getNow();
     const options: SyncQueryOptions = { nowId, userId: auth.user.id };
+
+    this.logger.log(`[sync-debug] nowId=${nowId}`);
 
     const handlers: Record<SyncRequestType, () => Promise<void>> = {
       [SyncRequestType.AuthUsersV1]: () => this.syncAuthUsersV1(options, response, checkpointMap),
@@ -202,6 +212,7 @@ export class SyncService extends BaseService {
       await handler();
     }
 
+    this.logger.log(`[sync-debug] stream complete, SyncCompleteV1 nowId=${nowId}`);
     send(response, { type: SyncEntityType.SyncCompleteV1, ids: [nowId], data: {} });
 
     response.end();
@@ -276,16 +287,35 @@ export class SyncService extends BaseService {
 
   private async syncAssetsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const deleteType = SyncEntityType.AssetDeleteV1;
-    const deletes = this.syncRepository.asset.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    const deleteAck = checkpointMap[deleteType];
+    this.logger.log(
+      `[sync-debug:AssetsV1] deletes query: userId=${options.userId} nowId=${options.nowId} ack=${JSON.stringify(deleteAck)}`,
+    );
+    let deleteCount = 0;
+    const deletes = this.syncRepository.asset.getDeletes({ ...options, ack: deleteAck });
     for await (const { id, ...data } of deletes) {
+      deleteCount++;
       send(response, { type: deleteType, ids: [id], data });
     }
+    this.logger.log(`[sync-debug:AssetsV1] sent ${deleteCount} deletes`);
 
     const upsertType = SyncEntityType.AssetV1;
-    const upserts = this.syncRepository.asset.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    const upsertAck = checkpointMap[upsertType];
+    this.logger.log(
+      `[sync-debug:AssetsV1] upserts query: userId=${options.userId} nowId=${options.nowId} ack=${JSON.stringify(upsertAck)}`,
+    );
+    let upsertCount = 0;
+    const upserts = this.syncRepository.asset.getUpserts({ ...options, ack: upsertAck });
     for await (const { updateId, ...data } of upserts) {
+      upsertCount++;
+      if (upsertCount <= 5 || upsertCount % 100 === 0) {
+        this.logger.log(
+          `[sync-debug:AssetsV1] upsert #${upsertCount}: id=${data.id} updateId=${updateId} visibility=${data.visibility} deletedAt=${data.deletedAt}`,
+        );
+      }
       send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV1(data) });
     }
+    this.logger.log(`[sync-debug:AssetsV1] sent ${upsertCount} upserts total`);
   }
 
   private async syncPartnerAssetsV1(
