@@ -211,7 +211,7 @@ where
 order by
   f_unaccent ("person"."name") <->>> f_unaccent ($3)
 limit
-  $4
+  $5
 
 -- PersonRepository.getDistinctNames
 select distinct
