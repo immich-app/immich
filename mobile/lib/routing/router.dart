@@ -114,6 +114,7 @@ import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/routing/asset_viewer_guard.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
@@ -144,6 +145,7 @@ class AppRouter extends RootStackRouter {
   late final BackupPermissionGuard _backupPermissionGuard;
   late final LockedGuard _lockedGuard;
   late final GalleryGuard _galleryGuard;
+  late final AssetViewerGuard _assetViewerGuard;
 
   AppRouter(
     ApiService apiService,
@@ -156,6 +158,7 @@ class AppRouter extends RootStackRouter {
     _lockedGuard = LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
     _galleryGuard = const GalleryGuard();
+    _assetViewerGuard = const AssetViewerGuard();
   }
 
   @override
@@ -297,7 +300,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard]),
     AutoRoute(
       page: AssetViewerRoute.page,
-      guards: [_authGuard, _duplicateGuard],
+      guards: [_authGuard, _assetViewerGuard],
       type: RouteType.custom(
         customRouteBuilder: <T>(context, child, page) => PageRouteBuilder<T>(
           fullscreenDialog: page.fullscreenDialog,
