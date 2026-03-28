@@ -35,7 +35,12 @@ jobs:
   close_template:
     runs-on: ubuntu-latest
     needs: parse_template
-    if: ${{ needs.parse_template.outputs.uses_template == 'false' && github.event.pull_request.state != 'closed' }}
+    if: >-
+      ${{
+        needs.parse_template.outputs.uses_template == 'false'
+        && github.event.pull_request.state != 'closed'
+        && !contains(github.event.pull_request.labels.*.name, 'auto-closed:template')
+      }}
     permissions:
       pull-requests: write
     steps:
