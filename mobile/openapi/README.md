@@ -123,7 +123,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | View asset thumbnail
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | Change password
 *AuthenticationApi* | [**changePinCode**](doc//AuthenticationApi.md#changepincode) | **PUT** /auth/pin-code | Change pin code
-*AuthenticationApi* | [**demoLogin**](doc//AuthenticationApi.md#demologin) | **POST** /auth/demo-login | Demo login
 *AuthenticationApi* | [**finishOAuth**](doc//AuthenticationApi.md#finishoauth) | **POST** /oauth/callback | Finish OAuth
 *AuthenticationApi* | [**getAuthStatus**](doc//AuthenticationApi.md#getauthstatus) | **GET** /auth/status | Retrieve auth status
 *AuthenticationApi* | [**linkOAuthAccount**](doc//AuthenticationApi.md#linkoauthaccount) | **POST** /oauth/link | Link OAuth account

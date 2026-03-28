@@ -104,7 +104,7 @@
           />
         {/if}
 
-        {#if !page.url.pathname.includes('/admin') && onUploadClick && !authManager.isDemo}
+        {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}

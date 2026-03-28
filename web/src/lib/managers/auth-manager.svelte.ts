@@ -7,7 +7,6 @@ import { getAboutInfo, logout, type UserAdminResponseDto } from '@immich/sdk';
 
 class AuthManager {
   isPurchased = $state(false);
-  isDemo = $state(false);
   isSharedLink = $derived(isSharedLinkRoute(page.route?.id));
   params = $derived(this.isSharedLink ? { key: page.params.key, slug: page.params.slug } : {});
 
@@ -51,7 +50,6 @@ class AuthManager {
       }
     } finally {
       this.isPurchased = false;
-      this.isDemo = false;
       eventManager.emit('AuthLogout');
     }
   }
