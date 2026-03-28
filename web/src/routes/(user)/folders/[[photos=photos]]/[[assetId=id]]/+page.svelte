@@ -19,13 +19,12 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
@@ -40,36 +39,34 @@
   let { data }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
-  const assetInteraction = new AssetInteraction();
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
   const getLinkForPath = (path: string) => Route.folders({ path });
 
-  afterNavigate(function clearAssetSelection() {
-    // Clear the asset selection when we navigate (like going to another folder)
-    cancelMultiselect(assetInteraction);
+  afterNavigate(() => {
+    assetMultiSelectManager.clear();
   });
 
-  function navigateToView(path: string) {
+  const navigateToView = (path: string) => {
     return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
-  }
+  };
 
-  async function triggerAssetUpdate() {
-    cancelMultiselect(assetInteraction);
+  const triggerAssetUpdate = async () => {
+    assetMultiSelectManager.clear();
     if (data.tree.path) {
       await foldersStore.refreshAssetsByPath(data.tree.path);
     }
     await invalidateAll();
-  }
+  };
 
-  function handleSelectAllAssets() {
+  const handleSelectAllAssets = () => {
     if (!data.pathAssets) {
       return;
     }
 
-    assetInteraction.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
-  }
+    assetMultiSelectManager.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
+  };
 </script>
 
 <UserPageLayout title={data.meta.title}>
@@ -100,7 +97,7 @@
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
           assets={data.pathAssets}
-          {assetInteraction}
+          assetInteraction={assetMultiSelectManager}
           {viewport}
           showAssetName={true}
           pageHeaderOffset={54}
@@ -111,13 +108,10 @@
   </section>
 </UserPageLayout>
 
-{#if assetInteraction.selectionActive}
+{#if assetMultiSelectManager.selectionActive}
   <div class="fixed top-0 start-0 w-full">
-    <AssetSelectControlBar
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => cancelMultiselect(assetInteraction)}
-    >
-      {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+    <AssetSelectControlBar>
+      {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />
       <IconButton
@@ -130,7 +124,7 @@
       />
       <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
-        removeFavorite={assetInteraction.isAllFavorite}
+        removeFavorite={assetMultiSelectManager.isAllFavorite}
         onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
           if (data.pathAssets && data.pathAssets.length > 0) {
             for (const id of ids) {
@@ -148,8 +142,8 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
-        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
+        {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
         {/if}
         <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />

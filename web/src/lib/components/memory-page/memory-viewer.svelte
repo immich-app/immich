@@ -19,17 +19,16 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { QueryParameter } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { memoryManager, type MemoryAsset } from '$lib/managers/memory-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
   import { ActionButton, IconButton, toastManager } from '@immich/ui';
@@ -80,7 +79,6 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   // need to include padding in the viewport for gallery
   const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
-  const assetInteraction = new AssetInteraction();
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
@@ -117,7 +115,7 @@
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
   const handleEscape = async () => goto(Route.photos());
   const handleSelectAll = () =>
-    assetInteraction.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
+    assetMultiSelectManager.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
 
   const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
     // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
@@ -336,14 +334,10 @@
       ]}
 />
 
-{#if assetInteraction.selectionActive}
+{#if assetMultiSelectManager.selectionActive}
   <div class="sticky top-0 z-1 dark">
-    <AssetSelectControlBar
-      forceDark
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => cancelMultiselect(assetInteraction)}
-    >
-      {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+    <AssetSelectControlBar forceDark>
+      {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
       <CreateSharedLink />
       <IconButton
         shape="round"
@@ -356,15 +350,19 @@
 
       <ActionButton action={Actions.AddToAlbum} />
 
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+      <FavoriteAction removeFavorite={assetMultiSelectManager.isAllFavorite} />
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={handleDeleteOrArchiveAssets} />
-        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+        <ArchiveAction
+          menuItem
+          unarchive={assetMultiSelectManager.isAllArchived}
+          onArchive={handleDeleteOrArchiveAssets}
+        />
+        {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
         {/if}
         <DeleteAssets menuItem onAssetDelete={handleDeleteOrArchiveAssets} />
@@ -669,7 +667,7 @@
         assets={currentTimelineAssets}
         {viewerAssets}
         viewport={galleryViewport}
-        {assetInteraction}
+        assetInteraction={assetMultiSelectManager}
         slidingWindowOffset={viewerHeight}
         arrowNavigation={false}
       />

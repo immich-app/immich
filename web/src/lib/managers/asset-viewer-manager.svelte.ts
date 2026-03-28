@@ -42,7 +42,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   isShowActivityPanel = $state(false);
   isPlayingMotionPhoto = $state(false);
   isShowEditor = $state(false);
-
+  #isFaceEditMode = $state(false);
   #viewingAssetStoreState = $state<AssetResponseDto>();
   #viewState = $state<boolean>(false);
   gridScrollTarget = $state<AssetGridRouteSearchParams | null | undefined>();
@@ -61,6 +61,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   get isShowDetailPanel() {
     return isShowDetailPanel.current;
+  }
+
+  get isFaceEditMode() {
+    return this.#isFaceEditMode;
   }
 
   get zoomState() {
@@ -159,6 +163,14 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   closeEditor() {
     this.isShowEditor = false;
+  }
+
+  toggleFaceEditMode() {
+    this.#isFaceEditMode = !this.#isFaceEditMode;
+  }
+
+  closeFaceEditMode() {
+    this.#isFaceEditMode = false;
   }
 
   setAsset(asset: AssetResponseDto) {

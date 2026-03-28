@@ -25,7 +25,6 @@
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { user } from '$lib/stores/user.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -93,7 +92,7 @@
     title: $t('go_back'),
     type: $t('assets'),
     icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
-    $if: () => !!onClose && !isFaceEditMode.value,
+    $if: () => !!onClose && !assetViewerManager.isFaceEditMode,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
   });

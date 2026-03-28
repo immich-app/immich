@@ -228,12 +228,12 @@ select
 from
   "asset_face"
   left join "asset" on "asset"."id" = "asset_face"."assetId"
-  and "asset_face"."personId" = $1
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
+  and "asset_face"."personId" = $1
 
 -- PersonRepository.getNumberOfPeople
 select

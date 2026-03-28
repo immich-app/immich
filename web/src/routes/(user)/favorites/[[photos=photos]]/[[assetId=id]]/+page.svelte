@@ -15,9 +15,9 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
@@ -33,28 +33,26 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { isFavorite: true, withStacked: true };
 
-  const assetInteraction = new AssetInteraction();
-
   const handleEscape = () => {
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
+    if (assetMultiSelectManager.selectionActive) {
+      assetMultiSelectManager.clear();
       return;
     }
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 </script>
 
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} title={data.meta.title} scrollbar={false}>
   <Timeline
     enableRouting={true}
     withStacked={true}
     bind:timelineManager
     {options}
-    {assetInteraction}
+    assetInteraction={assetMultiSelectManager}
     onEscape={handleEscape}
   >
     {#snippet empty()}
@@ -64,16 +62,13 @@
 </UserPageLayout>
 
 <!-- Multiselection mode app bar -->
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+{#if assetMultiSelectManager.selectionActive}
+  <AssetSelectControlBar>
+    {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
     <FavoriteAction removeFavorite onFavorite={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <CreateSharedLink />
-    <SelectAllAssets {timelineManager} {assetInteraction} />
+    <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <ActionButton action={Actions.AddToAlbum} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
@@ -82,7 +77,7 @@
       <ChangeLocation menuItem />
       <ArchiveAction
         menuItem
-        unarchive={assetInteraction.isAllArchived}
+        unarchive={assetMultiSelectManager.isAllArchived}
         onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
       />
       {#if $preferences.tags.enabled}

@@ -18,11 +18,11 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -44,9 +44,8 @@
 
   let { bbox, selectedClusterIds, assetCount, onClose }: Props = $props();
 
-  const assetInteraction = new AssetInteraction();
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  let selectedAssets = $derived(assetInteraction.selectedAssets);
+  let selectedAssets = $derived(assetMultiSelectManager.assets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
   let isLinkActionAvailable = $derived.by(() => {
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
@@ -55,7 +54,7 @@
       selectedAssets.some((asset) => asset.isImage) &&
       selectedAssets.some((asset) => asset.isVideo);
 
-    return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
+    return assetMultiSelectManager.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
 
   const handleLink: OnLink = ({ still, motion }) => {
@@ -70,11 +69,11 @@
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const handleEscape = () => {
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const timelineBoundingBox = $derived(
@@ -91,7 +90,7 @@
 
   $effect.pre(() => {
     void timelineOptions;
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clear();
   });
 </script>
 
@@ -112,35 +111,31 @@
       enableRouting={false}
       options={timelineOptions}
       onEscape={handleEscape}
-      {assetInteraction}
+      assetInteraction={assetMultiSelectManager}
       showArchiveIcon
     />
   </div>
 </aside>
 
-{#if assetInteraction.selectionActive}
-  {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+{#if assetMultiSelectManager.selectionActive}
+  {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
   <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
   <Portal target="body">
-    <AssetSelectControlBar
-      ownerId={$user.id}
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => assetInteraction.clearMultiselect()}
-    >
+    <AssetSelectControlBar>
       <CreateSharedLink />
-      <SelectAllAssets {timelineManager} {assetInteraction} />
+      <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />
 
-      {#if assetInteraction.isAllUserOwned}
+      {#if assetMultiSelectManager.isAllUserOwned}
         <FavoriteAction
-          removeFavorite={assetInteraction.isAllFavorite}
+          removeFavorite={assetMultiSelectManager.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
         />
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
-          {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
+          {#if assetMultiSelectManager.assets.length > 1 || isAssetStackSelected}
             <StackAction
               unstack={isAssetStackSelected}
               onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
@@ -150,7 +145,7 @@
           {#if isLinkActionAvailable}
             <LinkLivePhotoAction
               menuItem
-              unlink={assetInteraction.selectedAssets.length === 1}
+              unlink={assetMultiSelectManager.assets.length === 1}
               onLink={handleLink}
               onUnlink={handleUnlink}
             />
@@ -160,7 +155,7 @@
           <ChangeLocation menuItem />
           <ArchiveAction
             menuItem
-            unarchive={assetInteraction.isAllArchived}
+            unarchive={assetMultiSelectManager.isAllArchived}
             onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
           />
           {#if $preferences.tags.enabled}

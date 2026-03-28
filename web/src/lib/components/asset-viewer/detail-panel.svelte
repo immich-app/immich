@@ -10,7 +10,6 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { Route } from '$lib/route';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -208,7 +207,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
+            onclick={() => assetViewerManager.toggleFaceEditMode()}
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}

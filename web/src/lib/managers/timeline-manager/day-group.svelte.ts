@@ -18,7 +18,7 @@ export class DayGroup {
 
   height = $state(0);
   width = $state(0);
-  intersecting = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.intersecting));
+  isInOrNearViewport = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.isInOrNearViewport));
 
   #top: number = $state(0);
   #start: number = $state(0);
@@ -137,7 +137,7 @@ export class DayGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.monthGroup.intersecting && !this.monthGroup.timelineManager.isScrollingOnLoad) {
+    if (!noDefer && !this.monthGroup.isInOrNearViewport && !this.monthGroup.timelineManager.isScrollingOnLoad) {
       this.#deferredLayout = true;
       return;
     }

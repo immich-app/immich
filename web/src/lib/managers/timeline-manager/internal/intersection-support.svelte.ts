@@ -6,68 +6,64 @@ const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
-export function updateIntersectionMonthGroup(timelineManager: TimelineManager, month: MonthGroup) {
-  const actuallyIntersecting = calculateMonthGroupIntersecting(timelineManager, month, 0, 0);
-  let preIntersecting = false;
-  if (!actuallyIntersecting) {
-    preIntersecting = calculateMonthGroupIntersecting(
-      timelineManager,
-      month,
-      INTERSECTION_EXPAND_TOP,
-      INTERSECTION_EXPAND_BOTTOM,
-    );
+export function isIntersecting(regionTop: number, regionBottom: number, otherTop: number, otherBottom: number) {
+  return (
+    (regionTop >= otherTop && regionTop < otherBottom) ||
+    (regionBottom >= otherTop && regionBottom < otherBottom) ||
+    (regionTop < otherTop && regionBottom >= otherBottom)
+  );
+}
+
+export enum ViewportProximity {
+  FarFromViewport,
+  NearViewport,
+  InViewport,
+}
+
+export function isInViewport(state: ViewportProximity): boolean {
+  return state === ViewportProximity.InViewport;
+}
+
+export function isInOrNearViewport(state: ViewportProximity): boolean {
+  return state !== ViewportProximity.FarFromViewport;
+}
+
+function calculateViewportProximity(regionTop: number, regionBottom: number, windowTop: number, windowBottom: number) {
+  if (regionBottom < windowTop - INTERSECTION_EXPAND_TOP || regionTop >= windowBottom + INTERSECTION_EXPAND_BOTTOM) {
+    return ViewportProximity.FarFromViewport;
   }
-  month.intersecting = actuallyIntersecting || preIntersecting;
-  month.actuallyIntersecting = actuallyIntersecting;
-  if (preIntersecting || actuallyIntersecting) {
+
+  if (regionBottom < windowTop || regionTop >= windowBottom) {
+    return ViewportProximity.NearViewport;
+  }
+
+  return ViewportProximity.InViewport;
+}
+
+export function updateMonthGroupViewportProximity(timelineManager: TimelineManager, month: MonthGroup) {
+  const proximity = calculateViewportProximity(
+    month.top,
+    month.top + month.height,
+    timelineManager.visibleWindow.top,
+    timelineManager.visibleWindow.bottom,
+  );
+
+  month.viewportProximity = proximity;
+  if (isInOrNearViewport(proximity)) {
     timelineManager.clearDeferredLayout(month);
   }
 }
 
-/**
- * General function to check if a rectangular region intersects with a window.
- * @param regionTop - Top position of the region to check
- * @param regionBottom - Bottom position of the region to check
- * @param windowTop - Top position of the window
- * @param windowBottom - Bottom position of the window
- * @returns true if the region intersects with the window
- */
-export function isIntersecting(regionTop: number, regionBottom: number, windowTop: number, windowBottom: number) {
-  return (
-    (regionTop >= windowTop && regionTop < windowBottom) ||
-    (regionBottom >= windowTop && regionBottom < windowBottom) ||
-    (regionTop < windowTop && regionBottom >= windowBottom)
-  );
-}
-
-export function calculateMonthGroupIntersecting(
-  timelineManager: TimelineManager,
-  monthGroup: MonthGroup,
-  expandTop: number,
-  expandBottom: number,
-) {
-  const monthGroupTop = monthGroup.top;
-  const monthGroupBottom = monthGroupTop + monthGroup.height;
-  const topWindow = timelineManager.visibleWindow.top - expandTop;
-  const bottomWindow = timelineManager.visibleWindow.bottom + expandBottom;
-
-  return isIntersecting(monthGroupTop, monthGroupBottom, topWindow, bottomWindow);
-}
-
-/**
- * Calculate intersection for viewer assets with additional parameters like header height
- */
-export function calculateViewerAssetIntersecting(
+export function calculateViewerAssetViewportProximity(
   timelineManager: TimelineManager,
   positionTop: number,
   positionHeight: number,
-  expandTop: number = INTERSECTION_EXPAND_TOP,
-  expandBottom: number = INTERSECTION_EXPAND_BOTTOM,
 ) {
-  const topWindow = timelineManager.visibleWindow.top - timelineManager.headerHeight - expandTop;
-  const bottomWindow = timelineManager.visibleWindow.bottom + timelineManager.headerHeight + expandBottom;
-
-  const positionBottom = positionTop + positionHeight;
-
-  return isIntersecting(positionTop, positionBottom, topWindow, bottomWindow);
+  const headerHeight = timelineManager.headerHeight;
+  return calculateViewportProximity(
+    positionTop,
+    positionTop + positionHeight,
+    timelineManager.visibleWindow.top - headerHeight,
+    timelineManager.visibleWindow.bottom + headerHeight,
+  );
 }

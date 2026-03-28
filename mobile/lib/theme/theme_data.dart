@@ -62,6 +62,7 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
     ),
     chipTheme: const ChipThemeData(side: BorderSide.none),
     sliderTheme: const SliderThemeData(
+      trackHeight: 12,
       // ignore: deprecated_member_use
       year2023: false,
     ),
