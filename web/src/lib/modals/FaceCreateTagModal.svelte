@@ -1,8 +1,9 @@
 <script lang="ts">
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { delay } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, createPerson } from '@immich/sdk';
-  import { Field, FormModal, Input, Text } from '@immich/ui';
+  import { Field, FormModal, Input, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -51,6 +52,7 @@
         },
       });
 
+      await delay(1500);
       await assetViewerManager.setAssetId(assetId);
       onClose(true);
     } catch (error) {
@@ -72,8 +74,13 @@
   <Text size="tiny" class="mb-4" color="muted">{$t('create_person_subtitle')}</Text>
   {#if previewUrl}
     <Field label={$t('preview')}>
-      <div class="flex justify-center rounded-xl bg-gray-50 p-3 dark:border-gray-700 dark:bg-black/20">
+      <div class="flex justify-center rounded-xl bg-gray-50 p-3 dark:border-gray-700 dark:bg-black/20 relative">
         <img src={previewUrl} alt={$t('preview')} class="max-h-48 rounded-lg object-contain shadow-sm" />
+        {#if isSubmitting}
+          <div class="flex place-items-center place-content-center absolute inset-0 bg-black/20 rounded-lg">
+            <LoadingSpinner />
+          </div>
+        {/if}
       </div>
     </Field>
   {/if}
