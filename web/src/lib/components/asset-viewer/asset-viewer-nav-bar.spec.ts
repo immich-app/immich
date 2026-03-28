@@ -52,6 +52,24 @@ describe('AssetViewerNavBar component', () => {
     expect(getByLabelText('go_back')).toBeInTheDocument();
   });
 
+  it('shows edited badge when asset is edited', () => {
+    const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
+    preferencesStore.set(prefs);
+
+    const asset = assetFactory.build({ isEdited: true, isTrashed: false });
+    const { getByText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+    expect(getByText('edited')).toBeInTheDocument();
+  });
+
+  it('does not show edited badge when asset is not edited', () => {
+    const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
+    preferencesStore.set(prefs);
+
+    const asset = assetFactory.build({ isEdited: false, isTrashed: false });
+    const { queryByText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+    expect(queryByText('edited')).not.toBeInTheDocument();
+  });
+
   describe('if the current user owns the asset', () => {
     it('shows delete button', () => {
       const ownerId = 'id-of-the-user';

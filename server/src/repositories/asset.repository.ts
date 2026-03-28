@@ -1260,14 +1260,17 @@ export class AssetRepository {
       .select('originalFileName')
       .where('asset.id', 'in', ids)
       .$if(isEdited, (qb) =>
-        qb
-          .leftJoin('asset_file', (join) =>
-            join
-              .onRef('asset.id', '=', 'asset_file.assetId')
-              .on('asset_file.isEdited', '=', true)
-              .on('asset_file.type', '=', AssetFileType.FullSize),
-          )
-          .select('asset_file.path as editedPath'),
+        qb.select((eb) =>
+          eb
+            .selectFrom('asset_file')
+            .select('asset_file.path')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.isEdited', '=', true)
+            .where('asset_file.type', 'in', [AssetFileType.FullSize, AssetFileType.EncodedVideo])
+            .orderBy('asset_file.type', 'asc')
+            .limit(1)
+            .as('editedPath'),
+        ),
       )
       .select('originalPath');
   }

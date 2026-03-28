@@ -601,6 +601,32 @@ describe(AssetMediaService.name, () => {
         }),
       );
     });
+
+    it('should download trimmed video file (EncodedVideo, not FullSize frame)', async () => {
+      const trimmedVideoFile = AssetFileFactory.create({
+        type: AssetFileType.EncodedVideo,
+        isEdited: true,
+        path: '/encoded-video/owner/asset_edited.mp4',
+      });
+      const editedAsset = AssetFactory.from({ type: AssetType.Video })
+        .edit({ action: AssetEditAction.Trim })
+        .file({ type: AssetFileType.EncodedVideo })
+        .file({ type: AssetFileType.FullSize, isEdited: true })
+        .file(trimmedVideoFile)
+        .build();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([editedAsset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue({ ...editedAsset, editedPath: trimmedVideoFile.path });
+
+      await expect(sut.downloadOriginal(AuthFactory.create(), editedAsset.id, {})).resolves.toEqual(
+        new ImmichFileResponse({
+          path: trimmedVideoFile.path,
+          fileName: expect.stringMatching(/\.mp4$/),
+          contentType: 'video/mp4',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      );
+    });
   });
 
   describe('viewThumbnail', () => {

@@ -38,13 +38,14 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, Tooltip, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiArrowRight,
     mdiCompare,
     mdiDotsVertical,
     mdiImageSearch,
+    mdiPencilOutline,
     mdiPresentationPlay,
     mdiVideoOutline,
   } from '@mdi/js';
@@ -112,6 +113,12 @@
   </div>
 
   <div class="flex items-center gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+    {#if asset.isEdited}
+      <div class="flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-xs text-white">
+        <Icon icon={mdiPencilOutline} size="14" />
+        <span>{$t('edited')}</span>
+      </div>
+    {/if}
     {#if assetViewerManager.isImageLoading}
       <Tooltip text={$t('loading')}>
         {#snippet child({ props })}

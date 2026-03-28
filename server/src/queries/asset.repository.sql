@@ -608,29 +608,49 @@ where
 select
   "asset"."id",
   "originalFileName",
-  "asset_file"."path" as "editedPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."isEdited" = $1
+      and "asset_file"."type" in ($2, $3)
+    order by
+      "asset_file"."type" asc
+    limit
+      $4
+  ) as "editedPath",
   "originalPath"
 from
   "asset"
-  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
-  and "asset_file"."isEdited" = $1
-  and "asset_file"."type" = $2
 where
-  "asset"."id" in ($3)
+  "asset"."id" in ($5)
 
 -- AssetRepository.getForOriginals
 select
   "asset"."id",
   "originalFileName",
-  "asset_file"."path" as "editedPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."isEdited" = $1
+      and "asset_file"."type" in ($2, $3)
+    order by
+      "asset_file"."type" asc
+    limit
+      $4
+  ) as "editedPath",
   "originalPath"
 from
   "asset"
-  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
-  and "asset_file"."isEdited" = $1
-  and "asset_file"."type" = $2
 where
-  "asset"."id" in ($3)
+  "asset"."id" in ($5)
 
 -- AssetRepository.getForThumbnail
 select

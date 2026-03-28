@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Readable } from 'node:stream';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
+import { AssetType } from 'src/enum';
 import { DownloadService } from 'src/services/download.service';
 import { StorageService } from 'src/services/storage.service';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -204,6 +205,27 @@ describe(DownloadService.name, () => {
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
       expect(archiveMock.addFile).toHaveBeenCalledWith(asset.originalPath, asset.originalFileName);
+    });
+
+    it('should use EncodedVideo editedPath for trimmed video in archive', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const asset = AssetFactory.create({ type: AssetType.Video });
+      const editedAsset = { ...asset, editedPath: '/encoded-video/owner/asset_edited.mp4' };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([editedAsset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id], edited: true })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
+      expect(archiveMock.addFile).toHaveBeenCalledWith('/encoded-video/owner/asset_edited.mp4', asset.originalFileName);
     });
 
     it('should use original path when edited flag is not set', async () => {
