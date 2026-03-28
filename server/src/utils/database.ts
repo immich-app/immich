@@ -247,6 +247,25 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
   );
 }
 
+export function hasFace(eb: ExpressionBuilder<DB, 'person'>) {
+  return eb.exists((eb) =>
+    eb
+      .selectFrom('asset_face')
+      .whereRef('asset_face.personId', '=', 'person.id')
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('asset')
+            .whereRef('asset.id', '=', 'asset_face.assetId')
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+            .where('asset.deletedAt', 'is', null),
+        ),
+      ),
+  );
+}
+
 export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
   return qb.innerJoin(
     (eb) =>
