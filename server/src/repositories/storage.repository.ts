@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
+import { execFileSync } from 'node:child_process';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -191,10 +192,27 @@ export class StorageRepository {
 
   async checkDiskUsage(folder: string): Promise<DiskUsage> {
     const stats = await fs.statfs(folder);
+
+    // Node.js statfs() exposes bsize (optimal I/O block size) but not frsize
+    // (fundamental filesystem block size). Per POSIX, block counts (blocks, bfree,
+    // bavail) are in units of frsize. On most native filesystems bsize == frsize,
+    // but on FUSE mounts (Docker Desktop on macOS using VirtioFS/gRPC FUSE) they
+    // can differ by orders of magnitude, causing wildly inflated storage reports.
+    // Fall back to bsize if frsize cannot be determined.
+    let blockSize = stats.bsize;
+    try {
+      const frsize = Number(execFileSync('stat', ['-f', '-c', '%S', folder], { encoding: 'utf8' }).trim());
+      if (frsize > 0) {
+        blockSize = frsize;
+      }
+    } catch {
+      // stat format may differ on non-GNU systems; bsize is still a reasonable fallback
+    }
+
     return {
-      available: stats.bavail * stats.bsize,
-      free: stats.bfree * stats.bsize,
-      total: stats.blocks * stats.bsize,
+      available: stats.bavail * blockSize,
+      free: stats.bfree * blockSize,
+      total: stats.blocks * blockSize,
     };
   }
 
