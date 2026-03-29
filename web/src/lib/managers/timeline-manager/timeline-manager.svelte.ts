@@ -113,7 +113,7 @@ export class TimelineManager extends VirtualScrollManager {
 
     this.#unsubscribes.push(
       eventManager.on({
-        AssetUpdate: (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]),
+        AssetUpdate: (asset: AssetResponseDto) => this.#updateAssets([toTimelineAsset(asset)]),
       }),
     );
   }
