@@ -12,7 +12,13 @@ import { PersonFactory } from 'test/factories/person.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { getAsDetectedFace, getForAssetFace, getForDetectedFaces, getForFacialRecognitionJob } from 'test/mappers';
+import {
+  getAsDetectedFace,
+  getForAsset,
+  getForAssetFace,
+  getForDetectedFaces,
+  getForFacialRecognitionJob,
+} from 'test/mappers';
 import { newDate, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -371,7 +377,7 @@ describe(PersonService.name, () => {
   });
 
   describe('createFace', () => {
-    it('should create a manual face and initialize the person feature photo when missing', async () => {
+    it('should create a manual face and initialize the person feature photo creation', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
       const person = PersonFactory.create({ faceAssetId: null });
@@ -383,7 +389,7 @@ describe(PersonService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
       mocks.person.getById.mockResolvedValue(person);
       mocks.person.getRandomFace.mockResolvedValue(featureFace);
       mocks.person.update.mockResolvedValue({ ...person, faceAssetId: featureFace.id });
@@ -427,7 +433,7 @@ describe(PersonService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
       mocks.person.getById.mockResolvedValue(person);
 
       await expect(
