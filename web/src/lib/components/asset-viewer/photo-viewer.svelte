@@ -16,7 +16,7 @@
   import { getNaturalSize, scaleToFit, type ContentMetrics } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
-  import { getBoundingBox } from '$lib/utils/people-utils';
+  import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
@@ -80,6 +80,18 @@
       offsetX: 0,
       offsetY: 0,
     };
+  });
+
+  const highlightedBoxes = $derived(getBoundingBox($boundingBoxesArray, overlayMetrics));
+  const isHighlighting = $derived(highlightedBoxes.length > 0);
+
+  let visibleBoxes = $state<BoundingBox[]>([]);
+  let visibleBoundingBoxes = $state<Faces[]>([]);
+  $effect(() => {
+    if (isHighlighting) {
+      visibleBoxes = highlightedBoxes;
+      visibleBoundingBoxes = $boundingBoxesArray;
+    }
   });
 
   const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
@@ -242,21 +254,37 @@
       {/if}
     {/snippet}
     {#snippet overlays()}
-      {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox, index (boundingbox.id)}
-        <div
-          class="absolute border-solid border-white border-3 rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        ></div>
-        {#if faceToNameMap.get($boundingBoxesArray[index])}
+      <div
+        class="absolute inset-0 pointer-events-none transition-opacity duration-150"
+        style:opacity={isHighlighting ? 1 : 0}
+      >
+        <svg class="absolute inset-0 w-full h-full">
+          <defs>
+            <mask id="face-dim-mask">
+              <rect width="100%" height="100%" fill="white" />
+              {#each visibleBoxes as box (box.id)}
+                <rect x={box.left} y={box.top} width={box.width} height={box.height} fill="black" rx="8" />
+              {/each}
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="rgba(0,0,0,0.4)" mask="url(#face-dim-mask)" />
+        </svg>
+        {#each visibleBoxes as boundingbox, index (boundingbox.id)}
           <div
-            class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
-            style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
-              boundingbox.width}px; transform: translateX(-100%);"
-          >
-            {faceToNameMap.get($boundingBoxesArray[index])}
-          </div>
-        {/if}
-      {/each}
+            class="absolute border-solid border-white border-3 rounded-lg"
+            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          ></div>
+          {#if faceToNameMap.get(visibleBoundingBoxes[index])}
+            <div
+              class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
+              style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
+                boundingbox.width}px; transform: translateX(-100%);"
+            >
+              {faceToNameMap.get(visibleBoundingBoxes[index])}
+            </div>
+          {/if}
+        {/each}
+      </div>
 
       {#each ocrBoxes as ocrBox (ocrBox.id)}
         <OcrBoundingBox {ocrBox} />
