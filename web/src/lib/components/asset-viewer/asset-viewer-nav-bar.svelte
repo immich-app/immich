@@ -104,13 +104,16 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
-  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
+  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]"
 >
   <div class="dark">
     <ActionButton action={Close} />
   </div>
 
-  <div class="flex items-center gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+  <div
+    class="flex p-1 -m-1 items-center gap-2 overflow-x-auto *:shrink-0 dark"
+    data-testid="asset-viewer-navbar-actions"
+  >
     {#if assetViewerManager.isImageLoading}
       <Tooltip text={$t('loading')}>
         {#snippet child({ props })}
