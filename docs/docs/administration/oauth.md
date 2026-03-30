@@ -77,6 +77,7 @@ Once you have a new OAuth client application configured, Immich can be configure
 | Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |
 | [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |
 | [Mobile Redirect URI Override](#mobile-redirect-uri) | URL     | (empty)              | Http(s) alternative mobile redirect URI                                             |
+| Logout URI Override                                  | URL     | (empty)              | Http(s) alternative logout URI                                                      |
 
 :::note Claim Options [1]
 
@@ -194,6 +195,7 @@ Configuration of OAuth in Immich System Settings
 | Auto Launch                        | Enabled (optional)                                                  |
 | Mobile Redirect URI Override       | Disable                                                             |
 | Mobile Redirect URI                |                                                                     |
+| Logout URI                         | https://auth.example.com/logout?rd=https://immich.example.com/      |
 
 </details>
 

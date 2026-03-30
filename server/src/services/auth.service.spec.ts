@@ -164,6 +164,45 @@ describe(AuthService.name, () => {
       });
     });
 
+    it('should return the custom logout uri if override is enabled', async () => {
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { enabled: true, logoutOverrideEnabled: true, logoutUri: 'http://custom-logout-url' },
+      });
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: 'http://custom-logout-url',
+      });
+    });
+
+    it('should return the end session endpoint if override is disabled', async () => {
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { enabled: true, logoutOverrideEnabled: false, logoutUri: 'http://custom-logout-url' },
+      });
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: 'http://end-session-endpoint',
+      });
+    });
+
+    it('should return the end session endpoint when override is enabled but logout uri is empty', async () => {
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { enabled: true, logoutOverrideEnabled: true, logoutUri: '' },
+      });
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: 'http://end-session-endpoint',
+      });
+    });
+
     it('should return the default redirect', async () => {
       const auth = AuthFactory.create();
 

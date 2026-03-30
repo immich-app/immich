@@ -2520,6 +2520,10 @@ export type SystemConfigOAuthDto = {
     enabled: boolean;
     /** Issuer URL */
     issuerUrl: string;
+    /** Logout override enabled */
+    logoutOverrideEnabled: boolean;
+    /** Logout URI */
+    logoutUri: string;
     /** Mobile override enabled */
     mobileOverrideEnabled: boolean;
     /** Mobile redirect URI (set to empty string to disable) */

@@ -22,6 +22,8 @@ export type OAuthConfig = {
   clientId: string;
   clientSecret?: string;
   issuerUrl: string;
+  logoutUri: string;
+  logoutOverrideEnabled: boolean;
   mobileOverrideEnabled: boolean;
   mobileRedirectUri: string;
   profileSigningAlgorithm: string;

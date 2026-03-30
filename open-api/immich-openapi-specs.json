@@ -24335,6 +24335,15 @@
             "description": "Issuer URL",
             "type": "string"
           },
+          "logoutOverrideEnabled": {
+            "description": "Logout override enabled",
+            "type": "boolean"
+          },
+          "logoutUri": {
+            "description": "Logout URI",
+            "format": "uri",
+            "type": "string"
+          },
           "mobileOverrideEnabled": {
             "description": "Mobile override enabled",
             "type": "boolean"
@@ -24391,6 +24400,8 @@
           "defaultStorageQuota",
           "enabled",
           "issuerUrl",
+          "logoutOverrideEnabled",
+          "logoutUri",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",

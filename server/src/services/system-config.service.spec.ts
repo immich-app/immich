@@ -138,6 +138,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    logoutUri: '',
+    logoutOverrideEnabled: false,
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
     prompt: '',

@@ -275,6 +275,24 @@
                   isEdited={!(configToEdit.oauth.mobileRedirectUri === config.oauth.mobileRedirectUri)}
                 />
               {/if}
+
+              <SettingSwitch
+                title={$t('admin.oauth_logout_uri_override')}
+                subtitle={$t('admin.oauth_logout_uri_override_description')}
+                disabled={disabled || !configToEdit.oauth.enabled}
+                bind:checked={configToEdit.oauth.logoutOverrideEnabled}
+              />
+
+              {#if configToEdit.oauth.logoutOverrideEnabled}
+                <SettingInputField
+                  inputType={SettingInputFieldType.TEXT}
+                  label={$t('admin.oauth_logout_uri')}
+                  bind:value={configToEdit.oauth.logoutUri}
+                  required={true}
+                  disabled={disabled || !configToEdit.oauth.enabled}
+                  isEdited={!(configToEdit.oauth.logoutUri === config.oauth.logoutUri)}
+                />
+              {/if}
             {/if}
           </div>
         </SettingAccordion>

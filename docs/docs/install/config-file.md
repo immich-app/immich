@@ -193,6 +193,8 @@ The default configuration looks like this:
     "defaultStorageQuota": null,
     "enabled": false,
     "issuerUrl": "",
+    "logoutUri": "",
+    "logoutOverrideEnabled": false,
     "mobileOverrideEnabled": false,
     "mobileRedirectUri": "",
     "profileSigningAlgorithm": "none",
