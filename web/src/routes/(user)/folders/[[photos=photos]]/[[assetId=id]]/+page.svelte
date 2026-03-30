@@ -16,6 +16,7 @@
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
@@ -58,6 +59,10 @@
       await foldersStore.refreshAssetsByPath(data.tree.path);
     }
     await invalidateAll();
+  };
+
+  const handleSetVisibility = () => {
+    void triggerAssetUpdate();
   };
 
   const handleSelectAllAssets = () => {
@@ -143,6 +148,7 @@
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
+        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
         {/if}
