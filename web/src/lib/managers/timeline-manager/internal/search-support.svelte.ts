@@ -120,7 +120,7 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
     return [];
   }
   const assetOrder: AssetOrder = timelineManager.getAssetOrder();
-  if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, startAsset.localDateTime, endAsset.localDateTime) < 0) {
+  if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, startAsset.fileCreatedAt, endAsset.fileCreatedAt) < 0) {
     [startAsset, endAsset] = [endAsset, startAsset];
     // eslint-disable-next-line no-useless-assignment
     [startMonthGroup, endMonthGroup] = [endMonthGroup, startMonthGroup];
