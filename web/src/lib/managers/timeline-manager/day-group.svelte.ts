@@ -74,8 +74,16 @@ export class DayGroup {
   }
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
-    const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.viewerAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
+    const isAscending = sortOrder === AssetOrder.Asc;
+    this.viewerAssets.sort((a, b) => {
+      const timeComparison = plainDateTimeCompare(isAscending, a.asset.fileCreatedAt, b.asset.fileCreatedAt);
+      if (timeComparison !== 0) {
+        return timeComparison;
+      }
+      if (a.asset.id < b.asset.id) return isAscending ? -1 : 1;
+      if (a.asset.id > b.asset.id) return isAscending ? 1 : -1;
+      return 0;
+    });
   }
 
   getFirstAsset() {

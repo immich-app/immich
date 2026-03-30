@@ -119,8 +119,18 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
   if (!endMonthGroup || !endAsset) {
     return [];
   }
+
   const assetOrder: AssetOrder = timelineManager.getAssetOrder();
-  if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, startAsset.fileCreatedAt, endAsset.fileCreatedAt) < 0) {
+  const isAscending = assetOrder === AssetOrder.Asc;
+  const timeComparison = plainDateTimeCompare(isAscending, startAsset.fileCreatedAt, endAsset.fileCreatedAt);
+  // If we have a number of incorrectly timestamped assets, lets make sure that
+  // they are still sorted in a stable way:
+  const idComparison = isAscending
+    ? startAsset.id > endAsset.id
+    : startAsset.id < endAsset.id;
+  const needsSwap = timeComparison < 0 || (timeComparison === 0 && idComparison);
+
+  if (needsSwap) {
     [startAsset, endAsset] = [endAsset, startAsset];
     // eslint-disable-next-line no-useless-assignment
     [startMonthGroup, endMonthGroup] = [endMonthGroup, startMonthGroup];
