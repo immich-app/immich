@@ -738,6 +738,22 @@ class TestFaceRecognition:
         assert np.equal(faces["scores"], scores).all()
         det_model.detect.assert_called_once()
 
+    @pytest.mark.parametrize("shape", [(0, 100, 3), (100, 0, 3), (0, 0, 3)])
+    def test_detection_empty_image(self, shape: tuple[int, ...], mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceDetector, "load")
+        face_detector = FaceDetector("buffalo_s", min_score=0.0, cache_dir="test_cache")
+        det_model = mock.Mock()
+        face_detector.model = det_model
+
+        empty_image = np.empty(shape, dtype=np.uint8)
+        faces = face_detector.predict(empty_image)
+
+        assert isinstance(faces, dict)
+        assert faces["boxes"].shape == (0, 4)
+        assert faces["scores"].shape == (0,)
+        assert faces["landmarks"].shape == (0, 5, 2)
+        det_model.detect.assert_not_called()
+
     def test_recognition(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
