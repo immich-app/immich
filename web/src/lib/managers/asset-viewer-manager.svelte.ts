@@ -106,6 +106,15 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.#zoomState = state;
   }
 
+  zoomStateOverride(state: Partial<ZoomImageWheelState>) {
+    this.#zoomState = { ...this.#zoomState, ...state };
+    this.emit('ZoomChange', this.#zoomState);
+  }
+
+  setZoomEnabled(enabled: boolean) {
+    this.zoomState = { ...this.#zoomState, enable: enabled };
+  }
+
   cancelZoomAnimation() {
     if (this.#animationFrameId !== null) {
       cancelAnimationFrame(this.#animationFrameId);

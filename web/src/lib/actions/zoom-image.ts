@@ -1,5 +1,5 @@
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-import { createZoomImageWheel } from '@zoom-image/core';
+import { createZoomImageWheel, type ZoomImageWheelState } from '@zoom-image/core';
 
 // Minimal touch shape — avoids importing DOM TouchEvent which isn't available in all TS targets.
 type TouchEventLike = {
@@ -8,17 +8,38 @@ type TouchEventLike = {
 };
 const asTouchEvent = (event: Event) => event as unknown as TouchEventLike;
 
+const MAX_ZOOM = 10;
+
 export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTMLElement }) => {
   const zoomInstance = createZoomImageWheel(node, {
-    maxZoom: 10,
+    maxZoom: MAX_ZOOM,
     initialState: assetViewerManager.zoomState,
     zoomTarget: options?.zoomTarget,
   });
 
-  const unsubscribes = [
-    assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
-    zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
-  ];
+  const unsubscribeStore = zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state));
+
+  const applyTransform = (state: ZoomImageWheelState) => {
+    const target = options?.zoomTarget;
+    if (target) {
+      target.style.transform = `translate(${state.currentPositionX}px, ${state.currentPositionY}px) scale(${state.currentZoom})`;
+    }
+  };
+
+  const unsubscribeManager = assetViewerManager.on({
+    ZoomChange: (state) => {
+      const internalState = zoomInstance.getState();
+      const zoomChanged = state.currentZoom !== internalState.currentZoom;
+      zoomInstance.setState(state);
+      if (!zoomChanged) {
+        // Pan-only: library's setState ignores position, so sync manually
+        internalState.currentPositionX = state.currentPositionX;
+        internalState.currentPositionY = state.currentPositionY;
+        applyTransform(state);
+        assetViewerManager.onZoomChange(state);
+      }
+    },
+  });
 
   const controller = new AbortController();
   const { signal } = controller;
@@ -141,9 +162,8 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
       if (options?.zoomTarget) {
         options.zoomTarget.style.willChange = '';
       }
-      for (const unsubscribe of unsubscribes) {
-        unsubscribe();
-      }
+      unsubscribeManager();
+      unsubscribeStore();
       zoomInstance.cleanup();
     },
   };

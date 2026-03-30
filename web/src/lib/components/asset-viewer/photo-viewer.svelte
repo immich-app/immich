@@ -5,6 +5,7 @@
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
+  import ZoomMinimap from '$lib/components/asset-viewer/zoom-minimap.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
@@ -291,3 +292,5 @@
     <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
   {/if}
 </div>
+
+<ZoomMinimap {containerWidth} {containerHeight} {asset} {sharedLink} />

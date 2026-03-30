@@ -31,4 +31,8 @@ export const TUNABLES = {
   IMAGE_THUMBNAIL: {
     THUMBHASH_FADE_DURATION: getNumber(storage.getItem('THUMBHASH_FADE_DURATION'), 100),
   },
+  MINIMAP: {
+    FADE_DURATION: getNumber(storage.getItem('MINIMAP.FADE_DURATION'), 150),
+    HIDE_DELAY: getNumber(storage.getItem('MINIMAP.HIDE_DELAY'), 1500),
+  },
 };
