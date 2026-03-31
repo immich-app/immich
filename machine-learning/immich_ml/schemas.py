@@ -24,6 +24,8 @@ class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
     SEARCH = "clip"
     OCR = "ocr"
+    PET_DETECTION = "pet-detection"
+    PET_RECOGNITION = "pet-recognition"
 
 
 class ModelType(StrEnum):
@@ -44,6 +46,8 @@ class ModelSource(StrEnum):
     MCLIP = "mclip"
     OPENCLIP = "openclip"
     PADDLE = "paddle"
+    YOLOV8 = "yolov8"
+    MEGADESCRIPTOR = "megadescriptor"
 
 
 class ModelPrecision(StrEnum):
@@ -85,6 +89,12 @@ class FaceDetectionOutput(TypedDict):
     landmarks: npt.NDArray[np.float32]
 
 
+class PetDetectionOutput(TypedDict):
+    boxes: npt.NDArray[np.float32]
+    scores: npt.NDArray[np.float32]
+    labels: npt.NDArray[np.int32]
+
+
 class DetectedFace(TypedDict):
     boundingBox: BoundingBox
     embedding: str
@@ -92,6 +102,16 @@ class DetectedFace(TypedDict):
 
 
 FacialRecognitionOutput = list[DetectedFace]
+
+
+class DetectedPet(TypedDict):
+    boundingBox: BoundingBox
+    embedding: str
+    score: float
+    label: int
+
+
+PetRecognitionOutput = list[DetectedPet]
 
 
 class PipelineEntry(TypedDict):

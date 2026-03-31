@@ -31,6 +31,11 @@ class OcrSettings(BaseModel):
     detection: str | None = None
 
 
+class PetRecognitionSettings(BaseModel):
+    recognition: str | None = None
+    detection: str | None = None
+
+
 class PreloadModelData(BaseModel):
     clip_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
     facial_recognition_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
@@ -45,6 +50,7 @@ class PreloadModelData(BaseModel):
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
     ocr: OcrSettings = OcrSettings()
+    pet_recognition: PetRecognitionSettings = PetRecognitionSettings()
 
 
 class MaxBatchSize(BaseModel):
