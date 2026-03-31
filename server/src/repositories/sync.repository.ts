@@ -445,6 +445,7 @@ class PersonSync extends BaseSync {
         'isHidden',
         'isFavorite',
         'color',
+        'type',
         'updateId',
         'faceAssetId',
       ])
@@ -481,6 +482,7 @@ class AssetFaceSync extends BaseSync {
         'boundingBoxX2',
         'boundingBoxY2',
         'sourceType',
+        'personType',
         'isVisible',
         'asset_face.deletedAt',
         'asset_face.updateId',

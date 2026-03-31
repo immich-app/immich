@@ -9,6 +9,7 @@ import {
   AssetType,
   AssetVisibility,
   MemoryType,
+  PersonType,
   SyncEntityType,
   SyncRequestType,
   UserAvatarColor,
@@ -409,6 +410,8 @@ export class SyncPersonV1 {
   color!: string | null;
   @ApiProperty({ description: 'Face asset ID' })
   faceAssetId!: string | null;
+  @ValidateEnum({ enum: PersonType, name: 'PersonType', description: 'Person type' })
+  type!: PersonType;
 }
 
 @ExtraModel()
@@ -439,6 +442,8 @@ export class SyncAssetFaceV1 {
   boundingBoxY2!: number;
   @ApiProperty({ description: 'Source type' })
   sourceType!: string;
+  @ValidateEnum({ enum: PersonType, name: 'PersonType', description: 'Person type' })
+  personType!: PersonType;
 }
 
 @ExtraModel()

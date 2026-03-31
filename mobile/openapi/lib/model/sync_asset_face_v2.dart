@@ -24,6 +24,7 @@ class SyncAssetFaceV2 {
     required this.imageWidth,
     required this.isVisible,
     required this.personId,
+    required this.personType,
     required this.sourceType,
   });
 
@@ -54,6 +55,9 @@ class SyncAssetFaceV2 {
   /// Person ID
   String? personId;
 
+  /// Person type
+  PersonType personType;
+
   /// Source type
   String sourceType;
 
@@ -70,6 +74,7 @@ class SyncAssetFaceV2 {
     other.imageWidth == imageWidth &&
     other.isVisible == isVisible &&
     other.personId == personId &&
+    other.personType == personType &&
     other.sourceType == sourceType;
 
   @override
@@ -86,10 +91,11 @@ class SyncAssetFaceV2 {
     (imageWidth.hashCode) +
     (isVisible.hashCode) +
     (personId == null ? 0 : personId!.hashCode) +
+    (personType.hashCode) +
     (sourceType.hashCode);
 
   @override
-  String toString() => 'SyncAssetFaceV2[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, deletedAt=$deletedAt, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, isVisible=$isVisible, personId=$personId, sourceType=$sourceType]';
+  String toString() => 'SyncAssetFaceV2[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, deletedAt=$deletedAt, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, isVisible=$isVisible, personId=$personId, personType=$personType, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -112,6 +118,7 @@ class SyncAssetFaceV2 {
     } else {
     //  json[r'personId'] = null;
     }
+      json[r'personType'] = this.personType;
       json[r'sourceType'] = this.sourceType;
     return json;
   }
@@ -136,6 +143,7 @@ class SyncAssetFaceV2 {
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         isVisible: mapValueOfType<bool>(json, r'isVisible')!,
         personId: mapValueOfType<String>(json, r'personId'),
+        personType: PersonType.fromJson(json[r'personType'])!,
         sourceType: mapValueOfType<String>(json, r'sourceType')!,
       );
     }
@@ -195,6 +203,7 @@ class SyncAssetFaceV2 {
     'imageWidth',
     'isVisible',
     'personId',
+    'personType',
     'sourceType',
   };
 }

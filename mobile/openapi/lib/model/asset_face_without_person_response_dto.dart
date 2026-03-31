@@ -20,6 +20,7 @@ class AssetFaceWithoutPersonResponseDto {
     required this.id,
     required this.imageHeight,
     required this.imageWidth,
+    this.personType,
     this.sourceType,
   });
 
@@ -44,6 +45,15 @@ class AssetFaceWithoutPersonResponseDto {
   /// Image width in pixels
   int imageWidth;
 
+  /// Person type
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PersonType? personType;
+
   /// Face detection source type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,6 +72,7 @@ class AssetFaceWithoutPersonResponseDto {
     other.id == id &&
     other.imageHeight == imageHeight &&
     other.imageWidth == imageWidth &&
+    other.personType == personType &&
     other.sourceType == sourceType;
 
   @override
@@ -74,10 +85,11 @@ class AssetFaceWithoutPersonResponseDto {
     (id.hashCode) +
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
+    (personType == null ? 0 : personType!.hashCode) +
     (sourceType == null ? 0 : sourceType!.hashCode);
 
   @override
-  String toString() => 'AssetFaceWithoutPersonResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, sourceType=$sourceType]';
+  String toString() => 'AssetFaceWithoutPersonResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personType=$personType, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -88,6 +100,11 @@ class AssetFaceWithoutPersonResponseDto {
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
+    if (this.personType != null) {
+      json[r'personType'] = this.personType;
+    } else {
+    //  json[r'personType'] = null;
+    }
     if (this.sourceType != null) {
       json[r'sourceType'] = this.sourceType;
     } else {
@@ -112,6 +129,7 @@ class AssetFaceWithoutPersonResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
+        personType: PersonType.fromJson(json[r'personType']),
         sourceType: SourceType.fromJson(json[r'sourceType']),
       );
     }

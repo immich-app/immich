@@ -130,6 +130,9 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
+  if (value is PersonType) {
+    return PersonTypeTypeTransformer().encode(value).toString();
+  }
   if (value is PluginContextType) {
     return PluginContextTypeTypeTransformer().encode(value).toString();
   }

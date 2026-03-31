@@ -13,6 +13,7 @@ import {
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { PersonType } from 'src/enum';
+import { person_type_enum } from 'src/schema/enums';
 import { person_delete_audit } from 'src/schema/functions';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -56,7 +57,7 @@ export class PersonTable {
   @Column({ type: 'date', nullable: true })
   birthDate!: Timestamp | null;
 
-  @Column({ type: 'enum', enum: PersonType, default: PersonType.Human })
+  @Column({ enum: person_type_enum, default: PersonType.Human })
   type!: Generated<PersonType>;
 
   @ForeignKeyColumn(() => AssetFaceTable, { onDelete: 'SET NULL', nullable: true })

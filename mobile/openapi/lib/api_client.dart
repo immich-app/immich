@@ -512,6 +512,8 @@ class ApiClient {
           return PersonResponseDto.fromJson(value);
         case 'PersonStatisticsResponseDto':
           return PersonStatisticsResponseDto.fromJson(value);
+        case 'PersonType':
+          return PersonTypeTypeTransformer().decode(value);
         case 'PersonUpdateDto':
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':

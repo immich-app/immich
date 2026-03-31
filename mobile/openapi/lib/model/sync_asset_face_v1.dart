@@ -22,6 +22,7 @@ class SyncAssetFaceV1 {
     required this.imageHeight,
     required this.imageWidth,
     required this.personId,
+    required this.personType,
     required this.sourceType,
   });
 
@@ -46,6 +47,9 @@ class SyncAssetFaceV1 {
   /// Person ID
   String? personId;
 
+  /// Person type
+  PersonType personType;
+
   /// Source type
   String sourceType;
 
@@ -60,6 +64,7 @@ class SyncAssetFaceV1 {
     other.imageHeight == imageHeight &&
     other.imageWidth == imageWidth &&
     other.personId == personId &&
+    other.personType == personType &&
     other.sourceType == sourceType;
 
   @override
@@ -74,10 +79,11 @@ class SyncAssetFaceV1 {
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
     (personId == null ? 0 : personId!.hashCode) +
+    (personType.hashCode) +
     (sourceType.hashCode);
 
   @override
-  String toString() => 'SyncAssetFaceV1[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, sourceType=$sourceType]';
+  String toString() => 'SyncAssetFaceV1[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, personType=$personType, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -94,6 +100,7 @@ class SyncAssetFaceV1 {
     } else {
     //  json[r'personId'] = null;
     }
+      json[r'personType'] = this.personType;
       json[r'sourceType'] = this.sourceType;
     return json;
   }
@@ -116,6 +123,7 @@ class SyncAssetFaceV1 {
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         personId: mapValueOfType<String>(json, r'personId'),
+        personType: PersonType.fromJson(json[r'personType'])!,
         sourceType: mapValueOfType<String>(json, r'sourceType')!,
       );
     }
@@ -173,6 +181,7 @@ class SyncAssetFaceV1 {
     'imageHeight',
     'imageWidth',
     'personId',
+    'personType',
     'sourceType',
   };
 }

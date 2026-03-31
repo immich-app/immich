@@ -21,6 +21,7 @@ class AssetFaceResponseDto {
     required this.imageHeight,
     required this.imageWidth,
     required this.person,
+    this.personType,
     this.sourceType,
   });
 
@@ -48,6 +49,15 @@ class AssetFaceResponseDto {
   /// Person associated with face
   PersonResponseDto? person;
 
+  /// Person type
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PersonType? personType;
+
   /// Face detection source type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -67,6 +77,7 @@ class AssetFaceResponseDto {
     other.imageHeight == imageHeight &&
     other.imageWidth == imageWidth &&
     other.person == person &&
+    other.personType == personType &&
     other.sourceType == sourceType;
 
   @override
@@ -80,10 +91,11 @@ class AssetFaceResponseDto {
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
     (person == null ? 0 : person!.hashCode) +
+    (personType == null ? 0 : personType!.hashCode) +
     (sourceType == null ? 0 : sourceType!.hashCode);
 
   @override
-  String toString() => 'AssetFaceResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, person=$person, sourceType=$sourceType]';
+  String toString() => 'AssetFaceResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, person=$person, personType=$personType, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -98,6 +110,11 @@ class AssetFaceResponseDto {
       json[r'person'] = this.person;
     } else {
     //  json[r'person'] = null;
+    }
+    if (this.personType != null) {
+      json[r'personType'] = this.personType;
+    } else {
+    //  json[r'personType'] = null;
     }
     if (this.sourceType != null) {
       json[r'sourceType'] = this.sourceType;
@@ -124,6 +141,7 @@ class AssetFaceResponseDto {
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         person: PersonResponseDto.fromJson(json[r'person']),
+        personType: PersonType.fromJson(json[r'personType']),
         sourceType: SourceType.fromJson(json[r'sourceType']),
       );
     }

@@ -20,6 +20,7 @@ class PersonResponseDto {
     required this.isHidden,
     required this.name,
     required this.thumbnailPath,
+    required this.type,
     this.updatedAt,
   });
 
@@ -56,6 +57,9 @@ class PersonResponseDto {
   /// Thumbnail path
   String thumbnailPath;
 
+  /// Person type
+  PersonType type;
+
   /// Last update date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -74,6 +78,7 @@ class PersonResponseDto {
     other.isHidden == isHidden &&
     other.name == name &&
     other.thumbnailPath == thumbnailPath &&
+    other.type == type &&
     other.updatedAt == updatedAt;
 
   @override
@@ -86,10 +91,11 @@ class PersonResponseDto {
     (isHidden.hashCode) +
     (name.hashCode) +
     (thumbnailPath.hashCode) +
+    (type.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -112,6 +118,7 @@ class PersonResponseDto {
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
+      json[r'type'] = this.type;
     if (this.updatedAt != null) {
       json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
     } else {
@@ -136,6 +143,7 @@ class PersonResponseDto {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        type: PersonType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', r''),
       );
     }
@@ -189,6 +197,7 @@ class PersonResponseDto {
     'isHidden',
     'name',
     'thumbnailPath',
+    'type',
   };
 }
 

@@ -8,6 +8,7 @@ import {
   ChecksumAlgorithm,
   MemoryType,
   Permission,
+  PersonType,
   PluginContext,
   PluginTriggerType,
   SharedLinkType,
@@ -17,7 +18,9 @@ import {
 } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { PersonTable } from 'src/schema/tables/person.table';
 import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
@@ -246,37 +249,10 @@ export type Session = {
 
 export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | 'lockedProperties'>;
 
-export type Person = {
-  createdAt: Date;
-  id: string;
-  ownerId: string;
-  updatedAt: Date;
-  updateId: string;
-  isFavorite: boolean;
-  name: string;
-  birthDate: Date | null;
-  color: string | null;
-  faceAssetId: string | null;
-  isHidden: boolean;
-  thumbnailPath: string;
-};
+export type Person = Selectable<PersonTable>;
 
-export type AssetFace = {
-  id: string;
-  deletedAt: Date | null;
-  assetId: string;
-  boundingBoxX1: number;
-  boundingBoxX2: number;
-  boundingBoxY1: number;
-  boundingBoxY2: number;
-  imageHeight: number;
-  imageWidth: number;
-  personId: string | null;
-  sourceType: SourceType;
+export type AssetFace = Selectable<AssetFaceTable> & {
   person?: ShallowDehydrateObject<Person> | null;
-  updatedAt: Date;
-  updateId: string;
-  isVisible: boolean;
 };
 
 export type Plugin = Selectable<PluginTable>;

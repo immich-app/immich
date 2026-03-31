@@ -21,6 +21,7 @@ class PersonWithFacesResponseDto {
     required this.isHidden,
     required this.name,
     required this.thumbnailPath,
+    required this.type,
     this.updatedAt,
   });
 
@@ -60,6 +61,9 @@ class PersonWithFacesResponseDto {
   /// Thumbnail path
   String thumbnailPath;
 
+  /// Person type
+  PersonType type;
+
   /// Last update date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -79,6 +83,7 @@ class PersonWithFacesResponseDto {
     other.isHidden == isHidden &&
     other.name == name &&
     other.thumbnailPath == thumbnailPath &&
+    other.type == type &&
     other.updatedAt == updatedAt;
 
   @override
@@ -92,10 +97,11 @@ class PersonWithFacesResponseDto {
     (isHidden.hashCode) +
     (name.hashCode) +
     (thumbnailPath.hashCode) +
+    (type.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, color=$color, faces=$faces, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, color=$color, faces=$faces, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -119,6 +125,7 @@ class PersonWithFacesResponseDto {
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
+      json[r'type'] = this.type;
     if (this.updatedAt != null) {
       json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
     } else {
@@ -144,6 +151,7 @@ class PersonWithFacesResponseDto {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        type: PersonType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', r''),
       );
     }
@@ -198,6 +206,7 @@ class PersonWithFacesResponseDto {
     'isHidden',
     'name',
     'thumbnailPath',
+    'type',
   };
 }
 

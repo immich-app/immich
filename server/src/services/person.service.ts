@@ -29,6 +29,7 @@ import {
   JobStatus,
   Permission,
   PersonPathType,
+  PersonType,
   QueueName,
   SourceType,
   SystemMetadataKey,

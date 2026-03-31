@@ -16385,6 +16385,14 @@
             "description": "Person associated with face",
             "nullable": true
           },
+          "personType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
+          },
           "sourceType": {
             "allOf": [
               {
@@ -16470,6 +16478,14 @@
           "imageWidth": {
             "description": "Image width in pixels",
             "type": "integer"
+          },
+          "personType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
           },
           "sourceType": {
             "allOf": [
@@ -19794,6 +19810,14 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
           }
         },
         "required": [
@@ -19987,6 +20011,14 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
           }
         },
         "type": "object"
@@ -20045,6 +20077,14 @@
             "description": "Thumbnail path",
             "type": "string"
           },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
+          },
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
@@ -20067,7 +20107,8 @@
           "id",
           "isHidden",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "type"
         ],
         "type": "object"
       },
@@ -20082,6 +20123,14 @@
           "assets"
         ],
         "type": "object"
+      },
+      "PersonType": {
+        "description": "Person type",
+        "enum": [
+          "HUMAN",
+          "PET"
+        ],
+        "type": "string"
       },
       "PersonUpdateDto": {
         "properties": {
@@ -20112,6 +20161,14 @@
           "name": {
             "description": "Person name",
             "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
           }
         },
         "type": "object"
@@ -20177,6 +20234,14 @@
             "description": "Thumbnail path",
             "type": "string"
           },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
+          },
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
@@ -20200,7 +20265,8 @@
           "id",
           "isHidden",
           "name",
-          "thumbnailPath"
+          "thumbnailPath",
+          "type"
         ],
         "type": "object"
       },
@@ -23095,6 +23161,14 @@
             "nullable": true,
             "type": "string"
           },
+          "personType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
+          },
           "sourceType": {
             "description": "Source type",
             "type": "string"
@@ -23110,6 +23184,7 @@
           "imageHeight",
           "imageWidth",
           "personId",
+          "personType",
           "sourceType"
         ],
         "type": "object"
@@ -23157,6 +23232,14 @@
             "nullable": true,
             "type": "string"
           },
+          "personType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
+          },
           "sourceType": {
             "description": "Source type",
             "type": "string"
@@ -23174,6 +23257,7 @@
           "imageWidth",
           "isVisible",
           "personId",
+          "personType",
           "sourceType"
         ],
         "type": "object"
@@ -23705,6 +23789,14 @@
             "description": "Owner ID",
             "type": "string"
           },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonType"
+              }
+            ],
+            "description": "Person type"
+          },
           "updatedAt": {
             "description": "Updated at",
             "format": "date-time",
@@ -23721,6 +23813,7 @@
           "isHidden",
           "name",
           "ownerId",
+          "type",
           "updatedAt"
         ],
         "type": "object"
@@ -24444,6 +24537,10 @@
           "ocr": {
             "$ref": "#/components/schemas/OcrConfig"
           },
+          "recognizePets": {
+            "description": "Recognize pets",
+            "type": "boolean"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -24461,6 +24558,7 @@
           "enabled",
           "facialRecognition",
           "ocr",
+          "recognizePets",
           "urls"
         ],
         "type": "object"

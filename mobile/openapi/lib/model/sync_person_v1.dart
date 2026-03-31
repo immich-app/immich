@@ -22,6 +22,7 @@ class SyncPersonV1 {
     required this.isHidden,
     required this.name,
     required this.ownerId,
+    required this.type,
     required this.updatedAt,
   });
 
@@ -52,6 +53,9 @@ class SyncPersonV1 {
   /// Owner ID
   String ownerId;
 
+  /// Person type
+  PersonType type;
+
   /// Updated at
   DateTime updatedAt;
 
@@ -66,6 +70,7 @@ class SyncPersonV1 {
     other.isHidden == isHidden &&
     other.name == name &&
     other.ownerId == ownerId &&
+    other.type == type &&
     other.updatedAt == updatedAt;
 
   @override
@@ -80,10 +85,11 @@ class SyncPersonV1 {
     (isHidden.hashCode) +
     (name.hashCode) +
     (ownerId.hashCode) +
+    (type.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SyncPersonV1[birthDate=$birthDate, color=$color, createdAt=$createdAt, faceAssetId=$faceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, ownerId=$ownerId, updatedAt=$updatedAt]';
+  String toString() => 'SyncPersonV1[birthDate=$birthDate, color=$color, createdAt=$createdAt, faceAssetId=$faceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, ownerId=$ownerId, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,6 +114,7 @@ class SyncPersonV1 {
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
       json[r'ownerId'] = this.ownerId;
+      json[r'type'] = this.type;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -130,6 +137,7 @@ class SyncPersonV1 {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        type: PersonType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -187,6 +195,7 @@ class SyncPersonV1 {
     'isHidden',
     'name',
     'ownerId',
+    'type',
     'updatedAt',
   };
 }

@@ -18,6 +18,7 @@ class PersonCreateDto {
     this.isFavorite,
     this.isHidden,
     this.name,
+    this.type,
   });
 
   /// Person date of birth
@@ -53,13 +54,23 @@ class PersonCreateDto {
   ///
   String? name;
 
+  /// Person type
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PersonType? type;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonCreateDto &&
     other.birthDate == birthDate &&
     other.color == color &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
-    other.name == name;
+    other.name == name &&
+    other.type == type;
 
   @override
   int get hashCode =>
@@ -68,10 +79,11 @@ class PersonCreateDto {
     (color == null ? 0 : color!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
-    (name == null ? 0 : name!.hashCode);
+    (name == null ? 0 : name!.hashCode) +
+    (type == null ? 0 : type!.hashCode);
 
   @override
-  String toString() => 'PersonCreateDto[birthDate=$birthDate, color=$color, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
+  String toString() => 'PersonCreateDto[birthDate=$birthDate, color=$color, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -100,6 +112,11 @@ class PersonCreateDto {
     } else {
     //  json[r'name'] = null;
     }
+    if (this.type != null) {
+      json[r'type'] = this.type;
+    } else {
+    //  json[r'type'] = null;
+    }
     return json;
   }
 
@@ -117,6 +134,7 @@ class PersonCreateDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),
+        type: PersonType.fromJson(json[r'type']),
       );
     }
     return null;

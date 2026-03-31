@@ -20,6 +20,7 @@ class PeopleUpdateItem {
     this.isFavorite,
     this.isHidden,
     this.name,
+    this.type,
   });
 
   /// Person date of birth
@@ -67,6 +68,15 @@ class PeopleUpdateItem {
   ///
   String? name;
 
+  /// Person type
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PersonType? type;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateItem &&
     other.birthDate == birthDate &&
@@ -75,7 +85,8 @@ class PeopleUpdateItem {
     other.id == id &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
-    other.name == name;
+    other.name == name &&
+    other.type == type;
 
   @override
   int get hashCode =>
@@ -86,10 +97,11 @@ class PeopleUpdateItem {
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
-    (name == null ? 0 : name!.hashCode);
+    (name == null ? 0 : name!.hashCode) +
+    (type == null ? 0 : type!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
+  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -124,6 +136,11 @@ class PeopleUpdateItem {
     } else {
     //  json[r'name'] = null;
     }
+    if (this.type != null) {
+      json[r'type'] = this.type;
+    } else {
+    //  json[r'type'] = null;
+    }
     return json;
   }
 
@@ -143,6 +160,7 @@ class PeopleUpdateItem {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),
+        type: PersonType.fromJson(json[r'type']),
       );
     }
     return null;

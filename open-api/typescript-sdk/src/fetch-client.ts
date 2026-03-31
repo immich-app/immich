@@ -516,6 +516,8 @@ export type AssetFaceWithoutPersonResponseDto = {
     imageHeight: number;
     /** Image width in pixels */
     imageWidth: number;
+    /** Person type */
+    personType?: PersonType;
     /** Face detection source type */
     sourceType?: SourceType;
 };
@@ -536,6 +538,8 @@ export type PersonWithFacesResponseDto = {
     name: string;
     /** Thumbnail path */
     thumbnailPath: string;
+    /** Person type */
+    "type": PersonType;
     /** Last update date */
     updatedAt?: string;
 };
@@ -1194,6 +1198,8 @@ export type PersonResponseDto = {
     name: string;
     /** Thumbnail path */
     thumbnailPath: string;
+    /** Person type */
+    "type": PersonType;
     /** Last update date */
     updatedAt?: string;
 };
@@ -1214,6 +1220,8 @@ export type AssetFaceResponseDto = {
     imageWidth: number;
     /** Person associated with face */
     person: (PersonResponseDto) | null;
+    /** Person type */
+    personType?: PersonType;
     /** Face detection source type */
     sourceType?: SourceType;
 };
@@ -1523,6 +1531,8 @@ export type PersonCreateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** Person type */
+    "type"?: PersonType;
 };
 export type PeopleUpdateItem = {
     /** Person date of birth */
@@ -1539,6 +1549,8 @@ export type PeopleUpdateItem = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** Person type */
+    "type"?: PersonType;
 };
 export type PeopleUpdateDto = {
     /** People to update */
@@ -1557,6 +1569,8 @@ export type PersonUpdateDto = {
     isHidden?: boolean;
     /** Person name */
     name?: string;
+    /** Person type */
+    "type"?: PersonType;
 };
 export type MergePersonDto = {
     /** Person IDs to merge */
@@ -2571,6 +2585,8 @@ export type SystemConfigMachineLearningDto = {
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
     ocr: OcrConfig;
+    /** Recognize pets */
+    recognizePets: boolean;
     urls: string[];
 };
 export type SystemConfigMapDto = {
@@ -3061,6 +3077,8 @@ export type SyncAssetFaceV1 = {
     imageWidth: number;
     /** Person ID */
     personId: string | null;
+    /** Person type */
+    personType: PersonType;
     /** Source type */
     sourceType: string;
 };
@@ -3081,6 +3099,8 @@ export type SyncAssetFaceV2 = {
     isVisible: boolean;
     /** Person ID */
     personId: string | null;
+    /** Person type */
+    personType: PersonType;
     /** Source type */
     sourceType: string;
 };
@@ -3244,6 +3264,8 @@ export type SyncPersonV1 = {
     name: string;
     /** Owner ID */
     ownerId: string;
+    /** Person type */
+    "type": PersonType;
     /** Updated at */
     updatedAt: string;
 };
@@ -6907,6 +6929,10 @@ export enum AssetVisibility {
 export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
+}
+export enum PersonType {
+    Human = "HUMAN",
+    Pet = "PET"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",

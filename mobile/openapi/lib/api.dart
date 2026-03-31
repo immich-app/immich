@@ -233,6 +233,7 @@ part 'model/permission.dart';
 part 'model/person_create_dto.dart';
 part 'model/person_response_dto.dart';
 part 'model/person_statistics_response_dto.dart';
+part 'model/person_type.dart';
 part 'model/person_update_dto.dart';
 part 'model/person_with_faces_response_dto.dart';
 part 'model/pin_code_change_dto.dart';
