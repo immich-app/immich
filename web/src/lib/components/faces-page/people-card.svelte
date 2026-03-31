@@ -5,7 +5,7 @@
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { type PersonResponseDto } from '@immich/sdk';
+  import { PersonType, type PersonResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
     mdiAccountMultipleCheckOutline,
@@ -14,6 +14,7 @@
     mdiHeart,
     mdiHeartMinusOutline,
     mdiHeartOutline,
+    mdiPaw,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -59,6 +60,13 @@
       {#if person.isFavorite}
         <div class="absolute top-4 start-4">
           <Icon icon={mdiHeart} size="24" class="text-white" />
+        </div>
+      {/if}
+      {#if person.type === PersonType.Pet}
+        <div class="absolute top-4 end-4">
+          <div class="p-1.5 rounded-full bg-immich-primary shadow-sm">
+            <Icon icon={mdiPaw} size="16" class="text-white" />
+          </div>
         </div>
       {/if}
     </div>
