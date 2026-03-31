@@ -1,3 +1,8 @@
+export enum PersonType {
+  Human = 'HUMAN',
+  Pet = 'PET',
+}
+
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',

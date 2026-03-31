@@ -309,6 +309,9 @@ class SystemConfigMachineLearningDto {
   @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
+  @ValidateBoolean({ description: 'Recognize pets' })
+  recognizePets!: boolean;
+
   @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
   @ArrayMinSize(1)
   @ValidateIf((dto) => dto.enabled)

@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { SourceType } from 'src/enum';
+import { PersonType, SourceType } from 'src/enum';
 import { asset_face_source_type } from 'src/schema/enums';
 import { asset_face_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -74,6 +74,9 @@ export class AssetFaceTable {
 
   @Column({ default: SourceType.MachineLearning, enum: asset_face_source_type })
   sourceType!: Generated<SourceType>;
+
+  @Column({ type: 'enum', enum: PersonType, default: PersonType.Human })
+  personType!: Generated<PersonType>;
 
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;

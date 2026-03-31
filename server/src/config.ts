@@ -59,6 +59,7 @@ export type SystemConfig = {
       timeout: number;
       interval: number;
     };
+    recognizePets: boolean;
     clip: {
       enabled: boolean;
       modelName: string;
@@ -250,6 +251,7 @@ export const defaults = Object.freeze<SystemConfig>({
       timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
       interval: 30_000,
     },
+    recognizePets: false,
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',

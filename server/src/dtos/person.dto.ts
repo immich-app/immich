@@ -7,7 +7,7 @@ import { AssetFace, Person } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { SourceType } from 'src/enum';
+import { PersonType, SourceType } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { ImageDimensions, MaybeDehydrated } from 'src/types';
 import { asBirthDateString, asDateString } from 'src/utils/date';
@@ -45,6 +45,9 @@ export class PersonCreateDto {
   @Optional({ emptyToNull: true, nullable: true })
   @ValidateHexColor()
   color?: string | null;
+
+  @ValidateEnum({ enum: PersonType, name: 'PersonType', optional: true, description: 'Person type' })
+  type?: PersonType;
 }
 
 export class PersonUpdateDto extends PersonCreateDto {
@@ -115,6 +118,8 @@ export class PersonResponseDto {
   isFavorite?: boolean;
   @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   color?: string;
+  @ValidateEnum({ enum: PersonType, name: 'PersonType', description: 'Person type' })
+  type!: PersonType;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -139,6 +144,8 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY2!: number;
   @ValidateEnum({ enum: SourceType, name: 'SourceType', optional: true, description: 'Face detection source type' })
   sourceType?: SourceType;
+  @ValidateEnum({ enum: PersonType, name: 'PersonType', optional: true, description: 'Person type' })
+  personType?: PersonType;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
@@ -235,6 +242,7 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
+    type: person.type,
     updatedAt: asDateString(person.updatedAt),
   };
 }
@@ -259,6 +267,7 @@ export function mapFacesWithoutPerson(
       assetDimensions ?? { width: face.imageWidth, height: face.imageHeight },
     ),
     sourceType: face.sourceType,
+    personType: face.personType,
   };
 }
 

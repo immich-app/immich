@@ -14,6 +14,7 @@ export interface BoundingBox {
 
 export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
+  PET_RECOGNITION = 'pet-recognition',
   SEARCH = 'clip',
   OCR = 'ocr',
 }
@@ -66,6 +67,13 @@ export type FacialRecognitionRequest = {
   };
 };
 
+export type PetRecognitionRequest = {
+  [ModelTask.PET_RECOGNITION]: {
+    [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
+    [ModelType.RECOGNITION]: ModelOptions;
+  };
+};
+
 export interface Face {
   boundingBox: BoundingBox;
   embedding: string;
@@ -73,8 +81,14 @@ export interface Face {
 }
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
+export type PetRecognitionResponse = { [ModelTask.PET_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
-export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
+export type MachineLearningRequest =
+  | ClipVisualRequest
+  | ClipTextualRequest
+  | FacialRecognitionRequest
+  | PetRecognitionRequest
+  | OcrRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
@@ -203,6 +217,21 @@ export class MachineLearningRepository {
       imageHeight: response.imageHeight,
       imageWidth: response.imageWidth,
       faces: response[ModelTask.FACIAL_RECOGNITION],
+    };
+  }
+
+  async detectPets(imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+    const request = {
+      [ModelTask.PET_RECOGNITION]: {
+        [ModelType.DETECTION]: { modelName, options: { minScore } },
+        [ModelType.RECOGNITION]: { modelName },
+      },
+    };
+    const response = await this.predict<PetRecognitionResponse>({ imagePath }, request);
+    return {
+      imageHeight: response.imageHeight,
+      imageWidth: response.imageWidth,
+      faces: response[ModelTask.PET_RECOGNITION],
     };
   }
 

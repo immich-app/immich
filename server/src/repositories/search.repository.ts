@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, PersonType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -144,6 +144,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   numResults: number;
   maxDistance: number;
   minBirthDate?: Date | null;
+  personType?: PersonType;
 }
 
 export interface FaceSearchResult {
@@ -325,7 +326,15 @@ export class SearchRepository {
       },
     ],
   })
-  searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
+  searchFaces({
+    userIds,
+    embedding,
+    numResults,
+    maxDistance,
+    hasPerson,
+    minBirthDate,
+    personType,
+  }: FaceEmbeddingSearch) {
     if (!isValidInteger(numResults, { min: 1, max: 1000 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -346,6 +355,7 @@ export class SearchRepository {
             .leftJoin('person', 'person.id', 'asset_face.personId')
             .where('asset.ownerId', '=', anyUuid(userIds))
             .where('asset.deletedAt', 'is', null)
+            .$if(!!personType, (qb) => qb.where('asset_face.personType', '=', personType!))
             .$if(!!hasPerson, (qb) => qb.where('asset_face.personId', 'is not', null))
             .$if(!!minBirthDate, (qb) =>
               qb.where((eb) =>

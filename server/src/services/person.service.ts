@@ -184,6 +184,7 @@ export class PersonService extends BaseService {
       isHidden: dto.isHidden,
       isFavorite: dto.isFavorite,
       color: dto.color,
+      type: dto.type,
     });
 
     return mapPerson(person);
@@ -316,11 +317,22 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
+    const { imageHeight, imageWidth, faces: detectedFaces } = await this.machineLearningRepository.detectFaces(
       previewFile.path,
       machineLearning.facialRecognition,
     );
-    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
+    this.logger.debug(`${detectedFaces.length} faces detected in ${previewFile.path}`);
+
+    const faces = detectedFaces.map((face) => ({ ...face, type: PersonType.Human }));
+
+    if (machineLearning.recognizePets) {
+      const { faces: detectedPets } = await this.machineLearningRepository.detectPets(previewFile.path, {
+        modelName: 'pet-recognition',
+        minScore: machineLearning.facialRecognition.minScore,
+      });
+      this.logger.debug(`${detectedPets.length} pets detected in ${previewFile.path}`);
+      faces.push(...detectedPets.map((pet) => ({ ...pet, type: PersonType.Pet })));
+    }
 
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];
@@ -334,7 +346,7 @@ export class PersonService extends BaseService {
 
     const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
     const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
-    for (const { boundingBox, embedding } of faces) {
+    for (const { boundingBox, embedding, type } of faces) {
       const scaledBox = {
         x1: boundingBox.x1 * widthScale,
         y1: boundingBox.y1 * heightScale,
@@ -356,6 +368,7 @@ export class PersonService extends BaseService {
           boundingBoxY1: boundingBox.y1,
           boundingBoxX2: boundingBox.x2,
           boundingBoxY2: boundingBox.y2,
+          personType: type,
         });
         embeddings.push({ faceId, embedding });
       }
@@ -492,6 +505,7 @@ export class PersonService extends BaseService {
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
       minBirthDate: new Date(face.asset.fileCreatedAt),
+      personType: face.personType,
     });
 
     // `matches` also includes the face itself
@@ -520,6 +534,7 @@ export class PersonService extends BaseService {
         numResults: 1,
         hasPerson: true,
         minBirthDate: new Date(face.asset.fileCreatedAt),
+        personType: face.personType,
       });
 
       if (matchWithPerson.length > 0) {
@@ -528,8 +543,12 @@ export class PersonService extends BaseService {
     }
 
     if (isCore && !personId) {
-      this.logger.log(`Creating new person for face ${id}`);
-      const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      this.logger.log(`Creating new person for face ${id} with type ${face.personType}`);
+      const newPerson = await this.personRepository.create({
+        ownerId: face.asset.ownerId,
+        faceAssetId: face.id,
+        type: face.personType,
+      });
       await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id: newPerson.id } });
       personId = newPerson.id;
     }
