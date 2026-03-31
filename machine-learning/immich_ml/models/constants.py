@@ -98,6 +98,11 @@ _MEGADESCRIPTOR_MODELS = {
     "MegaDescriptor-L-384",
 }
 
+
+_PET_RECOGNITION_BUNDLE_MODELS = {
+    "pet-recognition",
+}
+
 SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
     "MIGraphXExecutionProvider",
@@ -190,5 +195,8 @@ def get_model_source(model_name: str) -> ModelSource | None:
 
     if cleaned_name in _MEGADESCRIPTOR_MODELS:
         return ModelSource.MEGADESCRIPTOR
+
+    if cleaned_name in _PET_RECOGNITION_BUNDLE_MODELS:
+        return ModelSource.PET_RECOGNITION_BUNDLE
 
     return None

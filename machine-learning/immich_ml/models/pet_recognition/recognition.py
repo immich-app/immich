@@ -15,6 +15,8 @@ class PetRecognizer(InferenceModel):
     identity = (ModelType.RECOGNITION, ModelTask.PET_RECOGNITION)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
+        if model_name == "pet-recognition":
+            model_name = "MegaDescriptor-L-384"
         super().__init__(model_name, **model_kwargs)
 
     def _predict(

@@ -14,6 +14,8 @@ class PetDetector(InferenceModel):
     identity = (ModelType.DETECTION, ModelTask.PET_RECOGNITION)
 
     def __init__(self, model_name: str, min_score: float = 0.5, **model_kwargs: Any) -> None:
+        if model_name == "pet-recognition":
+            model_name = "yolov8n"
         self.min_score = model_kwargs.pop("minScore", min_score)
         super().__init__(model_name, **model_kwargs)
 

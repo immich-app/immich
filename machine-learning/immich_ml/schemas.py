@@ -47,6 +47,7 @@ class ModelSource(StrEnum):
     PADDLE = "paddle"
     YOLOV8 = "yolov8"
     MEGADESCRIPTOR = "megadescriptor"
+    PET_RECOGNITION_BUNDLE = "pet-recognition-bundle"
 
 
 class ModelPrecision(StrEnum):
