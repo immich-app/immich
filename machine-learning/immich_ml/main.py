@@ -184,6 +184,8 @@ async def predict(
 ) -> Any:
     if image is not None:
         inputs: Image | str = await run(lambda: decode_pil(image))
+        if inputs.width == 0 or inputs.height == 0:
+            raise HTTPException(400, "Image has zero width or height")
     elif text is not None:
         inputs = text
     else:

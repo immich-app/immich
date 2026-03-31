@@ -27,13 +27,6 @@ class FaceDetector(InferenceModel):
     def _predict(self, inputs: NDArray[np.uint8] | bytes) -> FaceDetectionOutput:
         inputs = decode_cv2(inputs)
 
-        if inputs.shape[0] == 0 or inputs.shape[1] == 0:
-            return {
-                "boxes": np.empty((0, 4), dtype=np.float32),
-                "scores": np.empty(0, dtype=np.float32),
-                "landmarks": np.empty((0, 5, 2), dtype=np.float32),
-            }
-
         bboxes, landmarks = self._detect(inputs)
         return {
             "boxes": bboxes[:, :4].round(),

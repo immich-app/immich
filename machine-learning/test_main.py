@@ -738,22 +738,6 @@ class TestFaceRecognition:
         assert np.equal(faces["scores"], scores).all()
         det_model.detect.assert_called_once()
 
-    @pytest.mark.parametrize("shape", [(0, 100, 3), (100, 0, 3), (0, 0, 3)])
-    def test_detection_empty_image(self, shape: tuple[int, ...], mocker: MockerFixture) -> None:
-        mocker.patch.object(FaceDetector, "load")
-        face_detector = FaceDetector("buffalo_s", min_score=0.0, cache_dir="test_cache")
-        det_model = mock.Mock()
-        face_detector.model = det_model
-
-        empty_image = np.empty(shape, dtype=np.uint8)
-        faces = face_detector.predict(empty_image)
-
-        assert isinstance(faces, dict)
-        assert faces["boxes"].shape == (0, 4)
-        assert faces["scores"].shape == (0,)
-        assert faces["landmarks"].shape == (0, 5, 2)
-        det_model.detect.assert_not_called()
-
     def test_recognition(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
@@ -1212,6 +1196,19 @@ class TestLoad:
             "ARMNN is available, but model 'test_model_name' does not support it.", exc_info=error
         )
         mock_model.model_format = ModelFormat.ONNX
+
+
+@pytest.mark.parametrize("size", [(0, 100), (100, 0), (0, 0)])
+def test_predict_rejects_empty_image(size: tuple[int, int], deployed_app: TestClient) -> None:
+    with mock.patch("immich_ml.main.decode_pil", return_value=Image.new("RGB", size)):
+        response = deployed_app.post(
+            "http://localhost:3003/predict",
+            data={"entries": json.dumps({"clip": {"visual": {"modelName": "ViT-B-32__openai"}}})},
+            files={"image": b"fake image bytes"},
+        )
+
+    assert response.status_code == 400
+    assert "zero" in response.json()["detail"].lower()
 
 
 def test_root_endpoint(deployed_app: TestClient) -> None:
