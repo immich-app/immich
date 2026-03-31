@@ -8,7 +8,7 @@
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { Button, IconButton } from '@immich/ui';
+  import { Alert, Button, IconButton } from '@immich/ui';
   import { mdiPlus, mdiTrashCanOutline } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -29,6 +29,19 @@
           {disabled}
           bind:checked={configToEdit.machineLearning.enabled}
         />
+
+        <SettingSwitch
+          title={$t('admin.machine_learning_recognize_pets')}
+          subtitle={$t('admin.machine_learning_recognize_pets_description')}
+          disabled={disabled || !configToEdit.machineLearning.enabled}
+          bind:checked={configToEdit.machineLearning.recognizePets}
+        />
+
+        {#if configToEdit.machineLearning.recognizePets}
+          <div class="mt-2">
+            <Alert color="warning" title={$t('admin.machine_learning_recognize_pets_warning')} />
+          </div>
+        {/if}
 
         <hr />
 

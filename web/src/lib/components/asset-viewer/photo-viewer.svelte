@@ -17,8 +17,9 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
-  import { type SharedLinkResponseDto } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
+  import { PersonType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { Icon, toastManager } from '@immich/ui';
+  import { mdiPaw } from '@mdi/js';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -156,18 +157,18 @@
 
   let adaptiveImage = $state<HTMLDivElement | undefined>();
 
-  const faceToNameMap = $derived.by(() => {
+  const faceInfoMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const map = new Map<Faces, string>();
+    const map = new Map<Faces, { name: string; type: PersonType }>();
     for (const person of asset.people ?? []) {
       for (const face of person.faces ?? []) {
-        map.set(face, person.name);
+        map.set(face as unknown as Faces, { name: person.name, type: person.type });
       }
     }
     return map;
   });
 
-  const faces = $derived(Array.from(faceToNameMap.keys()));
+  const faces = $derived(Array.from(faceInfoMap.keys()));
 
   const handleImageMouseMove = (event: MouseEvent) => {
     $boundingBoxesArray = [];
@@ -265,17 +266,23 @@
           <rect width="100%" height="100%" fill="rgba(0,0,0,0.4)" mask="url(#face-dim-mask)" />
         </svg>
         {#each visibleBoxes as boundingbox, index (boundingbox.id)}
+          {@const info = faceInfoMap.get(visibleBoundingBoxes[index])}
           <div
-            class="absolute border-solid border-white border-3 rounded-lg"
+            class="absolute border-solid border-3 rounded-lg"
+            class:border-white={info?.type !== PersonType.Pet}
+            class:border-immich-primary={info?.type === PersonType.Pet}
             style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
           ></div>
-          {#if faceToNameMap.get(visibleBoundingBoxes[index])}
+          {#if info}
             <div
-              class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
+              class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg flex items-center gap-1"
               style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
                 boundingbox.width}px; transform: translateX(-100%);"
             >
-              {faceToNameMap.get(visibleBoundingBoxes[index])}
+              {#if info.type === PersonType.Pet}
+                <Icon icon={mdiPaw} size="16" />
+              {/if}
+              {info.name}
             </div>
           {/if}
         {/each}
