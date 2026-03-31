@@ -78,6 +78,7 @@ test.describe('search gallery-viewer', () => {
       await page.goto(buildSearchUrl(asset.id));
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[1]);
     });
 
@@ -86,8 +87,10 @@ test.describe('search gallery-viewer', () => {
       await page.goto(buildSearchUrl(asset.id));
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[1]);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[2]);
     });
 
@@ -100,6 +103,7 @@ test.describe('search gallery-viewer', () => {
       await page.getByLabel('View next asset').click();
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[2]);
     });
 
@@ -109,6 +113,7 @@ test.describe('search gallery-viewer', () => {
       await assetViewerUtils.waitForViewerLoad(page, lastAsset);
       await expect(page.getByLabel('View next asset')).toHaveCount(0);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[3]);
       await expect(page.getByLabel('View previous asset')).toBeVisible();
     });

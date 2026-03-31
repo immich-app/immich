@@ -176,6 +176,7 @@ test.describe('asset-viewer', () => {
       await page.goto(`/photos/${asset.id}`);
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       const index = assets.indexOf(asset);
       await assetViewerUtils.waitForViewerLoad(page, assets[index + 1]);
     });
@@ -184,9 +185,11 @@ test.describe('asset-viewer', () => {
       await page.goto(`/photos/${asset.id}`);
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       const index = assets.indexOf(asset);
       await assetViewerUtils.waitForViewerLoad(page, assets[index + 1]);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[index + 2]);
     });
     test('Delete last photo advances to prev', async ({ page }) => {
@@ -194,6 +197,7 @@ test.describe('asset-viewer', () => {
       await page.goto(`/photos/${asset.id}`);
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       const index = assets.indexOf(asset);
       await assetViewerUtils.waitForViewerLoad(page, assets[index - 1]);
     });
@@ -202,9 +206,11 @@ test.describe('asset-viewer', () => {
       await page.goto(`/photos/${asset.id}`);
       await assetViewerUtils.waitForViewerLoad(page, asset);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       const index = assets.indexOf(asset);
       await assetViewerUtils.waitForViewerLoad(page, assets[index - 1]);
       await page.getByLabel('Delete').click();
+      await assetViewerUtils.confirmMoveToTrashDialog(page);
       await assetViewerUtils.waitForViewerLoad(page, assets[index - 2]);
     });
   });

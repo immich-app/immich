@@ -172,6 +172,10 @@ export const assetViewerUtils = {
       )
       .waitFor();
   },
+  /** After Delete (move to trash) in the asset viewer, confirms the modalManager.showDialog step. */
+  async confirmMoveToTrashDialog(page: Page) {
+    await page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
+  },
   async expectActiveAssetToBe(page: Page, assetId: string) {
     const activeElement = () =>
       page.evaluate(() => {
