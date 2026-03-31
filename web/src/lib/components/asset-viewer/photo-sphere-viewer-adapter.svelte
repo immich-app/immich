@@ -5,6 +5,7 @@
   import { ocrManager, type OcrBoundingBox } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '$lib/utils/ocr-utils';
+  import type { AssetResponseDto } from '@immich/sdk';
   import {
     EquirectangularAdapter,
     Viewer,
@@ -13,7 +14,7 @@
     type PluginConstructor,
   } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
-  import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+  import { MarkersPlugin, events as markerEvents } from '@photo-sphere-viewer/markers-plugin';
   import '@photo-sphere-viewer/markers-plugin/index.css';
   import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
   import { SettingsPlugin } from '@photo-sphere-viewer/settings-plugin';
@@ -21,8 +22,18 @@
   import { escape } from 'lodash-es';
   import { onDestroy, onMount } from 'svelte';
 
+  const FACE_MARKER_PREFIX = 'face_';
+  const OCR_MARKER_PREFIX = 'box_';
+
+  // Transparent, invisible hit target for hoverable face bounding boxes
+  const FACE_BOX_DEFAULT_SVG_STYLE = {
+    fill: 'rgba(0, 0, 0, 0)',
+    stroke: 'rgba(0, 0, 0, 0)',
+    strokeWidth: '0',
+  };
+
   // Adapted as well as possible from classlist 'border-solid border-white border-3 rounded-lg'
-  const FACE_BOX_SVG_STYLE = {
+  const FACE_BOX_HIGHLIGHTED_SVG_STYLE = {
     fill: 'rgba(0, 0, 0, 0)',
     stroke: '#ffffff',
     strokeWidth: '3px',
@@ -43,56 +54,130 @@
   type Props = {
     panorama: string | { source: string };
     originalPanorama?: string | { source: string };
+    asset?: AssetResponseDto;
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
   };
 
-  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+  let {
+    panorama,
+    originalPanorama,
+    asset,
+    adapter = EquirectangularAdapter,
+    plugins = [],
+    navbar = false,
+  }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
+  let viewerReady = $state(false);
 
   let animationInProgress: { cancel: () => void } | undefined;
+  let isHighlightFromSphere = false;
 
+  const faces = $derived.by(() => {
+    const result: Faces[] = [];
+    for (const person of asset?.people ?? []) {
+      if (person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
+        continue;
+      }
+      for (const face of person.faces ?? []) {
+        result.push(face);
+      }
+    }
+    return result;
+  });
+
+  const getTextureWidth = () => {
+    if (!viewer?.state.textureData) {
+      return 0;
+    }
+    return viewer.state.textureData.panoData.croppedWidth;
+  };
+
+  const facePolygonPixels = (face: Faces, textureWidth: number): [number, number][] => {
+    const { boundingBoxX1: x1, boundingBoxY1: y1, boundingBoxX2: x2, boundingBoxY2: y2 } = face;
+    const ratio = textureWidth / face.imageWidth;
+    return [
+      [x1 * ratio, y1 * ratio],
+      [x2 * ratio, y1 * ratio],
+      [x2 * ratio, y2 * ratio],
+      [x1 * ratio, y2 * ratio],
+    ];
+  };
+
+  let activeFaceMarkerIds = new Set<string>();
+
+  // Add/remove face markers when the face set changes (does not touch styles)
   $effect(() => {
-    const faces: Faces[] = assetViewerManager.highlightedFaces;
+    const currentFaces = faces;
+
+    if (!viewerReady || !viewer || !viewer.state.textureData || !viewer.getPlugin(MarkersPlugin)) {
+      return;
+    }
+    const markersPlugin = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
+    const textureWidth = getTextureWidth();
+    const desiredIds = new Set(currentFaces.map((f) => `${FACE_MARKER_PREFIX}${f.id}`));
+
+    // Remove markers that are no longer in the face set
+    for (const id of activeFaceMarkerIds) {
+      if (!desiredIds.has(id)) {
+        markersPlugin.removeMarker(id);
+      }
+    }
+
+    // Add markers that are new
+    for (const face of currentFaces) {
+      const id = `${FACE_MARKER_PREFIX}${face.id}`;
+      if (!activeFaceMarkerIds.has(id)) {
+        markersPlugin.addMarker({
+          id,
+          polygonPixels: facePolygonPixels(face, textureWidth),
+          svgStyle: FACE_BOX_DEFAULT_SVG_STYLE,
+        });
+      }
+    }
+
+    activeFaceMarkerIds = desiredIds;
+  });
+
+  // Update highlight styles and animate (does not add/remove markers)
+  $effect(() => {
+    const highlightedFaces = assetViewerManager.highlightedFaces;
 
     if (animationInProgress) {
       animationInProgress.cancel();
       animationInProgress = undefined;
     }
-    if (!viewer || !viewer.state.textureData || !viewer.getPlugin(MarkersPlugin)) {
+    if (!viewerReady || !viewer || !viewer.state.textureData || !viewer.getPlugin(MarkersPlugin)) {
       return;
     }
     const markersPlugin = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
+    const highlightedIds = new Set(highlightedFaces.map((f) => f.id));
 
-    // croppedWidth is the size of the texture, which might be cropped to be less than 360/180 degrees.
-    // This is what we want because the facial recognition is done on the image, not the sphere.
-    const currentTextureWidth = viewer.state.textureData.panoData.croppedWidth;
-
-    markersPlugin.clearMarkers();
-    for (const [index, face] of faces.entries()) {
-      const { boundingBoxX1: x1, boundingBoxY1: y1, boundingBoxX2: x2, boundingBoxY2: y2 } = face;
-      const ratio = currentTextureWidth / face.imageWidth;
-      // Pixel values are translated to spherical coordinates and only then added to the panorama;
-      // no need to recalculate when the texture image changes to the original size.
-      markersPlugin.addMarker({
-        id: `face_${index}`,
-        polygonPixels: [
-          [x1 * ratio, y1 * ratio],
-          [x2 * ratio, y1 * ratio],
-          [x2 * ratio, y2 * ratio],
-          [x1 * ratio, y2 * ratio],
-        ],
-        svgStyle: FACE_BOX_SVG_STYLE,
+    // Update styles on existing face markers
+    for (const id of activeFaceMarkerIds) {
+      const faceId = id.slice(FACE_MARKER_PREFIX.length);
+      markersPlugin.updateMarker({
+        id,
+        svgStyle: highlightedIds.has(faceId) ? FACE_BOX_HIGHLIGHTED_SVG_STYLE : FACE_BOX_DEFAULT_SVG_STYLE,
       });
     }
 
-    // Smoothly pan to the highlighted (hovered-over) face.
-    if (faces.length === 1) {
-      const { boundingBoxX1: x1, boundingBoxY1: y1, boundingBoxX2: x2, boundingBoxY2: y2, imageWidth: w } = faces[0];
-      const ratio = currentTextureWidth / w;
+    // Only animate when the highlight came from outside the sphere (e.g. detail panel hover)
+    if (isHighlightFromSphere) {
+      isHighlightFromSphere = false;
+    } else if (highlightedFaces.length === 1) {
+      const textureWidth = getTextureWidth();
+      const {
+        boundingBoxX1: x1,
+        boundingBoxY1: y1,
+        boundingBoxX2: x2,
+        boundingBoxY2: y2,
+        imageWidth: w,
+      } = highlightedFaces[0];
+      const ratio = textureWidth / w;
       const x = ((x1 + x2) * ratio) / 2;
       const y = ((y1 + y2) * ratio) / 2;
       animationInProgress = viewer.animate({
@@ -108,6 +193,14 @@
     updateOcrBoxes(ocrManager.showOverlay, ocrManager.data);
   });
 
+  const clearOcrMarkers = (markersPlugin: MarkersPlugin) => {
+    for (const marker of markersPlugin.getMarkers()) {
+      if (marker.id.startsWith(OCR_MARKER_PREFIX)) {
+        markersPlugin.removeMarker(marker.id);
+      }
+    }
+  };
+
   /** Use updateOnly=true on zoom, pan, or resize. */
   const updateOcrBoxes = (showOverlay: boolean, ocrData: OcrBoundingBox[], updateOnly = false) => {
     if (!viewer || !viewer.state.textureData || !viewer.getPlugin(MarkersPlugin)) {
@@ -115,11 +208,11 @@
     }
     const markersPlugin = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
     if (!showOverlay) {
-      markersPlugin.clearMarkers();
+      clearOcrMarkers(markersPlugin);
       return;
     }
     if (!updateOnly) {
-      markersPlugin.clearMarkers();
+      clearOcrMarkers(markersPlugin);
     }
 
     const boxes = getOcrBoundingBoxes(ocrData, {
@@ -221,12 +314,38 @@
       viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler, { passive: true });
     }
 
-    const onReadyHandler = () => updateOcrBoxes(ocrManager.showOverlay, ocrManager.data, false);
+    const onReadyHandler = () => {
+      viewerReady = true;
+      updateOcrBoxes(ocrManager.showOverlay, ocrManager.data, false);
+    };
     const updateHandler = () => updateOcrBoxes(ocrManager.showOverlay, ocrManager.data, true);
     viewer.addEventListener(events.ReadyEvent.type, onReadyHandler);
     viewer.addEventListener(events.PositionUpdatedEvent.type, updateHandler);
     viewer.addEventListener(events.SizeUpdatedEvent.type, updateHandler);
     viewer.addEventListener(events.ZoomUpdatedEvent.type, updateHandler, { passive: true });
+
+    // Face marker hover events
+    const markersPlugin = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
+    const onEnterMarker = (event: markerEvents.EnterMarkerEvent) => {
+      if (!event.marker.id.startsWith(FACE_MARKER_PREFIX)) {
+        return;
+      }
+      const faceId = event.marker.id.slice(FACE_MARKER_PREFIX.length);
+      const face = faces.find((f) => f.id === faceId);
+      if (face) {
+        isHighlightFromSphere = true;
+        assetViewerManager.setHighlightedFaces([face]);
+      }
+    };
+    const onLeaveMarker = (event: markerEvents.LeaveMarkerEvent) => {
+      if (!event.marker.id.startsWith(FACE_MARKER_PREFIX)) {
+        return;
+      }
+      isHighlightFromSphere = true;
+      assetViewerManager.clearHighlightedFaces();
+    };
+    markersPlugin.addEventListener(markerEvents.EnterMarkerEvent.type, onEnterMarker);
+    markersPlugin.addEventListener(markerEvents.LeaveMarkerEvent.type, onLeaveMarker);
 
     return () => {
       viewer.removeEventListener(events.ReadyEvent.type, onReadyHandler);
@@ -234,6 +353,8 @@
       viewer.removeEventListener(events.SizeUpdatedEvent.type, updateHandler);
       viewer.removeEventListener(events.ZoomUpdatedEvent.type, updateHandler);
       viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
+      markersPlugin.removeEventListener(markerEvents.EnterMarkerEvent.type, onEnterMarker);
+      markersPlugin.removeEventListener(markerEvents.LeaveMarkerEvent.type, onLeaveMarker);
     };
   });
 

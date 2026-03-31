@@ -26,6 +26,7 @@
     <PhotoSphereViewer
       panorama={{ source: getAssetPlaybackUrl({ id: asset.id }) }}
       originalPanorama={{ source: getAssetUrl({ asset, forceOriginal: true })! }}
+      {asset}
       plugins={[videoPlugin]}
       {adapter}
       navbar
