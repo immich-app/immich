@@ -1,6 +1,7 @@
 from typing import Any
 
 import numpy as np
+import cv2
 from numpy.typing import NDArray
 
 from immich_ml.models.base import InferenceModel
@@ -18,25 +19,22 @@ class PetDetector(InferenceModel):
 
     def _predict(self, inputs: NDArray[np.uint8] | bytes) -> PetDetectionOutput:
         img = decode_cv2(inputs)
-        # Resize to 640x640 as per YOLOv8 requirement
-        # Note: In a real implementation, we might want to use letterbox resizing
-        import cv2
-        img = cv2.resize(img, (640, 640))
-        img = img.transpose(2, 0, 1)  # HWC to CHW
-        img = img.astype(np.float32) / 255.0
-        img = np.expand_dims(img, axis=0)
+        original_h, original_w = img.shape[:2]
 
-        outputs = self.session.run(None, {self.session.get_inputs()[0].name: img})
+        # Resize to 640x640 for YOLOv8
+        img_resized = cv2.resize(img, (640, 640))
+        img_input = img_resized.transpose(2, 0, 1)  # HWC to CHW
+        img_input = img_input.astype(np.float32) / 255.0
+        img_input = np.expand_dims(img_input, axis=0)
+
+        outputs = self.session.run(None, {self.session.get_inputs()[0].name: img_input})
         # YOLOv8 output: [1, 84, 8400]
         output = outputs[0][0]
         
         # Transpose to [8400, 84]
         output = output.T
         
-        # Boxes (x_center, y_center, w, h) are first 4 columns
-        # Classes are from column 4 onwards
-        # Cat is class 15, Dog is class 16
-        
+        # Scores are from column 4 onwards
         scores = output[:, 4:]
         max_scores = np.max(scores, axis=1)
         max_labels = np.argmax(scores, axis=1)
@@ -48,17 +46,14 @@ class PetDetector(InferenceModel):
         filtered_scores = max_scores[mask]
         filtered_labels = max_labels[mask]
         
-        # Convert xywh to xyxy
+        # Convert xywh (relative to 640x640) to xyxy
         x_center, y_center, w, h = filtered_boxes[:, 0], filtered_boxes[:, 1], filtered_boxes[:, 2], filtered_boxes[:, 3]
-        x1 = x_center - w / 2
-        y1 = y_center - h / 2
-        x2 = x_center + w / 2
-        y2 = y_center + h / 2
+        x1 = (x_center - w / 2) * (original_w / 640)
+        y1 = (y_center - h / 2) * (original_h / 640)
+        x2 = (x_center + w / 2) * (original_w / 640)
+        y2 = (y_center + h / 2) * (original_h / 640)
         
         boxes = np.stack([x1, y1, x2, y2], axis=1)
-        
-        # Rescale boxes to original image size (640x640 for now, should be original)
-        # For simplicity, returning relative coordinates [0, 640]
         
         return {
             "boxes": boxes,
