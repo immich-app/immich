@@ -236,6 +236,7 @@ part 'model/person_statistics_response_dto.dart';
 part 'model/person_type.dart';
 part 'model/person_update_dto.dart';
 part 'model/person_with_faces_response_dto.dart';
+part 'model/pet_recognition_config.dart';
 part 'model/pin_code_change_dto.dart';
 part 'model/pin_code_reset_dto.dart';
 part 'model/pin_code_setup_dto.dart';

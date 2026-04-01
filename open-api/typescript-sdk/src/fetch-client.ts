@@ -2114,8 +2114,6 @@ export type ServerFeaturesDto = {
     email: boolean;
     /** Whether facial recognition is enabled */
     facialRecognition: boolean;
-    /** Whether pet recognition is enabled */
-    petRecognition: boolean;
     /** Whether face import is enabled */
     importFaces: boolean;
     /** Whether map feature is enabled */
@@ -2128,6 +2126,8 @@ export type ServerFeaturesDto = {
     ocr: boolean;
     /** Whether password login is enabled */
     passwordLogin: boolean;
+    /** Whether pet recognition is enabled */
+    petRecognition: boolean;
     /** Whether reverse geocoding is enabled */
     reverseGeocoding: boolean;
     /** Whether search is enabled */

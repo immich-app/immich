@@ -21590,6 +21590,10 @@
             "description": "Whether password login is enabled",
             "type": "boolean"
           },
+          "petRecognition": {
+            "description": "Whether pet recognition is enabled",
+            "type": "boolean"
+          },
           "reverseGeocoding": {
             "description": "Whether reverse geocoding is enabled",
             "type": "boolean"
@@ -21622,6 +21626,7 @@
           "oauthAutoLaunch",
           "ocr",
           "passwordLogin",
+          "petRecognition",
           "reverseGeocoding",
           "search",
           "sidecar",

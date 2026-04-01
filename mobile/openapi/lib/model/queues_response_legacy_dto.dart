@@ -24,6 +24,8 @@ class QueuesResponseLegacyDto {
     required this.migration,
     required this.notifications,
     required this.ocr,
+    required this.petDetection,
+    required this.petRecognition,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
@@ -55,6 +57,10 @@ class QueuesResponseLegacyDto {
 
   QueueResponseLegacyDto ocr;
 
+  QueueResponseLegacyDto petDetection;
+
+  QueueResponseLegacyDto petRecognition;
+
   QueueResponseLegacyDto search;
 
   QueueResponseLegacyDto sidecar;
@@ -82,6 +88,8 @@ class QueuesResponseLegacyDto {
     other.migration == migration &&
     other.notifications == notifications &&
     other.ocr == ocr &&
+    other.petDetection == petDetection &&
+    other.petRecognition == petRecognition &&
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
@@ -104,6 +112,8 @@ class QueuesResponseLegacyDto {
     (migration.hashCode) +
     (notifications.hashCode) +
     (ocr.hashCode) +
+    (petDetection.hashCode) +
+    (petRecognition.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
@@ -113,7 +123,7 @@ class QueuesResponseLegacyDto {
     (workflow.hashCode);
 
   @override
-  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, petDetection=$petDetection, petRecognition=$petRecognition, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -128,6 +138,8 @@ class QueuesResponseLegacyDto {
       json[r'migration'] = this.migration;
       json[r'notifications'] = this.notifications;
       json[r'ocr'] = this.ocr;
+      json[r'petDetection'] = this.petDetection;
+      json[r'petRecognition'] = this.petRecognition;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
@@ -158,6 +170,8 @@ class QueuesResponseLegacyDto {
         migration: QueueResponseLegacyDto.fromJson(json[r'migration'])!,
         notifications: QueueResponseLegacyDto.fromJson(json[r'notifications'])!,
         ocr: QueueResponseLegacyDto.fromJson(json[r'ocr'])!,
+        petDetection: QueueResponseLegacyDto.fromJson(json[r'petDetection'])!,
+        petRecognition: QueueResponseLegacyDto.fromJson(json[r'petRecognition'])!,
         search: QueueResponseLegacyDto.fromJson(json[r'search'])!,
         sidecar: QueueResponseLegacyDto.fromJson(json[r'sidecar'])!,
         smartSearch: QueueResponseLegacyDto.fromJson(json[r'smartSearch'])!,
@@ -223,6 +237,8 @@ class QueuesResponseLegacyDto {
     'migration',
     'notifications',
     'ocr',
+    'petDetection',
+    'petRecognition',
     'search',
     'sidecar',
     'smartSearch',

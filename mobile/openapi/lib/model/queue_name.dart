@@ -27,7 +27,9 @@ class QueueName {
   static const metadataExtraction = QueueName._(r'metadataExtraction');
   static const videoConversion = QueueName._(r'videoConversion');
   static const faceDetection = QueueName._(r'faceDetection');
+  static const petDetection = QueueName._(r'petDetection');
   static const facialRecognition = QueueName._(r'facialRecognition');
+  static const petRecognition = QueueName._(r'petRecognition');
   static const smartSearch = QueueName._(r'smartSearch');
   static const duplicateDetection = QueueName._(r'duplicateDetection');
   static const backgroundTask = QueueName._(r'backgroundTask');
@@ -48,7 +50,9 @@ class QueueName {
     metadataExtraction,
     videoConversion,
     faceDetection,
+    petDetection,
     facialRecognition,
+    petRecognition,
     smartSearch,
     duplicateDetection,
     backgroundTask,
@@ -104,7 +108,9 @@ class QueueNameTypeTransformer {
         case r'metadataExtraction': return QueueName.metadataExtraction;
         case r'videoConversion': return QueueName.videoConversion;
         case r'faceDetection': return QueueName.faceDetection;
+        case r'petDetection': return QueueName.petDetection;
         case r'facialRecognition': return QueueName.facialRecognition;
+        case r'petRecognition': return QueueName.petRecognition;
         case r'smartSearch': return QueueName.smartSearch;
         case r'duplicateDetection': return QueueName.duplicateDetection;
         case r'backgroundTask': return QueueName.backgroundTask;

@@ -518,6 +518,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'PersonWithFacesResponseDto':
           return PersonWithFacesResponseDto.fromJson(value);
+        case 'PetRecognitionConfig':
+          return PetRecognitionConfig.fromJson(value);
         case 'PinCodeChangeDto':
           return PinCodeChangeDto.fromJson(value);
         case 'PinCodeResetDto':

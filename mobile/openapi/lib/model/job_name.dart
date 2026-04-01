@@ -27,6 +27,8 @@ class JobName {
   static const assetDeleteCheck = JobName._(r'AssetDeleteCheck');
   static const assetDetectFacesQueueAll = JobName._(r'AssetDetectFacesQueueAll');
   static const assetDetectFaces = JobName._(r'AssetDetectFaces');
+  static const assetDetectPetsQueueAll = JobName._(r'AssetDetectPetsQueueAll');
+  static const assetDetectPets = JobName._(r'AssetDetectPets');
   static const assetDetectDuplicatesQueueAll = JobName._(r'AssetDetectDuplicatesQueueAll');
   static const assetDetectDuplicates = JobName._(r'AssetDetectDuplicates');
   static const assetEditThumbnailGeneration = JobName._(r'AssetEditThumbnailGeneration');
@@ -43,6 +45,8 @@ class JobName {
   static const databaseBackup = JobName._(r'DatabaseBackup');
   static const facialRecognitionQueueAll = JobName._(r'FacialRecognitionQueueAll');
   static const facialRecognition = JobName._(r'FacialRecognition');
+  static const petRecognitionQueueAll = JobName._(r'PetRecognitionQueueAll');
+  static const petRecognition = JobName._(r'PetRecognition');
   static const fileDelete = JobName._(r'FileDelete');
   static const fileMigrationQueueAll = JobName._(r'FileMigrationQueueAll');
   static const libraryDeleteCheck = JobName._(r'LibraryDeleteCheck');
@@ -86,6 +90,8 @@ class JobName {
     assetDeleteCheck,
     assetDetectFacesQueueAll,
     assetDetectFaces,
+    assetDetectPetsQueueAll,
+    assetDetectPets,
     assetDetectDuplicatesQueueAll,
     assetDetectDuplicates,
     assetEditThumbnailGeneration,
@@ -102,6 +108,8 @@ class JobName {
     databaseBackup,
     facialRecognitionQueueAll,
     facialRecognition,
+    petRecognitionQueueAll,
+    petRecognition,
     fileDelete,
     fileMigrationQueueAll,
     libraryDeleteCheck,
@@ -180,6 +188,8 @@ class JobNameTypeTransformer {
         case r'AssetDeleteCheck': return JobName.assetDeleteCheck;
         case r'AssetDetectFacesQueueAll': return JobName.assetDetectFacesQueueAll;
         case r'AssetDetectFaces': return JobName.assetDetectFaces;
+        case r'AssetDetectPetsQueueAll': return JobName.assetDetectPetsQueueAll;
+        case r'AssetDetectPets': return JobName.assetDetectPets;
         case r'AssetDetectDuplicatesQueueAll': return JobName.assetDetectDuplicatesQueueAll;
         case r'AssetDetectDuplicates': return JobName.assetDetectDuplicates;
         case r'AssetEditThumbnailGeneration': return JobName.assetEditThumbnailGeneration;
@@ -196,6 +206,8 @@ class JobNameTypeTransformer {
         case r'DatabaseBackup': return JobName.databaseBackup;
         case r'FacialRecognitionQueueAll': return JobName.facialRecognitionQueueAll;
         case r'FacialRecognition': return JobName.facialRecognition;
+        case r'PetRecognitionQueueAll': return JobName.petRecognitionQueueAll;
+        case r'PetRecognition': return JobName.petRecognition;
         case r'FileDelete': return JobName.fileDelete;
         case r'FileMigrationQueueAll': return JobName.fileMigrationQueueAll;
         case r'LibraryDeleteCheck': return JobName.libraryDeleteCheck;
