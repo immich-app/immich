@@ -4,7 +4,7 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
+import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -154,6 +154,11 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .innerJoin('asset_face', 'asset_face.personId', 'person.id')
+      .innerJoin('user_metadata', (join) =>
+        join
+          .onRef('user_metadata.userId', '=', 'person.ownerId')
+          .on('user_metadata.key', '=', sql.lit(UserMetadataKey.Preferences)),
+      )
       .innerJoin('asset', (join) =>
         join
           .onRef('asset_face.assetId', '=', 'asset.id')
@@ -168,10 +173,15 @@ export class PersonRepository {
       .having((eb) =>
         eb.or([
           eb('person.name', '!=', ''),
-          eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
+          eb(
+            (innerEb) => innerEb.fn.count('asset_face.assetId'),
+            '>=',
+            sql`COALESCE(user_metadata.value ->> 'minimumFaces', '1')::int `,
+          ),
         ]),
       )
       .groupBy('person.id')
+      .groupBy('user_metadata.value')
       .$if(!!options?.closestFaceAssetId, (qb) =>
         qb.orderBy((eb) =>
           eb(
