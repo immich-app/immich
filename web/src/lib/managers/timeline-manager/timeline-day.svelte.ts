@@ -9,7 +9,7 @@ import type { MonthGroup } from './month-group.svelte';
 import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
-export class DayGroup {
+export class TimelineDay {
   readonly monthGroup: MonthGroup;
   readonly index: number;
   readonly groupTitle: string;
@@ -151,7 +151,7 @@ export class DayGroup {
     }
   }
 
-  get absoluteDayGroupTop() {
+  get absoluteTimelineDayTop() {
     return this.monthGroup.top + this.#top;
   }
 }

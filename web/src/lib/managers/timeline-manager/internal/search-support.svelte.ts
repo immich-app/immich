@@ -60,10 +60,10 @@ async function getAssetByAssetOffset(
   monthGroup: MonthGroup,
   direction: Direction,
 ) {
-  const dayGroup = monthGroup.findDayGroupForAsset(asset);
+  const timelineDay = monthGroup.findTimelineDayForAsset(asset);
   for await (const targetAsset of timelineManager.assetsIterator({
     startMonthGroup: monthGroup,
-    startDayGroup: dayGroup,
+    startTimelineDay: timelineDay,
     startAsset: asset,
     direction,
   })) {
@@ -79,10 +79,10 @@ async function getAssetByDayOffset(
   monthGroup: MonthGroup,
   direction: Direction,
 ) {
-  const dayGroup = monthGroup.findDayGroupForAsset(asset);
+  const timelineDay = monthGroup.findTimelineDayForAsset(asset);
   for await (const targetAsset of timelineManager.assetsIterator({
     startMonthGroup: monthGroup,
-    startDayGroup: dayGroup,
+    startTimelineDay: timelineDay,
     startAsset: asset,
     direction,
   })) {
@@ -127,10 +127,10 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
   }
 
   const range: TimelineAsset[] = [];
-  const startDayGroup = startMonthGroup.findDayGroupForAsset(startAsset);
+  const startTimelineDay = startMonthGroup.findTimelineDayForAsset(startAsset);
   for await (const targetAsset of timelineManager.assetsIterator({
     startMonthGroup,
-    startDayGroup,
+    startTimelineDay,
     startAsset,
   })) {
     range.push(targetAsset);

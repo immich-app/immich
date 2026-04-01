@@ -26,9 +26,9 @@ import {
 import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
-import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
+import { TimelineDay } from './timeline-day.svelte';
 import type {
   AssetDescriptor,
   Direction,
@@ -138,16 +138,16 @@ export class TimelineManager extends VirtualScrollManager {
 
   async *assetsIterator(options?: {
     startMonthGroup?: MonthGroup;
-    startDayGroup?: DayGroup;
+    startTimelineDay?: TimelineDay;
     startAsset?: TimelineAsset;
     direction?: Direction;
   }) {
     const direction = options?.direction ?? 'earlier';
-    let { startDayGroup, startAsset } = options ?? {};
+    let { startTimelineDay, startAsset } = options ?? {};
     for (const monthGroup of this.monthGroupIterator({ direction, startMonthGroup: options?.startMonthGroup })) {
       await this.loadMonthGroup(monthGroup.yearMonth, { cancelable: false });
-      yield* monthGroup.assetsIterator({ startDayGroup, startAsset, direction });
-      startDayGroup = startAsset = undefined;
+      yield* monthGroup.assetsIterator({ startTimelineDay, startAsset, direction });
+      startTimelineDay = startAsset = undefined;
     }
   }
 
@@ -226,10 +226,10 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   clearDeferredLayout(month: MonthGroup) {
-    const hasDeferred = month.dayGroups.some((group) => group.deferredLayout);
+    const hasDeferred = month.timelineDays.some((group) => group.deferredLayout);
     if (hasDeferred) {
       updateGeometry(this, month, { invalidateHeight: true, noDefer: true });
-      for (const group of month.dayGroups) {
+      for (const group of month.timelineDays) {
         group.deferredLayout = false;
       }
     }
@@ -428,8 +428,8 @@ export class TimelineManager extends VirtualScrollManager {
     }
     await this.loadMonthGroup(randomMonth.yearMonth, { cancelable: false });
 
-    let randomDay: DayGroup | undefined = undefined;
-    for (const day of randomMonth.dayGroups) {
+    let randomDay: TimelineDay | undefined = undefined;
+    for (const day of randomMonth.timelineDays) {
       if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
         randomDay = day;
         break;
@@ -618,16 +618,16 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected postUpsert(context: GroupInsertionCache): void {
-    for (const group of context.existingDayGroups) {
+    for (const group of context.existingTimelineDays) {
       group.sortAssets(this.#options.order);
     }
 
-    for (const monthGroup of context.bucketsWithNewDayGroups) {
-      monthGroup.sortDayGroups();
+    for (const monthGroup of context.bucketsWithNewTimelineDays) {
+      monthGroup.sortTimelineDays();
     }
 
     for (const month of context.updatedBuckets) {
-      month.sortDayGroups();
+      month.sortTimelineDays();
       updateGeometry(this, month, { invalidateHeight: true });
     }
     this.updateViewportProximities();

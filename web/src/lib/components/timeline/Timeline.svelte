@@ -13,7 +13,7 @@
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+  import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -52,7 +52,7 @@
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
-      dayGroup: DayGroup,
+      timelineDay: TimelineDay,
       onClick: (
         timelineManager: TimelineManager,
         assets: TimelineAsset[],
@@ -390,8 +390,8 @@
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (dayGroup: DayGroup, assets: TimelineAsset[]) => {
-    const group = dayGroup.groupTitle;
+  const handleGroupSelect = (timelineDay: TimelineDay, assets: TimelineAsset[]) => {
+    const group = timelineDay.groupTitle;
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -468,12 +468,12 @@
         const monthGroup = monthGroups[index];
 
         // Split month group into day groups and check each group
-        for (const dayGroup of monthGroup.dayGroups) {
-          const dayGroupTitle = dayGroup.groupTitle;
-          if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-            assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
+        for (const timelineDay of monthGroup.timelineDays) {
+          const timelineDayTitle = timelineDay.groupTitle;
+          if (timelineDay.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+            assetInteraction.addGroupToMultiselectGroup(timelineDayTitle);
           } else {
-            assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
+            assetInteraction.removeGroupFromMultiselectGroup(timelineDayTitle);
           }
         }
       }
@@ -524,16 +524,18 @@
   const assetSelectHandler = (
     timelineManager: TimelineManager,
     asset: TimelineAsset,
-    assetsInDayGroup: TimelineAsset[],
+    assetsInTimelineDay: TimelineAsset[],
     groupTitle: string,
   ) => {
     void onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInDayGroup.filter(({ id }) => assetInteraction.hasSelectedAsset(id)).length;
+    let selectedAssetsInGroupCount = assetsInTimelineDay.filter(({ id }) =>
+      assetInteraction.hasSelectedAsset(id),
+    ).length;
 
     // if all assets are selected in a group, add the group to selected group
-    if (selectedAssetsInGroupCount === assetsInDayGroup.length) {
+    if (selectedAssetsInGroupCount === assetsInTimelineDay.length) {
       assetInteraction.addGroupToMultiselectGroup(groupTitle);
     } else {
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
@@ -668,9 +670,9 @@
             {singleSelect}
             {monthGroup}
             manager={timelineManager}
-            onDayGroupSelect={handleGroupSelect}
+            onTimelineDaySelect={handleGroupSelect}
           >
-            {#snippet thumbnail({ asset, position, dayGroup, groupIndex })}
+            {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
               {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
               {@const isAssetSelected =
                 assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
@@ -683,14 +685,14 @@
                 {groupIndex}
                 onClick={(asset) => {
                   if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
+                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
                   } else {
-                    _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+                    _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
                   }
                 }}
                 onSelect={() => {
                   if (isSelectionMode || assetInteraction.selectionActive) {
-                    assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle);
+                    assetSelectHandler(timelineManager, asset, timelineDay.getAssets(), timelineDay.groupTitle);
                     return;
                   }
                   void onSelectAssets(asset);

@@ -25,41 +25,41 @@ export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthG
   let cumulativeWidth = 0;
   let currentRowHeight = 0;
 
-  let dayGroupRow = 0;
-  let dayGroupCol = 0;
+  let timelineDayRow = 0;
+  let timelineDayCol = 0;
 
   const options = timelineManager.justifiedLayoutOptions;
-  for (const dayGroup of month.dayGroups) {
-    dayGroup.layout(options, noDefer);
+  for (const timelineDay of month.timelineDays) {
+    timelineDay.layout(options, noDefer);
 
     // Calculate space needed for this item (including gap if not first in row)
-    const spaceNeeded = dayGroup.width + (dayGroupCol > 0 ? timelineManager.gap : 0);
+    const spaceNeeded = timelineDay.width + (timelineDayCol > 0 ? timelineManager.gap : 0);
     const fitsInCurrentRow = cumulativeWidth + spaceNeeded <= timelineManager.viewportWidth;
 
     if (fitsInCurrentRow) {
-      dayGroup.row = dayGroupRow;
-      dayGroup.col = dayGroupCol++;
-      dayGroup.start = cumulativeWidth;
-      dayGroup.top = cumulativeHeight;
+      timelineDay.row = timelineDayRow;
+      timelineDay.col = timelineDayCol++;
+      timelineDay.start = cumulativeWidth;
+      timelineDay.top = cumulativeHeight;
 
-      cumulativeWidth += dayGroup.width + timelineManager.gap;
+      cumulativeWidth += timelineDay.width + timelineManager.gap;
     } else {
       // Move to next row
       cumulativeHeight += currentRowHeight;
       cumulativeWidth = 0;
-      dayGroupRow++;
-      dayGroupCol = 0;
+      timelineDayRow++;
+      timelineDayCol = 0;
 
       // Position at start of new row
-      dayGroup.row = dayGroupRow;
-      dayGroup.col = dayGroupCol;
-      dayGroup.start = 0;
-      dayGroup.top = cumulativeHeight;
+      timelineDay.row = timelineDayRow;
+      timelineDay.col = timelineDayCol;
+      timelineDay.start = 0;
+      timelineDay.top = cumulativeHeight;
 
-      dayGroupCol++;
-      cumulativeWidth += dayGroup.width + timelineManager.gap;
+      timelineDayCol++;
+      cumulativeWidth += timelineDay.width + timelineManager.gap;
     }
-    currentRowHeight = dayGroup.height + timelineManager.headerHeight;
+    currentRowHeight = timelineDay.height + timelineManager.headerHeight;
   }
 
   // Add the height of the final row
