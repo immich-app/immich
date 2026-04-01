@@ -1,20 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
+import 'package:openapi/api.dart' show MirrorAxis, MirrorParameters, RotateParameters;
 
 List<AssetEdit> normalizedToEdits(NormalizedTransform transform) {
   List<AssetEdit> edits = [];
 
   if (transform.mirrorHorizontal) {
-    edits.add(const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}));
+    edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)));
   }
 
   if (transform.mirrorVertical) {
-    edits.add(const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}));
+    edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)));
   }
 
   if (transform.rotation != 0) {
-    edits.add(AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": transform.rotation}));
+    edits.add(RotateEdit(RotateParameters(angle: transform.rotation)));
   }
 
   return edits;
@@ -43,7 +44,7 @@ void main() {
 
     test('should handle a single 90° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
+        RotateEdit(RotateParameters(angle: 90)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -54,7 +55,7 @@ void main() {
 
     test('should handle a single 180° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
+        RotateEdit(RotateParameters(angle: 180)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -65,7 +66,7 @@ void main() {
 
     test('should handle a single 270° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
+        RotateEdit(RotateParameters(angle: 270)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -76,7 +77,7 @@ void main() {
 
     test('should handle a single horizontal mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -87,7 +88,7 @@ void main() {
 
     test('should handle a single vertical mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -98,8 +99,8 @@ void main() {
 
     test('should handle 90° rotation + horizontal mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
+        RotateEdit(RotateParameters(angle: 90)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -110,8 +111,8 @@ void main() {
 
     test('should handle 90° rotation + vertical mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        RotateEdit(RotateParameters(angle: 90)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -122,9 +123,9 @@ void main() {
 
     test('should handle 90° rotation + both mirrors', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        RotateEdit(RotateParameters(angle: 90)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -135,8 +136,8 @@ void main() {
 
     test('should handle 180° rotation + horizontal mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
+        RotateEdit(RotateParameters(angle: 180)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -147,8 +148,8 @@ void main() {
 
     test('should handle 180° rotation + vertical mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        RotateEdit(RotateParameters(angle: 180)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -159,9 +160,9 @@ void main() {
 
     test('should handle 180° rotation + both mirrors', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        RotateEdit(RotateParameters(angle: 180)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -172,8 +173,8 @@ void main() {
 
     test('should handle 270° rotation + horizontal mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
+        RotateEdit(RotateParameters(angle: 270)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -184,8 +185,8 @@ void main() {
 
     test('should handle 270° rotation + vertical mirror', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        RotateEdit(RotateParameters(angle: 270)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -196,9 +197,9 @@ void main() {
 
     test('should handle 270° rotation + both mirrors', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
+        RotateEdit(RotateParameters(angle: 270)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -209,8 +210,8 @@ void main() {
 
     test('should handle horizontal mirror + 90° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        RotateEdit(RotateParameters(angle: 90)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -221,8 +222,8 @@ void main() {
 
     test('should handle horizontal mirror + 180° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        RotateEdit(RotateParameters(angle: 180)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -233,8 +234,8 @@ void main() {
 
     test('should handle horizontal mirror + 270° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        RotateEdit(RotateParameters(angle: 270)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -245,8 +246,8 @@ void main() {
 
     test('should handle vertical mirror + 90° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
+        RotateEdit(RotateParameters(angle: 90)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -257,8 +258,8 @@ void main() {
 
     test('should handle vertical mirror + 180° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
+        RotateEdit(RotateParameters(angle: 180)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -269,8 +270,8 @@ void main() {
 
     test('should handle vertical mirror + 270° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
+        RotateEdit(RotateParameters(angle: 270)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -281,9 +282,9 @@ void main() {
 
     test('should handle both mirrors + 90° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 90}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
+        RotateEdit(RotateParameters(angle: 90)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -294,9 +295,9 @@ void main() {
 
     test('should handle both mirrors + 180° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 180}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
+        RotateEdit(RotateParameters(angle: 180)),
       ];
 
       final result = normalizeTransformEdits(edits);
@@ -307,9 +308,9 @@ void main() {
 
     test('should handle both mirrors + 270° rotation', () {
       final edits = <AssetEdit>[
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "horizontal"}),
-        const AssetEdit(action: AssetEditAction.mirror, parameters: {"axis": "vertical"}),
-        const AssetEdit(action: AssetEditAction.rotate, parameters: {"angle": 270}),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
+        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
+        RotateEdit(RotateParameters(angle: 270)),
       ];
 
       final result = normalizeTransformEdits(edits);

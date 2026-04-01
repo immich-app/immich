@@ -269,9 +269,8 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<List<AssetEdit>> getAssetEdits(String assetId) {
     final query = _db.assetEditEntity.select()
-      ..where((row) => row.assetId.equals(assetId))
+      ..where((row) => row.assetId.equals(assetId) & row.action.equals(AssetEditAction.other.index).not())
       ..orderBy([(row) => OrderingTerm.asc(row.sequence)]);
-
-    return query.map((row) => row.toDto()).get();
+    return query.map((row) => row.toDto()!).get();
   }
 }

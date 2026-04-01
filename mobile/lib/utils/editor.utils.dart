@@ -31,27 +31,12 @@ CropParameters convertRectToCropParameters(Rect rect, int originalWidth, int ori
 AffineMatrix buildAffineFromEdits(List<AssetEdit> edits) {
   return AffineMatrix.compose(
     edits.map<AffineMatrix>((edit) {
-      switch (edit.action) {
-        case AssetEditAction.rotate:
-          final parameters = RotateParameters.fromJson(edit.parameters);
-          if (parameters == null) {
-            throw ArgumentError("Unable to parse rotate parameters from edit: ${edit.parameters}");
-          }
-
-          final angleInDegrees = parameters.angle;
-          final angleInRadians = angleInDegrees * pi / 180;
-          return AffineMatrix.rotate(angleInRadians);
-
-        case AssetEditAction.mirror:
-          final parameters = MirrorParameters.fromJson(edit.parameters);
-          if (parameters == null) {
-            throw ArgumentError("Unable to parse mirror parameters from edit: ${edit.parameters}");
-          }
-
-          return parameters.axis == MirrorAxis.horizontal ? AffineMatrix.flipY() : AffineMatrix.flipX();
-        default:
-          return AffineMatrix.identity();
-      }
+      return switch (edit) {
+        RotateEdit(:final parameters) => AffineMatrix.rotate(parameters.angle * pi / 180),
+        MirrorEdit(:final parameters) =>
+          parameters.axis == MirrorAxis.horizontal ? AffineMatrix.flipY() : AffineMatrix.flipX(),
+        CropEdit() => AffineMatrix.identity(),
+      };
     }).toList(),
   );
 }

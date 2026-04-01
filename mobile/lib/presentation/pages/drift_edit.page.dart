@@ -15,7 +15,7 @@ import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
 import 'package:immich_ui/immich_ui.dart';
-import 'package:openapi/api.dart' show CropParameters, RotateParameters, MirrorParameters, MirrorAxis;
+import 'package:openapi/api.dart' show RotateParameters, MirrorParameters, MirrorAxis;
 
 @RoutePage()
 class DriftEditImagePage extends ConsumerStatefulWidget {
@@ -54,14 +54,10 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
   late final Rect _initialCrop;
 
   void initEditor() {
-    final existingCrop = widget.edits.firstWhereOrNull((edit) => edit.action == AssetEditAction.crop);
+    final existingCrop = widget.edits.whereType<CropEdit>().firstOrNull;
 
     Rect crop = existingCrop != null && originalWidth != null && originalHeight != null
-        ? convertCropParametersToRect(
-            CropParameters.fromJson(existingCrop.parameters)!,
-            originalWidth!,
-            originalHeight!,
-          )
+        ? convertCropParametersToRect(existingCrop.parameters, originalWidth!, originalHeight!)
         : const Rect.fromLTRB(0, 0, 1, 1);
 
     cropController = CropController(defaultCrop: crop);
@@ -90,34 +86,19 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     final edits = <AssetEdit>[];
 
     if (cropParameters.width != originalWidth || cropParameters.height != originalHeight) {
-      edits.add(AssetEdit(action: AssetEditAction.crop, parameters: cropParameters.toJson()));
+      edits.add(CropEdit(cropParameters));
     }
 
     if (_flipHorizontal) {
-      edits.add(
-        AssetEdit(
-          action: AssetEditAction.mirror,
-          parameters: MirrorParameters(axis: MirrorAxis.horizontal).toJson(),
-        ),
-      );
+      edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)));
     }
 
     if (_flipVertical) {
-      edits.add(
-        AssetEdit(
-          action: AssetEditAction.mirror,
-          parameters: MirrorParameters(axis: MirrorAxis.vertical).toJson(),
-        ),
-      );
+      edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)));
     }
 
     if (normalizedRotation != 0) {
-      edits.add(
-        AssetEdit(
-          action: AssetEditAction.rotate,
-          parameters: RotateParameters(angle: normalizedRotation).toJson(),
-        ),
-      );
+      edits.add(RotateEdit(RotateParameters(angle: normalizedRotation)));
     }
 
     await widget.applyEdits(edits);

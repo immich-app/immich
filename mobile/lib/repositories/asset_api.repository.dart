@@ -1,13 +1,13 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset_edit.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart' hide AssetEditAction;
 import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:openapi/api.dart' hide AssetEditAction;
+import 'package:openapi/api.dart';
 
 final assetApiRepositoryProvider = Provider(
   (ref) => AssetApiRepository(
@@ -108,12 +108,7 @@ class AssetApiRepository extends ApiRepository {
   }
 
   Future<AssetEditsResponseDto?> editAsset(String assetId, List<AssetEdit> edits) {
-    final editDtos = edits
-        .where((edit) => edit.action != AssetEditAction.other)
-        .map((edit) => AssetEditActionItemDto(action: edit.action.toDto()!, parameters: edit.parameters))
-        .toList();
-
-    return _api.editAsset(assetId, AssetEditsCreateDto(edits: editDtos));
+    return _api.editAsset(assetId, AssetEditsCreateDto(edits: edits.map((e) => e.toApi()).toList()));
   }
 
   Future<void> removeEdits(String assetId) async {
@@ -124,5 +119,24 @@ class AssetApiRepository extends ApiRepository {
 extension on StackResponseDto {
   StackResponse toStack() {
     return StackResponse(id: id, primaryAssetId: primaryAssetId, assetIds: assets.map((asset) => asset.id).toList());
+  }
+}
+
+extension on AssetEdit {
+  AssetEditActionItemDto toApi() {
+    return switch (this) {
+      CropEdit(:final parameters) => AssetEditActionItemDto(
+        action: AssetEditAction.crop,
+        parameters: parameters.toJson(),
+      ),
+      RotateEdit(:final parameters) => AssetEditActionItemDto(
+        action: AssetEditAction.rotate,
+        parameters: parameters.toJson(),
+      ),
+      MirrorEdit(:final parameters) => AssetEditActionItemDto(
+        action: AssetEditAction.mirror,
+        parameters: parameters.toJson(),
+      ),
+    };
   }
 }
