@@ -29,6 +29,8 @@ select
 from
   "person"
   inner join "asset_face" on "asset_face"."personId" = "person"."id"
+  inner join "user_metadata" on "user_metadata"."userId" = "person"."ownerId"
+  and "user_metadata"."key" = 'preferences'
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
@@ -38,11 +40,12 @@ where
   and "asset_face"."isVisible" is true
   and "person"."isHidden" = $2
 group by
-  "person"."id"
+  "person"."id",
+  "user_metadata"."value"
 having
   (
     "person"."name" != $3
-    or count("asset_face"."assetId") >= $4
+    or count("asset_face"."assetId") >= COALESCE(user_metadata.value ->> 'minimumFaces', '1')::int
   )
 order by
   "person"."isHidden" asc,
@@ -52,9 +55,9 @@ order by
   NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
-  $5
+  $4
 offset
-  $6
+  $5
 
 -- PersonRepository.getAllWithoutFaces
 select
