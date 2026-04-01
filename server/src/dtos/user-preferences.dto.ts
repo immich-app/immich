@@ -45,6 +45,7 @@ const PeopleUpdateSchema = z
   .object({
     enabled: z.boolean().optional().describe('Whether people are enabled'),
     sidebarWeb: z.boolean().optional().describe('Whether people appear in web sidebar'),
+    minimumFaces: z.int().min(1).optional().describe('People face threshold'),
   })
   .optional()
   .meta({ id: 'PeopleUpdate' });

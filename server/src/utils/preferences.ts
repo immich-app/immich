@@ -21,6 +21,7 @@ const getDefaultPreferences = (): UserPreferences => {
     people: {
       enabled: true,
       sidebarWeb: false,
+      minimumFaces: 1,
     },
     sharedLinks: {
       enabled: true,
