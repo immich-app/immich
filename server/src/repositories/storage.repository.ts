@@ -63,7 +63,11 @@ export class StorageRepository {
   }
 
   createWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'w', flush: true });
+    return createWriteStream(filepath, { flags: 'w', flush: true, highWaterMark: 1024 * 1024 });
+  }
+
+  createOrAppendWriteStream(filepath: string): Writable {
+    return createWriteStream(filepath, { flags: 'a', flush: true, highWaterMark: 1024 * 1024 });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
@@ -179,10 +183,13 @@ export class StorageRepository {
     }
   }
 
+  mkdir(filepath: string): Promise<string | undefined> {
+    return fs.mkdir(filepath, { recursive: true });
+  }
+
   mkdirSync(filepath: string): void {
-    if (!existsSync(filepath)) {
-      mkdirSync(filepath, { recursive: true });
-    }
+    // does not throw an error if the folder already exists
+    mkdirSync(filepath, { recursive: true });
   }
 
   existsSync(filepath: string) {

@@ -28,6 +28,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .leftJoin('smart_search', 'asset.id', 'smart_search.assetId')
       .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
       .limit(1)
@@ -39,6 +40,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .$call(withExifInner)
@@ -51,6 +53,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .limit(1)
@@ -62,6 +65,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.isEdited'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden))
       .$if(!options.force, (qb) =>
@@ -107,6 +111,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.ownerId'])
       .select(withFiles)
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -135,6 +140,7 @@ export class AssetJobRepository {
       .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -146,6 +152,7 @@ export class AssetJobRepository {
       .select(withFaces)
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -173,6 +180,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
       .where((eb) =>
@@ -190,6 +198,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
       .$call(withDefaultVisibility)
@@ -218,6 +227,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.visibility'])
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -230,6 +240,7 @@ export class AssetJobRepository {
       .select((eb) => withFaces(eb, true, true))
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -301,6 +312,7 @@ export class AssetJobRepository {
           .as('stack'),
       )
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -325,6 +337,7 @@ export class AssetJobRepository {
           )
           .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
       )
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .stream();
   }
@@ -337,6 +350,7 @@ export class AssetJobRepository {
       .select(withFiles)
       .where('asset.id', '=', id)
       .where('asset.type', '=', sql.lit(AssetType.Video))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -352,6 +366,7 @@ export class AssetJobRepository {
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
           ),
       )
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .stream();
   }
@@ -378,6 +393,7 @@ export class AssetJobRepository {
         'asset_exif.lensModel',
       ])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null);
   }
 
@@ -400,6 +416,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['id', 'isOffline'])
       .where('asset.deletedAt', '<=', trashedBefore)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .stream();
   }
 
@@ -421,6 +438,7 @@ export class AssetJobRepository {
           ),
         ),
       )
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .stream();
   }
 
@@ -429,6 +447,7 @@ export class AssetJobRepository {
     return this.assetsWithPreviews()
       .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['asset.id'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .orderBy('asset.fileCreatedAt', 'desc')
       .stream();
   }
@@ -450,6 +469,31 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForMigrationJob() {
-    return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', 'is', null).stream();
+    return this.db
+      .selectFrom('asset')
+      .select(['id'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
+      .where('asset.deletedAt', 'is', null)
+      .stream();
+  }
+
+  getForPartialAssetCleanupJob(assetId: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['originalPath as path', 'fileSizeInByte as size', 'checksum', 'fileModifiedAt'])
+      .where('id', '=', assetId)
+      .where('status', '=', sql.lit(AssetStatus.Partial))
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamForPartialAssetCleanupJob(createdBefore: Date) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id'])
+      .where('asset.status', '=', sql.lit(AssetStatus.Partial))
+      .where('asset.createdAt', '<', createdBefore)
+      .stream();
   }
 }

@@ -1,3 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
+
 import { IncomingHttpHeaders } from 'node:http';
 import { UAParser } from 'ua-parser-js';
 
@@ -20,3 +24,29 @@ export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
     appVersion,
   };
 };
+
+export function validateSyncOrReject<T extends object>(cls: new () => T, obj: any): T {
+  const dto = plainToInstance(cls, obj, { excludeExtraneousValues: true });
+  const errors = validateSync(dto);
+  if (errors.length === 0) {
+    return dto;
+  }
+
+  const constraints = [];
+  for (const error of errors) {
+    if (error.constraints) {
+      constraints.push(...Object.values(error.constraints));
+    }
+
+    if (!error.children) {
+      continue;
+    }
+
+    for (const child of error.children) {
+      if (child.constraints) {
+        constraints.push(...Object.values(child.constraints));
+      }
+    }
+  }
+  throw new BadRequestException(constraints);
+}

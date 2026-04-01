@@ -14,6 +14,7 @@ from
   left join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
   "asset"."id" = $1::uuid
+  and "asset"."status" != 'partial'
 limit
   $2
 
@@ -44,6 +45,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = $2::uuid
+  and "asset"."status" != 'partial'
 limit
   $3
 
@@ -72,6 +74,7 @@ from
   "asset"
 where
   "asset"."id" = $2::uuid
+  and "asset"."status" != 'partial'
 limit
   $3
 
@@ -83,7 +86,8 @@ from
   "asset"
   inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
-  "asset"."deletedAt" is null
+  "asset"."status" != 'partial'
+  and "asset"."deletedAt" is null
   and "asset"."visibility" != 'hidden'
   and (
     not exists (
@@ -195,6 +199,7 @@ from
   "asset"
 where
   "asset"."id" = $1
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.getForGenerateThumbnailJob
 select
@@ -244,6 +249,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = $4
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.getForMetadataExtraction
 select
@@ -302,6 +308,7 @@ from
   "asset"
 where
   "asset"."id" = $3
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.getLockedPropertiesForMetadataExtraction
 select
@@ -331,7 +338,8 @@ from
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
   inner join "asset_job_status" as "job_status" on "job_status"."assetId" = "asset"."id"
 where
-  "asset"."deletedAt" is null
+  "asset"."status" != 'partial'
+  and "asset"."deletedAt" is null
   and "asset"."visibility" in ('archive', 'timeline')
   and "job_status"."duplicatesDetectedAt" is null
 
@@ -343,6 +351,7 @@ from
   inner join "asset_job_status" as "job_status" on "assetId" = "asset"."id"
 where
   "asset"."visibility" != $1
+  and "asset"."status" != 'partial'
   and "asset"."deletedAt" is null
   and exists (
     select
@@ -385,6 +394,7 @@ from
   "asset"
 where
   "asset"."id" = $2
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.getForDetectFacesJob
 select
@@ -426,6 +436,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = $2
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.getForOcr
 select
@@ -514,6 +525,7 @@ from
   ) as "stack_result" on true
 where
   "asset"."id" = $3
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.streamForVideoConversion
 select
@@ -532,6 +544,7 @@ where
       and "asset_file"."type" = 'encoded_video'
   )
   and "asset"."visibility" != 'hidden'
+  and "asset"."status" != 'partial'
   and "asset"."deletedAt" is null
 
 -- AssetJobRepository.getForVideoConversion
@@ -560,6 +573,7 @@ from
 where
   "asset"."id" = $1
   and "asset"."type" = 'VIDEO'
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.streamForMetadataExtraction
 select
@@ -572,6 +586,7 @@ where
     "asset_job_status"."metadataExtractedAt" is null
     or "asset_job_status"."assetId" is null
   )
+  and "asset"."status" != 'partial'
   and "asset"."deletedAt" is null
 
 -- AssetJobRepository.getForStorageTemplateJob
@@ -612,7 +627,8 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."deletedAt" is null
+  "asset"."status" != 'partial'
+  and "asset"."deletedAt" is null
   and "asset"."id" = $2
   and "asset"."visibility" != $3
 
@@ -654,7 +670,8 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."deletedAt" is null
+  "asset"."status" != 'partial'
+  and "asset"."deletedAt" is null
   and "asset"."visibility" != $2
 
 -- AssetJobRepository.streamForDeletedJob
@@ -665,6 +682,7 @@ from
   "asset"
 where
   "asset"."deletedAt" <= $1
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.streamForSidecar
 select
@@ -681,6 +699,7 @@ where
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = $1
   )
+  and "asset"."status" != 'partial'
 
 -- AssetJobRepository.streamForDetectFacesJob
 select
@@ -690,6 +709,7 @@ from
   inner join "asset_job_status" as "job_status" on "assetId" = "asset"."id"
 where
   "asset"."visibility" != $1
+  and "asset"."status" != 'partial'
   and "asset"."deletedAt" is null
   and exists (
     select
@@ -699,6 +719,7 @@ where
       "assetId" = "asset"."id"
       and "asset_file"."type" = $2
   )
+  and "asset"."status" != 'partial'
 order by
   "asset"."fileCreatedAt" desc
 
@@ -719,4 +740,14 @@ select
 from
   "asset"
 where
-  "asset"."deletedAt" is null
+  "asset"."status" != 'partial'
+  and "asset"."deletedAt" is null
+
+-- AssetJobRepository.streamForPartialAssetCleanupJob
+select
+  "id"
+from
+  "asset"
+where
+  "asset"."status" = 'partial'
+  and "asset"."createdAt" < $1

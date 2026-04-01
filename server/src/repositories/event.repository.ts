@@ -82,6 +82,9 @@ type EventMap = {
   // stack bulk events
   StackDeleteAll: [{ stackIds: string[]; userId: string }];
 
+  // upload events
+  UploadAbort: [{ assetId: string; abortTime: Date }];
+
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
   UserCreate: [UserEvent];
