@@ -164,11 +164,11 @@ describe(AuthService.name, () => {
       });
     });
 
-    it('should return the custom logout uri if override is enabled', async () => {
+    it('should return the custom end session endpoint if provided', async () => {
       const auth = AuthFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue({
-        oauth: { enabled: true, logoutOverrideEnabled: true, logoutUri: 'http://custom-logout-url' },
+        oauth: { enabled: true, endSessionEndpoint: 'http://custom-logout-url' },
       });
 
       await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
@@ -177,24 +177,11 @@ describe(AuthService.name, () => {
       });
     });
 
-    it('should return the end session endpoint if override is disabled', async () => {
+    it('should return the auto-discovered end session endpoint if custom endpoint is not provided', async () => {
       const auth = AuthFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue({
-        oauth: { enabled: true, logoutOverrideEnabled: false, logoutUri: 'http://custom-logout-url' },
-      });
-
-      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
-        successful: true,
-        redirectUri: 'http://end-session-endpoint',
-      });
-    });
-
-    it('should return the end session endpoint when override is enabled but logout uri is empty', async () => {
-      const auth = AuthFactory.create();
-
-      mocks.systemMetadata.get.mockResolvedValue({
-        oauth: { enabled: true, logoutOverrideEnabled: true, logoutUri: '' },
+        oauth: { enabled: true, endSessionEndpoint: '' },
       });
 
       await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({

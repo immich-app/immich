@@ -24331,17 +24331,12 @@
             "description": "Enabled",
             "type": "boolean"
           },
-          "issuerUrl": {
-            "description": "Issuer URL",
+          "endSessionEndpoint": {
+            "description": "End session endpoint",
             "type": "string"
           },
-          "logoutOverrideEnabled": {
-            "description": "Logout override enabled",
-            "type": "boolean"
-          },
-          "logoutUri": {
-            "description": "Logout URI",
-            "format": "uri",
+          "issuerUrl": {
+            "description": "Issuer URL",
             "type": "string"
           },
           "mobileOverrideEnabled": {
@@ -24399,9 +24394,8 @@
           "clientSecret",
           "defaultStorageQuota",
           "enabled",
+          "endSessionEndpoint",
           "issuerUrl",
-          "logoutOverrideEnabled",
-          "logoutUri",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",

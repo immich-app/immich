@@ -2518,12 +2518,10 @@ export type SystemConfigOAuthDto = {
     defaultStorageQuota: number | null;
     /** Enabled */
     enabled: boolean;
+    /** End session endpoint */
+    endSessionEndpoint: string;
     /** Issuer URL */
     issuerUrl: string;
-    /** Logout override enabled */
-    logoutOverrideEnabled: boolean;
-    /** Logout URI */
-    logoutUri: string;
     /** Mobile override enabled */
     mobileOverrideEnabled: boolean;
     /** Mobile redirect URI (set to empty string to disable) */

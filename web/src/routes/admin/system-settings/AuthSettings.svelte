@@ -1,7 +1,6 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSelect from './setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
@@ -15,6 +14,7 @@
   import { mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import SettingSelect from './setting-select.svelte';
 
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
@@ -175,6 +175,16 @@
               />
 
               <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label="end_session_endpoint"
+                description={$t('admin.oauth_end_session_url_description')}
+                bind:value={configToEdit.oauth.endSessionEndpoint}
+                required={false}
+                disabled={disabled || !configToEdit.oauth.enabled}
+                isEdited={!(configToEdit.oauth.endSessionEndpoint === config.oauth.endSessionEndpoint)}
+              />
+
+              <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label={$t('admin.oauth_timeout')}
                 description={$t('admin.oauth_timeout_description')}
@@ -273,24 +283,6 @@
                   required={true}
                   disabled={disabled || !configToEdit.oauth.enabled}
                   isEdited={!(configToEdit.oauth.mobileRedirectUri === config.oauth.mobileRedirectUri)}
-                />
-              {/if}
-
-              <SettingSwitch
-                title={$t('admin.oauth_logout_uri_override')}
-                subtitle={$t('admin.oauth_logout_uri_override_description')}
-                disabled={disabled || !configToEdit.oauth.enabled}
-                bind:checked={configToEdit.oauth.logoutOverrideEnabled}
-              />
-
-              {#if configToEdit.oauth.logoutOverrideEnabled}
-                <SettingInputField
-                  inputType={SettingInputFieldType.TEXT}
-                  label={$t('admin.oauth_logout_uri')}
-                  bind:value={configToEdit.oauth.logoutUri}
-                  required={true}
-                  disabled={disabled || !configToEdit.oauth.enabled}
-                  isEdited={!(configToEdit.oauth.logoutUri === config.oauth.logoutUri)}
                 />
               {/if}
             {/if}

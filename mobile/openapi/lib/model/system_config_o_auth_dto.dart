@@ -21,6 +21,7 @@ class SystemConfigOAuthDto {
     required this.clientSecret,
     required this.defaultStorageQuota,
     required this.enabled,
+    required this.endSessionEndpoint,
     required this.issuerUrl,
     required this.mobileOverrideEnabled,
     required this.mobileRedirectUri,
@@ -60,6 +61,9 @@ class SystemConfigOAuthDto {
 
   /// Enabled
   bool enabled;
+
+  /// End session endpoint
+  String endSessionEndpoint;
 
   /// Issuer URL
   String issuerUrl;
@@ -109,6 +113,7 @@ class SystemConfigOAuthDto {
     other.clientSecret == clientSecret &&
     other.defaultStorageQuota == defaultStorageQuota &&
     other.enabled == enabled &&
+    other.endSessionEndpoint == endSessionEndpoint &&
     other.issuerUrl == issuerUrl &&
     other.mobileOverrideEnabled == mobileOverrideEnabled &&
     other.mobileRedirectUri == mobileRedirectUri &&
@@ -133,6 +138,7 @@ class SystemConfigOAuthDto {
     (clientSecret.hashCode) +
     (defaultStorageQuota == null ? 0 : defaultStorageQuota!.hashCode) +
     (enabled.hashCode) +
+    (endSessionEndpoint.hashCode) +
     (issuerUrl.hashCode) +
     (mobileOverrideEnabled.hashCode) +
     (mobileRedirectUri.hashCode) +
@@ -147,7 +153,7 @@ class SystemConfigOAuthDto {
     (tokenEndpointAuthMethod.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[allowInsecureRequests=$allowInsecureRequests, autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, prompt=$prompt, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
+  String toString() => 'SystemConfigOAuthDto[allowInsecureRequests=$allowInsecureRequests, autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, endSessionEndpoint=$endSessionEndpoint, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, prompt=$prompt, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -163,6 +169,7 @@ class SystemConfigOAuthDto {
     //  json[r'defaultStorageQuota'] = null;
     }
       json[r'enabled'] = this.enabled;
+      json[r'endSessionEndpoint'] = this.endSessionEndpoint;
       json[r'issuerUrl'] = this.issuerUrl;
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
       json[r'mobileRedirectUri'] = this.mobileRedirectUri;
@@ -197,6 +204,7 @@ class SystemConfigOAuthDto {
             ? null
             : num.parse('${json[r'defaultStorageQuota']}'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        endSessionEndpoint: mapValueOfType<String>(json, r'endSessionEndpoint')!,
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
         mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
@@ -264,6 +272,7 @@ class SystemConfigOAuthDto {
     'clientSecret',
     'defaultStorageQuota',
     'enabled',
+    'endSessionEndpoint',
     'issuerUrl',
     'mobileOverrideEnabled',
     'mobileRedirectUri',

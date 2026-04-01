@@ -455,8 +455,8 @@ export class AuthService extends BaseService {
       return LOGIN_URL;
     }
 
-    if (config.oauth.logoutOverrideEnabled && config.oauth.logoutUri) {
-      return config.oauth.logoutUri;
+    if (config.oauth.endSessionEndpoint) {
+      return config.oauth.endSessionEndpoint;
     }
 
     return (await this.oauthRepository.getLogoutEndpoint(config.oauth)) || LOGIN_URL;
