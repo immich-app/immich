@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
@@ -17,10 +15,10 @@ Rect convertCropParametersToRect(CropParameters parameters, int originalWidth, i
 }
 
 CropParameters convertRectToCropParameters(Rect rect, int originalWidth, int originalHeight) {
-  final x = (rect.left * originalWidth).round();
-  final y = (rect.top * originalHeight).round();
-  final width = (rect.width * originalWidth).round();
-  final height = (rect.height * originalHeight).round();
+  final x = (rect.left * originalWidth).truncate();
+  final y = (rect.top * originalHeight).truncate();
+  final width = (rect.width * originalWidth).truncate();
+  final height = (rect.height * originalHeight).truncate();
 
   return CropParameters(
     x: max(x, 0).clamp(0, originalWidth),
@@ -35,12 +33,22 @@ AffineMatrix buildAffineFromEdits(List<AssetEdit> edits) {
     edits.map<AffineMatrix>((edit) {
       switch (edit.action) {
         case AssetEditAction.rotate:
-          final angleInDegrees = edit.parameters["angle"] as num;
+          final parameters = RotateParameters.fromJson(edit.parameters);
+          if (parameters == null) {
+            throw ArgumentError("Unable to parse rotate parameters from edit: ${edit.parameters}");
+          }
+
+          final angleInDegrees = parameters.angle;
           final angleInRadians = angleInDegrees * pi / 180;
           return AffineMatrix.rotate(angleInRadians);
+
         case AssetEditAction.mirror:
-          final axis = edit.parameters["axis"] as String;
-          return axis == "horizontal" ? AffineMatrix.flipY() : AffineMatrix.flipX();
+          final parameters = MirrorParameters.fromJson(edit.parameters);
+          if (parameters == null) {
+            throw ArgumentError("Unable to parse mirror parameters from edit: ${edit.parameters}");
+          }
+
+          return parameters.axis == MirrorAxis.horizontal ? AffineMatrix.flipY() : AffineMatrix.flipX();
         default:
           return AffineMatrix.identity();
       }
@@ -69,29 +77,4 @@ NormalizedTransform normalizeTransformEdits(List<AssetEdit> edits) {
     mirrorHorizontal: false,
     mirrorVertical: isCloseToZero(a) ? b == c : a == -d,
   );
-}
-
-/// Helper to resolve an ImageProvider to a ui.Image
-Future<ui.Image> resolveImage(ImageProvider provider) {
-  final completer = Completer<ui.Image>();
-  final stream = provider.resolve(const ImageConfiguration());
-
-  late final ImageStreamListener listener;
-  listener = ImageStreamListener(
-    (ImageInfo info, bool sync) {
-      if (!completer.isCompleted) {
-        completer.complete(info.image);
-      }
-      stream.removeListener(listener);
-    },
-    onError: (error, stackTrace) {
-      if (!completer.isCompleted) {
-        completer.completeError(error, stackTrace);
-      }
-      stream.removeListener(listener);
-    },
-  );
-
-  stream.addListener(listener);
-  return completer.future;
 }

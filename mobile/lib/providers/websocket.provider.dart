@@ -213,7 +213,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       timeout,
       onTimeout: () {
         state.socket?.off(event, handler);
-        throw TimeoutException("Timeout waiting for event: $event");
+        completer.completeError(TimeoutException("Timeout waiting for event: $event"));
       },
     );
   }

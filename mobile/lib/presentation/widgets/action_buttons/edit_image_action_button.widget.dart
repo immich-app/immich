@@ -63,7 +63,7 @@ class EditImageActionButton extends ConsumerWidget {
       }
 
       await context.pushRoute(
-        DriftEditImageRoute(asset: currentAsset, image: image, edits: edits, exifInfo: exifInfo, applyEdits: editImage),
+        DriftEditImageRoute(image: image, edits: edits, exifInfo: exifInfo, applyEdits: editImage),
       );
     }
 

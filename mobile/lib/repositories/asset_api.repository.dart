@@ -107,23 +107,17 @@ class AssetApiRepository extends ApiRepository {
     return _api.updateAsset(assetId, UpdateAssetDto(rating: rating));
   }
 
-  Future<void> editAsset(String assetId, List<AssetEdit> edits) async {
+  Future<AssetEditsResponseDto?> editAsset(String assetId, List<AssetEdit> edits) {
     final editDtos = edits
-        .map((edit) {
-          if (edit.action == AssetEditAction.other) {
-            return null;
-          }
-
-          return AssetEditActionItemDto(action: edit.action.toDto()!, parameters: edit.parameters);
-        })
-        .whereType<AssetEditActionItemDto>()
+        .where((edit) => edit.action != AssetEditAction.other)
+        .map((edit) => AssetEditActionItemDto(action: edit.action.toDto()!, parameters: edit.parameters))
         .toList();
 
-    await _api.editAsset(assetId, AssetEditsCreateDto(edits: editDtos));
+    return _api.editAsset(assetId, AssetEditsCreateDto(edits: editDtos));
   }
 
   Future<void> removeEdits(String assetId) async {
-    await _api.removeAssetEdits(assetId);
+    return _api.removeAssetEdits(assetId);
   }
 }
 

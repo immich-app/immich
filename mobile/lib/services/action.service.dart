@@ -253,8 +253,6 @@ class ActionService {
     } else {
       await _assetApiRepository.editAsset(remoteId, edits);
     }
-
-    await _remoteAssetRepository.editAsset(remoteId, edits);
   }
 
   Future<int> _deleteLocalAssets(List<String> localIds) async {

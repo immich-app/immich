@@ -7,7 +7,7 @@ import 'package:crop_image/crop_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -20,7 +20,6 @@ import 'package:openapi/api.dart' show CropParameters, RotateParameters, MirrorP
 @RoutePage()
 class DriftEditImagePage extends ConsumerStatefulWidget {
   final Image image;
-  final BaseAsset asset;
   final List<AssetEdit> edits;
   final ExifInfo exifInfo;
   final Future<void> Function(List<AssetEdit> edits) applyEdits;
@@ -28,7 +27,6 @@ class DriftEditImagePage extends ConsumerStatefulWidget {
   const DriftEditImagePage({
     super.key,
     required this.image,
-    required this.asset,
     required this.edits,
     required this.exifInfo,
     required this.applyEdits,
@@ -38,12 +36,10 @@ class DriftEditImagePage extends ConsumerStatefulWidget {
   ConsumerState<DriftEditImagePage> createState() => _DriftEditImagePageState();
 }
 
-typedef AspectRatio = ({double? ratio, String label});
-
 class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with TickerProviderStateMixin {
   late final CropController cropController;
 
-  Duration _rotationAnimationDuration = const Duration(milliseconds: 250);
+  Duration _rotationAnimationDuration = const Duration(milliseconds: 0);
 
   int _rotationAngle = 0;
   bool _flipHorizontal = false;
@@ -56,18 +52,6 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
   bool _isApplyingEdits = false;
   bool _hasSheetChanges = false;
   late final Rect _initialCrop;
-  final String _selectedSegment = 'transform';
-
-  List<AspectRatio> aspectRatios = [
-    (ratio: null, label: 'Free'),
-    (ratio: 1.0, label: '1:1'),
-    (ratio: 16.0 / 9.0, label: '16:9'),
-    (ratio: 3.0 / 2.0, label: '3:2'),
-    (ratio: 7.0 / 5.0, label: '7:5'),
-    (ratio: 9.0 / 16.0, label: '9:16'),
-    (ratio: 2.0 / 3.0, label: '2:3'),
-    (ratio: 5.0 / 7.0, label: '5:7'),
-  ];
 
   void initEditor() {
     final existingCrop = widget.edits.firstWhereOrNull((edit) => edit.action == AssetEditAction.crop);
@@ -83,9 +67,6 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     cropController = CropController(defaultCrop: crop);
 
     final transform = normalizeTransformEdits(widget.edits);
-
-    // dont animate to initial rotation
-    _rotationAnimationDuration = const Duration(milliseconds: 0);
     _rotationAngle = transform.rotation.toInt();
 
     _flipHorizontal = transform.mirrorHorizontal;
@@ -160,7 +141,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 
   void _rotateLeft() {
     setState(() {
-      _rotationAnimationDuration = const Duration(milliseconds: 150);
+      _rotationAnimationDuration = const Duration(milliseconds: 250);
       _rotationAngle -= 90;
       _hasSheetChanges = true;
     });
@@ -168,7 +149,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 
   void _rotateRight() {
     setState(() {
-      _rotationAnimationDuration = const Duration(milliseconds: 150);
+      _rotationAnimationDuration = const Duration(milliseconds: 250);
       _rotationAngle += 90;
       _hasSheetChanges = true;
     });
@@ -230,30 +211,29 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     return isCropped || isRotated || isFlipped;
   }
 
-  Future<bool> _showDiscardChangesDialog() async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('editor_discard_edits_title'.tr()),
-            content: Text('editor_discard_edits_prompt'.tr()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(context.themeData.colorScheme.onSurfaceVariant),
-                ),
-                child: Text('cancel'.tr()),
-              ),
-              TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('confirm'.tr())),
-            ],
+  Future<bool?> _showDiscardChangesDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('editor_discard_edits_title'.tr()),
+        content: Text('editor_discard_edits_prompt'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: ButtonStyle(
+              foregroundColor: WidgetStateProperty.all(context.themeData.colorScheme.onSurfaceVariant),
+            ),
+            child: Text('cancel'.tr()),
           ),
-        ) ??
-        false;
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('confirm'.tr())),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleClose() async {
     if (hasUnsavedChanges) {
-      final shouldDiscard = await _showDiscardChangesDialog();
+      final shouldDiscard = await _showDiscardChangesDialog() ?? false;
       if (shouldDiscard && mounted) {
         Navigator.of(context).pop();
       }
@@ -268,7 +248,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
       canPop: !hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final shouldDiscard = await _showDiscardChangesDialog();
+        final shouldDiscard = await _showDiscardChangesDialog() ?? false;
         if (shouldDiscard && mounted) {
           Navigator.of(context).pop();
         }
@@ -319,19 +299,10 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
                               padding: const EdgeInsets.all(10),
                               width: (_rotationAngle % 180 == 0) ? baseWidth : baseHeight,
                               height: (_rotationAngle % 180 == 0) ? baseHeight : baseWidth,
-                              child: FutureBuilder(
-                                future: resolveImage(widget.image.image),
-                                builder: (context, data) {
-                                  if (!data.hasData) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-
-                                  return CropImage(
-                                    controller: cropController,
-                                    image: widget.image,
-                                    gridColor: Colors.white,
-                                  );
-                                },
+                              child: CropImage(
+                                controller: cropController,
+                                image: widget.image,
+                                gridColor: Colors.white,
                               ),
                             ),
                           ),
@@ -357,48 +328,18 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AnimatedCrossFade(
-                          duration: const Duration(milliseconds: 250),
-                          firstCurve: Curves.easeInOut,
-                          secondCurve: Curves.easeInOut,
-                          sizeCurve: Curves.easeInOut,
-                          crossFadeState: _selectedSegment == 'transform'
-                              ? CrossFadeState.showFirst
-                              : CrossFadeState.showSecond,
-                          firstChild: _TransformControls(
-                            onRotateLeft: _rotateLeft,
-                            onRotateRight: _rotateRight,
-                            onFlipHorizontal: _flipHorizontally,
-                            onFlipVertical: _flipVertically,
-                            onAspectRatioSelected: _applyAspectRatio,
-                            aspectRatio: _aspectRatio,
-                          ),
-                          // this will never show since the segmented button is not shown yet
-                          secondChild: const Text("Filters coming soon!"),
+                        _TransformControls(
+                          onRotateLeft: _rotateLeft,
+                          onRotateRight: _rotateRight,
+                          onFlipHorizontal: _flipHorizontally,
+                          onFlipVertical: _flipVertically,
+                          onAspectRatioSelected: _applyAspectRatio,
+                          aspectRatio: _aspectRatio,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 36, left: 24, right: 24),
                           child: Row(
                             children: [
-                              // SegmentedButton(
-                              //   segments: [
-                              //     const ButtonSegment<String>(
-                              //       value: 'transform',
-                              //       label: Text('Transform'),
-                              //       icon: Icon(Icons.transform),
-                              //     ),
-                              //     const ButtonSegment<String>(
-                              //       value: 'filters',
-                              //       label: Text('Filters'),
-                              //       icon: Icon(Icons.color_lens),
-                              //     ),
-                              //   ],
-                              //   selected: {selectedSegment},
-                              //   onSelectionChanged: (value) => setState(() {
-                              //     selectedSegment = value.first;
-                              //   }),
-                              //   showSelectedIcon: false,
-                              // ),
                               const Spacer(),
                               ImmichTextButton(
                                 labelText: 'reset'.tr(),
@@ -424,17 +365,11 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 }
 
 class _AspectRatioButton extends StatelessWidget {
-  final double? currentAspectRatio;
-  final double? ratio;
-  final String label;
+  final AspectRatioPreset ratio;
+  final bool isSelected;
   final VoidCallback onPressed;
 
-  const _AspectRatioButton({
-    required this.currentAspectRatio,
-    required this.ratio,
-    required this.label,
-    required this.onPressed,
-  });
+  const _AspectRatioButton({required this.ratio, required this.isSelected, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -444,22 +379,12 @@ class _AspectRatioButton extends StatelessWidget {
         IconButton(
           iconSize: 36,
           icon: Transform.rotate(
-            angle: (ratio ?? 1.0) < 1.0 ? pi / 2 : 0,
-            child: Icon(switch (label) {
-              'Free' => Icons.crop_free_rounded,
-              '1:1' => Icons.crop_square_rounded,
-              '16:9' => Icons.crop_16_9_rounded,
-              '3:2' => Icons.crop_3_2_rounded,
-              '7:5' => Icons.crop_7_5_rounded,
-              '9:16' => Icons.crop_16_9_rounded,
-              '2:3' => Icons.crop_3_2_rounded,
-              '5:7' => Icons.crop_7_5_rounded,
-              _ => Icons.crop_free_rounded,
-            }, color: currentAspectRatio == ratio ? context.primaryColor : context.themeData.iconTheme.color),
+            angle: ratio.iconRotated ? pi / 2 : 0,
+            child: Icon(ratio.icon, color: isSelected ? context.primaryColor : context.themeData.iconTheme.color),
           ),
           onPressed: onPressed,
         ),
-        Text(label, style: context.textTheme.displayMedium),
+        Text(ratio.label, style: context.textTheme.displayMedium),
       ],
     );
   }
@@ -473,17 +398,6 @@ class _AspectRatioSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final aspectRatios = <String, double?>{
-      'Free': null,
-      '1:1': 1.0,
-      '16:9': 16 / 9,
-      '3:2': 3 / 2,
-      '7:5': 7 / 5,
-      '9:16': 9 / 16,
-      '2:3': 2 / 3,
-      '5:7': 5 / 7,
-    };
-
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -491,10 +405,9 @@ class _AspectRatioSelector extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
-              currentAspectRatio: currentAspectRatio,
               ratio: entry.value,
-              label: entry.key,
-              onPressed: () => onAspectRatioSelected(entry.value),
+              isSelected: currentAspectRatio == entry.value.ratio,
+              onPressed: () => onAspectRatioSelected(entry.value.ratio),
             ),
           );
         }).toList(),

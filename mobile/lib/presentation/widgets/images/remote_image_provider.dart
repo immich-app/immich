@@ -13,10 +13,11 @@ import 'package:openapi/api.dart';
 class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
     with CancellableImageProviderMixin<RemoteImageProvider> {
   final String url;
+  final bool edited;
 
-  RemoteImageProvider({required this.url});
+  RemoteImageProvider({required this.url, this.edited = true});
 
-  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, bool edited = true})
+  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, this.edited = true})
     : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
 
   @override
@@ -45,13 +46,13 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is RemoteImageProvider) {
-      return url == other.url;
+      return url == other.url && edited == other.edited;
     }
     return false;
   }
 
   @override
-  int get hashCode => url.hashCode;
+  int get hashCode => url.hashCode ^ edited.hashCode;
 }
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
@@ -145,7 +146,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     final previewRequest = request = RemoteImageRequest(
-      uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
+      uri: getThumbnailUrlForRemoteId(
+        key.assetId,
+        type: AssetMediaSize.preview,
+        thumbhash: key.thumbhash,
+        edited: key.edited,
+      ),
     );
     yield* loadRequest(previewRequest, decode, isFinal: false);
 
@@ -154,7 +160,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     // always try original for animated, since previews don't support animation
-    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
+    final originalRequest = request = RemoteImageRequest(
+      uri: getOriginalUrlForRemoteId(key.assetId, edited: key.edited),
+    );
     final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
       if (isCancelled) {
