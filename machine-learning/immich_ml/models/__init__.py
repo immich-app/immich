@@ -37,7 +37,7 @@ def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTas
         case ModelSource.PADDLE, ModelType.RECOGNITION, ModelTask.OCR:
             return TextRecognizer
 
-        case ModelSource.YOLOV8, ModelType.DETECTION, ModelTask.PET_DETECTION:
+        case ModelSource.YOLOV8, ModelType.DETECTION, ModelTask.PET_RECOGNITION:
             return PetDetector
 
         case ModelSource.MEGADESCRIPTOR, ModelType.RECOGNITION, ModelTask.PET_RECOGNITION:

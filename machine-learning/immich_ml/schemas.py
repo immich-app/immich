@@ -24,7 +24,6 @@ class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
     SEARCH = "clip"
     OCR = "ocr"
-    PET_DETECTION = "pet-detection"
     PET_RECOGNITION = "pet-recognition"
 
 
