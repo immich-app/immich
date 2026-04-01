@@ -15,7 +15,13 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
+import {
+  CLIPConfig,
+  DuplicateDetectionConfig,
+  FacialRecognitionConfig,
+  OcrConfig,
+  PetRecognitionConfig,
+} from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -309,8 +315,10 @@ class SystemConfigMachineLearningDto {
   @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
-  @ValidateBoolean({ description: 'Recognize pets' })
-  recognizePets!: boolean;
+  @Type(() => PetRecognitionConfig)
+  @ValidateNested()
+  @IsObject()
+  petRecognition!: PetRecognitionConfig;
 
   @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
   @ArrayMinSize(1)

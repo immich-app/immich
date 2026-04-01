@@ -30,19 +30,6 @@
           bind:checked={configToEdit.machineLearning.enabled}
         />
 
-        <SettingSwitch
-          title={$t('admin.machine_learning_recognize_pets')}
-          subtitle={$t('admin.machine_learning_recognize_pets_description')}
-          disabled={disabled || !configToEdit.machineLearning.enabled}
-          bind:checked={configToEdit.machineLearning.recognizePets}
-        />
-
-        {#if configToEdit.machineLearning.recognizePets}
-          <div class="mt-2">
-            <Alert color="warning" title={$t('admin.machine_learning_recognize_pets_warning')} />
-          </div>
-        {/if}
-
         <hr />
 
         <div>
@@ -263,6 +250,85 @@
               !configToEdit.machineLearning.facialRecognition.enabled}
             isEdited={configToEdit.machineLearning.facialRecognition.minFaces !==
               config.machineLearning.facialRecognition.minFaces}
+          />
+        </div>
+      </SettingAccordion>
+
+      <SettingAccordion
+        key="pet-recognition"
+        title={$t('admin.machine_learning_pet_recognition')}
+        subtitle={$t('admin.machine_learning_pet_recognition_description')}
+      >
+        <div class="ms-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_pet_recognition_enabled')}
+            bind:checked={configToEdit.machineLearning.petRecognition.enabled}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+          />
+
+          {#if configToEdit.machineLearning.petRecognition.enabled}
+            <div class="mt-2">
+              <Alert color="warning" title={$t('admin.machine_learning_recognize_pets_warning')} />
+            </div>
+          {/if}
+
+          <hr />
+
+          <SettingSelect
+            label={$t('admin.machine_learning_pet_recognition_model')}
+            desc={$t('admin.machine_learning_pet_recognition_model_description')}
+            name="pet-recognition-model"
+            bind:value={configToEdit.machineLearning.petRecognition.modelName}
+            options={[{ value: 'pet-recognition', text: 'pet-recognition' }]}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petRecognition.enabled}
+            isEdited={configToEdit.machineLearning.petRecognition.modelName !==
+              config.machineLearning.petRecognition.modelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_min_detection_score')}
+            description={$t('admin.machine_learning_min_detection_score_description')}
+            bind:value={configToEdit.machineLearning.petRecognition.minScore}
+            step="0.01"
+            min={0.1}
+            max={1}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petRecognition.enabled}
+            isEdited={configToEdit.machineLearning.petRecognition.minScore !==
+              config.machineLearning.petRecognition.minScore}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_max_recognition_distance')}
+            description={$t('admin.machine_learning_max_recognition_distance_description')}
+            bind:value={configToEdit.machineLearning.petRecognition.maxDistance}
+            step="0.01"
+            min={0.1}
+            max={2}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petRecognition.enabled}
+            isEdited={configToEdit.machineLearning.petRecognition.maxDistance !==
+              config.machineLearning.petRecognition.maxDistance}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_min_recognized_faces')}
+            description={$t('admin.machine_learning_min_recognized_faces_description')}
+            bind:value={configToEdit.machineLearning.petRecognition.minFaces}
+            step="1"
+            min={1}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petRecognition.enabled}
+            isEdited={configToEdit.machineLearning.petRecognition.minFaces !==
+              config.machineLearning.petRecognition.minFaces}
           />
         </div>
       </SettingAccordion>

@@ -318,18 +318,19 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const { imageHeight, imageWidth, faces: detectedFaces } = await this.machineLearningRepository.detectFaces(
-      previewFile.path,
-      machineLearning.facialRecognition,
-    );
+    const {
+      imageHeight,
+      imageWidth,
+      faces: detectedFaces,
+    } = await this.machineLearningRepository.detectFaces(previewFile.path, machineLearning.facialRecognition);
     this.logger.debug(`${detectedFaces.length} faces detected in ${previewFile.path}`);
 
     const faces = detectedFaces.map((face) => ({ ...face, type: PersonType.Human }));
 
-    if (machineLearning.recognizePets) {
+    if (machineLearning.petRecognition.enabled) {
       const { faces: detectedPets } = await this.machineLearningRepository.detectPets(previewFile.path, {
-        modelName: 'pet-recognition',
-        minScore: machineLearning.facialRecognition.minScore,
+        modelName: machineLearning.petRecognition.modelName,
+        minScore: machineLearning.petRecognition.minScore,
       });
       this.logger.debug(`${detectedPets.length} pets detected in ${previewFile.path}`);
       faces.push(...detectedPets.map((pet) => ({ ...pet, type: PersonType.Pet })));
