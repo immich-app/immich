@@ -252,8 +252,16 @@
       ]}
     >
       <ImageThumbnail
-        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
-        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
+        class={[
+          'absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          { 'rounded-xl': selected },
+          imageClass,
+        ]}
+        brokenAssetClass={[
+          'z-1 absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          { 'rounded-xl': selected },
+          brokenAssetClass,
+        ]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
