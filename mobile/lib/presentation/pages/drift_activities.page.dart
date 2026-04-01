@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -34,14 +35,32 @@ class DriftActivitiesPage extends HookConsumerWidget {
       scrollToBottom();
     }
 
+    void loadMoreIfNeeded() {
+      if (activityNotifier.hasMore && !activityNotifier.isLoadingMore) {
+        activityNotifier.loadMore();
+      }
+    }
+
+    void checkIfViewportNotFilled() {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (listViewScrollController.hasClients &&
+            listViewScrollController.position.maxScrollExtent <= 0) {
+          loadMoreIfNeeded();
+        }
+      });
+    }
+
+    // Auto-load more pages if content doesn't fill the viewport
+    ref.listen(albumActivityProvider(album.id, assetId), (_, __) {
+      checkIfViewportNotFilled();
+    });
+
     useEffect(() {
       void onScroll() {
         // In a reversed ListView, scrolling toward older items means reaching maxScrollExtent
         if (listViewScrollController.position.pixels >=
             listViewScrollController.position.maxScrollExtent - 200) {
-          if (activityNotifier.hasMore && !activityNotifier.isLoadingMore) {
-            activityNotifier.loadMore();
-          }
+          loadMoreIfNeeded();
         }
       }
       listViewScrollController.addListener(onScroll);

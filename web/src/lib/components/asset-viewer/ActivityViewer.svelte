@@ -136,6 +136,21 @@
     }
   };
 
+  // Auto-load more pages if content doesn't fill the scroll container
+  $effect(() => {
+    // Track reactive dependencies
+    void activityManager.activities.length;
+    void activityManager.isLoadingMore;
+
+    if (!scrollContainer || !activityManager.hasMore || activityManager.isLoadingMore) return;
+    // After rendering, check if there's no scrollable overflow
+    tick().then(() => {
+      if (scrollContainer && scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+        void loadMoreAndPreserveScroll();
+      }
+    });
+  });
+
   const onsubmit = async (event: Event) => {
     event.preventDefault();
     await handleSendComment();

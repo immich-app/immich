@@ -40,7 +40,7 @@ export class ActivityService extends BaseService {
       // Fetch all activities at exactly that timestamp and prepend any not already loaded.
       if (results.length > 0) {
         const boundaryTime = results[0].createdAt;
-        const loadedIds = new Set(results.filter((a) => +new Date(a.createdAt) === +new Date(boundaryTime)).map((a) => a.id));
+        const loadedIds = new Set(results.filter((a) => a.createdAt.getTime() === boundaryTime.getTime()).map((a) => a.id));
         const extras = await this.activityRepository.search({ ...searchOptions, at: boundaryTime });
         const newExtras = extras.map(mapActivity).filter((a) => !loadedIds.has(a.id));
         return [...newExtras, ...results];
