@@ -351,6 +351,7 @@
         {showArchiveIcon}
         {onSelect}
         onEscape={handleEscape}
+        withStacked={true}
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
@@ -452,7 +453,7 @@
 
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar>
-        {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
+        {@const Actions = getAssetBulkActions($t)}
         <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
         <CreateSharedLink />
         <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />

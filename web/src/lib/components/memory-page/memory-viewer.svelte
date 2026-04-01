@@ -337,7 +337,7 @@
 {#if assetMultiSelectManager.selectionActive}
   <div class="sticky top-0 z-1 dark">
     <AssetSelectControlBar forceDark>
-      {@const Actions = getAssetBulkActions($t, assetMultiSelectManager.asControlContext())}
+      {@const Actions = getAssetBulkActions($t)}
       <CreateSharedLink />
       <IconButton
         shape="round"

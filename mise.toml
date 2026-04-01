@@ -14,7 +14,7 @@ config_roots = [
 ]
 
 [tools]
-node = "24.14.0"
+node = "24.14.1"
 flutter = "3.35.7"
 pnpm = "10.32.1"
 terragrunt = "0.99.4"

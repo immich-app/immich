@@ -1,7 +1,6 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { setAssetControlContext } from '$lib/utils/context';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -12,8 +11,6 @@
   };
 
   let { children, forceDark }: Props = $props();
-
-  setAssetControlContext(assetMultiSelectManager.asControlContext());
 
   const onClose = () => assetMultiSelectManager.clear();
 

@@ -126,12 +126,13 @@ export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileTy
   ).as('files');
 }
 
-export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType) {
+export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType, isEdited = false) {
   return eb
     .selectFrom('asset_file')
     .select('asset_file.path')
     .whereRef('asset_file.assetId', '=', 'asset.id')
-    .where('asset_file.type', '=', type);
+    .where('asset_file.type', '=', sql.lit(type))
+    .where('asset_file.isEdited', '=', sql.lit(isEdited));
 }
 
 export function withFacesAndPeople(

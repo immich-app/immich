@@ -98,7 +98,7 @@
     "nestjs-cls": "^5.0.0",
     "nestjs-kysely": "3.1.2",
     "nestjs-otel": "^7.0.0",
-    "nodemailer": "^7.0.0",
+    "nodemailer": "^8.0.0",
     "openid-client": "^6.3.3",
     "pg": "^8.11.3",
     "pg-connection-string": "^2.9.1",
@@ -174,7 +174,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.14.0"
+    "node": "24.14.1"
   },
   "overrides": {
     "sharp": "^0.34.5"

@@ -1,5 +1,5 @@
 import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import type { ContentMetrics } from '$lib/utils/container-utils';
+import type { Size } from '$lib/utils/container-utils';
 import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
 
 describe('getOcrBoundingBoxes', () => {
@@ -21,9 +21,9 @@ describe('getOcrBoundingBoxes', () => {
         text: 'hello',
       },
     ];
-    const metrics: ContentMetrics = { contentWidth: 1000, contentHeight: 500, offsetX: 0, offsetY: 0 };
+    const imageSize: Size = { width: 1000, height: 500 };
 
-    const boxes = getOcrBoundingBoxes(ocrData, metrics);
+    const boxes = getOcrBoundingBoxes(ocrData, imageSize);
 
     expect(boxes).toHaveLength(1);
     expect(boxes[0].id).toBe('box1');
@@ -37,7 +37,7 @@ describe('getOcrBoundingBoxes', () => {
     ]);
   });
 
-  it('should apply offsets for letterboxed images', () => {
+  it('should map full-image box to full display area', () => {
     const ocrData: OcrBoundingBox[] = [
       {
         id: 'box1',
@@ -55,21 +55,20 @@ describe('getOcrBoundingBoxes', () => {
         text: 'test',
       },
     ];
-    const metrics: ContentMetrics = { contentWidth: 600, contentHeight: 400, offsetX: 100, offsetY: 50 };
+    const imageSize: Size = { width: 600, height: 400 };
 
-    const boxes = getOcrBoundingBoxes(ocrData, metrics);
+    const boxes = getOcrBoundingBoxes(ocrData, imageSize);
 
     expect(boxes[0].points).toEqual([
-      { x: 100, y: 50 },
-      { x: 700, y: 50 },
-      { x: 700, y: 450 },
-      { x: 100, y: 450 },
+      { x: 0, y: 0 },
+      { x: 600, y: 0 },
+      { x: 600, y: 400 },
+      { x: 0, y: 400 },
     ]);
   });
 
   it('should return empty array for empty input', () => {
-    const metrics: ContentMetrics = { contentWidth: 800, contentHeight: 600, offsetX: 0, offsetY: 0 };
-    expect(getOcrBoundingBoxes([], metrics)).toEqual([]);
+    expect(getOcrBoundingBoxes([], { width: 800, height: 600 })).toEqual([]);
   });
 
   it('should handle multiple boxes', () => {
@@ -105,9 +104,9 @@ describe('getOcrBoundingBoxes', () => {
         text: 'second',
       },
     ];
-    const metrics: ContentMetrics = { contentWidth: 200, contentHeight: 200, offsetX: 0, offsetY: 0 };
+    const imageSize: Size = { width: 200, height: 200 };
 
-    const boxes = getOcrBoundingBoxes(ocrData, metrics);
+    const boxes = getOcrBoundingBoxes(ocrData, imageSize);
 
     expect(boxes).toHaveLength(2);
     expect(boxes[0].text).toBe('first');

@@ -1,7 +1,6 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { user } from '$lib/stores/user.store';
-import type { AssetControlContext } from '$lib/types';
 import { AssetVisibility, type UserAdminResponseDto } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
@@ -22,7 +21,10 @@ export class AssetMultiSelectManager {
   candidates = $state<TimelineAsset[]>([]);
 
   selectionActive = $derived(this.#selectedMap.size > 0);
+
   assets = $derived(Array.from(this.#selectedMap.values()));
+  ownedAssets = $derived(this.#userId ? this.assets.filter((asset) => asset.ownerId === this.#userId) : this.assets);
+
   isAllTrashed = $derived(this.assets.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.assets.every((asset) => asset.visibility === AssetVisibility.Archive));
   isAllFavorite = $derived(this.assets.every((asset) => asset.isFavorite));
@@ -41,13 +43,8 @@ export class AssetMultiSelectManager {
     this.#unsubscribe?.();
   }
 
-  asControlContext(): AssetControlContext {
-    return {
-      getOwnedAssets: () =>
-        this.#userId ? this.assets.filter((asset) => asset.ownerId === this.#userId) : this.assets,
-      getAssets: () => this.assets,
-      clearSelect: () => this.clear(),
-    };
+  getOwnedAssets() {
+    return this.#userId ? this.assets.filter((asset) => asset.ownerId === this.#userId) : this.assets;
   }
 
   hasSelectedAsset(assetId: string) {

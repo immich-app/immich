@@ -564,7 +564,7 @@
     {/if}
 
     {#if showOcrButton}
-      <div class="absolute bottom-0 end-0 mb-6 me-6">
+      <div class="absolute bottom-0 end-0 mb-6 me-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
         <OcrButton />
       </div>
     {/if}
