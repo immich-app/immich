@@ -13,7 +13,6 @@ import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
-  minimumFaceCount: number;
   withHidden: boolean;
   closestFaceAssetId?: string;
 }
