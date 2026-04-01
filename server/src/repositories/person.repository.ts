@@ -175,7 +175,7 @@ export class PersonRepository {
           eb(
             (innerEb) => innerEb.fn.count('asset_face.assetId'),
             '>=',
-            sql`COALESCE(user_metadata.value ->> 'minimumFaces', '1')::int `,
+            sql`COALESCE(user_metadata.value -> 'people' ->> 'minimumFaces', '1')::int `,
           ),
         ]),
       )
