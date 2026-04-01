@@ -8,11 +8,9 @@ import {
   ChecksumAlgorithm,
   MemoryType,
   Permission,
-  PersonType,
   PluginContext,
   PluginTriggerType,
   SharedLinkType,
-  SourceType,
   UserAvatarColor,
   UserStatus,
 } from 'src/enum';

@@ -24,6 +24,9 @@ const partialConfig = {
   oauth: { autoLaunch: true },
   trash: { days: 10 },
   user: { deleteDelay: 15 },
+  machineLearning: {
+    petRecognition: { enabled: true },
+  },
 } satisfies DeepPartial<SystemConfig>;
 
 const updatedConfig = Object.freeze<SystemConfig>({
@@ -32,6 +35,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },
+    [QueueName.PetDetection]: { concurrency: 2 },
     [QueueName.Search]: { concurrency: 5 },
     [QueueName.Sidecar]: { concurrency: 5 },
     [QueueName.Library]: { concurrency: 5 },
@@ -97,6 +101,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
     duplicateDetection: {
       enabled: true,
       maxDistance: 0.01,
+    },
+    petRecognition: {
+      enabled: true,
+      modelName: 'pet-recognition',
+      minScore: 0.5,
+      maxDistance: 0.5,
+      minFaces: 3,
     },
     facialRecognition: {
       enabled: true,
@@ -259,6 +270,9 @@ describe(SystemConfigService.name, () => {
         oauth: { autoLaunch: true },
         trash: { days: 10 },
         user: { deleteDelay: 15 },
+        machineLearning: {
+          petRecognition: { enabled: true },
+        },
       });
 
       await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
@@ -342,6 +356,9 @@ describe(SystemConfigService.name, () => {
           days: 10
         user:
           deleteDelay: 15
+        machineLearning:
+          petRecognition:
+            enabled: true
       `;
       mocks.systemMetadata.readFile.mockResolvedValue(partialConfig);
 

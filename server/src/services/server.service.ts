@@ -23,6 +23,7 @@ import {
   isDuplicateDetectionEnabled,
   isFacialRecognitionEnabled,
   isOcrEnabled,
+  isPetRecognitionEnabled,
   isSmartSearchEnabled,
 } from 'src/utils/misc';
 
@@ -93,6 +94,7 @@ export class ServerService extends BaseService {
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
       facialRecognition: isFacialRecognitionEnabled(machineLearning),
+      petRecognition: isPetRecognitionEnabled(machineLearning),
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
       reverseGeocoding: reverseGeocoding.enabled,

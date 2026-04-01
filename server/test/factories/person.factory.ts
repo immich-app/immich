@@ -1,4 +1,5 @@
 import { Selectable } from 'kysely';
+import { PersonType } from 'src/enum';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { PersonLike } from 'test/factories/types';
 import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
@@ -22,6 +23,7 @@ export class PersonFactory {
       name: 'person',
       ownerId: newUuid(),
       thumbnailPath: '/data/thumbs/person-thumbnail.jpg',
+      type: PersonType.Human,
       updatedAt: newDate(),
       updateId: newUuidV7(),
       ...dto,

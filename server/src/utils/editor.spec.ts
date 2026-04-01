@@ -1,6 +1,6 @@
 import { AssetFace } from 'src/database';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { SourceType } from 'src/enum';
+import { PersonType, SourceType } from 'src/enum';
 import { boundingBoxOverlap, checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { describe, expect, it } from 'vitest';
 
@@ -66,6 +66,7 @@ const createFace = (params: Partial<AssetFace> = {}): AssetFace => ({
   imageHeight: 1000,
   personId: null,
   sourceType: SourceType.MachineLearning,
+  personType: PersonType.Human,
   person: null,
   updatedAt: new Date(),
   updateId: 'update-id',

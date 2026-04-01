@@ -299,6 +299,7 @@ export class AssetRepository {
             {
               duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
               facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
+              petsRecognizedAt: eb.ref('excluded.petsRecognizedAt'),
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
             },
@@ -306,6 +307,14 @@ export class AssetRepository {
           ),
         ),
       )
+      .execute();
+  }
+
+  async resetJobStatus(column: keyof AssetJobStatusTable): Promise<void> {
+    await this.db
+      .updateTable('asset_job_status')
+      .set({ [column]: null })
+      .where(column as any, 'is not', null)
       .execute();
   }
 

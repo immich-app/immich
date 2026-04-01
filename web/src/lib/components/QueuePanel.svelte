@@ -69,7 +69,7 @@
       allText: $t('reset'),
       refreshText: $t('refresh'),
       missingText: $t('missing'),
-      disabled: !featureFlags.facialRecognition,
+      disabled: !featureFlags.petRecognition,
     },
     [QueueName.FacialRecognition]: {
       allText: $t('reset'),
@@ -79,7 +79,7 @@
     [QueueName.PetRecognition]: {
       allText: $t('reset'),
       missingText: $t('missing'),
-      disabled: !featureFlags.facialRecognition,
+      disabled: !featureFlags.petRecognition,
     },
     [QueueName.Ocr]: {
       allText: $t('all'),

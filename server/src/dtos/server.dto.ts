@@ -214,6 +214,8 @@ export class ServerFeaturesDto {
   configFile!: boolean;
   @ApiProperty({ description: 'Whether facial recognition is enabled' })
   facialRecognition!: boolean;
+  @ApiProperty({ description: 'Whether pet recognition is enabled' })
+  petRecognition!: boolean;
   @ApiProperty({ description: 'Whether map feature is enabled' })
   map!: boolean;
   @ApiProperty({ description: 'Whether trash feature is enabled' })

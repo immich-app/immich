@@ -277,12 +277,13 @@ export class PersonService extends BaseService {
 
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning, personType: PersonType.Human });
+      await this.assetRepository.resetJobStatus('facesRecognizedAt');
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: true });
     }
 
     let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
+    const assets = this.assetJobRepository.streamForDetectFacesJob(PersonType.Human, force);
     for await (const asset of assets) {
       jobs.push({ name: JobName.AssetDetectFaces, data: { id: asset.id } });
 
@@ -310,12 +311,13 @@ export class PersonService extends BaseService {
 
     if (force) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning, personType: PersonType.Pet });
+      await this.assetRepository.resetJobStatus('petsRecognizedAt');
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: true });
     }
 
     let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
+    const assets = this.assetJobRepository.streamForDetectFacesJob(PersonType.Pet, force);
     for await (const asset of assets) {
       jobs.push({ name: JobName.AssetDetectPets, data: { id: asset.id } });
 
@@ -505,6 +507,8 @@ export class PersonService extends BaseService {
       this.logger.log(`Added ${embeddings.length} pet embeddings for asset ${id}`);
     }
 
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, petsRecognizedAt: new Date() });
+
     return JobStatus.Success;
   }
 
@@ -549,7 +553,10 @@ export class PersonService extends BaseService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FacialRecognition);
 
     if (force) {
-      await this.personRepository.unassignFaces({ sourceType: SourceType.MachineLearning, personType: PersonType.Human });
+      await this.personRepository.unassignFaces({
+        sourceType: SourceType.MachineLearning,
+        personType: PersonType.Human,
+      });
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: false });
     } else if (waiting) {
@@ -766,8 +773,7 @@ export class PersonService extends BaseService {
     this.logger.debug(`Pet face ${id} has ${matches.length} matches`);
 
     const isCore =
-      matches.length >= machineLearning.petRecognition.minFaces &&
-      face.asset.visibility === AssetVisibility.Timeline;
+      matches.length >= machineLearning.petRecognition.minFaces && face.asset.visibility === AssetVisibility.Timeline;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core pet face ${id} for later processing`);
       await this.jobRepository.queue({ name: JobName.PetRecognition, data: { id, deferred: true } });

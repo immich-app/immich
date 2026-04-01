@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { SourceType } from 'src/enum';
+import { PersonType, SourceType } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { build } from 'test/factories/builder.factory';
 import { PersonFactory } from 'test/factories/person.factory';
@@ -28,6 +28,7 @@ export class AssetFaceFactory {
       imageWidth: 400,
       isVisible: true,
       personId: null,
+      personType: PersonType.Human,
       sourceType: SourceType.MachineLearning,
       updatedAt: newDate(),
       updateId: newUuidV7(),

@@ -689,7 +689,10 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_FACES });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetDetectFaces, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetDetectFaces, data: { id: 'asset-1' } },
+        { name: JobName.AssetDetectPets, data: { id: 'asset-1' } },
+      ]);
     });
 
     it('should run the refresh metadata job', async () => {

@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import { AssetFace } from 'src/database';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { SourceType } from 'src/enum';
+import { PersonType, SourceType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
@@ -337,6 +337,7 @@ describe(MediaRepository.name, () => {
       imageWidth: 1000,
       imageHeight: 800,
       sourceType: SourceType.MachineLearning,
+      personType: PersonType.Human,
       isVisible: true,
       updatedAt: new Date(),
       deletedAt: null,

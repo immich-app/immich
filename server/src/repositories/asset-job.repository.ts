@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, PersonType } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -424,10 +424,16 @@ export class AssetJobRepository {
       .stream();
   }
 
-  @GenerateSql({ params: [], stream: true })
-  streamForDetectFacesJob(force?: boolean) {
+  @GenerateSql({ params: [PersonType.Human], stream: true })
+  streamForDetectFacesJob(personType: PersonType, force?: boolean) {
     return this.assetsWithPreviews()
-      .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .$if(force === false, (qb) =>
+        qb.where(
+          personType === PersonType.Pet ? 'job_status.petsRecognizedAt' : 'job_status.facesRecognizedAt',
+          'is',
+          null,
+        ),
+      )
       .select(['asset.id'])
       .orderBy('asset.fileCreatedAt', 'desc')
       .stream();
