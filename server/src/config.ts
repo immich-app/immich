@@ -234,6 +234,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },
+    [QueueName.PetDetection]: { concurrency: 2 },
     [QueueName.Search]: { concurrency: 5 },
     [QueueName.Sidecar]: { concurrency: 5 },
     [QueueName.Library]: { concurrency: 5 },

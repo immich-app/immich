@@ -65,7 +65,18 @@
       missingText: $t('missing'),
       disabled: !featureFlags.facialRecognition,
     },
+    [QueueName.PetDetection]: {
+      allText: $t('reset'),
+      refreshText: $t('refresh'),
+      missingText: $t('missing'),
+      disabled: !featureFlags.facialRecognition,
+    },
     [QueueName.FacialRecognition]: {
+      allText: $t('reset'),
+      missingText: $t('missing'),
+      disabled: !featureFlags.facialRecognition,
+    },
+    [QueueName.PetRecognition]: {
       allText: $t('reset'),
       missingText: $t('missing'),
       disabled: !featureFlags.facialRecognition,
@@ -95,7 +106,9 @@
 
     switch (name) {
       case QueueName.FaceDetection:
-      case QueueName.FacialRecognition: {
+      case QueueName.PetDetection:
+      case QueueName.FacialRecognition:
+      case QueueName.PetRecognition: {
         if (dto.force) {
           const confirmed = await modalManager.showDialog({ prompt: $t('admin.confirm_reprocess_all_faces') });
           if (!confirmed) {

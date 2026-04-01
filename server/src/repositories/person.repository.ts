@@ -4,7 +4,7 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
+import { AssetFileType, AssetVisibility, PersonType, SourceType } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -44,6 +44,7 @@ export interface PersonStatistics {
 
 export interface DeleteFacesOptions {
   sourceType: SourceType;
+  personType?: PersonType;
 }
 
 export interface GetAllPeopleOptions {
@@ -57,9 +58,13 @@ export interface GetAllFacesOptions {
   personId?: string | null;
   assetId?: string;
   sourceType?: SourceType;
+  personType?: PersonType;
 }
 
-export type UnassignFacesOptions = DeleteFacesOptions;
+export interface UnassignFacesOptions {
+  sourceType: SourceType;
+  personType?: PersonType;
+}
 
 export type SelectFaceOptions = (keyof Selectable<AssetFaceTable>)[];
 
@@ -91,11 +96,12 @@ export class PersonRepository {
     return Number(result.numChangedRows ?? 0);
   }
 
-  async unassignFaces({ sourceType }: UnassignFacesOptions): Promise<void> {
+  async unassignFaces({ sourceType, personType }: UnassignFacesOptions): Promise<void> {
     await this.db
       .updateTable('asset_face')
       .set({ personId: null })
       .where('asset_face.sourceType', '=', sourceType)
+      .$if(!!personType, (qb) => qb.where('asset_face.personType', '=', personType!))
       .execute();
   }
 
@@ -109,8 +115,12 @@ export class PersonRepository {
     await this.db.deleteFrom('person').where('person.id', 'in', ids).execute();
   }
 
-  async deleteFaces({ sourceType }: DeleteFacesOptions): Promise<void> {
-    await this.db.deleteFrom('asset_face').where('asset_face.sourceType', '=', sourceType).execute();
+  async deleteFaces({ sourceType, personType }: DeleteFacesOptions): Promise<void> {
+    await this.db
+      .deleteFrom('asset_face')
+      .where('asset_face.sourceType', '=', sourceType)
+      .$if(!!personType, (qb) => qb.where('asset_face.personType', '=', personType!))
+      .execute();
   }
 
   getAllFaces(options: GetAllFacesOptions = {}) {
@@ -121,6 +131,7 @@ export class PersonRepository {
       .$if(!!options.personId, (qb) => qb.where('asset_face.personId', '=', options.personId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_face.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_face.assetId', '=', options.assetId!))
+      .$if(!!options.personType, (qb) => qb.where('asset_face.personType', '=', options.personType!))
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .stream();

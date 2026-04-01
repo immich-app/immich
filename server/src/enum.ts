@@ -566,7 +566,9 @@ export enum QueueName {
   MetadataExtraction = 'metadataExtraction',
   VideoConversion = 'videoConversion',
   FaceDetection = 'faceDetection',
+  PetDetection = 'petDetection',
   FacialRecognition = 'facialRecognition',
+  PetRecognition = 'petRecognition',
   SmartSearch = 'smartSearch',
   DuplicateDetection = 'duplicateDetection',
   BackgroundTask = 'backgroundTask',
@@ -596,6 +598,8 @@ export enum JobName {
   AssetDeleteCheck = 'AssetDeleteCheck',
   AssetDetectFacesQueueAll = 'AssetDetectFacesQueueAll',
   AssetDetectFaces = 'AssetDetectFaces',
+  AssetDetectPetsQueueAll = 'AssetDetectPetsQueueAll',
+  AssetDetectPets = 'AssetDetectPets',
   AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',
   AssetDetectDuplicates = 'AssetDetectDuplicates',
   AssetEditThumbnailGeneration = 'AssetEditThumbnailGeneration',
@@ -615,6 +619,9 @@ export enum JobName {
 
   FacialRecognitionQueueAll = 'FacialRecognitionQueueAll',
   FacialRecognition = 'FacialRecognition',
+
+  PetRecognitionQueueAll = 'PetRecognitionQueueAll',
+  PetRecognition = 'PetRecognition',
 
   FileDelete = 'FileDelete',
   FileMigrationQueueAll = 'FileMigrationQueueAll',

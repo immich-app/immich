@@ -99,6 +99,8 @@ export const isOcrEnabled = (machineLearning: SystemConfig['machineLearning']) =
   isMachineLearningEnabled(machineLearning) && machineLearning.ocr.enabled;
 export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
+export const isPetRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
+  isMachineLearningEnabled(machineLearning) && machineLearning.petRecognition.enabled;
 export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metadata.faces.import;

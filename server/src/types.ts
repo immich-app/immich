@@ -171,6 +171,7 @@ export type ConcurrentQueueName = Exclude<
   QueueName,
   | QueueName.StorageTemplateMigration
   | QueueName.FacialRecognition
+  | QueueName.PetRecognition
   | QueueName.DuplicateDetection
   | QueueName.BackupDatabase
 >;
@@ -330,8 +331,12 @@ export type JobItem =
   // Facial Recognition
   | { name: JobName.AssetDetectFacesQueueAll; data: IBaseJob }
   | { name: JobName.AssetDetectFaces; data: IEntityJob }
+  | { name: JobName.AssetDetectPetsQueueAll; data: IBaseJob }
+  | { name: JobName.AssetDetectPets; data: IEntityJob }
   | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
   | { name: JobName.FacialRecognition; data: IDeferrableJob }
+  | { name: JobName.PetRecognitionQueueAll; data: INightlyJob }
+  | { name: JobName.PetRecognition; data: IDeferrableJob }
   | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
 
   // Smart Search

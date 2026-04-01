@@ -228,8 +228,16 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force } });
       }
 
+      case QueueName.PetDetection: {
+        return this.jobRepository.queue({ name: JobName.AssetDetectPetsQueueAll, data: { force } });
+      }
+
       case QueueName.FacialRecognition: {
         return this.jobRepository.queue({ name: JobName.FacialRecognitionQueueAll, data: { force } });
+      }
+
+      case QueueName.PetRecognition: {
+        return this.jobRepository.queue({ name: JobName.PetRecognitionQueueAll, data: { force } });
       }
 
       case QueueName.Library: {
@@ -253,6 +261,7 @@ export class QueueService extends BaseService {
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
     return ![
       QueueName.FacialRecognition,
+      QueueName.PetRecognition,
       QueueName.StorageTemplateMigration,
       QueueName.DuplicateDetection,
       QueueName.BackupDatabase,
@@ -288,7 +297,10 @@ export class QueueService extends BaseService {
     }
 
     if (config.nightlyTasks.clusterNewFaces) {
-      jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
+      jobs.push(
+        { name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } },
+        { name: JobName.PetRecognitionQueueAll, data: { force: false, nightly: true } },
+      );
     }
 
     await this.jobRepository.queueAll(jobs);

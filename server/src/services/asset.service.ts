@@ -479,6 +479,7 @@ export class AssetService extends BaseService {
       switch (dto.name) {
         case AssetJobName.REFRESH_FACES: {
           jobs.push({ name: JobName.AssetDetectFaces, data: { id } });
+          jobs.push({ name: JobName.AssetDetectPets, data: { id } });
           break;
         }
 
