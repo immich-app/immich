@@ -5,10 +5,11 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner } from '@immich/ui';
+  import { Button, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
+  import { tv } from 'tailwind-variants';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
@@ -49,6 +50,16 @@
     const nameLower = name.toLowerCase();
     return name ? list.filter((p) => p.name.toLowerCase().includes(nameLower)) : list;
   };
+
+  const styles = tv({
+    base: 'flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all',
+    variants: {
+      selected: {
+        true: 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white',
+        false: 'border-transparent',
+      },
+    },
+  });
 </script>
 
 {#await peoplePromise}
@@ -63,22 +74,18 @@
 
     <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="uppercase immich-form-label py-3">{$t('people')}</p>
+        <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <SingleGridRow
-        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar"
+        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar space-between"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
-              person.id,
-            )
-              ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
-              : 'border-transparent'}"
+            class={styles({ selected: selectedPeople.has(person.id) })}
             onclick={() => togglePersonSelection(person.id)}
           >
             <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />

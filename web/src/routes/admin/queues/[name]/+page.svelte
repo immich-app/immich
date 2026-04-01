@@ -1,11 +1,9 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import QueueGraph from '$lib/components/QueueGraph.svelte';
-  import { AppRoute } from '$lib/constants';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
+  import { Route } from '$lib/route';
   import { asQueueItem, getQueueActions } from '$lib/services/queue.service';
-  import { type QueueResponseDto } from '@immich/sdk';
   import {
     Badge,
     Card,
@@ -29,24 +27,16 @@
 
   const { data }: Props = $props();
 
-  let queue = $derived(data.queue);
+  const queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) ?? data.queue);
 
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
   const item = $derived(asQueueItem($t, queue));
 
   onMount(() => queueManager.listen());
-
-  const onQueueUpdate = (update: QueueResponseDto) => {
-    if (update.name === queue.name) {
-      queue = update;
-    }
-  };
 </script>
 
-<OnEvents {onQueueUpdate} />
-
 <AdminPageLayout
-  breadcrumbs={[{ title: $t('admin.queues'), href: AppRoute.ADMIN_QUEUES }, { title: item.title }]}
+  breadcrumbs={[{ title: $t('admin.queues'), href: Route.queues() }, { title: item.title }]}
   actions={[Pause, Resume, Empty, MenuItemType.Divider, RemoveFailedJobs]}
 >
   <div>
@@ -63,7 +53,7 @@
 
       <div class="flex gap-1 mb-4">
         <Badge>{$t('active_count', { values: { count: queue.statistics.active } })}</Badge>
-        <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting } })}</Badge>
+        <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting + queue.statistics.paused } })}</Badge>
         {#if queue.statistics.failed > 0}
           <Badge color="danger">{$t('failed_count', { values: { count: queue.statistics.failed } })}</Badge>
         {/if}

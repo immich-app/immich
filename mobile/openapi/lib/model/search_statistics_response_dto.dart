@@ -16,6 +16,7 @@ class SearchStatisticsResponseDto {
     required this.total,
   });
 
+  /// Total number of matching assets
   int total;
 
   @override

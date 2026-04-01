@@ -159,8 +159,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     return unknownAsset;
   }
   const assetResponse = unknownAsset;
-  const { width, height } = getAssetRatio(assetResponse);
-  const ratio = width / height;
+  const ratio = getAssetRatio(assetResponse) ?? 1;
   const city = assetResponse.exifInfo?.city;
   const country = assetResponse.exifInfo?.country;
   const people = assetResponse.people?.map((person) => person.name) || [];
@@ -171,6 +170,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   return {
     id: assetResponse.id,
     ownerId: assetResponse.ownerId,
+    tags: assetResponse.tags?.map((tag) => tag.id),
     ratio,
     thumbhash: assetResponse.thumbhash,
     localDateTime,

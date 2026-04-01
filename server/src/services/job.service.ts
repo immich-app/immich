@@ -96,6 +96,40 @@ export class JobService extends BaseService {
         break;
       }
 
+      case JobName.AssetEditThumbnailGeneration: {
+        const asset = await this.assetRepository.getById(item.data.id);
+        const edits = await this.assetEditRepository.getWithSyncInfo(item.data.id);
+
+        if (asset) {
+          this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, {
+            asset: {
+              id: asset.id,
+              ownerId: asset.ownerId,
+              originalFileName: asset.originalFileName,
+              thumbhash: asset.thumbhash ? hexOrBufferToBase64(asset.thumbhash) : null,
+              checksum: hexOrBufferToBase64(asset.checksum),
+              fileCreatedAt: asset.fileCreatedAt,
+              fileModifiedAt: asset.fileModifiedAt,
+              localDateTime: asset.localDateTime,
+              duration: asset.duration,
+              type: asset.type,
+              deletedAt: asset.deletedAt,
+              isFavorite: asset.isFavorite,
+              visibility: asset.visibility,
+              livePhotoVideoId: asset.livePhotoVideoId,
+              stackId: asset.stackId,
+              libraryId: asset.libraryId,
+              width: asset.width,
+              height: asset.height,
+              isEdited: asset.isEdited,
+            },
+            edit: edits,
+          });
+        }
+
+        break;
+      }
+
       case JobName.AssetGenerateThumbnails: {
         if (!item.data.notify && item.data.source !== 'upload') {
           break;
@@ -141,6 +175,9 @@ export class JobService extends BaseService {
                 livePhotoVideoId: asset.livePhotoVideoId,
                 stackId: asset.stackId,
                 libraryId: asset.libraryId,
+                width: asset.width,
+                height: asset.height,
+                isEdited: asset.isEdited,
               },
               exif: {
                 assetId: exif.assetId,
@@ -149,8 +186,8 @@ export class JobService extends BaseService {
                 exifImageHeight: exif.exifImageHeight,
                 fileSizeInByte: exif.fileSizeInByte,
                 orientation: exif.orientation,
-                dateTimeOriginal: exif.dateTimeOriginal,
-                modifyDate: exif.modifyDate,
+                dateTimeOriginal: exif.dateTimeOriginal ? new Date(exif.dateTimeOriginal) : null,
+                modifyDate: exif.modifyDate ? new Date(exif.modifyDate) : null,
                 timeZone: exif.timeZone,
                 latitude: exif.latitude,
                 longitude: exif.longitude,

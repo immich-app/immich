@@ -1,6 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import { Card, CardBody, CardHeader, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -10,83 +11,38 @@
 
   let { options }: Props = $props();
 
-  const getLuxonExample = (format: string) => {
-    return DateTime.fromISO('2022-02-15T20:03:05.250Z', { locale: $locale }).toFormat(format);
-  };
+  const getExampleDate = () => DateTime.fromISO('2022-02-15T20:03:05.250Z', { locale: $locale });
 </script>
 
-<div class="mt-2 text-sm">
-  <h4 class="uppercase">{$t('date_and_time')}</h4>
-</div>
-
-<!-- eslint-disable svelte/no-useless-mustaches -->
-<div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
-  <div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
-    <p>{$t('admin.storage_template_date_time_description')}</p>
-    <p>{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-03T20:03:05.250' } })}</p>
+{#snippet example(title: string, options: Array<string>)}
+  <div>
+    <Text fontWeight="medium" size="tiny" color="primary" class="mb-1">{title}</Text>
+    <ul>
+      {#each options as format, index (index)}
+        <li>{`{{${format}}} - ${getExampleDate().toFormat(format)}`}</li>
+      {/each}
+    </ul>
   </div>
-  <div class="flex gap-10">
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('year')}</p>
-      <ul>
-        {#each options.yearOptions as yearFormat, index (index)}
-          <li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
-        {/each}
-      </ul>
-    </div>
+{/snippet}
 
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('month')}</p>
-      <ul>
-        {#each options.monthOptions as monthFormat, index (index)}
-          <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
-        {/each}
-      </ul>
-    </div>
+<Text size="small">{$t('date_and_time')}</Text>
 
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('week')}</p>
-      <ul>
-        {#each options.weekOptions as weekFormat, index (index)}
-          <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
-        {/each}
-      </ul>
+<Card class="mt-2 text-sm bg-light-50 shadow-none">
+  <CardHeader>
+    <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
+    <Text color="primary"
+      >{$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() } })}</Text
+    >
+  </CardHeader>
+  <CardBody>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 md:grid-cols-4">
+      {@render example($t('year'), options.yearOptions)}
+      {@render example($t('month'), options.monthOptions)}
+      {@render example($t('week'), options.weekOptions)}
+      {@render example($t('day'), options.dayOptions)}
+      {@render example($t('hour'), options.hourOptions)}
+      {@render example($t('minute'), options.minuteOptions)}
+      {@render example($t('second'), options.secondOptions)}
     </div>
-
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('day')}</p>
-      <ul>
-        {#each options.dayOptions as dayFormat, index (index)}
-          <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
-        {/each}
-      </ul>
-    </div>
-
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('hour')}</p>
-      <ul>
-        {#each options.hourOptions as dayFormat, index (index)}
-          <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
-        {/each}
-      </ul>
-    </div>
-
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('minute')}</p>
-      <ul>
-        {#each options.minuteOptions as dayFormat, index (index)}
-          <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
-        {/each}
-      </ul>
-    </div>
-
-    <div>
-      <p class="uppercase font-medium text-primary">{$t('second')}</p>
-      <ul>
-        {#each options.secondOptions as dayFormat, index (index)}
-          <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
-        {/each}
-      </ul>
-    </div>
-  </div>
-</div>
+  </CardBody>
+</Card>

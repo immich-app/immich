@@ -19,7 +19,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >
         <Icon icon={sunPath} viewBox={sunViewBox} size="96" />
-        <p class="uppercase font-semibold text-4xl">{$t('light')}</p>
+        <p class="font-semibold text-4xl">{$t('light')}</p>
       </div>
     </button>
     <button
@@ -31,7 +31,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
       >
         <Icon icon={moonPath} viewBox={moonViewBox} size="96" />
-        <p class="uppercase font-semibold text-4xl">{$t('dark')}</p>
+        <p class="font-semibold text-4xl">{$t('dark')}</p>
       </div>
     </button>
   </div>

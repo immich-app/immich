@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -88,10 +88,7 @@ class PersonResultPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(left: 8.0, top: 24),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 36,
-                backgroundImage: NetworkImage(getFaceThumbnailUrl(personId), headers: ApiService.getRequestHeaders()),
-              ),
+              CircleAvatar(radius: 36, backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(personId))),
               Expanded(
                 child: Padding(padding: const EdgeInsets.only(left: 16.0, right: 16.0), child: buildTitleBlock()),
               ),

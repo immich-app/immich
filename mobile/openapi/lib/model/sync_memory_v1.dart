@@ -27,28 +27,40 @@ class SyncMemoryV1 {
     required this.updatedAt,
   });
 
+  /// Created at
   DateTime createdAt;
 
+  /// Data
   Object data;
 
+  /// Deleted at
   DateTime? deletedAt;
 
+  /// Hide at
   DateTime? hideAt;
 
+  /// Memory ID
   String id;
 
+  /// Is saved
   bool isSaved;
 
+  /// Memory at
   DateTime memoryAt;
 
+  /// Owner ID
   String ownerId;
 
+  /// Seen at
   DateTime? seenAt;
 
+  /// Show at
   DateTime? showAt;
 
+  /// Memory type
   MemoryType type;
 
+  /// Updated at
   DateTime updatedAt;
 
   @override

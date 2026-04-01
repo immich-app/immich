@@ -18,10 +18,14 @@ class DatabaseBackupConfig {
     required this.keepLastAmount,
   });
 
+  /// Cron expression
   String cronExpression;
 
+  /// Enabled
   bool enabled;
 
+  /// Keep last amount
+  ///
   /// Minimum value: 1
   num keepLastAmount;
 

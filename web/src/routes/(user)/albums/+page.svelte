@@ -4,9 +4,9 @@
   import Albums from '$lib/components/album-page/albums-list.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
+  import { Route } from '$lib/route';
   import { AlbumFilter, albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbumAndRedirect } from '$lib/utils/album-utils';
   import { t } from 'svelte-i18n';
@@ -22,7 +22,7 @@
   let albumGroups: string[] = $state([]);
 </script>
 
-<UserPageLayout title={data.meta.title} use={[[scrollMemory, { routeStartsWith: AppRoute.ALBUMS }]]}>
+<UserPageLayout title={data.meta.title} use={[[scrollMemory, { routeStartsWith: Route.albums() }]]}>
   {#snippet buttons()}
     <div class="flex place-items-center gap-2">
       <AlbumsControls {albumGroups} bind:searchQuery />

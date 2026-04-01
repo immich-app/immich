@@ -29,6 +29,8 @@ bool _deepEquals(Object? a, Object? b) {
   return a == b;
 }
 
+enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
+
 class PlatformAsset {
   PlatformAsset({
     required this.id,
@@ -44,6 +46,7 @@ class PlatformAsset {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    required this.playbackStyle,
   });
 
   String id;
@@ -72,6 +75,8 @@ class PlatformAsset {
 
   double? longitude;
 
+  PlatformAssetPlaybackStyle playbackStyle;
+
   List<Object?> _toList() {
     return <Object?>[
       id,
@@ -87,6 +92,7 @@ class PlatformAsset {
       adjustmentTime,
       latitude,
       longitude,
+      playbackStyle,
     ];
   }
 
@@ -110,6 +116,7 @@ class PlatformAsset {
       adjustmentTime: result[10] as int?,
       latitude: result[11] as double?,
       longitude: result[12] as double?,
+      playbackStyle: result[13]! as PlatformAssetPlaybackStyle,
     );
   }
 
@@ -270,6 +277,45 @@ class HashResult {
   int get hashCode => Object.hashAll(_toList());
 }
 
+class CloudIdResult {
+  CloudIdResult({required this.assetId, this.error, this.cloudId});
+
+  String assetId;
+
+  String? error;
+
+  String? cloudId;
+
+  List<Object?> _toList() {
+    return <Object?>[assetId, error, cloudId];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static CloudIdResult decode(Object result) {
+    result as List<Object?>;
+    return CloudIdResult(assetId: result[0]! as String, error: result[1] as String?, cloudId: result[2] as String?);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! CloudIdResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -277,17 +323,23 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is PlatformAsset) {
+    } else if (value is PlatformAssetPlaybackStyle) {
       buffer.putUint8(129);
-      writeValue(buffer, value.encode());
-    } else if (value is PlatformAlbum) {
+      writeValue(buffer, value.index);
+    } else if (value is PlatformAsset) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is SyncDelta) {
+    } else if (value is PlatformAlbum) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is HashResult) {
+    } else if (value is SyncDelta) {
       buffer.putUint8(132);
+      writeValue(buffer, value.encode());
+    } else if (value is HashResult) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
+    } else if (value is CloudIdResult) {
+      buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -298,13 +350,18 @@ class _PigeonCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 129:
-        return PlatformAsset.decode(readValue(buffer)!);
+        final int? value = readValue(buffer) as int?;
+        return value == null ? null : PlatformAssetPlaybackStyle.values[value];
       case 130:
-        return PlatformAlbum.decode(readValue(buffer)!);
+        return PlatformAsset.decode(readValue(buffer)!);
       case 131:
-        return SyncDelta.decode(readValue(buffer)!);
+        return PlatformAlbum.decode(readValue(buffer)!);
       case 132:
+        return SyncDelta.decode(readValue(buffer)!);
+      case 133:
         return HashResult.decode(readValue(buffer)!);
+      case 134:
+        return CloudIdResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -614,6 +671,34 @@ class NativeSyncApi {
       );
     } else {
       return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!.cast<String, List<PlatformAsset>>();
+    }
+  }
+
+  Future<List<CloudIdResult>> getCloudIdForAssetIds(List<String> assetIds) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<CloudIdResult>();
     }
   }
 }

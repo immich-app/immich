@@ -57,7 +57,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
                   text,
-                  style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "Inconsolata"),
+                  style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "GoogleSansCode"),
                 ),
               ),
             ),
@@ -88,7 +88,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
                   logger.toString(),
-                  style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "Inconsolata"),
+                  style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "GoogleSansCode"),
                 ),
               ),
             ),

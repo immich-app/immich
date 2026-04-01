@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -24,15 +24,13 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
   const RemoteAlbumSliverAppBar({
     super.key,
     this.icon = Icons.camera,
-    this.onShowOptions,
-    this.onToggleAlbumOrder,
+    required this.kebabMenu,
     this.onEditTitle,
     this.onActivity,
   });
 
   final IconData icon;
-  final void Function()? onShowOptions;
-  final void Function()? onToggleAlbumOrder;
+  final Widget kebabMenu;
   final void Function()? onEditTitle;
   final void Function()? onActivity;
 
@@ -91,21 +89,12 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
               onPressed: () => context.maybePop(),
             ),
       actions: [
-        if (widget.onToggleAlbumOrder != null)
-          IconButton(
-            icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
-            onPressed: widget.onToggleAlbumOrder,
-          ),
         if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
           IconButton(
             icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
             onPressed: widget.onActivity,
           ),
-        if (widget.onShowOptions != null)
-          IconButton(
-            icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
-            onPressed: widget.onShowOptions,
-          ),
+        widget.kebabMenu,
       ],
       title: Builder(
         builder: (context) {
@@ -265,22 +254,9 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                 ),
                 GestureDetector(
                   onTap: widget.onEditTitle,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Text(
-                        currentAlbum.name,
-                        maxLines: 1,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black54)],
-                        ),
-                      ),
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) =>
+                        _DynamicText(text: currentAlbum.name, maxWidth: constraints.maxWidth),
                   ),
                 ),
                 if (currentAlbum.description.isNotEmpty)
@@ -558,5 +534,48 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
         );
       },
     );
+  }
+}
+
+class _DynamicText extends StatelessWidget {
+  final String text;
+  final double maxWidth;
+
+  const _DynamicText({required this.text, required this.maxWidth});
+
+  static const _baseTextStyle = TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.5,
+    shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black54)],
+    overflow: TextOverflow.ellipsis,
+  );
+
+  int _lineCount(double fontSize) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: _baseTextStyle.copyWith(fontSize: fontSize),
+      ),
+      maxLines: 3,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth);
+    return textPainter.computeLineMetrics().length;
+  }
+
+  double _fontSize() {
+    final fontSizes = [44.0, 36.0];
+    for (final fontSize in fontSizes) {
+      final lineCount = _lineCount(fontSize);
+      if (lineCount == 1) {
+        return fontSize;
+      }
+    }
+    return 28;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(text, style: _baseTextStyle.copyWith(fontSize: _fontSize()), maxLines: 3);
   }
 }

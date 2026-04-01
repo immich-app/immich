@@ -4,6 +4,10 @@ sidebar_position: 2
 
 # Setup
 
+:::warning
+Make sure to read the [`CONTRIBUTING.md`](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md) before you dive into the code.
+:::
+
 :::note
 If there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:
 
@@ -33,7 +37,8 @@ All the services are packaged to run as with single Docker Compose command.
 1. Clone the project repo.
 2. Run `cp docker/example.env docker/.env`.
 3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
-4. From the root directory, run:
+4. Install dependencies - `pnpm i`
+5. From the root directory, run:
 
 ```bash title="Start development server"
 make dev # required Makefile installed on the system.
@@ -85,10 +90,13 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 #### Setup
 
-1. Setup Flutter toolchain using FVM.
-2. Run `flutter pub get` to install the dependencies.
-3. Run `make translation` to generate the translation file.
-4. Run `fvm flutter run` to start the app.
+1. [Install mise](https://mise.jdx.dev/installing-mise.html).
+2. Change to the immich (root) directory and trust the mise config with `mise trust`.
+3. Install tools with mise: `mise install`.
+4. Change to the `mobile/` directory.
+5. Run `flutter pub get` to install the dependencies.
+6. Run `make translation` to generate the translation file.
+7. Run `flutter run` to start the app.
 
 #### Translation
 

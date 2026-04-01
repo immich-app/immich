@@ -22,18 +22,25 @@ class PluginActionResponseDto {
     required this.title,
   });
 
+  /// Action description
   String description;
 
+  /// Action ID
   String id;
 
+  /// Method name
   String methodName;
 
+  /// Plugin ID
   String pluginId;
 
+  /// Action schema
   Object? schema;
 
-  List<PluginContext> supportedContexts;
+  /// Supported contexts
+  List<PluginContextType> supportedContexts;
 
+  /// Action title
   String title;
 
   @override
@@ -90,7 +97,7 @@ class PluginActionResponseDto {
         methodName: mapValueOfType<String>(json, r'methodName')!,
         pluginId: mapValueOfType<String>(json, r'pluginId')!,
         schema: mapValueOfType<Object>(json, r'schema'),
-        supportedContexts: PluginContext.listFromJson(json[r'supportedContexts']),
+        supportedContexts: PluginContextType.listFromJson(json[r'supportedContexts']),
         title: mapValueOfType<String>(json, r'title')!,
       );
     }

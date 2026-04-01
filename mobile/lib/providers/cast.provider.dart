@@ -69,6 +69,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
           : AssetType.other,
       createdAt: asset.fileCreatedAt,
       updatedAt: asset.updatedAt,
+      isEdited: false,
     );
 
     _gCastService.loadMedia(remoteAsset, reload);
@@ -88,6 +89,16 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     }
 
     return discovered;
+  }
+
+  void toggle() {
+    switch (state.castState) {
+      case CastState.playing:
+        pause();
+      case CastState.paused:
+        play();
+      default:
+    }
   }
 
   void play() {

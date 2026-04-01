@@ -5,24 +5,27 @@
     title?: string;
     children?: Snippet;
     withHeader?: boolean;
+    withBackdrop?: boolean;
   }
 
-  let { title, children, withHeader = true }: Props = $props();
+  let { title, children, withHeader = true, withBackdrop = true }: Props = $props();
 </script>
 
 <section class="min-w-dvw flex min-h-dvh items-center justify-center relative">
-  <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
-    <img
-      src={immichLogo}
-      class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
-      alt="Immich logo"
-    />
-    <div
-      class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
-    ></div>
-  </div>
+  {#if withBackdrop}
+    <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
+      <img
+        src={immichLogo}
+        class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
+        alt="Immich logo"
+      />
+      <div
+        class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
+      ></div>
+    </div>
+  {/if}
 
-  <Card color="secondary" class="w-full max-w-lg border m-2">
+  <Card color="secondary" class="w-full max-w-xl border m-2">
     {#if withHeader}
       <CardHeader class="mt-6">
         <VStack>

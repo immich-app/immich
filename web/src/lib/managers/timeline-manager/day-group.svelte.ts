@@ -18,10 +18,10 @@ export class DayGroup {
 
   height = $state(0);
   width = $state(0);
-  intersecting = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.intersecting));
+  isInOrNearViewport = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.isInOrNearViewport));
 
   #top: number = $state(0);
-  #left: number = $state(0);
+  #start: number = $state(0);
   #row = $state(0);
   #col = $state(0);
   #deferredLayout = false;
@@ -41,12 +41,12 @@ export class DayGroup {
     this.#top = value;
   }
 
-  get left() {
-    return this.#left;
+  get start() {
+    return this.#start;
   }
 
-  set left(value: number) {
-    this.#left = value;
+  set start(value: number) {
+    this.#start = value;
   }
 
   get row() {
@@ -102,25 +102,21 @@ export class DayGroup {
   }
 
   runAssetCallback(ids: Set<string>, callback: (asset: TimelineAsset) => void | { remove?: boolean }) {
-    if (ids.size === 0) {
-      return {
-        moveAssets: [] as MoveAsset[],
-        processedIds: new SvelteSet<string>(),
-        unprocessedIds: ids,
-        changedGeometry: false,
-      };
-    }
     const unprocessedIds = new SvelteSet<string>(ids);
     const processedIds = new SvelteSet<string>();
     const moveAssets: MoveAsset[] = [];
     let changedGeometry = false;
-    for (const assetId of unprocessedIds) {
-      const index = this.viewerAssets.findIndex((viewAsset) => viewAsset.id == assetId);
-      if (index === -1) {
+
+    if (ids.size === 0) {
+      return { moveAssets, processedIds, unprocessedIds, changedGeometry };
+    }
+
+    for (let index = this.viewerAssets.length - 1; index >= 0; index--) {
+      const { id: assetId, asset } = this.viewerAssets[index];
+      if (!ids.has(assetId)) {
         continue;
       }
 
-      const asset = this.viewerAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
       const callbackResult = callback(asset);
       let remove = (callbackResult as { remove?: boolean } | undefined)?.remove ?? false;
@@ -141,7 +137,7 @@ export class DayGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.monthGroup.intersecting && !this.monthGroup.timelineManager.isScrollingOnLoad) {
+    if (!noDefer && !this.monthGroup.isInOrNearViewport && !this.monthGroup.timelineManager.isScrollingOnLoad) {
       this.#deferredLayout = true;
       return;
     }

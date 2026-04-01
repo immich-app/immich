@@ -69,6 +69,9 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
+  "asset"."isEdited",
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
@@ -99,6 +102,9 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
+  "asset"."isEdited",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -134,7 +140,10 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
-  "asset"."libraryId"
+  "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
+  "asset"."isEdited"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
@@ -448,6 +457,9 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
+  "asset"."isEdited",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -502,6 +514,38 @@ where
 order by
   "asset_exif"."updateId" asc
 
+-- SyncRepository.assetEdit.getDeletes
+select
+  "asset_edit_audit"."id",
+  "editId"
+from
+  "asset_edit_audit" as "asset_edit_audit"
+  inner join "asset" on "asset"."id" = "asset_edit_audit"."assetId"
+where
+  "asset_edit_audit"."id" < $1
+  and "asset_edit_audit"."id" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_edit_audit"."id" asc
+
+-- SyncRepository.assetEdit.getUpserts
+select
+  "asset_edit"."id",
+  "asset_edit"."assetId",
+  "asset_edit"."sequence",
+  "asset_edit"."action",
+  "asset_edit"."parameters",
+  "asset_edit"."updateId"
+from
+  "asset_edit" as "asset_edit"
+  inner join "asset" on "asset"."id" = "asset_edit"."assetId"
+where
+  "asset_edit"."updateId" < $1
+  and "asset_edit"."updateId" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_edit"."updateId" asc
+
 -- SyncRepository.assetFace.getDeletes
 select
   "asset_face_audit"."id",
@@ -528,6 +572,8 @@ select
   "boundingBoxX2",
   "boundingBoxY2",
   "sourceType",
+  "isVisible",
+  "asset_face"."deletedAt",
   "asset_face"."updateId"
 from
   "asset_face" as "asset_face"
@@ -740,6 +786,9 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
+  "asset"."isEdited",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -789,6 +838,9 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
+  "asset"."isEdited",
   "asset"."updateId"
 from
   "asset" as "asset"

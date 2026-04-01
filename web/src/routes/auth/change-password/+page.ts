@@ -1,4 +1,4 @@
-import { AppRoute } from '$lib/constants';
+import { Route } from '$lib/route';
 import { user } from '$lib/stores/user.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
@@ -9,7 +9,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
   if (!get(user).shouldChangePassword) {
-    redirect(302, AppRoute.PHOTOS);
+    redirect(307, Route.photos());
   }
 
   const $t = await getFormatter();

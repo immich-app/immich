@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-
 import { IsString } from 'class-validator';
+import type { BBoxDto } from 'src/dtos/bbox.dto';
 import { AssetOrder, AssetVisibility } from 'src/enum';
+import { ValidateBBox } from 'src/utils/bbox';
 import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
@@ -59,6 +60,9 @@ export class TimeBucketDto {
     description: 'Include location data in the response',
   })
   withCoordinates?: boolean;
+
+  @ValidateBBox({ optional: true })
+  bbox?: BBoxDto;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
@@ -132,7 +136,7 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({
     type: 'array',
     items: { type: 'string' },
-    description: 'Array of file creation timestamps in UTC (ISO 8601 format, without timezone)',
+    description: 'Array of file creation timestamps in UTC',
   })
   fileCreatedAt!: string[];
 

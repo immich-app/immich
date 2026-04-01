@@ -160,6 +160,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             _resumeBackup();
           }),
           _resumeBackup(),
+          // TODO: Bring back when the soft freeze issue is addressed
+          // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
@@ -180,7 +182,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         await _safeRun(
-          _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
+          _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
           "handleBackupResume",
         );
       }
@@ -230,21 +232,21 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
   }
 
-  Future<void> _performPause() async {
+  Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
       if (!Store.isBetaTimelineEnabled) {
         // Do not cancel backup if manual upload is in progress
         if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
+      } else {
+        _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
       }
 
       _ref.read(websocketProvider.notifier).disconnect();
     }
 
-    try {
-      await LogService.I.flush();
-    } catch (_) {}
+    return LogService.I.flush().catchError((_) {});
   }
 
   Future<void> handleAppDetached() async {

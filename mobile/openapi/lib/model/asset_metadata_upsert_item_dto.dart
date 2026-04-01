@@ -17,8 +17,10 @@ class AssetMetadataUpsertItemDto {
     required this.value,
   });
 
-  AssetMetadataKey key;
+  /// Metadata key
+  String key;
 
+  /// Metadata value (object)
   Object value;
 
   @override
@@ -51,7 +53,7 @@ class AssetMetadataUpsertItemDto {
       final json = value.cast<String, dynamic>();
 
       return AssetMetadataUpsertItemDto(
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
+        key: mapValueOfType<String>(json, r'key')!,
         value: mapValueOfType<Object>(json, r'value')!,
       );
     }

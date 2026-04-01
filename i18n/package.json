@@ -1,0 +1,13 @@
+{
+  "name": "immich-i18n",
+  "version": "2.6.3",
+  "private": true,
+  "scripts": {
+    "format": "prettier --cache --check .",
+    "format:fix": "prettier --cache --write --list-different ."
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "prettier-plugin-sort-json": "^4.1.1"
+  }
+}

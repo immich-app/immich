@@ -165,6 +165,11 @@ export class AuthService extends BaseService {
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
+    const { setup } = this.configRepository.getEnv();
+    if (!setup.allow) {
+      throw new BadRequestException('Admin setup is disabled');
+    }
+
     const adminUser = await this.userRepository.getAdmin();
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
@@ -256,6 +261,11 @@ export class AuthService extends BaseService {
   }
 
   async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
     const expectedState = dto.state ?? this.getCookieOauthState(headers);
     if (!expectedState?.length) {
       throw new BadRequestException('OAuth state is missing');
@@ -266,7 +276,6 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth code verifier is missing');
     }
 
-    const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
     const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
@@ -293,7 +302,8 @@ export class AuthService extends BaseService {
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      if (!profile.email) {
+      const email = profile.email;
+      if (!email) {
         throw new BadRequestException('OAuth profile does not have an email address');
       }
 
@@ -315,10 +325,13 @@ export class AuthService extends BaseService {
         isValid: (value: unknown) => isString(value) && ['admin', 'user'].includes(value),
       });
 
-      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.createUser({
-        name: userName,
-        email: profile.email,
+        name:
+          profile.name ||
+          `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
+          profile.preferred_username ||
+          email,
+        email,
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,
@@ -451,8 +464,8 @@ export class AuthService extends BaseService {
   }
 
   private async validateApiKey(key: string): Promise<AuthDto> {
-    const hashedKey = this.cryptoRepository.hashSha256(key);
-    const apiKey = await this.apiKeyRepository.getKey(hashedKey);
+    const hashed = this.cryptoRepository.hashSha256(key);
+    const apiKey = await this.apiKeyRepository.getKey(hashed);
     if (apiKey?.user) {
       return {
         user: apiKey.user,
@@ -471,9 +484,9 @@ export class AuthService extends BaseService {
     return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
-  private async validateSession(tokenValue: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
-    const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
-    const session = await this.sessionRepository.getByToken(hashedToken);
+  private async validateSession(token: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
+    const hashed = this.cryptoRepository.hashSha256(token);
+    const session = await this.sessionRepository.getByToken(hashed);
     if (session?.user) {
       const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
       const now = DateTime.now();
@@ -538,10 +551,10 @@ export class AuthService extends BaseService {
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
     const token = this.cryptoRepository.randomBytesAsText(32);
-    const tokenHashed = this.cryptoRepository.hashSha256(token);
+    const hashed = this.cryptoRepository.hashSha256(token);
 
     await this.sessionRepository.create({
-      token: tokenHashed,
+      token: hashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       appVersion: loginDetails.appVersion,

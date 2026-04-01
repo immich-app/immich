@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
 export interface Faces {
+  id: string;
   imageHeight: number;
   imageWidth: number;
   boundingBoxX1: number;

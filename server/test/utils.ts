@@ -1,3 +1,4 @@
+import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider, ValidationPipe } from '@nestjs/common';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
@@ -7,9 +8,8 @@ import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer from 'multer';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
-import { Readable, Writable } from 'node:stream';
+import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
-import postgres from 'postgres';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
@@ -20,6 +20,7 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AppRepository } from 'src/repositories/app.repository';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -69,12 +70,11 @@ import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
+import { getKyselyConfig } from 'src/utils/database';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
@@ -216,6 +216,7 @@ export type ServiceOverrides = {
   app: AppRepository;
   audit: AuditRepository;
   asset: AssetRepository;
+  assetEdit: AssetEditRepository;
   assetJob: AssetJobRepository;
   config: ConfigRepository;
   cron: CronRepository;
@@ -277,6 +278,14 @@ export const getMocks = () => {
   const loggerMock = { setContext: () => {} };
   const configMock = { getEnv: () => ({}) };
 
+  // eslint-disable-next-line no-sparse-arrays
+  const databaseMock = automock(DatabaseRepository, { args: [, loggerMock], strict: false });
+
+  databaseMock.withLock.mockImplementation((_type, fn) => fn());
+  databaseMock.getPostgresVersion = vitest.fn().mockResolvedValue('14.10 (Debian 14.10-1.pgdg120+1)');
+  databaseMock.getPostgresVersionRange = vitest.fn().mockReturnValue('>=14.0.0');
+  databaseMock.createExtension = vitest.fn().mockResolvedValue(void 0);
+
   const mocks: ServiceMocks = {
     access: newAccessRepositoryMock(),
     // eslint-disable-next-line no-sparse-arrays
@@ -289,10 +298,11 @@ export const getMocks = () => {
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
+    assetEdit: automock(AssetEditRepository),
     assetJob: automock(AssetJobRepository),
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
-    database: newDatabaseRepositoryMock(),
+    database: databaseMock,
     downloadRepository: automock(DownloadRepository, { strict: false }),
     duplicateRepository: automock(DuplicateRepository),
     email: automock(EmailRepository, { args: [loggerMock] }),
@@ -356,6 +366,7 @@ export const newTestService = <T extends BaseService>(
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
     overrides.app || (mocks.app as As<AppRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
+    overrides.assetEdit || (mocks.assetEdit as As<AssetEditRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
@@ -434,13 +445,8 @@ const withDatabase = (url: string, name: string) => url.replace(`/${templateName
 
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
-  const sql = postgres({
-    ...asPostgresConnectionConfig({
-      connectionType: 'url',
-      url: withDatabase(testUrl, 'postgres'),
-    }),
-    max: 1,
-  });
+  const connection = { connectionType: 'url', url: withDatabase(testUrl, 'postgres') } as DatabaseConnectionParams;
+  const sql = createPostgres({ maxConnections: 1, connection });
 
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;
@@ -489,6 +495,75 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
         callback(exitCode);
       }
     }),
+  } as unknown as ChildProcessWithoutNullStreams;
+});
+
+export const mockDuplex =
+  (chunkCb?: (chunk: Buffer) => void) =>
+  (command: string, exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+    const duplex = new Duplex({
+      write(chunk, _encoding, callback) {
+        chunkCb?.(chunk);
+        callback();
+      },
+
+      read() {},
+
+      final(callback) {
+        callback();
+      },
+    });
+
+    setImmediate(() => {
+      if (error) {
+        duplex.destroy(error as Error);
+      } else if (exitCode === 0) {
+        /* eslint-disable unicorn/prefer-single-call */
+        duplex.push(stdout);
+        duplex.push(null);
+        /* eslint-enable unicorn/prefer-single-call */
+      } else {
+        duplex.destroy(new Error(`${command} non-zero exit code (${exitCode})\n${stderr}`));
+      }
+    });
+
+    return duplex;
+  };
+
+export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  const stdoutStream = new Readable({
+    read() {
+      this.push(stdout); // write mock data to stdout
+      this.push(null); // end stream
+    },
+  });
+
+  return {
+    stdout: stdoutStream,
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        stdoutStream.once('end', () => callback(0));
+      }
+      if (event === 'error' && error) {
+        stdoutStream.once('end', () => callback(error));
+      }
+      if (event === 'exit') {
+        stdoutStream.once('end', () => callback(exitCode));
+      }
+    }),
+    kill: vitest.fn(),
   } as unknown as ChildProcessWithoutNullStreams;
 });
 

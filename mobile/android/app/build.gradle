@@ -3,6 +3,7 @@ plugins {
   id "kotlin-android"
   id "dev.flutter.flutter-gradle-plugin"
   id 'com.google.devtools.ksp'
+  id 'org.jetbrains.kotlin.plugin.serialization'
   id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
 
 }
@@ -31,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
   compileSdkVersion 35
-  ndkVersion = "28.1.13356709"
+  ndkVersion = "28.2.13676358"
 
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
@@ -48,6 +49,7 @@ android {
   }
 
   buildFeatures {
+    buildConfig true
     compose true
   }
 
@@ -80,6 +82,7 @@ android {
 
     release {
       signingConfig signingConfigs.release
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
   namespace 'app.alextran.immich'
@@ -105,8 +108,13 @@ dependencies {
   def serialization_version = '1.8.1'
   def compose_version = '1.1.1'
   def gson_version = '2.10.1'
+  def okhttp_version = '4.12.0'
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+  implementation 'org.chromium.net:cronet-embedded:143.7445.0'
+  implementation("androidx.media3:media3-datasource-okhttp:1.9.2")
+  implementation("androidx.media3:media3-datasource-cronet:1.9.2")
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
   implementation "androidx.work:work-runtime-ktx:$work_version"
   implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
@@ -127,6 +135,7 @@ dependencies {
   implementation "androidx.compose.ui:ui-tooling:$compose_version"
   implementation "androidx.compose.material3:material3:1.2.1"
   implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+  implementation "com.google.android.material:material:1.12.0"
 }
 
 // This is uncommented in F-Droid build script

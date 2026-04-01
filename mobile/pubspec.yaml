@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 2.3.1+3028
+version: 2.6.3+3041
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -12,8 +12,6 @@ dependencies:
   async: ^2.13.0
   auto_route: ^9.2.0
   background_downloader: ^9.3.0
-  cached_network_image: ^3.4.1
-  cancellation_token_http: ^2.1.0
   cast: ^2.1.0
   collection: ^1.19.1
   connectivity_plus: ^6.1.3
@@ -26,7 +24,6 @@ dependencies:
   dynamic_color: ^1.8.1
   easy_localization: ^3.0.8
   ffi: ^2.1.4
-  file_picker: ^8.0.0+1
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.4.1
@@ -59,7 +56,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: 'e132bc3'
+      ref: 'cdf621bdb7edaf996e118a58a48f6441187d79c6'
   network_info_plus: ^6.1.3
   octo_image: ^2.1.0
   openapi:
@@ -78,7 +75,6 @@ dependencies:
   share_handler: ^0.0.25
   share_plus: ^10.1.4
   sliver_tools: ^0.2.12
-  socket_io_client: ^2.0.3+1
   stream_transform: ^2.1.1
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
@@ -86,6 +82,21 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.3.0
   worker_manager: ^7.2.7
+  web_socket: ^1.0.1
+  socket_io_client:
+    git:
+      url: https://github.com/mertalev/socket.io-client-dart
+      ref: 'e1d813a240b5d5b7e2f141b2b605c5429b7cd006' # https://github.com/rikulo/socket.io-client-dart/pull/435
+  cupertino_http:
+    git:
+      url: https://github.com/mertalev/http
+      ref: 'a0a933358517c6d01cff37fc2a2752ee2d744a3c' # https://github.com/dart-lang/http/pull/1876
+      path: pkgs/cupertino_http/
+  ok_http:
+    git:
+      url: https://github.com/mertalev/http
+      ref: '549c24b0a4d3881a9a44b70f4873450d43c1c4af' # https://github.com/dart-lang/http/pull/1877
+      path: pkgs/ok_http/
 
 dev_dependencies:
   auto_route_generator: ^9.0.0
@@ -127,24 +138,26 @@ flutter:
   assets:
     - assets/
   fonts:
-    - family: Inconsolata
+    - family: GoogleSans
       fonts:
-        - asset: fonts/Inconsolata-Regular.ttf
-    - family: Overpass
-      fonts:
-        - asset: fonts/overpass/Overpass-Regular.ttf
+        - asset: fonts/GoogleSans/GoogleSans-Regular.ttf
           weight: 400
-        - asset: fonts/overpass/Overpass-Italic.ttf
+        - asset: fonts/GoogleSans/GoogleSans-Italic.ttf
           style: italic
-        - asset: fonts/overpass/Overpass-Medium.ttf
+        - asset: fonts/GoogleSans/GoogleSans-Medium.ttf
           weight: 500
-        - asset: fonts/overpass/Overpass-SemiBold.ttf
+        - asset: fonts/GoogleSans/GoogleSans-SemiBold.ttf
           weight: 600
-        - asset: fonts/overpass/Overpass-Bold.ttf
+        - asset: fonts/GoogleSans/GoogleSans-Bold.ttf
           weight: 700
-    - family: OverpassMono
+    - family: GoogleSansCode
       fonts:
-        - asset: fonts/overpass/OverpassMono.ttf
+        - asset: fonts/GoogleSansCode/GoogleSansCode-Regular.ttf
+          weight: 400
+        - asset: fonts/GoogleSansCode/GoogleSansCode-Medium.ttf
+          weight: 500
+        - asset: fonts/GoogleSansCode/GoogleSansCode-SemiBold.ttf
+          weight: 600
 flutter_launcher_icons:
   image_path_android: 'assets/immich-logo.png'
   adaptive_icon_background: '#ffffff'

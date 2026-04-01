@@ -1,4 +1,4 @@
-import { registerFunction } from 'src/sql-tools';
+import { registerFunction } from '@immich/sql-tools';
 
 export const immich_uuid_v7 = registerFunction({
   name: 'immich_uuid_v7',
@@ -250,6 +250,50 @@ export const asset_face_audit = registerFunction({
   body: `
     BEGIN
       INSERT INTO asset_face_audit ("assetFaceId", "assetId")
+      SELECT "id", "assetId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const asset_edit_insert = registerFunction({
+  name: 'asset_edit_insert',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE asset
+      SET "isEdited" = true
+      FROM inserted_edit
+      WHERE asset.id = inserted_edit."assetId" AND NOT asset."isEdited";
+      RETURN NULL;
+    END
+  `,
+});
+
+export const asset_edit_delete = registerFunction({
+  name: 'asset_edit_delete',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE asset
+      SET "isEdited" = false
+      FROM deleted_edit
+      WHERE asset.id = deleted_edit."assetId" AND asset."isEdited"
+        AND NOT EXISTS (SELECT FROM asset_edit edit WHERE edit."assetId" = asset.id);
+      RETURN NULL;
+    END
+  `,
+});
+
+export const asset_edit_audit = registerFunction({
+  name: 'asset_edit_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_edit_audit ("editId", "assetId")
       SELECT "id", "assetId"
       FROM OLD;
       RETURN NULL;

@@ -56,12 +56,16 @@ export default defineConfig({
     entries: ['src/**/*.{svelte,ts,html}'],
   },
   test: {
+    name: 'web:unit',
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test-data/setup.ts'],
     sequence: {
       hooks: 'list',
+    },
+    env: {
+      TZ: 'UTC',
     },
   },
 } as UserConfig);

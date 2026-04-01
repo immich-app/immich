@@ -118,7 +118,7 @@ class MapPage extends HookConsumerWidget {
     }
 
     // finds the nearest asset marker from the tap point and store it as the selectedMarker
-    Future<void> onMarkerClicked(Point<double> point, LatLng coords) async {
+    Future<void> onMarkerClicked(Point<double> point, LatLng _) async {
       // Guard map not created
       if (mapController.value == null) {
         return;
@@ -370,6 +370,7 @@ class _MapWithMarker extends StatelessWidget {
                   ? PositionedAssetMarkerIcon(
                       point: value.point,
                       assetRemoteId: value.marker.assetRemoteId,
+                      assetThumbhash: '',
                       durationInMilliseconds: value.shouldAnimate ? 100 : 0,
                       onTap: onMarkerTapped,
                     )

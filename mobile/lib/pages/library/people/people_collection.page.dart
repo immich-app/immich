@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
@@ -17,7 +17,6 @@ class PeopleCollectionPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final people = ref.watch(getAllPeopleProvider);
-    final headers = ApiService.getRequestHeaders();
     final formFocus = useFocusNode();
     final ValueNotifier<String?> search = useState(null);
 
@@ -88,7 +87,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                             elevation: 3,
                             child: CircleAvatar(
                               maxRadius: isTablet ? 120 / 2 : 96 / 2,
-                              backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
+                              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                             ),
                           ),
                         ),

@@ -11,6 +11,15 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+enum PlatformAssetPlaybackStyle {
+  unknown,
+  image,
+  video,
+  imageAnimated,
+  livePhoto,
+  videoLooping,
+}
+
 class PlatformAsset {
   final String id;
   final String name;
@@ -31,6 +40,8 @@ class PlatformAsset {
   final double? latitude;
   final double? longitude;
 
+  final PlatformAssetPlaybackStyle playbackStyle;
+
   const PlatformAsset({
     required this.id,
     required this.name,
@@ -45,6 +56,7 @@ class PlatformAsset {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    this.playbackStyle = PlatformAssetPlaybackStyle.unknown,
   });
 }
 
@@ -90,6 +102,14 @@ class HashResult {
   const HashResult({required this.assetId, this.error, this.hash});
 }
 
+class CloudIdResult {
+  final String assetId;
+  final String? error;
+  final String? cloudId;
+
+  const CloudIdResult({required this.assetId, this.error, this.cloudId});
+}
+
 @HostApi()
 abstract class NativeSyncApi {
   bool shouldFullSync();
@@ -121,4 +141,7 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);
 }

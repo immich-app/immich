@@ -17,9 +17,12 @@ class SystemConfigTrashDto {
     required this.enabled,
   });
 
+  /// Days
+  ///
   /// Minimum value: 0
   int days;
 
+  /// Enabled
   bool enabled;
 
   @override

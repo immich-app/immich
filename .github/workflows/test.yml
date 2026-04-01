@@ -17,14 +17,14 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@08bac802a312fc89808e0dd589271ca0974087b5 # pre-job-action-v2.0.0
+        uses: immich-app/devtools/actions/pre-job@f50e3b600b6ac1763ddb8f3dfc69093512b967a1 # pre-job-action-v2.0.3
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -63,21 +63,21 @@ jobs:
         working-directory: ./server
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
@@ -108,20 +108,20 @@ jobs:
         working-directory: ./cli
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
@@ -155,20 +155,20 @@ jobs:
         working-directory: ./cli
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
@@ -197,20 +197,20 @@ jobs:
         working-directory: ./web
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
@@ -241,20 +241,20 @@ jobs:
         working-directory: ./web
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
@@ -279,28 +279,28 @@ jobs:
       contents: read
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install dependencies
-        run: pnpm --filter=immich-web install --frozen-lockfile
+        run: pnpm --filter=immich-i18n install --frozen-lockfile
       - name: Format
-        run: pnpm --filter=immich-web format:i18n
+        run: pnpm --filter=immich-i18n format:fix
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
@@ -327,20 +327,20 @@ jobs:
         working-directory: ./e2e
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
@@ -373,21 +373,21 @@ jobs:
         working-directory: ./server
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
@@ -412,21 +412,21 @@ jobs:
         runner: [ubuntu-latest, ubuntu-24.04-arm]
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
@@ -446,12 +446,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
-      - name: Docker build
-        run: docker compose build
+      - name: Start Docker Compose
+        run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
       - name: Run e2e tests (api & cli)
+        env:
+          VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test
         if: ${{ !cancelled() }}
+      - name: Run e2e tests (maintenance)
+        env:
+          VITEST_DISABLE_DOCKER_SETUP: true
+        run: pnpm test:maintenance
+        if: ${{ !cancelled() }}
+      - name: Capture Docker logs
+        if: always()
+        run: docker compose logs --no-color > docker-compose-logs.txt
+        working-directory: ./e2e
+      - name: Archive Docker logs
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: e2e-server-docker-logs-${{ matrix.runner }}
+          path: e2e/docker-compose-logs.txt
   e2e-tests-web:
     name: End-to-End Tests (Web)
     needs: pre-job
@@ -467,21 +484,21 @@ jobs:
         runner: [ubuntu-latest, ubuntu-24.04-arm]
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
@@ -494,22 +511,54 @@ jobs:
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
       - name: Install Playwright Browsers
-        run: npx playwright install chromium --only-shell
+        run: pnpm exec playwright install chromium --only-shell
         if: ${{ !cancelled() }}
       - name: Docker build
-        run: docker compose build
+        run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)
         env:
-          CI: true
-        run: npx playwright test
+          PLAYWRIGHT_DISABLE_WEBSERVER: true
+        run: pnpm test:web
         if: ${{ !cancelled() }}
-      - name: Archive test results
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      - name: Archive e2e test (web) results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: success() || failure()
         with:
           name: e2e-web-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
+      - name: Run ui tests (web)
+        env:
+          PLAYWRIGHT_DISABLE_WEBSERVER: true
+        run: pnpm test:web:ui
+        if: ${{ !cancelled() }}
+      - name: Archive ui test (web) results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: success() || failure()
+        with:
+          name: e2e-ui-test-results-${{ matrix.runner }}
+          path: e2e/playwright-report/
+      - name: Run maintenance tests
+        env:
+          PLAYWRIGHT_DISABLE_WEBSERVER: true
+        run: pnpm test:web:maintenance
+        if: ${{ !cancelled() }}
+      - name: Archive maintenance tests (web) results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: success() || failure()
+        with:
+          name: e2e-maintenance-isolated-test-results-${{ matrix.runner }}
+          path: e2e/playwright-report/
+      - name: Capture Docker logs
+        if: always()
+        run: docker compose logs --no-color > docker-compose-logs.txt
+        working-directory: ./e2e
+      - name: Archive Docker logs
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: e2e-web-docker-logs-${{ matrix.runner }}
+          path: e2e/docker-compose-logs.txt
   success-check-e2e:
     name: End-to-End Tests Success
     needs: [e2e-tests-server-cli, e2e-tests-web]
@@ -517,7 +566,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
+      - uses: immich-app/devtools/actions/success-check@53bb77345ee9f953f93bd6fd9980f07a2f24965e # success-check-action-v0.0.5
         with:
           needs: ${{ toJSON(needs) }}
   mobile-unit-tests:
@@ -529,17 +578,17 @@ jobs:
       contents: read
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -561,31 +610,28 @@ jobs:
         working-directory: ./machine-learning
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Install uv
-        uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
-      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
-        # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
-        # with:
-        #   python-version: 3.11
-        #   cache: 'uv'
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          python-version: 3.11
       - name: Install dependencies
         run: |
           uv sync --extra cpu
       - name: Lint with ruff
         run: |
           uv run ruff check --output-format=github immich_ml
-      - name: Check black formatting
+      - name: Format with ruff
         run: |
-          uv run black --check immich_ml
+          uv run ruff format --check immich_ml
       - name: Run mypy type checking
         run: |
           uv run mypy --strict immich_ml/
@@ -604,20 +650,20 @@ jobs:
         working-directory: ./.github
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './.github/.nvmrc'
           cache: 'pnpm'
@@ -634,12 +680,12 @@ jobs:
       contents: read
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -655,20 +701,20 @@ jobs:
       contents: read
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
@@ -717,20 +763,20 @@ jobs:
         working-directory: ./server
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'

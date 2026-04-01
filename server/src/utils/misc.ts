@@ -261,6 +261,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
     extraModels: extraSyncModels,
+    ignoreGlobalPrefix: true,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);

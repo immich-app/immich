@@ -33,6 +33,7 @@ extension LocalAlbumEntityDataHelper on LocalAlbumEntityData {
       assetCount: assetCount,
       backupSelection: backupSelection,
       linkedRemoteAlbumId: linkedRemoteAlbumId,
+      isIosSharedAlbum: isIosSharedAlbum,
     );
   }
 }

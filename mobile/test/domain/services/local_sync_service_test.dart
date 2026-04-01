@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
@@ -25,6 +26,7 @@ import '../../repository.mocks.dart';
 void main() {
   late LocalSyncService sut;
   late DriftLocalAlbumRepository mockLocalAlbumRepository;
+  late DriftLocalAssetRepository mockLocalAssetRepository;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late LocalFilesManagerRepository mockLocalFilesManager;
   late StorageRepository mockStorageRepository;
@@ -47,6 +49,7 @@ void main() {
 
   setUp(() async {
     mockLocalAlbumRepository = MockLocalAlbumRepository();
+    mockLocalAssetRepository = MockLocalAssetRepository();
     mockTrashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     mockLocalFilesManager = MockLocalFilesManagerRepository();
     mockStorageRepository = MockStorageRepository();
@@ -66,6 +69,7 @@ void main() {
 
     sut = LocalSyncService(
       localAlbumRepository: mockLocalAlbumRepository,
+      localAssetRepository: mockLocalAssetRepository,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepository,
       localFilesManager: mockLocalFilesManager,
       storageRepository: mockStorageRepository,
@@ -127,6 +131,7 @@ void main() {
         durationInSeconds: 0,
         orientation: 0,
         isFavorite: false,
+        playbackStyle: PlatformAssetPlaybackStyle.image
       );
 
       final assetsToRestore = [LocalAssetStub.image1];
@@ -153,7 +158,14 @@ void main() {
         'album-a': [platformAsset],
       });
 
-      verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      final trashedSnapshot =
+          verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(captureAny())).captured.single
+              as Iterable<TrashedAsset>;
+      expect(trashedSnapshot.length, 1);
+      final trashedEntry = trashedSnapshot.single;
+      expect(trashedEntry.albumId, 'album-a');
+      expect(trashedEntry.asset.id, platformAsset.id);
+      expect(trashedEntry.asset.name, platformAsset.name);
       verify(() => mockTrashedLocalAssetRepository.getToTrash()).called(1);
 
       verify(() => mockLocalFilesManager.restoreAssetsFromTrash(any())).called(1);
@@ -174,6 +186,10 @@ void main() {
 
       await sut.processTrashedAssets({});
 
+      final trashedSnapshot =
+          verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(captureAny())).captured.single
+              as Iterable<TrashedAsset>;
+      expect(trashedSnapshot, isEmpty);
       verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any()));
     });
@@ -199,6 +215,7 @@ void main() {
         isFavorite: false,
         createdAt: 1700000000,
         updatedAt: 1732000000,
+        playbackStyle: PlatformAssetPlaybackStyle.image
       );
 
       final localAsset = platformAsset.toLocalAsset();

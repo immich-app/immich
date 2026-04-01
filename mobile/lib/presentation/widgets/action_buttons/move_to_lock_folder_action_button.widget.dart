@@ -14,12 +14,12 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 Future<void> performMoveToLockFolderAction(BuildContext context, WidgetRef ref, {required ActionSource source}) async {
   if (!context.mounted) return;
 
-  final result = await ref.read(actionProvider.notifier).moveToLockFolder(source);
-  ref.read(multiSelectProvider.notifier).reset();
-
   if (source == ActionSource.viewer) {
     EventStream.shared.emit(const ViewerReloadAssetEvent());
   }
+
+  final result = await ref.read(actionProvider.notifier).moveToLockFolder(source);
+  ref.read(multiSelectProvider.notifier).reset();
 
   final successMessage = 'move_to_lock_folder_action_prompt'.t(
     context: context,

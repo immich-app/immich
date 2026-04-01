@@ -1,10 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { AppRoute, timeToLoadTheMap } from '$lib/constants';
+  import MapTimelinePanel from '$lib/components/shared-components/map/MapTimelinePanel.svelte';
+  import type { SelectionBBox } from '$lib/components/shared-components/map/types';
+  import { timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { Route } from '$lib/route';
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -17,81 +20,79 @@
   }
 
   let { data }: Props = $props();
+  let selectedClusterIds = $state.raw(new Set<string>());
+  let selectedClusterBBox = $state.raw<SelectionBBox>();
+  let isTimelinePanelVisible = $state(false);
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
-
-  let viewingAssets: string[] = $state([]);
-  let viewingAssetCursor = 0;
+  function closeTimelinePanel() {
+    isTimelinePanelVisible = false;
+    selectedClusterBBox = undefined;
+    selectedClusterIds = new Set();
+  }
 
   onDestroy(() => {
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
   });
 
   if (!featureFlagsManager.value.map) {
-    handlePromiseError(goto(AppRoute.PHOTOS));
+    handlePromiseError(goto(Route.photos()));
   }
 
   async function onViewAssets(assetIds: string[]) {
-    viewingAssets = assetIds;
-    viewingAssetCursor = 0;
-    await setAssetId(assetIds[0]);
+    await assetViewerManager.setAssetId(assetIds[0]);
+    closeTimelinePanel();
   }
 
-  async function navigateNext() {
-    if (viewingAssetCursor < viewingAssets.length - 1) {
-      await setAssetId(viewingAssets[++viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-      return true;
-    }
-    return false;
-  }
-
-  async function navigatePrevious() {
-    if (viewingAssetCursor > 0) {
-      await setAssetId(viewingAssets[--viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-      return true;
-    }
-    return false;
-  }
-
-  async function navigateRandom() {
-    if (viewingAssets.length <= 0) {
-      return undefined;
-    }
-    const index = Math.floor(Math.random() * viewingAssets.length);
-    const asset = await setAssetId(viewingAssets[index]);
-    await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-    return asset;
+  function onClusterSelect(assetIds: string[], bbox: SelectionBBox) {
+    selectedClusterIds = new Set(assetIds);
+    selectedClusterBBox = bbox;
+    isTimelinePanelVisible = true;
+    assetViewerManager.showAssetViewer(false);
+    handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
   }
 </script>
 
 {#if featureFlagsManager.value.map}
   <UserPageLayout title={data.meta.title}>
-    <div class="isolate h-full w-full">
-      {#await import('$lib/components/shared-components/map/map.svelte')}
-        {#await delay(timeToLoadTheMap) then}
-          <!-- show the loading spinner only if loading the map takes too much time -->
-          <div class="flex items-center justify-center h-full w-full">
-            <LoadingSpinner />
-          </div>
+    <div class="isolate flex h-full w-full flex-col sm:flex-row">
+      <div
+        class={[
+          'min-h-0',
+          isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-2/3 sm:pe-2 sm:pb-0' : 'h-full w-full',
+        ]}
+      >
+        {#await import('$lib/components/shared-components/map/map.svelte')}
+          {#await delay(timeToLoadTheMap) then}
+            <!-- show the loading spinner only if loading the map takes too much time -->
+            <div class="flex items-center justify-center h-full w-full">
+              <LoadingSpinner />
+            </div>
+          {/await}
+        {:then { default: Map }}
+          <Map hash onSelect={onViewAssets} {onClusterSelect} />
         {/await}
-      {:then { default: Map }}
-        <Map hash onSelect={onViewAssets} />
-      {/await}
+      </div>
+
+      {#if isTimelinePanelVisible && selectedClusterBBox}
+        <div class="h-1/2 min-h-0 w-full pt-2 sm:h-full sm:w-1/3 sm:ps-2 sm:pt-0">
+          <MapTimelinePanel
+            bbox={selectedClusterBBox}
+            {selectedClusterIds}
+            assetCount={selectedClusterIds.size}
+            onClose={closeTimelinePanel}
+          />
+        </div>
+      {/if}
     </div>
   </UserPageLayout>
   <Portal target="body">
-    {#if $showAssetViewer}
+    {#if assetViewerManager.isViewing}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
-          asset={$viewingAsset}
-          showNavigation={viewingAssets.length > 1}
-          onNext={navigateNext}
-          onPrevious={navigatePrevious}
-          onRandom={navigateRandom}
+          cursor={{ current: assetViewerManager.asset! }}
+          showNavigation={false}
           onClose={() => {
-            assetViewingStore.showAssetViewer(false);
+            assetViewerManager.showAssetViewer(false);
             handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
           }}
           isShared={false}

@@ -1,119 +1,88 @@
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
-import type { PersonResponseDto } from '@immich/sdk';
 import { personFactory } from '@test-data/factories/person-factory';
 import { render } from '@testing-library/svelte';
-import { tick } from 'svelte';
+import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
+import ManagePeopleVisibilityWrapper from './manage-people-visibility.test-wrapper.svelte';
 
-describe('ManagePeopleVisibility Component', () => {
-  let personVisible: PersonResponseDto;
-  let personHidden: PersonResponseDto;
-  let personWithoutName: PersonResponseDto;
-
-  beforeAll(() => {
-    // Prevents errors from `img.decode()` in ImageThumbnail
-    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
-      value: vi.fn(),
-    });
-  });
-
+describe('ManagePeopleVisibility component', () => {
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
-    personVisible = personFactory.build({ isHidden: false });
-    personHidden = personFactory.build({ isHidden: true });
-    personWithoutName = personFactory.build({ isHidden: false, name: undefined });
-    sdkMock.updatePeople.mockResolvedValue([]);
   });
 
-  afterEach(() => {
-    vi.resetAllMocks();
-  });
+  it('keeps toggled hidden state when loading more people', async () => {
+    const onClose = vi.fn();
+    const onUpdate = vi.fn();
+    const loadNextPage = vi.fn();
 
-  it('does not update people when no changes are made', () => {
-    const { getByText } = render(ManagePeopleVisibility, {
+    const [personA, personB, personC] = [
+      personFactory.build({ id: 'a', isHidden: false }),
+      personFactory.build({ id: 'b', isHidden: false }),
+      personFactory.build({ id: 'c', isHidden: true }),
+    ];
+
+    const { container, rerender } = render(ManagePeopleVisibilityWrapper, {
       props: {
-        people: [personVisible, personHidden, personWithoutName],
+        people: [personA, personB],
         totalPeopleCount: 3,
-        onClose: vi.fn(),
-        loadNextPage: vi.fn(),
+        onClose,
+        onUpdate,
+        loadNextPage,
       },
     });
+    const user = userEvent.setup();
 
-    const saveButton = getByText('done');
-    saveButton.click();
-    expect(sdkMock.updatePeople).not.toHaveBeenCalled();
+    let personButtons = container.querySelectorAll('button[aria-pressed]');
+    expect(personButtons).toHaveLength(2);
+
+    await user.click(personButtons[0]);
+    expect(personButtons[0].getAttribute('aria-pressed')).toBe('true');
+
+    await rerender({
+      people: [personA, personB, personC],
+      totalPeopleCount: 3,
+      onClose,
+      onUpdate,
+      loadNextPage,
+    });
+
+    personButtons = container.querySelectorAll('button[aria-pressed]');
+    expect(personButtons).toHaveLength(3);
+    expect(personButtons[0].getAttribute('aria-pressed')).toBe('true');
+    expect(personButtons[2].getAttribute('aria-pressed')).toBe('true');
   });
 
-  // svelte animations require a real browser
-  it.skip('hides unnamed people on first button press', () => {
-    const { getByText, getByTitle } = render(ManagePeopleVisibility, {
+  it('shows newly loaded hidden people as hidden', async () => {
+    const onClose = vi.fn();
+    const onUpdate = vi.fn();
+    const loadNextPage = vi.fn();
+
+    const [personA, personB, personC] = [
+      personFactory.build({ id: 'a', isHidden: false }),
+      personFactory.build({ id: 'b', isHidden: false }),
+      personFactory.build({ id: 'c', isHidden: true }),
+    ];
+
+    const { container, rerender } = render(ManagePeopleVisibilityWrapper, {
       props: {
-        people: [personVisible, personHidden, personWithoutName],
+        people: [personA, personB],
         totalPeopleCount: 3,
-        onClose: vi.fn(),
-        loadNextPage: vi.fn(),
+        onClose,
+        onUpdate,
+        loadNextPage,
       },
     });
 
-    getByTitle('hide_unnamed_people').click();
-    getByText('done').click();
-
-    expect(sdkMock.updatePeople).toHaveBeenCalledWith({
-      peopleUpdateDto: {
-        people: [{ id: personWithoutName.id, isHidden: true }],
-      },
-    });
-  });
-
-  // svelte animations require a real browser
-  it.skip('hides all people on second button press', async () => {
-    const { getByText, getByTitle } = render(ManagePeopleVisibility, {
-      props: {
-        people: [personVisible, personHidden, personWithoutName],
-        totalPeopleCount: 3,
-        onClose: vi.fn(),
-        loadNextPage: vi.fn(),
-      },
+    await rerender({
+      people: [personA, personB, personC],
+      totalPeopleCount: 3,
+      onClose,
+      onUpdate,
+      loadNextPage,
     });
 
-    getByTitle('hide_unnamed_people').click();
-    await tick();
-    getByTitle('hide_all_people').click();
-    getByText('done').click();
-
-    expect(sdkMock.updatePeople).toHaveBeenCalledWith({
-      peopleUpdateDto: {
-        people: expect.arrayContaining([
-          { id: personVisible.id, isHidden: true },
-          { id: personWithoutName.id, isHidden: true },
-        ]),
-      },
-    });
-  });
-
-  // svelte animations require a real browser
-  it.skip('shows all people on third button press', async () => {
-    const { getByText, getByTitle } = render(ManagePeopleVisibility, {
-      props: {
-        people: [personVisible, personHidden, personWithoutName],
-        totalPeopleCount: 3,
-        onClose: vi.fn(),
-        loadNextPage: vi.fn(),
-      },
-    });
-
-    getByTitle('hide_unnamed_people').click();
-    await tick();
-    getByTitle('hide_all_people').click();
-    await tick();
-    getByTitle('show_all_people').click();
-    getByText('done').click();
-
-    expect(sdkMock.updatePeople).toHaveBeenCalledWith({
-      peopleUpdateDto: {
-        people: [{ id: personHidden.id, isHidden: false }],
-      },
-    });
+    const personButtons = container.querySelectorAll('button[aria-pressed]');
+    expect(personButtons).toHaveLength(3);
+    expect(personButtons[2].getAttribute('aria-pressed')).toBe('true');
   });
 });

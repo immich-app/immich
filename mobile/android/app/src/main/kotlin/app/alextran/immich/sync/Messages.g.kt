@@ -78,6 +78,21 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
+enum class PlatformAssetPlaybackStyle(val raw: Int) {
+  UNKNOWN(0),
+  IMAGE(1),
+  VIDEO(2),
+  IMAGE_ANIMATED(3),
+  LIVE_PHOTO(4),
+  VIDEO_LOOPING(5);
+
+  companion object {
+    fun ofRaw(raw: Int): PlatformAssetPlaybackStyle? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PlatformAsset (
   val id: String,
@@ -92,7 +107,8 @@ data class PlatformAsset (
   val isFavorite: Boolean,
   val adjustmentTime: Long? = null,
   val latitude: Double? = null,
-  val longitude: Double? = null
+  val longitude: Double? = null,
+  val playbackStyle: PlatformAssetPlaybackStyle
 )
  {
   companion object {
@@ -110,7 +126,8 @@ data class PlatformAsset (
       val adjustmentTime = pigeonVar_list[10] as Long?
       val latitude = pigeonVar_list[11] as Double?
       val longitude = pigeonVar_list[12] as Double?
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, adjustmentTime, latitude, longitude)
+      val playbackStyle = pigeonVar_list[13] as PlatformAssetPlaybackStyle
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, adjustmentTime, latitude, longitude, playbackStyle)
     }
   }
   fun toList(): List<Any?> {
@@ -128,6 +145,7 @@ data class PlatformAsset (
       adjustmentTime,
       latitude,
       longitude,
+      playbackStyle,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -252,27 +270,71 @@ data class HashResult (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class CloudIdResult (
+  val assetId: String,
+  val error: String? = null,
+  val cloudId: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): CloudIdResult {
+      val assetId = pigeonVar_list[0] as String
+      val error = pigeonVar_list[1] as String?
+      val cloudId = pigeonVar_list[2] as String?
+      return CloudIdResult(assetId, error, cloudId)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      assetId,
+      error,
+      cloudId,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is CloudIdResult) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return MessagesPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          PlatformAsset.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          PlatformAssetPlaybackStyle.ofRaw(it.toInt())
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PlatformAlbum.fromList(it)
+          PlatformAsset.fromList(it)
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          SyncDelta.fromList(it)
+          PlatformAlbum.fromList(it)
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          SyncDelta.fromList(it)
+        }
+      }
+      133.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           HashResult.fromList(it)
+        }
+      }
+      134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          CloudIdResult.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -280,20 +342,28 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is PlatformAsset -> {
+      is PlatformAssetPlaybackStyle -> {
         stream.write(129)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw)
       }
-      is PlatformAlbum -> {
+      is PlatformAsset -> {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-      is SyncDelta -> {
+      is PlatformAlbum -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-      is HashResult -> {
+      is SyncDelta -> {
         stream.write(132)
+        writeValue(stream, value.toList())
+      }
+      is HashResult -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
+      is CloudIdResult -> {
+        stream.write(134)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -315,6 +385,7 @@ interface NativeSyncApi {
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
   fun getTrashedAssets(): Map<String, List<PlatformAsset>>
+  fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult>
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -499,6 +570,23 @@ interface NativeSyncApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getTrashedAssets())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetIdsArg = args[0] as List<String>
+            val wrapped: List<Any?> = try {
+              listOf(api.getCloudIdForAssetIds(assetIdsArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

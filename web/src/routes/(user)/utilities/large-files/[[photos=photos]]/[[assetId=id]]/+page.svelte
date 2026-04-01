@@ -3,12 +3,13 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import LargeAssetData from '$lib/components/utilities-page/large-assets/large-asset-data.svelte';
   import Portal from '$lib/elements/Portal.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
+  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import type { AssetResponseDto } from '@immich/sdk';
 
   interface Props {
     data: PageData;
@@ -18,32 +19,12 @@
 
   let assets = $derived(data.assets);
   let asset = $derived(data.asset);
-  const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
-  const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
   $effect(() => {
     if (asset) {
-      setAsset(asset);
+      assetViewerManager.setAsset(asset);
     }
   });
-
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
-
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
 
   const onRandom = async () => {
     if (assets.length <= 0) {
@@ -58,13 +39,19 @@
   const onAction = (payload: Action) => {
     if (payload.type == 'trash') {
       assets = assets.filter((a) => a.id != payload.asset.id);
-      $showAssetViewer = false;
+      assetViewerManager.showAssetViewer(false);
     }
   };
 
   const onViewAsset = async (asset: AssetResponseDto) => {
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
+
+  const assetCursor = $derived({
+    current: assetViewerManager.asset!,
+    nextAsset: getNextAsset(assets, assetViewerManager.asset),
+    previousAsset: getPreviousAsset(assets, assetViewerManager.asset),
+  });
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
@@ -81,18 +68,16 @@
   </div>
 </UserPageLayout>
 
-{#if $showAssetViewer}
+{#if assetViewerManager.isViewing}
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
         {onRandom}
         {onAction}
         onClose={() => {
-          assetViewingStore.showAssetViewer(false);
+          assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}
       />

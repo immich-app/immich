@@ -37,48 +37,70 @@ class ExifResponseDto {
     this.timeZone,
   });
 
+  /// City name
   String? city;
 
+  /// Country name
   String? country;
 
+  /// Original date/time
   DateTime? dateTimeOriginal;
 
+  /// Image description
   String? description;
 
+  /// Image height in pixels
   num? exifImageHeight;
 
+  /// Image width in pixels
   num? exifImageWidth;
 
+  /// Exposure time
   String? exposureTime;
 
+  /// F-number (aperture)
   num? fNumber;
 
+  /// File size in bytes
   int? fileSizeInByte;
 
+  /// Focal length in mm
   num? focalLength;
 
+  /// ISO sensitivity
   num? iso;
 
+  /// GPS latitude
   num? latitude;
 
+  /// Lens model
   String? lensModel;
 
+  /// GPS longitude
   num? longitude;
 
+  /// Camera make
   String? make;
 
+  /// Camera model
   String? model;
 
+  /// Modification date/time
   DateTime? modifyDate;
 
+  /// Image orientation
   String? orientation;
 
+  /// Projection type
   String? projectionType;
 
+  /// Rating
   num? rating;
 
+  /// State/province name
   String? state;
 
+  /// Time zone
   String? timeZone;
 
   @override

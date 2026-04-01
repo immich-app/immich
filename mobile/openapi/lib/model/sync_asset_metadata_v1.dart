@@ -18,10 +18,13 @@ class SyncAssetMetadataV1 {
     required this.value,
   });
 
+  /// Asset ID
   String assetId;
 
-  AssetMetadataKey key;
+  /// Key
+  String key;
 
+  /// Value
   Object value;
 
   @override
@@ -58,7 +61,7 @@ class SyncAssetMetadataV1 {
 
       return SyncAssetMetadataV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
+        key: mapValueOfType<String>(json, r'key')!,
         value: mapValueOfType<Object>(json, r'value')!,
       );
     }

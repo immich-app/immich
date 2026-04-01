@@ -21,6 +21,7 @@ import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { asDateString } from 'src/utils/date';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -64,11 +65,11 @@ export class AlbumService extends BaseService {
     return albums.map((album) => ({
       ...mapAlbumWithoutAssets(album),
       sharedLinks: undefined,
-      startDate: albumMetadata[album.id]?.startDate ?? undefined,
-      endDate: albumMetadata[album.id]?.endDate ?? undefined,
+      startDate: asDateString(albumMetadata[album.id]?.startDate ?? undefined),
+      endDate: asDateString(albumMetadata[album.id]?.endDate ?? undefined),
       assetCount: albumMetadata[album.id]?.assetCount ?? 0,
       // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-      lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined,
+      lastModifiedAssetTimestamp: asDateString(albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined),
     }));
   }
 
@@ -85,10 +86,10 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album, withAssets, auth),
-      startDate: albumMetadataForIds?.startDate ?? undefined,
-      endDate: albumMetadataForIds?.endDate ?? undefined,
+      startDate: asDateString(albumMetadataForIds?.startDate ?? undefined),
+      endDate: asDateString(albumMetadataForIds?.endDate ?? undefined),
       assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
+      lastModifiedAssetTimestamp: asDateString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
       contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
@@ -164,6 +165,12 @@ export class AlbumService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+    if (auth.sharedLink) {
+      this.logger.deprecate(
+        'Assets uploaded to a shared link are automatically added and calling this endpoint is no longer necessary. It will be removed in the next major release.',
+      );
+    }
+
     const album = await this.findOrFail(id, { withAssets: false });
     await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
@@ -194,6 +201,12 @@ export class AlbumService extends BaseService {
   }
 
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
+    if (auth.sharedLink) {
+      this.logger.deprecate(
+        'Assets uploaded to a shared link are automatically added and calling this endpoint is no longer necessary. It will be removed in the next major release.',
+      );
+    }
+
     const results: AlbumsAddAssetsResponseDto = {
       success: false,
       error: BulkIdErrorReason.DUPLICATE,

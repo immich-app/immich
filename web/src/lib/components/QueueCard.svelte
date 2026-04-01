@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import QueueCardBadge from '$lib/components/QueueCardBadge.svelte';
   import QueueCardButton from '$lib/components/QueueCardButton.svelte';
   import Badge from '$lib/elements/Badge.svelte';
-  import { asQueueItem, getQueueDetailUrl } from '$lib/services/queue.service';
+  import { Route } from '$lib/route';
+  import { asQueueItem } from '$lib/services/queue.service';
   import { locale } from '$lib/stores/preferences.store';
+  import { transformToTitleCase } from '$lib/utils';
   import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
   import { Icon, IconButton, Link } from '@immich/ui';
   import {
@@ -50,9 +53,9 @@
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
       <div class="flex items-center gap-2 text-xl font-semibold text-primary">
-        <Link class="flex items-center gap-2 hover:underline" href={getQueueDetailUrl(queue)} underline={false}>
+        <Link class="flex items-center gap-2 hover:underline" href={Route.viewQueue(queue)} underline={false}>
           <Icon {icon} size="1.25em" class="hidden shrink-0 sm:block" />
-          <span class="uppercase">{title}</span>
+          <span>{transformToTitleCase(title)}</span>
         </Link>
         <IconButton
           color="primary"
@@ -60,7 +63,7 @@
           aria-label={$t('view_details')}
           size="small"
           variant="ghost"
-          href={getQueueDetailUrl(queue)}
+          href={Route.viewQueue(queue)}
         />
         <div class="flex gap-2">
           {#if statistics.failed > 0}
@@ -103,7 +106,10 @@
 
       <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
         <div
-          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-s-lg sm:rounded-e-none"
+          class={cleanClass(
+            commonClasses,
+            'rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-s-lg sm:rounded-e-none',
+          )}
         >
           <p>{$t('active')}</p>
           <p class="text-2xl">
@@ -112,7 +118,10 @@
         </div>
 
         <div
-          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg"
+          class={cleanClass(
+            commonClasses,
+            'flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg',
+          )}
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
@@ -130,7 +139,7 @@
         onClick={() => onCommand({ command: QueueCommand.Start, force: false })}
       >
         <Icon icon={mdiAlertCircle} size="36" />
-        <span class="uppercase">{$t('disabled')}</span>
+        <span>{$t('disabled')}</span>
       </QueueCardButton>
     {/if}
 
@@ -138,7 +147,7 @@
       {#if waitingCount > 0}
         <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Empty, force: false })}>
           <Icon icon={mdiClose} size="24" />
-          <span class="uppercase">{$t('clear')}</span>
+          <span>{$t('clear')}</span>
         </QueueCardButton>
       {/if}
       {#if queue.isPaused}
@@ -146,12 +155,12 @@
         <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
           <!-- size property is not reactive, so have to use width and height -->
           <Icon icon={mdiFastForward} {size} />
-          <span class="uppercase">{$t('resume')}</span>
+          <span>{$t('resume')}</span>
         </QueueCardButton>
       {:else}
         <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Pause, force: false })}>
           <Icon icon={mdiPause} size="24" />
-          <span class="uppercase">{$t('pause')}</span>
+          <span>{$t('pause')}</span>
         </QueueCardButton>
       {/if}
     {/if}
@@ -160,25 +169,25 @@
       {#if allText}
         <QueueCardButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
           <Icon icon={mdiAllInclusive} size="24" />
-          <span class="uppercase">{allText}</span>
+          <span>{allText}</span>
         </QueueCardButton>
       {/if}
       {#if refreshText}
         <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Start, force: undefined })}>
           <Icon icon={mdiImageRefreshOutline} size="24" />
-          <span class="uppercase">{refreshText}</span>
+          <span>{refreshText}</span>
         </QueueCardButton>
       {/if}
       <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiSelectionSearch} size="24" />
-        <span class="uppercase">{missingText}</span>
+        <span>{missingText}</span>
       </QueueCardButton>
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}
       <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiPlay} size="48" />
-        <span class="uppercase">{missingText}</span>
+        <span>{missingText}</span>
       </QueueCardButton>
     {/if}
   </div>

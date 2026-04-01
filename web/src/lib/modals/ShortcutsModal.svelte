@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { preferences } from '$lib/stores/user.store';
   import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -39,11 +40,14 @@
         { key: ['s'], action: $t('stack_selected_photos') },
         { key: ['l'], action: $t('add_to_album') },
         { key: ['t'], action: $t('tag_assets') },
-        { key: ['⇧', 'l'], action: $t('add_to_shared_album') },
+        { key: ['p'], action: $t('tag_people') },
         { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
         { key: ['⇧', 'd'], action: $t('download') },
         { key: ['Space'], action: $t('play_or_pause_video') },
         { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
+        ...($preferences?.ratings.enabled
+          ? [{ key: ['1-5'], action: $t('rate_asset'), info: $t('zero_to_clear_rating') }]
+          : []),
       ],
     },
   }: Props = $props();

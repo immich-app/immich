@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import {
   AlbumFilter,
   AlbumGroupBy,
@@ -29,6 +30,7 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
         assetIds,
       },
     });
+    eventManager.emit('AlbumCreate', newAlbum);
     return newAlbum;
   } catch (error) {
     const $t = get(t);
@@ -39,7 +41,7 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
 export const createAlbumAndRedirect = async (name?: string, assetIds?: string[]) => {
   const newAlbum = await createAlbum(name, assetIds);
   if (newAlbum) {
-    await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+    await goto(Route.viewAlbum(newAlbum));
   }
 };
 

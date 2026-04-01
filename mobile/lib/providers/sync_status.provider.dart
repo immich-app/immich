@@ -21,6 +21,7 @@ class SyncStatusState {
   final SyncStatus remoteSyncStatus;
   final SyncStatus localSyncStatus;
   final SyncStatus hashJobStatus;
+  final SyncStatus cloudIdSyncStatus;
 
   final String? errorMessage;
 
@@ -28,6 +29,7 @@ class SyncStatusState {
     this.remoteSyncStatus = SyncStatus.idle,
     this.localSyncStatus = SyncStatus.idle,
     this.hashJobStatus = SyncStatus.idle,
+    this.cloudIdSyncStatus = SyncStatus.idle,
     this.errorMessage,
   });
 
@@ -35,12 +37,14 @@ class SyncStatusState {
     SyncStatus? remoteSyncStatus,
     SyncStatus? localSyncStatus,
     SyncStatus? hashJobStatus,
+    SyncStatus? cloudIdSyncStatus,
     String? errorMessage,
   }) {
     return SyncStatusState(
       remoteSyncStatus: remoteSyncStatus ?? this.remoteSyncStatus,
       localSyncStatus: localSyncStatus ?? this.localSyncStatus,
       hashJobStatus: hashJobStatus ?? this.hashJobStatus,
+      cloudIdSyncStatus: cloudIdSyncStatus ?? this.cloudIdSyncStatus,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -48,6 +52,7 @@ class SyncStatusState {
   bool get isRemoteSyncing => remoteSyncStatus == SyncStatus.syncing;
   bool get isLocalSyncing => localSyncStatus == SyncStatus.syncing;
   bool get isHashing => hashJobStatus == SyncStatus.syncing;
+  bool get isCloudIdSyncing => cloudIdSyncStatus == SyncStatus.syncing;
 
   @override
   bool operator ==(Object other) {
@@ -56,11 +61,12 @@ class SyncStatusState {
         other.remoteSyncStatus == remoteSyncStatus &&
         other.localSyncStatus == localSyncStatus &&
         other.hashJobStatus == hashJobStatus &&
+        other.cloudIdSyncStatus == cloudIdSyncStatus &&
         other.errorMessage == errorMessage;
   }
 
   @override
-  int get hashCode => Object.hash(remoteSyncStatus, localSyncStatus, hashJobStatus, errorMessage);
+  int get hashCode => Object.hash(remoteSyncStatus, localSyncStatus, hashJobStatus, cloudIdSyncStatus, errorMessage);
 }
 
 class SyncStatusNotifier extends Notifier<SyncStatusState> {
@@ -71,6 +77,7 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
       remoteSyncStatus: SyncStatus.idle,
       localSyncStatus: SyncStatus.idle,
       hashJobStatus: SyncStatus.idle,
+      cloudIdSyncStatus: SyncStatus.idle,
     );
   }
 
@@ -109,6 +116,18 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   void startHashJob() => setHashJobStatus(SyncStatus.syncing);
   void completeHashJob() => setHashJobStatus(SyncStatus.success);
   void errorHashJob(String error) => setHashJobStatus(SyncStatus.error, error);
+
+  ///
+  /// Cloud ID Sync Job
+  ///
+
+  void setCloudIdSyncStatus(SyncStatus status, [String? errorMessage]) {
+    state = state.copyWith(cloudIdSyncStatus: status, errorMessage: status == SyncStatus.error ? errorMessage : null);
+  }
+
+  void startCloudIdSync() => setCloudIdSyncStatus(SyncStatus.syncing);
+  void completeCloudIdSync() => setCloudIdSyncStatus(SyncStatus.success);
+  void errorCloudIdSync(String error) => setCloudIdSyncStatus(SyncStatus.error, error);
 }
 
 final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatusState>(SyncStatusNotifier.new);

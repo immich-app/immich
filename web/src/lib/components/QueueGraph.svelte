@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import type { QueueSnapshot } from '$lib/types';
   import type { QueueResponseDto } from '@immich/sdk';
@@ -13,7 +14,7 @@
     class?: string;
   };
 
-  const { queue, class: className = '' }: Props = $props();
+  const { queue, class: className }: Props = $props();
 
   type Data = number | null;
   type NormalizedData = [
@@ -60,7 +61,7 @@
   const axisOptions: Axis = {
     stroke: () => (isDark ? '#ccc' : 'black'),
     ticks: {
-      show: true,
+      show: false,
       stroke: () => (isDark ? '#444' : '#ddd'),
     },
     grid: {
@@ -75,6 +76,7 @@
       show: false,
     },
     width: 2,
+    pxAlign: 0,
   };
 
   const options: uPlot.Options = {
@@ -91,7 +93,7 @@
     width: 200,
     height: 200,
     ms: 1,
-    pxAlign: true,
+    pxAlign: 0,
     scales: {
       y: {
         distr: 1,
@@ -116,6 +118,8 @@
     axes: [
       {
         ...axisOptions,
+        size: 40,
+        ticks: { show: true },
         values: (plot, values) => {
           return values.map((value) => {
             if (!value) {
@@ -125,7 +129,10 @@
           });
         },
       },
-      axisOptions,
+      {
+        ...axisOptions,
+        size: 60,
+      },
     ],
   };
 
@@ -153,7 +160,7 @@
   requestAnimationFrame(update);
 </script>
 
-<div class="w-full {className}" bind:this={chartElement}>
+<div class={cleanClass('w-full', className)} bind:this={chartElement}>
   {#if data[0].length === 0}
     <LoadingSpinner size="giant" />
   {/if}

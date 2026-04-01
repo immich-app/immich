@@ -2,10 +2,10 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -16,50 +16,32 @@
 
   interface Props {
     assets: AssetResponseDto[];
+    suggestedKeepAssetIds: string[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
-  const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
-  const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
-
+  let { assets, suggestedKeepAssetIds, onResolve, onStack }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
-    const suggestedAsset = suggestDuplicate(assets);
-
-    if (!suggestedAsset) {
-      selectedAssetIds = new SvelteSet(assets[0].id);
+    if (suggestedKeepAssetIds.length > 0) {
+      for (const id of suggestedKeepAssetIds) {
+        selectedAssetIds.add(id);
+      }
       return;
     }
 
-    selectedAssetIds.add(suggestedAsset.id);
+    if (assets.length > 0) {
+      selectedAssetIds.add(assets[0].id);
+    }
   });
 
   onDestroy(() => {
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
   });
-
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
-
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
 
   const onRandom = async () => {
     if (assets.length <= 0) {
@@ -89,7 +71,7 @@
 
   const onViewAsset = async ({ id }: AssetResponseDto) => {
     const asset = await getAssetInfo({ ...authManager.params, id });
-    setAsset(asset);
+    assetViewerManager.setAsset(asset);
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
@@ -102,6 +84,12 @@
   const handleStack = () => {
     onStack(assets);
   };
+
+  const assetCursor = $derived({
+    current: assetViewerManager.asset!,
+    nextAsset: getNextAsset(assets, assetViewerManager.asset),
+    previousAsset: getPreviousAsset(assets, assetViewerManager.asset),
+  });
 </script>
 
 <svelte:document
@@ -170,7 +158,7 @@
   </div>
 
   <div class="overflow-x-auto p-2">
-    <div class="flex flex-nowrap gap-1 place-items-center justify-center min-w-full w-fit mx-auto">
+    <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
       {#each assets as asset (asset.id)}
         <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
       {/each}
@@ -178,17 +166,15 @@
   </div>
 </div>
 
-{#if $showAssetViewer}
+{#if assetViewerManager.isViewing}
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
         {onRandom}
         onClose={() => {
-          assetViewingStore.showAssetViewer(false);
+          assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}
       />

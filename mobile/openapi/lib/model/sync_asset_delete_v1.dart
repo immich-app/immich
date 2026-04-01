@@ -16,6 +16,7 @@ class SyncAssetDeleteV1 {
     required this.assetId,
   });
 
+  /// Asset ID
   String assetId;
 
   @override

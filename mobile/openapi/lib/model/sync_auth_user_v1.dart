@@ -28,30 +28,41 @@ class SyncAuthUserV1 {
     required this.storageLabel,
   });
 
+  /// User avatar color
   UserAvatarColor? avatarColor;
 
+  /// User deleted at
   DateTime? deletedAt;
 
+  /// User email
   String email;
 
+  /// User has profile image
   bool hasProfileImage;
 
+  /// User ID
   String id;
 
+  /// User is admin
   bool isAdmin;
 
+  /// User name
   String name;
 
+  /// User OAuth ID
   String oauthId;
 
+  /// User pin code
   String? pinCode;
 
+  /// User profile changed at
   DateTime profileChangedAt;
 
   int? quotaSizeInBytes;
 
   int quotaUsageInBytes;
 
+  /// User storage label
   String? storageLabel;
 
   @override

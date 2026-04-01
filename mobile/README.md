@@ -4,10 +4,12 @@ The Immich mobile app is a Flutter-based solution leveraging the Isar Database f
 
 ## Setup
 
-1. Setup Flutter toolchain using FVM.
-2. Run `flutter pub get` to install the dependencies.
-3. Run `make translation` to generate the translation file.
-4. Run `fvm flutter run` to start the app.
+1. [Install mise](https://mise.jdx.dev/installing-mise.html).
+2. Change to the immich directory and trust the mise config with `mise trust`.
+3. Install tools with mise: `mise install`.
+4. Run `flutter pub get` to install the dependencies.
+5. Run `make translation` to generate the translation file.
+6. Run `flutter run` to start the app.
 
 ## Translation
 
@@ -29,7 +31,7 @@ dcm analyze lib
 ```
 
 [DCM](https://dcm.dev/) is a vendor tool that needs to be downloaded manually to run locally.
-Immich was provided an open source license. 
+Immich was provided an open source license.
 To use it, it is important that you do not have an active free tier license (can be verified with `dcm license`).
 If you have write-access to the Immich repository directly, running dcm in your clone should just work.
 If you are working on a clone of a fork, you need to connect to the main Immich repository as remote first:

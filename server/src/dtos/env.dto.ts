@@ -1,7 +1,16 @@
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
-import { DatabaseSslMode, ImmichEnvironment, LogLevel } from 'src/enum';
+import { ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
+
+// TODO import from sql-tools once the swagger plugin supports external enums
+enum DatabaseSslMode {
+  Disable = 'disable',
+  Allow = 'allow',
+  Prefer = 'prefer',
+  Require = 'require',
+  VerifyFull = 'verify-full',
+}
 
 export class EnvDto {
   @IsInt()
@@ -33,6 +42,10 @@ export class EnvDto {
   @Optional()
   IMMICH_CONFIG_FILE?: string;
 
+  @IsString()
+  @Optional()
+  IMMICH_HELMET_FILE?: string;
+
   @IsEnum(ImmichEnvironment)
   @Optional()
   IMMICH_ENV?: ImmichEnvironment;
@@ -48,6 +61,10 @@ export class EnvDto {
   @Optional()
   IMMICH_LOG_LEVEL?: LogLevel;
 
+  @IsEnum(LogFormat)
+  @Optional()
+  IMMICH_LOG_FORMAT?: LogFormat;
+
   @Optional()
   @Matches(/^\//, { message: 'IMMICH_MEDIA_LOCATION must be an absolute path' })
   IMMICH_MEDIA_LOCATION?: string;
@@ -58,7 +75,7 @@ export class EnvDto {
   IMMICH_MICROSERVICES_METRICS_PORT?: number;
 
   @ValidateBoolean({ optional: true })
-  IMMICH_PLUGINS_ENABLED?: boolean;
+  IMMICH_ALLOW_EXTERNAL_PLUGINS?: boolean;
 
   @Optional()
   @Matches(/^\//, { message: 'IMMICH_PLUGINS_INSTALL_FOLDER must be an absolute path' })
@@ -112,6 +129,9 @@ export class EnvDto {
   @IsString()
   @Optional()
   IMMICH_THIRD_PARTY_SUPPORT_URL?: string;
+
+  @ValidateBoolean({ optional: true })
+  IMMICH_ALLOW_SETUP?: boolean;
 
   @IsIPRange({ requireCIDR: false }, { each: true })
   @Transform(({ value }) =>

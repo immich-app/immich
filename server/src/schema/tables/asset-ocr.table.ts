@@ -1,5 +1,5 @@
+import { Column, ForeignKeyColumn, Generated, PrimaryGeneratedColumn, Table } from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { Column, ForeignKeyColumn, Generated, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
 
 @Table('asset_ocr')
 export class AssetOcrTable {
@@ -42,4 +42,7 @@ export class AssetOcrTable {
 
   @Column({ type: 'text' })
   text!: string;
+
+  @Column({ type: 'boolean', default: true })
+  isVisible!: Generated<boolean>;
 }

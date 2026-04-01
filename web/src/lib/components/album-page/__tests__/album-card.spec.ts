@@ -1,4 +1,5 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { renderWithTooltips } from '$tests/helpers';
 import { albumFactory } from '@test-data/factories/album-factory';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
@@ -88,7 +89,7 @@ describe('AlbumCard component', () => {
     const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
 
     beforeEach(async () => {
-      sut = render(AlbumCard, { album, onShowContextMenu });
+      sut = renderWithTooltips(AlbumCard, { album, onShowContextMenu });
 
       const albumImgElement = sut.getByTestId('album-image');
       await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));

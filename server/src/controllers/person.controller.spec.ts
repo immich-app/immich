@@ -58,6 +58,11 @@ describe(PersonController.name, () => {
       await request(ctx.getHttpServer()).post('/people').send({ birthDate: '' });
       expect(service.create).toHaveBeenCalledWith(undefined, { birthDate: null });
     });
+
+    it('should map an empty color to null', async () => {
+      await request(ctx.getHttpServer()).post('/people').send({ color: '' });
+      expect(service.create).toHaveBeenCalledWith(undefined, { color: null });
+    });
   });
 
   describe('DELETE /people', () => {

@@ -234,7 +234,7 @@ class FolderPath extends StatelessWidget {
               Text(
                 currentFolder.path,
                 style: TextStyle(
-                  fontFamily: 'Inconsolata',
+                  fontFamily: 'GoogleSansCode',
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                   color: context.colorScheme.onSurface.withAlpha(175),

@@ -15,9 +15,8 @@
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "rootDirs": ["src"],
     "baseUrl": "./"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "vitest*.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

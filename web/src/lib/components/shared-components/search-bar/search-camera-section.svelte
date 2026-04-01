@@ -1,20 +1,14 @@
-<script lang="ts" module>
-  export interface SearchCameraFilter {
-    make?: string;
-    model?: string;
-    lensModel?: string;
-  }
-</script>
-
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
+  import type { SearchCameraFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
+  import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     filters: SearchCameraFilter;
-  }
+  };
 
   let { filters = $bindable() }: Props = $props();
 
@@ -81,8 +75,7 @@
 </script>
 
 <div id="camera-selection">
-  <p class="uppercase immich-form-label">{$t('camera')}</p>
-
+  <Text fontWeight="medium">{$t('camera')}</Text>
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">
       <Combobox

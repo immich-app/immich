@@ -1,7 +1,8 @@
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
-import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+import { updateMonthGroupViewportProximity } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import {
@@ -90,9 +91,10 @@ export class TimelineManager extends VirtualScrollManager {
   static #INIT_OPTIONS = {};
   #websocketSupport: WebsocketSupport | undefined;
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
-  #updatingIntersections = false;
+  #updatingViewportProximities = false;
   #scrollableElement: HTMLElement | undefined = $state();
   #showAssetOwners = new PersistedLocalStorage<boolean>('album-show-asset-owners', false);
+  #unsubscribes: Array<() => void> = [];
 
   get showAssetOwners() {
     return this.#showAssetOwners.current;
@@ -108,6 +110,12 @@ export class TimelineManager extends VirtualScrollManager {
 
   constructor() {
     super();
+
+    this.#unsubscribes.push(
+      eventManager.on({
+        AssetUpdate: (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]),
+      }),
+    );
   }
 
   override get scrollTop(): number {
@@ -190,17 +198,21 @@ export class TimelineManager extends VirtualScrollManager {
     return clamp((this.visibleWindow.top - month.top) / month.height, 0, 1);
   }
 
-  override updateIntersections() {
-    if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
+  override updateViewportProximities() {
+    if (
+      this.#updatingViewportProximities ||
+      !this.isInitialized ||
+      this.visibleWindow.bottom === this.visibleWindow.top
+    ) {
       return;
     }
-    this.#updatingIntersections = true;
+    this.#updatingViewportProximities = true;
 
     for (const month of this.months) {
-      updateIntersectionMonthGroup(this, month);
+      updateMonthGroupViewportProximity(this, month);
     }
 
-    const month = this.months.find((month) => month.actuallyIntersecting);
+    const month = this.months.find((month) => month.isInViewport);
     const viewportTopRatioInMonth = this.#calculateVewportTopRatioInMonth(month);
     const monthBottomViewportRatio = this.#calculateMonthBottomViewportRatio(month);
 
@@ -210,7 +222,7 @@ export class TimelineManager extends VirtualScrollManager {
       viewportTopRatioInMonth,
     };
 
-    this.#updatingIntersections = false;
+    this.#updatingViewportProximities = false;
   }
 
   clearDeferredLayout(month: MonthGroup) {
@@ -250,10 +262,16 @@ export class TimelineManager extends VirtualScrollManager {
     if (this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
       return;
     }
-    await this.initTask.reset();
-    await this.#init(options);
-    this.updateViewportGeometry(false);
-    this.#createScrubberMonths();
+
+    this.suspendTransitions = true;
+    try {
+      await this.initTask.reset();
+      await this.#init(options);
+      this.updateViewportGeometry(false);
+      this.#createScrubberMonths();
+    } finally {
+      this.suspendTransitions = false;
+    }
   }
 
   async #init(options: TimelineManagerOptions) {
@@ -269,6 +287,11 @@ export class TimelineManager extends VirtualScrollManager {
   public override destroy() {
     this.disconnect();
     this.isInitialized = false;
+
+    for (const unsubscribe of this.#unsubscribes) {
+      unsubscribe();
+    }
+
     super.destroy();
   }
 
@@ -298,7 +321,7 @@ export class TimelineManager extends VirtualScrollManager {
     for (const month of this.months) {
       updateGeometry(this, month, { invalidateHeight: changedWidth });
     }
-    this.updateIntersections();
+    this.updateViewportProximities();
     if (changedWidth) {
       this.#createScrubberMonths();
     }
@@ -334,7 +357,7 @@ export class TimelineManager extends VirtualScrollManager {
     }, cancelable);
     if (executionStatus === 'LOADED') {
       updateGeometry(this, monthGroup, { invalidateHeight: false });
-      this.updateIntersections();
+      this.updateViewportProximities();
     }
   }
 
@@ -346,7 +369,7 @@ export class TimelineManager extends VirtualScrollManager {
 
   async findMonthGroupForAsset(asset: AssetDescriptor | AssetResponseDto) {
     if (!this.isInitialized) {
-      await this.initTask.waitUntilCompletion();
+      await this.initTask.waitUntilExecution();
     }
 
     const { id } = asset;
@@ -519,7 +542,7 @@ export class TimelineManager extends VirtualScrollManager {
       updateGeometry(this, month, { invalidateHeight: true });
     }
     if (changedGeometry) {
-      this.updateIntersections();
+      this.updateViewportProximities();
     }
     return { updated, notUpdated, changedGeometry };
   }
@@ -528,7 +551,7 @@ export class TimelineManager extends VirtualScrollManager {
     for (const month of this.months) {
       updateGeometry(this, month, { invalidateHeight: true });
     }
-    this.updateIntersections();
+    this.updateViewportProximities();
   }
 
   getFirstAsset(): TimelineAsset | undefined {
@@ -576,7 +599,9 @@ export class TimelineManager extends VirtualScrollManager {
     return (
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-      isMismatched(this.#options.isTrashed, asset.isTrashed)
+      isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+      (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
+      (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id))
     );
   }
 
@@ -605,6 +630,6 @@ export class TimelineManager extends VirtualScrollManager {
       month.sortDayGroups();
       updateGeometry(this, month, { invalidateHeight: true });
     }
-    this.updateIntersections();
+    this.updateViewportProximities();
   }
 }

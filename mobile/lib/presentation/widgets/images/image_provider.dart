@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
@@ -50,20 +50,51 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     return null;
   }
 
-  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
+  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {bool evictOnError = true}) async* {
     if (isCancelled) {
       this.request = null;
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     try {
       final image = await request.load(decode);
-      if (image == null || isCancelled) {
-        unawaited(evict());
+      if ((image == null && evictOnError) || isCancelled) {
+        PaintingBinding.instance.imageCache.evict(this);
+        return;
+      } else if (image == null) {
         return;
       }
       yield image;
+    } catch (e, stack) {
+      if (evictOnError) {
+        PaintingBinding.instance.imageCache.evict(this);
+        rethrow;
+      }
+      _log.warning('Non-fatal image load error', e, stack);
+    } finally {
+      this.request = null;
+    }
+  }
+
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
+    if (isCancelled) {
+      this.request = null;
+      PaintingBinding.instance.imageCache.evict(this);
+      return null;
+    }
+
+    try {
+      final codec = await request.loadCodec();
+      if (codec == null || isCancelled) {
+        codec?.dispose();
+        PaintingBinding.instance.imageCache.evict(this);
+        return null;
+      }
+      return codec;
+    } catch (e) {
+      PaintingBinding.instance.imageCache.evict(this);
+      rethrow;
     } finally {
       this.request = null;
     }
@@ -109,17 +140,25 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
+    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
   } else {
     final String assetId;
+    final String thumbhash;
     if (asset is LocalAsset && asset.hasRemote) {
       assetId = asset.remoteId!;
+      thumbhash = "";
     } else if (asset is RemoteAsset) {
       assetId = asset.id;
+      thumbhash = asset.thumbHash ?? "";
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId);
+    provider = RemoteFullImageProvider(
+      assetId: assetId,
+      thumbhash: thumbhash,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+    );
   }
 
   return provider;
@@ -132,8 +171,9 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
-  return assetId != null ? RemoteThumbProvider(assetId: assetId) : null;
+  final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
+  return assetId != null ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash) : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
-    asset.hasLocal && (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage));
+    asset.hasLocal && (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage)) && !asset.isEdited;

@@ -25,7 +25,7 @@
       });
       $preferences = newPreferences;
 
-      toastManager.success($t('saved_settings'));
+      toastManager.primary($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }
@@ -39,7 +39,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ms-4 mt-4 flex flex-col gap-4">
+      <div class="sm:ms-8 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.NUMBER}
           label={$t('archive_size')}

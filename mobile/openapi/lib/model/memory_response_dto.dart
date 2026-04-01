@@ -30,10 +30,12 @@ class MemoryResponseDto {
 
   List<AssetResponseDto> assets;
 
+  /// Creation date
   DateTime createdAt;
 
   OnThisDayDto data;
 
+  /// Deletion date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -42,6 +44,7 @@ class MemoryResponseDto {
   ///
   DateTime? deletedAt;
 
+  /// Date when memory should be hidden
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -50,14 +53,19 @@ class MemoryResponseDto {
   ///
   DateTime? hideAt;
 
+  /// Memory ID
   String id;
 
+  /// Is memory saved
   bool isSaved;
 
+  /// Memory date
   DateTime memoryAt;
 
+  /// Owner user ID
   String ownerId;
 
+  /// Date when memory was seen
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -66,6 +74,7 @@ class MemoryResponseDto {
   ///
   DateTime? seenAt;
 
+  /// Date when memory should be shown
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -74,8 +83,10 @@ class MemoryResponseDto {
   ///
   DateTime? showAt;
 
+  /// Memory type
   MemoryType type;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override

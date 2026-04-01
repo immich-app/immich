@@ -131,6 +131,7 @@ abstract final class TestUtils {
       isFavorite: false,
       width: width,
       height: height,
+      isEdited: false,
     );
   }
 
@@ -154,6 +155,8 @@ abstract final class TestUtils {
       width: width,
       height: height,
       orientation: orientation,
+      playbackStyle: domain.AssetPlaybackStyle.image,
+      isEdited: false,
     );
   }
 }

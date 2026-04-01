@@ -128,6 +128,15 @@ func deepHashMessages(value: Any?, hasher: inout Hasher) {
 
     
 
+enum PlatformAssetPlaybackStyle: Int {
+  case unknown = 0
+  case image = 1
+  case video = 2
+  case imageAnimated = 3
+  case livePhoto = 4
+  case videoLooping = 5
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct PlatformAsset: Hashable {
   var id: String
@@ -143,6 +152,7 @@ struct PlatformAsset: Hashable {
   var adjustmentTime: Int64? = nil
   var latitude: Double? = nil
   var longitude: Double? = nil
+  var playbackStyle: PlatformAssetPlaybackStyle
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -160,6 +170,7 @@ struct PlatformAsset: Hashable {
     let adjustmentTime: Int64? = nilOrValue(pigeonVar_list[10])
     let latitude: Double? = nilOrValue(pigeonVar_list[11])
     let longitude: Double? = nilOrValue(pigeonVar_list[12])
+    let playbackStyle = pigeonVar_list[13] as! PlatformAssetPlaybackStyle
 
     return PlatformAsset(
       id: id,
@@ -174,7 +185,8 @@ struct PlatformAsset: Hashable {
       isFavorite: isFavorite,
       adjustmentTime: adjustmentTime,
       latitude: latitude,
-      longitude: longitude
+      longitude: longitude,
+      playbackStyle: playbackStyle
     )
   }
   func toList() -> [Any?] {
@@ -192,6 +204,7 @@ struct PlatformAsset: Hashable {
       adjustmentTime,
       latitude,
       longitude,
+      playbackStyle,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -312,17 +325,58 @@ struct HashResult: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct CloudIdResult: Hashable {
+  var assetId: String
+  var error: String? = nil
+  var cloudId: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> CloudIdResult? {
+    let assetId = pigeonVar_list[0] as! String
+    let error: String? = nilOrValue(pigeonVar_list[1])
+    let cloudId: String? = nilOrValue(pigeonVar_list[2])
+
+    return CloudIdResult(
+      assetId: assetId,
+      error: error,
+      cloudId: cloudId
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      assetId,
+      error,
+      cloudId,
+    ]
+  }
+  static func == (lhs: CloudIdResult, rhs: CloudIdResult) -> Bool {
+    return deepEqualsMessages(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashMessages(value: toList(), hasher: &hasher)
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return PlatformAsset.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return PlatformAssetPlaybackStyle(rawValue: enumResultAsInt)
+      }
+      return nil
     case 130:
-      return PlatformAlbum.fromList(self.readValue() as! [Any?])
+      return PlatformAsset.fromList(self.readValue() as! [Any?])
     case 131:
-      return SyncDelta.fromList(self.readValue() as! [Any?])
+      return PlatformAlbum.fromList(self.readValue() as! [Any?])
     case 132:
+      return SyncDelta.fromList(self.readValue() as! [Any?])
+    case 133:
       return HashResult.fromList(self.readValue() as! [Any?])
+    case 134:
+      return CloudIdResult.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -331,17 +385,23 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
 
 private class MessagesPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? PlatformAsset {
+    if let value = value as? PlatformAssetPlaybackStyle {
       super.writeByte(129)
-      super.writeValue(value.toList())
-    } else if let value = value as? PlatformAlbum {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? PlatformAsset {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? SyncDelta {
+    } else if let value = value as? PlatformAlbum {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? HashResult {
+    } else if let value = value as? SyncDelta {
       super.writeByte(132)
+      super.writeValue(value.toList())
+    } else if let value = value as? HashResult {
+      super.writeByte(133)
+      super.writeValue(value.toList())
+    } else if let value = value as? CloudIdResult {
+      super.writeByte(134)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -377,6 +437,7 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
+  func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -559,6 +620,23 @@ class NativeSyncApiSetup {
       }
     } else {
       getTrashedAssetsChannel.setMessageHandler(nil)
+    }
+    let getCloudIdForAssetIdsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getCloudIdForAssetIdsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdsArg = args[0] as! [String]
+        do {
+          let result = try api.getCloudIdForAssetIds(assetIds: assetIdsArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getCloudIdForAssetIdsChannel.setMessageHandler(nil)
     }
   }
 }

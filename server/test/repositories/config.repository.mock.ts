@@ -1,4 +1,4 @@
-import { DatabaseExtension, ImmichEnvironment, ImmichWorker } from 'src/enum';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum';
 import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
 import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
@@ -6,6 +6,7 @@ import { Mocked, vitest } from 'vitest';
 const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
+  logFormat: LogFormat.Console,
 
   buildMetadata: {},
   bull: {
@@ -32,6 +33,10 @@ const envData: EnvData = {
 
     skipMigrations: false,
     vectorExtension: DatabaseExtension.Vectors,
+  },
+
+  helmet: {
+    config: {},
   },
 
   licensePublicKey: {
@@ -75,6 +80,10 @@ const envData: EnvData = {
     corePlugin: '/build/corePlugin',
   },
 
+  setup: {
+    allow: true,
+  },
+
   storage: {
     ignoreMountCheckErrors: false,
   },
@@ -88,8 +97,10 @@ const envData: EnvData = {
   workers: [ImmichWorker.Api, ImmichWorker.Microservices],
 
   plugins: {
-    enabled: true,
-    installFolder: '/app/data/plugins',
+    external: {
+      allow: true,
+      installFolder: '/app/data/plugins',
+    },
   },
 
   noColor: false,

@@ -15,7 +15,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -33,6 +33,7 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
@@ -62,6 +63,16 @@ export class AssetMediaController {
     required: false,
   })
   @ApiBody({ description: 'Asset Upload Information', type: AssetMediaCreateDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Asset is a duplicate',
+    type: AssetMediaResponseDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Asset uploaded successfully',
+    type: AssetMediaResponseDto,
+  })
   @Endpoint({
     summary: 'Upload asset',
     description: 'Uploads a new asset to the server.',
@@ -94,15 +105,21 @@ export class AssetMediaController {
   async downloadAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
+    @Query() dto: AssetDownloadOriginalDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.downloadOriginal(auth, id), this.logger);
+    await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
   }
 
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
+  @ApiResponse({
+    status: 200,
+    description: 'Asset replaced successfully',
+    type: AssetMediaResponseDto,
+  })
   @Endpoint({
     summary: 'Replace asset',
     description: 'Replace the asset with new file, without changing its id.',
@@ -130,7 +147,8 @@ export class AssetMediaController {
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   @Endpoint({
     summary: 'View asset thumbnail',
-    description: 'Retrieve the thumbnail image for the specified asset.',
+    description:
+      'Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async viewAsset(
@@ -185,7 +203,7 @@ export class AssetMediaController {
   }
 
   @Post('exist')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpload })
   @Endpoint({
     summary: 'Check existing assets',
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',

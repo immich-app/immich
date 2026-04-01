@@ -2,11 +2,10 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
-  import PincodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
   import { unlockAuthSession } from '@immich/sdk';
-  import { Button, Icon } from '@immich/ui';
+  import { Button, Icon, PinInput } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline, mdiLockSmart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -40,9 +39,9 @@
 </script>
 
 <AuthPageLayout withHeader={false}>
-  {#if hasPinCode}
-    <div class="flex items-center justify-center">
-      <div class="w-96 flex flex-col gap-6 items-center justify-center">
+  <div class="flex items-center justify-center">
+    <div class="w-96 flex flex-col gap-6 items-center justify-center">
+      {#if hasPinCode}
         {#if isVerified}
           <div in:fade={{ duration: 200 }}>
             <Icon icon={mdiLockOpenVariantOutline} size="64" class="text-success/90" />
@@ -55,22 +54,8 @@
 
         <p class="text-center text-sm" style="text-wrap: pretty;">{$t('enter_your_pin_code_subtitle')}</p>
 
-        <PincodeInput
-          type="password"
-          autofocus
-          label=""
-          bind:value={pinCode}
-          tabindexStart={1}
-          pinLength={6}
-          onFilled={handleUnlockSession}
-        />
-
-        <Button type="button" color="secondary" onclick={() => goto(AppRoute.PHOTOS)}>{$t('cancel')}</Button>
-      </div>
-    </div>
-  {:else}
-    <div class="flex items-center justify-center">
-      <div class="w-96 flex flex-col gap-6 items-center justify-center">
+        <PinInput password autofocus bind:value={pinCode} onComplete={handleUnlockSession} />
+      {:else}
         <div class="text-primary">
           <Icon icon={mdiLockSmart} size="64" />
         </div>
@@ -78,7 +63,11 @@
           {$t('new_pin_code_subtitle')}
         </p>
         <PinCodeCreateForm showLabel={false} onCreated={() => (hasPinCode = true)} />
+      {/if}
+
+      <div class={hasPinCode ? '' : 'flex w-full items-start'}>
+        <Button type="button" color="secondary" onclick={() => goto(Route.photos())}>{$t('cancel')}</Button>
       </div>
     </div>
-  {/if}
+  </div>
 </AuthPageLayout>

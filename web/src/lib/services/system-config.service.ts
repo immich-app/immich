@@ -62,7 +62,7 @@ export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) =
     const newConfig = await updateConfig({ systemConfigDto });
 
     eventManager.emit('SystemConfigUpdate', newConfig);
-    toastManager.success($t('settings_saved'));
+    toastManager.primary($t('settings_saved'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_settings'));
   }
@@ -96,7 +96,7 @@ export const handleDownloadConfig = (config: SystemConfigDto) => {
 export const handleUploadConfig = () => {
   const input = globalThis.document.createElement('input');
   input.setAttribute('type', 'file');
-  input.setAttribute('accept', 'json');
+  input.setAttribute('accept', '.json');
   input.setAttribute('style', 'display: none');
 
   input.addEventListener('change', ({ target }) => {
@@ -109,8 +109,10 @@ export const handleUploadConfig = () => {
       const newConfig = JSON.parse(text);
       await handleSystemConfigSave(newConfig);
     };
-    reader().catch((error) => console.error('Error handling JSON config upload', error));
-    globalThis.document.append(input);
+    reader()
+      .catch((error) => console.error('Error handling JSON config upload', error))
+      .finally(() => input.remove());
   });
-  input.remove();
+  globalThis.document.body.append(input);
+  input.click();
 };

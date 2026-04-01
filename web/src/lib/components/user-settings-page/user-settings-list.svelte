@@ -6,7 +6,7 @@
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
   import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
-  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import { OpenQueryParam, QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
@@ -46,7 +46,7 @@
 
   let oauthOpen =
     oauth.isCallback(globalThis.location) ||
-    $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenSettingQueryParameterValue.OAUTH;
+    $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
 </script>
 
 <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
@@ -105,7 +105,7 @@
 
   <SettingAccordion
     icon={mdiBellOutline}
-    key="notifications"
+    key={OpenQueryParam.NOTIFICATIONS}
     title={$t('notifications')}
     subtitle={$t('notifications_setting_description')}
   >
@@ -115,7 +115,7 @@
   {#if featureFlagsManager.value.oauth}
     <SettingAccordion
       icon={mdiTwoFactorAuthentication}
-      key="oauth"
+      key={OpenQueryParam.OAUTH}
       title={$t('oauth')}
       subtitle={$t('manage_your_oauth_connection')}
       isOpen={oauthOpen || undefined}
@@ -154,7 +154,7 @@
 
   <SettingAccordion
     icon={mdiKeyOutline}
-    key="user-purchase-settings"
+    key={OpenQueryParam.PURCHASE_SETTINGS}
     title={$t('user_purchase_settings')}
     subtitle={$t('user_purchase_settings_description')}
     autoScrollTo={true}

@@ -54,6 +54,14 @@ describe(UserController.name, () => {
         expect(body).toEqual(errorDto.badRequest());
       });
     }
+
+    it('should allow an empty avatarColor', async () => {
+      await request(ctx.getHttpServer())
+        .put(`/users/me`)
+        .set('Authorization', `Bearer token`)
+        .send({ avatarColor: null });
+      expect(service.updateMe).toHaveBeenCalledWith(undefined, expect.objectContaining({ avatarColor: null }));
+    });
   });
 
   describe('GET /users/:id', () => {

@@ -1,5 +1,5 @@
+import { Column, ForeignKeyColumn, Table, Timestamp } from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { Column, ForeignKeyColumn, Table, Timestamp } from 'src/sql-tools';
 
 @Table('asset_job_status')
 export class AssetJobStatusTable {
@@ -14,12 +14,6 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   duplicatesDetectedAt!: Timestamp | null;
-
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  previewAt!: Timestamp | null;
-
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  thumbnailAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   ocrAt!: Timestamp | null;

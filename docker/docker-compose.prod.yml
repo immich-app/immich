@@ -56,7 +56,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:fb8d272e529ea567b9bf1302245796f21a2672b8368ca3fcb938ac334e613c8f
+    image: docker.io/valkey/valkey:9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -77,13 +77,15 @@ services:
       - 5432:5432
     shm_size: 128mb
     restart: always
+    healthcheck:
+      disable: false
 
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   immich-prometheus:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:d936808bdea528155c0154a922cd42fd75716b8bb7ba302641350f9f3eaeba09
+    image: prom/prometheus@sha256:4a61322ac1103a0e3aea2a61ef1718422a48fa046441f299d71e660a3bc71ae9
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -95,7 +97,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:12.3.0-ubuntu@sha256:cee936306135e1925ab21dffa16f8a411535d16ab086bef2309339a8e74d62df
+    image: grafana/grafana:12.4.2-ubuntu@sha256:78839fe49e1425c02416fa8072591533a72bd9598e563b54a07d78f9e27fb5d3
     volumes:
       - grafana-data:/var/lib/grafana
 

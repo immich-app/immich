@@ -26,6 +26,7 @@ The `/api/something` endpoint is now `/api/something-else`
 
 ## Checklist:
 
+- [ ] I have carefully read CONTRIBUTING.md
 - [ ] I have performed a self-review of my own code
 - [ ] I have made corresponding changes to the documentation if applicable
 - [ ] I have no unrelated changes in the PR.

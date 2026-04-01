@@ -1,9 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { OpenQueryParam } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
-  import { purchaseStore } from '$lib/stores/purchase.store';
+  import { Route } from '$lib/route';
   import { preferences } from '$lib/stores/user.store';
   import { getAccountAge } from '$lib/utils/auth';
   import { handleError } from '$lib/utils/handle-error';
@@ -20,8 +21,6 @@
   let hoverButton = $state(false);
 
   let showBuyButton = $state(getButtonVisibility());
-
-  const { isPurchased } = purchaseStore;
 
   const openPurchaseModal = async () => {
     await modalManager.show(PurchaseModal);
@@ -71,15 +70,15 @@
 </script>
 
 <div class="license-status ps-4 text-sm">
-  {#if $isPurchased && $preferences.purchase.showSupportBadge}
+  {#if authManager.isPurchased && $preferences.purchase.showSupportBadge}
     <button
-      onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
+      onclick={() => goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }))}
       class="w-full mt-2"
       type="button"
     >
       <SupporterBadge size="small" effect="always" />
     </button>
-  {:else if !$isPurchased && showBuyButton && getAccountAge() > 14}
+  {:else if !authManager.isPurchased && showBuyButton && getAccountAge() > 14}
     <button
       type="button"
       onclick={openPurchaseModal}

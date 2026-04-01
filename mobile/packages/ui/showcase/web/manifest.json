@@ -1,0 +1,37 @@
+{
+    "name": "@immich/ui Showcase",
+    "short_name": "@immich/ui",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FCFCFD",
+    "theme_color": "#4250AF",
+    "description": "Immich UI component library showcase and documentation",
+    "orientation": "landscape",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

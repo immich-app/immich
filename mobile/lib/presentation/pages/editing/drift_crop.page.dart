@@ -37,7 +37,7 @@ class DriftCropImagePage extends HookWidget {
             icon: Icons.done_rounded,
             color: ImmichColor.primary,
             variant: ImmichVariant.ghost,
-            onTap: () async {
+            onPressed: () async {
               final croppedImage = await cropController.croppedImage();
               unawaited(context.pushRoute(DriftEditImageRoute(asset: asset, image: croppedImage, isEdited: true)));
             },
@@ -79,13 +79,13 @@ class DriftCropImagePage extends HookWidget {
                                   icon: Icons.rotate_left,
                                   variant: ImmichVariant.ghost,
                                   color: ImmichColor.secondary,
-                                  onTap: () => cropController.rotateLeft(),
+                                  onPressed: () => cropController.rotateLeft(),
                                 ),
                                 ImmichIconButton(
                                   icon: Icons.rotate_right,
                                   variant: ImmichVariant.ghost,
                                   color: ImmichColor.secondary,
-                                  onTap: () => cropController.rotateRight(),
+                                  onPressed: () => cropController.rotateRight(),
                                 ),
                               ],
                             ),

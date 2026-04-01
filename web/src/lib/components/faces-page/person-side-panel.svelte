@@ -1,9 +1,9 @@
 <script lang="ts">
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
@@ -70,8 +70,8 @@
     isShowLoadingPeople = false;
   }
 
-  const onPersonThumbnail = (personId: string) => {
-    assetFaceGenerated.push(personId);
+  const onPersonThumbnailReady = ({ id }: { id: string }) => {
+    assetFaceGenerated.push(id);
     if (
       isEqual(assetFaceGenerated, peopleToCreate) &&
       loaderLoadingDoneTimeout &&
@@ -86,7 +86,6 @@
 
   onMount(() => {
     handlePromiseError(loadPeople());
-    return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
   const isEqual = (a: string[], b: string[]): boolean => {
@@ -126,7 +125,7 @@
           }
         }
 
-        toastManager.success($t('people_edits_count', { values: { count: numberOfChanges } }));
+        toastManager.primary($t('people_edits_count', { values: { count: numberOfChanges } }));
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
       }
@@ -175,14 +174,18 @@
 
       await deleteFace({ id: face.id, assetFaceDeleteDto: { force: false } });
 
+      eventManager.emit('PersonAssetDelete', { id: face.person.id, assetId });
+
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 
-      await assetViewingStore.setAssetId(assetId);
+      await assetViewerManager.setAssetId(assetId);
     } catch (error) {
       handleError(error, $t('error_delete_face'));
     }
   };
 </script>
+
+<OnEvents {onPersonThumbnailReady} />
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
@@ -268,7 +271,7 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewerImgElement)}
+                  {#await zoomImageToBase64(face, assetId, assetType, assetViewerManager.imgRef)}
                     <ImageThumbnail
                       curve
                       shadow

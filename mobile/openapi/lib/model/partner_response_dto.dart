@@ -22,12 +22,16 @@ class PartnerResponseDto {
     required this.profileImagePath,
   });
 
+  /// Avatar color
   UserAvatarColor avatarColor;
 
+  /// User email
   String email;
 
+  /// User ID
   String id;
 
+  /// Show in timeline
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -36,10 +40,13 @@ class PartnerResponseDto {
   ///
   bool? inTimeline;
 
+  /// User name
   String name;
 
+  /// Profile change date
   DateTime profileChangedAt;
 
+  /// Profile image path
   String profileImagePath;
 
   @override

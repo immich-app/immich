@@ -10,14 +10,14 @@ import { isGranted } from 'src/utils/access';
 export class ApiKeyService extends BaseService {
   async create(auth: AuthDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     const token = this.cryptoRepository.randomBytesAsText(32);
-    const tokenHashed = this.cryptoRepository.hashSha256(token);
+    const hashed = this.cryptoRepository.hashSha256(token);
 
     if (auth.apiKey && !isGranted({ requested: dto.permissions, current: auth.apiKey.permissions })) {
       throw new BadRequestException('Cannot grant permissions you do not have');
     }
 
     const entity = await this.apiKeyRepository.create({
-      key: tokenHashed,
+      key: hashed,
       name: dto.name || 'API Key',
       userId: auth.user.id,
       permissions: dto.permissions,
@@ -30,6 +30,14 @@ export class ApiKeyService extends BaseService {
     const exists = await this.apiKeyRepository.getById(auth.user.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
+    }
+
+    if (
+      auth.apiKey &&
+      dto.permissions &&
+      !isGranted({ requested: dto.permissions, current: auth.apiKey.permissions })
+    ) {
+      throw new BadRequestException('Cannot grant permissions you do not have');
     }
 
     const key = await this.apiKeyRepository.update(auth.user.id, id, { name: dto.name, permissions: dto.permissions });

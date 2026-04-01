@@ -11,7 +11,7 @@
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
-  import { Button, modalManager, Text, toastManager } from '@immich/ui';
+  import { Button, Link, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -32,8 +32,8 @@
     const allMethodsDisabled = !configToEdit.oauth.enabled && !configToEdit.passwordLogin.enabled;
 
     if (allMethodsDisabled) {
-      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal);
-      if (!isConfirmed) {
+      const confirmed = await modalManager.show(AuthDisableLoginConfirmModal);
+      if (!confirmed) {
         return false;
       }
     }
@@ -55,7 +55,7 @@
 
     try {
       await unlinkAllOAuthAccountsAdmin();
-      toastManager.success();
+      toastManager.primary();
     } catch (error) {
       handleError(error, $t('errors.something_went_wrong'));
     }
@@ -75,14 +75,7 @@
             <Text size="small">
               <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
-                  <a
-                    href="https://docs.immich.app/administration/oauth"
-                    class="underline"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {message}
-                  </a>
+                  <Link href="https://docs.immich.app/administration/oauth">{message}</Link>
                 {/snippet}
               </FormatMessage>
             </Text>
@@ -105,7 +98,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="ISSUER_URL"
+                label="issuer_url"
                 bind:value={configToEdit.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -114,7 +107,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT_ID"
+                label="client_id"
                 bind:value={configToEdit.oauth.clientId}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -123,7 +116,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT_SECRET"
+                label="client_secret"
                 description={$t('admin.oauth_client_secret_description')}
                 bind:value={configToEdit.oauth.clientSecret}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -132,7 +125,7 @@
 
               {#if configToEdit.oauth.clientSecret}
                 <SettingSelect
-                  label="TOKEN_ENDPOINT_AUTH_METHOD"
+                  label="token_endpoint_auth_method"
                   bind:value={configToEdit.oauth.tokenEndpointAuthMethod}
                   disabled={disabled || !configToEdit.oauth.enabled || !configToEdit.oauth.clientSecret}
                   isEdited={!(configToEdit.oauth.tokenEndpointAuthMethod === config.oauth.tokenEndpointAuthMethod)}
@@ -146,7 +139,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="SCOPE"
+                label="scope"
                 bind:value={configToEdit.oauth.scope}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -155,7 +148,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="ID_TOKEN_SIGNED_RESPONSE_ALG"
+                label="id_token_signed_response_alg"
                 bind:value={configToEdit.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -164,7 +157,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="USERINFO_SIGNED_RESPONSE_ALG"
+                label="userinfo_signed_response_alg"
                 bind:value={configToEdit.oauth.profileSigningAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}

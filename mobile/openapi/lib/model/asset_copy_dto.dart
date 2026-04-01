@@ -22,18 +22,25 @@ class AssetCopyDto {
     required this.targetId,
   });
 
+  /// Copy album associations
   bool albums;
 
+  /// Copy favorite status
   bool favorite;
 
+  /// Copy shared links
   bool sharedLinks;
 
+  /// Copy sidecar file
   bool sidecar;
 
+  /// Source asset ID
   String sourceId;
 
+  /// Copy stack association
   bool stack;
 
+  /// Target asset ID
   String targetId;
 
   @override

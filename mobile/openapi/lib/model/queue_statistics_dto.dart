@@ -21,16 +21,22 @@ class QueueStatisticsDto {
     required this.waiting,
   });
 
+  /// Number of active jobs
   int active;
 
+  /// Number of completed jobs
   int completed;
 
+  /// Number of delayed jobs
   int delayed;
 
+  /// Number of failed jobs
   int failed;
 
+  /// Number of paused jobs
   int paused;
 
+  /// Number of waiting jobs
   int waiting;
 
   @override

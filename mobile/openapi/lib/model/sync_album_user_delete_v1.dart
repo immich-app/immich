@@ -17,8 +17,10 @@ class SyncAlbumUserDeleteV1 {
     required this.userId,
   });
 
+  /// Album ID
   String albumId;
 
+  /// User ID
   String userId;
 
   @override

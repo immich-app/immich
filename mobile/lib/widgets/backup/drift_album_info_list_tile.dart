@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -41,6 +42,13 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
       return Icon(Icons.circle, color: context.colorScheme.surfaceContainerHighest);
     }
 
+    Widget buildSubtitle() {
+      return Text(
+        album.isIosSharedAlbum ? '${album.assetCount} (iCloud Shared Album)' : album.assetCount.toString(),
+        style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+      );
+    }
+
     return GestureDetector(
       onDoubleTap: () {
         ref.watch(hapticFeedbackProvider.notifier).selectionClick();
@@ -73,8 +81,8 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
           }
         },
         leading: buildIcon(),
-        title: Text(album.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        subtitle: Text(album.assetCount.toString()),
+        title: Text(album.name, style: context.textTheme.titleSmall),
+        subtitle: buildSubtitle(),
         trailing: IconButton(
           onPressed: () {
             context.pushRoute(LocalTimelineRoute(album: album));

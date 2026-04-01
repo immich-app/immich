@@ -4,7 +4,9 @@ import { lang } from '$lib/stores/preferences.store';
 
 class LanguageManager {
   constructor() {
-    eventManager.on('AppInit', () => lang.subscribe((lang) => this.setLanguage(lang)));
+    eventManager.on({
+      AppInit: () => lang.subscribe((lang) => this.setLanguage(lang)),
+    });
   }
 
   rtl = $state(false);

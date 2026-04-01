@@ -21,6 +21,11 @@ describe(DatabaseService.name, () => {
     extensionRange = '0.2.x';
     mocks.database.getVectorExtension.mockResolvedValue(DatabaseExtension.VectorChord);
     mocks.database.getExtensionVersionRange.mockReturnValue(extensionRange);
+    mocks.database.getSchemaDrift.mockResolvedValue({
+      items: [],
+      asSql: () => [],
+      asHuman: () => [],
+    });
 
     versionBelowRange = '0.1.0';
     minVersionInRange = '0.2.0';

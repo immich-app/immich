@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ConfirmModal, Field, Textarea } from '@immich/ui';
+  import { Field, FormModal, Textarea } from '@immich/ui';
   import { mdiText } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -11,16 +11,8 @@
   let description = $state('');
 </script>
 
-<ConfirmModal
-  confirmColor="primary"
-  title={$t('edit_description')}
-  icon={mdiText}
-  prompt={$t('edit_description_prompt')}
-  onClose={(confirmed) => (confirmed ? onClose(description) : onClose())}
->
-  {#snippet promptSnippet()}
-    <Field label={$t('description')}>
-      <Textarea bind:value={description} grow />
-    </Field>
-  {/snippet}
-</ConfirmModal>
+<FormModal title={$t('edit_description')} icon={mdiText} {onClose} onSubmit={() => onClose(description)}>
+  <Field label={$t('description')}>
+    <Textarea bind:value={description} grow />
+  </Field>
+</FormModal>

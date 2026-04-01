@@ -71,6 +71,22 @@ For RKMPP to work:
 
 5. (Optional) Enable hardware decoding for optimal performance.
 
+<details>
+<summary>immich.json</summary>
+
+If you use a [configuration file](/install/config-file.md), use the `accel` option to select the hardware (e.g. `qsv` for Intel or `nvenc` for Nvidia). Set `accelDecode` to `true` if you want hardware decoding.
+
+```json
+{
+  "ffmpeg": {
+    "accel": "qsv",
+    "accelDecode": true
+  }
+}
+```
+
+</details>
+
 #### Single Compose File
 
 Some platforms, including Unraid and Portainer, do not support multiple Compose files as of writing. As an alternative, you can "inline" the relevant contents of the [`hwaccel.transcoding.yml`][hw-file] file into the `immich-server` service directly.

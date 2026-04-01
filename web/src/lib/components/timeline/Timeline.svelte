@@ -1,31 +1,30 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Month from '$lib/components/timeline/Month.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
+  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
+  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
 
   interface Props {
@@ -37,21 +36,14 @@
     enableRouting: boolean;
     timelineManager?: TimelineManager;
     options?: TimelineManagerOptions;
-    assetInteraction: AssetInteraction;
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE
-      | null;
+    assetInteraction: AssetMultiSelectManager;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
+    album?: AlbumResponseDto;
     albumUsers?: UserResponseDto[];
-    person?: PersonResponseDto | null;
-    isShowDeleteConfirmation?: boolean;
+    person?: PersonResponseDto;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -81,10 +73,9 @@
     withStacked = false,
     showArchiveIcon = false,
     isShared = false,
-    album = null,
+    album,
     albumUsers = [],
-    person = null,
-    isShowDeleteConfirmation = $bindable(false),
+    person,
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -97,10 +88,7 @@
   onDestroy(() => timelineManager.destroy());
   $effect(() => options && void timelineManager.updateOptions(options));
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
-
   let scrollableElement: HTMLElement | undefined = $state();
-
   let timelineElement: HTMLElement | undefined = $state();
   let invisible = $state(true);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
@@ -113,8 +101,8 @@
   let scrubberWidth = $state(0);
 
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
-  const maxMd = $derived(mobileDevice.maxMd);
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const maxMd = $derived(mediaQueryManager.maxMd);
+  const usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
   $effect(() => {
     const layoutOptions = maxMd
@@ -218,7 +206,7 @@
         timelineManager.viewportWidth = rect.width;
       }
     }
-    const scrollTarget = $gridScrollTarget?.at;
+    const scrollTarget = assetViewerManager.gridScrollTarget?.at;
     let scrolled = false;
     if (scrollTarget) {
       scrolled = await scrollAndLoadAsset(scrollTarget);
@@ -226,6 +214,9 @@
     if (!scrolled) {
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
+    } else if (scrollTarget) {
+      await tick();
+      focusAsset(scrollTarget);
     }
     invisible = false;
   };
@@ -264,8 +255,6 @@
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
-
-  const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
   onMount(() => {
     if (!enableRouting) {
@@ -337,7 +326,7 @@
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: ViewportTopMonth;
-        let monthGroupHeight = 0;
+        let monthGroupHeight: number;
         if (i === -1) {
           // lead-in
           monthGroup = 'lead-in';
@@ -415,11 +404,7 @@
       }
     }
 
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
   const onSelectAssets = async (asset: TimelineAsset) => {
@@ -428,77 +413,68 @@
     }
     onSelect(asset);
 
-    if (singleSelect) {
-      timelineManager.scrollTo(0);
-      return;
-    }
-
-    const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
+    const rangeSelection = assetInteraction.candidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);
 
     // Select/deselect already loaded assets
     if (deselect) {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
+      for (const candidate of assetInteraction.candidates) {
         assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
       assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
+      for (const candidate of assetInteraction.candidates) {
         handleSelectAsset(candidate);
       }
       handleSelectAsset(asset);
     }
 
-    assetInteraction.clearAssetSelectionCandidates();
+    assetInteraction.clearCandidates();
 
-    if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
+    if (assetInteraction.startAsset && rangeSelection) {
+      const startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.startAsset.id);
+      const endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
 
-      if (startBucket === null || endBucket === null) {
+      if (!startBucket || !endBucket) {
         return;
       }
 
+      const monthGroups = timelineManager.months;
+      const startBucketIndex = monthGroups.indexOf(startBucket);
+      const endBucketIndex = monthGroups.indexOf(endBucket);
+
+      if (startBucketIndex === -1 || endBucketIndex === -1) {
+        return;
+      }
+
+      const rangeStartIndex = Math.min(startBucketIndex, endBucketIndex);
+      const rangeEndIndex = Math.max(startBucketIndex, endBucketIndex);
+
       // Select/deselect assets in range (start,end)
-      let started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === endBucket) {
-          break;
-        }
-        if (started) {
-          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
-          for (const asset of monthGroup.assetsIterator()) {
-            if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-            } else {
-              handleSelectAsset(asset);
-            }
+      for (let index = rangeStartIndex + 1; index < rangeEndIndex; index++) {
+        const monthGroup = monthGroups[index];
+        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+        for (const monthAsset of monthGroup.assetsIterator()) {
+          if (deselect) {
+            assetInteraction.removeAssetFromMultiselectGroup(monthAsset.id);
+          } else {
+            handleSelectAsset(monthAsset);
           }
-        }
-        if (monthGroup === startBucket) {
-          started = true;
         }
       }
 
       // Update date group selection in range [start,end]
-      started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === startBucket) {
-          started = true;
-        }
-        if (started) {
-          // Split month group into day groups and check each group
-          for (const dayGroup of monthGroup.dayGroups) {
-            const dayGroupTitle = dayGroup.groupTitle;
-            if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-              assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
-            } else {
-              assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
-            }
+      for (let index = rangeStartIndex; index <= rangeEndIndex; index++) {
+        const monthGroup = monthGroups[index];
+
+        // Split month group into day groups and check each group
+        for (const dayGroup of monthGroup.dayGroups) {
+          const dayGroupTitle = dayGroup.groupTitle;
+          if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+            assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
+          } else {
+            assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
           }
-        }
-        if (monthGroup === endBucket) {
-          break;
         }
       }
     }
@@ -511,7 +487,7 @@
       return;
     }
 
-    const startAsset = assetInteraction.assetSelectionStart;
+    const startAsset = assetInteraction.startAsset;
     if (!startAsset) {
       return;
     }
@@ -522,13 +498,13 @@
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
-      assetInteraction.clearAssetSelectionCandidates();
+      assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
     if (!shiftKeyIsDown) {
-      assetInteraction.clearAssetSelectionCandidates();
+      assetInteraction.clearCandidates();
     }
   });
 
@@ -539,8 +515,8 @@
   });
 
   $effect(() => {
-    if ($showAssetViewer) {
-      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
+    if (assetViewerManager.asset && assetViewerManager.isViewing) {
+      const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
       void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }
   });
@@ -563,7 +539,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    isSelectingAllAssets.set(timelineManager.assetCount === assetInteraction.selectedAssets.length);
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
   const _onClick = (
@@ -586,7 +562,7 @@
   onAfterUpdate={() => {
     const asset = page.url.searchParams.get('at');
     if (asset) {
-      $gridScrollTarget = { at: asset };
+      assetViewerManager.gridScrollTarget = { at: asset };
     }
     void scrollAfterNavigate();
   }}
@@ -602,7 +578,6 @@
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
   {timelineManager}
   {assetInteraction}
-  bind:isShowDeleteConfirmation
   {onEscape}
 />
 
@@ -639,7 +614,7 @@
 <section
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
-  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
+  style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
@@ -653,7 +628,7 @@
     style:height={timelineManager.totalViewerHeight + 'px'}
   >
     <section
-      use:resizeObserver={topSectionResizeObserver}
+      bind:clientHeight={timelineManager.topSectionHeight}
       class:invisible
       style:position="absolute"
       style:left="0"
@@ -667,7 +642,7 @@
     </section>
 
     {#each timelineManager.months as monthGroup (monthGroup.viewId)}
-      {@const display = monthGroup.intersecting}
+      {@const isInOrNearViewport = monthGroup.isInOrNearViewport}
       {@const absoluteHeight = monthGroup.top}
 
       {#if !monthGroup.isLoaded}
@@ -679,7 +654,7 @@
         >
           <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
         </div>
-      {:else if display}
+      {:else if isInOrNearViewport}
         <div
           class="month-group"
           style:height={monthGroup.height + 'px'}
@@ -744,7 +719,7 @@
 </section>
 
 <Portal target="body">
-  {#if $showAssetViewer}
+  {#if assetViewerManager.isViewing}
     <TimelineAssetViewer bind:invisible {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>

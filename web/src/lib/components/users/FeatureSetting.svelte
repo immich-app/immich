@@ -11,6 +11,6 @@
 </script>
 
 <div class="flex justify-between items-center">
-  <Text class="text-sm font-medium">{title}</Text>
+  <Text class="text-sm" fontWeight="medium">{title}</Text>
   <Icon icon={state ? mdiCheck : mdiClose} class={state ? 'text-primary' : 'text-danger'} size="24" />
 </div>

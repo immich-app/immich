@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
 import { DB } from 'src/schema';
@@ -121,6 +122,7 @@ export class PersonRepository {
       .$if(!!options.sourceType, (qb) => qb.where('asset_face.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_face.assetId', '=', options.assetId!))
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .stream();
   }
 
@@ -160,6 +162,7 @@ export class PersonRepository {
       )
       .where('person.ownerId', '=', userId)
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .orderBy('person.isHidden', 'asc')
       .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
@@ -208,19 +211,23 @@ export class PersonRepository {
       .selectAll('person')
       .leftJoin('asset_face', 'asset_face.personId', 'person.id')
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .having((eb) => eb.fn.count('asset_face.assetId'), '=', 0)
       .groupBy('person.id')
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getFaces(assetId: string) {
+  getFaces(assetId: string, options?: { isVisible?: boolean }) {
+    const isVisible = options === undefined ? true : options.isVisible;
+
     return this.db
       .selectFrom('asset_face')
       .selectAll('asset_face')
       .select(withPerson)
       .where('asset_face.assetId', '=', assetId)
       .where('asset_face.deletedAt', 'is', null)
+      .$if(isVisible !== undefined, (qb) => qb.where('asset_face.isVisible', '=', isVisible!))
       .orderBy('asset_face.boundingBoxX1', 'asc')
       .execute();
   }
@@ -281,6 +288,7 @@ export class PersonRepository {
           .select('asset_file.path')
           .whereRef('asset_file.assetId', '=', 'asset.id')
           .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+          .where('asset_file.isEdited', '=', false)
           .as('previewPath'),
       )
       .where('person.id', '=', id)
@@ -344,12 +352,13 @@ export class PersonRepository {
       .leftJoin('asset', (join) =>
         join
           .onRef('asset.id', '=', 'asset_face.assetId')
-          .on('asset_face.personId', '=', personId)
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
+      .where('asset_face.personId', '=', personId)
       .executeTakeFirst();
 
     return {
@@ -368,6 +377,7 @@ export class PersonRepository {
             .selectFrom('asset_face')
             .whereRef('asset_face.personId', '=', 'person.id')
             .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', '=', true)
             .where((eb) =>
               eb.exists((eb) =>
                 eb
@@ -475,12 +485,6 @@ export class PersonRepository {
     return this.db
       .selectFrom('asset_face')
       .selectAll('asset_face')
-      .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('asset').selectAll('asset').whereRef('asset.id', '=', 'asset_face.assetId')).as(
-          'asset',
-        ),
-      )
-      .$narrowType<{ asset: NotNull }>()
       .select(withPerson)
       .where('asset_face.assetId', 'in', assetIds)
       .where('asset_face.personId', 'in', personIds)
@@ -495,6 +499,7 @@ export class PersonRepository {
       .selectAll('asset_face')
       .where('asset_face.personId', '=', personId)
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .executeTakeFirst();
   }
 
@@ -538,5 +543,49 @@ export class PersonRepository {
       return Promise.resolve([]);
     }
     return this.db.selectFrom('person').select(['id', 'thumbnailPath']).where('id', 'in', ids).execute();
+  }
+
+  @GenerateSql({ params: [[], []] })
+  async updateVisibility(visible: AssetFace[], hidden: AssetFace[]): Promise<void> {
+    if (visible.length === 0 && hidden.length === 0) {
+      return;
+    }
+
+    await this.db.transaction().execute(async (trx) => {
+      if (visible.length > 0) {
+        await trx
+          .updateTable('asset_face')
+          .set({ isVisible: true })
+          .where(
+            'asset_face.id',
+            'in',
+            visible.map(({ id }) => id),
+          )
+          .execute();
+      }
+
+      if (hidden.length > 0) {
+        await trx
+          .updateTable('asset_face')
+          .set({ isVisible: false })
+          .where(
+            'asset_face.id',
+            'in',
+            hidden.map(({ id }) => id),
+          )
+          .execute();
+      }
+    });
+  }
+
+  @GenerateSql({ params: [{ personId: DummyValue.UUID, assetId: DummyValue.UUID }] })
+  getForFeatureFaceUpdate({ personId, assetId }: { personId: string; assetId: string }) {
+    return this.db
+      .selectFrom('asset_face')
+      .select('asset_face.id')
+      .where('asset_face.assetId', '=', assetId)
+      .where('asset_face.personId', '=', personId)
+      .innerJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.isOffline', '=', false))
+      .executeTakeFirst();
   }
 }

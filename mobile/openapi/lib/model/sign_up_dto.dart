@@ -18,10 +18,13 @@ class SignUpDto {
     required this.password,
   });
 
+  /// User email
   String email;
 
+  /// User name
   String name;
 
+  /// User password
   String password;
 
   @override

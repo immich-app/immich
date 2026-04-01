@@ -28,6 +28,7 @@ export class MemoryService extends BaseService {
           continue;
         }
 
+        this.logger.log(`Creating memories for ${target.toISO()}`);
         try {
           await Promise.all(users.map((owner) => this.createOnThisDayMemories(owner.id, target)));
         } catch (error) {
@@ -99,6 +100,8 @@ export class MemoryService extends BaseService {
         data: dto.data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
+        showAt: dto.showAt,
+        hideAt: dto.hideAt,
         seenAt: dto.seenAt,
       },
       allowedAssetIds,

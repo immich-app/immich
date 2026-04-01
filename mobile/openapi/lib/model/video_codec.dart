@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Target video codec
 class VideoCodec {
   /// Instantiate a new enum with the provided [value].
   const VideoCodec._(this.value);

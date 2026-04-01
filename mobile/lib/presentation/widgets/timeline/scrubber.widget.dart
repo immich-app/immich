@@ -450,7 +450,7 @@ class _SegmentWidget extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               _segment.date.year.toString(),
-              style: context.textTheme.labelMedium?.copyWith(fontFamily: "OverpassMono", fontWeight: FontWeight.w600),
+              style: context.textTheme.labelMedium?.copyWith(fontFamily: "GoogleSansCode", fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -530,12 +530,14 @@ class _CircularThumb extends StatelessWidget {
         elevation: 4.0,
         color: backgroundColor,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(48.0),
-          bottomLeft: Radius.circular(48.0),
+          topLeft: Radius.circular(kScrubberThumbHeight),
+          bottomLeft: Radius.circular(kScrubberThumbHeight),
           topRight: Radius.circular(4.0),
           bottomRight: Radius.circular(4.0),
         ),
-        child: Container(constraints: BoxConstraints.tight(const Size(48.0 * 0.6, 48.0))),
+        child: Container(
+          constraints: BoxConstraints.tight(const Size(kScrubberThumbHeight * 0.6, kScrubberThumbHeight)),
+        ),
       ),
     );
   }

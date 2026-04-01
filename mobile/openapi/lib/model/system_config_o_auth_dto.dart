@@ -33,42 +33,61 @@ class SystemConfigOAuthDto {
     required this.tokenEndpointAuthMethod,
   });
 
+  /// Auto launch
   bool autoLaunch;
 
+  /// Auto register
   bool autoRegister;
 
+  /// Button text
   String buttonText;
 
+  /// Client ID
   String clientId;
 
+  /// Client secret
   String clientSecret;
 
+  /// Default storage quota
+  ///
   /// Minimum value: 0
   int? defaultStorageQuota;
 
+  /// Enabled
   bool enabled;
 
+  /// Issuer URL
   String issuerUrl;
 
+  /// Mobile override enabled
   bool mobileOverrideEnabled;
 
+  /// Mobile redirect URI
   String mobileRedirectUri;
 
+  /// Profile signing algorithm
   String profileSigningAlgorithm;
 
+  /// Role claim
   String roleClaim;
 
+  /// Scope
   String scope;
 
   String signingAlgorithm;
 
+  /// Storage label claim
   String storageLabelClaim;
 
+  /// Storage quota claim
   String storageQuotaClaim;
 
+  /// Timeout
+  ///
   /// Minimum value: 1
   int timeout;
 
+  /// Token endpoint auth method
   OAuthTokenEndpointAuthMethod tokenEndpointAuthMethod;
 
   @override

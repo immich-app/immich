@@ -1,11 +1,10 @@
 <script lang="ts">
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, MenuItemType, Text } from '@immich/ui';
+  import { ActionButton, ContextMenuButton, MenuItemType, Text } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -61,14 +60,14 @@
 >
   <svelte:element
     this={isExpired ? 'div' : 'a'}
-    href={isExpired ? undefined : `${AppRoute.SHARE}/${sharedLink.key}`}
+    href={isExpired ? undefined : Route.viewSharedLink(sharedLink)}
     class="flex gap-4 w-full py-4"
   >
     <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />
 
     <div class="flex flex-col gap-4 justify-between">
       <div class="flex flex-col">
-        <Text size="tiny" color={isExpired ? 'danger' : 'muted'} class="font-medium">
+        <Text size="tiny" color={isExpired ? 'danger' : 'muted'} fontWeight="medium">
           {#if isExpired}
             {$t('expired')}
           {:else if expiresAt}
@@ -78,7 +77,7 @@
           {/if}
         </Text>
 
-        <Text size="large" color="primary" class="flex place-items-center gap-2 break-all font-medium">
+        <Text size="large" color="primary" class="flex place-items-center gap-2 break-all" fontWeight="medium">
           {#if sharedLink.type === SharedLinkType.Album}
             {sharedLink.album?.albumName}
           {:else if sharedLink.type === SharedLinkType.Individual}
@@ -93,7 +92,7 @@
 
       <div class="flex flex-wrap items-center gap-2">
         {#each capabilities as capability, index (index)}
-          <Text size="small" color="primary" class="font-medium">
+          <Text size="small" color="primary" fontWeight="medium">
             {capability}
           </Text>
           {#if index < capabilities.length - 1}

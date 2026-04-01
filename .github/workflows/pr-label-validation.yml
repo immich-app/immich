@@ -14,13 +14,13 @@ jobs:
       pull-requests: write
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Require PR to have a changelog label
-        uses: mheap/github-action-required-labels@8afbe8ae6ab7647d0c9f0cfa7c2f939650d22509 # v5.5.1
+        uses: mheap/github-action-required-labels@0ac283b4e65c1fb28ce6079dea5546ceca98ccbe # v5.5.2
         with:
           token: ${{ steps.token.outputs.token }}
           mode: exactly
