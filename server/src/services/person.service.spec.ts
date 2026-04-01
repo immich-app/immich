@@ -1,16 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { mapFaces, mapPerson } from 'src/dtos/person.dto';
-import {
-  AssetFileType,
-  CacheControl,
-  JobName,
-  JobStatus,
-  PersonType,
-  QueueName,
-  SourceType,
-  SystemMetadataKey,
-} from 'src/enum';
+import { AssetFileType, CacheControl, JobName, JobStatus, PersonType, SourceType, SystemMetadataKey } from 'src/enum';
 import { FaceSearchResult } from 'src/repositories/search.repository';
 import { PersonService } from 'src/services/person.service';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -567,7 +558,7 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueDetectFaces({ force: false });
 
-      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human,false);
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human, false);
       expect(mocks.person.vacuum).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
@@ -586,11 +577,14 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueDetectFaces({ force: true });
 
-      expect(mocks.person.deleteFaces).toHaveBeenCalledWith({ sourceType: SourceType.MachineLearning, personType: PersonType.Human });
+      expect(mocks.person.deleteFaces).toHaveBeenCalledWith({
+        sourceType: SourceType.MachineLearning,
+        personType: PersonType.Human,
+      });
       expect(mocks.person.delete).toHaveBeenCalledWith([person.id]);
       expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
       expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
-      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human,true);
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human, true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
@@ -609,7 +603,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
       expect(mocks.person.vacuum).not.toHaveBeenCalled();
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
-      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human,undefined);
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human, undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
@@ -632,7 +626,7 @@ describe(PersonService.name, () => {
 
       await sut.handleQueueDetectFaces({ force: true });
 
-      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human,true);
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(PersonType.Human, true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
@@ -815,7 +809,10 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({ force: true });
 
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
-      expect(mocks.person.unassignFaces).toHaveBeenCalledWith({ sourceType: SourceType.MachineLearning, personType: PersonType.Human });
+      expect(mocks.person.unassignFaces).toHaveBeenCalledWith({
+        sourceType: SourceType.MachineLearning,
+        personType: PersonType.Human,
+      });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FacialRecognition,

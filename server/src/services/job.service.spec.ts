@@ -70,7 +70,13 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.AssetDetectPets, JobName.Ocr, JobName.AssetEncodeVideo],
+        jobs: [
+          JobName.SmartSearch,
+          JobName.AssetDetectFaces,
+          JobName.AssetDetectPets,
+          JobName.Ocr,
+          JobName.AssetEncodeVideo,
+        ],
         stub: [AssetFactory.create({ id: 'asset-1', type: AssetType.Video })],
       },
       {
