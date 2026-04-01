@@ -607,6 +607,64 @@ class AlbumsApi {
     return null;
   }
 
+  /// Get own sharing permissions
+  ///
+  /// Get the own sharing permissions in a specific album.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getOwnAlbumUserWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/user/self'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get own sharing permissions
+  ///
+  /// Get the own sharing permissions in a specific album.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<SharingOptionsResponseDto?> getOwnAlbumUser(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getOwnAlbumUserWithHttpInfo(id, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharingOptionsResponseDto',) as SharingOptionsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Remove assets from an album
   ///
   /// Remove multiple assets from a specific album by its ID.
@@ -843,6 +901,60 @@ class AlbumsApi {
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
   Future<void> updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto, { Future<void>? abortTrigger, }) async {
     final response = await updateAlbumUserWithHttpInfo(id, userId, updateAlbumUserDto, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Update own sharing permissions
+  ///
+  /// Change the own sharing permissions in a specific album.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [UpdateSharingOptionsDto] updateSharingOptionsDto (required):
+  Future<Response> updateOwnAlbumUserWithHttpInfo(String id, UpdateSharingOptionsDto updateSharingOptionsDto, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/user/self'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateSharingOptionsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Update own sharing permissions
+  ///
+  /// Change the own sharing permissions in a specific album.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [UpdateSharingOptionsDto] updateSharingOptionsDto (required):
+  Future<void> updateOwnAlbumUser(String id, UpdateSharingOptionsDto updateSharingOptionsDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateOwnAlbumUserWithHttpInfo(id, updateSharingOptionsDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

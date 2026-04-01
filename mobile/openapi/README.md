@@ -92,10 +92,12 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**getAlbumMapMarkers**](doc//AlbumsApi.md#getalbummapmarkers) | **GET** /albums/{id}/map-markers | Retrieve album map markers
 *AlbumsApi* | [**getAlbumStatistics**](doc//AlbumsApi.md#getalbumstatistics) | **GET** /albums/statistics | Retrieve album statistics
 *AlbumsApi* | [**getAllAlbums**](doc//AlbumsApi.md#getallalbums) | **GET** /albums | List all albums
+*AlbumsApi* | [**getOwnAlbumUser**](doc//AlbumsApi.md#getownalbumuser) | **GET** /albums/{id}/user/self | Get own sharing permissions
 *AlbumsApi* | [**removeAssetFromAlbum**](doc//AlbumsApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | Remove assets from an album
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | Remove user from album
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | Update an album
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | Update user role
+*AlbumsApi* | [**updateOwnAlbumUser**](doc//AlbumsApi.md#updateownalbumuser) | **PUT** /albums/{id}/user/self | Update own sharing permissions
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | Check bulk upload
 *AssetsApi* | [**copyAsset**](doc//AssetsApi.md#copyasset) | **PUT** /assets/copy | Copy asset
 *AssetsApi* | [**deleteAssetMetadata**](doc//AssetsApi.md#deleteassetmetadata) | **DELETE** /assets/{id}/metadata/{key} | Delete asset metadata by key
@@ -485,7 +487,7 @@ Class | Method | HTTP request | Description
  - [MemoryStatisticsResponseDto](doc//MemoryStatisticsResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
- - [MergePersonDto](doc//MergePersonDto.md)
+ - [MergeFaceClusterDto](doc//MergeFaceClusterDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
  - [MirrorAxis](doc//MirrorAxis.md)
  - [MirrorParameters](doc//MirrorParameters.md)
@@ -582,6 +584,8 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SharedLinksResponse](doc//SharedLinksResponse.md)
  - [SharedLinksUpdate](doc//SharedLinksUpdate.md)
+ - [SharingOptionsResponseDto](doc//SharingOptionsResponseDto.md)
+ - [SharingPermission](doc//SharingPermission.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
  - [SourceType](doc//SourceType.md)
@@ -687,6 +691,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
+ - [UpdateSharingOptionsDto](doc//UpdateSharingOptionsDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
  - [UserAdminDeleteDto](doc//UserAdminDeleteDto.md)

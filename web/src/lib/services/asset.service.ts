@@ -5,6 +5,7 @@ import {
   AssetVisibility,
   getAssetInfo,
   runAssetJobs,
+  SharingPermission,
   updateAsset,
   type AssetJobsDto,
   type AssetResponseDto,
@@ -50,8 +51,7 @@ import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelt
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils';
+import { downloadUrl, getAssetMediaUrl, getSharedLink, hasPermissions, sleep } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
@@ -108,7 +108,12 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
   const Share: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
-    $if: () => !!(authUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
+    $if: () =>
+      !!(
+        hasPermissions(asset, SharingPermission.AssetShare) &&
+        !asset.isTrashed &&
+        asset.visibility !== AssetVisibility.Locked
+      ),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
 
@@ -129,7 +134,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
 
   const SharedLinkDownload: ActionItem = {
     ...Download,
-    $if: () => isOwner || !!sharedLink?.allowDownload,
+    $if: () => hasPermissions(asset, SharingPermission.AssetShare) || !!sharedLink?.allowDownload,
   };
 
   const PlayMotionPhoto: ActionItem = {
@@ -239,7 +244,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     icon: mdiTune,
     $if: () =>
       !sharedLink &&
-      isOwner &&
+      hasPermissions(asset, SharingPermission.AssetEdit) &&
       asset.type === AssetTypeEnum.Image &&
       !asset.livePhotoVideoId &&
       asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&

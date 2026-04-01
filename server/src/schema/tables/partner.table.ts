@@ -9,6 +9,8 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { SharingPermission } from 'src/enum';
+import { sharing_permission_enum } from 'src/schema/enums';
 import { partner_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
 
@@ -46,4 +48,7 @@ export class PartnerTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ array: true, enum: sharing_permission_enum, default: [SharingPermission.All] })
+  permissions!: Generated<SharingPermission[]>;
 }

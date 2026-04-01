@@ -37,6 +37,7 @@ class AssetResponseDto {
     this.owner = const Optional.absent(),
     required this.ownerId,
     this.people = const Optional.present(const []),
+    this.permissions = const [],
     this.resized = const Optional.absent(),
     this.stack = const Optional.absent(),
     this.tags = const Optional.present(const []),
@@ -140,6 +141,8 @@ class AssetResponseDto {
 
   Optional<List<PersonResponseDto>?> people;
 
+  List<SharingPermission> permissions;
+
   /// Is resized
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -195,6 +198,7 @@ class AssetResponseDto {
     other.owner == owner &&
     other.ownerId == ownerId &&
     _deepEquality.equals(other.people, people) &&
+    _deepEquality.equals(other.permissions, permissions) &&
     other.resized == resized &&
     other.stack == stack &&
     _deepEquality.equals(other.tags, tags) &&
@@ -231,6 +235,7 @@ class AssetResponseDto {
     (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
     (people.hashCode) +
+    (permissions.hashCode) +
     (resized == null ? 0 : resized!.hashCode) +
     (stack == null ? 0 : stack!.hashCode) +
     (tags.hashCode) +
@@ -241,7 +246,7 @@ class AssetResponseDto {
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, permissions=$permissions, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -298,6 +303,7 @@ class AssetResponseDto {
       final value = this.people.value;
       json[r'people'] = value;
     }
+      json[r'permissions'] = this.permissions;
     if (this.resized.isPresent) {
       final value = this.resized.value;
       json[r'resized'] = value;
@@ -359,6 +365,7 @@ class AssetResponseDto {
         owner: json.containsKey(r'owner') ? Optional.present(UserResponseDto.fromJson(json[r'owner'])) : const Optional.absent(),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: json.containsKey(r'people') ? Optional.present(PersonResponseDto.listFromJson(json[r'people'])) : const Optional.absent(),
+        permissions: SharingPermission.listFromJson(json[r'permissions']),
         resized: json.containsKey(r'resized') ? Optional.present(mapValueOfType<bool>(json, r'resized')) : const Optional.absent(),
         stack: json.containsKey(r'stack') ? Optional.present(AssetStackResponseDto.fromJson(json[r'stack'])) : const Optional.absent(),
         tags: json.containsKey(r'tags') ? Optional.present(TagResponseDto.listFromJson(json[r'tags'])) : const Optional.absent(),
@@ -431,6 +438,7 @@ class AssetResponseDto {
     'originalFileName',
     'originalPath',
     'ownerId',
+    'permissions',
     'thumbhash',
     'type',
     'updatedAt',

@@ -8,6 +8,7 @@ import {
   SelectQueryBuilder,
   ShallowDehydrateObject,
   sql,
+  StringReference,
   Updateable,
   UpdateResult,
 } from 'kysely';
@@ -25,6 +26,7 @@ import {
   AssetType,
   AssetVisibility,
   CalendarHeatmapType,
+  SharingPermission,
 } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
@@ -49,6 +51,7 @@ import {
   withFiles,
   withLibrary,
   withOwner,
+  withPermissions,
   withSmartSearch,
   withTagId,
   withTags,
@@ -172,6 +175,93 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
     eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
   );
 };
+
+export const hasAssetPermissions =
+  (userId: string, permissions: SharingPermission[], ignoreTimelineVisibility: boolean = false) =>
+  (eb: ExpressionBuilder<DB, 'asset'>) =>
+    eb.or([
+      eb('asset.ownerId', '=', userId),
+      eb.exists(
+        eb
+          .selectFrom('partner')
+          .whereRef('partner.sharedById', '=', 'asset.ownerId')
+          .where('partner.sharedWithId', '=', userId)
+          .where((eb) =>
+            eb.or([
+              eb(eb.val(SharingPermission.All), '=', eb.fn.any('partner.permissions')),
+              eb('partner.permissions', '@>', eb.val(permissions)),
+            ]),
+          )
+          .$if(!ignoreTimelineVisibility, (qb) => qb.where('partner.inTimeline', '=', true)),
+      ),
+      eb.exists(
+        eb
+          .selectFrom('album_asset')
+          .whereRef('album_asset.assetId', '=', 'asset.id')
+          .innerJoin('album_user', (join) =>
+            join.onRef('album_user.albumId', '=', 'album_asset.albumId').on('album_user.userId', '=', userId),
+          )
+          .$if(!ignoreTimelineVisibility, (qb) => qb.where('album_user.inTimeline', '=', true))
+          .where('album_user.albumId', 'in', (eb) =>
+            eb
+              .selectFrom('album_user')
+              .select('album_user.albumId')
+              .whereRef('album_user.userId', '=', 'asset.ownerId')
+              .where((eb) =>
+                eb.or([
+                  eb(eb.val(SharingPermission.All), '=', eb.fn.any('album_user.permissions')),
+                  eb('album_user.permissions', '@>', eb.val(permissions)),
+                ]),
+              ),
+          ),
+      ),
+    ]);
+
+export const hasAssetPermissionsRef = <T extends keyof DB>(
+  eb: ExpressionBuilder<DB, 'asset'>,
+  userIdRef: StringReference<DB, 'asset' | T>,
+  permissions: SharingPermission[],
+  ignoreTimelineVisibility: boolean = false,
+) =>
+  eb.or([
+    eb('asset.ownerId', '=', eb.ref(userIdRef as never)),
+    eb.exists(
+      eb
+        .selectFrom('partner')
+        .whereRef('partner.sharedById', '=', 'asset.ownerId')
+        .whereRef('partner.sharedWithId', '=', userIdRef as never)
+        .where((eb) =>
+          eb.or([
+            eb(eb.val(SharingPermission.All), '=', eb.fn.any('partner.permissions')),
+            eb('partner.permissions', '@>', eb.val(permissions)),
+          ]),
+        )
+        .$if(!ignoreTimelineVisibility, (qb) => qb.where('partner.inTimeline', '=', true)),
+    ),
+    eb.exists(
+      eb
+        .selectFrom('album_asset')
+        .whereRef('album_asset.assetId', '=', 'asset.id')
+        .innerJoin('album_user', (join) =>
+          join
+            .onRef('album_user.albumId', '=', 'album_asset.albumId')
+            .onRef('album_user.userId', '=', userIdRef as never),
+        )
+        .$if(!ignoreTimelineVisibility, (qb) => qb.where('album_user.inTimeline', '=', true))
+        .where('album_user.albumId', 'in', (eb) =>
+          eb
+            .selectFrom('album_user')
+            .select('album_user.albumId')
+            .whereRef('album_user.userId', '=', 'asset.ownerId')
+            .where((eb) =>
+              eb.or([
+                eb(eb.val(SharingPermission.All), '=', eb.fn.any('album_user.permissions')),
+                eb('album_user.permissions', '@>', eb.val(permissions)),
+              ]),
+            ),
+        ),
+    ),
+  ]);
 
 @Injectable()
 export class AssetRepository {
@@ -564,17 +654,22 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [DummyValue.UUID, {}, DummyValue.UUID] })
   getById(
     id: string,
     { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits }: GetByIdsRelations = {},
+    userId?: string,
   ) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
       .where('asset.id', '=', asUuid(id))
       .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces).$narrowType<{ faces: NotNull }>())
+      .$if(!!faces, (qb) =>
+        qb
+          .select(faces?.person ? (eb) => withFacesAndPeople(eb, { userId }) : withFaces)
+          .$narrowType<{ faces: NotNull }>(),
+      )
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
       .$if(!!smartSearch, withSmartSearch)
@@ -610,6 +705,7 @@ export class AssetRepository {
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
       .$if(!!edits, (qb) => qb.select(withEdits))
+      .$if(!!userId, (qb) => qb.select(withPermissions(userId!)))
       .limit(1)
       .executeTakeFirst();
   }
@@ -778,7 +874,9 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds, (qb) =>
+            qb.where(hasAssetPermissions(options.userIds![0], [SharingPermission.AssetRead], !!options.personId)),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -864,7 +962,9 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds, (qb) =>
+            qb.where(hasAssetPermissions(options.userIds![0], [SharingPermission.AssetRead], !!options.personId)),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb

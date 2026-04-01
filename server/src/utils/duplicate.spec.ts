@@ -38,6 +38,7 @@ const createAsset = (
     fileSizeInByte !== null || Object.keys(exifFields).length > 0
       ? ExifResponseSchema.parse({ fileSizeInByte, ...exifFields })
       : undefined,
+  permissions: [],
 });
 
 describe('duplicate utils', () => {

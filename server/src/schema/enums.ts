@@ -1,5 +1,13 @@
 import { registerEnum } from '@immich/sql-tools';
-import { AlbumUserRole, AssetStatus, AssetVisibility, ChecksumAlgorithm, SourceType, VideoCodec } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetStatus,
+  AssetVisibility,
+  ChecksumAlgorithm,
+  SharingPermission,
+  SourceType,
+  VideoCodec,
+} from 'src/enum';
 
 export const album_user_role_enum = registerEnum({
   name: 'album_user_role_enum',
@@ -29,4 +37,9 @@ export const asset_checksum_algorithm_enum = registerEnum({
 export const video_stream_variant_codec_enum = registerEnum({
   name: 'video_stream_variant_codec_enum',
   values: [VideoCodec.Av1, VideoCodec.Hevc, VideoCodec.H264],
+});
+
+export const sharing_permission_enum = registerEnum({
+  name: 'sharing_permission_enum',
+  values: Object.values(SharingPermission),
 });

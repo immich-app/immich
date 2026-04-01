@@ -8,13 +8,15 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   mapAlbum,
+  SharingPermissionsResponseDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
+  UpdateSharingPermissionsDto,
 } from 'src/dtos/album.dto';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto';
-import { AlbumUserRole, Permission } from 'src/enum';
+import { AlbumUserRole, Permission, SharingPermission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
@@ -130,6 +132,11 @@ export class AlbumService extends BaseService {
     );
 
     for (const { userId } of albumUsers) {
+      await this.userRepository.mergeTrustedGroups({
+        userId: auth.user.id,
+        userIdToMerge: userId,
+      });
+
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
     }
 
@@ -299,7 +306,17 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Invalid user');
       }
 
-      await this.albumUserRepository.create({ userId, albumId: id, role });
+      await this.userRepository.mergeTrustedGroups({
+        userId: auth.user.id,
+        userIdToMerge: userId,
+      });
+      await this.albumUserRepository.create({
+        userId,
+        albumId: id,
+        role,
+        permissions: [SharingPermission.AssetRead, SharingPermission.ExifRead],
+      });
+
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
     }
 
@@ -336,6 +353,19 @@ export class AlbumService extends BaseService {
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+  }
+
+  async updateSelf(auth: AuthDto, albumId: string, dto: UpdateSharingPermissionsDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [albumId] });
+    await this.albumUserRepository.update(
+      { albumId, userId: auth.user.id },
+      { permissions: dto.permissions, inTimeline: dto.inTimeline },
+    );
+  }
+
+  async getSelf(auth: AuthDto, albumId: string): Promise<SharingPermissionsResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [albumId] });
+    return this.albumUserRepository.get({ userId: auth.user.id, albumId });
   }
 
   private async findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {

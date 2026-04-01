@@ -4,6 +4,7 @@ import {
   asset_face_source_type,
   asset_visibility_enum,
   assets_status_enum,
+  sharing_permission_enum,
 } from 'src/schema/enums';
 import {
   album_user_after_insert,
@@ -47,6 +48,7 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
@@ -114,6 +116,7 @@ export class ImmichDatabase {
     AssetTable,
     AssetFileTable,
     AssetExifTable,
+    FaceClusterTable,
     FaceSearchTable,
     GeodataPlacesTable,
     IntegrityReportTable,
@@ -176,7 +179,13 @@ export class ImmichDatabase {
     asset_ocr_delete_audit,
   ];
 
-  enum = [album_user_role_enum, assets_status_enum, asset_face_source_type, asset_visibility_enum];
+  enum = [
+    album_user_role_enum,
+    assets_status_enum,
+    asset_face_source_type,
+    asset_visibility_enum,
+    sharing_permission_enum,
+  ];
 }
 
 export interface Migrations {
@@ -218,6 +227,7 @@ export interface DB {
   ocr_search: OcrSearchTable;
 
   face_search: FaceSearchTable;
+  face_cluster: FaceClusterTable;
 
   geodata_places: GeodataPlacesTable;
 

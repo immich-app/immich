@@ -4,7 +4,7 @@ import { AssetFile } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, Permission, SharingPermission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -131,6 +131,11 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
     }
 
     if (timelineEnabled && !partner.inTimeline) {
+      continue;
+    }
+
+    const permissions = [SharingPermission.All, SharingPermission.AssetRead];
+    if (!permissions.some((permission) => partner.permissions.includes(permission))) {
       continue;
     }
 

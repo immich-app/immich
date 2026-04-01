@@ -325,4 +325,61 @@ export class UserRepository {
 
     await query.execute();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getInSameTrustedGroup(userId: string) {
+    return this.db
+      .selectFrom('user')
+      .select('user.id')
+      .where('user.trustedGroupId', '=', (eb) =>
+        eb.selectFrom('user').select('user.trustedGroupId').where('user.id', '=', userId),
+      )
+      .execute()
+      .then((result) => result.map(({ id }) => id));
+  }
+
+  @GenerateSql({ params: [{ userId: DummyValue.UUID, userIdToMerge: DummyValue.UUID }] })
+  async mergeTrustedGroups({ userId, userIdToMerge }: { userId: string; userIdToMerge: string }) {
+    return this.db
+      .updateTable('user')
+      .from('user as u')
+      .where('u.id', '=', userId)
+      .where('user.trustedGroupId', '=', (eb) =>
+        eb
+          .selectFrom('user')
+          .select('user.trustedGroupId')
+          .where('user.id', '=', userIdToMerge)
+          .whereRef('user.trustedGroupId', '!=', 'u.trustedGroupId'),
+      )
+      .set((eb) => ({
+        trustedGroupId: eb.ref('u.trustedGroupId'),
+      }))
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async updateTrustedGroups(userId: string) {
+    return this.db
+      .updateTable('user')
+      .set((eb) => ({ trustedGroupId: eb.fn('uuid_generate_v4') }))
+      .where('user.trustedGroupId', '=', (eb) =>
+        eb.selectFrom('user').select('user.trustedGroupId').where('user.id', '=', userId),
+      )
+      .where('user.id', '!=', userId)
+      .where('user.id', 'not in', (eb) =>
+        eb
+          .selectFrom('partner')
+          .select('partner.sharedById as userId')
+          .where('sharedWithId', '=', userId)
+          .union((eb) =>
+            eb
+              .selectFrom('album_user')
+              .select('album_user.userId')
+              .where('album_user.albumId', 'in', (eb) =>
+                eb.selectFrom('album_user').select('album_user.albumId').where('album_user.userId', '=', userId),
+              ),
+          ),
+      )
+      .executeTakeFirst();
+  }
 }

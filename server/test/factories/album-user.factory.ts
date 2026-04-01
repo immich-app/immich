@@ -28,6 +28,8 @@ export class AlbumUserFactory {
       createdAt: newDate(),
       updateId: newUuidV7(),
       updatedAt: newDate(),
+      permissions: [],
+      inTimeline: false,
       ...dto,
     });
   }

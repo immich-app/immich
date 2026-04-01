@@ -15,6 +15,8 @@ import {
   AssetVisibility,
   AssetVisibilitySchema,
   ChecksumAlgorithm,
+  SharingPermission,
+  SharingPermissionSchema,
 } from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
@@ -45,6 +47,7 @@ const SanitizedAssetResponseSchema = z
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
     width: z.int().min(0).nullable().describe('Asset width'),
     height: z.int().min(0).nullable().describe('Asset height'),
+    permissions: z.array(SharingPermissionSchema),
   })
   .meta({ id: 'SanitizedAssetResponseDto' });
 
@@ -113,6 +116,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .boolean()
       .describe('Is edited')
       .meta(new HistoryBuilder().added('v2.5.0').beta('v2.5.0').getExtensions()),
+    permissions: z.array(SharingPermissionSchema),
   }).shape,
 ).meta({ id: 'AssetResponseDto' });
 
@@ -154,6 +158,7 @@ export type MapAsset = {
   width: number | null;
   height: number | null;
   isEdited: boolean;
+  permissions?: { permission: SharingPermission }[];
 };
 
 export type AssetMapOptions = {
@@ -192,8 +197,16 @@ const mapStack = (entity: { stack?: Stack | null }) => {
 
 export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
+  const permissions =
+    options.auth?.user.id === entity.ownerId
+      ? [SharingPermission.All]
+      : (entity.permissions?.map(({ permission }) => permission) ?? []);
 
-  if (stripMetadata) {
+  if (
+    stripMetadata ||
+    (entity.permissions &&
+      !(permissions.includes(SharingPermission.All) || permissions.includes(SharingPermission.ExifRead)))
+  ) {
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
       id: entity.id,
       type: entity.type,
@@ -205,6 +218,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
       hasMetadata: false,
       width: entity.width,
       height: entity.height,
+      permissions,
     };
     return sanitizedAssetResponse as AssetResponseDto;
   }
@@ -242,5 +256,6 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     width: entity.width,
     height: entity.height,
     isEdited: entity.isEdited,
+    permissions,
   };
 }

@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Generated,
+  GeneratedColumn,
   Index,
   PrimaryGeneratedColumn,
   Table,
@@ -82,4 +83,7 @@ export class UserTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @GeneratedColumn('uuid')
+  trustedGroupId!: Generated<string>;
 }

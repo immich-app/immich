@@ -15,9 +15,17 @@ import {
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
-import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
+import { columns, lockableProperties, LockableProperty } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetOrderBy, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
+import {
+  AssetFileType,
+  AssetOrderBy,
+  AssetVisibility,
+  DatabaseExtension,
+  ExifOrientation,
+  SharingPermission,
+} from 'src/enum';
+import { hasAssetPermissions } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -215,19 +223,22 @@ export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFile
 
 export function withFacesAndPeople(
   eb: ExpressionBuilder<DB, 'asset'>,
-  withHidden?: boolean,
-  withDeletedFace?: boolean,
+  { withHidden, withDeletedFace, userId: _ }: { withHidden?: boolean; withDeletedFace?: boolean; userId?: string } = {},
 ) {
   return jsonArrayFrom(
     eb
       .selectFrom('asset_face')
-      .leftJoinLateral(
-        (eb) =>
-          eb.selectFrom('person').selectAll('person').whereRef('asset_face.personId', '=', 'person.id').as('person'),
-        (join) => join.onTrue(),
+      .select((eb) =>
+        jsonObjectFrom(
+          eb
+            .selectFrom('face_cluster')
+            .whereRef('face_cluster.id', '=', 'asset_face.faceClusterId')
+            .innerJoin('person', 'person.faceClusterId', 'face_cluster.id')
+            .selectAll('person')
+            .limit(1),
+        ).as('person'),
       )
       .selectAll('asset_face')
-      .select((eb) => eb.table('person').$castTo<ShallowDehydrateObject<Person>>().as('person'))
       .whereRef('asset_face.assetId', '=', 'asset.id')
       .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
       .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', 'is', true)),
@@ -240,11 +251,12 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
       eb
         .selectFrom('asset_face')
         .select('assetId')
-        .where('personId', '=', anyUuid(personIds!))
+        .innerJoin('person', 'person.faceClusterId', 'asset_face.faceClusterId')
+        .where('person.id', '=', anyUuid(personIds!))
         .where('deletedAt', 'is', null)
         .where('isVisible', 'is', true)
         .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        .having((eb) => eb.fn.count('person.id').distinct(), '=', personIds.length)
         .as('has_people'),
     (join) => join.onRef('has_people.assetId', '=', 'asset.id'),
   );
@@ -303,6 +315,30 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
 
 export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size?: 'DAY' | 'MONTH') {
   return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+}
+
+export function withPermissions(userId: string) {
+  return (eb: ExpressionBuilder<DB, 'asset'>) =>
+    jsonArrayFrom(
+      eb
+        .selectFrom('album_user')
+        .select((eb) => eb.fn<SharingPermission>('unnest', ['album_user.permissions']).as('permission'))
+        .distinct()
+        .innerJoin('album_asset', 'album_user.albumId', 'album_asset.albumId')
+        .whereRef('album_asset.assetId', '=', 'asset.id')
+        .whereRef('album_user.userId', '=', 'asset.ownerId')
+        .where('album_user.albumId', 'in', (eb) =>
+          eb.selectFrom('album_user').select('album_user.albumId').where('album_user.userId', '=', userId),
+        )
+        .union(
+          eb
+            .selectFrom('partner')
+            .select((eb) => eb.fn<SharingPermission>('unnest', ['partner.permissions']).as('permission'))
+            .distinct()
+            .whereRef('partner.sharedById', '=', 'asset.ownerId')
+            .where('partner.sharedWithId', '=', userId),
+        ),
+    ).as('permissions');
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
@@ -431,7 +467,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.checksum, (qb) => qb.where('asset.checksum', '=', options.checksum!))
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
-    .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+    .$if(!!options.userIds, (qb) => qb.where(hasAssetPermissions(options.userIds![0], [SharingPermission.AssetRead])))
     .$if(!!options.encodedVideoPath, (qb) =>
       qb
         .innerJoin('asset_file', (join) =>

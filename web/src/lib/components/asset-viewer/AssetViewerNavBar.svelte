@@ -21,12 +21,13 @@
   import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
-  import { getSharedLink, withoutIcons } from '$lib/utils';
+  import { getSharedLink, hasPermissions, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
     AssetVisibility,
+    SharingPermission,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
@@ -130,7 +131,7 @@
 
     <ActionButton action={Actions.Edit} />
 
-    {#if isOwner}
+    {#if hasPermissions(asset, SharingPermission.AssetDelete)}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
     {/if}
 
@@ -146,7 +147,7 @@
         {/if}
 
         <ActionMenuItem action={Actions.AddToAlbum} />
-        {#if album && (isOwner || isAlbumOwner)}
+        {#if album && (hasPermissions(asset, SharingPermission.AssetShare) || isAlbumOwner)}
           <RemoveFromAlbumAction {album} onRemove={onRemoveFromAlbum} assetIds={[asset.id]} menuItem />
         {/if}
 

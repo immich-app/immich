@@ -3,8 +3,8 @@ import { createZodDto } from 'nestjs-zod';
 import { AlbumUser, AuthSharedLink } from 'src/database';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
-import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
+import { mapUser, UserResponseSchema } from 'src/dtos/user.dto';
+import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema, SharingPermissionSchema } from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
 import { asDateTimeString } from 'src/utils/date';
 import { stringToBool } from 'src/validation';
@@ -62,6 +62,14 @@ const UpdateAlbumSchema = z
     order: AssetOrderSchema.optional(),
   })
   .meta({ id: 'UpdateAlbumDto' });
+
+const UpdateSharingOptionsSchema = z
+  .object({ inTimeline: z.boolean(), permissions: z.array(SharingPermissionSchema) })
+  .meta({ id: 'UpdateSharingOptionsDto' });
+
+const SharingOptionsResponseSchema = z
+  .object({ inTimeline: z.boolean(), permissions: z.array(SharingPermissionSchema) })
+  .meta({ id: 'SharingOptionsResponseDto' });
 
 const GetAlbumsSchema = z
   .object({
@@ -149,6 +157,8 @@ export class UpdateAlbumDto extends createZodDto(UpdateAlbumSchema) {}
 export class GetAlbumsDto extends createZodDto(GetAlbumsSchema) {}
 export class AlbumStatisticsResponseDto extends createZodDto(AlbumStatisticsResponseSchema) {}
 export class UpdateAlbumUserDto extends createZodDto(UpdateAlbumUserSchema) {}
+export class UpdateSharingPermissionsDto extends createZodDto(UpdateSharingOptionsSchema) {}
+export class SharingPermissionsResponseDto extends createZodDto(SharingOptionsResponseSchema) {}
 export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}
 class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) {}
 
