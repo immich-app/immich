@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/face_bounding_box_overlay.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -404,6 +405,12 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     isPlayingMotionVideo: isPlayingMotionVideo,
                   ),
                 ),
+                if (_showingDetails)
+                  FaceBoundingBoxOverlay(
+                    asset: displayAsset,
+                    controller: _viewController,
+                    viewportSize: Size(viewportWidth, viewportHeight),
+                  ),
                 IgnorePointer(
                   ignoring: !_showingDetails,
                   child: Column(
