@@ -203,6 +203,12 @@ class _AspectRatioSelector extends ConsumerWidget {
     final editorState = ref.watch(editorStateProvider);
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
+    // the whole crop view is rotated, so we need to swap the aspect ratio when the rotation is 90 or 270 degrees
+    double? selectedAspectRatio = editorState.aspectRatio;
+    if (editorState.rotationAngle % 180 != 0 && selectedAspectRatio != null) {
+      selectedAspectRatio = 1 / selectedAspectRatio;
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -211,7 +217,7 @@ class _AspectRatioSelector extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
               ratio: entry,
-              isSelected: editorState.aspectRatio == entry.ratio,
+              isSelected: selectedAspectRatio == entry.ratio,
               onPressed: () => editorNotifier.setAspectRatio(entry.ratio),
             ),
           );
