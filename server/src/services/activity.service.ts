@@ -31,22 +31,19 @@ export class ActivityService extends BaseService {
     const activities = await this.activityRepository.search({ ...searchOptions, take, before });
     const results = activities.map((activity) => mapActivity(activity));
 
-    if (take !== undefined) {
-      // Paginated: query returned DESC-ordered rows; reverse to return ASC
-      results.reverse();
+    // Query always returns DESC; reverse to ASC for the caller
+    results.reverse();
 
+    if (take !== undefined && results.length > 0) {
       // Complete the boundary timestamp group: the oldest item's createdAt may be shared
       // by other activities not returned due to the take limit (e.g. bulk operations).
       // Fetch all activities at exactly that timestamp and prepend any not already loaded.
-      if (results.length > 0) {
-        const boundaryTime = results[0].createdAt;
-        const loadedIds = new Set(results.filter((a) => a.createdAt.getTime() === boundaryTime.getTime()).map((a) => a.id));
-        const extras = await this.activityRepository.search({ ...searchOptions, at: boundaryTime });
-        const newExtras = extras.map(mapActivity).filter((a) => !loadedIds.has(a.id));
-        return [...newExtras, ...results];
-      }
-
-      return results;
+      const boundaryTime = results[0].createdAt;
+      const loadedIds = new Set(results.filter((a) => a.createdAt.getTime() === boundaryTime.getTime()).map((a) => a.id));
+      const extras = await this.activityRepository.search({ ...searchOptions, at: boundaryTime });
+      const newExtras = extras.map((a) => mapActivity(a)).filter((a) => !loadedIds.has(a.id));
+      newExtras.reverse();
+      return [...newExtras, ...results];
     }
 
     return results;

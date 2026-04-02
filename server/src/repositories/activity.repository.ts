@@ -47,8 +47,8 @@ export class ActivityRepository {
       .where('asset.deletedAt', 'is', null)
       .$if(!!before, (qb) => qb.where('activity.createdAt', '<', before!))
       .$if(!!at, (qb) => qb.where('activity.createdAt', '=', at!))
-      .orderBy('activity.createdAt', take !== undefined ? 'desc' : 'asc')
-      .orderBy('activity.id', take !== undefined ? 'desc' : 'asc')
+      .orderBy('activity.createdAt', 'desc')
+      .orderBy('activity.id', 'desc')
       .$if(take !== undefined, (qb) => qb.limit(take!))
       .execute();
   }
