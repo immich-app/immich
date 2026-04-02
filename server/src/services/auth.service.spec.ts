@@ -1038,7 +1038,7 @@ describe(AuthService.name, () => {
     it('should link an account and update the session with the oauthSid', async () => {
       const user = UserFactory.create();
       const session = SessionFactory.create();
-      const auth = AuthFactory.from(user).apiKey({ permissions: [] }).build();
+      const auth = AuthFactory.from(user).session(session).build();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
@@ -1091,7 +1091,7 @@ describe(AuthService.name, () => {
     it('should unlink an account and remove the oauthSid from the session', async () => {
       const user = UserFactory.create();
       const session = SessionFactory.create();
-      const auth = AuthFactory.from(user).apiKey({ permissions: [] }).build();
+      const auth = AuthFactory.from(user).session(session).build();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.session.update.mockResolvedValue(session);

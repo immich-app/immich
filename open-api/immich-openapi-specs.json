@@ -3703,7 +3703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
+                  "$ref": "#/components/schemas/AssetEditsResponseDto"
                 }
               }
             },
@@ -3756,7 +3756,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetEditActionListDto"
+                "$ref": "#/components/schemas/AssetEditsCreateDto"
               }
             }
           },
@@ -3767,7 +3767,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
+                  "$ref": "#/components/schemas/AssetEditsResponseDto"
                 }
               }
             },
@@ -5283,6 +5283,65 @@
         ],
         "x-immich-permission": "duplicate.read",
         "x-immich-state": "Stable"
+      }
+    },
+    "/duplicates/resolve": {
+      "post": {
+        "description": "Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.",
+        "operationId": "resolveDuplicates",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateResolveDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Resolve duplicate groups",
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "x-immich-state": "Alpha"
       }
     },
     "/duplicates/{id}": {
@@ -9439,10 +9498,27 @@
             "name": "rating",
             "required": false,
             "in": "query",
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable",
             "schema": {
               "minimum": -1,
               "maximum": 5,
+              "nullable": true,
               "type": "number"
             }
           },
@@ -11620,22 +11696,6 @@
               "format": "uuid",
               "type": "string"
             }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
@@ -11692,6 +11752,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "sharedLink.update",
         "x-immich-state": "Stable"
       },
       "put": {
@@ -13508,6 +13569,16 @@
             }
           },
           {
+            "name": "bbox",
+            "required": false,
+            "in": "query",
+            "description": "Bounding box coordinates as west,south,east,north (WGS84)",
+            "schema": {
+              "example": "11.075683,49.416711,11.117589,49.454875",
+              "type": "string"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -13680,6 +13751,16 @@
             "description": "Filter assets belonging to a specific album",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "bbox",
+            "required": false,
+            "in": "query",
+            "description": "Bounding box coordinates as west,south,east,north (WGS84)",
+            "schema": {
+              "example": "11.075683,49.416711,11.117589,49.454875",
               "type": "string"
             }
           },
@@ -15904,10 +15985,27 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating",
+            "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "timeZone": {
             "description": "Time zone (IANA timezone)",
@@ -16114,7 +16212,7 @@
         ],
         "type": "string"
       },
-      "AssetEditActionCrop": {
+      "AssetEditActionItemDto": {
         "properties": {
           "action": {
             "allOf": [
@@ -16125,7 +16223,18 @@
             "description": "Type of edit action to perform"
           },
           "parameters": {
-            "$ref": "#/components/schemas/CropParameters"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CropParameters"
+              },
+              {
+                "$ref": "#/components/schemas/RotateParameters"
+              },
+              {
+                "$ref": "#/components/schemas/MirrorParameters"
+              }
+            ],
+            "description": "List of edit actions to apply (crop, rotate, or mirror)"
           }
         },
         "required": [
@@ -16134,30 +16243,48 @@
         ],
         "type": "object"
       },
-      "AssetEditActionListDto": {
+      "AssetEditActionItemResponseDto": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CropParameters"
+              },
+              {
+                "$ref": "#/components/schemas/RotateParameters"
+              },
+              {
+                "$ref": "#/components/schemas/MirrorParameters"
+              }
+            ],
+            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+          }
+        },
+        "required": [
+          "action",
+          "id",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditsCreateDto": {
         "properties": {
           "edits": {
             "description": "List of edit actions to apply (crop, rotate, or mirror)",
             "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
-                }
-              ],
-              "discriminator": {
-                "mapping": {
-                  "crop": "#/components/schemas/AssetEditActionCrop",
-                  "mirror": "#/components/schemas/AssetEditActionMirror",
-                  "rotate": "#/components/schemas/AssetEditActionRotate"
-                },
-                "propertyName": "action"
-              }
+              "$ref": "#/components/schemas/AssetEditActionItemDto"
             },
             "minItems": 1,
             "type": "array"
@@ -16168,77 +16295,18 @@
         ],
         "type": "object"
       },
-      "AssetEditActionMirror": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ],
-            "description": "Type of edit action to perform"
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/MirrorParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditActionRotate": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ],
-            "description": "Type of edit action to perform"
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/RotateParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditsDto": {
+      "AssetEditsResponseDto": {
         "properties": {
           "assetId": {
-            "description": "Asset ID to apply edits to",
+            "description": "Asset ID these edits belong to",
             "format": "uuid",
             "type": "string"
           },
           "edits": {
-            "description": "List of edit actions to apply (crop, rotate, or mirror)",
+            "description": "List of edit actions applied to the asset",
             "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
-                }
-              ],
-              "discriminator": {
-                "mapping": {
-                  "crop": "#/components/schemas/AssetEditActionCrop",
-                  "mirror": "#/components/schemas/AssetEditActionMirror",
-                  "rotate": "#/components/schemas/AssetEditActionRotate"
-                },
-                "propertyName": "action"
-              }
+              "$ref": "#/components/schemas/AssetEditActionItemResponseDto"
             },
-            "minItems": 1,
             "type": "array"
           }
         },
@@ -17132,7 +17200,7 @@
             "type": "array"
           },
           "thumbhash": {
-            "description": "Thumbhash for thumbnail generation",
+            "description": "Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.",
             "nullable": true,
             "type": "string"
           },
@@ -17268,6 +17336,7 @@
           "mp3",
           "aac",
           "libopus",
+          "opus",
           "pcm_s16le"
         ],
         "type": "string"
@@ -17321,7 +17390,8 @@
           "duplicate",
           "no_permission",
           "not_found",
-          "unknown"
+          "unknown",
+          "validation"
         ],
         "type": "string"
       },
@@ -17333,8 +17403,12 @@
               "duplicate",
               "no_permission",
               "not_found",
-              "unknown"
+              "unknown",
+              "validation"
             ],
+            "type": "string"
+          },
+          "errorMessage": {
             "type": "string"
           },
           "id": {
@@ -17850,6 +17924,52 @@
         ],
         "type": "object"
       },
+      "DuplicateResolveDto": {
+        "properties": {
+          "groups": {
+            "description": "List of duplicate groups to resolve",
+            "items": {
+              "$ref": "#/components/schemas/DuplicateResolveGroupDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "groups"
+        ],
+        "type": "object"
+      },
+      "DuplicateResolveGroupDto": {
+        "properties": {
+          "duplicateId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "keepAssetIds": {
+            "description": "Asset IDs to keep",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "trashAssetIds": {
+            "description": "Asset IDs to trash or delete",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "duplicateId",
+          "keepAssetIds",
+          "trashAssetIds"
+        ],
+        "type": "object"
+      },
       "DuplicateResponseDto": {
         "properties": {
           "assets": {
@@ -17862,11 +17982,20 @@
           "duplicateId": {
             "description": "Duplicate group ID",
             "type": "string"
+          },
+          "suggestedKeepAssetIds": {
+            "description": "Suggested asset IDs to keep based on file size and EXIF data",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
           "assets",
-          "duplicateId"
+          "duplicateId",
+          "suggestedKeepAssetIds"
         ],
         "type": "object"
       },
@@ -18713,6 +18842,22 @@
           "data": {
             "$ref": "#/components/schemas/OnThisDayDto"
           },
+          "hideAt": {
+            "description": "Date when memory should be hidden",
+            "format": "date-time",
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v2.6.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
           "isSaved": {
             "description": "Is memory saved",
             "type": "boolean"
@@ -18726,6 +18871,22 @@
             "description": "Date when memory was seen",
             "format": "date-time",
             "type": "string"
+          },
+          "showAt": {
+            "description": "Date when memory should be shown",
+            "format": "date-time",
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v2.6.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "type": {
             "allOf": [
@@ -19018,10 +19179,27 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -19102,7 +19280,7 @@
             "type": "boolean"
           },
           "withPeople": {
-            "description": "Include assets with people",
+            "description": "Include people data in response",
             "type": "boolean"
           },
           "withStacked": {
@@ -20756,10 +20934,27 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -20836,7 +21031,7 @@
             "type": "boolean"
           },
           "withPeople": {
-            "description": "Include assets with people",
+            "description": "Include people data in response",
             "type": "boolean"
           },
           "withStacked": {
@@ -22130,10 +22325,27 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -22364,10 +22576,27 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -22656,6 +22885,48 @@
         ],
         "type": "object"
       },
+      "SyncAssetEditDeleteV1": {
+        "properties": {
+          "editId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "editId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetEditV1": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ]
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "sequence": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "assetId",
+          "id",
+          "parameters",
+          "sequence"
+        ],
+        "type": "object"
+      },
       "SyncAssetExifV1": {
         "properties": {
           "assetId": {
@@ -22878,6 +23149,70 @@
           "id",
           "imageHeight",
           "imageWidth",
+          "personId",
+          "sourceType"
+        ],
+        "type": "object"
+      },
+      "SyncAssetFaceV2": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "deletedAt": {
+            "description": "Face deleted at",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Asset face ID",
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "isVisible": {
+            "description": "Is the face visible in the asset",
+            "type": "boolean"
+          },
+          "personId": {
+            "description": "Person ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceType": {
+            "description": "Source type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "deletedAt",
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "isVisible",
           "personId",
           "sourceType"
         ],
@@ -23141,6 +23476,8 @@
           "AssetV1",
           "AssetDeleteV1",
           "AssetExifV1",
+          "AssetEditV1",
+          "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
           "PartnerV1",
@@ -23176,6 +23513,7 @@
           "PersonV1",
           "PersonDeleteV1",
           "AssetFaceV1",
+          "AssetFaceV2",
           "AssetFaceDeleteV1",
           "UserMetadataV1",
           "UserMetadataDeleteV1",
@@ -23437,6 +23775,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AssetEditsV1",
           "AssetMetadataV1",
           "AuthUsersV1",
           "MemoriesV1",
@@ -23449,6 +23788,7 @@
           "UsersV1",
           "PeopleV1",
           "AssetFacesV1",
+          "AssetFacesV2",
           "UserMetadataV1"
         ],
         "type": "string"
@@ -25140,10 +25480,27 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating",
+            "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "visibility": {
             "allOf": [

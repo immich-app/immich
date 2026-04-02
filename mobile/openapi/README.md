@@ -157,6 +157,7 @@ Class | Method | HTTP request | Description
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Delete a duplicate
 *DuplicatesApi* | [**deleteDuplicates**](doc//DuplicatesApi.md#deleteduplicates) | **DELETE** /duplicates | Delete duplicates
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | Retrieve duplicates
+*DuplicatesApi* | [**resolveDuplicates**](doc//DuplicatesApi.md#resolveduplicates) | **POST** /duplicates/resolve | Resolve duplicate groups
 *FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | Create a face
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | Delete a face
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
@@ -359,12 +360,11 @@ Class | Method | HTTP request | Description
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetEditAction](doc//AssetEditAction.md)
- - [AssetEditActionCrop](doc//AssetEditActionCrop.md)
- - [AssetEditActionListDto](doc//AssetEditActionListDto.md)
- - [AssetEditActionListDtoEditsInner](doc//AssetEditActionListDtoEditsInner.md)
- - [AssetEditActionMirror](doc//AssetEditActionMirror.md)
- - [AssetEditActionRotate](doc//AssetEditActionRotate.md)
- - [AssetEditsDto](doc//AssetEditsDto.md)
+ - [AssetEditActionItemDto](doc//AssetEditActionItemDto.md)
+ - [AssetEditActionItemDtoParameters](doc//AssetEditActionItemDtoParameters.md)
+ - [AssetEditActionItemResponseDto](doc//AssetEditActionItemResponseDto.md)
+ - [AssetEditsCreateDto](doc//AssetEditsCreateDto.md)
+ - [AssetEditsResponseDto](doc//AssetEditsResponseDto.md)
  - [AssetFaceCreateDto](doc//AssetFaceCreateDto.md)
  - [AssetFaceDeleteDto](doc//AssetFaceDeleteDto.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
@@ -424,6 +424,8 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [DownloadUpdate](doc//DownloadUpdate.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
+ - [DuplicateResolveDto](doc//DuplicateResolveDto.md)
+ - [DuplicateResolveGroupDto](doc//DuplicateResolveGroupDto.md)
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
@@ -578,9 +580,12 @@ Class | Method | HTTP request | Description
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
+ - [SyncAssetEditDeleteV1](doc//SyncAssetEditDeleteV1.md)
+ - [SyncAssetEditV1](doc//SyncAssetEditV1.md)
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
  - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
  - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)
+ - [SyncAssetFaceV2](doc//SyncAssetFaceV2.md)
  - [SyncAssetMetadataDeleteV1](doc//SyncAssetMetadataDeleteV1.md)
  - [SyncAssetMetadataV1](doc//SyncAssetMetadataV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
