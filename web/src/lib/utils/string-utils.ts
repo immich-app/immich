@@ -1,3 +1,11 @@
+let escapeElement: HTMLSpanElement | undefined;
+
+export const escapeHtml = (text: string) => {
+  escapeElement ??= document.createElement('span');
+  escapeElement.textContent = text;
+  return escapeElement.innerHTML;
+};
+
 export const removeAccents = (str: string) => {
   return str.normalize('NFD').replaceAll(/[\u0300-\u036F]/g, '');
 };

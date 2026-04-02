@@ -6,6 +6,7 @@
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '$lib/utils/ocr-utils';
+  import { escapeHtml } from '$lib/utils/string-utils';
   import {
     EquirectangularAdapter,
     Viewer,
@@ -138,7 +139,7 @@
 
       const fontSize = (1.4 * width) / box.text.length; // fits almost all strings within the box, depends on font family
       const transform = `matrix3d(${matrix.join(',')})`;
-      const content = `<div class="${OCR_TOOLTIP_HTML_CLASS}" style="font-size: ${fontSize}px; width: ${width}px; height: ${height}px; transform: ${transform}; transform-origin: 0 0;">${box.text}</div>`;
+      const content = `<div class="${OCR_TOOLTIP_HTML_CLASS}" style="font-size: ${fontSize}px; width: ${width}px; height: ${height}px; transform: ${transform}; transform-origin: 0 0;">${escapeHtml(box.text)}</div>`;
 
       if (updateOnly) {
         markersPlugin.updateMarker({
