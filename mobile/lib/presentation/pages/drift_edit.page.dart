@@ -382,7 +382,7 @@ class _AspectRatioSelector extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: aspectRatios.map((entry) {
+        children: AspectRatioPreset.values.map((entry) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
