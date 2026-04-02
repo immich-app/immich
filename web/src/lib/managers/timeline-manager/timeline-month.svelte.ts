@@ -4,7 +4,7 @@ import { CancellableTask } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
 import {
   formatGroupTitle,
-  formatMonthGroupTitle,
+  formatTimelineMonthTitle,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
@@ -29,7 +29,7 @@ import type { TimelineManager } from './timeline-manager.svelte';
 import type { AssetDescriptor, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
-export class MonthGroup {
+export class TimelineMonth {
   #viewportProximity: ViewportProximity = $state(ViewportProximity.FarFromViewport);
   isLoaded: boolean = $state(false);
   timelineDays: TimelineDay[] = $state([]);
@@ -50,7 +50,7 @@ export class MonthGroup {
   loader: CancellableTask | undefined;
   isHeightActual: boolean = $state(false);
 
-  readonly monthGroupTitle: string;
+  readonly title: string;
   readonly yearMonth: TimelineYearMonth;
 
   constructor(
@@ -65,7 +65,7 @@ export class MonthGroup {
     this.#sortOrder = order;
 
     this.yearMonth = { year: yearMonth.year, month: yearMonth.month };
-    this.monthGroupTitle = formatMonthGroupTitle(fromTimelinePlainYearMonth(yearMonth));
+    this.title = formatTimelineMonthTitle(fromTimelinePlainYearMonth(yearMonth));
 
     this.loader = new CancellableTask(
       () => {
@@ -89,7 +89,7 @@ export class MonthGroup {
     }
     this.#viewportProximity = newValue;
     if (isInOrNearViewportUtil(newValue)) {
-      void this.timelineManager.loadMonthGroup(this.yearMonth);
+      void this.timelineManager.loadTimelineMonth(this.yearMonth);
     } else {
       this.cancel();
     }
@@ -269,9 +269,9 @@ export class MonthGroup {
     const index = timelineManager.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = timelineManager.months[index - 1];
-    if (prevMonthGroup) {
-      const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
+    const previousTimelineMonth = timelineManager.months[index - 1];
+    if (previousTimelineMonth) {
+      const newTop = previousTimelineMonth.#top + previousTimelineMonth.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
@@ -280,10 +280,10 @@ export class MonthGroup {
       return;
     }
     for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
-      const monthGroup = this.timelineManager.months[cursor];
-      const newTop = monthGroup.#top + heightDelta;
-      if (monthGroup.#top !== newTop) {
-        monthGroup.#top = newTop;
+      const timelineMonth = this.timelineManager.months[cursor];
+      const newTop = timelineMonth.#top + heightDelta;
+      if (timelineMonth.#top !== newTop) {
+        timelineMonth.#top = newTop;
       }
     }
     if (!timelineManager.viewportTopMonthIntersection) {
