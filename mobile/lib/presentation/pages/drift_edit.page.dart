@@ -382,13 +382,13 @@ class _AspectRatioSelector extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: aspectRatios.entries.map((entry) {
+        children: aspectRatios.map((entry) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
-              ratio: entry.value,
-              isSelected: currentAspectRatio == entry.value.ratio,
-              onPressed: () => onAspectRatioSelected(entry.value.ratio),
+              ratio: entry,
+              isSelected: currentAspectRatio == entry.ratio,
+              onPressed: () => onAspectRatioSelected(entry.ratio),
             ),
           );
         }).toList(),
