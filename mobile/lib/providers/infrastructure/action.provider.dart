@@ -22,6 +22,7 @@ import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(
@@ -502,8 +503,8 @@ class ActionNotifier extends Notifier<void> {
     }
 
     final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
-      final eventData = data as Map<String, dynamic>;
-      return eventData["asset"]['id'] == ids.first;
+      final eventAsset = SyncAssetV1.fromJson(data["asset"]);
+      return eventAsset?.id == ids.first;
     }, const Duration(seconds: 10));
 
     try {
