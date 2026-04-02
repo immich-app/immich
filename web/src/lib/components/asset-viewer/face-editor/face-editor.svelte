@@ -2,7 +2,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import FaceCreateTagModal from '$lib/modals/FaceCreateTagModal.svelte';
+  import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';

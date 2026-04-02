@@ -694,7 +694,7 @@ export class PersonService extends BaseService {
       sourceType: SourceType.Manual,
     });
 
-    if (person.faceAssetId === null) {
+    if (!person.faceAssetId) {
       await this.createNewFeaturePhoto([person.id]);
     }
   }
