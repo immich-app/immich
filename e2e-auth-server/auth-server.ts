@@ -51,8 +51,6 @@ const claims = [
   },
 ];
 
-const host = '0.0.0.0';
-const port = 2286;
 const privateKey = await importPKCS8(PRIVATE_KEY_PEM, 'RS256');
 const publicKey = await importSPKI(PUBLIC_KEY_PEM, 'RS256');
 const kid = await calculateJwkThumbprint(await exportJWK(publicKey));
@@ -94,11 +92,6 @@ const getClaims = (sub: string, use?: string) => {
 };
 
 const setup = async () => {
-  const redirectUris = [
-    'http://127.0.0.1:2285/auth/login',
-    'https://photos.immich.app/oauth/mobile-redirect',
-  ];
-
   const redirectUris = [
     'http://127.0.0.1:2285/auth/login',
     'https://photos.immich.app/oauth/mobile-redirect',
