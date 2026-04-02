@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
@@ -500,8 +501,14 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: false, error: 'Expected single asset for applying edits');
     }
 
+    final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
+      final eventData = data as Map<String, dynamic>;
+      return eventData["asset"]['id'] == ids.first;
+    }, const Duration(seconds: 10));
+
     try {
       await _service.applyEdits(ids.first, edits);
+      await completer;
       return const ActionResult(count: 1, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to apply edits to assets', error, stack);

@@ -1,21 +1,17 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class EditImageActionButton extends ConsumerWidget {
   const EditImageActionButton({super.key});
@@ -29,22 +25,7 @@ class EditImageActionButton extends ConsumerWidget {
         return;
       }
 
-      try {
-        final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
-          final eventData = data as Map<String, dynamic>;
-          return eventData["asset"]['id'] == currentAsset.remoteId;
-        }, const Duration(seconds: 10));
-
-        await ref.read(actionProvider.notifier).applyEdits(ActionSource.viewer, edits);
-        await completer;
-
-        ImmichToast.show(context: context, msg: 'success'.tr(), toastType: ToastType.success);
-
-        context.pop();
-      } catch (e) {
-        ImmichToast.show(context: context, msg: 'error_title'.tr(), toastType: ToastType.error);
-        return;
-      }
+      await ref.read(actionProvider.notifier).applyEdits(ActionSource.viewer, edits);
     }
 
     Future<void> onPress() async {
