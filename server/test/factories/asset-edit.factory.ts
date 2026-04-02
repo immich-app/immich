@@ -1,10 +1,10 @@
 import { Selectable } from 'kysely';
-import { AssetEditAction } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { build } from 'test/factories/builder.factory';
 import { AssetEditLike, AssetLike, FactoryBuilder } from 'test/factories/types';
-import { newUuid } from 'test/small.factory';
+import { newDate, newUuid } from 'test/small.factory';
 
 export class AssetEditFactory {
   private constructor(private readonly value: Selectable<AssetEditTable>) {}
@@ -15,6 +15,7 @@ export class AssetEditFactory {
 
   static from(dto: AssetEditLike = {}) {
     const id = dto.id ?? newUuid();
+    const updateId = dto.updateId ?? newUuid();
 
     return new AssetEditFactory({
       id,
@@ -22,6 +23,8 @@ export class AssetEditFactory {
       action: AssetEditAction.Crop,
       parameters: { x: 5, y: 6, width: 200, height: 100 },
       sequence: 1,
+      updateId,
+      updatedAt: newDate(),
       ...dto,
     });
   }
@@ -33,6 +36,6 @@ export class AssetEditFactory {
   }
 
   build() {
-    return { ...this.value } as Selectable<AssetEditTable<AssetEditAction.Crop>>;
+    return { ...this.value } as Omit<Selectable<AssetEditTable>, 'action' | 'parameters'> & AssetEditActionItem;
   }
 }

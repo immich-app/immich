@@ -1,9 +1,10 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
-import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { assetFactory, timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { tick } from 'svelte';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
@@ -286,6 +287,17 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
     });
 
+    it('ignores new assets that do not match the tag filter', async () => {
+      await timelineManager.updateOptions({ tagId: 'tag-1' });
+
+      const matching = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ tags: ['tag-1'] }));
+      const unrelated = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ tags: ['tag-2'] }));
+
+      timelineManager.upsertAssets([matching, unrelated]);
+
+      expect(await getAssets(timelineManager)).toEqual([matching]);
+    });
+
     // disabled due to the wasm Justified Layout import
     it('ignores trashed assets when isTrashed is true', async () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isTrashed: false }));
@@ -344,6 +356,29 @@ describe('TimelineManager', () => {
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })).not.toBeUndefined();
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })?.getAssets().length).toEqual(1);
     });
+
+    it('yearMonth is not a shared reference with asset.localDateTime (reference bug)', () => {
+      const asset = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+
+      timelineManager.upsertAssets([asset]);
+      const januaryMonth = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })!;
+      const monthYearMonth = januaryMonth.yearMonth;
+
+      const originalMonth = monthYearMonth.month;
+      expect(originalMonth).toEqual(1);
+
+      // Simulating updateObject
+      asset.localDateTime.month = 3;
+      asset.localDateTime.day = 20;
+
+      expect(monthYearMonth.month).toEqual(originalMonth);
+      expect(monthYearMonth.month).toEqual(1);
+    });
+
     it('asset is removed during upsert when TimelineManager if visibility changes', async () => {
       await timelineManager.updateOptions({
         visibility: AssetVisibility.Archive,
@@ -405,6 +440,48 @@ describe('TimelineManager', () => {
 
       timelineManager.upsertAssets([{ ...fixture, isTrashed: true }]);
       expect(timelineManager.assetCount).toEqual(1);
+    });
+  });
+
+  describe('AssetUpdate events', () => {
+    let timelineManager: TimelineManager;
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      await timelineManager.updateOptions({ albumId: 'album-id' });
+    });
+
+    afterEach(() => {
+      timelineManager.destroy();
+    });
+
+    it('ignores unknown assets for album timelines', () => {
+      eventManager.emit('AssetUpdate', assetFactory.build());
+
+      expect(timelineManager.assetCount).toEqual(0);
+      expect(timelineManager.months).toHaveLength(0);
+    });
+
+    it('updates existing assets in the timeline', () => {
+      const existing = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isFavorite: false }));
+
+      timelineManager.upsertAssets([existing]);
+      eventManager.emit(
+        'AssetUpdate',
+        assetFactory.build({
+          id: existing.id,
+          ownerId: existing.ownerId,
+          isFavorite: true,
+          isTrashed: existing.isTrashed,
+          visibility: existing.visibility,
+        }),
+      );
+
+      expect(timelineManager.assetCount).toEqual(1);
+      expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
     });
   });
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
@@ -72,6 +72,13 @@ export class ApiService {
         return next();
       }
 
+      const responseType = request.accepts('text/html');
+      if (!responseType) {
+        throw new NotAcceptableException(
+          `The route ${request.path} was requested as ${request.header('accept')}, but only returns text/html`,
+        );
+      }
+
       let status = 200;
       let html = index;
 
@@ -105,7 +112,7 @@ export class ApiService {
         html = render(index, meta);
       }
 
-      res.status(status).type('text/html').header('Cache-Control', 'no-store').send(html);
+      res.status(status).type(responseType).header('Cache-Control', 'no-store').send(html);
     };
   }
 }

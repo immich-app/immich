@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exif } from 'src/database';
+import { MaybeDehydrated } from 'src/types';
+import { asDateString } from 'src/utils/date';
 
 export class ExifResponseDto {
   @ApiPropertyOptional({ description: 'Camera make' })
@@ -16,9 +18,9 @@ export class ExifResponseDto {
   @ApiPropertyOptional({ description: 'Image orientation' })
   orientation?: string | null = null;
   @ApiPropertyOptional({ description: 'Original date/time', format: 'date-time' })
-  dateTimeOriginal?: Date | null = null;
+  dateTimeOriginal?: string | null = null;
   @ApiPropertyOptional({ description: 'Modification date/time', format: 'date-time' })
-  modifyDate?: Date | null = null;
+  modifyDate?: string | null = null;
   @ApiPropertyOptional({ description: 'Time zone' })
   timeZone?: string | null = null;
   @ApiPropertyOptional({ description: 'Lens model' })
@@ -49,7 +51,7 @@ export class ExifResponseDto {
   rating?: number | null = null;
 }
 
-export function mapExif(entity: Exif): ExifResponseDto {
+export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
   return {
     make: entity.make,
     model: entity.model,
@@ -57,8 +59,8 @@ export function mapExif(entity: Exif): ExifResponseDto {
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: entity.dateTimeOriginal,
-    modifyDate: entity.modifyDate,
+    dateTimeOriginal: asDateString(entity.dateTimeOriginal),
+    modifyDate: asDateString(entity.modifyDate),
     timeZone: entity.timeZone,
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,
@@ -80,7 +82,7 @@ export function mapSanitizedExif(entity: Exif): ExifResponseDto {
   return {
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: entity.dateTimeOriginal,
+    dateTimeOriginal: asDateString(entity.dateTimeOriginal),
     timeZone: entity.timeZone,
     projectionType: entity.projectionType,
     exifImageWidth: entity.exifImageWidth,

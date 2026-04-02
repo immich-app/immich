@@ -9,7 +9,7 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
-formatter:  
+formatter:
   page_width: 120
 
 linter:
@@ -33,6 +33,7 @@ linter:
     require_trailing_commas: true
     unrelated_type_equality_checks: true
     prefer_const_constructors: true
+    always_use_package_imports: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

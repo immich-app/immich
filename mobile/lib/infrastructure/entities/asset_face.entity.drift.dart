@@ -5,11 +5,12 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
     as i1;
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart'
     as i2;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-    as i3;
-import 'package:drift/internal/modular.dart' as i4;
+    as i4;
+import 'package:drift/internal/modular.dart' as i5;
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart'
-    as i5;
+    as i6;
 
 typedef $$AssetFaceEntityTableCreateCompanionBuilder =
     i1.AssetFaceEntityCompanion Function({
@@ -23,6 +24,8 @@ typedef $$AssetFaceEntityTableCreateCompanionBuilder =
       required int boundingBoxX2,
       required int boundingBoxY2,
       required String sourceType,
+      i0.Value<bool> isVisible,
+      i0.Value<DateTime?> deletedAt,
     });
 typedef $$AssetFaceEntityTableUpdateCompanionBuilder =
     i1.AssetFaceEntityCompanion Function({
@@ -36,6 +39,8 @@ typedef $$AssetFaceEntityTableUpdateCompanionBuilder =
       i0.Value<int> boundingBoxX2,
       i0.Value<int> boundingBoxY2,
       i0.Value<String> sourceType,
+      i0.Value<bool> isVisible,
+      i0.Value<DateTime?> deletedAt,
     });
 
 final class $$AssetFaceEntityTableReferences
@@ -51,29 +56,29 @@ final class $$AssetFaceEntityTableReferences
     super.$_typedResult,
   );
 
-  static i3.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db)
-          .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
+  static i4.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
+      i5.ReadDatabaseContainer(db)
+          .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity')
           .createAlias(
             i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
+              i5.ReadDatabaseContainer(db)
                   .resultSet<i1.$AssetFaceEntityTable>('asset_face_entity')
                   .assetId,
-              i4.ReadDatabaseContainer(
+              i5.ReadDatabaseContainer(
                 db,
-              ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity').id,
+              ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity').id,
             ),
           );
 
-  i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {
+  i4.$$RemoteAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<String>('asset_id')!;
 
-    final manager = i3
+    final manager = i4
         .$$RemoteAssetEntityTableTableManager(
           $_db,
-          i4.ReadDatabaseContainer(
+          i5.ReadDatabaseContainer(
             $_db,
-          ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+          ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
         )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
@@ -83,29 +88,29 @@ final class $$AssetFaceEntityTableReferences
     );
   }
 
-  static i5.$PersonEntityTable _personIdTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db)
-          .resultSet<i5.$PersonEntityTable>('person_entity')
+  static i6.$PersonEntityTable _personIdTable(i0.GeneratedDatabase db) =>
+      i5.ReadDatabaseContainer(db)
+          .resultSet<i6.$PersonEntityTable>('person_entity')
           .createAlias(
             i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
+              i5.ReadDatabaseContainer(db)
                   .resultSet<i1.$AssetFaceEntityTable>('asset_face_entity')
                   .personId,
-              i4.ReadDatabaseContainer(
+              i5.ReadDatabaseContainer(
                 db,
-              ).resultSet<i5.$PersonEntityTable>('person_entity').id,
+              ).resultSet<i6.$PersonEntityTable>('person_entity').id,
             ),
           );
 
-  i5.$$PersonEntityTableProcessedTableManager? get personId {
+  i6.$$PersonEntityTableProcessedTableManager? get personId {
     final $_column = $_itemColumn<String>('person_id');
     if ($_column == null) return null;
-    final manager = i5
+    final manager = i6
         .$$PersonEntityTableTableManager(
           $_db,
-          i4.ReadDatabaseContainer(
+          i5.ReadDatabaseContainer(
             $_db,
-          ).resultSet<i5.$PersonEntityTable>('person_entity'),
+          ).resultSet<i6.$PersonEntityTable>('person_entity'),
         )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_personIdTable($_db));
@@ -165,24 +170,34 @@ class $$AssetFaceEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i3.$$RemoteAssetEntityTableFilterComposer get assetId {
-    final i3.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
+  i0.ColumnFilters<bool> get isVisible => $composableBuilder(
+    column: $table.isVisible,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i4.$$RemoteAssetEntityTableFilterComposer get assetId {
+    final i4.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.assetId,
-      referencedTable: i4.ReadDatabaseContainer(
+      referencedTable: i5.ReadDatabaseContainer(
         $db,
-      ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+      ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i3.$$RemoteAssetEntityTableFilterComposer(
+          }) => i4.$$RemoteAssetEntityTableFilterComposer(
             $db: $db,
-            $table: i4.ReadDatabaseContainer(
+            $table: i5.ReadDatabaseContainer(
               $db,
-            ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+            ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -192,24 +207,24 @@ class $$AssetFaceEntityTableFilterComposer
     return composer;
   }
 
-  i5.$$PersonEntityTableFilterComposer get personId {
-    final i5.$$PersonEntityTableFilterComposer composer = $composerBuilder(
+  i6.$$PersonEntityTableFilterComposer get personId {
+    final i6.$$PersonEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.personId,
-      referencedTable: i4.ReadDatabaseContainer(
+      referencedTable: i5.ReadDatabaseContainer(
         $db,
-      ).resultSet<i5.$PersonEntityTable>('person_entity'),
+      ).resultSet<i6.$PersonEntityTable>('person_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i5.$$PersonEntityTableFilterComposer(
+          }) => i6.$$PersonEntityTableFilterComposer(
             $db: $db,
-            $table: i4.ReadDatabaseContainer(
+            $table: i5.ReadDatabaseContainer(
               $db,
-            ).resultSet<i5.$PersonEntityTable>('person_entity'),
+            ).resultSet<i6.$PersonEntityTable>('person_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -269,25 +284,35 @@ class $$AssetFaceEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i3.$$RemoteAssetEntityTableOrderingComposer get assetId {
-    final i3.$$RemoteAssetEntityTableOrderingComposer composer =
+  i0.ColumnOrderings<bool> get isVisible => $composableBuilder(
+    column: $table.isVisible,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i4.$$RemoteAssetEntityTableOrderingComposer get assetId {
+    final i4.$$RemoteAssetEntityTableOrderingComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.assetId,
-          referencedTable: i4.ReadDatabaseContainer(
+          referencedTable: i5.ReadDatabaseContainer(
             $db,
-          ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+          ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i3.$$RemoteAssetEntityTableOrderingComposer(
+              }) => i4.$$RemoteAssetEntityTableOrderingComposer(
                 $db: $db,
-                $table: i4.ReadDatabaseContainer(
+                $table: i5.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+                ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -297,24 +322,24 @@ class $$AssetFaceEntityTableOrderingComposer
     return composer;
   }
 
-  i5.$$PersonEntityTableOrderingComposer get personId {
-    final i5.$$PersonEntityTableOrderingComposer composer = $composerBuilder(
+  i6.$$PersonEntityTableOrderingComposer get personId {
+    final i6.$$PersonEntityTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.personId,
-      referencedTable: i4.ReadDatabaseContainer(
+      referencedTable: i5.ReadDatabaseContainer(
         $db,
-      ).resultSet<i5.$PersonEntityTable>('person_entity'),
+      ).resultSet<i6.$PersonEntityTable>('person_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i5.$$PersonEntityTableOrderingComposer(
+          }) => i6.$$PersonEntityTableOrderingComposer(
             $db: $db,
-            $table: i4.ReadDatabaseContainer(
+            $table: i5.ReadDatabaseContainer(
               $db,
-            ).resultSet<i5.$PersonEntityTable>('person_entity'),
+            ).resultSet<i6.$PersonEntityTable>('person_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -372,25 +397,31 @@ class $$AssetFaceEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
-  i3.$$RemoteAssetEntityTableAnnotationComposer get assetId {
-    final i3.$$RemoteAssetEntityTableAnnotationComposer composer =
+  i0.GeneratedColumn<bool> get isVisible =>
+      $composableBuilder(column: $table.isVisible, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  i4.$$RemoteAssetEntityTableAnnotationComposer get assetId {
+    final i4.$$RemoteAssetEntityTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.assetId,
-          referencedTable: i4.ReadDatabaseContainer(
+          referencedTable: i5.ReadDatabaseContainer(
             $db,
-          ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+          ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i3.$$RemoteAssetEntityTableAnnotationComposer(
+              }) => i4.$$RemoteAssetEntityTableAnnotationComposer(
                 $db: $db,
-                $table: i4.ReadDatabaseContainer(
+                $table: i5.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+                ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -400,24 +431,24 @@ class $$AssetFaceEntityTableAnnotationComposer
     return composer;
   }
 
-  i5.$$PersonEntityTableAnnotationComposer get personId {
-    final i5.$$PersonEntityTableAnnotationComposer composer = $composerBuilder(
+  i6.$$PersonEntityTableAnnotationComposer get personId {
+    final i6.$$PersonEntityTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.personId,
-      referencedTable: i4.ReadDatabaseContainer(
+      referencedTable: i5.ReadDatabaseContainer(
         $db,
-      ).resultSet<i5.$PersonEntityTable>('person_entity'),
+      ).resultSet<i6.$PersonEntityTable>('person_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i5.$$PersonEntityTableAnnotationComposer(
+          }) => i6.$$PersonEntityTableAnnotationComposer(
             $db: $db,
-            $table: i4.ReadDatabaseContainer(
+            $table: i5.ReadDatabaseContainer(
               $db,
-            ).resultSet<i5.$PersonEntityTable>('person_entity'),
+            ).resultSet<i6.$PersonEntityTable>('person_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -468,6 +499,8 @@ class $$AssetFaceEntityTableTableManager
                 i0.Value<int> boundingBoxX2 = const i0.Value.absent(),
                 i0.Value<int> boundingBoxY2 = const i0.Value.absent(),
                 i0.Value<String> sourceType = const i0.Value.absent(),
+                i0.Value<bool> isVisible = const i0.Value.absent(),
+                i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
               }) => i1.AssetFaceEntityCompanion(
                 id: id,
                 assetId: assetId,
@@ -479,6 +512,8 @@ class $$AssetFaceEntityTableTableManager
                 boundingBoxX2: boundingBoxX2,
                 boundingBoxY2: boundingBoxY2,
                 sourceType: sourceType,
+                isVisible: isVisible,
+                deletedAt: deletedAt,
               ),
           createCompanionCallback:
               ({
@@ -492,6 +527,8 @@ class $$AssetFaceEntityTableTableManager
                 required int boundingBoxX2,
                 required int boundingBoxY2,
                 required String sourceType,
+                i0.Value<bool> isVisible = const i0.Value.absent(),
+                i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
               }) => i1.AssetFaceEntityCompanion.insert(
                 id: id,
                 assetId: assetId,
@@ -503,6 +540,8 @@ class $$AssetFaceEntityTableTableManager
                 boundingBoxX2: boundingBoxX2,
                 boundingBoxY2: boundingBoxY2,
                 sourceType: sourceType,
+                isVisible: isVisible,
+                deletedAt: deletedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -709,6 +748,33 @@ class $AssetFaceEntityTable extends i2.AssetFaceEntity
     type: i0.DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const i0.VerificationMeta _isVisibleMeta = const i0.VerificationMeta(
+    'isVisible',
+  );
+  @override
+  late final i0.GeneratedColumn<bool> isVisible = i0.GeneratedColumn<bool>(
+    'is_visible',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_visible" IN (0, 1))',
+    ),
+    defaultValue: const i3.Constant(true),
+  );
+  static const i0.VerificationMeta _deletedAtMeta = const i0.VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final i0.GeneratedColumn<DateTime> deletedAt =
+      i0.GeneratedColumn<DateTime>(
+        'deleted_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     id,
@@ -721,6 +787,8 @@ class $AssetFaceEntityTable extends i2.AssetFaceEntity
     boundingBoxX2,
     boundingBoxY2,
     sourceType,
+    isVisible,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -824,6 +892,18 @@ class $AssetFaceEntityTable extends i2.AssetFaceEntity
     } else if (isInserting) {
       context.missing(_sourceTypeMeta);
     }
+    if (data.containsKey('is_visible')) {
+      context.handle(
+        _isVisibleMeta,
+        isVisible.isAcceptableOrUnknown(data['is_visible']!, _isVisibleMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -873,6 +953,14 @@ class $AssetFaceEntityTable extends i2.AssetFaceEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}source_type'],
       )!,
+      isVisible: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}is_visible'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
     );
   }
 
@@ -899,6 +987,8 @@ class AssetFaceEntityData extends i0.DataClass
   final int boundingBoxX2;
   final int boundingBoxY2;
   final String sourceType;
+  final bool isVisible;
+  final DateTime? deletedAt;
   const AssetFaceEntityData({
     required this.id,
     required this.assetId,
@@ -910,6 +1000,8 @@ class AssetFaceEntityData extends i0.DataClass
     required this.boundingBoxX2,
     required this.boundingBoxY2,
     required this.sourceType,
+    required this.isVisible,
+    this.deletedAt,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -926,6 +1018,10 @@ class AssetFaceEntityData extends i0.DataClass
     map['bounding_box_x2'] = i0.Variable<int>(boundingBoxX2);
     map['bounding_box_y2'] = i0.Variable<int>(boundingBoxY2);
     map['source_type'] = i0.Variable<String>(sourceType);
+    map['is_visible'] = i0.Variable<bool>(isVisible);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = i0.Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
@@ -945,6 +1041,8 @@ class AssetFaceEntityData extends i0.DataClass
       boundingBoxX2: serializer.fromJson<int>(json['boundingBoxX2']),
       boundingBoxY2: serializer.fromJson<int>(json['boundingBoxY2']),
       sourceType: serializer.fromJson<String>(json['sourceType']),
+      isVisible: serializer.fromJson<bool>(json['isVisible']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -961,6 +1059,8 @@ class AssetFaceEntityData extends i0.DataClass
       'boundingBoxX2': serializer.toJson<int>(boundingBoxX2),
       'boundingBoxY2': serializer.toJson<int>(boundingBoxY2),
       'sourceType': serializer.toJson<String>(sourceType),
+      'isVisible': serializer.toJson<bool>(isVisible),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
@@ -975,6 +1075,8 @@ class AssetFaceEntityData extends i0.DataClass
     int? boundingBoxX2,
     int? boundingBoxY2,
     String? sourceType,
+    bool? isVisible,
+    i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
   }) => i1.AssetFaceEntityData(
     id: id ?? this.id,
     assetId: assetId ?? this.assetId,
@@ -986,6 +1088,8 @@ class AssetFaceEntityData extends i0.DataClass
     boundingBoxX2: boundingBoxX2 ?? this.boundingBoxX2,
     boundingBoxY2: boundingBoxY2 ?? this.boundingBoxY2,
     sourceType: sourceType ?? this.sourceType,
+    isVisible: isVisible ?? this.isVisible,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   AssetFaceEntityData copyWithCompanion(i1.AssetFaceEntityCompanion data) {
     return AssetFaceEntityData(
@@ -1013,6 +1117,8 @@ class AssetFaceEntityData extends i0.DataClass
       sourceType: data.sourceType.present
           ? data.sourceType.value
           : this.sourceType,
+      isVisible: data.isVisible.present ? data.isVisible.value : this.isVisible,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -1028,7 +1134,9 @@ class AssetFaceEntityData extends i0.DataClass
           ..write('boundingBoxY1: $boundingBoxY1, ')
           ..write('boundingBoxX2: $boundingBoxX2, ')
           ..write('boundingBoxY2: $boundingBoxY2, ')
-          ..write('sourceType: $sourceType')
+          ..write('sourceType: $sourceType, ')
+          ..write('isVisible: $isVisible, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -1045,6 +1153,8 @@ class AssetFaceEntityData extends i0.DataClass
     boundingBoxX2,
     boundingBoxY2,
     sourceType,
+    isVisible,
+    deletedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -1059,7 +1169,9 @@ class AssetFaceEntityData extends i0.DataClass
           other.boundingBoxY1 == this.boundingBoxY1 &&
           other.boundingBoxX2 == this.boundingBoxX2 &&
           other.boundingBoxY2 == this.boundingBoxY2 &&
-          other.sourceType == this.sourceType);
+          other.sourceType == this.sourceType &&
+          other.isVisible == this.isVisible &&
+          other.deletedAt == this.deletedAt);
 }
 
 class AssetFaceEntityCompanion
@@ -1074,6 +1186,8 @@ class AssetFaceEntityCompanion
   final i0.Value<int> boundingBoxX2;
   final i0.Value<int> boundingBoxY2;
   final i0.Value<String> sourceType;
+  final i0.Value<bool> isVisible;
+  final i0.Value<DateTime?> deletedAt;
   const AssetFaceEntityCompanion({
     this.id = const i0.Value.absent(),
     this.assetId = const i0.Value.absent(),
@@ -1085,6 +1199,8 @@ class AssetFaceEntityCompanion
     this.boundingBoxX2 = const i0.Value.absent(),
     this.boundingBoxY2 = const i0.Value.absent(),
     this.sourceType = const i0.Value.absent(),
+    this.isVisible = const i0.Value.absent(),
+    this.deletedAt = const i0.Value.absent(),
   });
   AssetFaceEntityCompanion.insert({
     required String id,
@@ -1097,6 +1213,8 @@ class AssetFaceEntityCompanion
     required int boundingBoxX2,
     required int boundingBoxY2,
     required String sourceType,
+    this.isVisible = const i0.Value.absent(),
+    this.deletedAt = const i0.Value.absent(),
   }) : id = i0.Value(id),
        assetId = i0.Value(assetId),
        imageWidth = i0.Value(imageWidth),
@@ -1117,6 +1235,8 @@ class AssetFaceEntityCompanion
     i0.Expression<int>? boundingBoxX2,
     i0.Expression<int>? boundingBoxY2,
     i0.Expression<String>? sourceType,
+    i0.Expression<bool>? isVisible,
+    i0.Expression<DateTime>? deletedAt,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1129,6 +1249,8 @@ class AssetFaceEntityCompanion
       if (boundingBoxX2 != null) 'bounding_box_x2': boundingBoxX2,
       if (boundingBoxY2 != null) 'bounding_box_y2': boundingBoxY2,
       if (sourceType != null) 'source_type': sourceType,
+      if (isVisible != null) 'is_visible': isVisible,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
@@ -1143,6 +1265,8 @@ class AssetFaceEntityCompanion
     i0.Value<int>? boundingBoxX2,
     i0.Value<int>? boundingBoxY2,
     i0.Value<String>? sourceType,
+    i0.Value<bool>? isVisible,
+    i0.Value<DateTime?>? deletedAt,
   }) {
     return i1.AssetFaceEntityCompanion(
       id: id ?? this.id,
@@ -1155,6 +1279,8 @@ class AssetFaceEntityCompanion
       boundingBoxX2: boundingBoxX2 ?? this.boundingBoxX2,
       boundingBoxY2: boundingBoxY2 ?? this.boundingBoxY2,
       sourceType: sourceType ?? this.sourceType,
+      isVisible: isVisible ?? this.isVisible,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -1191,6 +1317,12 @@ class AssetFaceEntityCompanion
     if (sourceType.present) {
       map['source_type'] = i0.Variable<String>(sourceType.value);
     }
+    if (isVisible.present) {
+      map['is_visible'] = i0.Variable<bool>(isVisible.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = i0.Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -1206,7 +1338,9 @@ class AssetFaceEntityCompanion
           ..write('boundingBoxY1: $boundingBoxY1, ')
           ..write('boundingBoxX2: $boundingBoxX2, ')
           ..write('boundingBoxY2: $boundingBoxY2, ')
-          ..write('sourceType: $sourceType')
+          ..write('sourceType: $sourceType, ')
+          ..write('isVisible: $isVisible, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }

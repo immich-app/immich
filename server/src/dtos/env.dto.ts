@@ -1,7 +1,16 @@
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
-import { DatabaseSslMode, ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
+import { ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
+
+// TODO import from sql-tools once the swagger plugin supports external enums
+enum DatabaseSslMode {
+  Disable = 'disable',
+  Allow = 'allow',
+  Prefer = 'prefer',
+  Require = 'require',
+  VerifyFull = 'verify-full',
+}
 
 export class EnvDto {
   @IsInt()
@@ -32,6 +41,10 @@ export class EnvDto {
   @IsString()
   @Optional()
   IMMICH_CONFIG_FILE?: string;
+
+  @IsString()
+  @Optional()
+  IMMICH_HELMET_FILE?: string;
 
   @IsEnum(ImmichEnvironment)
   @Optional()

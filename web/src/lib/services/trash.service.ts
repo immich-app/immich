@@ -31,7 +31,7 @@ export const handleEmptyTrash = async () => {
 
   try {
     const { count } = await emptyTrash();
-    toastManager.success($t('assets_permanently_deleted_count', { values: { count } }));
+    toastManager.primary($t('assets_permanently_deleted_count', { values: { count } }));
   } catch (error) {
     handleError(error, $t('errors.unable_to_empty_trash'));
   }
@@ -47,7 +47,7 @@ export const handleRestoreTrash = async () => {
 
   try {
     const { count } = await restoreTrash();
-    toastManager.success($t('assets_restored_count', { values: { count } }));
+    toastManager.primary($t('assets_restored_count', { values: { count } }));
   } catch (error) {
     handleError(error, $t('errors.unable_to_restore_trash'));
   }

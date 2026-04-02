@@ -67,7 +67,8 @@ graph TD
     C --> D["Thumbnail Generation (Large, small, blurred and person)"]
     D --> E[Smart Search]
     D --> F[Face Detection]
-    D --> G[Video Transcoding]
-    E --> H[Duplicate Detection]
-    F --> I[Facial Recognition]
+    D --> G[OCR]
+    D --> H[Video Transcoding]
+    E --> I[Duplicate Detection]
+    F --> J[Facial Recognition]
 ```

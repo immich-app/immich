@@ -1,6 +1,20 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey } from 'jose';
-import type { UserInfoResponse } from 'openid-client' with { 'resolution-mode': 'import' };
+import {
+  allowInsecureRequests,
+  authorizationCodeGrant,
+  buildAuthorizationUrl,
+  calculatePKCECodeChallenge,
+  ClientSecretBasic,
+  ClientSecretPost,
+  discovery,
+  fetchUserInfo,
+  None,
+  randomPKCECodeVerifier,
+  randomState,
+  skipSubjectCheck,
+  type UserInfoResponse,
+} from 'openid-client';
 import { OAuthTokenEndpointAuthMethod } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -25,8 +39,6 @@ export class OAuthRepository {
   }
 
   async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string) {
-    const { buildAuthorizationUrl, randomState, randomPKCECodeVerifier, calculatePKCECodeChallenge } =
-      await import('openid-client');
     const client = await this.getClient(config);
     state ??= randomState();
 
@@ -65,13 +77,21 @@ export class OAuthRepository {
     expectedState: string,
     codeVerifier: string,
   ): Promise<{ profile: OAuthProfile; sid?: string }> {
-    const { authorizationCodeGrant, fetchUserInfo, ...oidc } = await import('openid-client');
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
     try {
       const tokens = await authorizationCodeGrant(client, new URL(url), { expectedState, pkceCodeVerifier });
-      const profile = await fetchUserInfo(client, tokens.access_token, oidc.skipSubjectCheck);
+
+      let profile: OAuthProfile;
+      const tokenClaims = tokens.claims();
+      if (tokenClaims && 'email' in tokenClaims) {
+        this.logger.debug('Using ID token claims instead of userinfo endpoint');
+        profile = tokenClaims as OAuthProfile;
+      } else {
+        profile = await fetchUserInfo(client, tokens.access_token, skipSubjectCheck);
+      }
+
       if (!profile.sub) {
         throw new Error('Unexpected profile response, no `sub`');
       }
@@ -176,7 +196,6 @@ export class OAuthRepository {
     timeout,
   }: OAuthConfig) {
     try {
-      const { allowInsecureRequests, discovery } = await import('openid-client');
       return await discovery(
         new URL(issuerUrl),
         clientId,
@@ -186,7 +205,7 @@ export class OAuthRepository {
           userinfo_signed_response_alg: profileSigningAlgorithm === 'none' ? undefined : profileSigningAlgorithm,
           id_token_signed_response_alg: signingAlgorithm,
         },
-        await this.getTokenAuthMethod(tokenEndpointAuthMethod, clientSecret),
+        this.getTokenAuthMethod(tokenEndpointAuthMethod, clientSecret),
         {
           execute: [allowInsecureRequests],
           timeout,
@@ -198,9 +217,7 @@ export class OAuthRepository {
     }
   }
 
-  private async getTokenAuthMethod(tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod, clientSecret?: string) {
-    const { None, ClientSecretPost, ClientSecretBasic } = await import('openid-client');
-
+  private getTokenAuthMethod(tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod, clientSecret?: string) {
     if (!clientSecret) {
       return None();
     }

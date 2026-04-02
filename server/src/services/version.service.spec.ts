@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
+import { defaults } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
@@ -127,6 +128,32 @@ describe(VersionService.name, () => {
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
       expect(mocks.websocket.clientBroadcast).not.toHaveBeenCalled();
       expect(mocks.logger.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should queue a version check job when newVersionCheck is enabled', async () => {
+      await sut.onConfigUpdate({
+        oldConfig: { ...defaults, newVersionCheck: { enabled: false } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: true } },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.VersionCheck, data: {} });
+    });
+
+    it('should not queue a version check job when newVersionCheck is disabled', async () => {
+      await sut.onConfigUpdate({
+        oldConfig: { ...defaults, newVersionCheck: { enabled: true } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: false } },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should not queue a version check job when newVersionCheck was already enabled', async () => {
+      await sut.onConfigUpdate({
+        oldConfig: { ...defaults, newVersionCheck: { enabled: true } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: true } },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 

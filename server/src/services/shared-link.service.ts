@@ -150,6 +150,12 @@ export class SharedLinkService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
+    if (auth.sharedLink) {
+      this.logger.deprecate(
+        'Assets uploaded using shared link authentication are now automatically added to the shared link during upload and in the next major release this endpoint will no longer accept shared link authentication',
+      );
+    }
+
     const sharedLink = await this.findOrFail(auth.user.id, id);
 
     if (sharedLink.type !== SharedLinkType.Individual) {
@@ -236,6 +242,6 @@ export class SharedLinkService extends BaseService {
   }
 
   private asToken(sharedLink: { id: string; password: string }) {
-    return this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`);
+    return this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`).toString('base64');
   }
 }

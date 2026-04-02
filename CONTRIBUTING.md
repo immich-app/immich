@@ -15,6 +15,8 @@ Please try to keep pull requests as focused as possible. A PR should do exactly 
 
 If you are looking for something to work on, there are discussions and issues with a `good-first-issue` label on them. These are always a good starting point. If none of them sound interesting or fit your skill set, feel free to reach out on our Discord. We're happy to help you find something to work on!
 
+We usually do not assign issues to new contributors, since it happens often that a PR is never even opened. Again, reach out on Discord if you fear putting a lot of time into fixing an issue, but ending up with a duplicate PR.
+
 ## Use of generative AI
 
 We ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.

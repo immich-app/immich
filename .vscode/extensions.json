@@ -5,6 +5,13 @@
     "dbaeumer.vscode-eslint",
     "dart-code.flutter",
     "dart-code.dart-code",
-    "dcmdev.dcm-vscode-extension"
+    "dcmdev.dcm-vscode-extension",
+    "bradlc.vscode-tailwindcss",
+    "ms-playwright.playwright",
+    "vitest.explorer",
+    "editorconfig.editorconfig",
+    "foxundermoon.shell-format",
+    "timonwong.shellcheck",
+    "bluebrown.yamlfmt"
   ]
 }

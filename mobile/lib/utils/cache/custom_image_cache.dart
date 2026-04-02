@@ -20,7 +20,7 @@ final class CustomImageCache implements ImageCache {
   set maximumSize(int value) => _small.maximumSize = value;
 
   @override
-  set maximumSizeBytes(int value) => _small.maximumSize = value;
+  set maximumSizeBytes(int value) => _small.maximumSizeBytes = value;
 
   @override
   void clear() {

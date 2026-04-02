@@ -5,18 +5,18 @@
   import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AssetAction } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
+  import { downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -31,7 +31,6 @@
   let { sharedLink = $bindable(), isOwned }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
-  const assetInteraction = new AssetInteraction();
 
   let assets = $derived(sharedLink.assets);
 
@@ -48,28 +47,18 @@
 
   const handleUploadAssets = async (files: File[] = []) => {
     try {
-      let results: (string | undefined)[] = [];
-      results = await (!files || files.length === 0 || !Array.isArray(files)
+      await (!files || files.length === 0 || !Array.isArray(files)
         ? openFileUploadDialog()
         : fileUploadHandler({ files }));
-      const data = await addSharedLinkAssets({
-        ...authManager.params,
-        id: sharedLink.id,
-        assetIdsDto: {
-          assetIds: results.filter((id) => !!id) as string[],
-        },
-      });
 
-      const added = data.filter((item) => item.success).length;
-
-      toastManager.success($t('assets_added_count', { values: { count: added } }));
+      toastManager.primary();
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
+    assetMultiSelectManager.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
   };
 
   const handleAction = async (action: Action) => {
@@ -84,13 +73,14 @@
   };
 </script>
 
-<section>
-  {#if sharedLink?.allowUpload || assets.length > 1}
-    {#if assetInteraction.selectionActive}
-      <AssetSelectControlBar
-        assets={assetInteraction.selectedAssets}
-        clearSelect={() => cancelMultiselect(assetInteraction)}
-      >
+{#if sharedLink?.allowUpload || assets.length > 1}
+  <main class="mt-24 mb-40 mx-4 isolate" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
+  </main>
+
+  <header class="fixed top-0 inset-s-0 w-full">
+    {#if assetMultiSelectManager.selectionActive}
+      <AssetSelectControlBar>
         <IconButton
           shape="round"
           color="secondary"
@@ -139,14 +129,11 @@
         {/snippet}
       </ControlAppBar>
     {/if}
-    <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-      <GalleryViewer {assets} {assetInteraction} {viewport} />
-    </section>
-  {:else if assets.length === 1}
-    {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
-      {/await}
+  </header>
+{:else if assets.length === 1}
+  {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
+    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
     {/await}
-  {/if}
-</section>
+  {/await}
+{/if}

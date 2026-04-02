@@ -48,7 +48,7 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getByToken(token: string) {
+  getByToken(token: Buffer) {
     return this.db
       .selectFrom('session')
       .select((eb) => [

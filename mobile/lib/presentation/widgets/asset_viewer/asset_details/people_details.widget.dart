@@ -7,7 +7,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
@@ -15,17 +14,14 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 
-class PeopleDetails extends ConsumerStatefulWidget {
-  const PeopleDetails({super.key});
+class PeopleDetails extends ConsumerWidget {
+  final BaseAsset asset;
+
+  const PeopleDetails({super.key, required this.asset});
 
   @override
-  ConsumerState createState() => _PeopleDetailsState();
-}
-
-class _PeopleDetailsState extends ConsumerState<PeopleDetails> {
-  @override
-  Widget build(BuildContext context) {
-    final asset = ref.watch(currentAssetNotifier);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
     if (asset is! RemoteAsset) {
       return const SizedBox.shrink();
     }

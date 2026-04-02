@@ -33,11 +33,26 @@ class FastClampingScrollPhysics extends ClampingScrollPhysics {
   );
 }
 
+class SnapScrollController extends ScrollController {
+  SnapScrollPosition get snapPosition => position as SnapScrollPosition;
+
+  @override
+  ScrollPosition createScrollPosition(ScrollPhysics physics, ScrollContext context, ScrollPosition? oldPosition) =>
+      SnapScrollPosition(physics: physics, context: context, oldPosition: oldPosition);
+}
+
+class SnapScrollPosition extends ScrollPositionWithSingleContext {
+  double snapOffset;
+
+  SnapScrollPosition({required super.physics, required super.context, super.oldPosition, this.snapOffset = 0.0});
+
+  @override
+  bool get shouldIgnorePointer => false;
+}
+
 class SnapScrollPhysics extends ScrollPhysics {
   static const _minFlingVelocity = 700.0;
   static const minSnapDistance = 30.0;
-
-  static final _spring = SpringDescription.withDampingRatio(mass: .5, stiffness: 300);
 
   const SnapScrollPhysics({super.parent});
 
@@ -66,91 +81,21 @@ class SnapScrollPhysics extends ScrollPhysics {
       }
     }
 
-    return ScrollSpringSimulation(
-      _spring,
-      position.pixels,
-      target(position, velocity, snapOffset),
-      velocity,
-      tolerance: toleranceFor(position),
-    );
+    return ScrollSpringSimulation(spring, position.pixels, target(position, velocity, snapOffset), velocity);
   }
+
+  @override
+  SpringDescription get spring => SpringDescription.withDampingRatio(mass: .5, stiffness: 300);
+
+  @override
+  bool get allowImplicitScrolling => false;
+
+  @override
+  bool get allowUserScrolling => false;
 
   static double target(ScrollMetrics position, double velocity, double snapOffset) {
     if (velocity > _minFlingVelocity) return snapOffset;
     if (velocity < -_minFlingVelocity) return position.pixels < snapOffset ? 0.0 : snapOffset;
     return position.pixels < minSnapDistance ? 0.0 : snapOffset;
   }
-}
-
-class SnapScrollPosition extends ScrollPositionWithSingleContext {
-  double snapOffset;
-
-  SnapScrollPosition({this.snapOffset = 0.0, required super.physics, required super.context, super.oldPosition});
-}
-
-class ProxyScrollController extends ScrollController {
-  final ScrollController scrollController;
-
-  ProxyScrollController({required this.scrollController});
-
-  SnapScrollPosition get snapPosition => position as SnapScrollPosition;
-
-  @override
-  ScrollPosition createScrollPosition(ScrollPhysics physics, ScrollContext context, ScrollPosition? oldPosition) {
-    return ProxyScrollPosition(
-      scrollController: scrollController,
-      physics: physics,
-      context: context,
-      oldPosition: oldPosition,
-    );
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-}
-
-class ProxyScrollPosition extends SnapScrollPosition {
-  final ScrollController scrollController;
-
-  ProxyScrollPosition({
-    required this.scrollController,
-    required super.physics,
-    required super.context,
-    super.oldPosition,
-  });
-
-  @override
-  double setPixels(double newPixels) {
-    final overscroll = super.setPixels(newPixels);
-    if (scrollController.hasClients && scrollController.position.pixels != pixels) {
-      scrollController.position.forcePixels(pixels);
-    }
-    return overscroll;
-  }
-
-  @override
-  void forcePixels(double value) {
-    super.forcePixels(value);
-    if (scrollController.hasClients && scrollController.position.pixels != pixels) {
-      scrollController.position.forcePixels(pixels);
-    }
-  }
-
-  @override
-  double get maxScrollExtent => scrollController.hasClients && scrollController.position.hasContentDimensions
-      ? scrollController.position.maxScrollExtent
-      : super.maxScrollExtent;
-
-  @override
-  double get minScrollExtent => scrollController.hasClients && scrollController.position.hasContentDimensions
-      ? scrollController.position.minScrollExtent
-      : super.minScrollExtent;
-
-  @override
-  double get viewportDimension => scrollController.hasClients && scrollController.position.hasViewportDimension
-      ? scrollController.position.viewportDimension
-      : super.viewportDimension;
 }

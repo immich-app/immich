@@ -5,7 +5,7 @@
   import { ocrManager, type OcrBoundingBox } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-  import { calculateBoundingBoxMatrix, getOcrBoundingBoxesAtSize, type Point } from '$lib/utils/ocr-utils';
+  import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '$lib/utils/ocr-utils';
   import {
     EquirectangularAdapter,
     Viewer,
@@ -127,7 +127,7 @@
       markersPlugin.clearMarkers();
     }
 
-    const boxes = getOcrBoundingBoxesAtSize(ocrData, {
+    const boxes = getOcrBoundingBoxes(ocrData, {
       width: viewer.state.textureData.panoData.croppedWidth,
       height: viewer.state.textureData.panoData.croppedHeight,
     });

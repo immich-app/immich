@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shortcuts } from '$lib/actions/shortcut';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
@@ -47,7 +47,12 @@
   let { asset = $bindable(), onClose }: Props = $props();
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
+<svelte:document
+  use:shortcuts={[
+    { shortcut: { key: 'Escape' }, onShortcut: onClose },
+    { shortcut: { key: 'Enter' }, onShortcut: applyEdits },
+  ]}
+/>
 
 <section class="relative flex flex-col h-full p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg dark pt-3">
   <HStack class="justify-between me-4">

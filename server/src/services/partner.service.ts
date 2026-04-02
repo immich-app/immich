@@ -49,9 +49,8 @@ export class PartnerService extends BaseService {
 
   private mapPartner(partner: Partner, direction: PartnerDirection): PartnerResponseDto {
     // this is opposite to return the non-me user of the "partner"
-    const user = mapUser(
-      direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,
-    ) as PartnerResponseDto;
+    const sharedUser = direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy;
+    const user = mapUser(sharedUser);
 
     return { ...user, inTimeline: partner.inTimeline };
   }

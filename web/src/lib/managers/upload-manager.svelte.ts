@@ -1,5 +1,6 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { uploadAssetsStore } from '$lib/stores/upload';
+import { cancelUploadRequests } from '$lib/utils';
 import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
 
 class UploadManager {
@@ -13,6 +14,7 @@ class UploadManager {
   }
 
   reset() {
+    cancelUploadRequests();
     uploadAssetsStore.reset();
   }
 

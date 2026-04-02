@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
 import { Memory } from 'src/database';
+import { HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOrderWithRandom, MemoryType } from 'src/enum';
@@ -76,6 +77,20 @@ export class MemoryCreateDto extends MemoryBaseDto {
 
   @ValidateDate({ description: 'Memory date' })
   memoryAt!: Date;
+
+  @ValidateDate({
+    optional: true,
+    description: 'Date when memory should be shown',
+    history: new HistoryBuilder().added('v2.6.0').stable('v2.6.0'),
+  })
+  showAt?: Date;
+
+  @ValidateDate({
+    optional: true,
+    description: 'Date when memory should be hidden',
+    history: new HistoryBuilder().added('v2.6.0').stable('v2.6.0'),
+  })
+  hideAt?: Date;
 
   @ValidateUUID({ optional: true, each: true, description: 'Asset IDs to associate with memory' })
   assetIds?: string[];

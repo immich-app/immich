@@ -27,7 +27,7 @@ The default configuration looks like this:
   "ffmpeg": {
     "accel": "disabled",
     "accelDecode": false,
-    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
+    "acceptedAudioCodecs": ["aac", "mp3", "opus"],
     "acceptedContainers": ["mov", "ogg", "webm"],
     "acceptedVideoCodecs": ["h264"],
     "bframes": -1,

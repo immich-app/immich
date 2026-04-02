@@ -17,6 +17,7 @@ export enum OAuthClient {
 export enum OAuthUser {
   NO_EMAIL = 'no-email',
   NO_NAME = 'no-name',
+  ID_TOKEN_CLAIMS = 'id-token-claims',
   WITH_QUOTA = 'with-quota',
   WITH_USERNAME = 'with-username',
   WITH_ROLE = 'with-role',
@@ -80,8 +81,17 @@ const withDefaultClaims = (sub: string) => ({
   email_verified: true,
 });
 
-const getClaims = (sub: string) =>
-  claims.find((user) => user.sub === sub) || withDefaultClaims(sub);
+const getClaims = (sub: string, use?: string) => {
+  if (sub === OAuthUser.ID_TOKEN_CLAIMS) {
+    return {
+      sub,
+      email: `oauth-${sub}@immich.app`,
+      email_verified: true,
+      name: use === 'id_token' ? 'ID Token User' : 'Userinfo User',
+    };
+  }
+  return claims.find((user) => user.sub === sub) || withDefaultClaims(sub);
+};
 
 const setup = async () => {
   const redirectUris = [
@@ -89,6 +99,12 @@ const setup = async () => {
     'https://photos.immich.app/oauth/mobile-redirect',
   ];
 
+  const redirectUris = [
+    'http://127.0.0.1:2285/auth/login',
+    'https://photos.immich.app/oauth/mobile-redirect',
+  ];
+  const port = 2286;
+  const host = '0.0.0.0';
   const oidc = new Provider(`http://${host}:${port}`, {
     renderError: async (ctx, out, error) => {
       console.error(out);
@@ -97,7 +113,7 @@ const setup = async () => {
     },
     findAccount: (ctx, sub) => ({
       accountId: sub,
-      claims: () => getClaims(sub),
+      claims: (use) => getClaims(sub, use),
     }),
     scopes: ['openid', 'email', 'profile'],
     claims: {
@@ -126,6 +142,7 @@ const setup = async () => {
         state: 'oidc.state',
       },
     },
+    conformIdTokenClaims: false,
     pkce: {
       required: () => false,
     },
