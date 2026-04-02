@@ -568,6 +568,7 @@ Class | Method | HTTP request | Description
  - [SyncAlbumUserDeleteV1](doc//SyncAlbumUserDeleteV1.md)
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
+ - [SyncAlbumV2](doc//SyncAlbumV2.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
  - [SyncAssetEditDeleteV1](doc//SyncAssetEditDeleteV1.md)
  - [SyncAssetEditV1](doc//SyncAssetEditV1.md)

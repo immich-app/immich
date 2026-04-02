@@ -638,7 +638,7 @@
       <ActivityViewer
         disabled={!album.isActivityEnabled}
         assetType={asset.type}
-        albumOwnerId={album.ownerId}
+        albumUsers={album.albumUsers}
         albumId={album.id}
         assetId={asset.id}
       />

@@ -20,7 +20,7 @@
   const { album, onClose }: Props = $props();
 
   let users: UserResponseDto[] = $state([]);
-  const excludedUserIds = $derived([album.ownerId, ...album.albumUsers.map(({ user: { id } }) => id)]);
+  const excludedUserIds = $derived(album.albumUsers.map(({ user: { id } }) => id));
   const filteredUsers = $derived(
     sortBy(
       users.filter(

@@ -249,6 +249,7 @@ export interface INotifySignupJob extends IEntityJob {
 
 export interface INotifyAlbumInviteJob extends IEntityJob {
   recipientId: string;
+  senderName: string;
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {

@@ -210,9 +210,7 @@
   let albumId = $derived(album.id);
 
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
-  const albumUsers = $derived(
-    showAlbumUsers && containsEditors ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
-  );
+  const albumUsers = $derived(showAlbumUsers && containsEditors ? album.albumUsers.map(({ user }) => user) : []);
 
   $effect(() => {
     if (!album.isActivityEnabled && activityManager.commentCount === 0) {
@@ -231,7 +229,7 @@
     return { albumId, order: album.order };
   });
 
-  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
+  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 1);
 
   $effect(() => {
     if (assetViewerManager.isViewing || !isShared) {
@@ -243,16 +241,15 @@
 
   onDestroy(() => activityManager.reset());
 
-  let isOwned = $derived(authManager.user.id == album.ownerId);
+  const isOwned = $derived(album.albumUsers[0].user.id === authManager.user.id);
 
   let showActivityStatus = $derived(
-    album.albumUsers.length > 0 &&
+    album.albumUsers.length > 1 &&
       !assetViewerManager.isViewing &&
       (album.isActivityEnabled || activityManager.commentCount > 0),
   );
-  let isEditor = $derived(
-    album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor ||
-      album.ownerId === authManager.user.id,
+  const isEditor = $derived(
+    album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor || isOwned,
   );
 
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
@@ -374,7 +371,7 @@
               {/if}
 
               <!-- ALBUM SHARING -->
-              {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
+              {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
                 <div class="my-3 flex gap-x-1">
                   <!-- link -->
                   {#if album.hasSharedLink && isOwned}
@@ -388,13 +385,8 @@
                     />
                   {/if}
 
-                  <!-- owner -->
-                  <button type="button" onclick={() => modalManager.show(AlbumOptionsModal, { album })}>
-                    <UserAvatar user={album.owner} size="md" />
-                  </button>
-
                   <!-- users with write access (collaborators) -->
-                  {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
+                  {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
                     <button type="button" onclick={() => modalManager.show(AlbumOptionsModal, { album })}>
                       <UserAvatar {user} size="md" />
                     </button>
@@ -620,7 +612,7 @@
       {/if}
     {/if}
   </div>
-  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && authManager.authenticated && !assetViewerManager.isViewing}
+  {#if album.albumUsers.length > 1 && album && assetViewerManager.isShowActivityPanel && authManager.authenticated && !assetViewerManager.isViewing}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -628,7 +620,7 @@
         class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
-        <ActivityViewer disabled={!album.isActivityEnabled} albumOwnerId={album.ownerId} albumId={album.id} />
+        <ActivityViewer disabled={!album.isActivityEnabled} albumUsers={album.albumUsers} albumId={album.id} />
       </div>
     </div>
   {/if}
