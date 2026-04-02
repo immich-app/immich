@@ -441,7 +441,7 @@
     "user_successfully_removed": "المستخدم {email} تمت ازالته بنجاح.",
     "users_page_description": "صفحة ادارة المستخدمين",
     "version_check_enabled_description": "تفعيل التحقق من الإصدارات الجديدة",
-    "version_check_implications": "تعتمد ميزة التحقق من الإصدار على التواصل الدوري مع github.com",
+    "version_check_implications": "تعتمد ميزة التحقق من الإصدار على التواصل الدوري مع {server}",
     "version_check_settings": "التحقق من الإصدار",
     "version_check_settings_description": "تفعيل/تعطيل الإشعار لإصدار جديد",
     "video_conversion_job": "تحويل أشرطة الفيديو",

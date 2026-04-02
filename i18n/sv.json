@@ -441,7 +441,7 @@
     "user_successfully_removed": "Användaren {email} har tagits bort.",
     "users_page_description": "Administratörsanvändare",
     "version_check_enabled_description": "Aktivera versionskontroll",
-    "version_check_implications": "Funktionen för versionskontroll är beroende av periodisk kommunikation med github.com",
+    "version_check_implications": "Funktionen för versionskontroll är beroende av periodisk kommunikation med {server}",
     "version_check_settings": "Versionskontroll",
     "version_check_settings_description": "Aktivera/inaktivera notis om ny version",
     "video_conversion_job": "Omkoda videor",

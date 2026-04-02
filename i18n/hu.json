@@ -441,7 +441,7 @@
     "user_successfully_removed": "{email} felhasználó sikeresen eltávolítva.",
     "users_page_description": "Admin felhasználók oldala",
     "version_check_enabled_description": "Új verziók elérhetőségének ellenőrzése",
-    "version_check_implications": "Az új verziók ellenőrzése időszakos kommunikációt igényel a github.com oldallal",
+    "version_check_implications": "Az új verziók ellenőrzése időszakos kommunikációt igényel a {server} oldallal",
     "version_check_settings": "Verzió ellenőrzés",
     "version_check_settings_description": "Az új verzióról való értesítés be- és kikapcsolása",
     "video_conversion_job": "Videók Átkódolása",

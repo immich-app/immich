@@ -441,7 +441,7 @@
     "user_successfully_removed": "Kasutaja {email} edukalt eemaldatud.",
     "users_page_description": "Kasutajate haldamise leht",
     "version_check_enabled_description": "Luba versioonikontroll",
-    "version_check_implications": "Versioonikontroll vajab perioodilist ühendumist github.com-iga",
+    "version_check_implications": "Versioonikontroll vajab perioodilist ühendumist {server}-iga",
     "version_check_settings": "Versioonikontroll",
     "version_check_settings_description": "Luba/keela uue versiooni teavitus",
     "video_conversion_job": "Videote transkodeerimine",

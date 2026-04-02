@@ -441,7 +441,7 @@
     "user_successfully_removed": "Pengguna {email} berhasil dihapus.",
     "users_page_description": "Halaman pengguna admin",
     "version_check_enabled_description": "Aktifkan pemeriksaan versi",
-    "version_check_implications": "Fitur pemeriksaan versi tergantung pada komunikasi berkala dengan github.com",
+    "version_check_implications": "Fitur pemeriksaan versi tergantung pada komunikasi berkala dengan {server}",
     "version_check_settings": "Pemeriksaan Versi",
     "version_check_settings_description": "Aktifkan/nonaktifkan notifikasi versi baru",
     "video_conversion_job": "Transkode video",

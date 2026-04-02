@@ -441,7 +441,7 @@
     "user_successfully_removed": "Baineadh an t-úsáideoir {email} go rathúil.",
     "users_page_description": "Leathanach úsáideoirí riarthóra",
     "version_check_enabled_description": "Cumasaigh seiceáil leagan",
-    "version_check_implications": "Braitheann an ghné seiceála leagan ar chumarsáid thréimhsiúil le github.com",
+    "version_check_implications": "Braitheann an ghné seiceála leagan ar chumarsáid thréimhsiúil le {server}",
     "version_check_settings": "Seiceáil Leagan",
     "version_check_settings_description": "Cumasaigh/díchumasaigh an fógra faoin leagan nua",
     "video_conversion_job": "Físeáin Traschódaithe",

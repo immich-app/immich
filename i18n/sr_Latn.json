@@ -441,7 +441,7 @@
     "user_successfully_removed": "Korisnik {email} je uspešno uklonjen.",
     "users_page_description": "Stranica administratorskih korisnika",
     "version_check_enabled_description": "Omogućite proveru novih izdanja",
-    "version_check_implications": "Funkcija provere verzije se oslanja na periodičnu komunikaciju sa github.com",
+    "version_check_implications": "Funkcija provere verzije se oslanja na periodičnu komunikaciju sa {server}",
     "version_check_settings": "Provera verzije",
     "version_check_settings_description": "Omogućite/onemogućite obaveštenje o novoj verziji",
     "video_conversion_job": "Transkodiranje video zapisa",

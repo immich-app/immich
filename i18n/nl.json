@@ -441,7 +441,7 @@
     "user_successfully_removed": "Gebruiker {email} is succesvol verwĳderd.",
     "users_page_description": "Gebruikers­pagina voor administrators",
     "version_check_enabled_description": "Versiecontrole inschakelen",
-    "version_check_implications": "De versiecontrole is afhankelijk van periodieke communicatie met github.com",
+    "version_check_implications": "De versiecontrole is afhankelijk van periodieke communicatie met {server}",
     "version_check_settings": "Versiecontrole",
     "version_check_settings_description": "Melding voor een nieuwe versie in-/uitschakelen",
     "video_conversion_job": "Transcodeer video's",

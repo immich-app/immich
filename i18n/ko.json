@@ -441,7 +441,7 @@
     "user_successfully_removed": "사용자 {email}님이 성공적으로 삭제되었습니다.",
     "users_page_description": "관리자 사용자 페이지",
     "version_check_enabled_description": "버전 확인 활성화",
-    "version_check_implications": "주기적으로 Github에 요청을 보내 새 버전을 확인합니다.",
+    "version_check_implications": "주기적으로 {server}에 요청을 보내 새 버전을 확인합니다.",
     "version_check_settings": "버전 확인",
     "version_check_settings_description": "새 버전 확인 및 알림 기능을 관리합니다.",
     "video_conversion_job": "동영상 트랜스코드",

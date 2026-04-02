@@ -370,7 +370,7 @@
     "user_settings": "Подешавања корисника",
     "user_settings_description": "Управљајте корисничким подешавањима",
     "version_check_enabled_description": "Омогући проверу нових издања",
-    "version_check_implications": "Функција провере верзије се ослања на периодичну комуникацију са гитхуб.цом",
+    "version_check_implications": "Функција провере верзије се ослања на периодичну комуникацију са {server}",
     "version_check_settings": "Провера верзије",
     "version_check_settings_description": "Омогући/онемогући обавештење о новој верзији",
     "video_conversion_job": "Транскодирање видео записа",

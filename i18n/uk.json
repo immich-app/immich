@@ -441,7 +441,7 @@
     "user_successfully_removed": "Користувача {email} успішно видалено.",
     "users_page_description": "Сторінка адміністраторів",
     "version_check_enabled_description": "Увімкнути перевірку версії",
-    "version_check_implications": "Функція перевірки версії залежить від періодичної комунікації з github.com",
+    "version_check_implications": "Функція перевірки версії залежить від періодичної комунікації з {server}",
     "version_check_settings": "Перевірка версії",
     "version_check_settings_description": "Увімкнути/вимкнути сповіщення про нову версію",
     "video_conversion_job": "Перекодувати відео",

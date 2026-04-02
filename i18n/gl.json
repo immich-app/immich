@@ -441,7 +441,7 @@
     "user_successfully_removed": "O usuario {email} foi eliminado satisfactoriamente.",
     "users_page_description": "Páxina de usuarios administradores",
     "version_check_enabled_description": "Activar comprobación de versión",
-    "version_check_implications": "A función de comprobación de versión depende da comunicación periódica con github.com",
+    "version_check_implications": "A función de comprobación de versión depende da comunicación periódica con {server}",
     "version_check_settings": "Comprobación de Versión",
     "version_check_settings_description": "Activar/desactivar a notificación de nova versión",
     "video_conversion_job": "Transcodificar vídeos",

@@ -441,7 +441,7 @@
     "user_successfully_removed": "Потребител {email} е успешно премахнат.",
     "users_page_description": "Страница за администриране на потребители",
     "version_check_enabled_description": "Активирай проверка на версията",
-    "version_check_implications": "Функцията за проверка на версията разчита на периодична комуникация с github.com",
+    "version_check_implications": "Функцията за проверка на версията разчита на периодична комуникация с {server}",
     "version_check_settings": "Проверка на версията",
     "version_check_settings_description": "Активирайте/деактивирайте известието за нова версия",
     "video_conversion_job": "Транскодиране на видеоклиповете",

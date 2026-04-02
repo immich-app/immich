@@ -441,7 +441,7 @@
     "user_successfully_removed": "Uporabnik {email} je bil uspešno odstranjen.",
     "users_page_description": "Stran skrbniških uporabnikov",
     "version_check_enabled_description": "Omogoči preverjanje različice",
-    "version_check_implications": "Funkcija preverjanja različic se opira na občasno komunikacijo z github.com",
+    "version_check_implications": "Funkcija preverjanja različic se opira na občasno komunikacijo z {server}",
     "version_check_settings": "Preverjanje različice",
     "version_check_settings_description": "Omogoči/onemogoči obvestilo o novi različici",
     "video_conversion_job": "Prekodiranje videoposnetkov",

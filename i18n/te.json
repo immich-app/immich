@@ -350,7 +350,7 @@
     "user_settings": "వాడుకరి సెట్టింగ్‌లు",
     "user_settings_description": "వాడుకరి సెట్టింగ్‌లను నిర్వహించండి",
     "version_check_enabled_description": "వర్షన్ తనిఖీని చేయండి",
-    "version_check_implications": "వర్షన్ తనిఖీ ఫీచర్ github.comతో క్రమానుగత కమ్యూనికేషన్‌పై ఆధారపడుతుంది",
+    "version_check_implications": "వర్షన్ తనిఖీ ఫీచర్ {server}తో క్రమానుగత కమ్యూనికేషన్‌పై ఆధారపడుతుంది",
     "version_check_settings": "వర్షన్ తనిఖీ",
     "version_check_settings_description": "కొత్త వర్షన్ నోటిఫికేషన్‌ను ప్రారంభించండి/ఆపివేయండి",
     "video_conversion_job": "వీడియోలను ట్రాన్స్‌కోడ్ చేయండి",

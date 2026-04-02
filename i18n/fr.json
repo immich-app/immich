@@ -441,7 +441,7 @@
     "user_successfully_removed": "L'utilisateur {email} a été supprimé avec succès.",
     "users_page_description": "Page d'administration des utilisateurs",
     "version_check_enabled_description": "Activer la vérification périodique de nouvelle version",
-    "version_check_implications": "Le contrôle de version repose sur une communication périodique avec github.com",
+    "version_check_implications": "Le contrôle de version repose sur une communication périodique avec {server}",
     "version_check_settings": "Vérification de la version",
     "version_check_settings_description": "Gérer la vérification de nouvelle version d'Immich",
     "video_conversion_job": "Transcodage des vidéos",

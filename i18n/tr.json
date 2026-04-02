@@ -441,7 +441,7 @@
     "user_successfully_removed": "Kullanıcı {email} başarıyla kaldırıldı.",
     "users_page_description": "Yönetici kullanıcılar sayfası",
     "version_check_enabled_description": "Sürüm kontrolü etkin",
-    "version_check_implications": "Sürüm kontrol özelliği, github.com ile periyodik iletişime dayanır",
+    "version_check_implications": "Sürüm kontrol özelliği, {server} ile periyodik iletişime dayanır",
     "version_check_settings": "Sürüm Kontrolü",
     "version_check_settings_description": "Yeni sürüm bildirimini etkinleştir/devre dışı bırak",
     "video_conversion_job": "Videoları dönüştür",

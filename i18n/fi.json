@@ -441,7 +441,7 @@
     "user_successfully_removed": "Käyttäjä {email} on poistettu onnistuneesti.",
     "users_page_description": "Ylläpitäjän käyttäjien lista",
     "version_check_enabled_description": "Ota käyttöön versiotarkastus",
-    "version_check_implications": "Versiotarkistus vaatii säännöllisen yhteyden github.comiin",
+    "version_check_implications": "Versiotarkistus vaatii säännöllisen yhteyden {server}iin",
     "version_check_settings": "Versiotarkistus",
     "version_check_settings_description": "Ota käyttöön ilmoitukset, kun uusi versio on saatavilla",
     "video_conversion_job": "Transkoodaa videot",

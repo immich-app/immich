@@ -441,7 +441,7 @@
     "user_successfully_removed": "Bruker {email} har blitt fjernet.",
     "users_page_description": "Administrer brukere",
     "version_check_enabled_description": "Aktiver periodiske forespørsler til GitHub for å sjekke etter nye utgivelser",
-    "version_check_implications": "Versjonssjekkfunksjonen baserer seg på periodisk kommunikasjon med github.com",
+    "version_check_implications": "Versjonssjekkfunksjonen baserer seg på periodisk kommunikasjon med {server}",
     "version_check_settings": "Versjonssjekk",
     "version_check_settings_description": "Aktiver/deaktiver varsel om ny versjon",
     "video_conversion_job": "Transkod videoer",

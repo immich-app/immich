@@ -441,7 +441,7 @@
     "user_successfully_removed": "Ο χρήστης {email} αφαιρέθηκε με επιτυχία.",
     "users_page_description": "Σελίδα χρηστών διαχειριστή",
     "version_check_enabled_description": "Ενεργοποίηση ελέγχου έκδοσης",
-    "version_check_implications": "Η λειτουργία ελέγχου έκδοσης, εξαρτάται από την περιοδική επικοινωνία με το github.com",
+    "version_check_implications": "Η λειτουργία ελέγχου έκδοσης, εξαρτάται από την περιοδική επικοινωνία με το {server}",
     "version_check_settings": "Έλεγχος εκδοσης",
     "version_check_settings_description": "Ενεργοποίηση/απενεργοποίηση της ειδοποίησης για νέα έκδοση",
     "video_conversion_job": "Μετατροπή βίντεο",

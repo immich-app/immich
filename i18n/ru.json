@@ -441,7 +441,7 @@
     "user_successfully_removed": "Пользователь {email} успешно удален.",
     "users_page_description": "Управление пользователями системы",
     "version_check_enabled_description": "Включить проверку наличия новых версий",
-    "version_check_implications": "Функция проверки версии периодически обращается к сайту github.com",
+    "version_check_implications": "Функция проверки версии периодически обращается к сайту {server}",
     "version_check_settings": "Проверка версии",
     "version_check_settings_description": "Включить/отключить уведомление о новой версии",
     "video_conversion_job": "Перекодирование видео",

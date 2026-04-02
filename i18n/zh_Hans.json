@@ -441,7 +441,7 @@
     "user_successfully_removed": "用户 {email} 已成功删除。",
     "users_page_description": "管理用户页面",
     "version_check_enabled_description": "检查软件新版本",
-    "version_check_implications": "版本检查功能依赖于与 github.com 的定期通信",
+    "version_check_implications": "版本检查功能依赖于与 {server} 的定期通信",
     "version_check_settings": "新版本检查",
     "version_check_settings_description": "启用/禁用新版本通知",
     "video_conversion_job": "转码视频",

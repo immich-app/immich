@@ -441,7 +441,7 @@
     "user_successfully_removed": "Naudotojas {email} sėkmingai pašalintas.",
     "users_page_description": "Administratorių vartotojų puslapis",
     "version_check_enabled_description": "Įgalinti versijų tikrinimą",
-    "version_check_implications": "Versijų tikrinimas reikalauja periodiškos komunikacijos su github.com",
+    "version_check_implications": "Versijų tikrinimas reikalauja periodiškos komunikacijos su {server}",
     "version_check_settings": "Versijos tikrinimas",
     "version_check_settings_description": "Įjungti/išjungti naujos versijos pranešimus",
     "video_conversion_job": "Vaizdo įrašų konvertavimas",

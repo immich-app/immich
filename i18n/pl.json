@@ -441,7 +441,7 @@
     "user_successfully_removed": "Użytkownik {email} został pomyślnie usunięty.",
     "users_page_description": "Strona administracyjna do zarządzania użytkownikami",
     "version_check_enabled_description": "Włącz sprawdzanie wersji",
-    "version_check_implications": "Funkcja sprawdzania wersji opiera się na okresowej komunikacji z github.com",
+    "version_check_implications": "Funkcja sprawdzania wersji opiera się na okresowej komunikacji z {server}",
     "version_check_settings": "Sprawdzenie Wersji",
     "version_check_settings_description": "Włącz/wyłącz powiadomienia o nowej wersji",
     "video_conversion_job": "Transkodowanie wideo",

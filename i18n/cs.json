@@ -441,7 +441,7 @@
     "user_successfully_removed": "Uživatel {email} byl úspěšně odstraněn.",
     "users_page_description": "Stránka správců",
     "version_check_enabled_description": "Povolit kontrolu verzí",
-    "version_check_implications": "Kontrola verze je založena na pravidelné komunikaci s github.com",
+    "version_check_implications": "Kontrola verze je založena na pravidelné komunikaci s {server}",
     "version_check_settings": "Kontrola verze",
     "version_check_settings_description": "Povolení/zakázání oznámení o nové verzi",
     "video_conversion_job": "Překódování videí",

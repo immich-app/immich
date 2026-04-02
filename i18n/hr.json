@@ -429,7 +429,7 @@
     "user_settings": "Korisničke postavke",
     "user_settings_description": "Upravljanje korisničkim postavkama",
     "version_check_enabled_description": "Omogući provjeru verzije",
-    "version_check_implications": "Značajka provjere verzije oslanja se na periodičnu komunikaciju s github.com",
+    "version_check_implications": "Značajka provjere verzije oslanja se na periodičnu komunikaciju s {server}",
     "version_check_settings": "Provjera verzije",
     "version_check_settings_description": "Omogućite/onemogućite obavijest o novoj verziji",
     "video_conversion_job": "Transkodiranje videozapisa",

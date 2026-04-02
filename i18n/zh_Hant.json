@@ -441,7 +441,7 @@
     "user_successfully_removed": "已成功刪除使用者 {email}。",
     "users_page_description": "管理使用者頁面",
     "version_check_enabled_description": "啟用版本檢查",
-    "version_check_implications": "版本檢查功能仰賴與 github.com 的定期通訊",
+    "version_check_implications": "版本檢查功能仰賴與 {server} 的定期通訊",
     "version_check_settings": "版本檢查",
     "version_check_settings_description": "啟用 / 停用新版本通知",
     "video_conversion_job": "影片轉碼",

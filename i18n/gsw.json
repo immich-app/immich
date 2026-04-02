@@ -422,7 +422,7 @@
     "user_successfully_removed": "Dr Benutzer {email} isch erfolgrich entfernt worde.",
     "users_page_description": "Administrator-Benutzersiite",
     "version_check_enabled_description": "Versionsprüefig akivierä",
-    "version_check_implications": "D’Funktion zur Versionsprüefig basiert uf regelmässiger Kommunikazion mit GitHub.com",
+    "version_check_implications": "D’Funktion zur Versionsprüefig basiert uf regelmässiger Kommunikazion mit {server}",
     "version_check_settings": "Versionsprüefig",
     "version_check_settings_description": "Aktiviere/Deaktivier d’Benochrichtigung über neui Versione",
     "video_conversion_job": "Videos transkodiere",

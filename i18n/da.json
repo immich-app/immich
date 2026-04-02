@@ -441,7 +441,7 @@
     "user_successfully_removed": "Bruger {email} er blevet fjernet med succes.",
     "users_page_description": "Admin-brugere side",
     "version_check_enabled_description": "Aktivér versionstjek",
-    "version_check_implications": "Funktionen til versionstjek er afhængig af periodisk kommunikation med github.com",
+    "version_check_implications": "Funktionen til versionstjek er afhængig af periodisk kommunikation med {server}",
     "version_check_settings": "Versionstjek",
     "version_check_settings_description": "Aktiver/deaktiverer notifikation for den nye version",
     "video_conversion_job": "Transkod videoer",

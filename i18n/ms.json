@@ -393,7 +393,7 @@
     "user_settings": "Tetapan Pengguna",
     "user_settings_description": "Urus tetapan pengguna",
     "version_check_enabled_description": "Dayakan semakan versi",
-    "version_check_implications": "Ciri semakan versi bergantung kepada komunikasi berkala dengan github.com",
+    "version_check_implications": "Ciri semakan versi bergantung kepada komunikasi berkala dengan {server}",
     "version_check_settings": "Semakan Versi",
     "version_check_settings_description": "Dayakan/nyahdayakan notifikasi versi baharu",
     "video_conversion_job": "Transkod video",

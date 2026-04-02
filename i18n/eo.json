@@ -441,7 +441,7 @@
     "user_successfully_removed": "La uzanto {email} estas forigita.",
     "users_page_description": "Paĝo por administri uzantojn",
     "version_check_enabled_description": "Ebligi kontrolon de versio",
-    "version_check_implications": "La funkcio de kontrolado de versio bezonas de temp' al tempan komunikadon kun github.com",
+    "version_check_implications": "La funkcio de kontrolado de versio bezonas de temp' al tempan komunikadon kun {server}",
     "version_check_settings": "Kontrolo de versio",
     "version_check_settings_description": "Ŝalti/malŝalti atentigilon pri novaj versioj",
     "video_conversion_job": "Transkodado de videoj",

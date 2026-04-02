@@ -441,7 +441,7 @@
     "user_successfully_removed": "Der Benutzer {email} wurde erfolgreich entfernt.",
     "users_page_description": "Administrator-Benutzerseite",
     "version_check_enabled_description": "Versionsprüfung aktivieren",
-    "version_check_implications": "Die Funktion zur Versionsprüfung basiert auf regelmäßiger Kommunikation mit GitHub.com",
+    "version_check_implications": "Die Funktion zur Versionsprüfung basiert auf regelmäßiger Kommunikation mit {server}",
     "version_check_settings": "Versionsprüfung",
     "version_check_settings_description": "Aktivieren/Deaktivieren der Benachrichtigung über neue Versionen",
     "video_conversion_job": "Videos transkodieren",

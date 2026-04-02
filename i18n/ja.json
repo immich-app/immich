@@ -441,7 +441,7 @@
     "user_successfully_removed": "ユーザー {email} は正常に削除されました。",
     "users_page_description": "管理者用 ユーザー ページ",
     "version_check_enabled_description": "バージョンの確認を有効にする",
-    "version_check_implications": "このバージョン確認機能は定期的なgithub.comとの通信によります",
+    "version_check_implications": "このバージョン確認機能は定期的な{server}との通信によります",
     "version_check_settings": "バージョンチェック",
     "version_check_settings_description": "新しいバージョンの通知を有効/無効にします",
     "video_conversion_job": "動画をトランスコード",

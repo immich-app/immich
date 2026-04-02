@@ -426,7 +426,7 @@
     "user_successfully_removed": "பயனர் {email} வெற்றிகரமாக அகற்றப்பட்டது.",
     "users_page_description": "நிர்வாக பயனர்கள் பக்கம்",
     "version_check_enabled_description": "பதிப்பு சரிபார்ப்பு இயக்கவும்",
-    "version_check_implications": "பதிப்பு சரிபார்ப்பு அம்சம் github .com உடனான அவ்வப்போது தொடர்புகொள்வதை நம்பியுள்ளது",
+    "version_check_implications": "பதிப்பு சரிபார்ப்பு அம்சம் {server} உடனான அவ்வப்போது தொடர்புகொள்வதை நம்பியுள்ளது",
     "version_check_settings": "பதிப்பு சோதனை",
     "version_check_settings_description": "புதிய பதிப்பு அறிவிப்பை இயக்கவும்/முடக்கவும்",
     "video_conversion_job": "டிரான்ச்கோட் வீடியோக்கள்",

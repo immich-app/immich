@@ -439,7 +439,7 @@
     "user_successfully_removed": "ಬಳಕೆದಾರ {email} ಅವರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ತೆಗೆದುಹಾಕಲಾಗಿದೆ.",
     "users_page_description": "ನಿರ್ವಾಹಕ ಬಳಕೆದಾರರ ಪುಟ",
     "version_check_enabled_description": "ಆವೃತ್ತಿ ಪರಿಶೀಲನೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
-    "version_check_implications": "ಆವೃತ್ತಿ ಪರಿಶೀಲನೆ ವೈಶಿಷ್ಟ್ಯವು github.com ನೊಂದಿಗೆ ಆವರ್ತಕ ಸಂವಹನವನ್ನು ಅವಲಂಬಿಸಿದೆ",
+    "version_check_implications": "ಆವೃತ್ತಿ ಪರಿಶೀಲನೆ ವೈಶಿಷ್ಟ್ಯವು {server} ನೊಂದಿಗೆ ಆವರ್ತಕ ಸಂವಹನವನ್ನು ಅವಲಂಬಿಸಿದೆ",
     "version_check_settings": "ಆವೃತ್ತಿ ಪರಿಶೀಲನೆ",
     "version_check_settings_description": "ಹೊಸ ಆವೃತ್ತಿಯ ಅಧಿಸೂಚನೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ/ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ",
     "video_conversion_job": "ವೀಡಿಯೊಗಳನ್ನು ಟ್ರಾನ್ಸ್‌ಕೋಡ್ ಮಾಡಿ",

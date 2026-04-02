@@ -441,7 +441,7 @@
     "user_successfully_removed": "उपयोगकर्ता {email} को सफलतापूर्वक हटा दिया गया है।",
     "users_page_description": "प्रशासक (Admin) उपयोगकर्ता पेज",
     "version_check_enabled_description": "नई रिलीज़ की जाँच के लिए GitHub पर आवधिक अनुरोध सक्षम करें",
-    "version_check_implications": "संस्करण जाँच सुविधा github.com के साथ आवधिक संचार पर निर्भर करती है",
+    "version_check_implications": "संस्करण जाँच सुविधा {server} के साथ आवधिक संचार पर निर्भर करती है",
     "version_check_settings": "संस्करण चेक",
     "version_check_settings_description": "नए संस्करण अधिसूचना को सक्षम/अक्षम करें",
     "video_conversion_job": "ट्रांसकोड वीडियो",

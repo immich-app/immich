@@ -441,7 +441,7 @@
     "user_successfully_removed": "Người dùng {email} đã được xóa thành công.",
     "users_page_description": "Trang quản trị người dùng",
     "version_check_enabled_description": "Bật kiểm tra phiên bản",
-    "version_check_implications": "Tính năng kiểm tra phiên bản yêu cầu kết nối thường xuyên đến github.com",
+    "version_check_implications": "Tính năng kiểm tra phiên bản yêu cầu kết nối thường xuyên đến {server}",
     "version_check_settings": "Kiểm tra phiên bản",
     "version_check_settings_description": "Bật/tắt thông báo phiên bản mới",
     "video_conversion_job": "Chuyển mã video",

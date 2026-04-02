@@ -365,7 +365,7 @@
     "user_successfully_removed": "کاربر {email} با موفقیت حذف شد.",
     "users_page_description": "صفحه مدیریت کاربران",
     "version_check_enabled_description": "فعال‌سازی بررسی نسخه",
-    "version_check_implications": "ویژگی بررسی نسخه به ارتباط دوره ای با github.com متکی است",
+    "version_check_implications": "ویژگی بررسی نسخه به ارتباط دوره ای با {server} متکی است",
     "version_check_settings": "بررسی نسخه",
     "version_check_settings_description": "فعال یا غیرفعال کردن اعلان نسخه جدید",
     "video_conversion_job": "تبدیل (رمزگذاری) ویدیوها",

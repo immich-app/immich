@@ -422,7 +422,7 @@
     "user_successfully_removed": "ลบผู้ใช้ {email} เสร็จสมบูรณ์แล้ว",
     "users_page_description": "หน้าผู้ใช้ผู้ดูแล",
     "version_check_enabled_description": "เช็ค GitHub เป็นระยะ ๆ เพื่อตรวจสอบรุ่นใหม่",
-    "version_check_implications": "การตรวจสอบเวอร์ชันใหม่จะต้องติดต่อกับ github.com เป็นระยะ",
+    "version_check_implications": "การตรวจสอบเวอร์ชันใหม่จะต้องติดต่อกับ {server} เป็นระยะ",
     "version_check_settings": "ตรวจสอบรุ่น",
     "version_check_settings_description": "เปิด/ปิดการแจ้งเตือนรุ่นใหม่",
     "video_conversion_job": "เข้ารหัสวีดีโอ (transcode)",

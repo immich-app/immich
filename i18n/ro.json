@@ -441,7 +441,7 @@
     "user_successfully_removed": "Utilizatorul {email} a fost șters cu succes.",
     "users_page_description": "Pagina utilizatorilor administratori",
     "version_check_enabled_description": "Activează verificarea versiunii",
-    "version_check_implications": "Funcția de verificare a versiunii se bazează pe comunicarea periodică cu github.com",
+    "version_check_implications": "Funcția de verificare a versiunii se bazează pe comunicarea periodică cu {server}",
     "version_check_settings": "Verificare versiune",
     "version_check_settings_description": "Activeazǎ/dezactiveazǎ notificarea unei noi versiuni",
     "video_conversion_job": "Transcodați videoclipuri",
