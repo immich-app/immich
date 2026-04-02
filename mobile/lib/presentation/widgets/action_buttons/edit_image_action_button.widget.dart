@@ -55,8 +55,10 @@ class EditImageActionButton extends ConsumerWidget {
       final imageProvider = getFullImageProvider(currentAsset, edited: false);
 
       final image = Image(image: imageProvider);
-      final edits = await ref.read(remoteAssetRepositoryProvider).getAssetEdits(currentAsset.remoteId!);
-      final exifInfo = await ref.read(remoteAssetRepositoryProvider).getExif(currentAsset.remoteId!);
+      final (edits, exifInfo) = await (
+        ref.read(remoteAssetRepositoryProvider).getAssetEdits(currentAsset.remoteId!),
+        ref.read(remoteAssetRepositoryProvider).getExif(currentAsset.remoteId!),
+      ).wait;
 
       if (exifInfo == null) {
         return;
