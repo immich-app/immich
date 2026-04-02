@@ -4,7 +4,7 @@ import MobileCoreServices
 import Photos
 
 class LocalImageRequest {
-  weak var workItem: DispatchWorkItem?
+  weak var operation: Operation?
   var isCancelled = false
   let callback: (Result<[String: Int64]?, any Error>) -> Void
 
@@ -50,7 +50,7 @@ class LocalImageApiImpl: LocalImageApi {
   }()
 
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
-    ImageProcessing.queue.async {
+    ImageProcessing.queue.addOperation {
       guard let data = Data(base64Encoded: thumbhash)
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
 
@@ -66,16 +66,7 @@ class LocalImageApiImpl: LocalImageApi {
 
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     let request = LocalImageRequest(callback: completion)
-    let item = DispatchWorkItem {
-      if request.isCancelled {
-        return completion(ImageProcessing.cancelledResult)
-      }
-
-      ImageProcessing.semaphore.wait()
-      defer {
-        ImageProcessing.semaphore.signal()
-      }
-
+    let operation = BlockOperation {
       if request.isCancelled {
         return completion(ImageProcessing.cancelledResult)
       }
@@ -180,9 +171,9 @@ class LocalImageApiImpl: LocalImageApi {
       }
     }
 
-    request.workItem = item
+    request.operation = operation
     Self.add(requestId: requestId, request: request)
-    ImageProcessing.queue.async(execute: item)
+    ImageProcessing.queue.addOperation(operation)
   }
 
   func cancelRequest(requestId: Int64) {
@@ -201,8 +192,8 @@ class LocalImageApiImpl: LocalImageApi {
     requestQueue.async {
       guard let request = requests.removeValue(forKey: requestId) else { return }
       request.isCancelled = true
-      guard let item = request.workItem else { return }
-      if item.isCancelled {
+      guard let operation = request.operation else { return }
+      if operation.isCancelled {
         cancelQueue.async { request.callback(ImageProcessing.cancelledResult) }
       }
     }

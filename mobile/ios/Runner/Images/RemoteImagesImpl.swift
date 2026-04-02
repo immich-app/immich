@@ -73,10 +73,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
-    ImageProcessing.queue.async {
-      ImageProcessing.semaphore.wait()
-      defer { ImageProcessing.semaphore.signal() }
-
+    ImageProcessing.queue.addOperation {
       if request.isCancelled {
         return request.completion(ImageProcessing.cancelledResult)
       }
