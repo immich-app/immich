@@ -184,6 +184,7 @@
     localStorage.setItem('searchQueryType', type);
     currentSearchType = type;
     showSearchTypeDropdown = false;
+    input?.focus();
   };
 
   const onsubmit = (event: Event) => {
@@ -317,7 +318,9 @@
           shape="round"
           variant={searchStore.isSearchEnabled ? 'filled' : 'outline'}
           color={searchStore.isSearchEnabled ? 'primary' : 'secondary'}
-          class="px-3 py-1 text-xs {searchStore.isSearchEnabled ? 'border border-transparent' : ''}"
+          class="px-3 py-1 text-xs {searchStore.isSearchEnabled
+            ? 'border border-transparent'
+            : 'border border-secondary/5 text-muted hover:text-dark font-light'}"
           onclick={toggleSearchTypeDropdown}
           aria-expanded={showSearchTypeDropdown}
           aria-haspopup="listbox"
