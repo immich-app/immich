@@ -18,6 +18,8 @@
     sharedLink?: SharedLinkResponseDto;
     objectFit?: 'contain' | 'cover';
     container: Size;
+    imageClass?: string;
+    transitionName?: string;
     onUrlChange?: (url: string) => void;
     onImageReady?: () => void;
     onError?: () => void;
@@ -35,6 +37,8 @@
     sharedLink,
     objectFit = 'contain',
     container,
+    imageClass,
+    transitionName,
     onUrlChange,
     onImageReady,
     onError,
@@ -152,11 +156,12 @@
   {@render backdrop?.()}
 
   <div
-    class="absolute inset-0 pointer-events-none"
+    class={['absolute inset-0 pointer-events-none', imageClass]}
     style:inset-inline-start={insetInlineStart}
     style:top
     style:width
     style:height
+    style:view-transition-name={transitionName ?? assetViewerManager.transitionName}
   >
     {#if show.alphaBackground}
       <AlphaBackground />

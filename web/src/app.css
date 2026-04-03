@@ -75,6 +75,11 @@
     --immich-dark-bg: 10 10 10;
     --immich-dark-fg: 229 231 235;
     --immich-dark-gray: 33 33 33;
+
+    /* view transition variables */
+    --vt-duration-default: 250ms;
+    --vt-duration-hero: 280ms;
+    --vt-memory-easing: cubic-bezier(0.2, 0, 0, 1);
   }
 
   button:not(:disabled),
@@ -173,5 +178,150 @@
 
   .maplibregl-popup-content {
     @apply bg-subtle rounded-lg;
+  }
+}
+
+@layer base {
+  ::view-transition {
+    background: var(--color-black);
+    animation-duration: var(--vt-duration-default);
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    mix-blend-mode: normal;
+    animation-duration: inherit;
+  }
+
+  ::view-transition-old(*) {
+    animation-name: fadeOut;
+    animation-fill-mode: forwards;
+  }
+  ::view-transition-new(*) {
+    animation-name: fadeIn;
+    animation-fill-mode: forwards;
+  }
+
+  ::view-transition-old(root) {
+    animation: var(--vt-duration-default) 0s fadeOut forwards;
+  }
+  ::view-transition-new(root) {
+    animation: var(--vt-duration-default) 0s fadeIn forwards;
+  }
+
+  ::view-transition-image-pair(info) {
+    isolation: auto;
+  }
+  ::view-transition-old(info) {
+    animation: var(--vt-duration-default) 0s panelSlideOutRight forwards;
+  }
+  ::view-transition-new(info) {
+    animation: var(--vt-duration-default) 0s panelSlideInRight forwards;
+  }
+
+  ::view-transition-group(exclude-previousbutton),
+  ::view-transition-group(exclude-nextbutton),
+  ::view-transition-group(exclude) {
+    animation: none;
+    z-index: 5;
+  }
+  ::view-transition-old(exclude-previousbutton),
+  ::view-transition-old(exclude-nextbutton),
+  ::view-transition-old(exclude) {
+    visibility: hidden;
+  }
+  ::view-transition-new(exclude-previousbutton),
+  ::view-transition-new(exclude-nextbutton),
+  ::view-transition-new(exclude) {
+    animation: none;
+    z-index: 5;
+  }
+
+  ::view-transition-group(hero) {
+    animation-duration: var(--vt-duration-hero);
+    animation-timing-function: var(--vt-memory-easing);
+  }
+  ::view-transition-old(hero) {
+    animation: none;
+    display: none;
+  }
+  ::view-transition-new(hero) {
+    animation: none;
+    align-content: center;
+  }
+
+  @keyframes panelSlideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes panelSlideOutRight {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.85;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.85;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(hero) {
+      animation-name: none;
+    }
+
+    ::view-transition-old(hero) {
+      animation: none;
+      display: none;
+    }
+
+    ::view-transition-new(hero) {
+      animation: none;
+    }
+
+    html:active-view-transition-type(viewer) {
+      &::view-transition-old(hero) {
+        animation: none;
+        display: none;
+      }
+      &::view-transition-new(hero) {
+        animation: var(--vt-duration-default) 0s fadeIn forwards;
+      }
+    }
+
+    html:active-view-transition-type(timeline) {
+      &::view-transition-old(hero) {
+        animation: var(--vt-duration-default) 0s fadeOut forwards;
+      }
+      &::view-transition-new(hero) {
+        animation: var(--vt-duration-default) 0s fadeIn forwards;
+      }
+    }
   }
 }

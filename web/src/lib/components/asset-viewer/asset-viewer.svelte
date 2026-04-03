@@ -13,6 +13,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { getAssetActions } from '$lib/services/asset.service';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -37,7 +38,7 @@
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
+  import { slide } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
@@ -146,8 +147,45 @@
     }
   };
 
+  let detailPanelTransitionName = $state<string | undefined>();
+  let navigationBarTransitionName = $state<string | undefined>();
+  let previousButtonTransitionName = $state<string | undefined>();
+  let nextButtonTransitionName = $state<string | undefined>();
+
+  const activateViewTransitionNames = () => {
+    detailPanelTransitionName = 'info';
+    assetViewerManager.transitionName = 'hero';
+  };
+
   onMount(() => {
     syncAssetViewerOpenClass(true);
+
+    const unsubAssetViewerEvents = assetViewerManager.on({
+      ViewerOpenTransition: activateViewTransitionNames,
+      ViewerCloseTransition: activateViewTransitionNames,
+    });
+    const unsubViewTransitionEvents = viewTransitionManager.on({
+      PrepareOldSnapshot: (types) => {
+        if (types.includes('timeline')) {
+          navigationBarTransitionName = 'exclude';
+          previousButtonTransitionName = 'exclude-previousbutton';
+          nextButtonTransitionName = 'exclude-nextbutton';
+        }
+      },
+      PrepareNewSnapshot: (types) => {
+        const isViewer = types.includes('viewer');
+        navigationBarTransitionName = isViewer ? 'exclude' : undefined;
+        previousButtonTransitionName = isViewer ? 'exclude-previousbutton' : undefined;
+        nextButtonTransitionName = isViewer ? 'exclude-nextbutton' : undefined;
+      },
+      Finished: () => {
+        navigationBarTransitionName = undefined;
+        previousButtonTransitionName = undefined;
+        nextButtonTransitionName = undefined;
+        assetViewerManager.transitionName = undefined;
+        detailPanelTransitionName = undefined;
+      },
+    });
     const slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -157,7 +195,6 @@
         handlePromiseError(handleStopSlideshow());
       }
     });
-
     const slideshowNavigationUnsubscribe = slideshowNavigation.subscribe((value) => {
       if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
@@ -166,6 +203,8 @@
     });
 
     return () => {
+      unsubAssetViewerEvents();
+      unsubViewTransitionEvents();
       slideshowStateUnsubscribe();
       slideshowNavigationUnsubscribe();
     };
@@ -192,6 +231,7 @@
   };
 
   const tracker = new InvocationTracker();
+  let navigating = $state(false);
   const navigateAsset = (order?: 'previous' | 'next') => {
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
@@ -207,7 +247,8 @@
       return;
     }
 
-    void tracker.invoke(async () => {
+    navigating = true;
+    const navigation = tracker.invoke(async () => {
       const isShuffle =
         $slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle;
 
@@ -244,6 +285,7 @@
 
       await handleStopSlideshow();
     }, $t('error_while_navigating'));
+    void navigation.finally(() => (navigating = false));
   };
 
   /**
@@ -457,13 +499,17 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed start-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  data-navigating={navigating || undefined}
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
-    <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+    <div
+      class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform"
+      style:view-transition-name={navigationBarTransitionName}
+    >
       <AssetViewerNavBar
         {asset}
         {album}
@@ -496,7 +542,11 @@
   {/if}
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && previousAsset}
-    <div class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
+    <div
+      data-test-id="previous-asset"
+      class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start"
+      style:view-transition-name={previousButtonTransitionName}
+    >
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
   {/if}
@@ -569,15 +619,20 @@
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && nextAsset}
-    <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
+    <div
+      data-test-id="next-asset"
+      class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end"
+      style:view-transition-name={nextButtonTransitionName}
+    >
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
   {#if showDetailPanel || assetViewerManager.isShowEditor}
     <div
-      transition:fly={{ duration: 150 }}
+      transition:slide={{ axis: 'x', duration: 150 }}
       id="detail-panel"
+      style:view-transition-name={detailPanelTransitionName}
       class={[
         'row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light',
         showDetailPanel ? 'w-90' : 'w-100',
@@ -630,7 +685,7 @@
 
   {#if isShared && album && assetViewerManager.isShowActivityPanel && authManager.authenticated}
     <div
-      transition:fly={{ duration: 150 }}
+      transition:slide={{ axis: 'x', duration: 150 }}
       id="activity-panel"
       class="row-start-1 row-span-5 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"

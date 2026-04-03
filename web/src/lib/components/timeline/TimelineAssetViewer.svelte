@@ -5,6 +5,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -97,6 +98,12 @@
   };
 
   const handleClose = async (asset: { id: string }) => {
+    if (viewTransitionManager.isSupported()) {
+      const transitionReady = assetViewerManager.untilNext('ViewerCloseTransitionReady');
+      assetViewerManager.emit('ViewerCloseTransition', { id: asset.id });
+      await transitionReady;
+    }
+
     invisible = true;
     assetViewerManager.gridScrollTarget = { at: asset.id };
     await navigate({

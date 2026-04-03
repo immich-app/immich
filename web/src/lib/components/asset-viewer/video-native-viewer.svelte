@@ -139,6 +139,7 @@
       </div>
     {:else}
       <video
+        style:view-transition-name={assetViewerManager.transitionName}
         bind:this={videoPlayer}
         loop={$loopVideoPreference && loopVideo}
         autoplay={$autoPlayVideo}
@@ -147,6 +148,7 @@
         disablePictureInPicture
         class="h-full object-contain"
         {...useSwipe(onSwipe)}
+        onloadedmetadata={() => assetViewerManager.emit('ViewerOpenTransitionReady')}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
         onended={onVideoEnded}
         onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}

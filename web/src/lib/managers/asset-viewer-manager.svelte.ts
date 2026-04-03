@@ -23,12 +23,17 @@ export type Events = {
   Zoom: [];
   ZoomChange: [ZoomImageWheelState];
   Copy: [];
+  ViewerOpenTransitionReady: [];
+  ViewerOpenTransition: [];
+  ViewerCloseTransition: [{ id: string }];
+  ViewerCloseTransitionReady: [];
 };
 
 class AssetViewerManager extends BaseEventManager<Events> {
   #zoomState = $state(createDefaultZoomState());
   #animationFrameId: number | null = null;
 
+  transitionName = $state<string | undefined>();
   imgRef = $state<HTMLImageElement | undefined>();
   imageLoaderStatus = $state<ImageLoaderStatus | undefined>();
   #isImageLoading = $derived.by(() => {

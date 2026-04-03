@@ -3,11 +3,13 @@
 </script>
 
 <script lang="ts">
+  import { page } from '$app/state';
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -48,7 +50,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar onUploadClick={() => openFileUploadDialog()} />
+    <NavigationBar hidden={isAssetViewerRoute(page)} onUploadClick={() => openFileUploadDialog()} />
   {/if}
 </header>
 <div
@@ -64,7 +66,7 @@
     <UserSidebar />
   {/if}
 
-  <main class="relative">
+  <main class="relative w-full">
     <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto p-2" use:useActions={use}>
       {@render children?.()}
     </div>

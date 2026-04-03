@@ -89,6 +89,8 @@ export type Events = {
   ReleaseEvent: [ReleaseEvent];
 
   WebsocketConnect: [];
+
+  TimelineLoaded: [{ id: string | null }];
 };
 
 export const eventManager = new BaseEventManager<Events>();

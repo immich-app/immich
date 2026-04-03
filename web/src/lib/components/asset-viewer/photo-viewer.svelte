@@ -28,12 +28,11 @@
     cursor: AssetCursor;
     element?: HTMLDivElement;
     sharedLink?: SharedLinkResponseDto;
-    onReady?: () => void;
     onError?: () => void;
     onSwipe?: (event: SwipeCustomEvent) => void;
   };
 
-  let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
+  let { cursor, element = $bindable(), sharedLink, onError, onSwipe }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
@@ -231,11 +230,11 @@
     {onUrlChange}
     onImageReady={() => {
       visibleImageReady = true;
-      onReady?.();
+      assetViewerManager.emit('ViewerOpenTransitionReady');
     }}
     onError={() => {
       onError?.();
-      onReady?.();
+      assetViewerManager.emit('ViewerOpenTransitionReady');
     }}
     bind:imgRef={assetViewerManager.imgRef}
     bind:ref={adaptiveImage}

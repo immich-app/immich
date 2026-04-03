@@ -22,7 +22,7 @@
   });
 </script>
 
-<div class:display-none={assetViewerManager.isViewing}>
+<div class:invisible={assetViewerManager.isViewing}>
   {@render children?.()}
 </div>
 <UploadCover />
@@ -30,8 +30,5 @@
 <style>
   :root {
     overscroll-behavior: none;
-  }
-  .display-none {
-    display: none;
   }
 </style>

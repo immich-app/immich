@@ -13,6 +13,8 @@
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { startViewerTransition } from '$lib/utils/transition-utils';
   import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
@@ -99,6 +101,7 @@
   // Overall scroll percentage through the entire timeline (0-1)
   let timelineScrollPercent: number = $state(0);
   let scrubberWidth = $state(0);
+  let toViewerHeroAssetId = $state<string | null>(null);
 
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
   const maxMd = $derived(mediaQueryManager.maxMd);
@@ -207,7 +210,7 @@
         timelineManager.viewportWidth = rect.width;
       }
     }
-    const scrollTarget = assetViewerManager.gridScrollTarget?.at;
+    const scrollTarget = getScrollTarget();
     let scrolled = false;
     if (scrollTarget) {
       scrolled = await scrollAndLoadAsset(scrollTarget);
@@ -219,7 +222,7 @@
       await tick();
       focusAsset(scrollTarget);
     }
-    invisible = false;
+    invisible = isAssetViewerRoute(page) ? true : false;
   };
 
   // note: only modified once in afterNavigate()
@@ -237,10 +240,13 @@
     hasNavigatedToOrFromAssetViewer = isNavigatingToAssetViewer !== isNavigatingFromAssetViewer;
   });
 
+  const getScrollTarget = () => {
+    return assetViewerManager.gridScrollTarget?.at ?? page.params.assetId ?? null;
+  };
   // afterNavigate is only called after navigation to a new URL, {complete} will resolve
   // after successful navigation.
   afterNavigate(({ complete }) => {
-    void complete.finally(() => {
+    void complete.finally(async () => {
       const isAssetViewerPage = isAssetViewerRoute(page);
 
       // Set initial load state only once - if initialLoadWasAssetViewer is null, then
@@ -251,6 +257,12 @@
       }
 
       void scrollAfterNavigate();
+      if (!isAssetViewerPage) {
+        const scrollTarget = getScrollTarget();
+        await tick();
+
+        eventManager.emit('TimelineLoaded', { id: scrollTarget });
+      }
     });
   });
 
@@ -258,7 +270,7 @@
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
 
   onMount(() => {
-    if (!enableRouting) {
+    if (!enableRouting && !isAssetViewerRoute(page)) {
       invisible = false;
     }
   });
@@ -545,7 +557,7 @@
     assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.assets.length;
   };
 
-  const _onClick = (
+  const defaultThumbnailClick = (
     timelineManager: TimelineManager,
     assets: TimelineAsset[],
     groupTitle: string,
@@ -556,6 +568,25 @@
       return;
     }
     void navigate({ targetRoute: 'current', assetId: asset.id });
+  };
+
+  const handleThumbnailClick = (asset: TimelineAsset, timelineDay: TimelineDay) => {
+    if (typeof onThumbnailClick === 'function' || isSelectionMode || assetInteraction.selectionActive) {
+      if (typeof onThumbnailClick === 'function') {
+        onThumbnailClick(asset, timelineManager, timelineDay, defaultThumbnailClick);
+      } else {
+        defaultThumbnailClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
+      }
+      return;
+    }
+
+    const openViewer = () => void navigate({ targetRoute: 'current', assetId: asset.id });
+    startViewerTransition(
+      asset.id,
+      openViewer,
+      (id) => (toViewerHeroAssetId = id),
+      () => (toViewerHeroAssetId = null),
+    );
   };
 </script>
 
@@ -587,6 +618,7 @@
 {#if timelineManager.months.length > 0}
   <Scrubber
     {timelineManager}
+    {invisible}
     height={timelineManager.viewportHeight}
     timelineTopOffset={timelineManager.topSectionHeight}
     timelineBottomOffset={timelineManager.bottomSectionHeight}
@@ -618,6 +650,7 @@
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
+  data-initialized={timelineManager.isInitialized || undefined}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
@@ -666,11 +699,11 @@
           style:width="100%"
         >
           <Month
+            {toViewerHeroAssetId}
             {assetInteraction}
             {customThumbnailLayout}
             {singleSelect}
             {timelineMonth}
-            manager={timelineManager}
             onTimelineDaySelect={handleGroupSelect}
           >
             {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
@@ -684,13 +717,7 @@
                 {asset}
                 {albumUsers}
                 {groupIndex}
-                onClick={(asset) => {
-                  if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
-                  } else {
-                    _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
-                  }
-                }}
+                onClick={(asset) => handleThumbnailClick(asset, timelineDay)}
                 onSelect={() => {
                   if (isSelectionMode || assetInteraction.selectionActive) {
                     assetSelectHandler(timelineManager, asset, timelineDay.getAssets(), timelineDay.groupTitle);

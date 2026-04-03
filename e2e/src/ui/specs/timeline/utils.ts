@@ -143,8 +143,9 @@ export const timelineUtils = {
     return page.locator('#asset-grid');
   },
   async waitForTimelineLoad(page: Page) {
-    await expect(timelineUtils.locator(page)).toBeInViewport();
+    await page.locator('#asset-grid[data-initialized]').waitFor();
     await expect.poll(() => thumbnailUtils.locator(page).count()).toBeGreaterThan(0);
+    await page.locator('#virtual-timeline:not(.invisible)').waitFor();
   },
   async getScrollTop(page: Page) {
     const queryTop = () =>
@@ -163,14 +164,17 @@ export const assetViewerUtils = {
     return page.locator('#immich-asset-viewer');
   },
   async waitForViewerLoad(page: Page, asset: TimelineAssetConfig) {
-    await page
-      .locator(
-        `img[draggable="false"][src="/api/assets/${asset.id}/thumbnail?size=preview&c=${asset.thumbhash}&edited=true"]`,
-      )
-      .or(
-        page.locator(`video[poster="/api/assets/${asset.id}/thumbnail?size=preview&c=${asset.thumbhash}&edited=true"]`),
-      )
-      .waitFor();
+    const imgLocator = page.locator(`[data-viewer-content] img[data-testid="preview"][src*="${asset.id}"]`);
+    const videoLocator = page.locator(`[data-viewer-content] video[poster*="${asset.id}"]`);
+    await imgLocator.or(videoLocator).waitFor();
+
+    if ((await videoLocator.count()) === 0) {
+      await expect
+        .poll(() => imgLocator.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
+        .toBe(true);
+    }
+
+    await expect(page.locator('#immich-asset-viewer')).not.toHaveAttribute('data-navigating');
   },
   async expectActiveAssetToBe(page: Page, assetId: string) {
     const activeElement = () =>

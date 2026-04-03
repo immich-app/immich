@@ -9,6 +9,7 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
@@ -27,10 +28,11 @@
     onUploadClick?: () => void;
     // TODO: remove once this is only used in <AppShellHeader>
     noBorder?: boolean;
+    hidden?: boolean;
   };
 
-  let { onUploadClick, noBorder = false }: Props = $props();
-
+  let { onUploadClick, noBorder = false, hidden = false }: Props = $props();
+  let viewTransitionName = $state<string | undefined>();
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
@@ -44,12 +46,32 @@
     }
   });
 
+  onMount(() => {
+    return viewTransitionManager.on({
+      PrepareOldSnapshot: (types) => {
+        if (types.includes('viewer')) {
+          viewTransitionName = 'exclude';
+        }
+      },
+      PrepareNewSnapshot: (types) => {
+        viewTransitionName = types.includes('timeline') ? 'exclude' : undefined;
+      },
+      Finished: () => {
+        viewTransitionName = undefined;
+      },
+    });
+  });
+
   const { Cast } = $derived(getGlobalActions($t));
 </script>
 
 <svelte:window bind:innerWidth />
 
-<nav id="dashboard-navbar" class="max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm">
+<nav
+  id="dashboard-navbar"
+  class={['max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm', hidden && 'invisible']}
+  style:view-transition-name={viewTransitionName}
+>
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[--spacing(32)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder

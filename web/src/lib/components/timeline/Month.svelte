@@ -1,19 +1,23 @@
 <script lang="ts">
+  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
   import AssetLayout from '$lib/components/timeline/AssetLayout.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot, filterIsInOrNearViewport } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import type { Snippet } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
 
   type Props = {
+    toViewerHeroAssetId?: string | null;
     thumbnail: Snippet<
       [
         {
@@ -28,16 +32,16 @@
     singleSelect: boolean;
     assetInteraction: AssetMultiSelectManager;
     timelineMonth: TimelineMonth;
-    manager: VirtualScrollManager;
     onTimelineDaySelect: (timelineDay: TimelineDay, assets: TimelineAsset[]) => void;
   };
+
   let {
+    toViewerHeroAssetId,
     thumbnail: thumbnailWithGroup,
     customThumbnailLayout,
     singleSelect,
     assetInteraction,
     timelineMonth,
-    manager,
     onTimelineDaySelect,
   }: Props = $props();
 
@@ -55,6 +59,32 @@
     });
     return getDateLocaleString(date);
   };
+
+  let toTimelineHeroAssetId = $state<string | null>(null);
+  let heroTransitionAssetId = $derived(toTimelineHeroAssetId ?? toViewerHeroAssetId ?? null);
+
+  const handleViewerCloseTransition = ({ id }: { id: string }) => {
+    const asset = timelineMonth.findAssetById({ id });
+    if (!asset) {
+      return;
+    }
+    void viewTransitionManager.startTransition({
+      types: ['timeline'],
+      performUpdate: async () => {
+        assetViewerManager.emit('ViewerCloseTransitionReady');
+        const event = await eventManager.untilNext('TimelineLoaded');
+        toTimelineHeroAssetId = event.id;
+        await tick();
+      },
+      onFinished: () => {
+        toTimelineHeroAssetId = null;
+        focusAsset(asset.id);
+      },
+    });
+  };
+  if (viewTransitionManager.isSupported()) {
+    onMount(() => assetViewerManager.on({ ViewerCloseTransition: handleViewerCloseTransition }));
+  }
 </script>
 
 {#each filterIsInOrNearViewport(timelineMonth.timelineDays) as timelineDay, groupIndex (timelineDay.day)}
@@ -99,7 +129,8 @@
     </div>
 
     <AssetLayout
-      {manager}
+      {heroTransitionAssetId}
+      suspendTransitions={timelineMonth.timelineManager.suspendTransitions}
       viewerAssets={timelineDay.viewerAssets}
       height={timelineDay.height}
       width={timelineDay.width}

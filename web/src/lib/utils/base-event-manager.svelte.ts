@@ -43,6 +43,50 @@ export class BaseEventManager<Events extends EventsBase> {
     };
   }
 
+  private once<T extends keyof Events>(event: T, callback: EventCallback<Events, T>) {
+    const unsubscribe = this.#onEvent(event, (...args: Events[T]) => {
+      unsubscribe();
+      return callback(...args);
+    });
+    return unsubscribe;
+  }
+
+  untilNext<T extends keyof Events>(
+    event: T,
+    { timeoutMs = 10_000, signal }: { timeoutMs?: number; signal?: AbortSignal } = {},
+  ): Promise<Events[T] extends [] ? void : Events[T][0]> {
+    type Result = Events[T] extends [] ? void : Events[T][0];
+    return new Promise<Result>((resolve, reject) => {
+      let settled = false;
+      const settle = () => {
+        if (settled) {
+          return false;
+        }
+        settled = true;
+        unsubscribe();
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', onAbort);
+        return true;
+      };
+      const unsubscribe = this.once(event, (...args: Events[T]) => {
+        if (settle()) {
+          resolve(args[0] as Result);
+        }
+      });
+      const timer = setTimeout(() => {
+        if (settle()) {
+          reject(new Error(`untilNext('${String(event)}') timed out after ${timeoutMs}ms`));
+        }
+      }, timeoutMs);
+      const onAbort = () => {
+        if (settle()) {
+          resolve(undefined as Result);
+        }
+      };
+      signal?.addEventListener('abort', onAbort, { once: true });
+    });
+  }
+
   emit<T extends keyof Events>(event: T, ...params: Events[T]) {
     const listeners = this.getListeners(event);
     for (const listener of listeners) {

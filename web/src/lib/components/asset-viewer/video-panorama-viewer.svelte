@@ -3,8 +3,6 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
-
   interface Props {
     asset: AssetResponseDto;
   }
@@ -19,7 +17,7 @@
   ]);
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
+<div class="flex h-full select-none place-content-center place-items-center">
   {#await modules}
     <LoadingSpinner />
   {:then [PhotoSphereViewer, adapter, videoPlugin]}

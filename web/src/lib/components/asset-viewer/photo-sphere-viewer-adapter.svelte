@@ -211,6 +211,7 @@
       zoomSpeed: 0.5,
       fisheye: false,
     });
+    viewer.addEventListener('ready', () => assetViewerManager.emit('ViewerOpenTransitionReady'), { once: true });
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel is 0-100
@@ -255,7 +256,12 @@
 <AssetViewerEvents {onZoom} />
 
 <svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true }]} />
-<div class="h-full w-full mb-0" bind:this={container}></div>
+<div
+  id="sphere"
+  class="h-dvh w-dvw mb-0"
+  bind:this={container}
+  style:view-transition-name={assetViewerManager.transitionName}
+></div>
 
 <style>
   /* Reset the default tooltip styling */
