@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+
 import 'package:package_info_plus/package_info_plus.dart';
 
 Future<String> getUserAgentString() async {
@@ -11,5 +12,5 @@ Future<String> getUserAgentString() async {
   } else {
     platform = 'unknown';
   }
-  return 'immich-${platform}/${packageInfo.version}';
+  return 'immich-$platform/${packageInfo.version}';
 }
