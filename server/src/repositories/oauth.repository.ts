@@ -148,10 +148,11 @@ export class OAuthRepository {
         if (!jwksUri) {
           throw new Error('Unable to get JWKS URI');
         }
-        keyOrGetter = this.jwksClients.get(jwksUri) ?? createRemoteJWKSet(new URL(jwksUri));
+
         if (!this.jwksClients.has(jwksUri)) {
-          this.jwksClients.set(jwksUri, keyOrGetter as JWTVerifyGetKey);
+          this.jwksClients.set(jwksUri, createRemoteJWKSet(new URL(jwksUri)));
         }
+        keyOrGetter = this.jwksClients.get(jwksUri) as JWTVerifyGetKey;
       }
 
       const { payload } = await jwtVerify(logoutToken, keyOrGetter as any, {
