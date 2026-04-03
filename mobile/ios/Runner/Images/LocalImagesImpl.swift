@@ -62,9 +62,7 @@ class LocalImageApiImpl: LocalImageApi {
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     let request = LocalImageRequest(callback: completion)
     let operation = BlockOperation {
-      if request.isCancelled {
-        return request.finish(with: ImageProcessing.cancelledResult)
-      }
+      if request.isCancelled { return }
 
       guard let asset = Self.requestAsset(assetId: assetId)
       else {
@@ -74,7 +72,7 @@ class LocalImageApiImpl: LocalImageApi {
 
       if request.isCancelled {
         Self.registry.remove(requestId: requestId)
-        return request.finish(with: ImageProcessing.cancelledResult)
+        return
       }
 
       if preferEncoded {
@@ -94,7 +92,7 @@ class LocalImageApiImpl: LocalImageApi {
 
         if request.isCancelled {
           Self.registry.remove(requestId: requestId)
-          return request.finish(with: ImageProcessing.cancelledResult)
+          return
         }
 
         guard let data = imageData else {
@@ -120,7 +118,7 @@ class LocalImageApiImpl: LocalImageApi {
 
       if request.isCancelled {
         Self.registry.remove(requestId: requestId)
-        return request.finish(with: ImageProcessing.cancelledResult)
+        return
       }
 
       guard let image = image,
@@ -131,7 +129,7 @@ class LocalImageApiImpl: LocalImageApi {
 
       if request.isCancelled {
         Self.registry.remove(requestId: requestId)
-        return request.finish(with: ImageProcessing.cancelledResult)
+        return
       }
 
       do {

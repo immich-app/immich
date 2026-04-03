@@ -44,7 +44,7 @@ class ImageRequest {
     data.copyBytes(to: pointer.assumingMemoryBound(to: UInt8.self), count: length)
     if isCancelled {
       free(pointer)
-      return finish(with: ImageProcessing.cancelledResult)
+      return
     }
     finish(with: .success([
       "pointer": Int64(Int(bitPattern: pointer)),
@@ -57,7 +57,7 @@ class ImageRequest {
     let buffer = try vImage_Buffer(cgImage: cgImage, format: fmt)
     if isCancelled {
       buffer.free()
-      return finish(with: ImageProcessing.cancelledResult)
+      return
     }
     finish(with: .success([
       "pointer": Int64(Int(bitPattern: buffer.data)),

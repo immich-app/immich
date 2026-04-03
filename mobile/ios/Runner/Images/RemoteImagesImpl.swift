@@ -54,15 +54,13 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return
     }
 
+    if request.isCancelled { return }
+
     if let error = error {
-      if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
+      if (error as NSError).code == NSURLErrorCancelled {
         return request.finish(with: ImageProcessing.cancelledResult)
       }
       return request.finish(with: .failure(error))
-    }
-
-    if request.isCancelled {
-      return request.finish(with: ImageProcessing.cancelledResult)
     }
 
     guard let data = data else {
@@ -70,9 +68,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     }
 
     ImageProcessing.queue.addOperation {
-      if request.isCancelled {
-        return request.finish(with: ImageProcessing.cancelledResult)
-      }
+      if request.isCancelled { return }
 
       // Return raw encoded bytes when requested (for animated images)
       if encoded {
@@ -84,9 +80,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
         return request.finish(with: .failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
       }
 
-      if request.isCancelled {
-        return request.finish(with: ImageProcessing.cancelledResult)
-      }
+      if request.isCancelled { return }
 
       do {
         try request.cgImageToPointer(cgImage, format: rgbaFormat)
