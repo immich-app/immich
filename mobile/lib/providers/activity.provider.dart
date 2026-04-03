@@ -8,7 +8,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 const _pageSize = 50;
 
 /// Minimum server version that supports paginated activity loading (take + before params).
-const _paginationMinVersion = ServerVersion(major: 2, minor: 6, patch: 0);
+const _paginationMinVersion = ServerVersion(major: 2, minor: 7, patch: 0);
 
 // ignore: unintended_html_in_doc_comment
 /// Maintains the current list of all activities for <share-album-id, asset>

@@ -16,7 +16,7 @@ import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 
 /** Minimum server version that supports paginated activity loading (take + before params). */
-const PAGINATION_MIN_VERSION = { major: 2, minor: 6, patch: 0 };
+const PAGINATION_MIN_VERSION = { major: 2, minor: 7, patch: 0 };
 
 function waitForServerVersion(): Promise<{ major: number; minor: number; patch: number }> {
   return new Promise((resolve) => {
