@@ -89,18 +89,16 @@ _PADDLE_MODELS = {
 }
 
 
-_YOLOV8_MODELS = {
-    "yolov8n",
-}
+_YOLOV8_MODELS = set()
 
 
-_MEGADESCRIPTOR_MODELS = {
-    "MegaDescriptor-L-384",
-}
+_MEGADESCRIPTOR_MODELS = set()
 
 
 _PET_RECOGNITION_BUNDLE_MODELS = {
     "pet-recognition",
+    "yolov8n",
+    "MegaDescriptor-L-384",
 }
 
 SUPPORTED_PROVIDERS = [

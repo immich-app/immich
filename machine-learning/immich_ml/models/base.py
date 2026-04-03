@@ -19,11 +19,13 @@ from ..sessions.ann import AnnSession
 class InferenceModel(ABC):
     depends: ClassVar[list[ModelIdentity]]
     identity: ClassVar[ModelIdentity]
+    use_type_subfolder: ClassVar[bool] = True
+    model_file: ClassVar[str | None] = None
 
     def __init__(
         self,
         model_name: str,
-        cache_dir: Path | str | None = None,
+        cache_dir: str | Path | None = None,
         model_format: ModelFormat | None = None,
         session: ModelSession | None = None,
         **model_kwargs: Any,
@@ -72,12 +74,20 @@ class InferenceModel(ABC):
             ModelFormat.RKNN: ["*.armnn"],
         }
 
-        snapshot_download(
-            f"immich-app/{clean_name(self.model_name)}",
-            cache_dir=self.cache_dir,
-            local_dir=self.cache_dir,
-            ignore_patterns=ignored_patterns.get(self.model_format, []),
-        )
+        repo_id = getattr(self, "hf_repo", f"immich-app/{clean_name(self.model_name)}")
+        log.info(f"Downloading model '{self.model_name}' from Hugging Face repo '{repo_id}' to {self.model_path}")
+
+        try:
+            snapshot_download(
+                repo_id,
+                cache_dir=self.cache_dir,
+                local_dir=self.cache_dir,
+                ignore_patterns=ignored_patterns.get(self.model_format, []),
+                token=settings.hf_token,
+            )
+        except Exception as e:
+            log.error(f"Failed to download model '{self.model_name}' from Hugging Face repo '{repo_id}': {e}")
+            raise e
 
     def _load(self) -> ModelSession:
         return self._make_session(self.model_path)
@@ -93,7 +103,7 @@ class InferenceModel(ABC):
 
         if self.cache_dir.is_dir():
             log.info(f"Cleared cache directory for model '{self.model_name}'.")
-            rmtree(self.cache_dir)
+            rmtree(self.cache_dir, ignore_errors=True)
         else:
             log.warning(
                 (
@@ -121,13 +131,16 @@ class InferenceModel(ABC):
 
     def model_path_for_format(self, model_format: ModelFormat) -> Path:
         model_path_prefix = rknn.model_prefix if model_format == ModelFormat.RKNN else None
+        filename = self.model_file or f"model.{model_format}"
         if model_path_prefix:
-            return self.model_dir / model_path_prefix / f"model.{model_format}"
-        return self.model_dir / f"model.{model_format}"
+            return self.model_dir / model_path_prefix / filename
+        return self.model_dir / filename
 
     @property
     def model_dir(self) -> Path:
-        return self.cache_dir / self.model_type.value
+        if self.use_type_subfolder:
+            return self.cache_dir / self.model_type.value
+        return self.cache_dir
 
     @property
     def model_path(self) -> Path:
