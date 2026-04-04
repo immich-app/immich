@@ -226,7 +226,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
   void _startBufferingTimer() {
     _bufferingTimer?.cancel();
-    _bufferingTimer = Timer(const Duration(seconds: 3), () {
+    _bufferingTimer = Timer(const Duration(seconds: 1), () {
       if (mounted && state.status != VideoPlaybackStatus.completed) {
         state = state.copyWith(status: VideoPlaybackStatus.buffering);
       }
