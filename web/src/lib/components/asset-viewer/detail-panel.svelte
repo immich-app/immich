@@ -10,7 +10,6 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { Route } from '$lib/route';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -208,7 +207,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
+            onclick={() => assetViewerManager.toggleFaceEditMode()}
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}
@@ -228,8 +227,9 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
+            {@const isHighlighted = people[index].faces.some((f) => $boundingBoxesArray.some((b) => b.id === f.id))}
             <a
-              class="w-22"
+              class="group w-22 outline-none"
               href={Route.viewPerson(person, { previousRoute })}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
@@ -246,6 +246,8 @@
                   widthStyle="90px"
                   heightStyle="90px"
                   hidden={person.isHidden}
+                  highlighted={isHighlighted}
+                  class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
                 />
               </div>
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>

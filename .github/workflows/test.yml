@@ -566,7 +566,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
+      - uses: immich-app/devtools/actions/success-check@53bb77345ee9f953f93bd6fd9980f07a2f24965e # success-check-action-v0.0.5
         with:
           needs: ${{ toJSON(needs) }}
   mobile-unit-tests:
@@ -588,7 +588,7 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@0ca7a949e71ae44c8e688a51c5e7e93b2c87e295 # v2.22.0
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml

@@ -1,15 +1,15 @@
 <script lang="ts">
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, updateAsset } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
 
   interface Props {
     onLink: OnLink;
@@ -25,12 +25,10 @@
   let text = $derived(unlink ? $t('unlink_motion_video') : $t('link_motion_video'));
   let icon = $derived(unlink ? mdiLinkOff : mdiMotionPlayOutline);
 
-  const { clearSelect, getOwnedAssets } = getAssetControlContext();
-
   const onClick = () => (unlink ? handleUnlink() : handleLink());
 
   const handleLink = async () => {
-    let [still, motion] = [...getOwnedAssets()];
+    let [still, motion] = assetMultiSelectManager.ownedAssets;
     if ((still as TimelineAsset).isVideo) {
       [still, motion] = [motion, still];
     }
@@ -39,7 +37,7 @@
       loading = true;
       const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: motion.id } });
       onLink({ still: toTimelineAsset(stillResponse), motion: motion as TimelineAsset });
-      clearSelect();
+      assetMultiSelectManager.clear();
     } catch (error) {
       handleError(error, $t('errors.unable_to_link_motion_video'));
     } finally {
@@ -48,7 +46,7 @@
   };
 
   const handleUnlink = async () => {
-    const [still] = [...getOwnedAssets()];
+    const [still] = assetMultiSelectManager.ownedAssets;
     if (!still) {
       return;
     }
@@ -61,7 +59,7 @@
       const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
       const motionResponse = await getAssetInfo({ ...authManager.params, id: motionId });
       onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
-      clearSelect();
+      assetMultiSelectManager.clear();
     } catch (error) {
       handleError(error, $t('errors.unable_to_unlink_motion_video'));
     } finally {

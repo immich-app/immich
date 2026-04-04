@@ -1,30 +1,27 @@
 <script lang="ts">
+  import { isDefined } from '$lib';
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
   import type Map from '$lib/components/shared-components/map/map.svelte';
   import { timeDebounceOnSearch, timeToLoadTheMap } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
-  import { lastChosenLocation } from '$lib/stores/asset-editor.store';
+  import { geolocationManager } from '$lib/managers/geolocation.manager.svelte';
+  import type { LatLng } from '$lib/types';
   import { delay } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { ConfirmModal, LoadingSpinner } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { get } from 'svelte/store';
-  interface Point {
-    lng: number;
-    lat: number;
-  }
 
-  interface Props {
-    asset?: AssetResponseDto | undefined;
-    point?: Point;
-    onClose: (point?: Point) => void;
-  }
+  type Props = {
+    asset?: AssetResponseDto;
+    point?: LatLng;
+    onClose: (point?: LatLng) => void;
+  };
 
-  let { asset = undefined, point: initialPoint, onClose }: Props = $props();
+  let { asset, point: initialPoint, onClose }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
   let suggestedPlaces: PlacesResponseDto[] = $derived(places.slice(0, 5));
@@ -35,15 +32,22 @@
   let hideSuggestion = $state(false);
   let mapElement = $state<ReturnType<typeof Map>>();
 
-  let previousLocation = get(lastChosenLocation);
+  let assetPoint = $derived.by<LatLng | undefined>(() => {
+    if (!asset || !asset.exifInfo) {
+      return;
+    }
 
-  let assetLat = $derived(initialPoint?.lat ?? asset?.exifInfo?.latitude ?? undefined);
-  let assetLng = $derived(initialPoint?.lng ?? asset?.exifInfo?.longitude ?? undefined);
+    const { latitude, longitude } = asset.exifInfo;
+    if (!isDefined(latitude) || !isDefined(longitude)) {
+      return;
+    }
 
-  let mapLat = $derived(assetLat ?? previousLocation?.lat ?? undefined);
-  let mapLng = $derived(assetLng ?? previousLocation?.lng ?? undefined);
+    return { lat: latitude, lng: longitude };
+  });
 
-  let zoom = $derived(mapLat && mapLng ? 12.5 : 1);
+  let point = $state<LatLng | undefined>(initialPoint ?? assetPoint);
+  let zoom = $state(point ? 12.5 : 1);
+  let center = $state(point ?? geolocationManager.lastPoint);
 
   $effect(() => {
     if (mapElement && initialPoint) {
@@ -57,11 +61,9 @@
     }
   });
 
-  let point: Point | null = $state(initialPoint ?? null);
-
   const handleConfirm = (confirmed?: boolean) => {
     if (point && confirmed) {
-      lastChosenLocation.set(point);
+      geolocationManager.onSelected(point);
       onClose(point);
     } else {
       onClose();
@@ -201,12 +203,12 @@
         {:then { default: Map }}
           <Map
             bind:this={mapElement}
-            mapMarkers={assetLat !== undefined && assetLng !== undefined && asset
+            mapMarkers={asset && assetPoint
               ? [
                   {
                     id: asset.id,
-                    lat: assetLat,
-                    lon: assetLng,
+                    lat: assetPoint.lat,
+                    lon: assetPoint.lng,
                     city: asset.exifInfo?.city ?? null,
                     state: asset.exifInfo?.state ?? null,
                     country: asset.exifInfo?.country ?? null,
@@ -214,7 +216,7 @@
                 ]
               : []}
             {zoom}
-            center={mapLat && mapLng ? { lat: mapLat, lng: mapLng } : undefined}
+            {center}
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
@@ -225,7 +227,7 @@
       </div>
 
       <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
-        <CoordinatesInput lat={point ? point.lat : assetLat} lng={point ? point.lng : assetLng} {onUpdate} />
+        <CoordinatesInput lat={point?.lat} lng={point?.lng} {onUpdate} />
       </div>
     </div>
   {/snippet}

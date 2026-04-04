@@ -1,42 +1,42 @@
-import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+import { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { resetSavedUser, user } from '$lib/stores/user.store';
 import { AssetVisibility } from '@immich/sdk';
 import { timelineAssetFactory } from '@test-data/factories/asset-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 
-describe('AssetInteraction', () => {
-  let assetInteraction: AssetInteraction;
+describe('AssetMultiSelectManager', () => {
+  let sut: AssetMultiSelectManager;
 
   beforeEach(() => {
-    assetInteraction = new AssetInteraction();
+    sut = new AssetMultiSelectManager();
   });
 
   it('calculates derived values from selection', () => {
-    assetInteraction.selectAsset(
+    sut.selectAsset(
       timelineAssetFactory.build({ isFavorite: true, visibility: AssetVisibility.Archive, isTrashed: true }),
     );
-    assetInteraction.selectAsset(
+    sut.selectAsset(
       timelineAssetFactory.build({ isFavorite: true, visibility: AssetVisibility.Timeline, isTrashed: false }),
     );
 
-    expect(assetInteraction.selectionActive).toBe(true);
-    expect(assetInteraction.isAllTrashed).toBe(false);
-    expect(assetInteraction.isAllArchived).toBe(false);
-    expect(assetInteraction.isAllFavorite).toBe(true);
+    expect(sut.selectionActive).toBe(true);
+    expect(sut.isAllTrashed).toBe(false);
+    expect(sut.isAllArchived).toBe(false);
+    expect(sut.isAllFavorite).toBe(true);
   });
 
   it('updates isAllUserOwned when the active user changes', () => {
     const [user1, user2] = userAdminFactory.buildList(2);
-    assetInteraction.selectAsset(timelineAssetFactory.build({ ownerId: user1.id }));
+    sut.selectAsset(timelineAssetFactory.build({ ownerId: user1.id }));
 
     const cleanup = $effect.root(() => {
-      expect(assetInteraction.isAllUserOwned).toBe(false);
+      expect(sut.isAllUserOwned).toBe(false);
 
       user.set(user1);
-      expect(assetInteraction.isAllUserOwned).toBe(true);
+      expect(sut.isAllUserOwned).toBe(true);
 
       user.set(user2);
-      expect(assetInteraction.isAllUserOwned).toBe(false);
+      expect(sut.isAllUserOwned).toBe(false);
     });
 
     cleanup();

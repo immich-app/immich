@@ -5,14 +5,14 @@
   import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AssetAction } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
+  import { downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -31,7 +31,6 @@
   let { sharedLink = $bindable(), isOwned }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
-  const assetInteraction = new AssetInteraction();
 
   let assets = $derived(sharedLink.assets);
 
@@ -59,7 +58,7 @@
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
+    assetMultiSelectManager.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
   };
 
   const handleAction = async (action: Action) => {
@@ -76,15 +75,12 @@
 
 {#if sharedLink?.allowUpload || assets.length > 1}
   <main class="mt-24 mb-40 mx-4 isolate" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-    <GalleryViewer {assets} {assetInteraction} {viewport} allowDeletion={false} />
+    <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
 
   <header class="fixed top-0 inset-s-0 w-full">
-    {#if assetInteraction.selectionActive}
-      <AssetSelectControlBar
-        assets={assetInteraction.selectedAssets}
-        clearSelect={() => cancelMultiselect(assetInteraction)}
-      >
+    {#if assetMultiSelectManager.selectionActive}
+      <AssetSelectControlBar>
         <IconButton
           shape="round"
           color="secondary"

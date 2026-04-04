@@ -85,11 +85,6 @@ function createUploadStore() {
       if (assetToRemove) {
         stats.update((stats) => {
           switch (assetToRemove.state) {
-            case UploadState.DONE: {
-              stats.success--;
-              break;
-            }
-
             case UploadState.DUPLICATED: {
               stats.duplicates--;
               break;
@@ -99,9 +94,12 @@ function createUploadStore() {
               stats.errors--;
               break;
             }
+
+            case UploadState.DONE: {
+              break;
+            }
           }
 
-          stats.total--;
           return stats;
         });
       }

@@ -30,12 +30,17 @@ jobs:
           while IFS= read -r header; do
             printf '%s\n' "$BODY" | grep -qF "$header" || OK=false
           done < <(sed '/<!--/,/-->/d' .github/pull_request_template.md | grep "^## ")
-          echo "uses_template=$OK" >> "$GITHUB_OUTPUT"
+          echo "uses_template=$OK" | tee --append "$GITHUB_OUTPUT"
 
   close_template:
     runs-on: ubuntu-latest
     needs: parse_template
-    if: ${{ needs.parse_template.outputs.uses_template == 'false' && github.event.pull_request.state != 'closed' }}
+    if: >-
+      ${{
+        needs.parse_template.outputs.uses_template == 'false'
+        && github.event.pull_request.state != 'closed'
+        && !contains(github.event.pull_request.labels.*.name, 'auto-closed:template')
+      }}
     permissions:
       pull-requests: write
     steps:
@@ -123,7 +128,7 @@ jobs:
         run: |
           REMAINING=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json labels \
             --jq '[.labels[].name | select(startswith("auto-closed:"))] | length')
-          echo "remaining=$REMAINING" >> "$GITHUB_OUTPUT"
+          echo "remaining=$REMAINING" | tee --append "$GITHUB_OUTPUT"
 
       - name: Reopen PR
         if: ${{ steps.check_labels.outputs.remaining == '0' }}
