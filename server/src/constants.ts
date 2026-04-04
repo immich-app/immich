@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
 import { ApiTag, AudioCodec, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
+export const IMMICH_SERVER_START = 'Immich Server is listening';
+
 export const ErrorMessages = {
   InconsistentMediaLocation:
     'Detected an inconsistent media location. For more information, see https://docs.immich.app/errors#inconsistent-media-location',

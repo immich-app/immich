@@ -23,10 +23,7 @@
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
   const timezones = $derived(getTimezones(selectedDate));
 
-  // svelte-ignore state_referenced_locally
-  let lastSelectedTimezone = $state(getPreferredTimeZone(initialDate, initialTimeZone, timezones));
-  // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
-  let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
+  let selectedOption = $state(getPreferredTimeZone(initialDate, initialTimeZone, getTimezones(selectedDate)));
 
   const onSubmit = async () => {
     if (!date.isValid || !selectedOption) {
@@ -45,6 +42,12 @@
     }
   };
 
+  const updateSelectedDate = (value: string) => {
+    selectedDate = value;
+
+    selectedOption = getPreferredTimeZone(initialDate, initialTimeZone, getTimezones(value), selectedOption);
+  };
+
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
@@ -59,7 +62,12 @@
   size="small"
 >
   <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
-  <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
+  <DateInput
+    class="immich-form-input w-full mb-2"
+    id="datetime"
+    type="datetime-local"
+    bind:value={() => selectedDate, updateSelectedDate}
+  />
   {#if timezoneInput}
     <div class="w-full">
       <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />

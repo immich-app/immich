@@ -79,6 +79,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                     final person = people[index];
 
                     return Column(
+                      key: ValueKey(person.id),
                       children: [
                         GestureDetector(
                           onTap: () {
@@ -88,6 +89,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                             shape: const CircleBorder(side: BorderSide.none),
                             elevation: 3,
                             child: CircleAvatar(
+                              key: ValueKey('avatar-${person.id}'),
                               maxRadius: isTablet ? 100 / 2 : 96 / 2,
                               backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                             ),

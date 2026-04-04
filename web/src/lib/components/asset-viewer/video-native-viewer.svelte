@@ -3,7 +3,7 @@
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import {
     autoPlayVideo,
     loopVideo as loopVideoPreference,
@@ -115,7 +115,7 @@
   let containerHeight = $state(0);
 
   $effect(() => {
-    if (isFaceEditMode.value) {
+    if (assetViewerManager.isFaceEditMode) {
       videoPlayer?.pause();
     }
   });
@@ -172,7 +172,7 @@
         </div>
       {/if}
 
-      {#if isFaceEditMode.value}
+      {#if assetViewerManager.isFaceEditMode}
         <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
       {/if}
     {/if}

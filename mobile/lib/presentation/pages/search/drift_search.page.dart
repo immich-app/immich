@@ -69,6 +69,7 @@ class DriftSearchPage extends HookConsumerWidget {
     );
 
     final previousFilter = useState<SearchFilter?>(null);
+    final hasRequestedSearch = useState<bool>(false);
     final dateInputFilter = useState<DateFilterInputModel?>(null);
 
     final peopleCurrentFilterWidget = useState<Widget?>(null);
@@ -91,9 +92,11 @@ class DriftSearchPage extends HookConsumerWidget {
 
       if (filter.isEmpty) {
         previousFilter.value = null;
+        hasRequestedSearch.value = false;
         return;
       }
 
+      hasRequestedSearch.value = true;
       unawaited(ref.read(paginatedSearchProvider.notifier).search(filter));
       previousFilter.value = filter;
     }
@@ -107,6 +110,8 @@ class DriftSearchPage extends HookConsumerWidget {
     searchPreFilter() {
       if (preFilter != null) {
         Future.delayed(Duration.zero, () {
+          filter.value = preFilter;
+          textSearchController.clear();
           searchFilter(preFilter);
 
           if (preFilter.location.city != null) {
@@ -719,7 +724,7 @@ class DriftSearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          if (filter.value.isEmpty)
+          if (!hasRequestedSearch.value)
             const _SearchSuggestions()
           else
             _SearchResultGrid(onScrollEnd: loadMoreSearchResults),

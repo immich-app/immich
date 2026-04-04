@@ -28,7 +28,10 @@
   let { onClose }: Props = $props();
 
   onMount(async () => {
-    albums = await getAllAlbums({});
+    // TODO the server should *really* just return all albums (paginated ideally)
+    const ownedAlbums = await getAllAlbums({ shared: false });
+    ownedAlbums.push.apply(ownedAlbums, await getAllAlbums({ shared: true }));
+    albums = ownedAlbums;
     recentAlbums = albums.sort((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });

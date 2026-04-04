@@ -2,9 +2,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import helmetMiddleware from 'helmet';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
-import { excludePaths, serverVersion } from 'src/constants';
+import { IMMICH_SERVER_START, excludePaths, serverVersion } from 'src/constants';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -39,7 +40,7 @@ export async function configureExpress(
   },
 ) {
   const configRepository = app.get(ConfigRepository);
-  const { environment, host, port, resourcePaths, network } = configRepository.getEnv();
+  const { environment, host, port, helmet, resourcePaths, network } = configRepository.getEnv();
 
   const logger = await app.resolve(LoggingRepository);
   logger.setContext('Bootstrap');
@@ -47,6 +48,12 @@ export async function configureExpress(
 
   app.set('trust proxy', ['loopback', ...network.trustedProxies]);
   app.set('etag', 'strong');
+
+  if (helmet.config) {
+    app.use(helmetMiddleware(helmet.config));
+    logger.log('Initialized helmet middleware');
+  }
+
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
 
@@ -83,5 +90,5 @@ export async function configureExpress(
   const server = await (host ? app.listen(port, host) : app.listen(port));
   server.requestTimeout = 24 * 60 * 60 * 1000;
 
-  logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
+  logger.log(`${IMMICH_SERVER_START} on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }

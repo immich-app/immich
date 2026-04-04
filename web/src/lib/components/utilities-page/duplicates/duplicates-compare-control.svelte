@@ -2,11 +2,10 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -17,30 +16,31 @@
 
   interface Props {
     assets: AssetResponseDto[];
+    suggestedKeepAssetIds: string[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
-  const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
-
+  let { assets, suggestedKeepAssetIds, onResolve, onStack }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
-    const suggestedAsset = suggestDuplicate(assets);
-
-    if (!suggestedAsset) {
-      selectedAssetIds = new SvelteSet(assets[0].id);
+    if (suggestedKeepAssetIds.length > 0) {
+      for (const id of suggestedKeepAssetIds) {
+        selectedAssetIds.add(id);
+      }
       return;
     }
 
-    selectedAssetIds.add(suggestedAsset.id);
+    if (assets.length > 0) {
+      selectedAssetIds.add(assets[0].id);
+    }
   });
 
   onDestroy(() => {
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
   });
 
   const onRandom = async () => {
@@ -71,7 +71,7 @@
 
   const onViewAsset = async ({ id }: AssetResponseDto) => {
     const asset = await getAssetInfo({ ...authManager.params, id });
-    setAsset(asset);
+    assetViewerManager.setAsset(asset);
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
@@ -86,9 +86,9 @@
   };
 
   const assetCursor = $derived({
-    current: $viewingAsset,
-    nextAsset: getNextAsset(assets, $viewingAsset),
-    previousAsset: getPreviousAsset(assets, $viewingAsset),
+    current: assetViewerManager.asset!,
+    nextAsset: getNextAsset(assets, assetViewerManager.asset),
+    previousAsset: getPreviousAsset(assets, assetViewerManager.asset),
   });
 </script>
 
@@ -166,7 +166,7 @@
   </div>
 </div>
 
-{#if $showAssetViewer}
+{#if assetViewerManager.isViewing}
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
@@ -174,7 +174,7 @@
         showNavigation={assets.length > 1}
         {onRandom}
         onClose={() => {
-          assetViewingStore.showAssetViewer(false);
+          assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}
       />

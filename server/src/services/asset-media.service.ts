@@ -27,6 +27,7 @@ import {
   AssetStatus,
   AssetVisibility,
   CacheControl,
+  ChecksumAlgorithm,
   JobName,
   Permission,
   StorageFolder,
@@ -356,6 +357,7 @@ export class AssetMediaService extends BaseService {
         await this.addToSharedLink(auth.sharedLink, duplicateId);
       }
 
+      this.logger.debug(`Duplicate asset upload rejected: existing asset ${duplicateId}`);
       return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
     }
 
@@ -424,6 +426,7 @@ export class AssetMediaService extends BaseService {
       deviceId: asset.deviceId,
       type: asset.type,
       checksum: asset.checksum,
+      checksumAlgorithm: asset.checksumAlgorithm,
       fileCreatedAt: asset.fileCreatedAt,
       localDateTime: asset.localDateTime,
       fileModifiedAt: asset.fileModifiedAt,
@@ -445,6 +448,7 @@ export class AssetMediaService extends BaseService {
       libraryId: null,
 
       checksum: file.checksum,
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       originalPath: file.originalPath,
 
       deviceAssetId: dto.deviceAssetId,

@@ -91,8 +91,7 @@ export class VersionService extends BaseService {
         }
       }
 
-      const { tag_name: releaseVersion, published_at: publishedAt } =
-        await this.serverInfoRepository.getGitHubRelease();
+      const { version: releaseVersion, published_at: publishedAt } = await this.serverInfoRepository.getLatestRelease();
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VersionCheckState, metadata);

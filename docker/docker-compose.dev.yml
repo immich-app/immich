@@ -90,6 +90,7 @@ services:
       IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
       IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
       IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
+      IMMICH_HELMET_FILE: 'true'
     ports:
       - 9230:9230
       - 9231:9231
