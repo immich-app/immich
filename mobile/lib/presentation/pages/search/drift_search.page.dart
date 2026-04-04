@@ -80,13 +80,17 @@ class DriftSearchPage extends HookConsumerWidget {
     final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
     search(SearchFilter f) {
-      if (f == filter.value) return;
+      if (f == filter.value) {
+        return;
+      }
 
       filter.value = f;
 
       ref.read(paginatedSearchProvider.notifier).clear();
 
-      if (!f.isEmpty) unawaited(ref.read(paginatedSearchProvider.notifier).search(f));
+      if (!f.isEmpty) {
+        unawaited(ref.read(paginatedSearchProvider.notifier).search(f));
+      }
     }
 
     loadMoreSearchResults() {
@@ -96,7 +100,9 @@ class DriftSearchPage extends HookConsumerWidget {
     // TODO: Use ref.listen with `fireImmediately` in the new riverpod version.
     final preFilter = ref.watch(searchPreFilterProvider);
     useEffect(() {
-      if (preFilter == null) return null;
+      if (preFilter == null) {
+        return null;
+      }
 
       Future.microtask(() {
         textSearchController.clear();
