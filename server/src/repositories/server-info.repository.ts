@@ -4,6 +4,7 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
+import { ImmichEnvironment } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -66,7 +67,10 @@ export class ServerInfoRepository {
 
   async getLatestRelease(): Promise<VersionResponse> {
     try {
-      const response = await fetch('https://version.immich.cloud/version');
+      const { environment } = this.configRepository.getEnv();
+      const isDev = environment !== ImmichEnvironment.Production;
+      const url = isDev ? 'https://version.dev.immich.cloud/version' : 'https://version.immich.cloud/version';
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Version check request failed with status ${response.status}: ${await response.text()}`);

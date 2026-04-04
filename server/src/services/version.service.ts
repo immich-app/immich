@@ -4,7 +4,7 @@ import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import { DatabaseLock, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VersionCheckMetadata } from 'src/types';
@@ -70,11 +70,6 @@ export class VersionService extends BaseService {
   async handleVersionCheck(): Promise<JobStatus> {
     try {
       this.logger.debug('Running version check');
-
-      const { environment } = this.configRepository.getEnv();
-      if (environment === ImmichEnvironment.Development) {
-        return JobStatus.Skipped;
-      }
 
       const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {

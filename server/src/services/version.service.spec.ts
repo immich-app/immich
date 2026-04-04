@@ -2,9 +2,8 @@ import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
 import { defaults } from 'src/config';
 import { serverVersion } from 'src/constants';
-import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
+import { JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -73,15 +72,6 @@ describe(VersionService.name, () => {
   });
 
   describe('handVersionCheck', () => {
-    beforeEach(() => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.Production }));
-    });
-
-    it('should not run in dev mode', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.Development }));
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
-    });
-
     it('should not run if the last check was < 60 minutes ago', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         checkedAt: DateTime.utc().minus({ minutes: 5 }).toISO(),
