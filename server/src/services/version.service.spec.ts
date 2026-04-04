@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
+import { defaults } from 'src/config';
 import { serverVersion } from 'src/constants';
 import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
@@ -7,14 +8,9 @@ import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
-const mockRelease = (version: string) => ({
-  id: 1,
-  url: 'https://api.github.com/repos/owner/repo/releases/1',
-  tag_name: version,
-  name: 'Release 1000',
-  created_at: DateTime.utc().toISO(),
+const mockVersionResponse = (version: string) => ({
+  version,
   published_at: DateTime.utc().toISO(),
-  body: '',
 });
 
 describe(VersionService.name, () => {
@@ -100,7 +96,7 @@ describe(VersionService.name, () => {
     });
 
     it('should run if it has been > 60 minutes', async () => {
-      mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
+      mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse('v100.0.0'));
       mocks.systemMetadata.get.mockResolvedValue({
         checkedAt: DateTime.utc().minus({ minutes: 65 }).toISO(),
         releaseVersion: '1.0.0',
@@ -112,7 +108,7 @@ describe(VersionService.name, () => {
     });
 
     it('should not notify if the version is equal', async () => {
-      mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
+      mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse(serverVersion.toString()));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.VersionCheckState, {
         checkedAt: expect.any(String),
@@ -121,12 +117,38 @@ describe(VersionService.name, () => {
       expect(mocks.websocket.clientBroadcast).not.toHaveBeenCalled();
     });
 
-    it('should handle a github error', async () => {
-      mocks.serverInfo.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
+    it('should handle a version check error', async () => {
+      mocks.serverInfo.getLatestRelease.mockRejectedValue(new Error('Version service is down'));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Failed);
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
       expect(mocks.websocket.clientBroadcast).not.toHaveBeenCalled();
       expect(mocks.logger.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should queue a version check job when newVersionCheck is enabled', async () => {
+      await sut.onConfigUpdate({
+        oldConfig: { ...defaults, newVersionCheck: { enabled: false } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: true } },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.VersionCheck, data: {} });
+    });
+
+    it('should not queue a version check job when newVersionCheck is disabled', async () => {
+      await sut.onConfigUpdate({
+        oldConfig: { ...defaults, newVersionCheck: { enabled: true } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: false } },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should not queue a version check job when newVersionCheck was already enabled', async () => {
+      await sut.onConfigUpdate({
+        oldConfig: { ...defaults, newVersionCheck: { enabled: true } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: true } },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 

@@ -55,6 +55,13 @@ export class VersionService extends BaseService {
     return this.versionRepository.getAll();
   }
 
+  @OnEvent({ name: 'ConfigUpdate' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
+    if (!oldConfig.newVersionCheck.enabled && newConfig.newVersionCheck.enabled) {
+      await this.handleQueueVersionCheck();
+    }
+  }
+
   async handleQueueVersionCheck() {
     await this.jobRepository.queue({ name: JobName.VersionCheck, data: {} });
   }
@@ -84,8 +91,7 @@ export class VersionService extends BaseService {
         }
       }
 
-      const { tag_name: releaseVersion, published_at: publishedAt } =
-        await this.serverInfoRepository.getGitHubRelease();
+      const { version: releaseVersion, published_at: publishedAt } = await this.serverInfoRepository.getLatestRelease();
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VersionCheckState, metadata);

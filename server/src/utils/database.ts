@@ -4,23 +4,23 @@ import {
   DeduplicateJoinsPlugin,
   Expression,
   ExpressionBuilder,
-  ExpressionWrapper,
   Kysely,
   KyselyConfig,
-  Nullable,
+  NotNull,
   Selectable,
   SelectQueryBuilder,
-  Simplify,
+  ShallowDehydrateObject,
   sql,
 } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
-import { columns, Exif, lockableProperties, LockableProperty, Person } from 'src/database';
+import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetVisibility, DatabaseExtension } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { VectorExtension } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
@@ -70,28 +70,6 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
   return update;
 };
 
-/** Modifies toJson return type to not set all properties as nullable */
-export function toJson<DB, TB extends keyof DB & string, T extends TB | Expression<unknown>>(
-  eb: ExpressionBuilder<DB, TB>,
-  table: T,
-) {
-  return eb.fn.toJson<T>(table) as ExpressionWrapper<
-    DB,
-    TB,
-    Simplify<
-      T extends TB
-        ? Selectable<DB[T]> extends Nullable<infer N>
-          ? N | null
-          : Selectable<DB[T]>
-        : T extends Expression<infer O>
-          ? O extends Nullable<infer N>
-            ? N | null
-            : O
-          : never
-    >
-  >;
-}
-
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
 export const isAssetChecksumConstraint = (error: unknown) => {
@@ -106,19 +84,25 @@ export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>)
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).$castTo<Exif | null>().as('exifInfo'));
+    .select((eb) =>
+      eb.fn
+        .toJson(eb.table('asset_exif'))
+        .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>> | null>()
+        .as('exifInfo'),
+    );
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).$castTo<Exif>().as('exifInfo'));
+    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
+    .$narrowType<{ exifInfo: NotNull }>();
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .leftJoin('smart_search', 'asset.id', 'smart_search.assetId')
-    .select((eb) => toJson(eb, 'smart_search').as('smartSearch'));
+    .select((eb) => jsonObjectFrom(eb.table('smart_search')).as('smartSearch'));
 }
 
 export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withHidden?: boolean, withDeletedFace?: boolean) {
@@ -142,12 +126,13 @@ export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileTy
   ).as('files');
 }
 
-export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType) {
+export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType, isEdited = false) {
   return eb
     .selectFrom('asset_file')
     .select('asset_file.path')
     .whereRef('asset_file.assetId', '=', 'asset.id')
-    .where('asset_file.type', '=', type);
+    .where('asset_file.type', '=', sql.lit(type))
+    .where('asset_file.isEdited', '=', sql.lit(isEdited));
 }
 
 export function withFacesAndPeople(
@@ -164,7 +149,7 @@ export function withFacesAndPeople(
         (join) => join.onTrue(),
       )
       .selectAll('asset_face')
-      .select((eb) => eb.table('person').$castTo<Person>().as('person'))
+      .select((eb) => eb.table('person').$castTo<ShallowDehydrateObject<Person>>().as('person'))
       .whereRef('asset_face.assetId', '=', 'asset.id')
       .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
       .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', 'is', true)),
@@ -371,7 +356,16 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
-    .$if(!!options.encodedVideoPath, (qb) => qb.where('asset.encodedVideoPath', '=', options.encodedVideoPath!))
+    .$if(!!options.encodedVideoPath, (qb) =>
+      qb
+        .innerJoin('asset_file', (join) =>
+          join
+            .onRef('asset.id', '=', 'asset_file.assetId')
+            .on('asset_file.type', '=', AssetFileType.EncodedVideo)
+            .on('asset_file.isEdited', '=', false),
+        )
+        .where('asset_file.path', '=', options.encodedVideoPath!),
+    )
     .$if(!!options.originalPath, (qb) =>
       qb.where(sql`f_unaccent(asset."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
     )
@@ -396,7 +390,15 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))
     .$if(options.isEncoded !== undefined, (qb) =>
-      qb.where('asset.encodedVideoPath', options.isEncoded ? 'is not' : 'is', null),
+      qb.where((eb) => {
+        const exists = eb.exists((eb) =>
+          eb
+            .selectFrom('asset_file')
+            .whereRef('assetId', '=', 'asset.id')
+            .where('type', '=', AssetFileType.EncodedVideo),
+        );
+        return options.isEncoded ? exists : eb.not(exists);
+      }),
     )
     .$if(options.isMotion !== undefined, (qb) =>
       qb.where('asset.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
@@ -404,6 +406,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
     )
+    .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));

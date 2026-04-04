@@ -4,7 +4,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
-  import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
@@ -20,6 +20,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
+  import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteDefaultProvider,
     TooltipProvider,
@@ -32,6 +33,7 @@
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
   import '../app.css';
 
   interface Props {
@@ -50,7 +52,7 @@
       prompt_default: $t('are_you_sure_to_do_this'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
-      dark_theme: $t('dark_theme'),
+      dark_theme: themeManager.isDark ? $t('light_theme') : $t('dark_theme'),
       open_menu: $t('open'),
       command_palette_prompt_default: $t('command_palette_prompt'),
       command_palette_to_select: $t('command_palette_to_select'),
@@ -97,6 +99,9 @@
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
+
+    eventManager.emit('AppNavigate');
+
     showNavigationLoadingBar = true;
   });
 
@@ -121,19 +126,18 @@
 
     if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
       modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
-
-      // we will be disconnected momentarily
-      // wait for reconnect then reload
-      let waiting = false;
-      websocketStore.connected.subscribe((connected) => {
-        if (!connected) {
-          waiting = true;
-        } else if (connected && waiting) {
-          location.reload();
-        }
-      });
     }
   });
+
+  const onWebsocketConnect = async () => {
+    const isRestarting = get(serverRestarting);
+    if (isRestarting && maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
+      const { maintenanceMode } = await getServerConfig();
+      if (maintenanceMode === isRestarting.isMaintenanceMode) {
+        location.reload();
+      }
+    }
+  };
 
   const userCommands: ActionItem[] = [
     {
@@ -183,14 +187,16 @@
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
+<OnEvents {onWebsocketConnect} />
+
 <CommandPaletteDefaultProvider name="Global" actions={commands} />
 <VersionAnnouncement />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
-  <meta name="theme-color" content="currentColor" />
-  <AppleHeader />
+  <meta name="theme-color" content="white" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />
 
   {#if page.data.meta}
     <meta name="description" content={page.data.meta.description} />

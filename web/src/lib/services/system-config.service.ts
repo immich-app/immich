@@ -62,7 +62,7 @@ export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) =
     const newConfig = await updateConfig({ systemConfigDto });
 
     eventManager.emit('SystemConfigUpdate', newConfig);
-    toastManager.success($t('settings_saved'));
+    toastManager.primary($t('settings_saved'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_settings'));
   }

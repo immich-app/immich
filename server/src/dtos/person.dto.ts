@@ -9,8 +9,8 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SourceType } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { ImageDimensions } from 'src/types';
-import { asDateString } from 'src/utils/date';
+import { ImageDimensions, MaybeDehydrated } from 'src/types';
+import { asBirthDateString, asDateString } from 'src/utils/date';
 import { transformFaceBoundingBox } from 'src/utils/transform';
 import {
   IsDateStringFormat,
@@ -33,7 +33,7 @@ export class PersonCreateDto {
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
   @Optional({ nullable: true, emptyToNull: true })
-  birthDate?: Date | null;
+  birthDate?: string | null;
 
   @ValidateBoolean({ optional: true, description: 'Person visibility (hidden)' })
   isHidden?: boolean;
@@ -105,8 +105,12 @@ export class PersonResponseDto {
   thumbnailPath!: string;
   @ApiProperty({ description: 'Is hidden' })
   isHidden!: boolean;
-  @Property({ description: 'Last update date', history: new HistoryBuilder().added('v1.107.0').stable('v2') })
-  updatedAt?: Date;
+  @Property({
+    description: 'Last update date',
+    format: 'date-time',
+    history: new HistoryBuilder().added('v1.107.0').stable('v2'),
+  })
+  updatedAt?: string;
   @Property({ description: 'Is favorite', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   isFavorite?: boolean;
   @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
@@ -222,21 +226,21 @@ export class PeopleResponseDto {
   hasNextPage?: boolean;
 }
 
-export function mapPerson(person: Person): PersonResponseDto {
+export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: asDateString(person.birthDate),
+    birthDate: asBirthDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: person.updatedAt,
+    updatedAt: asDateString(person.updatedAt),
   };
 }
 
 export function mapFacesWithoutPerson(
-  face: Selectable<AssetFaceTable>,
+  face: MaybeDehydrated<Selectable<AssetFaceTable>>,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): AssetFaceWithoutPersonResponseDto {

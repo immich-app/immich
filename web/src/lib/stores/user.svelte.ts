@@ -22,10 +22,17 @@ const defaultUserInteraction: UserInteractions = {
 
 export const userInteraction = $state<UserInteractions>(defaultUserInteraction);
 
+const resetRecentAlbums = () => {
+  userInteraction.recentAlbums = undefined;
+};
+
 const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
 
 eventManager.on({
+  AlbumCreate: () => resetRecentAlbums(),
+  AlbumUpdate: () => resetRecentAlbums(),
+  AlbumDelete: () => resetRecentAlbums(),
   AuthLogout: () => reset(),
 });

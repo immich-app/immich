@@ -524,14 +524,19 @@ describe('/albums', () => {
       expect(body).toEqual(errorDto.badRequest('Not found or no album.update access'));
     });
 
-    it('should not be able to update as an editor', async () => {
+    it('should be able to update as an editor', async () => {
       const { status, body } = await request(app)
         .patch(`/albums/${user1Albums[0].id}`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ albumName: 'New album name' });
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no album.update access'));
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: user1Albums[0].id,
+          albumName: 'New album name',
+        }),
+      );
     });
   });
 

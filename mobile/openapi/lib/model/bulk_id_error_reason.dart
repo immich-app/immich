@@ -27,6 +27,7 @@ class BulkIdErrorReason {
   static const noPermission = BulkIdErrorReason._(r'no_permission');
   static const notFound = BulkIdErrorReason._(r'not_found');
   static const unknown = BulkIdErrorReason._(r'unknown');
+  static const validation = BulkIdErrorReason._(r'validation');
 
   /// List of all possible values in this [enum][BulkIdErrorReason].
   static const values = <BulkIdErrorReason>[
@@ -34,6 +35,7 @@ class BulkIdErrorReason {
     noPermission,
     notFound,
     unknown,
+    validation,
   ];
 
   static BulkIdErrorReason? fromJson(dynamic value) => BulkIdErrorReasonTypeTransformer().decode(value);
@@ -76,6 +78,7 @@ class BulkIdErrorReasonTypeTransformer {
         case r'no_permission': return BulkIdErrorReason.noPermission;
         case r'not_found': return BulkIdErrorReason.notFound;
         case r'unknown': return BulkIdErrorReason.unknown;
+        case r'validation': return BulkIdErrorReason.validation;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

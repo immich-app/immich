@@ -29,6 +29,7 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
@@ -36,6 +37,7 @@ import { CliService } from 'src/services/cli.service';
 import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
+import { configureUserAgent } from 'src/utils/fetch';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -58,6 +60,8 @@ const commonImports = [
 ];
 
 const bullImports = [BullModule.forRoot(bull.config), BullModule.registerQueue(...bull.queues)];
+
+configureUserAgent();
 
 export class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
@@ -111,6 +115,7 @@ export class ApiModule extends BaseModule {}
     StorageRepository,
     ProcessRepository,
     DatabaseRepository,
+    UserRepository,
     SystemMetadataRepository,
     AppRepository,
     MaintenanceHealthRepository,

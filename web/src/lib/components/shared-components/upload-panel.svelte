@@ -30,7 +30,7 @@
       if ($stats.errors > 0) {
         toastManager.danger($t('upload_errors', { values: { count: $stats.errors } }));
       } else if ($stats.success > 0) {
-        toastManager.success($t('upload_success'));
+        toastManager.primary($t('upload_success'));
       }
       if ($stats.duplicates > 0) {
         toastManager.warning($t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }));

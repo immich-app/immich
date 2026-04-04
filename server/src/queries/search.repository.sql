@@ -84,7 +84,6 @@ select
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."visibility" = $1
   and "asset"."fileCreatedAt" >= $2
@@ -254,6 +253,7 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "state" is not null
+  and "state" != $3
 
 -- SearchRepository.getCities
 select distinct
@@ -266,6 +266,7 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "city" is not null
+  and "city" != $3
 
 -- SearchRepository.getCameraMakes
 select distinct
@@ -278,6 +279,7 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "make" is not null
+  and "make" != $3
 
 -- SearchRepository.getCameraModels
 select distinct
@@ -290,6 +292,7 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "model" is not null
+  and "model" != $3
 
 -- SearchRepository.getCameraLensModels
 select distinct
@@ -302,3 +305,4 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "lensModel" is not null
+  and "lensModel" != $3

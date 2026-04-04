@@ -19,6 +19,7 @@
     mdiCheckCircle,
     mdiFileGifBox,
     mdiHeart,
+    mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
@@ -46,6 +47,7 @@
     dimmed?: boolean;
     albumUsers?: UserResponseDto[];
     onClick?: (asset: TimelineAsset) => void;
+    onPreview?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
   }
@@ -65,6 +67,7 @@
     showStackedIcon = true,
     albumUsers = [],
     onClick = undefined,
+    onPreview = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
     imageClass = '',
@@ -208,7 +211,11 @@
 </script>
 
 <div
-  class={['group focus-visible:outline-none flex overflow-hidden', backgroundColorClass, { 'rounded-xl': selected }]}
+  class={[
+    'group focus-visible:outline-none flex overflow-hidden transition-[background-color,border-radius]',
+    backgroundColorClass,
+    { 'rounded-xl': selected },
+  ]}
   style:width="{width}px"
   style:height="{height}px"
   onmouseenter={onMouseEnter}
@@ -248,8 +255,16 @@
       ]}
     >
       <ImageThumbnail
-        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
-        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
+        class={[
+          'absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          { 'rounded-xl': selected },
+          imageClass,
+        ]}
+        brokenAssetClass={[
+          'z-1 absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          { 'rounded-xl': selected },
+          brokenAssetClass,
+        ]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
@@ -283,8 +298,7 @@
         </div>
       {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
         <!-- GIF -->
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
+        <div class="absolute h-full w-full pointer-events-none">
           <ImageThumbnail
             class={imageClass}
             {brokenAssetClass}
@@ -294,11 +308,6 @@
             heightStyle="{height}px"
             curve={selected}
           />
-          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pe-2 pt-2">
-              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
-            </span>
-          </div>
         </div>
       {/if}
 
@@ -318,7 +327,7 @@
       <!-- icon overlay -->
       <div class="z-2 absolute inset-0">
         <!-- Gradient overlay on hover -->
-        {#if !usingMobileDevice && !disabled}
+        {#if !usingMobileDevice && !disabled && !asset.isVideo}
           <div
             class={[
               'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100 ',
@@ -340,37 +349,37 @@
 
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
-          <div class="z-2 absolute bottom-2 start-2">
+          <div class="z-2 absolute bottom-2 inset-s-2">
             <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !!assetOwner}
-          <div class="z-2 absolute bottom-1 end-2 max-w-[50%]">
-            <p class="text-xs font-medium text-white drop-shadow-lg max-w-[100%] truncate">
+          <div class="z-2 absolute bottom-1 inset-e-2 max-w-[50%]">
+            <p class="text-xs font-medium text-white drop-shadow-lg max-w-full truncate">
               {assetOwner.name}
             </p>
           </div>
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
-          <div class={['z-2  absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+          <div class={['z-2 absolute inset-s-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="z-2 absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon data-icon-equirectangular icon={mdiRotate360} size="24" />
+              <Icon icon={mdiRotate360} size="24" />
             </span>
           </div>
         {/if}
 
         {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
-          <div class="z-2 absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
+              <Icon icon={mouseOver ? mdiMotionPauseOutline : mdiFileGifBox} size="24" />
             </span>
           </div>
         {/if}
@@ -380,12 +389,12 @@
           <div
             class={[
               'z-2 absolute flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.isImage && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
+              asset.isImage && !asset.livePhotoVideoId ? 'top-0 inset-e-0' : 'top-7 inset-e-1',
             ]}
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-              <Icon data-icon-stack icon={mdiCameraBurst} size="24" />
+              <Icon icon={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
@@ -433,6 +442,24 @@
         {:else}
           <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
+      </button>
+    {/if}
+
+    <!-- Preview asset button (visible on hover when any asset is selected) -->
+    {#if mouseOver && onPreview}
+      <button
+        type="button"
+        onclick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onPreview?.($state.snapshot(asset));
+        }}
+        class="absolute z-2 bottom-1 end-1 rounded-full bg-black/25 p-1.5 hover:bg-black/50 focus:outline-none transition-colors"
+        in:fade={{ duration: 100 }}
+        tabindex={-1}
+        aria-label="Preview asset"
+      >
+        <Icon icon={mdiMagnifyPlusOutline} size="20" class="text-white" />
       </button>
     {/if}
 

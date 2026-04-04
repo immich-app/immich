@@ -1,5 +1,4 @@
 import { goto } from '$app/navigation';
-import ToastAction from '$lib/components/ToastAction.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -138,16 +137,8 @@ const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: strin
     description = $t('assets_were_part_of_album_count', { values: { count: duplicateCount } });
   }
 
-  toastManager.custom(
-    {
-      component: ToastAction,
-      props: {
-        title: $t('info'),
-        color: 'primary',
-        description,
-        button: { text: $t('view_album'), color: 'primary', onClick: () => goto(Route.viewAlbum({ id: albumId })) },
-      },
-    },
+  toastManager.primary(
+    { description, button: { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id: albumId })) } },
     { timeout: 5000 },
   );
 };
@@ -163,7 +154,7 @@ const notifyAddToAlbums = (
   } else if (results.error) {
     toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
   } else {
-    toastManager.success(
+    toastManager.primary(
       $t('assets_added_to_albums_count', {
         values: { albumTotal: albumIds.length, assetTotal: assetIds.length },
       }),
@@ -229,18 +220,9 @@ export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbum
   try {
     const response = await updateAlbumInfo({ id, updateAlbumDto: dto });
     eventManager.emit('AlbumUpdate', response);
-    toastManager.custom({
-      component: ToastAction,
-      props: {
-        color: 'primary',
-        title: $t('success'),
-        description: $t('album_info_updated'),
-        button: {
-          text: $t('view_album'),
-          color: 'primary',
-          onClick: () => goto(Route.viewAlbum({ id })),
-        },
-      },
+    toastManager.primary({
+      description: $t('album_info_updated'),
+      button: { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id })) },
     });
 
     return true;
@@ -269,11 +251,11 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
     await deleteAlbum({ id: album.id });
     eventManager.emit('AlbumDelete', album);
     if (notify) {
-      toastManager.success();
+      toastManager.primary();
     }
     return true;
   } catch (error) {
-    handleError(error, $t('errors.unable_to_delete_album'));
+    handleError(error, $t('errors.unable_to_delete_album'), { notify });
     return false;
   }
 };

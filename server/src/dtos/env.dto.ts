@@ -42,6 +42,10 @@ export class EnvDto {
   @Optional()
   IMMICH_CONFIG_FILE?: string;
 
+  @IsString()
+  @Optional()
+  IMMICH_HELMET_FILE?: string;
+
   @IsEnum(ImmichEnvironment)
   @Optional()
   IMMICH_ENV?: ImmichEnvironment;

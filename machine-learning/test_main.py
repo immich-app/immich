@@ -18,7 +18,7 @@ from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from immich_ml.config import Settings, settings
+from immich_ml.config import MaxBatchSize, Settings, settings
 from immich_ml.main import load, preload_models
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.cache import ModelCache
@@ -26,6 +26,9 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.models.ocr.detection import TextDetector
+from immich_ml.models.ocr.recognition import TextRecognizer
+from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
@@ -201,13 +204,6 @@ class TestOrtSession:
 
         assert session.providers == self.OV_EP
 
-    @pytest.mark.ov_device_ids(["CPU"])
-    @pytest.mark.providers(OV_EP)
-    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], ov_device_ids: list[str]) -> None:
-        session = OrtSession("ViT-B-32__openai")
-
-        assert session.providers == self.CPU_EP
-
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
         session = OrtSession("ViT-B-32__openai")
@@ -253,7 +249,8 @@ class TestOrtSession:
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
-    def test_sets_provider_options_for_openvino(self) -> None:
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_provider_options_for_openvino(self, ov_device_ids: list[str]) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
@@ -267,7 +264,8 @@ class TestOrtSession:
             }
         ]
 
-    def test_sets_openvino_to_fp16_if_enabled(self, mocker: MockerFixture) -> None:
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_openvino_to_fp16_if_enabled(self, ov_device_ids: list[str], mocker: MockerFixture) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
         mocker.patch.object(settings, "openvino_precision", ModelPrecision.FP16)
@@ -279,6 +277,19 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP16",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
+
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_provider_options_for_openvino_cpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "CPU",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/openvino",
             }
         ]
 
@@ -337,6 +348,23 @@ class TestOrtSession:
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert session.sess_options.inter_op_num_threads == 1
         assert session.sess_options.intra_op_num_threads == 2
+
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_default_sess_options_if_openvino_cpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
+        assert session.sess_options.inter_op_num_threads == 0
+        assert session.sess_options.intra_op_num_threads == 0
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    def test_sets_default_sess_options_if_openvino_gpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.sess_options.inter_op_num_threads == 0
+        assert session.sess_options.intra_op_num_threads == 0
 
     def test_sets_default_sess_options_does_not_set_threads_if_non_cpu_and_default_threads(self) -> None:
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
@@ -854,6 +882,78 @@ class TestFaceRecognition:
         update_dims.assert_not_called()
         onnx.load.assert_not_called()
         onnx.save.assert_not_called()
+
+    def test_set_custom_max_batch_size(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=2))
+
+        recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
+
+        assert recognizer.batch_size == 2
+
+    def test_ignore_other_custom_max_batch_size(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=2))
+
+        recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
+
+        assert recognizer.batch_size is None
+
+
+class TestOcr:
+    def test_set_det_min_score(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        text_detector = TextDetector("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+
+        assert text_detector.postprocess.box_thresh == 0.8
+
+    def test_set_rec_min_score(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+
+        assert text_recognizer.min_score == 0.8
+
+    def test_set_rec_set_default_max_batch_size(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+        )
+
+    def test_set_custom_max_batch_size(self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=4))
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(session=ort_session.return_value, rec_batch_num=4, rec_img_shape=(3, 48, 320))
+        )
+
+    def test_ignore_other_custom_max_batch_size(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=3))
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+        )
 
 
 @pytest.mark.asyncio

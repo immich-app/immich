@@ -17,6 +17,11 @@ export interface GitHubRelease {
   body: string;
 }
 
+export interface VersionResponse {
+  version: string;
+  published_at: string;
+}
+
 export interface ServerBuildVersions {
   nodejs: string;
   ffmpeg: string;
@@ -59,17 +64,17 @@ export class ServerInfoRepository {
     this.logger.setContext(ServerInfoRepository.name);
   }
 
-  async getGitHubRelease(): Promise<GitHubRelease> {
+  async getLatestRelease(): Promise<VersionResponse> {
     try {
-      const response = await fetch('https://api.github.com/repos/immich-app/immich/releases/latest');
+      const response = await fetch('https://version.immich.cloud/version');
 
       if (!response.ok) {
-        throw new Error(`GitHub API request failed with status ${response.status}: ${await response.text()}`);
+        throw new Error(`Version check request failed with status ${response.status}: ${await response.text()}`);
       }
 
       return response.json();
     } catch (error) {
-      throw new Error('Failed to fetch GitHub release', { cause: error });
+      throw new Error('Failed to fetch latest release', { cause: error });
     }
   }
 

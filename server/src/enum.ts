@@ -37,6 +37,11 @@ export enum AssetType {
   Other = 'OTHER',
 }
 
+export enum ChecksumAlgorithm {
+  sha1File = 'sha1', // sha1 checksum of the whole file contents
+  sha1Path = 'sha1-path', // sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated
+}
+
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
@@ -45,6 +50,7 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
+  EncodedVideo = 'encoded_video',
 }
 
 export enum AlbumUserRole {
@@ -409,7 +415,9 @@ export enum VideoCodec {
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  LibOpus = 'libopus',
+  /** @deprecated Use `Opus` instead */
+  Libopus = 'libopus',
+  Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
 

@@ -3,37 +3,64 @@
 -- SharedLinkRepository.get
 select
   "shared_link".*,
-  coalesce(
-    json_agg("a") filter (
-      where
-        "a"."id" is not null
-    ),
-    '[]'
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset".*,
+          to_json("exifInfo") as "exifInfo"
+        from
+          "shared_link_asset"
+          inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+          inner join lateral (
+            select
+              "asset_exif"."assetId",
+              "asset_exif"."autoStackId",
+              "asset_exif"."bitsPerSample",
+              "asset_exif"."city",
+              "asset_exif"."colorspace",
+              "asset_exif"."country",
+              "asset_exif"."dateTimeOriginal",
+              "asset_exif"."description",
+              "asset_exif"."exifImageHeight",
+              "asset_exif"."exifImageWidth",
+              "asset_exif"."exposureTime",
+              "asset_exif"."fileSizeInByte",
+              "asset_exif"."fNumber",
+              "asset_exif"."focalLength",
+              "asset_exif"."fps",
+              "asset_exif"."iso",
+              "asset_exif"."latitude",
+              "asset_exif"."lensModel",
+              "asset_exif"."livePhotoCID",
+              "asset_exif"."longitude",
+              "asset_exif"."make",
+              "asset_exif"."model",
+              "asset_exif"."modifyDate",
+              "asset_exif"."orientation",
+              "asset_exif"."profileDescription",
+              "asset_exif"."projectionType",
+              "asset_exif"."rating",
+              "asset_exif"."state",
+              "asset_exif"."tags",
+              "asset_exif"."timeZone"
+            from
+              "asset_exif"
+            where
+              "asset_exif"."assetId" = "asset"."id"
+          ) as "exifInfo" on true
+        where
+          "shared_link"."id" = "shared_link_asset"."sharedLinkId"
+          and "asset"."deletedAt" is null
+        order by
+          "asset"."fileCreatedAt" asc
+      ) as agg
   ) as "assets",
   to_json("album") as "album"
 from
   "shared_link"
-  left join lateral (
-    select
-      "asset".*,
-      to_json("exifInfo") as "exifInfo"
-    from
-      "shared_link_asset"
-      inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
-      inner join lateral (
-        select
-          "asset_exif".*
-        from
-          "asset_exif"
-        where
-          "asset_exif"."assetId" = "asset"."id"
-      ) as "exifInfo" on true
-    where
-      "shared_link"."id" = "shared_link_asset"."sharedLinkId"
-      and "asset"."deletedAt" is null
-    order by
-      "asset"."fileCreatedAt" asc
-  ) as "a" on true
   left join lateral (
     select
       "album".*,
@@ -60,7 +87,36 @@ from
           "asset"
           inner join lateral (
             select
-              "asset_exif".*
+              "asset_exif"."assetId",
+              "asset_exif"."autoStackId",
+              "asset_exif"."bitsPerSample",
+              "asset_exif"."city",
+              "asset_exif"."colorspace",
+              "asset_exif"."country",
+              "asset_exif"."dateTimeOriginal",
+              "asset_exif"."description",
+              "asset_exif"."exifImageHeight",
+              "asset_exif"."exifImageWidth",
+              "asset_exif"."exposureTime",
+              "asset_exif"."fileSizeInByte",
+              "asset_exif"."fNumber",
+              "asset_exif"."focalLength",
+              "asset_exif"."fps",
+              "asset_exif"."iso",
+              "asset_exif"."latitude",
+              "asset_exif"."lensModel",
+              "asset_exif"."livePhotoCID",
+              "asset_exif"."longitude",
+              "asset_exif"."make",
+              "asset_exif"."model",
+              "asset_exif"."modifyDate",
+              "asset_exif"."orientation",
+              "asset_exif"."profileDescription",
+              "asset_exif"."projectionType",
+              "asset_exif"."rating",
+              "asset_exif"."state",
+              "asset_exif"."tags",
+              "asset_exif"."timeZone"
             from
               "asset_exif"
             where
@@ -74,7 +130,12 @@ from
       ) as "assets" on true
       inner join lateral (
         select
-          "user".*
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt"
         from
           "user"
         where
@@ -95,29 +156,34 @@ where
     "shared_link"."type" = $3
     or "album"."id" is not null
   )
-group by
-  "shared_link"."id",
-  "album".*
 order by
   "shared_link"."createdAt" desc
 
 -- SharedLinkRepository.getAll
-select distinct
-  on ("shared_link"."createdAt") "shared_link".*,
-  "assets"."assets",
+select
+  "shared_link".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset".*
+        from
+          "shared_link_asset"
+          inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
+        where
+          "shared_link"."id" = "shared_link_asset"."sharedLinkId"
+          and "asset"."deletedAt" is null
+        order by
+          "asset"."fileCreatedAt" asc
+        limit
+          $1
+      ) as agg
+  ) as "assets",
   to_json("album") as "album"
 from
   "shared_link"
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
-  left join lateral (
-    select
-      json_agg("asset") as "assets"
-    from
-      "asset"
-    where
-      "asset"."id" = "shared_link_asset"."assetId"
-      and "asset"."deletedAt" is null
-  ) as "assets" on true
   left join lateral (
     select
       "album".*,
@@ -126,21 +192,12 @@ from
       "album"
       inner join lateral (
         select
-          "user"."id",
-          "user"."email",
-          "user"."createdAt",
-          "user"."profileImagePath",
-          "user"."isAdmin",
-          "user"."shouldChangePassword",
-          "user"."deletedAt",
-          "user"."oauthId",
-          "user"."updatedAt",
-          "user"."storageLabel",
-          "user"."name",
-          "user"."quotaSizeInBytes",
-          "user"."quotaUsageInBytes",
-          "user"."status",
-          "user"."profileChangedAt"
+          "id",
+          "name",
+          "email",
+          "avatarColor",
+          "profileImagePath",
+          "profileChangedAt"
         from
           "user"
         where
@@ -152,12 +209,12 @@ from
       and "album"."deletedAt" is null
   ) as "album" on true
 where
-  "shared_link"."userId" = $1
+  "shared_link"."userId" = $2
   and (
-    "shared_link"."type" = $2
+    "shared_link"."type" = $3
     or "album"."id" is not null
   )
-  and "shared_link"."albumId" = $3
+  and "shared_link"."albumId" = $4
 order by
   "shared_link"."createdAt" desc
 
@@ -165,6 +222,7 @@ order by
 select
   "shared_link"."id",
   "shared_link"."userId",
+  "shared_link"."albumId",
   "shared_link"."expiresAt",
   "shared_link"."showExif",
   "shared_link"."allowUpload",
@@ -203,6 +261,7 @@ where
 select
   "shared_link"."id",
   "shared_link"."userId",
+  "shared_link"."albumId",
   "shared_link"."expiresAt",
   "shared_link"."showExif",
   "shared_link"."allowUpload",
@@ -236,3 +295,66 @@ where
     or "album"."id" is not null
   )
   and "shared_link"."slug" = $2
+
+-- SharedLinkRepository.getSharedLinks
+select
+  "shared_link".*,
+  coalesce(
+    json_agg("assets") filter (
+      where
+        "assets"."id" is not null
+    ),
+    '[]'
+  ) as "assets"
+from
+  "shared_link"
+  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
+  left join lateral (
+    select
+      "asset".*
+    from
+      "asset"
+      inner join lateral (
+        select
+          "asset_exif"."assetId",
+          "asset_exif"."autoStackId",
+          "asset_exif"."bitsPerSample",
+          "asset_exif"."city",
+          "asset_exif"."colorspace",
+          "asset_exif"."country",
+          "asset_exif"."dateTimeOriginal",
+          "asset_exif"."description",
+          "asset_exif"."exifImageHeight",
+          "asset_exif"."exifImageWidth",
+          "asset_exif"."exposureTime",
+          "asset_exif"."fileSizeInByte",
+          "asset_exif"."fNumber",
+          "asset_exif"."focalLength",
+          "asset_exif"."fps",
+          "asset_exif"."iso",
+          "asset_exif"."latitude",
+          "asset_exif"."lensModel",
+          "asset_exif"."livePhotoCID",
+          "asset_exif"."longitude",
+          "asset_exif"."make",
+          "asset_exif"."model",
+          "asset_exif"."modifyDate",
+          "asset_exif"."orientation",
+          "asset_exif"."profileDescription",
+          "asset_exif"."projectionType",
+          "asset_exif"."rating",
+          "asset_exif"."state",
+          "asset_exif"."tags",
+          "asset_exif"."timeZone"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as "exifInfo" on true
+    where
+      "asset"."id" = "shared_link_asset"."assetId"
+  ) as "assets" on true
+where
+  "shared_link"."id" = $1
+group by
+  "shared_link"."id"

@@ -91,6 +91,16 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     return discovered;
   }
 
+  void toggle() {
+    switch (state.castState) {
+      case CastState.playing:
+        pause();
+      case CastState.paused:
+        play();
+      default:
+    }
+  }
+
   void play() {
     _gCastService.play();
   }
