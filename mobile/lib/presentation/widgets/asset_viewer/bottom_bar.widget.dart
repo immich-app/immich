@@ -74,7 +74,7 @@ class ViewerBottomBar extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (asset.isVideo) VideoControls(key: ValueKey(asset.heroTag), videoPlayerName: asset.heroTag),
+                      if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
                       if (!isReadonlyModeEnabled)
                         Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                     ],
