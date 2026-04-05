@@ -1,8 +1,8 @@
-import type { MonthGroup } from '../month-group.svelte';
 import { TimelineManager } from '../timeline-manager.svelte';
+import type { TimelineMonth } from '../timeline-month.svelte';
 import type { UpdateGeometryOptions } from '../types';
 
-export function updateGeometry(timelineManager: TimelineManager, month: MonthGroup, options: UpdateGeometryOptions) {
+export function updateGeometry(timelineManager: TimelineManager, month: TimelineMonth, options: UpdateGeometryOptions) {
   const { invalidateHeight, noDefer = false } = options;
   if (invalidateHeight) {
     month.isHeightActual = false;
@@ -17,10 +17,10 @@ export function updateGeometry(timelineManager: TimelineManager, month: MonthGro
     }
     return;
   }
-  layoutMonthGroup(timelineManager, month, noDefer);
+  layoutTimelineMonth(timelineManager, month, noDefer);
 }
 
-export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthGroup, noDefer: boolean = false) {
+export function layoutTimelineMonth(timelineManager: TimelineManager, month: TimelineMonth, noDefer: boolean = false) {
   let cumulativeHeight = 0;
   let cumulativeWidth = 0;
   let currentRowHeight = 0;

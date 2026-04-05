@@ -441,7 +441,7 @@
     "user_successfully_removed": "User {email} has been successfully removed.",
     "users_page_description": "Admin users page",
     "version_check_enabled_description": "Enable version check",
-    "version_check_implications": "The version check feature relies on periodic communication with github.com",
+    "version_check_implications": "The version check feature relies on periodic communication with {server}",
     "version_check_settings": "Version Check",
     "version_check_settings_description": "Enable/disable the new version notification",
     "video_conversion_job": "Transcode videos",
