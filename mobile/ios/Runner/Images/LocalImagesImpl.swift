@@ -3,7 +3,7 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-class LocalImageRequest: Cancellable {
+class LocalImageRequest {
   weak var operation: Operation?
   var isCancelled = false
   let callback: (Result<[String: Int64]?, any Error>) -> Void
@@ -177,7 +177,7 @@ class LocalImageApiImpl: LocalImageApi {
   }
 
   func cancelRequest(requestId: Int64) {
-    Self.registry.cancel(requestId: requestId)
+    Self.registry.remove(requestId: requestId)?.cancel()
   }
 
   private static func requestAsset(assetId: String) -> PHAsset? {

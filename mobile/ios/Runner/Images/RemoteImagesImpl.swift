@@ -3,7 +3,7 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-class RemoteImageRequest: Cancellable {
+class RemoteImageRequest {
   weak var task: URLSessionDataTask?
   let id: Int64
   var isCancelled = false
@@ -126,7 +126,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   }
 
   func cancelRequest(requestId: Int64) {
-    Self.registry.cancel(requestId: requestId)
+    Self.registry.remove(requestId: requestId)?.cancel()
   }
 
   func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
