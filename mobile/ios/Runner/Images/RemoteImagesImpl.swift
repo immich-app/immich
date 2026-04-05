@@ -42,7 +42,6 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       Self.handleCompletion(requestId: requestId, encoded: preferEncoded, data: data, response: response, error: error)
     }
 
-    let request = RemoteImageRequest(id: requestId, task: task, completion: completion)
     let request = RemoteImageRequest(id: requestId, task: task) { result in
       Self.registry.remove(requestId: requestId)
       completion(result)

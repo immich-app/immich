@@ -20,6 +20,7 @@ class ImageRequest {
       defer { callback = nil }
       return callback
     }
+    guard cb != nil else { return }
     onCancel()
     cb?(ImageProcessing.cancelledResult)
   }
