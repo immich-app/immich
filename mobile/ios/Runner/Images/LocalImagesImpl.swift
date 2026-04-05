@@ -60,7 +60,6 @@ class LocalImageApiImpl: LocalImageApi {
   }
 
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    let request = LocalImageRequest(callback: completion)
     let request = LocalImageRequest { result in
       Self.registry.remove(requestId: requestId)
       completion(result)
