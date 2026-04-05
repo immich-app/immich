@@ -212,9 +212,14 @@ export class AssetMediaService extends BaseService {
 
     const path = editedPath ?? originalPath!;
 
+    // Don't expose original filename when showMetadata is disabled for shared links
+    const shouldShowFilename = !auth.sharedLink || auth.sharedLink.showExif;
+
     return new ImmichFileResponse({
       path,
-      fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
+      fileName: shouldShowFilename
+        ? getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path)
+        : undefined,
       contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
@@ -257,7 +262,11 @@ export class AssetMediaService extends BaseService {
       throw new NotFoundException('Asset media not found');
     }
 
-    const fileName = `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`;
+    // Don't expose original filename when showMetadata is disabled for shared links
+    const shouldShowFilename = !auth.sharedLink || auth.sharedLink.showExif;
+    const fileName = shouldShowFilename
+      ? `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`
+      : undefined;
 
     return new ImmichFileResponse({
       fileName,
