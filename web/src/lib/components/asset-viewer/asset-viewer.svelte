@@ -173,7 +173,7 @@
 
   onDestroy(() => {
     activityManager.reset();
-    assetViewerManager.closeEditor();
+    assetViewerManager.resetPanelState();
     syncAssetViewerOpenClass(false);
     preloadManager.destroy();
   });
