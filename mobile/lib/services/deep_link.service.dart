@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -57,6 +58,8 @@ class DeepLinkService {
 
   final UserDto? _currentUser;
 
+  PageRouteInfo<dynamic>? _pendingWarmRoute;
+
   const DeepLinkService(
     this._memoryService,
     this._assetService,
@@ -72,12 +75,23 @@ class DeepLinkService {
   );
 
   DeepLink _handleColdStart(PageRouteInfo<dynamic> route, bool isColdStart) {
-    return DeepLink([
-      // we need something to segue back to if the app was cold started
-      // TODO: use MainTimelineRoute this when beta is default
-      if (isColdStart) (Store.isBetaTimelineEnabled) ? const TabShellRoute() : const PhotosRoute(),
-      route,
-    ]);
+    if (isColdStart) {
+      return DeepLink([
+        // we need something to segue back to if the app was cold started
+        // TODO: use MainTimelineRoute this when beta is default
+        (Store.isBetaTimelineEnabled) ? const TabShellRoute() : const PhotosRoute(),
+        route,
+      ]);
+    }
+
+    _pendingWarmRoute = route;
+    return DeepLink.none;
+  }
+
+  PageRouteInfo<dynamic>? takePendingWarmRoute() {
+    final route = _pendingWarmRoute;
+    _pendingWarmRoute = null;
+    return route;
   }
 
   Future<DeepLink> handleScheme(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
@@ -183,6 +197,7 @@ class DeepLinkService {
 
       AssetViewer.setAsset(ref, asset);
       return AssetViewerRoute(
+        key: ValueKey('asset_viewer_$assetId'),
         initialIndex: 0,
         timelineService: _betaTimelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
       );
@@ -196,7 +211,13 @@ class DeepLinkService {
       _currentAsset.set(asset);
       final renderList = await RenderList.fromAssets([asset], GroupAssetsBy.auto);
 
-      return GalleryViewerRoute(renderList: renderList, initialIndex: 0, heroOffset: 0, showStack: true);
+      return GalleryViewerRoute(
+        key: ValueKey('gallery_viewer_$assetId'),
+        renderList: renderList,
+        initialIndex: 0,
+        heroOffset: 0,
+        showStack: true,
+      );
     }
   }
 

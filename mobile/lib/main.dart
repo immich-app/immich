@@ -179,6 +179,15 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     await ref.read(localNotificationService).setup();
   }
 
+  void _handleWarmDeepLink() {
+    final deepLinkHandler = ref.read(deepLinkServiceProvider);
+    final warmRoute = deepLinkHandler.takePendingWarmRoute();
+    if (warmRoute != null) {
+      final router = ref.read(appRouterProvider);
+      unawaited(router.replace(warmRoute));
+    }
+  }
+
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
@@ -188,11 +197,15 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 
+      if (!isColdStart) _handleWarmDeepLink();
+
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
       final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
+
+      if (!isColdStart) _handleWarmDeepLink();
 
       return proposedRoute;
     }
