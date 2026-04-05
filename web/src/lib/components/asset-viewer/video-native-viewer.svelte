@@ -58,7 +58,6 @@
   });
 
   $effect(() => {
-    // reactive on `assetFileUrl` changes
     if (assetFileUrl) {
       hasFocused = false;
       videoPlayer?.load();

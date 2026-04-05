@@ -35,6 +35,9 @@
   let { cursor, element = $bindable(), sharedLink, onError, onSwipe }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
+  const objectFit = $derived(
+    $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain',
+  );
   const asset = $derived(cursor.current);
 
   let visibleImageReady: boolean = $state(false);
@@ -226,7 +229,7 @@
     {asset}
     {sharedLink}
     {container}
-    objectFit={$slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain'}
+    {objectFit}
     {onUrlChange}
     onImageReady={() => {
       visibleImageReady = true;

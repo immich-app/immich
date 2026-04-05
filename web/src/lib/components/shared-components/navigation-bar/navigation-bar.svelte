@@ -9,8 +9,8 @@
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
@@ -37,16 +37,11 @@
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
-
-  onMount(async () => {
-    try {
-      await notificationManager.refresh();
-    } catch (error) {
-      console.error('Failed to load notifications on mount', error);
-    }
-  });
+  const { Cast } = $derived(getGlobalActions($t));
 
   onMount(() => {
+    void notificationManager.refresh().catch((error) => console.error('Failed to load notifications on mount', error));
+
     return viewTransitionManager.on({
       PrepareOldSnapshot: (types) => {
         if (types.includes('viewer')) {
@@ -61,8 +56,6 @@
       },
     });
   });
-
-  const { Cast } = $derived(getGlobalActions($t));
 </script>
 
 <svelte:window bind:innerWidth />

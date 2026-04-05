@@ -108,6 +108,10 @@
   let sharedLink = getSharedLink();
   let fullscreenElement = $state<Element>();
 
+  let slideShowPlaying = $derived($slideshowState === SlideshowState.PlaySlideshow);
+  let slideShowAscending = $derived($slideshowNavigation === SlideshowNavigation.AscendingOrder);
+  let slideShowShuffle = $derived($slideshowNavigation === SlideshowNavigation.Shuffle);
+
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
   let slideshowStartAssetId = $state<string>();
 
@@ -138,12 +142,6 @@
       await activityManager.toggleLike();
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_favorite'));
-    }
-  };
-
-  const onAssetUpdate = (updatedAsset: AssetResponseDto) => {
-    if (asset.id === updatedAsset.id) {
-      cursor = { ...cursor, current: updatedAsset };
     }
   };
 
@@ -230,67 +228,64 @@
     assetViewerManager.closeEditor();
   };
 
+  const completeNavigation = async (order: 'previous' | 'next') => {
+    preloadManager.cancelBeforeNavigation(order);
+
+    let hasNext: boolean;
+
+    if (slideShowPlaying && slideShowShuffle) {
+      let next = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+      if (!next) {
+        const asset = await onRandom?.();
+        if (asset) {
+          slideshowHistory.queue(asset);
+          next = true;
+        }
+      }
+      hasNext = next;
+    } else {
+      const target = order === 'previous' ? previousAsset : nextAsset;
+      hasNext = await navigateToAsset(target);
+    }
+
+    if (!slideShowPlaying) {
+      return;
+    }
+
+    if (hasNext) {
+      $restartSlideshowProgress = true;
+      return;
+    }
+
+    if ($slideshowRepeat && slideshowStartAssetId) {
+      await assetViewerManager.setAssetId(slideshowStartAssetId);
+      $restartSlideshowProgress = true;
+      return;
+    }
+
+    await handleStopSlideshow();
+  };
+
   const tracker = new InvocationTracker();
   let navigating = $state(false);
   const navigateAsset = (order?: 'previous' | 'next') => {
     if (!order) {
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
-        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+      if (slideShowPlaying) {
+        order = slideShowAscending ? 'previous' : 'next';
       } else {
         return;
       }
     }
-
-    preloadManager.cancelBeforeNavigation(order);
 
     if (tracker.isActive()) {
       return;
     }
 
     navigating = true;
-    const navigation = tracker.invoke(async () => {
-      const isShuffle =
-        $slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle;
-
-      let hasNext: boolean;
-
-      if (isShuffle) {
-        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-        if (!hasNext) {
-          const asset = await onRandom?.();
-          if (asset) {
-            slideshowHistory.queue(asset);
-            hasNext = true;
-          }
-        }
-      } else {
-        hasNext =
-          order === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
-      }
-
-      if ($slideshowState !== SlideshowState.PlaySlideshow) {
-        return;
-      }
-
-      if (hasNext) {
-        $restartSlideshowProgress = true;
-        return;
-      }
-
-      if ($slideshowRepeat && slideshowStartAssetId) {
-        await assetViewerManager.setAssetId(slideshowStartAssetId);
-        $restartSlideshowProgress = true;
-        return;
-      }
-
-      await handleStopSlideshow();
-    }, $t('error_while_navigating'));
-    void navigation.finally(() => (navigating = false));
+    void tracker
+      .invoke(() => completeNavigation(order), $t('error_while_navigating'))
+      .finally(() => (navigating = false));
   };
-
-  /**
-   * Slide show mode
-   */
 
   let assetViewerHtmlElement = $state<HTMLElement>();
 
@@ -316,9 +311,11 @@
 
   const handleStopSlideshow = async () => {
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
+      if (!document.fullscreenElement) {
+        return;
       }
+      document.body.style.cursor = '';
+      await document.exitFullscreen();
     } catch (error) {
       handleError(error, $t('errors.unable_to_exit_fullscreen'));
     } finally {
@@ -421,13 +418,20 @@
       return;
     }
     if (lastCursor) {
+      previewStackedAsset = undefined;
+      ocrManager.showOverlay = false;
       preloadManager.updateAfterNavigation(lastCursor, cursor, sharedLink);
-    }
-    if (!lastCursor) {
+    } else {
       preloadManager.initializePreloads(cursor, sharedLink);
     }
     lastCursor = cursor;
   });
+
+  const onAssetUpdate = (update: AssetResponseDto) => {
+    if (asset.id === update.id) {
+      cursor = { ...cursor, current: update };
+    }
+  };
 
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
@@ -504,7 +508,6 @@
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
-  <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
     <div
       class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform"
@@ -551,11 +554,11 @@
     </div>
   {/if}
 
-  <!-- Asset Viewer -->
   <div data-viewer-content class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
+        assetId={previewStackedAsset!.id}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
@@ -647,7 +650,7 @@
     </div>
   {/if}
 
-  {#if stack && withStacked && !assetViewerManager.isShowEditor}
+  {#if stack && withStacked && $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none">
       <div class="relative flex flex-row no-wrap overflow-x-auto overflow-y-hidden horizontal-scrollbar">
