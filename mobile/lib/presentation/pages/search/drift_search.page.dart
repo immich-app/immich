@@ -106,10 +106,17 @@ class DriftSearchPage extends HookConsumerWidget {
 
       Future.microtask(() {
         textSearchController.clear();
+        peopleCurrentFilterWidget.value = null;
+        dateRangeCurrentFilterWidget.value = null;
+        cameraCurrentFilterWidget.value = null;
+        tagCurrentFilterWidget.value = null;
+        mediaTypeCurrentFilterWidget.value = null;
+        ratingCurrentFilterWidget.value = null;
+        displayOptionCurrentFilterWidget.value = null;
+        locationCurrentFilterWidget.value = preFilter.location.city != null
+            ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
+            : null;
         search(preFilter);
-        if (preFilter.location.city != null) {
-          locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
-        }
       });
 
       return null;
