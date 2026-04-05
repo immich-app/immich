@@ -3195,13 +3195,13 @@ export type SyncUserV1 = {
 /**
  * List all activities
  */
-export function getActivities({ albumId, assetId, before, level, $type, take, userId }: {
+export function getActivities({ albumId, assetId, before, level, take, $type, userId }: {
     albumId: string;
     assetId?: string;
-    before?: Date;
+    before?: string;
     level?: ReactionLevel;
-    $type?: ReactionType;
     take?: number;
+    $type?: ReactionType;
     userId?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3212,8 +3212,8 @@ export function getActivities({ albumId, assetId, before, level, $type, take, us
         assetId,
         before,
         level,
-        "type": $type,
         take,
+        "type": $type,
         userId
     }))}`, {
         ...opts

@@ -21,10 +21,9 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
   late String? assetId;
 
   bool _hasMore = true;
-  bool _isLoadingMore = false;
 
   bool get hasMore => _hasMore;
-  bool get isLoadingMore => _isLoadingMore;
+  bool get isLoadingMore => state.isLoading;
 
   bool get _paginationSupported =>
       ref.read(serverInfoProvider).serverVersion >= _paginationMinVersion;
@@ -34,7 +33,6 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
     albumId = args.$1;
     assetId = args.$2;
     _hasMore = true;
-    _isLoadingMore = false;
     final paginationSupported = _paginationSupported;
     final activities = await ref.watch(activityServiceProvider).getAllActivities(
       albumId,
@@ -47,11 +45,12 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
 
   Future<void> loadMore() async {
     final activities = state.valueOrNull;
-    if (!_hasMore || _isLoadingMore || activities == null || activities.isEmpty) {
+    if (!_hasMore || state.isLoading || activities == null || activities.isEmpty) {
       return;
     }
 
-    _isLoadingMore = true;
+    final previous = state;
+    state = const AsyncLoading<List<Activity>>().copyWithPrevious(previous);
     try {
       final older = await ref.watch(activityServiceProvider).getAllActivities(
         albumId,
@@ -61,8 +60,8 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
       );
       _hasMore = older.length >= _pageSize;
       state = AsyncData([...older, ...activities]);
-    } finally {
-      _isLoadingMore = false;
+    } catch (e, st) {
+      state = AsyncError<List<Activity>>(e, st).copyWithPrevious(previous);
     }
   }
 

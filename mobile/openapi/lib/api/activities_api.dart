@@ -135,21 +135,19 @@ class ActivitiesApi {
   /// * [String] assetId:
   ///   Asset ID (if activity is for an asset)
   ///
-  /// * [ReactionLevel] level:
-  ///   Filter by activity level
-  ///
-  /// * [ReactionType] type:
-  ///   Filter by activity type
-  ///
-  /// * [String] userId:
-  ///   Filter by user ID
-  ///
   /// * [DateTime] before:
   ///   Return activities created before this date (for pagination)
   ///
+  /// * [ReactionLevel] level:
+  ///
   /// * [int] take:
   ///   Maximum number of activities to return
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, DateTime? before, ReactionLevel? level, ReactionType? type, int? take, String? userId, }) async {
+  ///
+  /// * [ReactionType] type:
+  ///
+  /// * [String] userId:
+  ///   Filter by user ID
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, DateTime? before, ReactionLevel? level, int? take, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
 
@@ -165,16 +163,16 @@ class ActivitiesApi {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
     if (before != null) {
-      queryParams.addAll(_queryParams('', 'before', before.toUtc().toIso8601String()));
+      queryParams.addAll(_queryParams('', 'before', before));
     }
     if (level != null) {
       queryParams.addAll(_queryParams('', 'level', level));
     }
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
-    }
     if (take != null) {
       queryParams.addAll(_queryParams('', 'take', take));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
     }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
@@ -206,22 +204,20 @@ class ActivitiesApi {
   /// * [String] assetId:
   ///   Asset ID (if activity is for an asset)
   ///
-  /// * [ReactionLevel] level:
-  ///   Filter by activity level
-  ///
-  /// * [ReactionType] type:
-  ///   Filter by activity type
-  ///
-  /// * [String] userId:
-  ///   Filter by user ID
-  ///
   /// * [DateTime] before:
   ///   Return activities created before this date (for pagination)
   ///
+  /// * [ReactionLevel] level:
+  ///
   /// * [int] take:
   ///   Maximum number of activities to return
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, DateTime? before, ReactionLevel? level, ReactionType? type, int? take, String? userId, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, before: before, level: level, type: type, take: take, userId: userId, );
+  ///
+  /// * [ReactionType] type:
+  ///
+  /// * [String] userId:
+  ///   Filter by user ID
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, DateTime? before, ReactionLevel? level, int? take, ReactionType? type, String? userId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, before: before, level: level, take: take, type: type, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
