@@ -43,6 +43,10 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     }
 
     let request = RemoteImageRequest(id: requestId, task: task, completion: completion)
+    let request = RemoteImageRequest(id: requestId, task: task) { result in
+      Self.registry.remove(requestId: requestId)
+      completion(result)
+    }
 
     Self.registry.add(requestId: requestId, request: request)
 
@@ -50,7 +54,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   }
 
   private static func handleCompletion(requestId: Int64, encoded: Bool, data: Data?, response: URLResponse?, error: Error?) {
-    guard let request = registry.remove(requestId: requestId) else {
+    guard let request = registry.get(requestId: requestId) else {
       return
     }
 

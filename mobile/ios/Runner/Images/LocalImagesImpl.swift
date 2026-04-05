@@ -61,12 +61,15 @@ class LocalImageApiImpl: LocalImageApi {
 
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     let request = LocalImageRequest(callback: completion)
+    let request = LocalImageRequest { result in
+      Self.registry.remove(requestId: requestId)
+      completion(result)
+    }
     let operation = BlockOperation {
       if request.isCancelled { return }
 
       guard let asset = Self.requestAsset(assetId: assetId)
       else {
-        Self.registry.remove(requestId: requestId)
         return request.finish(with: .failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
       }
 
@@ -90,13 +93,10 @@ class LocalImageApiImpl: LocalImageApi {
         if request.isCancelled { return }
 
         guard let data = imageData else {
-          Self.registry.remove(requestId: requestId)
           return request.finish(with: .failure(PigeonError(code: "", message: "Could not get image data for \(assetId)", details: nil)))
         }
 
-        request.finish(encoding: data)
-        Self.registry.remove(requestId: requestId)
-        return
+        return request.finish(encoding: data)
       }
 
       var image: UIImage?
@@ -114,7 +114,6 @@ class LocalImageApiImpl: LocalImageApi {
 
       guard let image = image,
             let cgImage = image.cgImage else {
-        Self.registry.remove(requestId: requestId)
         return request.finish(with: .failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
       }
 
@@ -122,9 +121,7 @@ class LocalImageApiImpl: LocalImageApi {
 
       do {
         try request.finish(cgImage: cgImage, format: &Self.rgbaFormat)
-        Self.registry.remove(requestId: requestId)
       } catch {
-        Self.registry.remove(requestId: requestId)
         return request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
       }
     }

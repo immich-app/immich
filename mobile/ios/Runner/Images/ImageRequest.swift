@@ -71,6 +71,10 @@ class RequestRegistry<T: ImageRequest> {
     lock.withLock { requests[requestId] = request }
   }
 
+  func get(requestId: Int64) -> T? {
+    lock.withLock { requests[requestId] }
+  }
+
   @discardableResult
   func remove(requestId: Int64) -> T? {
     lock.withLock { requests.removeValue(forKey: requestId) }
