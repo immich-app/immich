@@ -170,10 +170,17 @@
   const faces = $derived(Array.from(faceToNameMap.keys()));
 
   const handleImageMouseMove = (event: MouseEvent) => {
-    $boundingBoxesArray = [];
-    if (!assetViewerManager.imgRef || !element || assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
+    if (
+      !assetViewerManager.imgRef ||
+      !element ||
+      assetViewerManager.isFaceEditMode ||
+      assetViewerManager.isEditFacesPanelOpen ||
+      ocrManager.showOverlay
+    ) {
       return;
     }
+
+    $boundingBoxesArray = [];
 
     const natural = getNaturalSize(assetViewerManager.imgRef);
     const scaled = scaleToFit(natural, container);
@@ -196,6 +203,9 @@
   };
 
   const handleImageMouseLeave = () => {
+    if (assetViewerManager.isEditFacesPanelOpen) {
+      return;
+    }
     $boundingBoxesArray = [];
   };
 </script>

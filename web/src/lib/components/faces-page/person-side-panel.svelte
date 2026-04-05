@@ -146,6 +146,7 @@
       selectedPersonToCreate[editedFace.id] = newFeaturePhoto;
     }
     showSelectedFaces = false;
+    $boundingBoxesArray = [];
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
@@ -153,11 +154,13 @@
       selectedPersonToReassign[editedFace.id] = person;
     }
     showSelectedFaces = false;
+    $boundingBoxesArray = [];
   };
 
   const handleFacePicker = (face: AssetFaceResponseDto) => {
     editedFace = face;
     showSelectedFaces = true;
+    $boundingBoxesArray = [face];
   };
 
   const deleteAssetFace = async (face: AssetFaceResponseDto) => {
@@ -247,7 +250,11 @@
               class="absolute start-0 top-0 h-22.5 w-22.5 cursor-default"
               onfocus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
               onmouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              onmouseleave={() => ($boundingBoxesArray = [])}
+              onmouseleave={() => {
+                if (!showSelectedFaces) {
+                  $boundingBoxesArray = [];
+                }
+              }}
             >
               <div class="relative">
                 {#if selectedPersonToCreate[face.id]}
@@ -384,7 +391,10 @@
     {editedFace}
     {assetId}
     {assetType}
-    onClose={() => (showSelectedFaces = false)}
+    onClose={() => {
+      showSelectedFaces = false;
+      $boundingBoxesArray = [];
+    }}
     onCreatePerson={handleCreatePerson}
     onReassign={handleReassignFace}
   />
