@@ -70,13 +70,13 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return request.finish(with: .failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
+    // Return raw encoded bytes when requested (for animated images)
+    if encoded {
+      return request.finish(encoding: data)
+    }
+
     ImageProcessing.queue.addOperation {
       if request.isCancelled { return }
-
-      // Return raw encoded bytes when requested (for animated images)
-      if encoded {
-        return request.finish(encoding: data)
-      }
 
       guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
             let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
