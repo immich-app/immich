@@ -4,17 +4,23 @@ import MobileCoreServices
 import Photos
 
 class RemoteImageRequest: ImageRequest {
+  private let operationLock = UnfairLock()
   weak var task: URLSessionDataTask?
-  let id: Int64
-
-  init(id: Int64, task: URLSessionDataTask, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    self.id = id
-    self.task = task
-    super.init(callback: completion)
+  private weak var _operation: Operation?
+  // This needs to be thread safe because operation is set from a background thread, while onCancel is called from the main thread
+  weak var operation: Operation? {
+    get { operationLock.withLock { _operation } }
+    set { operationLock.withLock { _operation = newValue } }
   }
+
+  init(task: URLSessionDataTask, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
+      self.task = task
+      super.init(callback: completion)
+    }
 
   override func onCancel() {
     task?.cancel()
+    operation?.cancel()
   }
 }
 
@@ -42,7 +48,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       Self.handleCompletion(requestId: requestId, encoded: preferEncoded, data: data, response: response, error: error)
     }
 
-    let request = RemoteImageRequest(id: requestId, task: task) { result in
+    let request = RemoteImageRequest(task: task) { result in
       Self.registry.remove(requestId: requestId)
       completion(result)
     }
@@ -70,7 +76,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return request.finish(with: .failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
-    ImageProcessing.queue.addOperation {
+    let operation = BlockOperation {
       if request.isCancelled { return }
 
       // Return raw encoded bytes when requested (for animated images)
@@ -91,6 +97,9 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
         return request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
       }
     }
+
+    request.operation = operation
+    ImageProcessing.queue.addOperation(operation)
   }
 
   func cancelRequest(requestId: Int64) {
