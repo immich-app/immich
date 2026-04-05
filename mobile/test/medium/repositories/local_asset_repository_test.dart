@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
-import '../../medium/repository_context.dart';
+import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 
-import '../../medium/repository_context.dart';
+import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;

@@ -18,6 +18,8 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
 
+import '../utils.dart';
+
 class MediumRepositoryContext {
   final Drift db;
   final Random _random = Random();
@@ -51,7 +53,7 @@ class MediumRepositoryContext {
     DateTime? profileChangedAt,
     bool? hasProfileImage,
   }) async {
-    id = id ?? const Uuid().v4();
+    id = TestUtils.uuid(id);
     return await db
         .into(db.userEntity)
         .insertReturning(
@@ -60,7 +62,7 @@ class MediumRepositoryContext {
             email: Value(email ?? '$id@test.com'),
             name: Value(email ?? 'user_$id'),
             avatarColor: Value(avatarColor ?? AvatarColor.values[_random.nextInt(AvatarColor.values.length)]),
-            profileChangedAt: Value(profileChangedAt ?? DateTime.now()),
+            profileChangedAt: Value(TestUtils.date(profileChangedAt)),
             hasProfileImage: Value(hasProfileImage ?? false),
           ),
         );
@@ -85,19 +87,19 @@ class MediumRepositoryContext {
     String? thumbHash,
     String? libraryId,
   }) async {
-    id = id ?? const Uuid().v4();
-    createdAt = createdAt ?? DateTime.now();
+    id = TestUtils.uuid(id);
+    createdAt = TestUtils.date(createdAt);
     return db
         .into(db.remoteAssetEntity)
         .insertReturning(
           RemoteAssetEntityCompanion(
             id: Value(id),
             name: Value('remote_$id.jpg'),
-            checksum: Value(checksum ?? const Uuid().v4()),
+            checksum: Value(TestUtils.uuid(checksum)),
             type: Value(type ?? AssetType.image),
             createdAt: Value(createdAt),
-            updatedAt: Value(updatedAt ?? DateTime.now()),
-            ownerId: Value(ownerId ?? const Uuid().v4()),
+            updatedAt: Value(TestUtils.date(updatedAt)),
+            ownerId: Value(TestUtils.uuid(ownerId)),
             visibility: Value(visibility ?? AssetVisibility.timeline),
             deletedAt: Value(deletedAt),
             durationInSeconds: Value(durationInSeconds ?? 0),
@@ -108,8 +110,8 @@ class MediumRepositoryContext {
             livePhotoVideoId: Value(livePhotoVideoId),
             stackId: Value(stackId),
             localDateTime: Value(createdAt.toLocal()),
-            thumbHash: Value(thumbHash ?? const Uuid().v4()),
-            libraryId: Value(libraryId ?? const Uuid().v4()),
+            thumbHash: Value(TestUtils.uuid(thumbHash)),
+            libraryId: Value(TestUtils.uuid(libraryId)),
           ),
         );
   }
@@ -127,9 +129,9 @@ class MediumRepositoryContext {
         .into(db.remoteAssetCloudIdEntity)
         .insertReturning(
           RemoteAssetCloudIdEntityCompanion(
-            assetId: Value(id ?? const Uuid().v4()),
-            cloudId: Value(cloudId ?? const Uuid().v4()),
-            createdAt: Value(createdAt ?? DateTime.now()),
+            assetId: Value(TestUtils.uuid(id)),
+            cloudId: Value(TestUtils.uuid(cloudId)),
+            createdAt: Value(TestUtils.date(createdAt)),
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: _resolveOption(latitude, _random.nextDouble() * 180 - 90),
             longitude: _resolveOption(longitude, _random.nextDouble() * 360 - 180),
@@ -148,16 +150,16 @@ class MediumRepositoryContext {
     AlbumAssetOrder? order,
     String? thumbnailAssetId,
   }) async {
-    id = id ?? const Uuid().v4();
+    id = TestUtils.uuid(id);
     return db
         .into(db.remoteAlbumEntity)
         .insertReturning(
           RemoteAlbumEntityCompanion(
             id: Value(id),
             name: Value(name ?? 'remote_album_$id'),
-            ownerId: Value(ownerId ?? const Uuid().v4()),
-            createdAt: Value(createdAt ?? DateTime.now()),
-            updatedAt: Value(updatedAt ?? DateTime.now()),
+            ownerId: Value(TestUtils.uuid(ownerId)),
+            createdAt: Value(TestUtils.date(createdAt)),
+            updatedAt: Value(TestUtils.date(updatedAt)),
             description: Value(description ?? 'Description for album $id'),
             isActivityEnabled: Value(isActivityEnabled ?? false),
             order: Value(order ?? AlbumAssetOrder.asc),
@@ -191,7 +193,7 @@ class MediumRepositoryContext {
     int? orientation,
     DateTime? updatedAt,
   }) async {
-    id = id ?? const Uuid().v4();
+    id = TestUtils.uuid(id);
     return db
         .into(db.localAssetEntity)
         .insertReturning(
@@ -202,12 +204,12 @@ class MediumRepositoryContext {
             width: Value(width ?? _random.nextInt(1000)),
             durationInSeconds: Value(durationInSeconds ?? 0),
             orientation: Value(orientation ?? 0),
-            updatedAt: Value(updatedAt ?? DateTime.now()),
+            updatedAt: Value(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
-            createdAt: Value(createdAt ?? DateTime.now()),
+            createdAt: Value(TestUtils.date(createdAt)),
             type: Value(type ?? AssetType.image),
             isFavorite: Value(isFavorite ?? false),
-            iCloudId: Value(iCloudId ?? const Uuid().v4()),
+            iCloudId: Value(TestUtils.uuid(iCloudId)),
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: Value(latitude ?? _random.nextDouble() * 180 - 90),
             longitude: Value(longitude ?? _random.nextDouble() * 360 - 180),
@@ -223,14 +225,14 @@ class MediumRepositoryContext {
     bool? isIosSharedAlbum,
     String? linkedRemoteAlbumId,
   }) {
-    id = id ?? const Uuid().v4();
+    id = TestUtils.uuid(id);
     return db
         .into(db.localAlbumEntity)
         .insertReturning(
           LocalAlbumEntityCompanion(
             id: Value(id),
             name: Value(name ?? 'local_album_$id'),
-            updatedAt: Value(updatedAt ?? DateTime.now()),
+            updatedAt: Value(TestUtils.date(updatedAt)),
             backupSelection: Value(backupSelection ?? BackupSelection.none),
             isIosSharedAlbum: Value(isIosSharedAlbum ?? false),
             linkedRemoteAlbumId: Value(linkedRemoteAlbumId),

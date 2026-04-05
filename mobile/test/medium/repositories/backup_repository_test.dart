@@ -3,7 +3,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
-import '../../medium/repository_context.dart';
+import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
