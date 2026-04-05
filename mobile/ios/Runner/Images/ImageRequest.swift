@@ -1,15 +1,14 @@
 import Foundation
 
-class RequestRegistry<T: AnyObject> {
-  private let lock = UnfairLock()
-  private var requests = [Int64: T]()
+struct RequestRegistry<T: AnyObject & Sendable>: ~Copyable, Sendable {
+  private let requests = Mutex<[Int64: T]>([:])
 
   func add(requestId: Int64, request: T) {
-    lock.withLock { requests[requestId] = request }
+    requests.withLock { $0[requestId] = request }
   }
 
   @discardableResult
   func remove(requestId: Int64) -> T? {
-    lock.withLock { requests.removeValue(forKey: requestId) }
+    requests.withLock { $0.removeValue(forKey: requestId) }
   }
 }
