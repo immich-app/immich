@@ -79,7 +79,6 @@ export interface UpdateStackAssets {
 export type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
 
 export type ScrubberMonth = {
-  height: number;
   assetCount: number;
   year: number;
   month: number;

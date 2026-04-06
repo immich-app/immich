@@ -47,7 +47,6 @@
       style:inset-inline-start={position.left + 'px'}
       style:width={position.width + 'px'}
       style:height={position.height + 'px'}
-      out:scale|global={{ start: 0.1, duration: scaleDuration }}
       animate:flip={{ duration: transitionDuration }}
     >
       {@render thumbnail({ asset, position })}

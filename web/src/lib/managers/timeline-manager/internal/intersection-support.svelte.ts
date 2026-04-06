@@ -42,8 +42,8 @@ function calculateViewportProximity(regionTop: number, regionBottom: number, win
 
 export function updateTimelineMonthViewportProximity(timelineManager: TimelineManager, month: TimelineMonth) {
   const proximity = calculateViewportProximity(
-    month.top,
-    month.top + month.height,
+    month.planeTop,
+    month.planeTop + month.height,
     timelineManager.visibleWindow.top,
     timelineManager.visibleWindow.bottom,
   );

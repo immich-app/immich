@@ -36,7 +36,7 @@ export class TimelineMonth {
   readonly timelineManager: TimelineManager;
 
   #height: number = $state(0);
-  #top: number = $state(0);
+  #planeTop: number = $state(0);
 
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
@@ -266,39 +266,36 @@ export class TimelineMonth {
       return;
     }
     const timelineManager = this.timelineManager;
-    const index = timelineManager.months.indexOf(this);
+    // Repin the anchor BEFORE positionMonthsOnPlane re-derives planeTops, so the
+    // recomputation only shifts content above the viewport (invisible to the user).
+    timelineManager.trackAnchorToViewportTop();
+    // When this month is the viewport-top one, its photos will reflow as the height
+    // settles from estimate to actual; capture the user's fractional position so we
+    // can restore it below and avoid the visible stutter.
+    const isViewportTopMonth =
+      timelineManager.anchorMonthIndex !== -1 &&
+      timelineManager.months[timelineManager.anchorMonthIndex] === this &&
+      this.#height > 0;
+    const scrollFractionInMonth = isViewportTopMonth ? (timelineManager.scrollTop - this.#planeTop) / this.#height : 0;
     const heightDelta = height - this.#height;
     this.#height = height;
-    const previousTimelineMonth = timelineManager.months[index - 1];
-    if (previousTimelineMonth) {
-      const newTop = previousTimelineMonth.#top + previousTimelineMonth.#height;
-      if (this.#top !== newTop) {
-        this.#top = newTop;
-      }
-    }
+
     if (heightDelta === 0) {
       return;
     }
-    for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
-      const timelineMonth = this.timelineManager.months[cursor];
-      const newTop = timelineMonth.#top + heightDelta;
-      if (timelineMonth.#top !== newTop) {
-        timelineMonth.#top = newTop;
-      }
+
+    // Shift the anchor instead of scrollTop — touching scrollTop here fights
+    // native scroll momentum on Safari and visibly stutters.
+    if (isViewportTopMonth && scrollFractionInMonth > 0) {
+      timelineManager.anchorPlaneTop -= heightDelta * scrollFractionInMonth;
     }
-    if (!timelineManager.viewportTopMonthIntersection) {
-      return;
-    }
-    const { month, monthBottomViewportRatio, viewportTopRatioInMonth } = timelineManager.viewportTopMonthIntersection;
-    const currentIndex = month ? timelineManager.months.indexOf(month) : -1;
-    if (!month || currentIndex <= 0 || index > currentIndex) {
-      return;
-    }
-    if (index < currentIndex || monthBottomViewportRatio < 1) {
-      timelineManager.scrollBy(heightDelta);
-    } else if (index === currentIndex) {
-      const scrollTo = this.top + height * viewportTopRatioInMonth;
-      timelineManager.scrollTo(scrollTo);
+
+    timelineManager.positionMonthsOnPlane();
+
+    // Async loads change heights without going through updateSlidingWindow, so the
+    // near-edge check needs to run here too.
+    if (timelineManager.isNearPlaneEdge()) {
+      timelineManager.recenterPlane();
     }
   }
 
@@ -306,8 +303,12 @@ export class TimelineMonth {
     return this.#height;
   }
 
-  get top(): number {
-    return this.#top + this.timelineManager.topSectionHeight;
+  get planeTop(): number {
+    return this.#planeTop;
+  }
+
+  set planeTop(value: number) {
+    this.#planeTop = value;
   }
 
   #handleLoadError(error: unknown) {
@@ -337,7 +338,7 @@ export class TimelineMonth {
           return;
         }
         return {
-          top: this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
+          top: this.planeTop + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
           height: viewerAsset.position.height,
         };
       }

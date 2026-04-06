@@ -13,16 +13,17 @@
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
+  import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { clamp } from 'lodash-es';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -101,6 +102,14 @@
   let scrubberWidth = $state(0);
 
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
+  const topSectionPlaneTop = $derived(
+    timelineManager.months.length > 0 ? timelineManager.months[0].planeTop - timelineManager.topSectionHeight : 0,
+  );
+  const leadoutPlaneTop = $derived(
+    timelineManager.months.length > 0
+      ? timelineManager.months.at(-1)!.planeTop + timelineManager.months.at(-1)!.height
+      : timelineManager.topSectionHeight,
+  );
   const maxMd = $derived(mediaQueryManager.maxMd);
   const usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
@@ -169,17 +178,14 @@
 
   const scrollAndLoadAsset = async (assetId: string) => {
     try {
-      // This flag prevents layout deferral to fix scroll positioning issues.
-      // When layouts are deferred and we scroll to an asset at the end of the timeline,
-      // we can calculate the asset's position, but the scrollableElement's scrollHeight
-      // hasn't been updated yet to reflect the new layout. This creates a mismatch that
-      // breaks scroll positioning. By disabling layout deferral in this case, we maintain
-      // the performance benefits of deferred layouts while still supporting deep linking
-      // to assets at the end of the timeline.
       timelineManager.isScrollingOnLoad = true;
       const timelineMonth = await timelineManager.findTimelineMonthForAsset({ id: assetId });
       if (!timelineMonth) {
         return false;
+      }
+      const monthIndex = timelineManager.months.indexOf(timelineMonth);
+      if (monthIndex !== -1) {
+        timelineManager.jumpToMonth({ monthIndex, fractionInMonth: 0 });
       }
       scrollToAssetPosition(assetId, timelineMonth);
       return true;
@@ -213,7 +219,6 @@
       scrolled = await scrollAndLoadAsset(scrollTarget);
     }
     if (!scrolled) {
-      // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
     } else if (scrollTarget) {
       await tick();
@@ -263,102 +268,105 @@
     }
   });
 
-  const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, timelineMonthScrollPercent: number) => {
-    const topOffset = segmentTop;
-    const maxScrollPercent = timelineManager.maxScrollPercent;
-    const delta = segmentHeight * timelineMonthScrollPercent;
-    const scrollToTop = (topOffset + delta) * maxScrollPercent;
-
-    timelineManager.scrollTo(scrollToTop);
-  };
-
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
   const onScrub: ScrubberListener = (scrubberData) => {
-    const { scrubberMonth, overallScrollPercent, scrubberMonthScrollPercent } = scrubberData;
+    const { scrubberMonth, scrubberMonthScrollPercent } = scrubberData;
 
-    const leadIn = scrubberMonth === 'lead-in';
-    const leadOut = scrubberMonth === 'lead-out';
-    const noMonth = !scrubberMonth;
+    // For small timelines, use linear percentage for bi-directional sync with handleTimelineScroll
+    if (timelineManager.limitedScroll) {
+      const maxScroll = timelineManager.planeHeight - timelineManager.viewportHeight;
+      timelineManager.scrollTo(scrubberData.overallScrollPercent * maxScroll);
+      return;
+    }
 
-    if (noMonth || timelineManager.limitedScroll) {
-      // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
-      const maxScroll = timelineManager.maxScrollPercent;
-      const offset = maxScroll * overallScrollPercent * timelineManager.totalViewerHeight;
-      timelineManager.scrollTo(offset);
-    } else if (leadIn) {
-      scrollToSegmentPercentage(0, timelineManager.topSectionHeight, scrubberMonthScrollPercent);
-    } else if (leadOut) {
-      scrollToSegmentPercentage(
-        timelineManager.topSectionHeight + timelineManager.bodySectionHeight,
-        timelineManager.bottomSectionHeight,
-        scrubberMonthScrollPercent,
-      );
-    } else {
-      const timelineMonth = timelineManager.months.find(
-        ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
-      );
-      if (!timelineMonth) {
+    if (!scrubberMonth) {
+      if (timelineManager.months.length === 0) {
         return;
       }
-      scrollToSegmentPercentage(timelineMonth.top, timelineMonth.height, scrubberMonthScrollPercent);
+      if (scrubberData.overallScrollPercent <= 0) {
+        const firstMonth = timelineManager.months[0];
+        timelineManager.scrollTo(firstMonth.planeTop - timelineManager.topSectionHeight);
+      } else if (scrubberData.overallScrollPercent >= 1) {
+        const lastMonth = timelineManager.months.at(-1)!;
+        timelineManager.scrollTo(
+          lastMonth.planeTop + lastMonth.height + timelineManager.bottomSectionHeight - timelineManager.viewportHeight,
+        );
+      }
+      return;
+    }
+
+    if (scrubberMonth === 'lead-in') {
+      if (timelineManager.months.length > 0) {
+        const firstMonth = timelineManager.months[0];
+        timelineManager.scrollTo(
+          firstMonth.planeTop - timelineManager.topSectionHeight * (1 - scrubberMonthScrollPercent),
+        );
+      }
+      return;
+    }
+
+    if (scrubberMonth === 'lead-out') {
+      if (timelineManager.months.length > 0) {
+        const lastMonth = timelineManager.months.at(-1)!;
+        timelineManager.scrollTo(
+          lastMonth.planeTop + lastMonth.height + timelineManager.bottomSectionHeight * scrubberMonthScrollPercent,
+        );
+      }
+      return;
+    }
+
+    const monthIndex = timelineManager.months.findIndex(
+      ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
+    );
+    if (monthIndex !== -1) {
+      timelineManager.jumpToMonth({ monthIndex, fractionInMonth: scrubberMonthScrollPercent });
     }
   };
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   const handleTimelineScroll = () => {
-    if (!scrollableElement) {
+    const maxScroll = timelineManager.planeHeight - timelineManager.viewportHeight;
+    timelineScrollPercent = maxScroll > 0 ? clamp(timelineManager.visibleWindow.top / maxScroll, 0, 1) : 0;
+
+    // For small timelines, use linear percentage positioning for smooth bi-directional sync
+    if (timelineManager.limitedScroll) {
+      viewportTopMonth = undefined;
+      viewportTopMonthScrollPercent = 0;
       return;
     }
 
-    if (timelineManager.limitedScroll) {
-      // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
-      const maxScroll = timelineManager.maxScroll;
-
-      timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
+    const intersection = timelineManager.viewportTopMonthIntersection;
+    if (!intersection?.month) {
       viewportTopMonth = undefined;
       viewportTopMonthScrollPercent = 0;
-    } else {
-      timelineScrollPercent = 0;
-
-      let top = scrollableElement.scrollTop;
-      let maxScrollPercent = timelineManager.maxScrollPercent;
-
-      const monthsLength = timelineManager.months.length;
-      for (let i = -1; i < monthsLength + 1; i++) {
-        let timelineMonth: ViewportTopMonth;
-        let timelineMonthHeight: number;
-        if (i === -1) {
-          // lead-in
-          timelineMonth = 'lead-in';
-          timelineMonthHeight = timelineManager.topSectionHeight;
-        } else if (i === monthsLength) {
-          // lead-out
-          timelineMonth = 'lead-out';
-          timelineMonthHeight = timelineManager.bottomSectionHeight;
-        } else {
-          timelineMonth = timelineManager.months[i].yearMonth;
-          timelineMonthHeight = timelineManager.months[i].height;
-        }
-
-        let next = top - timelineMonthHeight * maxScrollPercent;
-        // instead of checking for < 0, add a little wiggle room for subpixel resolution
-        if (next < -1 && timelineMonth) {
-          viewportTopMonth = timelineMonth;
-
-          // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
-          viewportTopMonthScrollPercent = Math.max(0, top / (timelineMonthHeight * maxScrollPercent));
-
-          // compensate for lost precision/rounding errors advance to the next bucket, if present
-          if (viewportTopMonthScrollPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            viewportTopMonth = timelineManager.months[i + 1].yearMonth;
-            viewportTopMonthScrollPercent = 0;
-          }
-          break;
-        }
-        top = next;
-      }
+      return;
     }
+
+    const firstMonth = timelineManager.months[0];
+    if (firstMonth && timelineManager.visibleWindow.top < firstMonth.planeTop) {
+      viewportTopMonth = 'lead-in';
+      const topSectionTop = firstMonth.planeTop - timelineManager.topSectionHeight;
+      viewportTopMonthScrollPercent =
+        timelineManager.topSectionHeight > 0
+          ? Math.max(0, (timelineManager.visibleWindow.top - topSectionTop) / timelineManager.topSectionHeight)
+          : 0;
+      return;
+    }
+
+    const lastMonth = timelineManager.months.at(-1)!;
+    const contentBottom = lastMonth.planeTop + lastMonth.height;
+    if (timelineManager.visibleWindow.top >= contentBottom && timelineManager.bottomSectionHeight > 0) {
+      viewportTopMonth = 'lead-out';
+      viewportTopMonthScrollPercent = Math.min(
+        1,
+        (timelineManager.visibleWindow.bottom - contentBottom) / timelineManager.bottomSectionHeight,
+      );
+      return;
+    }
+
+    viewportTopMonth = intersection.month.yearMonth;
+    viewportTopMonthScrollPercent = intersection.viewportTopRatioInMonth;
   };
 
   const handleSelectAsset = (asset: TimelineAsset) => {
@@ -594,6 +602,8 @@
     {viewportTopMonthScrollPercent}
     {viewportTopMonth}
     {onScrub}
+    startScrub={() => timelineManager.setScrubbing(true)}
+    stopScrub={() => timelineManager.setScrubbing(false)}
     bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
@@ -622,13 +632,13 @@
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
   bind:this={scrollableElement}
-  onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
+  onscroll={() => (timelineManager.updateSlidingWindow(), handleTimelineScroll(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}
     id="virtual-timeline"
     class:invisible
-    style:height={timelineManager.totalViewerHeight + 'px'}
+    style:height={timelineManager.planeHeight + 'px'}
   >
     <section
       bind:clientHeight={timelineManager.topSectionHeight}
@@ -636,6 +646,7 @@
       style:position="absolute"
       style:left="0"
       style:right="0"
+      style:transform={`translate3d(0,${topSectionPlaneTop}px,0)`}
     >
       {@render children?.()}
       {#if isEmpty}
@@ -646,70 +657,66 @@
 
     {#each timelineManager.months as timelineMonth (timelineMonth.viewId)}
       {@const isInOrNearViewport = timelineMonth.isInOrNearViewport}
-      {@const absoluteHeight = timelineMonth.top}
+      {@const absoluteHeight = timelineMonth.planeTop}
 
-      {#if !timelineMonth.isLoaded}
+      {#if isInOrNearViewport}
         <div
           style:height={timelineMonth.height + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton {invisible} height={timelineMonth.height} title={timelineMonth.title} />
-        </div>
-      {:else if isInOrNearViewport}
-        <div
-          class="timeline-month"
-          style:height={timelineMonth.height + 'px'}
-          style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
-          style:width="100%"
-        >
-          <Month
-            {assetInteraction}
-            {customThumbnailLayout}
-            {singleSelect}
-            {timelineMonth}
-            manager={timelineManager}
-            onTimelineDaySelect={handleGroupSelect}
-          >
-            {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
-              {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
-              {@const isAssetSelected =
-                assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
-              {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
-              <Thumbnail
-                showStackedIcon={withStacked}
-                {showArchiveIcon}
-                {asset}
-                {albumUsers}
-                {groupIndex}
-                onClick={(asset) => {
-                  if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
-                  } else {
-                    _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
-                  }
-                }}
-                onSelect={() => {
-                  if (isSelectionMode || assetInteraction.selectionActive) {
-                    assetSelectHandler(timelineManager, asset, timelineDay.getAssets(), timelineDay.groupTitle);
-                    return;
-                  }
-                  void onSelectAssets(asset);
-                }}
-                onMouseEvent={() => handleSelectAssetCandidates(asset)}
-                onPreview={isSelectionMode || assetInteraction.selectionActive
-                  ? (asset) => void navigate({ targetRoute: 'current', assetId: asset.id })
-                  : undefined}
-                selected={isAssetSelected}
-                selectionCandidate={isAssetSelectionCandidate}
-                disabled={isAssetDisabled}
-                thumbnailWidth={position.width}
-                thumbnailHeight={position.height}
-              />
-            {/snippet}
-          </Month>
+          {#if timelineMonth.isLoaded}
+            <div class="timeline-month" style:height={timelineMonth.height + 'px'} style:width="100%">
+              <Month
+                {assetInteraction}
+                {customThumbnailLayout}
+                {singleSelect}
+                {timelineMonth}
+                manager={timelineManager}
+                onTimelineDaySelect={handleGroupSelect}
+              >
+                {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}
+                  {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
+                  {@const isAssetSelected =
+                    assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
+                  {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
+                  <Thumbnail
+                    showStackedIcon={withStacked}
+                    {showArchiveIcon}
+                    {asset}
+                    {albumUsers}
+                    {groupIndex}
+                    onClick={(asset) => {
+                      if (typeof onThumbnailClick === 'function') {
+                        onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
+                      } else {
+                        _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
+                      }
+                    }}
+                    onSelect={() => {
+                      if (isSelectionMode || assetInteraction.selectionActive) {
+                        assetSelectHandler(timelineManager, asset, timelineDay.getAssets(), timelineDay.groupTitle);
+                        return;
+                      }
+                      void onSelectAssets(asset);
+                    }}
+                    onMouseEvent={() => handleSelectAssetCandidates(asset)}
+                    onPreview={isSelectionMode || assetInteraction.selectionActive
+                      ? (asset) => void navigate({ targetRoute: 'current', assetId: asset.id })
+                      : undefined}
+                    selected={isAssetSelected}
+                    selectionCandidate={isAssetSelectionCandidate}
+                    disabled={isAssetDisabled}
+                    thumbnailWidth={position.width}
+                    thumbnailHeight={position.height}
+                  />
+                {/snippet}
+              </Month>
+            </div>
+          {:else}
+            <Skeleton {invisible} height={timelineMonth.height} title={timelineMonth.title} />
+          {/if}
         </div>
       {/if}
     {/each}
@@ -719,7 +726,7 @@
       style:position="absolute"
       style:left="0"
       style:right="0"
-      style:transform={`translate3d(0,${timelineManager.topSectionHeight + timelineManager.bodySectionHeight}px,0)`}
+      style:transform={`translate3d(0,${leadoutPlaneTop}px,0)`}
     ></div>
   </section>
 </section>

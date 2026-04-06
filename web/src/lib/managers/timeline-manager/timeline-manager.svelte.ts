@@ -70,9 +70,17 @@ export class TimelineManager extends VirtualScrollManager {
   months: TimelineMonth[] = $state([]);
   albumAssets: Set<string> = new SvelteSet();
   scrubberMonths: ScrubberMonth[] = $state([]);
-  scrubberTimelineHeight: number = $state(0);
   viewportTopMonthIntersection: ViewportTopMonthIntersection | undefined;
-  limitedScroll = $derived(this.maxScrollPercent < 0.5);
+  anchorMonthIndex: number = -1;
+  anchorPlaneTop: number = VirtualScrollManager.PLANE_CENTER;
+  #recenterTimer: ReturnType<typeof setTimeout> | undefined;
+  #recentering = false;
+  #scrubbing = false;
+  limitedScroll = $derived(
+    this.months.length > 0 &&
+      this.totalViewerHeight <= VirtualScrollManager.PLANE_SIZE &&
+      this.viewportHeight > this.months.at(-1)!.height + this.bottomSectionHeight,
+  );
   initTask = new CancellableTask(
     () => {
       this.isInitialized = true;
@@ -120,6 +128,22 @@ export class TimelineManager extends VirtualScrollManager {
 
   override get scrollTop(): number {
     return this.#scrollableElement?.scrollTop ?? 0;
+  }
+
+  protected override onTopSectionHeightChanged(oldHeight: number, newHeight: number) {
+    if (this.anchorMonthIndex === -1 || this.months.length === 0) {
+      return;
+    }
+    const delta = newHeight - oldHeight;
+    const scrollTopBefore = this.scrollTop;
+    this.anchorPlaneTop += delta;
+    this.positionMonthsOnPlane();
+    // If the user is still inside the lead-in, no month content is visible to keep
+    // pinned, and shifting scrollTop would push them past the lead-in.
+    if (scrollTopBefore <= oldHeight) {
+      return;
+    }
+    this.scrollBy(delta);
   }
 
   set scrollableElement(element: HTMLElement | undefined) {
@@ -189,7 +213,7 @@ export class TimelineManager extends VirtualScrollManager {
       return 0;
     }
     const windowHeight = this.visibleWindow.bottom - this.visibleWindow.top;
-    const bottomOfMonth = month.top + month.height;
+    const bottomOfMonth = month.planeTop + month.height;
     const bottomOfMonthInViewport = bottomOfMonth - this.visibleWindow.top;
     return clamp(bottomOfMonthInViewport / windowHeight, 0, 1);
   }
@@ -198,7 +222,7 @@ export class TimelineManager extends VirtualScrollManager {
     if (!month) {
       return 0;
     }
-    return clamp((this.visibleWindow.top - month.top) / month.height, 0, 1);
+    return clamp((this.visibleWindow.top - month.planeTop) / month.height, 0, 1);
   }
 
   override updateViewportProximities() {
@@ -236,6 +260,177 @@ export class TimelineManager extends VirtualScrollManager {
         group.deferredLayout = false;
       }
     }
+  }
+
+  /**
+   * Derives every month's planeTop by walking outward from the anchor. The anchor
+   * stays pinned at anchorPlaneTop, so any height change elsewhere shifts months
+   * away from the anchor — content at the viewport-top stays stable as long as
+   * trackAnchorToViewportTop ran beforehand.
+   */
+  positionMonthsOnPlane() {
+    if (this.months.length === 0 || this.anchorMonthIndex === -1) {
+      return;
+    }
+    const anchor = this.months[this.anchorMonthIndex];
+    anchor.planeTop = this.anchorPlaneTop;
+
+    let cursorBelow = this.anchorPlaneTop + anchor.height;
+    for (let i = this.anchorMonthIndex + 1; i < this.months.length; i++) {
+      const month = this.months[i];
+      month.planeTop = cursorBelow;
+      cursorBelow += month.height;
+    }
+
+    let cursorAbove = this.anchorPlaneTop;
+    for (let i = this.anchorMonthIndex - 1; i >= 0; i--) {
+      const month = this.months[i];
+      cursorAbove -= month.height;
+      month.planeTop = cursorAbove;
+    }
+
+    const lastMonth = this.months.at(-1)!;
+    const contentBottom = lastMonth.planeTop + lastMonth.height + this.bottomSectionHeight;
+    this.planeHeight = Math.min(VirtualScrollManager.PLANE_SIZE, contentBottom);
+  }
+
+  /** Soft repoint: change the anchor month without moving any planeTop or scrollTop. */
+  trackAnchorToViewportTop() {
+    if (this.months.length === 0) {
+      return;
+    }
+    const visibleTop = this.visibleWindow.top;
+    let newAnchorIndex = -1;
+    for (let i = 0; i < this.months.length; i++) {
+      const month = this.months[i];
+      if (month.planeTop + month.height > visibleTop) {
+        newAnchorIndex = i;
+        break;
+      }
+    }
+    if (newAnchorIndex === -1 || newAnchorIndex === this.anchorMonthIndex) {
+      return;
+    }
+    this.anchorMonthIndex = newAnchorIndex;
+    this.anchorPlaneTop = this.months[newAnchorIndex].planeTop;
+  }
+
+  // Each scroll event resets this timer, so a brief pause in scrolling recenters
+  // the plane. Continuous scrolling near a plane edge bypasses it via isNearPlaneEdge.
+  static readonly RECENTER_DEBOUNCE_MS = 50;
+  static readonly PLANE_EDGE_THRESHOLD = 50_000;
+
+  #scheduleRecenter() {
+    clearTimeout(this.#recenterTimer);
+    this.#recenterTimer = setTimeout(() => {
+      this.#recenterTimer = undefined;
+      this.recenterPlane();
+    }, TimelineManager.RECENTER_DEBOUNCE_MS);
+  }
+
+  isNearPlaneEdge(): boolean {
+    return (
+      this.scrollTop < TimelineManager.PLANE_EDGE_THRESHOLD ||
+      this.scrollTop > VirtualScrollManager.PLANE_SIZE - TimelineManager.PLANE_EDGE_THRESHOLD
+    );
+  }
+
+  /**
+   * Hard repoint: slide every planeTop and scrollTop to pull the anchor back
+   * toward PLANE_CENTER, or pin month 0 to topSectionHeight when it fits.
+   */
+  recenterPlane() {
+    clearTimeout(this.#recenterTimer);
+    this.#recenterTimer = undefined;
+    if (this.#recentering || this.months.length === 0 || this.anchorMonthIndex === -1) {
+      return;
+    }
+    const viewportTopMonth = this.months[this.anchorMonthIndex];
+    if (!viewportTopMonth) {
+      return;
+    }
+
+    // Pin months[0] when the visible content still fits on the plane alongside it.
+    // Only the downward distance is checked because nothing exists above month 0.
+    // Fall back to PLANE_CENTER recycling only when month 0 no longer fits.
+    const firstMonth = this.months[0];
+    const viewportTopOffsetFromFirstMonth = viewportTopMonth.planeTop - firstMonth.planeTop + this.topSectionHeight;
+    const canPinFirstMonth =
+      viewportTopOffsetFromFirstMonth + this.viewportHeight <=
+      VirtualScrollManager.PLANE_SIZE - TimelineManager.PLANE_EDGE_THRESHOLD;
+
+    let targetMonth: TimelineMonth;
+    let targetPlaneTop: number;
+    if (canPinFirstMonth || this.anchorMonthIndex === 0) {
+      targetMonth = firstMonth;
+      targetPlaneTop = this.topSectionHeight;
+    } else {
+      targetMonth = viewportTopMonth;
+      targetPlaneTop = VirtualScrollManager.PLANE_CENTER;
+    }
+    const monthIndex = this.months.indexOf(targetMonth);
+    const delta = targetPlaneTop - targetMonth.planeTop;
+    if (delta === 0) {
+      return;
+    }
+    // Same lead-in guard as onTopSectionHeightChanged.
+    const preserveScrollTop = this.scrollTop <= this.topSectionHeight;
+    this.#recentering = true;
+    try {
+      for (const month of this.months) {
+        month.planeTop += delta;
+      }
+      this.anchorMonthIndex = monthIndex;
+      this.anchorPlaneTop = targetPlaneTop;
+      if (this.#scrollableElement && !preserveScrollTop) {
+        this.#scrollableElement.scrollTop += delta;
+      }
+      const lastMonth = this.months.at(-1)!;
+      const contentBottom = lastMonth.planeTop + lastMonth.height + this.bottomSectionHeight;
+      this.planeHeight = Math.min(VirtualScrollManager.PLANE_SIZE, contentBottom);
+      this.updateSlidingWindow();
+    } finally {
+      this.#recentering = false;
+    }
+  }
+
+  override updateSlidingWindow() {
+    super.updateSlidingWindow();
+    if (this.#recentering || this.#scrubbing) {
+      return;
+    }
+    this.trackAnchorToViewportTop();
+
+    // Continuous scroll keeps resetting the debounce timer, so if scrollTop is
+    // already near a plane edge we have to recenter immediately or risk hitting it.
+    if (this.isNearPlaneEdge()) {
+      this.recenterPlane();
+      return;
+    }
+    this.#scheduleRecenter();
+  }
+
+  setScrubbing(value: boolean) {
+    this.#scrubbing = value;
+    if (!value) {
+      this.updateSlidingWindow();
+    }
+  }
+
+  jumpToMonth({ monthIndex, fractionInMonth }: { monthIndex: number; fractionInMonth: number }) {
+    clearTimeout(this.#recenterTimer);
+    this.#recenterTimer = undefined;
+    if (this.months.length === 0) {
+      return;
+    }
+    const month = this.months[monthIndex];
+    if (!month) {
+      return;
+    }
+    this.anchorMonthIndex = monthIndex;
+    this.anchorPlaneTop = monthIndex === 0 ? this.topSectionHeight : VirtualScrollManager.PLANE_CENTER;
+    this.positionMonthsOnPlane();
+    this.scrollTo(month.planeTop + fractionInMonth * month.height);
   }
 
   async #initializeTimelineMonths() {
@@ -280,6 +475,7 @@ export class TimelineManager extends VirtualScrollManager {
   async #init(options: TimelineManagerOptions) {
     this.isInitialized = false;
     this.months = [];
+    this.anchorMonthIndex = -1;
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
       this.#options = options;
@@ -324,6 +520,13 @@ export class TimelineManager extends VirtualScrollManager {
     for (const month of this.months) {
       updateGeometry(this, month, { invalidateHeight: changedWidth });
     }
+
+    if (this.months.length > 0 && this.anchorMonthIndex === -1) {
+      this.anchorMonthIndex = 0;
+      this.anchorPlaneTop = this.topSectionHeight;
+    }
+    this.positionMonthsOnPlane();
+
     this.updateViewportProximities();
     if (changedWidth) {
       this.#createScrubberMonths();
@@ -336,9 +539,7 @@ export class TimelineManager extends VirtualScrollManager {
       year: month.yearMonth.year,
       month: month.yearMonth.month,
       title: month.title,
-      height: month.height,
     }));
-    this.scrubberTimelineHeight = this.totalViewerHeight;
   }
 
   async loadTimelineMonth(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {

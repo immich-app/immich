@@ -6,10 +6,29 @@ type LayoutOptions = {
   gap: number;
 };
 export abstract class VirtualScrollManager {
-  topSectionHeight = $state(0);
+  static readonly PLANE_SIZE = 500_000;
+  static readonly PLANE_CENTER = 250_000;
+
+  planeHeight = $state(VirtualScrollManager.PLANE_SIZE);
+  #topSectionHeight = $state(0);
   bodySectionHeight = $state(0);
   bottomSectionHeight = $state(0);
   totalViewerHeight = $derived.by(() => this.topSectionHeight + this.bodySectionHeight + this.bottomSectionHeight);
+
+  get topSectionHeight() {
+    return this.#topSectionHeight;
+  }
+
+  set topSectionHeight(value: number) {
+    if (this.#topSectionHeight === value) {
+      return;
+    }
+    const oldValue = this.#topSectionHeight;
+    this.#topSectionHeight = value;
+    this.onTopSectionHeightChanged(oldValue, value);
+  }
+
+  protected onTopSectionHeightChanged(_oldHeight: number, _newHeight: number) {}
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
