@@ -63,6 +63,7 @@ export type DatabaseBackupDeleteDto = {
 export type DatabaseBackupDto = {
     filename: string;
     filesize: number;
+    timezone?: string;
 };
 export type DatabaseBackupListResponseDto = {
     backups: DatabaseBackupDto[];

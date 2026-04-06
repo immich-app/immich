@@ -16,8 +16,6 @@
     expectedVersion: string;
   };
 
-  type BackupWithTimezone = DatabaseBackupDto & { timezone?: string };
-
   let props: Props = $props();
 
   let backups = $state(props.backups ?? []);
@@ -53,7 +51,7 @@
     const unknownDateKey = $t('unknown_date');
 
     for (const backup of backups) {
-      const timezone = (backup as BackupWithTimezone).timezone ?? DateTime.local().zoneName;
+      const timezone = backup.timezone ?? DateTime.local().zoneName;
       const dateMatch = backup.filename.match(/\d+T\d+/);
       let dateKey: string;
       let dt: DateTime;
@@ -131,7 +129,7 @@
           filename={backup.filename}
           filesize={backup.filesize}
           expectedVersion={props.expectedVersion}
-          timezone={(backup as BackupWithTimezone).timezone}
+          timezone={backup.timezone}
         />
       {/each}
     </Stack>
