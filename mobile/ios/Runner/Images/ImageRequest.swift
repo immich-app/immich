@@ -42,7 +42,7 @@ class ImageRequest {
   func onCancel() {}
 }
 
-class RequestRegistry<T: ImageRequest> {
+struct RequestRegistry<T: AnyObject & Sendable>: ~Copyable, Sendable {
   private let requests = Mutex<[Int64: T]>([:])
 
   func add(requestId: Int64, request: T) {
