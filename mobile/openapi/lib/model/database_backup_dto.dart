@@ -15,20 +15,14 @@ class DatabaseBackupDto {
   DatabaseBackupDto({
     required this.filename,
     required this.filesize,
-    this.timezone,
+    required this.timezone,
   });
 
   String filename;
 
   num filesize;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? timezone;
+  String timezone;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DatabaseBackupDto &&
@@ -41,7 +35,7 @@ class DatabaseBackupDto {
     // ignore: unnecessary_parenthesis
     (filename.hashCode) +
     (filesize.hashCode) +
-    (timezone == null ? 0 : timezone!.hashCode);
+    (timezone.hashCode);
 
   @override
   String toString() => 'DatabaseBackupDto[filename=$filename, filesize=$filesize, timezone=$timezone]';
@@ -50,11 +44,7 @@ class DatabaseBackupDto {
     final json = <String, dynamic>{};
       json[r'filename'] = this.filename;
       json[r'filesize'] = this.filesize;
-    if (this.timezone != null) {
       json[r'timezone'] = this.timezone;
-    } else {
-    //  json[r'timezone'] = null;
-    }
     return json;
   }
 
@@ -69,7 +59,7 @@ class DatabaseBackupDto {
       return DatabaseBackupDto(
         filename: mapValueOfType<String>(json, r'filename')!,
         filesize: num.parse('${json[r'filesize']}'),
-        timezone: mapValueOfType<String>(json, r'timezone'),
+        timezone: mapValueOfType<String>(json, r'timezone')!,
       );
     }
     return null;
@@ -119,6 +109,7 @@ class DatabaseBackupDto {
   static const requiredKeys = <String>{
     'filename',
     'filesize',
+    'timezone',
   };
 }
 

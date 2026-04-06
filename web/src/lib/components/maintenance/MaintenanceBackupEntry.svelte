@@ -16,7 +16,7 @@
     timezone?: string;
   };
 
-  const { filename, filesize, expectedVersion, timezone = DateTime.local().zoneName }: Props = $props();
+  const { filename, filesize, expectedVersion, timezone }: Props = $props();
 
   const filesizeText = $derived(getBytesWithUnit(filesize, 1));
 

@@ -17678,7 +17678,8 @@
         },
         "required": [
           "filename",
-          "filesize"
+          "filesize",
+          "timezone"
         ],
         "type": "object"
       },

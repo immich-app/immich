@@ -4,7 +4,7 @@ import { IsString } from 'class-validator';
 export class DatabaseBackupDto {
   filename!: string;
   filesize!: number;
-  timezone?: string;
+  timezone!: string;
 }
 
 export class DatabaseBackupListResponseDto {

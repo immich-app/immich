@@ -51,7 +51,7 @@
     const unknownDateKey = $t('unknown_date');
 
     for (const backup of backups) {
-      const timezone = backup.timezone ?? DateTime.local().zoneName;
+      const timezone = backup.timezone;
       const dateMatch = backup.filename.match(/\d+T\d+/);
       let dateKey: string;
       let dt: DateTime;
