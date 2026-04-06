@@ -44,6 +44,10 @@ const envData: EnvData = {
     server: 'server-public-key',
   },
 
+  versionCheck: {
+    url: 'https://version.immich.cloud/version',
+  },
+
   network: {
     trustedProxies: [],
   },

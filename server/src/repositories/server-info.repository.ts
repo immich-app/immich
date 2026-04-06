@@ -66,7 +66,8 @@ export class ServerInfoRepository {
 
   async getLatestRelease(): Promise<VersionResponse> {
     try {
-      const response = await fetch('https://version.immich.cloud/version');
+      const { versionCheck } = this.configRepository.getEnv();
+      const response = await fetch(versionCheck.url);
 
       if (!response.ok) {
         throw new Error(`Version check request failed with status ${response.status}: ${await response.text()}`);
