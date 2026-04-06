@@ -60,6 +60,9 @@ class Album {
   @ignore
   int remoteAssetCount = 0;
 
+  @ignore
+  int? totalSize;
+
   // getters
   @ignore
   bool get isRemote => remoteId != null;
@@ -157,6 +160,7 @@ class Album {
       activityEnabled: dto.isActivityEnabled,
     );
     a.remoteAssetCount = dto.assetCount;
+    a.totalSize = dto.totalSize;
     a.owner.value = await db.users.getById(dto.ownerId);
     if (dto.order != null) {
       a.sortOrder = dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;

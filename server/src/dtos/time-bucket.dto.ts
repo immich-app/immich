@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import type { BBoxDto } from 'src/dtos/bbox.dto';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetOrder, AssetSortField, AssetVisibility } from 'src/enum';
 import { ValidateBBox } from 'src/utils/bbox';
 import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -46,6 +46,14 @@ export class TimeBucketDto {
     optional: true,
   })
   order?: AssetOrder;
+
+  @ValidateEnum({
+    enum: AssetSortField,
+    name: 'AssetSortField',
+    description: 'Field to sort assets by (date or size)',
+    optional: true,
+  })
+  sortBy?: AssetSortField;
 
   @ValidateEnum({
     enum: AssetVisibility,

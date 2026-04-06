@@ -668,6 +668,8 @@ export type AlbumResponseDto = {
     shared: boolean;
     /** Start date (earliest asset) */
     startDate?: string;
+    /** Total size of all assets in the album in bytes */
+    totalSize?: number;
     /** Last update date */
     updatedAt: string;
 };
@@ -1730,6 +1732,8 @@ export type MetadataSearchDto = {
     rating?: number | null;
     /** Number of results to return */
     size?: number;
+    /** Field to sort assets by (date or size) */
+    sortBy?: AssetSortField;
     /** Filter by state/province name */
     state?: string | null;
     /** Filter by tag IDs */
@@ -6446,7 +6450,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, sortBy, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6455,6 +6459,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     order?: AssetOrder;
     personId?: string;
     slug?: string;
+    sortBy?: AssetSortField;
     tagId?: string;
     timeBucket: string;
     userId?: string;
@@ -6475,6 +6480,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         order,
         personId,
         slug,
+        sortBy,
         tagId,
         timeBucket,
         userId,
@@ -6489,7 +6495,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, sortBy, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6498,6 +6504,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     order?: AssetOrder;
     personId?: string;
     slug?: string;
+    sortBy?: AssetSortField;
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
@@ -6517,6 +6524,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         order,
         personId,
         slug,
+        sortBy,
         tagId,
         userId,
         visibility,
@@ -7246,6 +7254,10 @@ export enum JobName {
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
     WorkflowRun = "WorkflowRun"
+}
+export enum AssetSortField {
+    Date = "date",
+    Size = "size"
 }
 export enum SearchSuggestionType {
     Country = "country",

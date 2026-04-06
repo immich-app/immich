@@ -5,7 +5,7 @@ import { Place } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
+import { AssetOrder, AssetSortField, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
@@ -213,6 +213,14 @@ export class MetadataSearchDto extends RandomSearchDto {
     description: 'Sort order',
   })
   order?: AssetOrder;
+
+  @ValidateEnum({
+    enum: AssetSortField,
+    name: 'AssetSortField',
+    optional: true,
+    description: 'Field to sort assets by (date or size)',
+  })
+  sortBy?: AssetSortField;
 
   @ApiPropertyOptional({ type: 'number', description: 'Page number', minimum: 1 })
   @IsInt()

@@ -53,6 +53,7 @@ describe(AlbumService.name, () => {
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
+          totalSize: 0,
         },
         {
           albumId: sharedWithUserAlbum.id,
@@ -60,6 +61,7 @@ describe(AlbumService.name, () => {
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
+          totalSize: 0,
         },
       ]);
 
@@ -84,6 +86,7 @@ describe(AlbumService.name, () => {
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
+          totalSize: 0,
         },
       ]);
 
@@ -103,6 +106,7 @@ describe(AlbumService.name, () => {
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
+          totalSize: 0,
         },
       ]);
 
@@ -122,6 +126,7 @@ describe(AlbumService.name, () => {
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
+          totalSize: 0,
         },
       ]);
 
@@ -142,6 +147,7 @@ describe(AlbumService.name, () => {
         startDate: new Date('1970-01-01'),
         endDate: new Date('1970-01-01'),
         lastModifiedAssetTimestamp: new Date('1970-01-01'),
+        totalSize: 0,
       },
     ]);
 
@@ -560,6 +566,7 @@ describe(AlbumService.name, () => {
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
+          totalSize: 0,
         },
       ]);
 
@@ -580,6 +587,7 @@ describe(AlbumService.name, () => {
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
+          totalSize: 0,
         },
       ]);
 
@@ -602,6 +610,7 @@ describe(AlbumService.name, () => {
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
+          totalSize: 0,
         },
       ]);
 

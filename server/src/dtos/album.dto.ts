@@ -185,6 +185,8 @@ export class AlbumResponseDto {
   isActivityEnabled!: boolean;
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Asset sort order', optional: true })
   order?: AssetOrder;
+  @ApiPropertyOptional({ type: 'integer', description: 'Total size of all assets in the album in bytes' })
+  totalSize?: number;
 
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })

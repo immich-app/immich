@@ -102,6 +102,7 @@ export interface SearchAlbumOptions {
 
 export interface SearchOrderOptions {
   orderDirection?: 'asc' | 'desc';
+  sortBy?: 'date' | 'size';
 }
 
 export interface SearchPaginationOptions {
@@ -201,7 +202,10 @@ export class SearchRepository {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilder(this.db, options)
       .selectAll('asset')
-      .orderBy('asset.fileCreatedAt', orderDirection)
+      .$if(options.sortBy === 'size', (qb) =>
+        qb.innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId').orderBy('asset_exif.fileSizeInByte', orderDirection),
+      )
+      .$if(options.sortBy !== 'size', (qb) => qb.orderBy('asset.fileCreatedAt', orderDirection))
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();

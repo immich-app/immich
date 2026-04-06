@@ -70,6 +70,14 @@ class _AlbumSortHandlers {
     });
     return (isReverse ? sorted.reversed : sorted).toList();
   }
+
+  static const AlbumSortFn totalSize = _sortByTotalSize;
+  static List<Album> _sortByTotalSize(List<Album> albums, bool isReverse) {
+    final sorted = albums.sorted(
+      (a, b) => (a.totalSize ?? 0).compareTo(b.totalSize ?? 0),
+    );
+    return (isReverse ? sorted.reversed : sorted).toList();
+  }
 }
 
 // Store index allows us to re-arrange the values without affecting the saved prefs
@@ -79,7 +87,8 @@ enum AlbumSortMode {
   lastModified(3, "library_page_sort_last_modified", _AlbumSortHandlers.lastModified, SortOrder.desc),
   created(0, "library_page_sort_created", _AlbumSortHandlers.created, SortOrder.desc),
   mostRecent(2, "sort_recent", _AlbumSortHandlers.mostRecent, SortOrder.desc),
-  mostOldest(5, "sort_oldest", _AlbumSortHandlers.mostOldest, SortOrder.asc);
+  mostOldest(5, "sort_oldest", _AlbumSortHandlers.mostOldest, SortOrder.asc),
+  totalSize(6, "sort_size", _AlbumSortHandlers.totalSize, SortOrder.desc);
 
   final int storeIndex;
   final String label;

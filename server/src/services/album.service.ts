@@ -68,6 +68,7 @@ export class AlbumService extends BaseService {
       startDate: asDateString(albumMetadata[album.id]?.startDate ?? undefined),
       endDate: asDateString(albumMetadata[album.id]?.endDate ?? undefined),
       assetCount: albumMetadata[album.id]?.assetCount ?? 0,
+      totalSize: albumMetadata[album.id]?.totalSize ?? 0,
       // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
       lastModifiedAssetTimestamp: asDateString(albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined),
     }));
@@ -89,6 +90,7 @@ export class AlbumService extends BaseService {
       startDate: asDateString(albumMetadataForIds?.startDate ?? undefined),
       endDate: asDateString(albumMetadataForIds?.endDate ?? undefined),
       assetCount: albumMetadataForIds?.assetCount ?? 0,
+      totalSize: albumMetadataForIds?.totalSize ?? 0,
       lastModifiedAssetTimestamp: asDateString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
       contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };

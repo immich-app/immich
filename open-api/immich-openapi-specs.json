@@ -13600,6 +13600,15 @@
             }
           },
           {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort assets by (date or size)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetSortField"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -13783,6 +13792,15 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort assets by (date or size)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetSortField"
             }
           },
           {
@@ -15699,6 +15717,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "totalSize": {
+            "description": "Total size of all assets in the album in bytes",
+            "type": "integer"
+          },
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
@@ -17233,6 +17255,14 @@
           "width"
         ],
         "type": "object"
+      },
+      "AssetSortField": {
+        "description": "Field to sort assets by (date or size)",
+        "enum": [
+          "date",
+          "size"
+        ],
+        "type": "string"
       },
       "AssetStackResponseDto": {
         "properties": {
@@ -19178,6 +19208,14 @@
             "maximum": 1000,
             "minimum": 1,
             "type": "number"
+          },
+          "sortBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetSortField"
+              }
+            ],
+            "description": "Field to sort assets by (date or size)"
           },
           "state": {
             "description": "Filter by state/province name",

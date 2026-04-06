@@ -25,6 +25,7 @@ export interface AlbumAssetCount {
   startDate: Date | null;
   endDate: Date | null;
   lastModifiedAssetTimestamp: Date | null;
+  totalSize: number;
 }
 
 export interface AlbumInfoOptions {
@@ -176,12 +177,14 @@ export class AlbumRepository {
         .selectFrom('asset')
         .$call(withDefaultVisibility)
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
+        .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
         .select('album_asset.albumId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
         .select((eb) => eb.fn.max(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('endDate'))
         // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
         .select((eb) => eb.fn.max('asset.updatedAt').as('lastModifiedAssetTimestamp'))
         .select((eb) => sql<number>`${eb.fn.count('asset.id')}::int`.as('assetCount'))
+        .select((eb) => sql<number>`coalesce(${eb.fn.sum('asset_exif.fileSizeInByte')}, 0)::bigint`.as('totalSize'))
         .where('album_asset.albumId', 'in', ids)
         .where('asset.deletedAt', 'is', null)
         .groupBy('album_asset.albumId')

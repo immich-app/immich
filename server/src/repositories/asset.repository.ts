@@ -17,7 +17,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetSortField, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
@@ -88,6 +88,7 @@ interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   order?: AssetOrder;
+  sortBy?: AssetSortField;
 }
 
 export interface TimeBucketItem {
@@ -848,8 +849,14 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
-          .orderBy('asset.fileCreatedAt', order),
+          .$if(options.sortBy === AssetSortField.Size, (qb) =>
+            qb.orderBy('asset_exif.fileSizeInByte', order).orderBy('asset.fileCreatedAt', order),
+          )
+          .$if(options.sortBy !== AssetSortField.Size, (qb) =>
+            qb
+              .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
+              .orderBy('asset.fileCreatedAt', order),
+          ),
       )
       .with('agg', (qb) =>
         qb
