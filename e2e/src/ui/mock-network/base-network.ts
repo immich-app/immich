@@ -173,6 +173,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           '.mpeg',
           '.mpg',
           '.mts',
+          '.ts',
           '.vob',
           '.webm',
           '.wmv',
