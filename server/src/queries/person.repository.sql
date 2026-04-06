@@ -207,9 +207,27 @@ from
   "person"
 where
   "person"."ownerId" = $1
-  and f_unaccent ("person"."name") %> f_unaccent ($2)
+  and exists (
+    select
+    from
+      "asset_face"
+    where
+      "asset_face"."personId" = "person"."id"
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" = $2
+      and exists (
+        select
+        from
+          "asset"
+        where
+          "asset"."id" = "asset_face"."assetId"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
+      )
+  )
+  and f_unaccent ("person"."name") %>> f_unaccent ($3)
 order by
-  f_unaccent ("person"."name") <->>> f_unaccent ($3)
+  f_unaccent ("person"."name") <->>> f_unaccent ($4)
 limit
   $5
 
