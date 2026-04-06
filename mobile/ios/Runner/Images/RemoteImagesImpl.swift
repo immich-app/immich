@@ -61,34 +61,54 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 
     if let error = error {
       if (error as NSError).code == NSURLErrorCancelled {
-        return request.finish(with: ImageProcessing.cancelledResult)
+        request.finish(with: ImageProcessing.cancelledResult)
+      } else {
+        request.finish(with: .failure(error))
       }
-      return request.finish(with: .failure(error))
+      return
     }
 
     guard let data = data else {
-      return request.finish(with: .failure(PigeonError(code: "", message: "No data received", details: nil)))
+      request.finish(with: .failure(PigeonError(code: "", message: "No data received", details: nil)))
+      return
+    }
+
+    if encoded {
+      let length = data.count
+      let pointer = malloc(length)!
+      data.copyBytes(to: pointer.assumingMemoryBound(to: UInt8.self), count: length)
+      if !request.finish(with: .success([
+        "pointer": Int64(Int(bitPattern: pointer)),
+        "length": Int64(length),
+      ])) {
+        free(pointer)
+      }
+      return
     }
 
     ImageProcessing.queue.addOperation {
       if request.isCancelled { return }
 
-      // Return raw encoded bytes when requested (for animated images)
-      if encoded {
-        return request.finish(encoding: data)
-      }
-
       guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
             let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
-        return request.finish(with: .failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
+        request.finish(with: .failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
+        return
       }
 
       if request.isCancelled { return }
 
       do {
-        try request.finish(cgImage: cgImage, format: &rgbaFormat)
+        let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+        if !request.finish(with: .success([
+          "pointer": Int64(Int(bitPattern: buffer.data)),
+          "width": Int64(buffer.width),
+          "height": Int64(buffer.height),
+          "rowBytes": Int64(buffer.rowBytes),
+        ])) {
+          buffer.free()
+        }
       } catch {
-        return request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+        request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
       }
     }
   }

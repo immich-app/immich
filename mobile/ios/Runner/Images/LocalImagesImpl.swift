@@ -69,7 +69,8 @@ class LocalImageApiImpl: LocalImageApi {
 
       guard let asset = Self.requestAsset(assetId: assetId)
       else {
-        return request.finish(with: .failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
+        request.finish(with: .failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
+        return
       }
 
       if request.isCancelled { return }
@@ -92,10 +93,20 @@ class LocalImageApiImpl: LocalImageApi {
         if request.isCancelled { return }
 
         guard let data = imageData else {
-          return request.finish(with: .failure(PigeonError(code: "", message: "Could not get image data for \(assetId)", details: nil)))
+          request.finish(with: .failure(PigeonError(code: "", message: "Could not get image data for \(assetId)", details: nil)))
+          return
         }
 
-        return request.finish(encoding: data)
+        let length = data.count
+        let pointer = malloc(length)!
+        data.copyBytes(to: pointer.assumingMemoryBound(to: UInt8.self), count: length)
+        if !request.finish(with: .success([
+          "pointer": Int64(Int(bitPattern: pointer)),
+          "length": Int64(length),
+        ])) {
+          free(pointer)
+        }
+        return
       }
 
       var image: UIImage?
@@ -113,15 +124,24 @@ class LocalImageApiImpl: LocalImageApi {
 
       guard let image = image,
             let cgImage = image.cgImage else {
-        return request.finish(with: .failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
+        request.finish(with: .failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
+        return
       }
 
       if request.isCancelled { return }
 
       do {
-        try request.finish(cgImage: cgImage, format: &Self.rgbaFormat)
+        let buffer = try vImage_Buffer(cgImage: cgImage, format: Self.rgbaFormat)
+        if !request.finish(with: .success([
+          "pointer": Int64(Int(bitPattern: buffer.data)),
+          "width": Int64(buffer.width),
+          "height": Int64(buffer.height),
+          "rowBytes": Int64(buffer.rowBytes),
+        ])) {
+          buffer.free()
+        }
       } catch {
-        return request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
+        request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
       }
     }
 
