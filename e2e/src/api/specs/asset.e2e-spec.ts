@@ -1237,5 +1237,35 @@ describe('/asset', () => {
 
       expect(response.existingIds).toEqual(['test-asset-0']);
     });
+
+    it('returns trashed assets as existing to prevent infinite re-upload loop', async () => {
+      const asset = await utils.createAsset(user1.accessToken, {
+        deviceId: 'test-assets-exist-trashed',
+        deviceAssetId: 'test-asset-trashed',
+      });
+      await utils.deleteAssets(user1.accessToken, [asset.id]);
+
+      const response = await utils.checkExistingAssets(user1.accessToken, {
+        deviceId: 'test-assets-exist-trashed',
+        deviceAssetIds: ['test-asset-trashed'],
+      });
+
+      expect(response.existingIds).toEqual(['test-asset-trashed']);
+    });
+
+    it('returns hidden assets (live photo videos) as existing', async () => {
+      await utils.createAsset(user1.accessToken, {
+        deviceId: 'test-assets-exist-hidden',
+        deviceAssetId: 'test-asset-hidden',
+        visibility: AssetVisibility.Hidden,
+      });
+
+      const response = await utils.checkExistingAssets(user1.accessToken, {
+        deviceId: 'test-assets-exist-hidden',
+        deviceAssetIds: ['test-asset-hidden'],
+      });
+
+      expect(response.existingIds).toEqual(['test-asset-hidden']);
+    });
   });
 });

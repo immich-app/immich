@@ -417,8 +417,6 @@ export class AssetRepository {
       .where('deviceAssetId', 'in', deviceAssetIds)
       .where('deviceId', '=', deviceId)
       .where('ownerId', '=', asUuid(ownerId))
-      .where('visibility', '!=', AssetVisibility.Hidden)
-      .where('deletedAt', 'is', null)
       .execute();
 
     return assets.map((asset) => asset.deviceAssetId);
