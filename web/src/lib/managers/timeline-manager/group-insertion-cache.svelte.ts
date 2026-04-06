@@ -1,7 +1,7 @@
 import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
-import type { MonthGroup } from './month-group.svelte';
 import type { TimelineDay } from './timeline-day.svelte';
+import type { TimelineMonth } from './timeline-month.svelte';
 import type { TimelineAsset } from './types';
 
 export class GroupInsertionCache {
@@ -34,23 +34,23 @@ export class GroupInsertionCache {
 
   get updatedBuckets() {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const updated = new Set<MonthGroup>();
+    const updated = new Set<TimelineMonth>();
     for (const group of this.changedTimelineDays) {
-      updated.add(group.monthGroup);
+      updated.add(group.timelineMonth);
     }
     return updated;
   }
 
   get bucketsWithNewTimelineDays() {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const updated = new Set<MonthGroup>();
+    const updated = new Set<TimelineMonth>();
     for (const group of this.newTimelineDays) {
-      updated.add(group.monthGroup);
+      updated.add(group.timelineMonth);
     }
     return updated;
   }
 
-  sort(monthGroup: MonthGroup, sortOrder: AssetOrder = AssetOrder.Desc) {
+  sort(timelineMonth: TimelineMonth, sortOrder: AssetOrder = AssetOrder.Desc) {
     for (const group of this.changedTimelineDays) {
       group.sortAssets(sortOrder);
     }
@@ -58,7 +58,7 @@ export class GroupInsertionCache {
       group.sortAssets(sortOrder);
     }
     if (this.newTimelineDays.size > 0) {
-      monthGroup.sortTimelineDays();
+      timelineMonth.sortTimelineDays();
     }
   }
 }

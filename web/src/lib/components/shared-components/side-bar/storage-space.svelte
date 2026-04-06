@@ -4,38 +4,18 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { requestServerInfo } from '$lib/utils/auth';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { LoadingSpinner } from '@immich/ui';
+  import { LoadingSpinner, Meter } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-
-  let usageClasses = $state('');
 
   let hasQuota = $derived($user?.quotaSizeInBytes !== null);
   let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : userInteraction.serverInfo?.diskSizeRaw) || 0);
   let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : userInteraction.serverInfo?.diskUseRaw) || 0);
-  let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
 
-  const onUpdate = () => {
-    usageClasses = getUsageClass();
-  };
-
-  const getUsageClass = () => {
-    if (usedPercentage >= 95) {
-      return 'bg-red-500';
-    }
-
-    if (usedPercentage > 80) {
-      return 'bg-yellow-500';
-    }
-
-    return 'bg-primary';
-  };
-
-  $effect(() => {
-    if ($user) {
-      onUpdate();
-    }
-  });
+  const thresholds = [
+    { from: 0.8, className: 'bg-warning' },
+    { from: 0.95, className: 'bg-danger' },
+  ];
 
   onMount(async () => {
     if (userInteraction.serverInfo && $user) {
@@ -46,7 +26,7 @@
 </script>
 
 <div
-  class="storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ms-4 rounded-lg text-sm min-w-52"
+  class="p-4 bg-light-100 ms-4 rounded-lg text-sm min-w-52"
   title={$t('storage_usage', {
     values: {
       used: getByteUnitString(usedBytes, $locale, 3),
@@ -54,24 +34,23 @@
     },
   })}
 >
-  <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-
   {#if userInteraction.serverInfo}
-    <p class="text-gray-500 dark:text-gray-300">
-      {$t('storage_usage', {
+    <Meter
+      size="tiny"
+      class="bg-light-200"
+      containerClass="gap-2 leading-6"
+      label={$t('storage')}
+      valueLabel={$t('storage_usage', {
         values: {
           used: getByteUnitString(usedBytes, $locale),
           available: getByteUnitString(availableBytes, $locale),
         },
       })}
-    </p>
-
-    <div class="mt-4 h-1.75 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-      <div class="h-1.75 rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
-    </div>
+      value={usedBytes / availableBytes}
+      {thresholds}
+    />
   {:else}
-    <div class="mt-2">
-      <LoadingSpinner />
-    </div>
+    <p class="font-medium text-immich-dark-gray dark:text-white mb-4">{$t('storage')}</p>
+    <LoadingSpinner />
   {/if}
 </div>

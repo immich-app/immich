@@ -4,7 +4,7 @@ import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import { DatabaseLock, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VersionCheckMetadata } from 'src/types';
@@ -71,11 +71,6 @@ export class VersionService extends BaseService {
     try {
       this.logger.debug('Running version check');
 
-      const { environment } = this.configRepository.getEnv();
-      if (environment === ImmichEnvironment.Development) {
-        return JobStatus.Skipped;
-      }
-
       const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
         return JobStatus.Skipped;
@@ -91,8 +86,7 @@ export class VersionService extends BaseService {
         }
       }
 
-      const { tag_name: releaseVersion, published_at: publishedAt } =
-        await this.serverInfoRepository.getGitHubRelease();
+      const { version: releaseVersion, published_at: publishedAt } = await this.serverInfoRepository.getLatestRelease();
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VersionCheckState, metadata);

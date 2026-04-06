@@ -2,33 +2,35 @@ import Accelerate
 import Foundation
 
 class ImageRequest {
-  private let lock = UnfairLock()
-  private var _isCancelled = false
-  private var callback: ((Result<[String: Int64]?, any Error>) -> Void)?
+  private struct State {
+    var isCancelled = false
+    var callback: ((Result<[String: Int64]?, any Error>) -> Void)?
+  }
+
+  private let state: Mutex<State>
 
   var isCancelled: Bool {
-    lock.withLock { _isCancelled }
+    state.withLock { $0.isCancelled }
   }
 
   init(callback: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    self.callback = callback
+    self.state = Mutex(State(callback: callback))
   }
 
   func cancel() {
-    let cb = lock.withLock {
-      _isCancelled = true
-      defer { callback = nil }
-      return callback
-    }
-    guard cb != nil else { return }
+    guard let cb = state.withLock({
+      $0.isCancelled = true
+      defer { $0.callback = nil }
+      return $0.callback
+    }) else { return }
     onCancel()
-    cb?(ImageProcessing.cancelledResult)
+    cb(ImageProcessing.cancelledResult)
   }
 
   func finish(with result: Result<[String: Int64]?, any Error>) {
-    let cb = lock.withLock {
-      defer { callback = nil }
-      return callback
+    let cb = state.withLock {
+      defer { $0.callback = nil }
+      return $0.callback
     }
     cb?(result)
   }
@@ -65,19 +67,18 @@ class ImageRequest {
 }
 
 class RequestRegistry<T: ImageRequest> {
-  private let lock = UnfairLock()
-  private var requests = [Int64: T]()
+  private let requests = Mutex<[Int64: T]>([:])
 
   func add(requestId: Int64, request: T) {
-    lock.withLock { requests[requestId] = request }
+    requests.withLock { $0[requestId] = request }
   }
 
   func get(requestId: Int64) -> T? {
-    lock.withLock { requests[requestId] }
+    requests.withLock { $0[requestId] }
   }
 
   @discardableResult
   func remove(requestId: Int64) -> T? {
-    lock.withLock { requests.removeValue(forKey: requestId) }
+    requests.withLock { $0.removeValue(forKey: requestId) }
   }
 }

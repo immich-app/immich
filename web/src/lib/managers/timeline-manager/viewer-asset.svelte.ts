@@ -16,7 +16,7 @@ export class ViewerAsset {
       return ViewportProximity.FarFromViewport;
     }
 
-    const store = this.#group.monthGroup.timelineManager;
+    const store = this.#group.timelineMonth.timelineManager;
     const positionTop = this.#group.absoluteTimelineDayTop + this.position.top;
 
     return calculateViewerAssetViewportProximity(store, positionTop, this.position.height);

@@ -396,18 +396,18 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   assetInteraction.selectAll = true;
 
   try {
-    for (const monthGroup of timelineManager.months) {
-      if (!monthGroup.isLoaded) {
-        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+    for (const timelineMonth of timelineManager.months) {
+      if (!timelineMonth.isLoaded) {
+        await timelineManager.loadTimelineMonth(timelineMonth.yearMonth);
       }
 
       if (!assetInteraction.selectAll) {
         assetInteraction.clear();
         break; // Cancelled
       }
-      assetInteraction.selectAssets([...monthGroup.assetsIterator()]);
+      assetInteraction.selectAssets([...timelineMonth.assetsIterator()]);
 
-      for (const dateGroup of monthGroup.timelineDays) {
+      for (const dateGroup of timelineMonth.timelineDays) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
       }
     }
