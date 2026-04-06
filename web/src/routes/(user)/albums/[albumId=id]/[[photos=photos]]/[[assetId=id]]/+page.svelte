@@ -315,7 +315,6 @@
 
   const Close = $derived({
     title: $t('go_back'),
-    type: $t('command'),
     icon: mdiArrowLeft,
     onAction: handleEscape,
     $if: () => !assetViewerManager.isViewing,

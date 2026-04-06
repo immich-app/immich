@@ -129,7 +129,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const PlayMotionPhoto: ActionItem = {
     title: $t('play_motion_photo'),
     icon: mdiMotionPlayOutline,
-    type: $t('assets'),
     $if: () => !!asset.livePhotoVideoId && !assetViewerManager.isPlayingMotionPhoto,
     onAction: () => {
       assetViewerManager.isPlayingMotionPhoto = true;
@@ -139,7 +138,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const StopMotionPhoto: ActionItem = {
     title: $t('stop_motion_photo'),
     icon: mdiMotionPauseOutline,
-    type: $t('assets'),
     $if: () => !!asset.livePhotoVideoId && assetViewerManager.isPlayingMotionPhoto,
     onAction: () => {
       assetViewerManager.isPlayingMotionPhoto = false;
@@ -149,7 +147,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Favorite: ActionItem = {
     title: $t('to_favorite'),
     icon: mdiHeartOutline,
-    type: $t('assets'),
     $if: () => isOwner && !asset.isFavorite,
     onAction: () => handleFavorite(asset),
     shortcuts: [{ key: 'f' }],
@@ -158,7 +155,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Unfavorite: ActionItem = {
     title: $t('unfavorite'),
     icon: mdiHeart,
-    type: $t('assets'),
     $if: () => isOwner && asset.isFavorite,
     onAction: () => handleUnfavorite(asset),
     shortcuts: [{ key: 'f' }],
@@ -175,7 +171,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Offline: ActionItem = {
     title: $t('asset_offline'),
     icon: mdiAlertOutline,
-    type: $t('assets'),
     color: 'danger',
     $if: () => !!asset.isOffline,
     onAction: () => assetViewerManager.toggleDetailPanel(),
@@ -205,7 +200,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Info: ActionItem = {
     title: $t('info'),
     icon: mdiInformationOutline,
-    type: $t('assets'),
     $if: () => asset.hasMetadata,
     onAction: () => assetViewerManager.toggleDetailPanel(),
     shortcuts: { key: 'i' },
@@ -223,7 +217,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const TagPeople: ActionItem = {
     title: $t('tag_people'),
     icon: mdiFaceRecognition,
-    type: $t('assets'),
     $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
     onAction: () => assetViewerManager.toggleFaceEditMode(),
     shortcuts: { key: 'p' },

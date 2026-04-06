@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -22,15 +21,27 @@
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getServerConfig } from '@immich/sdk';
   import {
-    CommandPaletteDefaultProvider,
-    TooltipProvider,
+    CommandPaletteProvider,
+    defaultProvider,
     modalManager,
+    screencastManager,
+    ScreencastOverlay,
     setLocale,
     setTranslations,
+    siteCommands,
     toastManager,
+    TooltipProvider,
     type ActionItem,
   } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
+  import {
+    mdiAccountMultipleOutline,
+    mdiBookshelf,
+    mdiCog,
+    mdiKeyboard,
+    mdiServer,
+    mdiSync,
+    mdiThemeLightDark,
+  } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -139,26 +150,37 @@
     }
   };
 
-  const userCommands: ActionItem[] = [
+  const commands: ActionItem[] = [
     {
       title: $t('theme'),
       description: $t('toggle_theme_description'),
-      type: $t('command'),
       icon: mdiThemeLightDark,
       onAction: () => themeManager.toggleTheme(),
       shortcuts: { shift: true, key: 't' },
     },
+    {
+      title: $t('screencast_mode_title'),
+      description: $t('screencast_mode_description'),
+      icon: mdiKeyboard,
+      onAction: () => screencastManager.toggle(),
+    },
+    {
+      title: $t('my_immich_title'),
+      description: $t('my_immich_description'),
+      onAction: () => copyToClipboard(getMyImmichLink().toString()),
+      shortcuts: { ctrl: true, shift: true, key: 'm' },
+    },
   ];
 
-  const adminCommands: ActionItem[] = [
+  const adminPages: ActionItem[] = [
     {
-      title: $t('users'),
+      title: $t('admin.user_management'),
       description: $t('admin.users_page_description'),
       icon: mdiAccountMultipleOutline,
       onAction: () => goto(Route.users()),
     },
     {
-      title: $t('settings'),
+      title: $t('admin.system_settings'),
       description: $t('admin.settings_page_description'),
       icon: mdiCog,
       onAction: () => goto(Route.systemSettings()),
@@ -167,7 +189,6 @@
       title: $t('admin.queues'),
       description: $t('admin.queues_page_description'),
       icon: mdiSync,
-      type: $t('page'),
       onAction: () => goto(Route.queues()),
     },
     {
@@ -182,14 +203,11 @@
       icon: mdiServer,
       onAction: () => goto(Route.systemStatistics()),
     },
-  ].map((route) => ({ ...route, type: $t('page'), $if: () => authManager.user.isAdmin }));
-
-  const commands = $derived([...userCommands, ...adminCommands]);
+  ].map((route) => ({ ...route, $if: () => authManager.authenticated && authManager.user.isAdmin }));
 </script>
 
 <OnEvents {onWebsocketConnect} />
 
-<CommandPaletteDefaultProvider name="Global" actions={commands} />
 <VersionAnnouncement />
 
 <svelte:head>
@@ -231,13 +249,6 @@
   {/if}
 </svelte:head>
 
-<svelte:document
-  use:shortcut={{
-    shortcut: { ctrl: true, shift: true, key: 'm' },
-    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
-  }}
-/>
-
 <TooltipProvider>
   {#if page.data.error}
     <ErrorLayout error={page.data.error}></ErrorLayout>
@@ -251,4 +262,13 @@
 
   <DownloadPanel />
   <UploadPanel />
+  <ScreencastOverlay />
+
+  <CommandPaletteProvider
+    providers={[
+      defaultProvider({ name: $t('command'), actions: commands }),
+      defaultProvider({ name: $t('page'), actions: adminPages }),
+      defaultProvider({ name: $t('link'), actions: siteCommands }),
+    ]}
+  />
 </TooltipProvider>

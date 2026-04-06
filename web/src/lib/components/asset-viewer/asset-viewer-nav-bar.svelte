@@ -90,7 +90,6 @@
 
   const Close: ActionItem = $derived({
     title: $t('go_back'),
-    type: $t('assets'),
     icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
     $if: () => !!onClose && !assetViewerManager.isFaceEditMode,
     onAction: () => onClose?.(),
