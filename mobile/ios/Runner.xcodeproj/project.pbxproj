@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -16,6 +16,7 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		A01DD69B2F7F43B40049AB63 /* ImageRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01DD6982F7F43B40049AB63 /* ImageRequest.swift */; };
 		B21E34AA2E5AFD2B0031FDB9 /* BackgroundWorkerApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21E34A92E5AFD210031FDB9 /* BackgroundWorkerApiImpl.swift */; };
 		B21E34AC2E5B09190031FDB9 /* BackgroundWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21E34AB2E5B09100031FDB9 /* BackgroundWorker.swift */; };
 		B25D377A2E72CA15008B6CA7 /* Connectivity.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25D37782E72CA15008B6CA7 /* Connectivity.g.swift */; };
@@ -102,6 +103,7 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A01DD6982F7F43B40049AB63 /* ImageRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRequest.swift; sourceTree = "<group>"; };
 		B1FBA9EE014DE20271B0FE77 /* Pods-ShareExtension.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShareExtension.profile.xcconfig"; path = "Target Support Files/Pods-ShareExtension/Pods-ShareExtension.profile.xcconfig"; sourceTree = "<group>"; };
 		B21E34A92E5AFD210031FDB9 /* BackgroundWorkerApiImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorkerApiImpl.swift; sourceTree = "<group>"; };
 		B21E34AB2E5B09100031FDB9 /* BackgroundWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorker.swift; sourceTree = "<group>"; };
@@ -137,20 +139,23 @@
 			);
 			target = F0B57D372DF764BD00DC5BCC /* WidgetExtension */;
 		};
+		FE1BB4572F83196E0087DBF9 /* Exceptions for "Utility" folder in "Runner" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Mutex.swift,
+			);
+			target = 97C146ED1CF9000F007C117D /* Runner */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B231F52D2E93A44A00BC45D1 /* Core */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Core;
 			sourceTree = "<group>";
 		};
 		B2CF7F8C2DDE4EBB00744BF6 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Sync;
 			sourceTree = "<group>";
 		};
@@ -162,10 +167,16 @@
 			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
-		FEE084F22EC172080045228E /* Schemas */ = {
+		FE1BB4562F8319560087DBF9 /* Utility */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				FE1BB4572F83196E0087DBF9 /* Exceptions for "Utility" folder in "Runner" target */,
 			);
+			path = Utility;
+			sourceTree = "<group>";
+		};
+		FEE084F22EC172080045228E /* Schemas */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Schemas;
 			sourceTree = "<group>";
 		};
@@ -273,6 +284,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				FE1BB4562F8319560087DBF9 /* Utility */,
 				FEE084F22EC172080045228E /* Schemas */,
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B25D37792E72CA15008B6CA7 /* Connectivity */,
@@ -327,6 +339,7 @@
 		FED3B1952E253E9B0030FD97 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				A01DD6982F7F43B40049AB63 /* ImageRequest.swift */,
 				FE5FE4AD2F30FBC000A71243 /* ImageProcessing.swift */,
 				FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */,
 				FE5499F52F11980E006016CB /* LocalImagesImpl.swift */,
@@ -558,9 +571,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -590,9 +607,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -608,6 +629,7 @@
 			files = (
 				65F32F31299BD2F800CE9261 /* BackgroundServicePlugin.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				A01DD69B2F7F43B40049AB63 /* ImageRequest.swift in Sources */,
 				B21E34AC2E5B09190031FDB9 /* BackgroundWorker.swift in Sources */,
 				FE5499F32F1197D8006016CB /* LocalImages.g.swift in Sources */,
 				FE5499F62F11980E006016CB /* LocalImagesImpl.swift in Sources */,

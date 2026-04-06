@@ -14,11 +14,15 @@ class RemoteImageRequest {
     self.task = task
     self.completion = completion
   }
+
+  func cancel() {
+    isCancelled = true
+    task?.cancel()
+  }
 }
 
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
-  private static var lock = os_unfair_lock()
-  private static var requests = [Int64: RemoteImageRequest]()
+  private static let registry = RequestRegistry<RemoteImageRequest>()
   private static var rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
@@ -43,20 +47,15 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 
     let request = RemoteImageRequest(id: requestId, task: task, completion: completion)
 
-    os_unfair_lock_lock(&Self.lock)
-    Self.requests[requestId] = request
-    os_unfair_lock_unlock(&Self.lock)
+    Self.registry.add(requestId: requestId, request: request)
 
     task.resume()
   }
 
   private static func handleCompletion(requestId: Int64, encoded: Bool, data: Data?, response: URLResponse?, error: Error?) {
-    os_unfair_lock_lock(&Self.lock)
-    guard let request = requests[requestId] else {
-      return os_unfair_lock_unlock(&Self.lock)
+    guard let request = registry.remove(requestId: requestId) else {
+      return
     }
-    requests[requestId] = nil
-    os_unfair_lock_unlock(&Self.lock)
 
     if let error = error {
       if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
@@ -73,10 +72,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
-    ImageProcessing.queue.async {
-      ImageProcessing.semaphore.wait()
-      defer { ImageProcessing.semaphore.signal() }
-
+    ImageProcessing.queue.addOperation {
       if request.isCancelled {
         return request.completion(ImageProcessing.cancelledResult)
       }
@@ -130,13 +126,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   }
 
   func cancelRequest(requestId: Int64) {
-    os_unfair_lock_lock(&Self.lock)
-    let request = Self.requests[requestId]
-    os_unfair_lock_unlock(&Self.lock)
-
-    guard let request = request else { return }
-    request.isCancelled = true
-    request.task?.cancel()
+    Self.registry.remove(requestId: requestId)?.cancel()
   }
 
   func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {

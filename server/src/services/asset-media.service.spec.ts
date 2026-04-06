@@ -111,6 +111,7 @@ const validVideos = [
   '.mpg',
   '.mts',
   '.mxf',
+  '.ts',
   '.vob',
   '.webm',
   '.wmv',
