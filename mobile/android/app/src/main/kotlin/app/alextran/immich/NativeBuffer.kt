@@ -22,7 +22,7 @@ object NativeBuffer {
   external fun wrap(address: Long, capacity: Int): ByteBuffer
 
   @JvmStatic
-  external fun copy(buffer: ByteBuffer, destAddress: Long, offset: Int, length: Int)
+  external fun copy(buffer: ByteBuffer, destAddress: Long, destCapacity: Long, offset: Int, length: Int)
 
   @JvmStatic
   external fun createGlobalRef(obj: Any): Long
