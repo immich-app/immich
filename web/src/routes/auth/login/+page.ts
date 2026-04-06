@@ -1,3 +1,4 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
@@ -10,6 +11,13 @@ export const load = (async ({ parent, url }) => {
   if (!serverConfigManager.value.isInitialized) {
     // Admin not registered
     redirect(307, Route.register());
+  }
+
+  if (authManager.hasSession) {
+    await authManager.load();
+    if (authManager.authenticated && !serverConfigManager.value.maintenanceMode) {
+      redirect(307, url.searchParams.get('continue') || Route.photos());
+    }
   }
 
   const $t = await getFormatter();

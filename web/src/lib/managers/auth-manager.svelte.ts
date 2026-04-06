@@ -41,12 +41,16 @@ class AuthManager {
     return this.#preferences;
   }
 
+  get hasSession() {
+    return this.#hasAuthCookie();
+  }
+
   async load() {
     if (authManager.authenticated) {
       return;
     }
 
-    if (!this.#hasAuthCookie()) {
+    if (!this.hasSession) {
       return;
     }
 
