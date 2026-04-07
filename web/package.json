@@ -62,6 +62,7 @@
     "tabbable": "^6.2.0",
     "tailwind-merge": "^3.5.0",
     "tailwind-variants": "^3.2.2",
+    "three": "^0.183.2",
     "thumbhash": "^0.1.1",
     "transformation-matrix": "^3.1.0",
     "uplot": "^1.6.32"

@@ -851,6 +851,9 @@ importers:
       tailwind-variants:
         specifier: ^3.2.2
         version: 3.2.2(tailwind-merge@3.5.0)(tailwindcss@4.2.2)
+      three:
+        specifier: ^0.183.2
+        version: 0.183.2
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
@@ -11511,8 +11514,8 @@ packages:
   three@0.179.1:
     resolution: {integrity: sha512-5y/elSIQbrvKOISxpwXCR4sQqHtGiOI+MKLc3SsBdDXA2hz3Mdp3X59aUp8DyybMa34aeBwbFTpdoLJaUDEWSw==}
 
-  three@0.182.0:
-    resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
+  three@0.183.2:
+    resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
 
   throttleit@2.1.0:
     resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
@@ -16168,7 +16171,7 @@ snapshots:
     dependencies:
       '@photo-sphere-viewer/core': 5.14.1
       '@photo-sphere-viewer/video-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
-      three: 0.182.0
+      three: 0.183.2
 
   '@photo-sphere-viewer/markers-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
     dependencies:
@@ -16186,7 +16189,7 @@ snapshots:
   '@photo-sphere-viewer/video-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
     dependencies:
       '@photo-sphere-viewer/core': 5.14.1
-      three: 0.182.0
+      three: 0.183.2
 
   '@photostructure/tz-lookup@11.5.0': {}
 
@@ -25028,7 +25031,7 @@ snapshots:
 
   three@0.179.1: {}
 
-  three@0.182.0: {}
+  three@0.183.2: {}
 
   throttleit@2.1.0: {}
 
