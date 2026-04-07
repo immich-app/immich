@@ -85,9 +85,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       }
 
       if (syncSuccess == null) {
-        ref.read(driftBackupProvider.notifier).updateSyncing(true);
+        backupNotifier.updateSyncing(true);
         syncSuccess = await backupSyncManager.syncRemote();
-        ref.read(driftBackupProvider.notifier).updateSyncing(false);
+        backupNotifier.updateSyncing(false);
       }
 
       await backupNotifier.getBackupStatus(currentUser.id);
