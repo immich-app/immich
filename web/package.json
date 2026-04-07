@@ -89,7 +89,7 @@
     "dotenv": "^17.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-compat": "^6.0.2",
+    "eslint-plugin-compat": "^7.0.0",
     "eslint-plugin-svelte": "^3.12.4",
     "eslint-plugin-unicorn": "^63.0.0",
     "factory.ts": "^1.4.1",
