@@ -560,7 +560,7 @@ describe(LibraryService.name, () => {
         paths: ['/data/user1/photo.jpg'],
       };
 
-      mocks.asset.createAll.mockResolvedValue([asset]);
+      mocks.asset.createAll.mockResolvedValue([asset.id]);
       mocks.library.get.mockResolvedValue(library);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
