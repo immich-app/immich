@@ -18,7 +18,10 @@
     "format:fix": "prettier --cache --write --list-different .",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "lint:fix": "pnpm run lint --fix",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "screenshots": "pnpm exec playwright test --config playwright.screenshot.config.ts",
+    "screenshots:compare": "pnpm exec tsx src/screenshots/compare.ts",
+    "screenshots:analyze": "pnpm exec tsx src/screenshots/analyze-deps.ts"
   },
   "keywords": [],
   "author": "",
@@ -51,6 +54,7 @@
     "sharp": "^0.34.5",
     "socket.io-client": "^4.7.4",
     "supertest": "^7.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.28.0",
     "utimes": "^5.2.1",

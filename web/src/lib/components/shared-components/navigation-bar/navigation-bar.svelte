@@ -50,7 +50,10 @@
 
 <svelte:window bind:innerWidth />
 
-<nav id="dashboard-navbar" class="max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm">
+<nav
+  id="dashboard-navbar"
+  class="max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm bg-red-50 dark:bg-red-950"
+>
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[--spacing(32)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder
@@ -80,6 +83,7 @@
       <a data-sveltekit-preload-data="hover" href={Route.photos()}>
         <Logo variant={mediaQueryManager.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
+      <span class="text-xs font-bold text-red-500 ms-2">[VISUAL TEST]</span>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">
       <div class="hidden w-full max-w-5xl flex-1 tall:ps-0 sm:block">

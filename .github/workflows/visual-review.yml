@@ -1,0 +1,406 @@
+name: Visual Review
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions: {}
+
+jobs:
+  visual-diff:
+    name: Visual Diff Screenshots
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event.action == 'labeled' && github.event.label.name == 'visual-review') ||
+      (github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'visual-review'))
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: ./e2e
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@05e16407c0a5492138bb38139c9d9bf067b40886 # create-workflow-token-action-v1.0.1
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          token: ${{ steps.token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Determine changed web files
+        id: changed-files
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            const files = [];
+            const perPage = 100;
+            let page = 1;
+            while (true) {
+              const { data } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                per_page: perPage,
+                page,
+              });
+              files.push(...data);
+              if (data.length < perPage) break;
+              page++;
+            }
+
+            const webPrefixes = ['web/', 'i18n/', 'open-api/typescript-sdk/'];
+            const webFiles = files
+              .map(f => f.filename)
+              .filter(f => webPrefixes.some(p => f.startsWith(p)));
+
+            console.log(`Total PR files: ${files.length}`);
+            console.log(`Web-related files: ${webFiles.length}`);
+            for (const f of webFiles) {
+              console.log(`  ${f}`);
+            }
+
+            core.setOutput('files', webFiles.join('\n'));
+            core.setOutput('has_changes', webFiles.length > 0 ? 'true' : 'false');
+
+      - name: Setup pnpm
+        if: steps.changed-files.outputs.has_changes == 'true'
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+
+      - name: Setup Node
+        if: steps.changed-files.outputs.has_changes == 'true'
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version-file: './e2e/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
+
+      - name: Install e2e dependencies
+        if: steps.changed-files.outputs.has_changes == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright
+        if: steps.changed-files.outputs.has_changes == 'true'
+        run: pnpm exec playwright install chromium --only-shell
+
+      - name: Analyze affected routes
+        if: steps.changed-files.outputs.has_changes == 'true'
+        id: routes
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
+        run: |
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo "---"
+
+          ROUTES=$(echo "$CHANGED_FILES" | xargs pnpm exec tsx src/screenshots/analyze-deps.ts 2>&1 | tee /dev/stderr | grep "^  /" | sed 's/^  //' || true)
+
+          echo "routes<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$ROUTES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$ROUTES" ]; then
+            echo "has_routes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_routes=true" >> "$GITHUB_OUTPUT"
+
+            # Build the scenario filter JSON array
+            SCENARIO_NAMES=$(pnpm exec tsx -e "
+              import { getScenariosForRoutes } from './src/screenshots/page-map.ts';
+              const routes = process.argv.slice(1);
+              const scenarios = getScenariosForRoutes(routes);
+              console.log(JSON.stringify(scenarios.map(s => s.name)));
+            " $ROUTES)
+            echo "scenarios=$SCENARIO_NAMES" >> "$GITHUB_OUTPUT"
+            echo "Scenarios: $SCENARIO_NAMES"
+          fi
+
+      - name: Post initial comment
+        if: steps.changed-files.outputs.has_changes == 'true' && steps.routes.outputs.has_routes == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          AFFECTED_ROUTES: ${{ steps.routes.outputs.routes }}
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            const routes = process.env.AFFECTED_ROUTES || '';
+            const body = `## Visual Review\n\nGenerating screenshots for affected pages...\n\nAffected routes:\n\`\`\`\n${routes}\n\`\`\``;
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.data.find(c => c.body && c.body.includes('## Visual Review'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      # === Screenshot PR version ===
+      - name: Build SDK (PR)
+        if: steps.routes.outputs.has_routes == 'true'
+        run: pnpm install --frozen-lockfile && pnpm build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Build web (PR)
+        if: steps.routes.outputs.has_routes == 'true'
+        run: pnpm install --frozen-lockfile && pnpm build
+        working-directory: ./web
+
+      - name: Take screenshots (PR)
+        if: steps.routes.outputs.has_routes == 'true'
+        env:
+          PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: '1'
+          SCREENSHOT_OUTPUT_DIR: ${{ github.workspace }}/screenshots/pr
+          SCREENSHOT_SCENARIOS: ${{ steps.routes.outputs.scenarios }}
+          SCREENSHOT_BASE_URL: http://127.0.0.1:4173
+        run: |
+          # Start the preview server in background
+          cd ../web && pnpm preview --port 4173 --host 127.0.0.1 &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          for i in $(seq 1 30); do
+            if curl -s http://127.0.0.1:4173 > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          # Run screenshot tests
+          pnpm exec playwright test --config playwright.screenshot.config.ts || true
+
+          # Stop the preview server and all children (pnpm spawns vite as child)
+          kill $SERVER_PID 2>/dev/null || true
+          sleep 1
+          # Ensure port is fully released — kill any lingering vite process
+          fuser -k 4173/tcp 2>/dev/null || true
+          sleep 1
+
+      # === Screenshot base version ===
+      # Disable pnpm's verifyDepsBeforeRun for all base steps since the base
+      # checkout changes package.json files, making them mismatch the lockfile.
+      - name: Checkout base web directory
+        if: steps.routes.outputs.has_routes == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # Restore web directory from base branch
+          git checkout "$BASE_SHA" -- web/ open-api/typescript-sdk/ i18n/ || true
+          # Clear SvelteKit build cache to avoid stale artifacts from the PR build
+          rm -rf web/.svelte-kit web/build
+        working-directory: .
+
+      - name: Build SDK (base)
+        if: steps.routes.outputs.has_routes == 'true'
+        continue-on-error: true
+        id: base-sdk
+        env:
+          PNPM_VERIFY_DEPS_BEFORE_RUN: 'false'
+        run: pnpm build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Build web (base)
+        if: steps.routes.outputs.has_routes == 'true' && steps.base-sdk.outcome == 'success'
+        continue-on-error: true
+        id: base-web
+        env:
+          PNPM_VERIFY_DEPS_BEFORE_RUN: 'false'
+        run: pnpm build
+        working-directory: ./web
+
+      - name: Take screenshots (base)
+        if: steps.routes.outputs.has_routes == 'true' && steps.base-web.outcome == 'success'
+        env:
+          PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: '1'
+          SCREENSHOT_OUTPUT_DIR: ${{ github.workspace }}/screenshots/base
+          SCREENSHOT_SCENARIOS: ${{ steps.routes.outputs.scenarios }}
+          SCREENSHOT_BASE_URL: http://127.0.0.1:4173
+          PNPM_VERIFY_DEPS_BEFORE_RUN: 'false'
+        run: |
+          # Kill any process still on port 4173 from the PR step
+          fuser -k 4173/tcp 2>/dev/null || true
+          sleep 1
+
+          # Start the preview server in background
+          cd ../web && pnpm preview --port 4173 --host 127.0.0.1 &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          for i in $(seq 1 30); do
+            if curl -s http://127.0.0.1:4173 > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          # Run screenshot tests
+          pnpm exec playwright test --config playwright.screenshot.config.ts || true
+
+          # Stop the preview server
+          kill $SERVER_PID 2>/dev/null || true
+          fuser -k 4173/tcp 2>/dev/null || true
+
+      - name: Restore PR source
+        if: steps.routes.outputs.has_routes == 'true'
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git checkout "$HEAD_SHA" -- web/ open-api/typescript-sdk/ i18n/ || true
+        working-directory: .
+
+      # === Compare and report ===
+      - name: Compare screenshots
+        if: steps.routes.outputs.has_routes == 'true'
+        env:
+          WORKSPACE_DIR: ${{ github.workspace }}
+        run: |
+          # Ensure directories exist even if base screenshots were skipped
+          mkdir -p "$WORKSPACE_DIR/screenshots/base" "$WORKSPACE_DIR/screenshots/pr" "$WORKSPACE_DIR/screenshots/diff"
+          pnpm exec tsx src/screenshots/compare.ts \
+            "$WORKSPACE_DIR/screenshots/base" \
+            "$WORKSPACE_DIR/screenshots/pr" \
+            "$WORKSPACE_DIR/screenshots/diff"
+
+      - name: Upload screenshot artifacts
+        if: steps.routes.outputs.has_routes == 'true'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: visual-review-screenshots
+          path: screenshots/
+          retention-days: 14
+
+      - name: Upload HTML report
+        if: steps.routes.outputs.has_routes == 'true'
+        id: html-report
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          path: screenshots/diff/visual-review.html
+          archive: false
+          retention-days: 14
+
+      - name: Post comparison results
+        if: steps.routes.outputs.has_routes == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          REPORT_URL: ${{ steps.html-report.outputs.artifact-url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const reportPath = path.join(process.env.GITHUB_WORKSPACE, 'screenshots', 'diff', 'report.md');
+
+            let body;
+            try {
+              body = fs.readFileSync(reportPath, 'utf8');
+            } catch {
+              body = '## Visual Review\n\nScreenshot comparison failed. Check the workflow artifacts for details.';
+            }
+
+            // Append links to the HTML report artifact and workflow run
+            const reportUrl = process.env.REPORT_URL;
+            const runUrl = process.env.RUN_URL;
+            body += '\n---\n';
+            if (reportUrl) {
+              body += `[View full visual comparison](${reportUrl}) | `;
+            }
+            body += `[Download all screenshots](${runUrl}#artifacts)\n`;
+
+            // Find and update existing comment or create new one
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(c =>
+              c.body && c.body.includes('## Visual Review')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: No web changes
+        if: steps.changed-files.outputs.has_changes != 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            const body = '## Visual Review\n\nNo web-related file changes detected in this PR. Visual review not needed.';
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.data.find(c => c.body && c.body.includes('## Visual Review'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body,
+              });
+            }
+
+      - name: No affected routes
+        if: steps.changed-files.outputs.has_changes == 'true' && steps.routes.outputs.has_routes != 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            const body = '## Visual Review\n\nChanged files don\'t affect any pages with screenshot scenarios configured.\nTo add coverage, define new scenarios in `e2e/src/screenshots/page-map.ts`.';
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.data.find(c => c.body && c.body.includes('## Visual Review'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body,
+              });
+            }

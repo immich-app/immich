@@ -10,6 +10,27 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
       path: '/',
     },
   ]);
+
+  // Block socket.io connections — these are persistent WebSocket connections
+  // that prevent networkidle from resolving since there's no real server.
+  await context.route('**/api/socket.io**', async (route) => {
+    return route.abort('connectionrefused');
+  });
+
+  // Catch-all for any /api/ endpoint not explicitly mocked below.
+  // Registered FIRST so specific routes (registered after) take priority
+  // (Playwright checks routes in reverse registration order).
+  // Without this, unmocked API calls hit the static preview server which
+  // either hangs or returns HTML, preventing networkidle and causing timeouts.
+  await context.route('**/api/**', async (route) => {
+    const method = route.request().method();
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: method === 'GET' ? [] : {},
+    });
+  });
+
   await context.route('**/api/users/me', async (route) => {
     return route.fulfill({
       status: 200,
