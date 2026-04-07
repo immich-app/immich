@@ -1580,6 +1580,8 @@
   "merge_people_prompt": "Do you want to merge these people? This action is irreversible.",
   "merge_people_successfully": "Merge people successfully",
   "merged_people_count": "Merged {count, plural, one {# person} other {# people}}",
+  "minFaces": "Minimum faces",
+  "minFaces_description": "The minimum number of recognized faces for a person to be displayed",
   "minimize": "Minimize",
   "minute": "Minute",
   "minutes": "Minutes",
