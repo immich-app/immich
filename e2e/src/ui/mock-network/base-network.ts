@@ -1,5 +1,5 @@
 import { BrowserContext } from '@playwright/test';
-import { playwrightHost } from 'playwright.config';
+import { playwrightHost } from 'src/../playwright.config';
 
 export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserId: string) => {
   await context.addCookies([

@@ -19,8 +19,9 @@
     "preserveWatchOutput": true,
     "paths": {
       "src/*": ["./src/*"],
+      "test/*": ["./test/*"]
     },
-    "baseUrl": "./",
+    "rootDir": ".",
     "jsx": "react",
     "types": ["vitest/globals"],
     "noErrorTruncation": true
