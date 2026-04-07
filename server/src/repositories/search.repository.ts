@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
