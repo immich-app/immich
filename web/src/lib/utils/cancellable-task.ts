@@ -64,12 +64,8 @@ export class CancellableTask {
       if (this.cancellable && !cancellable) {
         this.cancellable = cancellable;
       }
-      try {
-        await this.complete;
-        return 'WAITED';
-      } catch {
-        return 'CANCELED';
-      }
+      await this.complete;
+      return 'WAITED';
     }
     this.cancellable = cancellable;
     const cancelToken = (this.cancelToken = new AbortController());
@@ -90,9 +86,7 @@ export class CancellableTask {
       this.#transitionToErrored(error);
       return 'ERRORED';
     } finally {
-      if (this.cancelToken === cancelToken) {
-        this.cancelToken = null;
-      }
+      this.cancelToken = null;
     }
   }
 
