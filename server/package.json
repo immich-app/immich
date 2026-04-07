@@ -167,7 +167,7 @@
     "supertest": "^7.1.0",
     "tailwindcss": "^3.4.0",
     "testcontainers": "^11.0.0",
-    "typescript": "^5.9.2",
+    "typescript": "^6.0.0",
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",
     "vite-tsconfig-paths": "^6.0.0",

@@ -40,7 +40,7 @@
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
     "prettier": "^3.7.4",
-    "typescript": "^5.1.6"
+    "typescript": "^6.0.0"
   },
   "browserslist": {
     "production": [
