@@ -692,6 +692,24 @@ describe(AssetMediaService.name, () => {
       );
       expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(asset.id, AssetFileType.Thumbnail, true);
     });
+
+    it('should not include original filename if requested using a shared link with showExif false', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+
+      const auth = AuthFactory.from().sharedLink({ showExif: false }).build();
+
+      await expect(sut.viewThumbnail(auth, asset.id, { size: AssetMediaSize.PREVIEW })).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.files[0].path,
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: `${asset.id}_preview.jpg`,
+        }),
+      );
+    });
   });
 
   describe('playbackVideo', () => {
