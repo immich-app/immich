@@ -380,8 +380,10 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
-  createAll(assets: Insertable<AssetTable>[]) {
-    return this.db.insertInto('asset').values(assets).returningAll().execute();
+  @ChunkedArray({ chunkSize: 4000 })
+  async createAll(assets: Insertable<AssetTable>[]) {
+    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    return ids.map(({ id }) => id);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })
