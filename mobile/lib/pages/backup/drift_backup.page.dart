@@ -45,14 +45,17 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+      final backupNotifier = ref.read(driftBackupProvider.notifier);
+      final syncManager = ref.read(backgroundSyncProvider);
 
-      ref.read(driftBackupProvider.notifier).updateSyncing(true);
-      syncSuccess = await ref.read(backgroundSyncProvider).syncRemote();
-      ref.read(driftBackupProvider.notifier).updateSyncing(false);
+      await backupNotifier.getBackupStatus(currentUser.id);
+
+      backupNotifier.updateSyncing(true);
+      syncSuccess = await syncManager.syncRemote();
+      backupNotifier.updateSyncing(false);
 
       if (mounted) {
-        await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+        await backupNotifier.getBackupStatus(currentUser.id);
       }
     });
   }
