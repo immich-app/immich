@@ -567,6 +567,23 @@ describe(AssetMediaService.name, () => {
         }),
       );
     });
+
+    it('should use a generic filename when downloading via a shared link with showExif=false', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await expect(
+        sut.downloadOriginal(AuthFactory.from().sharedLink({ showExif: false }).build(), asset.id, {}),
+      ).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.originalPath,
+          fileName: 'photo.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      );
+    });
   });
 
   describe('viewThumbnail', () => {
@@ -691,6 +708,24 @@ describe(AssetMediaService.name, () => {
         }),
       );
       expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(asset.id, AssetFileType.Thumbnail, true);
+    });
+
+    it('should use a generic filename when viewing via a shared link with showExif=false', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail }).build();
+      mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+      await expect(
+        sut.viewThumbnail(AuthFactory.from().sharedLink({ showExif: false }).build(), asset.id, {
+          size: AssetMediaSize.THUMBNAIL,
+        }),
+      ).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.files[0].path,
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: 'photo_thumbnail.jpg',
+        }),
+      );
     });
   });
 
