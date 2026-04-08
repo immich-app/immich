@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
 import { defaults } from 'src/config';
 import { serverVersion } from 'src/constants';
-import { JobName, JobStatus, SystemMetadataKey } from 'src/enum';
+import { CronJob, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -18,6 +18,8 @@ describe(VersionService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(VersionService));
+    mocks.cron.create.mockResolvedValue();
+    mocks.cron.update.mockResolvedValue();
   });
 
   it('should work', () => {
@@ -43,6 +45,20 @@ describe(VersionService.name, () => {
       });
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
       expect(mocks.versionHistory.create).not.toHaveBeenCalled();
+    });
+
+    it('should create a version check cron job', async () => {
+      mocks.versionHistory.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: serverVersion.toString(),
+      });
+      await sut.onBootstrap();
+      expect(mocks.cron.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: CronJob.VersionCheck,
+        }),
+      );
     });
   });
 
@@ -72,25 +88,13 @@ describe(VersionService.name, () => {
   });
 
   describe('handVersionCheck', () => {
-    it('should not run if the last check was < 60 minutes ago', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({
-        checkedAt: DateTime.utc().minus({ minutes: 5 }).toISO(),
-        releaseVersion: '1.0.0',
-      });
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
-    });
-
     it('should not run if version check is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
     });
 
-    it('should run if it has been > 60 minutes', async () => {
+    it('should run and notify if a new version is available', async () => {
       mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse('v100.0.0'));
-      mocks.systemMetadata.get.mockResolvedValue({
-        checkedAt: DateTime.utc().minus({ minutes: 65 }).toISO(),
-        releaseVersion: '1.0.0',
-      });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
       expect(mocks.systemMetadata.set).toHaveBeenCalled();
       expect(mocks.logger.log).toHaveBeenCalled();
