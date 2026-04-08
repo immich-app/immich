@@ -36,7 +36,9 @@ export class MaintenanceHealthRepository {
         }
       });
 
-      worker.on('exit', (code, signal) => reject(new Error(`Server health check failed, server exited with ${signal ?? code}`)));
+      worker.on('exit', (code, signal) =>
+        reject(new Error(`Server health check failed, server exited with ${signal ?? code}`)),
+      );
       worker.on('error', (error) => reject(new Error(`Server health check failed, process threw: ${error}`)));
 
       setTimeout(() => {
