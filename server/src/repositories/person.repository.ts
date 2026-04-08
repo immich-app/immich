@@ -313,7 +313,7 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .where('person.ownerId', '=', userId)
-      .where(() => sql`f_unaccent("person"."name") %>> f_unaccent(${personName})`)
+      .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)
       .orderBy(sql`f_unaccent("person"."name") <->>> f_unaccent(${personName})`)
       .limit(100)
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))

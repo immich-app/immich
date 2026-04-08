@@ -201,7 +201,7 @@ from
   "person"
 where
   "person"."ownerId" = $1
-  and f_unaccent ("person"."name") %>> f_unaccent ($2)
+  and f_unaccent ("person"."name") %> f_unaccent ($2)
 order by
   f_unaccent ("person"."name") <->>> f_unaccent ($3)
 limit
