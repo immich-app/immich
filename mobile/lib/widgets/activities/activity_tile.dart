@@ -6,7 +6,6 @@ import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class ActivityTile extends HookConsumerWidget {
@@ -17,11 +16,10 @@ class ActivityTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetProvider);
     final isLike = activity.type == ActivityType.like;
     // Asset thumbnail is displayed when we are accessing activities from the album page
     // currentAssetProvider will not be set until we open the gallery viewer
-    final showAssetThumbnail = asset == null && activity.assetId != null && !isBottomSheet;
+    final showAssetThumbnail = activity.assetId != null && !isBottomSheet;
 
     onTap() async {
       final activityService = ref.read(activityServiceProvider);

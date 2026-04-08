@@ -5,15 +5,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
-import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -50,39 +45,9 @@ class AssetMediaRepository {
     return PhotoManager.editor.deleteWithIds(ids);
   }
 
-  Future<asset_entity.Asset?> get(String id) async {
+  Future<AssetEntity?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
-    return toAsset(entity);
-  }
-
-  static asset_entity.Asset? toAsset(AssetEntity? local) {
-    if (local == null) return null;
-
-    final asset_entity.Asset asset = asset_entity.Asset(
-      checksum: "",
-      localId: local.id,
-      ownerId: fastHash(Store.get(StoreKey.currentUser).id),
-      fileCreatedAt: local.createDateTime,
-      fileModifiedAt: local.modifiedDateTime,
-      updatedAt: local.modifiedDateTime,
-      durationInSeconds: local.duration,
-      type: asset_entity.AssetType.values[local.typeInt],
-      fileName: local.title!,
-      width: local.width,
-      height: local.height,
-      isFavorite: local.isFavorite,
-    );
-
-    if (asset.fileCreatedAt.year == 1970) {
-      asset.fileCreatedAt = asset.fileModifiedAt;
-    }
-
-    if (local.latitude != null) {
-      asset.exifInfo = ExifInfo(latitude: local.latitude, longitude: local.longitude);
-    }
-
-    asset.local = local;
-    return asset;
+    return entity;
   }
 
   Future<String?> getOriginalFilename(String id) async {

@@ -5,28 +5,18 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/services/background.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
 
@@ -87,43 +77,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final endpoint = await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
       _log.info("Using server URL: $endpoint");
 
-      if (!Store.isBetaTimelineEnabled) {
-        final permission = _ref.watch(galleryPermissionNotifier);
-        if (permission.isGranted || permission.isLimited) {
-          await _ref.read(backupProvider.notifier).resumeBackup();
-          await _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-        }
-      }
-
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
     }
 
-    if (!Store.isBetaTimelineEnabled) {
-      switch (_ref.read(tabProvider)) {
-        case TabEnum.home:
-          await _ref.read(assetProvider.notifier).getAllAsset();
-
-        case TabEnum.albums:
-          await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
-
-        case TabEnum.library:
-        case TabEnum.search:
-          break;
-      }
-    } else {
-      _ref.read(websocketProvider.notifier).connect();
-      await _handleBetaTimelineResume();
-    }
+    _ref.read(websocketProvider.notifier).connect();
+    await _handleBetaTimelineResume();
 
     await _ref.read(notificationPermissionProvider.notifier).getNotificationPermission();
 
     await _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
-
-    if (!Store.isBetaTimelineEnabled) {
-      await _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
-
-      _ref.invalidate(memoryFutureProvider);
-    }
   }
 
   Future<void> _safeRun(Future<void> action, String debugName) async {
@@ -139,7 +101,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 
   Future<void> _handleBetaTimelineResume() async {
-    _ref.read(backupProvider.notifier).cancelBackup();
     unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
 
     // Give isolates time to complete any ongoing database transactions
@@ -218,9 +179,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     _pauseOperation = Completer<void>();
 
     try {
-      if (Store.isBetaTimelineEnabled) {
-        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
-      }
+      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
       await _performPause();
     } catch (e, stackTrace) {
       _log.severe("Error during app pause", e, stackTrace);
@@ -234,14 +193,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      if (!Store.isBetaTimelineEnabled) {
-        // Do not cancel backup if manual upload is in progress
-        if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
-          _ref.read(backupProvider.notifier).cancelBackup();
-        }
-      } else {
-        _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
-      }
+      _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
 
       _ref.read(websocketProvider.notifier).disconnect();
     }
@@ -252,9 +204,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
 
-    if (Store.isBetaTimelineEnabled) {
-      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
-    }
+    unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
 
     // Flush logs before closing database
     try {
@@ -267,15 +217,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (isar != null && isar.isOpen) {
         await isar.close();
       }
-    } catch (_) {}
-
-    if (Store.isBetaTimelineEnabled) {
-      return;
-    }
-
-    // no guarantee this is called at all
-    try {
-      _ref.read(manualUploadProvider.notifier).cancelBackup();
     } catch (_) {}
   }
 

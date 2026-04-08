@@ -25,10 +25,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final actionProvider = NotifierProvider<ActionNotifier, void>(
-  ActionNotifier.new,
-  dependencies: [multiSelectProvider, timelineServiceProvider],
-);
+final actionProvider = NotifierProvider<ActionNotifier, void>(ActionNotifier.new, dependencies: [multiSelectProvider]);
 
 class ActionResult {
   final int count;

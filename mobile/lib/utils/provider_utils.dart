@@ -7,7 +7,6 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/person_api.repository.dart';
-import 'package:immich_mobile/repositories/timeline.repository.dart';
 
 void invalidateAllApiRepositoryProviders(WidgetRef ref) {
   ref.invalidate(userApiRepositoryProvider);
@@ -16,7 +15,6 @@ void invalidateAllApiRepositoryProviders(WidgetRef ref) {
   ref.invalidate(albumApiRepositoryProvider);
   ref.invalidate(personApiRepositoryProvider);
   ref.invalidate(assetApiRepositoryProvider);
-  ref.invalidate(timelineRepositoryProvider);
   ref.invalidate(searchApiRepositoryProvider);
 
   // Drift

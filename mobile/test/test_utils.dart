@@ -6,18 +6,6 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as domain;
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/android_device_asset.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
-import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'mock_http_override.dart';
@@ -29,42 +17,6 @@ class ListenerMock<T> extends Mock {
 
 abstract final class TestUtils {
   const TestUtils._();
-
-  /// Downloads Isar binaries (if required) and initializes a new Isar db
-  static Future<Isar> initIsar() async {
-    await Isar.initializeIsarCore(download: true);
-
-    final instance = Isar.getInstance();
-    if (instance != null) {
-      return instance;
-    }
-
-    final db = await Isar.open(
-      [
-        StoreValueSchema,
-        ExifInfoSchema,
-        AssetSchema,
-        AlbumSchema,
-        UserSchema,
-        BackupAlbumSchema,
-        DuplicatedAssetSchema,
-        ETagSchema,
-        AndroidDeviceAssetSchema,
-        IOSDeviceAssetSchema,
-        DeviceAssetEntitySchema,
-      ],
-      directory: "test/",
-      maxSizeMiB: 1024,
-      inspector: false,
-    );
-
-    // Clear and close db on test end
-    addTearDown(() async {
-      await db.writeTxn(() async => await db.clear());
-      await db.close();
-    });
-    return db;
-  }
 
   /// Creates a new ProviderContainer to test Riverpod providers
   static ProviderContainer createContainer({

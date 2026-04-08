@@ -1,18 +1,13 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
@@ -76,7 +71,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
-  final Debouncer _debounce = Debouncer(interval: const Duration(milliseconds: 500));
 
   final Debouncer _batchDebouncer = Debouncer(
     interval: const Duration(seconds: 5),
@@ -128,19 +122,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
         });
 
-        if (!Store.isBetaTimelineEnabled) {
-          socket.on('on_upload_success', _handleOnUploadSuccess);
-          socket.on('on_asset_delete', _handleOnAssetDelete);
-          socket.on('on_asset_trash', _handleOnAssetTrash);
-          socket.on('on_asset_restore', _handleServerUpdates);
-          socket.on('on_asset_update', _handleServerUpdates);
-          socket.on('on_asset_stack_update', _handleServerUpdates);
-          socket.on('on_asset_hidden', _handleOnAssetHidden);
-        } else {
-          socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
-          socket.on('AssetEditReadyV1', _handleSyncAssetEditReady);
-        }
-
+        socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+        socket.on('AssetEditReadyV1', _handleSyncAssetEditReady);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
@@ -285,21 +268,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _ref.read(serverInfoProvider.notifier).getServerFeatures();
     _ref.read(serverInfoProvider.notifier).getServerConfig();
   }
-
-  // Refresh updated assets
-  void _handleServerUpdates(dynamic _) {
-    _ref.read(assetProvider.notifier).getAllAsset();
-  }
-
-  void _handleOnUploadSuccess(dynamic data) => addPendingChange(PendingAction.assetUploaded, data);
-
-  void _handleOnAssetDelete(dynamic data) => addPendingChange(PendingAction.assetDelete, data);
-
-  void _handleOnAssetTrash(dynamic data) {
-    addPendingChange(PendingAction.assetTrash, data);
-  }
-
-  void _handleOnAssetHidden(dynamic data) => addPendingChange(PendingAction.assetHidden, data);
 
   _handleReleaseUpdates(dynamic data) {
     // Json guard
