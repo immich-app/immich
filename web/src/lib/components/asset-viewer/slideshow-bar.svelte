@@ -85,6 +85,7 @@
   });
 
   onDestroy(() => {
+    setCursorStyle('');
     if (unsubscribeRestart) {
       unsubscribeRestart();
     }

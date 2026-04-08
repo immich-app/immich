@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.6.3
+ * 2.7.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -63,6 +63,7 @@ export type DatabaseBackupDeleteDto = {
 export type DatabaseBackupDto = {
     filename: string;
     filesize: number;
+    timezone: string;
 };
 export type DatabaseBackupListResponseDto = {
     backups: DatabaseBackupDto[];
