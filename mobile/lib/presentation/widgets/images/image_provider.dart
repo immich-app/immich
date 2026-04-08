@@ -19,6 +19,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   static final _log = Logger('CancellableImageProviderMixin');
 
   bool isCancelled = false;
+  bool isFinished = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
 
@@ -53,13 +54,15 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {bool evictOnError = true}) async* {
     if (isCancelled) {
       this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     try {
       final image = await request.load(decode);
-      if ((image == null && evictOnError) || isCancelled) {
+      if (isCancelled) {
+        return;
+      }
+      if (image == null && evictOnError) {
         PaintingBinding.instance.imageCache.evict(this);
         return;
       } else if (image == null) {
@@ -67,6 +70,9 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       }
       yield image;
     } catch (e, stack) {
+      if (isCancelled) {
+        return;
+      }
       if (evictOnError) {
         PaintingBinding.instance.imageCache.evict(this);
         rethrow;
@@ -80,20 +86,24 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
     if (isCancelled) {
       this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
       return null;
     }
 
     try {
       final codec = await request.loadCodec();
-      if (codec == null || isCancelled) {
+      if (isCancelled) {
         codec?.dispose();
+        return null;
+      }
+      if (codec == null) {
         PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
       return codec;
     } catch (e) {
-      PaintingBinding.instance.imageCache.evict(this);
+      if (!isCancelled) {
+        PaintingBinding.instance.imageCache.evict(this);
+      }
       rethrow;
     } finally {
       this.request = null;
@@ -121,6 +131,8 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   @override
   void cancel() {
     isCancelled = true;
+    final hasActiveWork = !isFinished;
+
     final request = this.request;
     if (request != null) {
       this.request = null;
@@ -131,6 +143,10 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     if (operation != null) {
       cachedOperation = null;
       operation.cancel();
+    }
+
+    if (hasActiveWork) {
+      PaintingBinding.instance.imageCache.evict(this);
     }
   }
 }

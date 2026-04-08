@@ -105,7 +105,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -116,23 +115,23 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* loadRequest(previewRequest, decode, evictOnError: !loadOriginal);
 
     if (!loadOriginal) {
+      isFinished = true;
       return;
     }
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
     yield* loadRequest(originalRequest, decode);
+    isFinished = true;
   }
 
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -142,7 +141,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* loadRequest(previewRequest, decode, evictOnError: false);
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -150,9 +148,13 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
     final codec = await loadCodecRequest(originalRequest);
     if (codec == null) {
+      if (isCancelled) {
+        return;
+      }
       throw StateError('Failed to load animated codec for asset ${key.assetId}');
     }
     yield codec;
+    isFinished = true;
   }
 
   @override

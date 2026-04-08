@@ -100,7 +100,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -113,24 +112,24 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* loadRequest(request, decode);
 
     if (!Store.get(StoreKey.loadOriginal, false)) {
+      isFinished = true;
       return;
     }
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
     yield* loadRequest(request, decode);
+    isFinished = true;
   }
 
   Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -143,7 +142,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* loadRequest(previewRequest, decode);
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -151,9 +149,11 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
     final codec = await loadCodecRequest(originalRequest);
     if (codec == null) {
+      if (isCancelled) return;
       throw StateError('Failed to load animated codec for local asset ${key.id}');
     }
     yield codec;
+    isFinished = true;
   }
 
   @override
