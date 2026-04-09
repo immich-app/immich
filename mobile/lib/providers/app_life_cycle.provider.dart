@@ -15,7 +15,6 @@ import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
 enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
@@ -209,14 +208,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // Flush logs before closing database
     try {
       await LogService.I.flush();
-    } catch (_) {}
-
-    // Close Isar database safely
-    try {
-      final isar = Isar.getInstance();
-      if (isar != null && isar.isOpen) {
-        await isar.close();
-      }
     } catch (_) {}
   }
 

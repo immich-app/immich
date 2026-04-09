@@ -4,33 +4,12 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as domain;
-import 'package:mocktail/mocktail.dart';
 
 import 'mock_http_override.dart';
 
-// Listener Mock to test when a provider notifies its listeners
-class ListenerMock<T> extends Mock {
-  void call(T? previous, T next);
-}
-
 abstract final class TestUtils {
   const TestUtils._();
-
-  /// Creates a new ProviderContainer to test Riverpod providers
-  static ProviderContainer createContainer({
-    ProviderContainer? parent,
-    List<Override> overrides = const [],
-    List<ProviderObserver>? observers,
-  }) {
-    final container = ProviderContainer(parent: parent, overrides: overrides, observers: observers);
-
-    // Dispose on test end
-    addTearDown(container.dispose);
-
-    return container;
-  }
 
   static void init() {
     // Turn off easy localization logging

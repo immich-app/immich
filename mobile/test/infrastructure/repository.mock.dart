@@ -1,5 +1,4 @@
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/device_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
@@ -19,8 +18,6 @@ import 'package:mocktail/mocktail.dart';
 class MockDriftStoreRepository extends Mock implements DriftStoreRepository {}
 
 class MockLogRepository extends Mock implements LogRepository {}
-
-class MockDeviceAssetRepository extends Mock implements IsarDeviceAssetRepository {}
 
 class MockSyncStreamRepository extends Mock implements SyncStreamRepository {}
 

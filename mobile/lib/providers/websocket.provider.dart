@@ -14,42 +14,14 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-enum PendingAction { assetDelete, assetUploaded, assetHidden, assetTrash }
-
-class PendingChange {
-  final String id;
-  final PendingAction action;
-  final dynamic value;
-
-  const PendingChange(this.id, this.action, this.value);
-
-  @override
-  String toString() => 'PendingChange(id: $id, action: $action, value: $value)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is PendingChange && other.id == id && other.action == action;
-  }
-
-  @override
-  int get hashCode => id.hashCode ^ action.hashCode;
-}
-
 class WebsocketState {
   final Socket? socket;
   final bool isConnected;
-  final List<PendingChange> pendingChanges;
 
-  const WebsocketState({this.socket, required this.isConnected, required this.pendingChanges});
+  const WebsocketState({this.socket, required this.isConnected});
 
-  WebsocketState copyWith({Socket? socket, bool? isConnected, List<PendingChange>? pendingChanges}) {
-    return WebsocketState(
-      socket: socket ?? this.socket,
-      isConnected: isConnected ?? this.isConnected,
-      pendingChanges: pendingChanges ?? this.pendingChanges,
-    );
+  WebsocketState copyWith({Socket? socket, bool? isConnected}) {
+    return WebsocketState(socket: socket ?? this.socket, isConnected: isConnected ?? this.isConnected);
   }
 
   @override
@@ -67,7 +39,7 @@ class WebsocketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
-  WebsocketNotifier(this._ref) : super(const WebsocketState(socket: null, isConnected: false, pendingChanges: []));
+  WebsocketNotifier(this._ref) : super(const WebsocketState(socket: null, isConnected: false));
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
@@ -109,17 +81,17 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
-          state = WebsocketState(isConnected: true, socket: socket, pendingChanges: state.pendingChanges);
+          state = WebsocketState(isConnected: true, socket: socket);
         });
 
         socket.onDisconnect((_) {
           dPrint(() => "Disconnect to Websocket Connection");
-          state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
+          state = const WebsocketState(isConnected: false, socket: null);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
+          state = const WebsocketState(isConnected: false, socket: null);
         });
 
         socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
@@ -138,7 +110,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _batchedAssetUploadReady.clear();
 
     state.socket?.dispose();
-    state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
+    state = const WebsocketState(isConnected: false, socket: null);
   }
 
   void stopListenToEvent(String eventName) {

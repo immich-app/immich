@@ -9,10 +9,6 @@ final fileMediaRepositoryProvider = Provider((ref) => const FileMediaRepository(
 
 class FileMediaRepository {
   const FileMediaRepository();
-  Future<AssetEntity?> saveImage(Uint8List data, {required String title, String? relativePath}) async {
-    final entity = await PhotoManager.editor.saveImage(data, filename: title, title: title, relativePath: relativePath);
-    return entity;
-  }
 
   Future<LocalAsset?> saveLocalAsset(Uint8List data, {required String title, String? relativePath}) async {
     final entity = await PhotoManager.editor.saveImage(data, filename: title, title: title, relativePath: relativePath);
@@ -42,10 +38,4 @@ class FileMediaRepository {
     final entity = await PhotoManager.editor.saveVideo(file, title: title, relativePath: relativePath);
     return entity;
   }
-
-  Future<void> clearFileCache() => PhotoManager.clearFileCache();
-
-  Future<void> enableBackgroundAccess() => PhotoManager.setIgnorePermissionCheck(true);
-
-  Future<void> requestExtendedPermissions() => PhotoManager.requestPermissionExtend();
 }
