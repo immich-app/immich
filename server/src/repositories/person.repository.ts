@@ -313,7 +313,7 @@ export class PersonRepository {
       .with('similarity_threshold', (db) =>
         db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
       )
-      .selectFrom('person')
+      .selectFrom(['similarity_threshold', 'person'])
       .selectAll('person')
       .where('person.ownerId', '=', userId)
       .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)

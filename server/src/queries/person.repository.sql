@@ -203,6 +203,7 @@ with
 select
   "person".*
 from
+  "similarity_threshold",
   "person"
 where
   "person"."ownerId" = $1
