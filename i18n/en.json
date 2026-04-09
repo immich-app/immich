@@ -791,6 +791,8 @@
   "close": "Close",
   "collapse": "Collapse",
   "collapse_all": "Collapse all",
+  "collapse_folders": "Collapse folders",
+  "collapse_folders_description": "Collapse folders with only one child folder",
   "color": "Color",
   "color_theme": "Color theme",
   "command": "Command",
