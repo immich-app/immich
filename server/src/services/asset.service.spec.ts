@@ -575,16 +575,9 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
-      expect(mocks.job.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.FileDelete,
-            data: {
-              files: [...asset.files.map(({ path }) => path), asset.originalPath],
-            },
-          },
-        ],
-      ]);
+      expect(mocks.storage.unlink.mock.calls).toEqual(
+        [...asset.files.map(({ path }) => path), asset.originalPath].map((file) => [file]),
+      );
       expect(mocks.asset.remove).toHaveBeenCalledWith(getForAssetDeletion(asset));
     });
 
@@ -613,8 +606,8 @@ describe(AssetService.name, () => {
 
       expect(mocks.job.queue.mock.calls).toEqual([
         [{ name: JobName.AssetDelete, data: { id: motionAsset.id, deleteOnDisk: true } }],
-        [{ name: JobName.FileDelete, data: { files: [asset.originalPath] } }],
       ]);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(asset.originalPath);
     });
 
     it('should not delete a live motion part if it is being used by another asset', async () => {
@@ -624,9 +617,8 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
-      expect(mocks.job.queue.mock.calls).toEqual([
-        [{ name: JobName.FileDelete, data: { files: [`/data/library/IMG_${asset.id}.jpg`] } }],
-      ]);
+      expect(mocks.job.queue.mock.calls).toEqual([]);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(`/data/library/IMG_${asset.id}.jpg`);
     });
 
     it('should update usage', async () => {
