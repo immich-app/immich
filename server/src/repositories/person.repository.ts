@@ -310,6 +310,9 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions) {
     return this.db
+      .with('similarity_threshold', (db) =>
+        db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
+      )
       .selectFrom('person')
       .selectAll('person')
       .where('person.ownerId', '=', userId)

@@ -195,6 +195,11 @@ where
   "asset_face"."id" = $2
 
 -- PersonRepository.getByName
+with
+  "similarity_threshold" as (
+    select
+      set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
+  )
 select
   "person".*
 from
