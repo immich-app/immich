@@ -111,12 +111,11 @@ class LocalImageApiImpl: LocalImageApi {
           return request.completion(ImageProcessing.cancelledResult)
         }
 
-        request.completion(.success([
+        Self.registry.remove(requestId: requestId)
+        return request.completion(.success([
           "pointer": Int64(Int(bitPattern: pointer)),
           "length": Int64(length),
         ]))
-        Self.registry.remove(requestId: requestId)
-        return
       }
 
       var image: UIImage?
@@ -152,16 +151,17 @@ class LocalImageApiImpl: LocalImageApi {
           return request.completion(ImageProcessing.cancelledResult)
         }
 
-        request.completion(.success([
+        Self.registry.remove(requestId: requestId)
+        return request.completion(.success([
           "pointer": Int64(Int(bitPattern: buffer.data)),
           "width": Int64(buffer.width),
           "height": Int64(buffer.height),
           "rowBytes": Int64(buffer.rowBytes),
         ]))
       } catch {
-        request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
+        Self.registry.remove(requestId: requestId)
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
       }
-      Self.registry.remove(requestId: requestId)
     }
 
     request.operation = operation
