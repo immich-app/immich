@@ -51,12 +51,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     return null;
   }
 
-  Stream<ImageInfo> loadRequest(
-    ImageRequest request,
-    ImageDecoderCallback decode, {
-    bool evictOnError = true,
-    bool markFinished = true,
-  }) async* {
+  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {required bool isFinal}) async* {
     if (isCancelled) {
       this.request = null;
       return;
@@ -65,21 +60,20 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     try {
       final image = await request.load(decode);
       if (isCancelled) {
+        image?.dispose();
         return;
       }
-      if (image == null && evictOnError) {
-        PaintingBinding.instance.imageCache.evict(this);
-        return;
-      } else if (image == null) {
+      if (image == null) {
+        if (isFinal) PaintingBinding.instance.imageCache.evict(this);
         return;
       }
-      if (markFinished) isFinished = true;
+      if (isFinal) isFinished = true;
       yield image;
     } catch (e, stack) {
       if (isCancelled) {
         return;
       }
-      if (evictOnError) {
+      if (isFinal) {
         PaintingBinding.instance.imageCache.evict(this);
         rethrow;
       }
@@ -89,7 +83,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     }
   }
 
-  Future<ui.Codec?> loadCodecRequest(ImageRequest request, {bool markFinished = true}) async {
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request, {required bool isFinal}) async {
     if (isCancelled) {
       this.request = null;
       return null;
@@ -102,10 +96,10 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         return null;
       }
       if (codec == null) {
-        PaintingBinding.instance.imageCache.evict(this);
+        if (isFinal) PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
-      if (markFinished) isFinished = true;
+      if (isFinal) isFinished = true;
       return codec;
     } catch (e) {
       if (!isCancelled) {

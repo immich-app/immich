@@ -36,7 +36,7 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
     final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
@@ -103,16 +103,16 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return;
     }
 
+    final loadOriginal = Store.get(StoreKey.loadOriginal, false);
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     var request = this.request = LocalImageRequest(
       localId: key.id,
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-    yield* loadRequest(request, decode, markFinished: false);
+    yield* loadRequest(request, decode, isFinal: !loadOriginal);
 
-    if (!Store.get(StoreKey.loadOriginal, false)) {
-      isFinished = true;
+    if (!loadOriginal) {
       return;
     }
 
@@ -122,7 +122,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
     request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
-    yield* loadRequest(request, decode);
+    yield* loadRequest(request, decode, isFinal: true);
   }
 
   Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -138,7 +138,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-    yield* loadRequest(previewRequest, decode, markFinished: false);
+    yield* loadRequest(previewRequest, decode, isFinal: false);
 
     if (isCancelled) {
       return;
@@ -146,7 +146,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
     // always try original for animated, since previews don't support animation
     final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
-    final codec = await loadCodecRequest(originalRequest);
+    final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
       if (isCancelled) return;
       throw StateError('Failed to load animated codec for local asset ${key.id}');

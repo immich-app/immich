@@ -38,7 +38,7 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
 
   Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
     final request = this.request = RemoteImageRequest(uri: key.url);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
@@ -112,10 +112,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
     );
     final loadOriginal = assetType == AssetType.image && AppSetting.get(Setting.loadOriginal);
-    yield* loadRequest(previewRequest, decode, evictOnError: !loadOriginal, markFinished: false);
+    yield* loadRequest(previewRequest, decode, isFinal: !loadOriginal);
 
     if (!loadOriginal) {
-      isFinished = true;
       return;
     }
 
@@ -124,7 +123,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
-    yield* loadRequest(originalRequest, decode);
+    yield* loadRequest(originalRequest, decode, isFinal: true);
   }
 
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -137,7 +136,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
     );
-    yield* loadRequest(previewRequest, decode, evictOnError: false, markFinished: false);
+    yield* loadRequest(previewRequest, decode, isFinal: false);
 
     if (isCancelled) {
       return;
@@ -145,7 +144,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
     // always try original for animated, since previews don't support animation
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
-    final codec = await loadCodecRequest(originalRequest);
+    final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
       if (isCancelled) {
         return;
