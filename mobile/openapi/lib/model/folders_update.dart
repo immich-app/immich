@@ -13,9 +13,19 @@ part of openapi.api;
 class FoldersUpdate {
   /// Returns a new [FoldersUpdate] instance.
   FoldersUpdate({
+    this.collapse,
     this.enabled,
     this.sidebarWeb,
   });
+
+  /// Whether to collapse folders with only one child folder
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? collapse;
 
   /// Whether folders are enabled
   ///
@@ -37,20 +47,27 @@ class FoldersUpdate {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is FoldersUpdate &&
+    other.collapse == collapse &&
     other.enabled == enabled &&
     other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (collapse == null ? 0 : collapse!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
     (sidebarWeb == null ? 0 : sidebarWeb!.hashCode);
 
   @override
-  String toString() => 'FoldersUpdate[enabled=$enabled, sidebarWeb=$sidebarWeb]';
+  String toString() => 'FoldersUpdate[collapse=$collapse, enabled=$enabled, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.collapse != null) {
+      json[r'collapse'] = this.collapse;
+    } else {
+    //  json[r'collapse'] = null;
+    }
     if (this.enabled != null) {
       json[r'enabled'] = this.enabled;
     } else {
@@ -73,6 +90,7 @@ class FoldersUpdate {
       final json = value.cast<String, dynamic>();
 
       return FoldersUpdate(
+        collapse: mapValueOfType<bool>(json, r'collapse'),
         enabled: mapValueOfType<bool>(json, r'enabled'),
         sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb'),
       );

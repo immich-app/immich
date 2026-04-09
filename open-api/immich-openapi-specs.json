@@ -18204,6 +18204,11 @@
       },
       "FoldersResponse": {
         "properties": {
+          "collapse": {
+            "default": true,
+            "description": "Whether to collapse folders with only one child folder",
+            "type": "boolean"
+          },
           "enabled": {
             "default": false,
             "description": "Whether folders are enabled",
@@ -18216,6 +18221,7 @@
           }
         },
         "required": [
+          "collapse",
           "enabled",
           "sidebarWeb"
         ],
@@ -18223,6 +18229,10 @@
       },
       "FoldersUpdate": {
         "properties": {
+          "collapse": {
+            "description": "Whether to collapse folders with only one child folder",
+            "type": "boolean"
+          },
           "enabled": {
             "description": "Whether folders are enabled",
             "type": "boolean"

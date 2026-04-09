@@ -290,6 +290,8 @@ export type EmailNotificationsResponse = {
     enabled: boolean;
 };
 export type FoldersResponse = {
+    /** Whether to collapse folders with only one child folder */
+    collapse: boolean;
     /** Whether folders are enabled */
     enabled: boolean;
     /** Whether folders appear in web sidebar */
@@ -369,6 +371,8 @@ export type EmailNotificationsUpdate = {
     enabled?: boolean;
 };
 export type FoldersUpdate = {
+    /** Whether to collapse folders with only one child folder */
+    collapse?: boolean;
     /** Whether folders are enabled */
     enabled?: boolean;
     /** Whether folders appear in web sidebar */

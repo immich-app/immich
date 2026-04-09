@@ -13,9 +13,13 @@ part of openapi.api;
 class FoldersResponse {
   /// Returns a new [FoldersResponse] instance.
   FoldersResponse({
+    this.collapse = true,
     this.enabled = false,
     this.sidebarWeb = false,
   });
+
+  /// Whether to collapse folders with only one child folder
+  bool collapse;
 
   /// Whether folders are enabled
   bool enabled;
@@ -25,20 +29,23 @@ class FoldersResponse {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is FoldersResponse &&
+    other.collapse == collapse &&
     other.enabled == enabled &&
     other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (collapse.hashCode) +
     (enabled.hashCode) +
     (sidebarWeb.hashCode);
 
   @override
-  String toString() => 'FoldersResponse[enabled=$enabled, sidebarWeb=$sidebarWeb]';
+  String toString() => 'FoldersResponse[collapse=$collapse, enabled=$enabled, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'collapse'] = this.collapse;
       json[r'enabled'] = this.enabled;
       json[r'sidebarWeb'] = this.sidebarWeb;
     return json;
@@ -53,6 +60,7 @@ class FoldersResponse {
       final json = value.cast<String, dynamic>();
 
       return FoldersResponse(
+        collapse: mapValueOfType<bool>(json, r'collapse')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb')!,
       );
@@ -102,6 +110,7 @@ class FoldersResponse {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'collapse',
     'enabled',
     'sidebarWeb',
   };
