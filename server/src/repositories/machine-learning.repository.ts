@@ -173,7 +173,7 @@ export class MachineLearningRepository {
         const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
         if (response.ok) {
           this.setHealthy(url, true);
-          return response.json();
+          return await response.json();
         }
 
         this.logger.warn(
