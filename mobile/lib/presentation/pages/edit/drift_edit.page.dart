@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
@@ -21,17 +20,9 @@ import 'package:openapi/api.dart' show RotateParameters, MirrorParameters, Mirro
 @RoutePage()
 class DriftEditImagePage extends ConsumerStatefulWidget {
   final Image image;
-  final List<AssetEdit> edits;
-  final ExifInfo exifInfo;
   final Future<void> Function(List<AssetEdit> edits) applyEdits;
 
-  const DriftEditImagePage({
-    super.key,
-    required this.image,
-    required this.edits,
-    required this.exifInfo,
-    required this.applyEdits,
-  });
+  const DriftEditImagePage({super.key, required this.image, required this.applyEdits});
 
   @override
   ConsumerState<DriftEditImagePage> createState() => _DriftEditImagePageState();
@@ -75,15 +66,6 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     } finally {
       ref.read(editorStateProvider.notifier).setIsEditing(false);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(editorStateProvider.notifier).init(widget.edits, widget.exifInfo);
-    });
   }
 
   Future<bool?> _showDiscardChangesDialog() {
@@ -349,26 +331,16 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
     super.initState();
 
     cropController = CropController();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      cropController.crop = ref.read(editorStateProvider.select((state) => state.crop));
-    });
-
+    cropController.crop = ref.read(editorStateProvider.select((state) => state.crop));
     cropController.addListener(onCrop);
   }
 
   void onCrop() {
-    if (!mounted) {
+    if (!mounted || cropController.crop == ref.read(editorStateProvider).crop) {
       return;
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (cropController.crop == ref.read(editorStateProvider).crop) {
-        return;
-      }
-
-      ref.read(editorStateProvider.notifier).setCrop(cropController.crop);
-    });
+    ref.read(editorStateProvider.notifier).setCrop(cropController.crop);
   }
 
   @override

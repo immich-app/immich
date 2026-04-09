@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -45,9 +46,8 @@ class EditImageActionButton extends ConsumerWidget {
         return;
       }
 
-      await context.pushRoute(
-        DriftEditImageRoute(image: image, edits: edits, exifInfo: exifInfo, applyEdits: editImage),
-      );
+      ref.read(editorStateProvider.notifier).init(edits, exifInfo);
+      await context.pushRoute(DriftEditImageRoute(image: image, applyEdits: editImage));
     }
 
     return BaseActionButton(
