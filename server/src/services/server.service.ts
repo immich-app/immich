@@ -68,7 +68,8 @@ export class ServerService extends BaseService {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.Library);
     const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
 
-    const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
+    const usagePercentage =
+      diskInfo.total === 0 ? 0 : Number.parseFloat((((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2));
 
     const serverInfo = new ServerStorageResponseDto();
     serverInfo.diskAvailable = asHumanReadable(diskInfo.available);
@@ -77,7 +78,7 @@ export class ServerService extends BaseService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = usagePercentage;
     return serverInfo;
   }
 

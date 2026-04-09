@@ -122,6 +122,22 @@ describe(ServerService.name, () => {
 
       expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
+
+    it('should return 0% usage when total disk size is 0', async () => {
+      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 0, available: 0, total: 0 });
+
+      await expect(sut.getStorage()).resolves.toEqual({
+        diskAvailable: '0 B',
+        diskAvailableRaw: 0,
+        diskSize: '0 B',
+        diskSizeRaw: 0,
+        diskUsagePercentage: 0,
+        diskUse: '0 B',
+        diskUseRaw: 0,
+      });
+
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
+    });
   });
 
   describe('ping', () => {
