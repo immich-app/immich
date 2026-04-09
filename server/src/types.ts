@@ -501,6 +501,7 @@ export type UserPreferences = {
   folders: {
     enabled: boolean;
     sidebarWeb: boolean;
+    collapse: boolean;
   };
   memories: {
     enabled: boolean;

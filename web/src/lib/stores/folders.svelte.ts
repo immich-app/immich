@@ -1,4 +1,5 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { preferences } from '$lib/stores/user.store';
 import { TreeNode } from '$lib/utils/tree-utils';
 import {
   getAssetsByOriginalPath,
@@ -8,6 +9,7 @@ import {
    */
   type AssetResponseDto,
 } from '@immich/sdk';
+import { get } from 'svelte/store';
 
 type AssetCache = {
   [path: string]: AssetResponseDto[];
@@ -29,7 +31,10 @@ class FoldersStore {
       return this.folders!;
     }
     this.folders = TreeNode.fromPaths(await getUniqueOriginalPaths());
-    this.folders.collapse();
+    const shouldCollapse = get(preferences)?.folders?.collapse ?? true;
+    if (shouldCollapse) {
+      this.folders.collapse();
+    }
     this.initialized = true;
     return this.folders;
   }

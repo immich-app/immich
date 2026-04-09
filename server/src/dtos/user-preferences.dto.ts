@@ -38,6 +38,9 @@ class FoldersUpdate {
 
   @ValidateBoolean({ optional: true, description: 'Whether folders appear in web sidebar' })
   sidebarWeb?: boolean;
+
+  @ValidateBoolean({ optional: true, description: 'Whether to collapse folders with only one child folder' })
+  collapse?: boolean;
 }
 
 class PeopleUpdate {
@@ -210,6 +213,8 @@ class FoldersResponse {
   enabled: boolean = false;
   @ApiProperty({ description: 'Whether folders appear in web sidebar' })
   sidebarWeb: boolean = false;
+  @ApiProperty({ description: 'Whether to collapse folders with only one child folder' })
+  collapse: boolean = true;
 }
 
 class PeopleResponse {

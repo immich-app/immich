@@ -13,6 +13,7 @@ const getDefaultPreferences = (): UserPreferences => {
     folders: {
       enabled: false,
       sidebarWeb: false,
+      collapse: true,
     },
     memories: {
       enabled: true,

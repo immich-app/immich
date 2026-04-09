@@ -13,6 +13,7 @@
   // Folders
   let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
   let foldersSidebar = $state($preferences?.folders?.sidebarWeb ?? false);
+  let foldersCollapse = $state($preferences?.folders?.collapse ?? true);
 
   // Memories
   let memoriesEnabled = $state($preferences?.memories?.enabled ?? true);
@@ -41,7 +42,7 @@
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
-          folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
+          folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar, collapse: foldersCollapse },
           memories: { enabled: memoriesEnabled, duration: memoriesDuration },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
           ratings: { enabled: ratingsEnabled },
@@ -91,6 +92,9 @@
             {#if foldersEnabled}
               <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
                 <Switch bind:checked={foldersSidebar} />
+              </Field>
+              <Field label={$t('collapse_folders')} description={$t('collapse_folders_description')}>
+                <Switch bind:checked={foldersCollapse} />
               </Field>
             {/if}
           </div>
