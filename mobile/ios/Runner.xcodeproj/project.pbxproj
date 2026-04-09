@@ -10,8 +10,6 @@
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		3B6A31FED0FC846D6BD69BBC /* Pods_ShareExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 357FC57E54FD0F51795CF28A /* Pods_ShareExtension.framework */; };
-		65F32F31299BD2F800CE9261 /* BackgroundServicePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F32F30299BD2F800CE9261 /* BackgroundServicePlugin.swift */; };
-		65F32F33299D349D00CE9261 /* BackgroundSyncWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F32F32299D349D00CE9261 /* BackgroundSyncWorker.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -90,8 +88,6 @@
 		357FC57E54FD0F51795CF28A /* Pods_ShareExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShareExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		571EAA93D77181C7C98C2EA6 /* Pods-ShareExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShareExtension.release.xcconfig"; path = "Target Support Files/Pods-ShareExtension/Pods-ShareExtension.release.xcconfig"; sourceTree = "<group>"; };
-		65F32F30299BD2F800CE9261 /* BackgroundServicePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundServicePlugin.swift; sourceTree = "<group>"; };
-		65F32F32299D349D00CE9261 /* BackgroundSyncWorker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundSyncWorker.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -238,15 +234,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		65DD438629917FAD0047FFA8 /* BackgroundSync */ = {
-			isa = PBXGroup;
-			children = (
-				65F32F32299D349D00CE9261 /* BackgroundSyncWorker.swift */,
-				65F32F30299BD2F800CE9261 /* BackgroundServicePlugin.swift */,
-			);
-			path = BackgroundSync;
-			sourceTree = "<group>";
-		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
 			isa = PBXGroup;
 			children = (
@@ -291,7 +278,6 @@
 				B21E34A62E5AF9760031FDB9 /* Background */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
 				FA9973382CF6DF4B000EF859 /* Runner.entitlements */,
-				65DD438629917FAD0047FFA8 /* BackgroundSync */,
 				FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
@@ -627,7 +613,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65F32F31299BD2F800CE9261 /* BackgroundServicePlugin.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				A01DD69B2F7F43B40049AB63 /* ImageRequest.swift in Sources */,
 				B21E34AC2E5B09190031FDB9 /* BackgroundWorker.swift in Sources */,
@@ -642,7 +627,6 @@
 				B21E34AA2E5AFD2B0031FDB9 /* BackgroundWorkerApiImpl.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				B2BE315F2E5E5229006EEF88 /* BackgroundWorker.g.swift in Sources */,
-				65F32F33299D349D00CE9261 /* BackgroundSyncWorker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
