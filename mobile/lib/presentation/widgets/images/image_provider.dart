@@ -59,12 +59,8 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     try {
       final image = await request.load(decode);
-      if (isCancelled) {
+      if (isCancelled || image == null) {
         image?.dispose();
-        return;
-      }
-      if (image == null) {
-        if (isFinal) PaintingBinding.instance.imageCache.evict(this);
         return;
       }
       isFinished = isFinal;
@@ -91,12 +87,8 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     try {
       final codec = await request.loadCodec();
-      if (isCancelled) {
+      if (isCancelled || codec == null) {
         codec?.dispose();
-        return null;
-      }
-      if (codec == null) {
-        if (isFinal) PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
       isFinished = isFinal;
