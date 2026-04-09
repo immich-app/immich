@@ -67,7 +67,7 @@ export class ServerInfoRepository {
         throw new Error(`GitHub API request failed with status ${response.status}: ${await response.text()}`);
       }
 
-      return response.json();
+      return await response.json();
     } catch (error) {
       throw new Error('Failed to fetch GitHub release', { cause: error });
     }
