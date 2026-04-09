@@ -1,22 +1,15 @@
-<script lang="ts" module>
-  export interface SearchLocationFilter {
-    country?: string;
-    state?: string;
-    city?: string;
-  }
-</script>
-
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
+  import type { SearchLocationFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     filters: SearchLocationFilter;
-  }
+  };
 
   let { filters = $bindable() }: Props = $props();
 

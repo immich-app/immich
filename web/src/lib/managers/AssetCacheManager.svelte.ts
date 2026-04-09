@@ -1,30 +1,33 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { getAssetInfo, getAssetOcr, type AssetOcrResponseDto, type AssetResponseDto } from '@immich/sdk';
+import { getAssetInfo, getAssetOcr } from '@immich/sdk';
 
 const defaultSerializer = <K>(params: K) => JSON.stringify(params);
 
-class AsyncCache<V> {
+class AsyncCache<K, V> {
   #cache = new Map<string, V>();
 
-  async getOrFetch<K>(
-    params: K,
-    fetcher: (params: K) => Promise<V>,
-    keySerializer: (params: K) => string = defaultSerializer,
-    updateCache: boolean,
-  ): Promise<V> {
-    const cacheKey = keySerializer(params);
+  constructor(private fetcher: (params: K) => Promise<V>) {}
+
+  async getOrFetch(params: K, updateCache: boolean): Promise<V> {
+    const cacheKey = defaultSerializer(params);
 
     const cached = this.#cache.get(cacheKey);
     if (cached) {
       return cached;
     }
 
-    const value = await fetcher(params);
+    const value = await this.fetcher(params);
     if (value && updateCache) {
       this.#cache.set(cacheKey, value);
     }
 
     return value;
+  }
+
+  clearKey(params: K) {
+    const cacheKey = defaultSerializer(params);
+    this.#cache.delete(cacheKey);
   }
 
   clear() {
@@ -33,24 +36,32 @@ class AsyncCache<V> {
 }
 
 class AssetCacheManager {
-  #assetCache = new AsyncCache<AssetResponseDto>();
-  #ocrCache = new AsyncCache<AssetOcrResponseDto[]>();
+  #assetCache = new AsyncCache(getAssetInfo);
+  #ocrCache = new AsyncCache(getAssetOcr);
 
   constructor() {
     eventManager.on({
-      AssetEditsApplied: () => {
-        this.#assetCache.clear();
-        this.#ocrCache.clear();
+      AssetEditsApplied: (assetId) => {
+        this.invalidateAsset(assetId);
+      },
+      AssetUpdate: (asset) => {
+        this.invalidateAsset(asset.id);
       },
     });
   }
 
-  async getAsset(assetIdentifier: { key?: string; slug?: string; id: string }, updateCache = true) {
-    return this.#assetCache.getOrFetch(assetIdentifier, getAssetInfo, defaultSerializer, updateCache);
+  async getAsset({ id, key, slug }: { id: string; key?: string; slug?: string }, updateCache = true) {
+    return this.#assetCache.getOrFetch({ id, key, slug }, updateCache);
   }
 
   async getAssetOcr(id: string) {
-    return this.#ocrCache.getOrFetch({ id }, getAssetOcr, (params) => params.id, true);
+    return this.#ocrCache.getOrFetch({ id }, true);
+  }
+
+  invalidateAsset(id: string) {
+    const { key, slug } = authManager.params;
+    this.#assetCache.clearKey({ id, key, slug });
+    this.#ocrCache.clearKey({ id });
   }
 
   clearAssetCache() {

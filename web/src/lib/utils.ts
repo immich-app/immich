@@ -4,11 +4,9 @@ import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
-  AssetJobName,
   AssetMediaSize,
   AssetTypeEnum,
   MemoryType,
-  QueueName,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -27,8 +25,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
-import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { init, register, t, type MessageFormatter } from 'svelte-i18n';
+import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
@@ -81,17 +78,40 @@ export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+let unsubscribeId = 0;
+const uploads: Record<number, () => void> = {};
+
+const trackUpload = (unsubscribe: () => void) => {
+  const id = unsubscribeId++;
+  uploads[id] = unsubscribe;
+  return () => {
+    delete uploads[id];
+  };
+};
+
+export const cancelUploadRequests = () => {
+  for (const unsubscribe of Object.values(uploads)) {
+    unsubscribe();
+  }
+};
+
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const unsubscribe = trackUpload(() => xhr.abort());
 
-    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('error', (error) => {
+      unsubscribe();
+      reject(error);
+    });
+
     xhr.addEventListener('load', () => {
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
+        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });
@@ -146,37 +166,10 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getQueueName = derived(t, ($t) => {
-  return (name: QueueName) => {
-    const names: Record<QueueName, string> = {
-      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
-      [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
-      [QueueName.Sidecar]: $t('admin.sidecar_job'),
-      [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
-      [QueueName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
-      [QueueName.FaceDetection]: $t('admin.face_detection'),
-      [QueueName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
-      [QueueName.VideoConversion]: $t('admin.video_conversion_job'),
-      [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
-      [QueueName.Migration]: $t('admin.migration_job'),
-      [QueueName.BackgroundTask]: $t('admin.background_task_job'),
-      [QueueName.Search]: $t('search'),
-      [QueueName.Library]: $t('external_libraries'),
-      [QueueName.Notifications]: $t('notifications'),
-      [QueueName.BackupDatabase]: $t('admin.backup_database'),
-      [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
-      [QueueName.Workflow]: $t('workflows'),
-      [QueueName.Editor]: $t('editor'),
-    };
-
-    return names[name];
-  };
-});
-
 let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
-export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
+export const setSharedLink = (sharedLink: typeof _sharedLink) => (_sharedLink = sharedLink);
+export const getSharedLink = (): typeof _sharedLink => _sharedLink;
 
 const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const searchParameters = new URLSearchParams();
@@ -216,13 +209,23 @@ export const getAssetUrl = ({
   return getAssetMediaUrl({ id, size, cacheKey });
 };
 
+export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
+  return {
+    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    preview: getAssetUrl({ asset, sharedLink })!,
+    original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
+  };
+}
+
 const forceUseOriginal = (asset: AssetResponseDto) => {
   return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+      ? AssetMediaSize.Original
+      : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
@@ -244,28 +247,6 @@ export const getProfileImageUrl = (user: UserResponseDto) =>
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
-
-export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
-  const messages: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
-    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
-    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
-    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
-  };
-
-  return messages[job];
-};
-
-export const getAssetJobIcon = (job: AssetJobName) => {
-  const names: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: mdiHeadSyncOutline,
-    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
-    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
-    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
-  };
-
-  return names[job];
-};
 
 export const copyToClipboard = async (secret: string) => {
   const $t = get(t);

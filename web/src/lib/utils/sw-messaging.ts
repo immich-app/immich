@@ -1,14 +1,12 @@
-const broadcast = new BroadcastChannel('immich');
+import { ServiceWorkerMessenger } from './sw-messenger';
+
+const hasServiceWorker = globalThis.isSecureContext && 'serviceWorker' in navigator;
+// eslint-disable-next-line compat/compat
+const messenger = hasServiceWorker ? new ServiceWorkerMessenger(navigator.serviceWorker) : undefined;
 
 export function cancelImageUrl(url: string | undefined | null) {
-  if (!url) {
+  if (!url || !messenger) {
     return;
   }
-  broadcast.postMessage({ type: 'cancel', url });
-}
-export function preloadImageUrl(url: string | undefined | null) {
-  if (!url) {
-    return;
-  }
-  broadcast.postMessage({ type: 'preload', url });
+  messenger.send('cancel', { url });
 }

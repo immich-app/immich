@@ -23,6 +23,7 @@ typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
       required i3.TrashOrigin source,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
     i1.TrashedLocalAssetEntityCompanion Function({
@@ -39,6 +40,7 @@ typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
       i0.Value<i3.TrashOrigin> source,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 
 class $$TrashedLocalAssetEntityTableFilterComposer
@@ -117,6 +119,16 @@ class $$TrashedLocalAssetEntityTableFilterComposer
     column: $table.source,
     builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
+
+  i0.ColumnWithTypeConverterFilters<
+    i2.AssetPlaybackStyle,
+    i2.AssetPlaybackStyle,
+    int
+  >
+  get playbackStyle => $composableBuilder(
+    column: $table.playbackStyle,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
 }
 
 class $$TrashedLocalAssetEntityTableOrderingComposer
@@ -193,6 +205,11 @@ class $$TrashedLocalAssetEntityTableOrderingComposer
     column: $table.source,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<int> get playbackStyle => $composableBuilder(
+    column: $table.playbackStyle,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$TrashedLocalAssetEntityTableAnnotationComposer
@@ -249,6 +266,12 @@ class $$TrashedLocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumnWithTypeConverter<i3.TrashOrigin, int> get source =>
       $composableBuilder(column: $table.source, builder: (column) => column);
+
+  i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
+  get playbackStyle => $composableBuilder(
+    column: $table.playbackStyle,
+    builder: (column) => column,
+  );
 }
 
 class $$TrashedLocalAssetEntityTableTableManager
@@ -310,6 +333,8 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
                 i0.Value<i3.TrashOrigin> source = const i0.Value.absent(),
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
+                    const i0.Value.absent(),
               }) => i1.TrashedLocalAssetEntityCompanion(
                 name: name,
                 type: type,
@@ -324,6 +349,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 isFavorite: isFavorite,
                 orientation: orientation,
                 source: source,
+                playbackStyle: playbackStyle,
               ),
           createCompanionCallback:
               ({
@@ -340,6 +366,8 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
                 required i3.TrashOrigin source,
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
+                    const i0.Value.absent(),
               }) => i1.TrashedLocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -354,6 +382,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 isFavorite: isFavorite,
                 orientation: orientation,
                 source: source,
+                playbackStyle: playbackStyle,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -550,6 +579,19 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         i1.$TrashedLocalAssetEntityTable.$convertersource,
       );
   @override
+  late final i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
+  playbackStyle =
+      i0.GeneratedColumn<int>(
+        'playback_style',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const i4.Constant(0),
+      ).withConverter<i2.AssetPlaybackStyle>(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle,
+      );
+  @override
   List<i0.GeneratedColumn> get $columns => [
     name,
     type,
@@ -564,6 +606,7 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     isFavorite,
     orientation,
     source,
+    playbackStyle,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -720,6 +763,13 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
           data['${effectivePrefix}source'],
         )!,
       ),
+      playbackStyle: i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle
+          .fromSql(
+            attachedDatabase.typeMapping.read(
+              i0.DriftSqlType.int,
+              data['${effectivePrefix}playback_style'],
+            )!,
+          ),
     );
   }
 
@@ -732,6 +782,10 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
       const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
   static i0.JsonTypeConverter2<i3.TrashOrigin, int, int> $convertersource =
       const i0.EnumIndexConverter<i3.TrashOrigin>(i3.TrashOrigin.values);
+  static i0.JsonTypeConverter2<i2.AssetPlaybackStyle, int, int>
+  $converterplaybackStyle = const i0.EnumIndexConverter<i2.AssetPlaybackStyle>(
+    i2.AssetPlaybackStyle.values,
+  );
   @override
   bool get withoutRowId => true;
   @override
@@ -753,6 +807,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
   final bool isFavorite;
   final int orientation;
   final i3.TrashOrigin source;
+  final i2.AssetPlaybackStyle playbackStyle;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -767,6 +822,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     required this.isFavorite,
     required this.orientation,
     required this.source,
+    required this.playbackStyle,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -800,6 +856,13 @@ class TrashedLocalAssetEntityData extends i0.DataClass
         i1.$TrashedLocalAssetEntityTable.$convertersource.toSql(source),
       );
     }
+    {
+      map['playback_style'] = i0.Variable<int>(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle.toSql(
+          playbackStyle,
+        ),
+      );
+    }
     return map;
   }
 
@@ -826,6 +889,8 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       source: i1.$TrashedLocalAssetEntityTable.$convertersource.fromJson(
         serializer.fromJson<int>(json['source']),
       ),
+      playbackStyle: i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle
+          .fromJson(serializer.fromJson<int>(json['playbackStyle'])),
     );
   }
   @override
@@ -849,6 +914,11 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       'source': serializer.toJson<int>(
         i1.$TrashedLocalAssetEntityTable.$convertersource.toJson(source),
       ),
+      'playbackStyle': serializer.toJson<int>(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle.toJson(
+          playbackStyle,
+        ),
+      ),
     };
   }
 
@@ -866,6 +936,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     bool? isFavorite,
     int? orientation,
     i3.TrashOrigin? source,
+    i2.AssetPlaybackStyle? playbackStyle,
   }) => i1.TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -882,6 +953,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
     source: source ?? this.source,
+    playbackStyle: playbackStyle ?? this.playbackStyle,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     i1.TrashedLocalAssetEntityCompanion data,
@@ -906,6 +978,9 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           ? data.orientation.value
           : this.orientation,
       source: data.source.present ? data.source.value : this.source,
+      playbackStyle: data.playbackStyle.present
+          ? data.playbackStyle.value
+          : this.playbackStyle,
     );
   }
 
@@ -924,7 +999,8 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('source: $source')
+          ..write('source: $source, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }
@@ -944,6 +1020,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     isFavorite,
     orientation,
     source,
+    playbackStyle,
   );
   @override
   bool operator ==(Object other) =>
@@ -961,7 +1038,8 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation &&
-          other.source == this.source);
+          other.source == this.source &&
+          other.playbackStyle == this.playbackStyle);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -979,6 +1057,7 @@ class TrashedLocalAssetEntityCompanion
   final i0.Value<bool> isFavorite;
   final i0.Value<int> orientation;
   final i0.Value<i3.TrashOrigin> source;
+  final i0.Value<i2.AssetPlaybackStyle> playbackStyle;
   const TrashedLocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -993,6 +1072,7 @@ class TrashedLocalAssetEntityCompanion
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
     this.source = const i0.Value.absent(),
+    this.playbackStyle = const i0.Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -1008,6 +1088,7 @@ class TrashedLocalAssetEntityCompanion
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
     required i3.TrashOrigin source,
+    this.playbackStyle = const i0.Value.absent(),
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id),
@@ -1027,6 +1108,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Expression<bool>? isFavorite,
     i0.Expression<int>? orientation,
     i0.Expression<int>? source,
+    i0.Expression<int>? playbackStyle,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1042,6 +1124,7 @@ class TrashedLocalAssetEntityCompanion
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
       if (source != null) 'source': source,
+      if (playbackStyle != null) 'playback_style': playbackStyle,
     });
   }
 
@@ -1059,6 +1142,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Value<bool>? isFavorite,
     i0.Value<int>? orientation,
     i0.Value<i3.TrashOrigin>? source,
+    i0.Value<i2.AssetPlaybackStyle>? playbackStyle,
   }) {
     return i1.TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1074,6 +1158,7 @@ class TrashedLocalAssetEntityCompanion
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
       source: source ?? this.source,
+      playbackStyle: playbackStyle ?? this.playbackStyle,
     );
   }
 
@@ -1123,6 +1208,13 @@ class TrashedLocalAssetEntityCompanion
         i1.$TrashedLocalAssetEntityTable.$convertersource.toSql(source.value),
       );
     }
+    if (playbackStyle.present) {
+      map['playback_style'] = i0.Variable<int>(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle.toSql(
+          playbackStyle.value,
+        ),
+      );
+    }
     return map;
   }
 
@@ -1141,7 +1233,8 @@ class TrashedLocalAssetEntityCompanion
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('source: $source')
+          ..write('source: $source, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }

@@ -1,8 +1,8 @@
 <script lang="ts">
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -25,7 +25,6 @@
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 
   interface Props {
     assetId: string;
@@ -126,7 +125,7 @@
           }
         }
 
-        toastManager.success($t('people_edits_count', { values: { count: numberOfChanges } }));
+        toastManager.primary($t('people_edits_count', { values: { count: numberOfChanges } }));
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
       }
@@ -179,7 +178,7 @@
 
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 
-      await assetViewingStore.setAssetId(assetId);
+      await assetViewerManager.setAssetId(assetId);
     } catch (error) {
       handleError(error, $t('error_delete_face'));
     }
@@ -226,6 +225,7 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
+          {@const isHighlighted = $boundingBoxesArray.some((b) => b.id === face.id)}
           <div class="relative h-29 w-24">
             <div
               role="button"
@@ -240,6 +240,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={selectedPersonToCreate[face.id]}
                     altText={$t('new_person')}
                     title={$t('new_person')}
@@ -250,6 +251,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
                     altText={selectedPersonToReassign[face.id].name}
                     title={$getPersonNameWithHiddenValue(
@@ -264,6 +266,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(face.person)}
                     altText={face.person.name}
                     title={$getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
@@ -276,6 +279,7 @@
                     <ImageThumbnail
                       curve
                       shadow
+                      highlighted={isHighlighted}
                       url="/src/lib/assets/no-thumbnail.png"
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}
@@ -286,6 +290,7 @@
                     <ImageThumbnail
                       curve
                       shadow
+                      highlighted={isHighlighted}
                       url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}

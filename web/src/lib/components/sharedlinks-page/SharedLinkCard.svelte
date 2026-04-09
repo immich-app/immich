@@ -1,11 +1,10 @@
 <script lang="ts">
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { Route } from '$lib/route';
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, MenuItemType, Text } from '@immich/ui';
+  import { ActionButton, ContextMenuButton, MenuItemType, Text } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 

@@ -9,7 +9,6 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -23,15 +22,16 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import { AssetAction } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getTagActions } from '$lib/services/tag.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { preferences } from '$lib/stores/user.store';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiPlus, mdiTag, mdiTagMultiple } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiTag, mdiTagMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -40,8 +40,6 @@
   }
 
   let { data }: Props = $props();
-
-  const assetInteraction = new AssetInteraction();
 
   let tags = $derived<TagResponseDto[]>(data.tags);
   const tree = $derived(TreeNode.fromTags(tags));
@@ -58,7 +56,7 @@
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
 
   const onRefresh = async () => {
@@ -99,7 +97,7 @@
         enableRouting={true}
         bind:timelineManager
         {options}
-        {assetInteraction}
+        assetInteraction={assetMultiSelectManager}
         removeAction={AssetAction.UNARCHIVE}
       >
         {#snippet empty()}
@@ -113,21 +111,16 @@
 </UserPageLayout>
 
 <section>
-  {#if assetInteraction.selectionActive}
+  {#if assetMultiSelectManager.selectionActive}
     <div class="fixed top-0 start-0 w-full">
-      <AssetSelectControlBar
-        ownerId={$user.id}
-        assets={assetInteraction.selectedAssets}
-        clearSelect={() => assetInteraction.clearMultiselect()}
-      >
+      <AssetSelectControlBar>
+        {@const Actions = getAssetBulkActions($t)}
+        <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
         <CreateSharedLink />
-        <SelectAllAssets {timelineManager} {assetInteraction} />
-        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum />
-          <AddToAlbum shared />
-        </ButtonContextMenu>
+        <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+        <ActionButton action={Actions.AddToAlbum} />
         <FavoriteAction
-          removeFavorite={assetInteraction.isAllFavorite}
+          removeFavorite={assetMultiSelectManager.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
         ></FavoriteAction>
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>

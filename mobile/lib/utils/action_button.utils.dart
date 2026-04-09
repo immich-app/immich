@@ -18,11 +18,14 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
@@ -42,6 +45,7 @@ class ActionButtonContext {
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
   final ThemeData? originalTheme;
+  final int selectedCount;
 
   const ActionButtonContext({
     required this.asset,
@@ -56,6 +60,7 @@ class ActionButtonContext {
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
     this.originalTheme,
+    this.selectedCount = 1,
   });
 }
 
@@ -65,10 +70,13 @@ enum ActionButtonType {
   share,
   shareLink,
   cast,
+  setAlbumCover,
   similarPhotos,
+  setProfilePicture,
   viewInTimeline,
   download,
   upload,
+  openInBrowser,
   unstack,
   archive,
   unarchive,
@@ -134,10 +142,15 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.currentAlbum != null,
+      ActionButtonType.setAlbumCover =>
+        !context.isInLockedView && //
+            context.currentAlbum != null && //
+            context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
             !context.isInLockedView && //
             context.isStacked,
+      ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
@@ -146,6 +159,10 @@ enum ActionButtonType {
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
             context.asset is RemoteAsset,
+      ActionButtonType.setProfilePicture =>
+        !context.isInLockedView && //
+            context.asset is RemoteAsset && //
+            context.isOwner,
       ActionButtonType.openInfo => true,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
@@ -213,10 +230,28 @@ enum ActionButtonType {
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
+      ActionButtonType.setAlbumCover => SetAlbumCoverActionButton(
+        albumId: context.currentAlbum!.id,
+        source: context.source,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => UnStackActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.openInBrowser => OpenInBrowserActionButton(
+        remoteId: context.asset.remoteId!,
+        origin: context.timelineOrigin,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+        iconColor: context.originalTheme?.iconTheme.color,
+      ),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(
         assetId: (context.asset as RemoteAsset).id,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
+      ActionButtonType.setProfilePicture => SetProfilePictureActionButton(
+        asset: context.asset,
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
@@ -225,7 +260,7 @@ enum ActionButtonType {
         iconData: Icons.info_outline,
         iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
-        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
+        onPressed: () => EventStream.shared.emit(const ViewerShowDetailsEvent()),
       ),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),
@@ -251,7 +286,7 @@ enum ActionButtonType {
   int get kebabMenuGroup => switch (this) {
     // 0: info
     ActionButtonType.openInfo => 0,
-    // 10: move,remove, and delete
+    // 10: move, remove, and delete
     ActionButtonType.trash => 10,
     ActionButtonType.deletePermanent => 10,
     ActionButtonType.removeFromLockFolder => 10,

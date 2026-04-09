@@ -4,10 +4,11 @@ import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import { CronJob, DatabaseLock, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VersionCheckMetadata } from 'src/types';
+import { handlePromiseError } from 'src/utils/misc';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
   return {
@@ -23,6 +24,15 @@ export class VersionService extends BaseService {
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
+
+    const randomMinute = Math.floor(Math.random() * 60);
+    const expression = `${randomMinute} * * * *`;
+    this.logger.debug(`Scheduling version check for cron ${expression}`);
+    this.cronRepository.create({
+      name: CronJob.VersionCheck,
+      expression,
+      onTick: () => handlePromiseError(this.handleQueueVersionCheck(), this.logger),
+    });
 
     await this.databaseRepository.withLock(DatabaseLock.VersionHistory, async () => {
       const previous = await this.versionRepository.getLatest();
@@ -55,6 +65,13 @@ export class VersionService extends BaseService {
     return this.versionRepository.getAll();
   }
 
+  @OnEvent({ name: 'ConfigUpdate' })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
+    if (!oldConfig.newVersionCheck.enabled && newConfig.newVersionCheck.enabled) {
+      await this.handleQueueVersionCheck();
+    }
+  }
+
   async handleQueueVersionCheck() {
     await this.jobRepository.queue({ name: JobName.VersionCheck, data: {} });
   }
@@ -64,28 +81,12 @@ export class VersionService extends BaseService {
     try {
       this.logger.debug('Running version check');
 
-      const { environment } = this.configRepository.getEnv();
-      if (environment === ImmichEnvironment.Development) {
-        return JobStatus.Skipped;
-      }
-
       const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
         return JobStatus.Skipped;
       }
 
-      const versionCheck = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
-      if (versionCheck?.checkedAt) {
-        const lastUpdate = DateTime.fromISO(versionCheck.checkedAt);
-        const elapsedTime = DateTime.now().diff(lastUpdate).as('minutes');
-        // check once per hour (max)
-        if (elapsedTime < 60) {
-          return JobStatus.Skipped;
-        }
-      }
-
-      const { tag_name: releaseVersion, published_at: publishedAt } =
-        await this.serverInfoRepository.getGitHubRelease();
+      const { version: releaseVersion, published_at: publishedAt } = await this.serverInfoRepository.getLatestRelease();
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VersionCheckState, metadata);

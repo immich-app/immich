@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -17,6 +19,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   static final _log = Logger('CancellableImageProviderMixin');
 
   bool isCancelled = false;
+  bool isFinished = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
 
@@ -48,22 +51,59 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     return null;
   }
 
-  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
+  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {bool evictOnError = true}) async* {
     if (isCancelled) {
       this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     try {
       final image = await request.load(decode);
-      if (image == null || isCancelled) {
+      if (isCancelled) {
+        return;
+      }
+      if (image == null && evictOnError) {
         PaintingBinding.instance.imageCache.evict(this);
+        return;
+      } else if (image == null) {
         return;
       }
       yield image;
+    } catch (e, stack) {
+      if (isCancelled) {
+        return;
+      }
+      if (evictOnError) {
+        PaintingBinding.instance.imageCache.evict(this);
+        rethrow;
+      }
+      _log.warning('Non-fatal image load error', e, stack);
+    } finally {
+      this.request = null;
+    }
+  }
+
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
+    if (isCancelled) {
+      this.request = null;
+      return null;
+    }
+
+    try {
+      final codec = await request.loadCodec();
+      if (isCancelled) {
+        codec?.dispose();
+        return null;
+      }
+      if (codec == null) {
+        PaintingBinding.instance.imageCache.evict(this);
+        return null;
+      }
+      return codec;
     } catch (e) {
-      PaintingBinding.instance.imageCache.evict(this);
+      if (!isCancelled) {
+        PaintingBinding.instance.imageCache.evict(this);
+      }
       rethrow;
     } finally {
       this.request = null;
@@ -91,6 +131,8 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   @override
   void cancel() {
     isCancelled = true;
+    final hasActiveWork = !isFinished;
+
     final request = this.request;
     if (request != null) {
       this.request = null;
@@ -102,6 +144,10 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       cachedOperation = null;
       operation.cancel();
     }
+
+    if (hasActiveWork) {
+      PaintingBinding.instance.imageCache.evict(this);
+    }
   }
 }
 
@@ -110,7 +156,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
+    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
   } else {
     final String assetId;
     final String thumbhash;
@@ -123,7 +169,12 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId, thumbhash: thumbhash, assetType: asset.type);
+    provider = RemoteFullImageProvider(
+      assetId: assetId,
+      thumbhash: thumbhash,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+    );
   }
 
   return provider;

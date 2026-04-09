@@ -17,7 +17,6 @@
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -46,6 +45,7 @@
     userSettings,
     allowEdit = false,
     showOwner = false,
+    // eslint-disable-next-line no-useless-assignment
     albumGroupIds = $bindable([]),
     empty,
   }: Props = $props();
@@ -232,14 +232,9 @@
     return albums;
   };
 
-  const onUpdate = (album: AlbumResponseDto) => {
+  const onAlbumUpdate = (album: AlbumResponseDto) => {
     ownedAlbums = findAndUpdate(ownedAlbums, album);
     sharedAlbums = findAndUpdate(sharedAlbums, album);
-  };
-
-  const onAlbumUpdate = (album: AlbumResponseDto) => {
-    onUpdate(album);
-    userInteraction.recentAlbums = findAndUpdate(userInteraction.recentAlbums || [], album);
   };
 
   const onAlbumDelete = (album: AlbumResponseDto) => {
@@ -249,7 +244,7 @@
 
   const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
     if (sharedLink.album) {
-      onUpdate(sharedLink.album);
+      onAlbumUpdate(sharedLink.album);
     }
   };
 </script>

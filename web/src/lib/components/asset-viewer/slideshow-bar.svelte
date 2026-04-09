@@ -2,6 +2,7 @@
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import { ProgressBarStatus } from '$lib/constants';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetTypeEnum } from '@immich/sdk';
@@ -84,6 +85,7 @@
   });
 
   onDestroy(() => {
+    setCursorStyle('');
     if (unsubscribeRestart) {
       unsubscribeRestart();
     }
@@ -199,7 +201,7 @@
       variant="ghost"
       shape="round"
       color="secondary"
-      icon={mdiChevronLeft}
+      icon={languageManager.rtl ? mdiChevronRight : mdiChevronLeft}
       onclick={onPrevious}
       aria-label={$t('previous')}
     />
@@ -207,7 +209,7 @@
       variant="ghost"
       shape="round"
       color="secondary"
-      icon={mdiChevronRight}
+      icon={languageManager.rtl ? mdiChevronLeft : mdiChevronRight}
       onclick={onNext}
       aria-label={$t('next')}
     />

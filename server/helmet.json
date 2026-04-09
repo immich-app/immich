@@ -1,0 +1,21 @@
+{
+  "contentSecurityPolicy": {
+    "directives": {
+      "default-src": ["'self'"],
+      "script-src": ["'self'", "'wasm-unsafe-eval'", "'unsafe-inline'", "https://www.gstatic.com"],
+      "style-src": ["'self'", "'unsafe-inline'"],
+      "img-src": ["'self'", "data:", "blob:"],
+      "connect-src": [
+        "'self'",
+        "blob:",
+        "https://pay.futo.org",
+        "https://static.immich.cloud",
+        "https://tiles.immich.cloud"
+      ],
+      "worker-src": ["'self'", "blob:"],
+      "frame-src": ["'none'"],
+      "object-src": ["'none'"],
+      "base-uri": ["'self'"]
+    }
+  }
+}

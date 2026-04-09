@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
@@ -285,6 +285,28 @@ class AuthDeviceAccess {
   }
 }
 
+class DuplicateAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, duplicateIds: Set<string>) {
+    if (duplicateIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset')
+      .select('asset.duplicateId')
+      .where('asset.duplicateId', 'in', [...duplicateIds])
+      .where('asset.ownerId', '=', userId)
+      .where('asset.deletedAt', 'is', null)
+      .$narrowType<{ duplicateId: NotNull }>()
+      .execute()
+      .then((assets) => new Set(assets.map((asset) => asset.duplicateId)));
+  }
+}
+
 class NotificationAccess {
   constructor(private db: Kysely<DB>) {}
 
@@ -488,6 +510,7 @@ export class AccessRepository {
   album: AlbumAccess;
   asset: AssetAccess;
   authDevice: AuthDeviceAccess;
+  duplicate: DuplicateAccess;
   memory: MemoryAccess;
   notification: NotificationAccess;
   person: PersonAccess;
@@ -503,6 +526,7 @@ export class AccessRepository {
     this.album = new AlbumAccess(db);
     this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
+    this.duplicate = new DuplicateAccess(db);
     this.memory = new MemoryAccess(db);
     this.notification = new NotificationAccess(db);
     this.person = new PersonAccess(db);

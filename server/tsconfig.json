@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "node16",
+    "module": "node20",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -19,8 +19,9 @@
     "preserveWatchOutput": true,
     "paths": {
       "src/*": ["./src/*"],
+      "test/*": ["./test/*"]
     },
-    "baseUrl": "./",
+    "rootDir": ".",
     "jsx": "react",
     "types": ["vitest/globals"],
     "noErrorTruncation": true

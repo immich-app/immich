@@ -47,6 +47,7 @@
 
   let {
     searchName = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
     searchedPeopleLocal = $bindable(),
     type,
     numberPeopleToSearch = maximumLengthSearchPeople,
@@ -69,7 +70,12 @@
       reset();
       return;
     }
-    if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
+    if (
+      !force &&
+      searchedPeople.length > 0 &&
+      searchedPeople.length < maximumLengthSearchPeople &&
+      searchName.startsWith(searchWord)
+    ) {
       search();
       return;
     }

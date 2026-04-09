@@ -26,6 +26,7 @@ class AudioCodec {
   static const mp3 = AudioCodec._(r'mp3');
   static const aac = AudioCodec._(r'aac');
   static const libopus = AudioCodec._(r'libopus');
+  static const opus = AudioCodec._(r'opus');
   static const pcmS16le = AudioCodec._(r'pcm_s16le');
 
   /// List of all possible values in this [enum][AudioCodec].
@@ -33,6 +34,7 @@ class AudioCodec {
     mp3,
     aac,
     libopus,
+    opus,
     pcmS16le,
   ];
 
@@ -75,6 +77,7 @@ class AudioCodecTypeTransformer {
         case r'mp3': return AudioCodec.mp3;
         case r'aac': return AudioCodec.aac;
         case r'libopus': return AudioCodec.libopus;
+        case r'opus': return AudioCodec.opus;
         case r'pcm_s16le': return AudioCodec.pcmS16le;
         default:
           if (!allowNull) {

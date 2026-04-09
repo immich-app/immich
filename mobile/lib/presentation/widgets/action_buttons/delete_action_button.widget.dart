@@ -57,12 +57,12 @@ class DeleteActionButton extends ConsumerWidget {
       if (confirm != true) return;
     }
 
-    final result = await ref.read(actionProvider.notifier).trashRemoteAndDeleteLocal(source);
-    ref.read(multiSelectProvider.notifier).reset();
-
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
+
+    final result = await ref.read(actionProvider.notifier).trashRemoteAndDeleteLocal(source);
+    ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'delete_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 

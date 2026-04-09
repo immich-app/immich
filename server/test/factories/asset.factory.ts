@@ -1,20 +1,33 @@
 import { Selectable } from 'kysely';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { AssetEditFactory } from 'test/factories/asset-edit.factory';
 import { AssetExifFactory } from 'test/factories/asset-exif.factory';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { build } from 'test/factories/builder.factory';
-import { AssetEditLike, AssetExifLike, AssetFileLike, AssetLike, FactoryBuilder, UserLike } from 'test/factories/types';
+import { StackFactory } from 'test/factories/stack.factory';
+import {
+  AssetEditLike,
+  AssetExifLike,
+  AssetFaceLike,
+  AssetFileLike,
+  AssetLike,
+  FactoryBuilder,
+  StackLike,
+  UserLike,
+} from 'test/factories/types';
 import { UserFactory } from 'test/factories/user.factory';
-import { newDate, newSha1, newUuid, newUuidV7 } from 'test/small.factory';
+import { newSha1, newUuid, newUuidV7 } from 'test/small.factory';
 
 export class AssetFactory {
   #owner!: UserFactory;
   #assetExif?: AssetExifFactory;
   #files: AssetFileFactory[] = [];
   #edits: AssetEditFactory[] = [];
+  #faces: AssetFaceFactory[] = [];
+  #stack?: Selectable<StackTable> & { assets: Selectable<AssetTable>[]; primaryAsset: Selectable<AssetTable> };
 
   private constructor(private readonly value: Selectable<AssetTable>) {
     value.ownerId ??= newUuid();
@@ -28,29 +41,31 @@ export class AssetFactory {
   static from(dto: AssetLike = {}) {
     const id = dto.id ?? newUuid();
 
-    const originalFileName = dto.originalFileName ?? `IMG_${id}.jpg`;
+    const originalFileName = dto.originalFileName ?? (dto.type === AssetType.Video ? `MOV_${id}.mp4` : `IMG_${id}.jpg`);
+
+    let now = Date.now();
 
     return new AssetFactory({
       id,
-      createdAt: newDate(),
-      updatedAt: newDate(),
+      createdAt: new Date(now++),
+      updatedAt: new Date(now++),
       deletedAt: null,
       updateId: newUuidV7(),
       status: AssetStatus.Active,
       checksum: newSha1(),
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       deviceAssetId: '',
       deviceId: '',
       duplicateId: null,
       duration: null,
-      encodedVideoPath: null,
-      fileCreatedAt: newDate(),
-      fileModifiedAt: newDate(),
+      fileCreatedAt: new Date(now++),
+      fileModifiedAt: new Date(now++),
       isExternal: false,
       isFavorite: false,
       isOffline: false,
       libraryId: null,
       livePhotoVideoId: null,
-      localDateTime: newDate(),
+      localDateTime: new Date(now),
       originalFileName,
       originalPath: `/data/library/${originalFileName}`,
       ownerId: newUuid(),
@@ -79,6 +94,11 @@ export class AssetFactory {
   edit(dto: AssetEditLike = {}, builder?: FactoryBuilder<AssetEditFactory>) {
     this.#edits.push(build(AssetEditFactory.from(dto).asset(this.value), builder));
     this.value.isEdited = true;
+    return this;
+  }
+
+  face(dto: AssetFaceLike = {}, builder?: FactoryBuilder<AssetFaceFactory>) {
+    this.#faces.push(build(AssetFaceFactory.from({ assetId: this.value?.id, ...dto }), builder));
     return this;
   }
 
@@ -111,6 +131,12 @@ export class AssetFactory {
     return this;
   }
 
+  stack(dto: StackLike = {}, builder?: FactoryBuilder<StackFactory>) {
+    this.#stack = build(StackFactory.from(dto).primaryAsset(this.value), builder).build();
+    this.value.stackId = this.#stack.id;
+    return this;
+  }
+
   build() {
     const exif = this.#assetExif?.build();
 
@@ -120,7 +146,9 @@ export class AssetFactory {
       exifInfo: exif as NonNullable<typeof exif>,
       files: this.#files.map((file) => file.build()),
       edits: this.#edits.map((edit) => edit.build()),
-      faces: [] as Selectable<AssetFaceTable>[],
+      faces: this.#faces.map((face) => face.build()),
+      stack: this.#stack ?? null,
+      tags: [],
     };
   }
 }

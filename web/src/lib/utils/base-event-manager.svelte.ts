@@ -15,7 +15,7 @@ const nextId = () => count++;
 const noop = () => {};
 
 export class BaseEventManager<Events extends EventsBase> {
-  #callbacks: EventItem<Events>[] = $state([]);
+  #callbacks: EventItem<Events>[] = $state.raw([]);
 
   on(subscriptions: EventMap<Events>): () => void {
     const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
@@ -36,7 +36,7 @@ export class BaseEventManager<Events extends EventsBase> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const item = { id: nextId(), event, callback } as EventItem<Events, any>;
-    this.#callbacks.push(item);
+    this.#callbacks = [...this.#callbacks, item];
 
     return () => {
       this.#callbacks = this.#callbacks.filter((current) => current.id !== item.id);

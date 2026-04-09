@@ -41,7 +41,7 @@ class CommentBubble extends ConsumerWidget {
     // avatar (hidden for own messages)
     Widget avatar = const SizedBox.shrink();
     if (!isOwn) {
-      avatar = UserCircleAvatar(user: activity.user, size: 28, radius: 14);
+      avatar = UserCircleAvatar(user: activity.user, size: 28);
     }
 
     // Thumbnail with tappable behavior and optional heart overlay

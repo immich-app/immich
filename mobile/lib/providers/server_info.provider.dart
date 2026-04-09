@@ -15,7 +15,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     : super(
         const ServerInfo(
           serverVersion: ServerVersion(major: 0, minor: 0, patch: 0),
-          latestVersion: null,
           serverFeatures: ServerFeatures(map: true, trash: true, oauthEnabled: false, passwordLogin: true),
           serverConfig: ServerConfig(
             trashDays: 30,
@@ -104,7 +103,9 @@ final serverInfoProvider = StateNotifierProvider<ServerInfoNotifier, ServerInfo>
 
 final versionWarningPresentProvider = Provider.family<bool, UserDto?>((ref, user) {
   final serverInfo = ref.watch(serverInfoProvider);
-  return serverInfo.versionStatus == VersionStatus.clientOutOfDate ||
-      serverInfo.versionStatus == VersionStatus.error ||
-      ((user?.isAdmin ?? false) && serverInfo.versionStatus == VersionStatus.serverOutOfDate);
+  return switch (serverInfo.versionStatus) {
+    VersionStatus.clientOutOfDate || VersionStatus.error => true,
+    VersionStatus.serverOutOfDate => serverInfo.latestVersion != null && (user?.isAdmin ?? false),
+    VersionStatus.upToDate => false,
+  };
 });

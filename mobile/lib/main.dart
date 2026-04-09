@@ -18,8 +18,9 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -42,7 +43,6 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
@@ -52,30 +52,33 @@ import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
-  ImmichWidgetsBinding();
-  unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
-  final (isar, drift, logDb) = await Bootstrap.initDB();
-  await Bootstrap.initDomain(isar, drift, logDb);
-  await initApp();
-  // Warm-up isolate pool for worker manager
-  await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-  await migrateDatabaseIfNeeded(isar, drift);
-  HttpSSLOptions.apply();
+  try {
+    ImmichWidgetsBinding();
+    unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
+    await EasyLocalization.ensureInitialized();
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb);
+    await initApp();
+    // Warm-up isolate pool for worker manager
+    await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
+    await migrateDatabaseIfNeeded(isar, drift);
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        dbProvider.overrideWithValue(isar),
-        isarProvider.overrideWithValue(isar),
-        driftProvider.overrideWith(driftOverride(drift)),
-      ],
-      child: const MainWidget(),
-    ),
-  );
+    runApp(
+      ProviderScope(
+        overrides: [
+          dbProvider.overrideWithValue(isar),
+          isarProvider.overrideWithValue(isar),
+          driftProvider.overrideWith(driftOverride(drift)),
+        ],
+        child: const MainWidget(),
+      ),
+    );
+  } catch (error, stack) {
+    runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
+  }
 }
 
 Future<void> initApp() async {
-  await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
 
   if (Platform.isAndroid) {
@@ -227,8 +230,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
           ref
               .read(backgroundWorkerFgServiceProvider)
               .saveNotificationMessage(
-                IntlKeys.uploading_media.t(),
-                IntlKeys.backup_background_service_default_notification.t(),
+                StaticTranslations.instance.uploading_media,
+                StaticTranslations.instance.backup_background_service_default_notification,
               );
         }
       } else {
@@ -256,7 +259,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void reassemble() {
     if (kDebugMode) {
-      NetworkRepository.reset();
+      NetworkRepository.init();
     }
     super.reassemble();
   }

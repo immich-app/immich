@@ -128,10 +128,10 @@ export class PersonService extends BaseService {
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.id] });
     const faces = await this.personRepository.getFaces(dto.id);
-    const asset = await this.assetRepository.getById(dto.id, { edits: true, exifInfo: true });
-    const assetDimensions = getDimensions(asset!.exifInfo!);
+    const asset = await this.assetRepository.getForFaces(dto.id);
+    const assetDimensions = getDimensions(asset);
 
-    return faces.map((face) => mapFaces(face, auth, asset!.edits!, assetDimensions));
+    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
@@ -197,13 +197,9 @@ export class PersonService extends BaseService {
     let faceId: string | undefined = undefined;
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
-      const [face] = await this.personRepository.getFacesByIds([{ personId: id, assetId }]);
+      const face = await this.personRepository.getForFeatureFaceUpdate({ personId: id, assetId });
       if (!face) {
-        throw new BadRequestException('Invalid assetId for feature face');
-      }
-
-      if (face.asset.isOffline) {
-        throw new BadRequestException('An offline asset cannot be used for feature face');
+        throw new BadRequestException('Invalid assetId for feature face or asset is offline');
       }
 
       faceId = face.id;
@@ -495,7 +491,7 @@ export class PersonService extends BaseService {
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
-      minBirthDate: face.asset.fileCreatedAt ?? undefined,
+      minBirthDate: new Date(face.asset.fileCreatedAt),
     });
 
     // `matches` also includes the face itself
@@ -523,7 +519,7 @@ export class PersonService extends BaseService {
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
-        minBirthDate: face.asset.fileCreatedAt ?? undefined,
+        minBirthDate: new Date(face.asset.fileCreatedAt),
       });
 
       if (matchWithPerson.length > 0) {
@@ -599,7 +595,7 @@ export class PersonService extends BaseService {
           update.birthDate = mergePerson.birthDate;
         }
 
-        if (Object.keys(update).length > 0) {
+        if (Object.keys(update).length > 1) {
           primaryPerson = await this.personRepository.update(update);
         }
 
@@ -635,7 +631,11 @@ export class PersonService extends BaseService {
       this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
     ]);
 
-    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    const [asset, person] = await Promise.all([
+      this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true }),
+      this.findOrFail(dto.personId),
+    ]);
+
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -677,8 +677,9 @@ export class PersonService extends BaseService {
       };
 
       // now coordinates are in original image space
-      dto.imageHeight = asset.exifInfo.exifImageHeight;
-      dto.imageWidth = asset.exifInfo.exifImageWidth;
+      const originalDimensions = getDimensions(asset.exifInfo);
+      dto.imageWidth = originalDimensions.width;
+      dto.imageHeight = originalDimensions.height;
     }
 
     await this.personRepository.createAssetFace({
@@ -692,6 +693,10 @@ export class PersonService extends BaseService {
       boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
+
+    if (!person.faceAssetId) {
+      await this.createNewFeaturePhoto([person.id]);
+    }
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {

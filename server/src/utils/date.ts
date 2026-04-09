@@ -1,6 +1,10 @@
 import { DateTime } from 'luxon';
 
-export const asDateString = (x: Date | string | null): string | null => {
+export const asDateString = <T extends Date | string | undefined | null>(x: T) => {
+  return x instanceof Date ? x.toISOString() : (x as Exclude<T, Date>);
+};
+
+export const asBirthDateString = (x: Date | string | null): string | null => {
   return x instanceof Date ? x.toISOString().split('T')[0] : x;
 };
 

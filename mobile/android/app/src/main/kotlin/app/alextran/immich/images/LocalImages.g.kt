@@ -59,7 +59,7 @@ private open class LocalImagesPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface LocalImageApi {
-  fun requestImage(assetId: String, requestId: Long, width: Long, height: Long, isVideo: Boolean, callback: (Result<Map<String, Long>?>) -> Unit)
+  fun requestImage(assetId: String, requestId: Long, width: Long, height: Long, isVideo: Boolean, preferEncoded: Boolean, callback: (Result<Map<String, Long>?>) -> Unit)
   fun cancelRequest(requestId: Long)
   fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit)
 
@@ -82,7 +82,8 @@ interface LocalImageApi {
             val widthArg = args[2] as Long
             val heightArg = args[3] as Long
             val isVideoArg = args[4] as Boolean
-            api.requestImage(assetIdArg, requestIdArg, widthArg, heightArg, isVideoArg) { result: Result<Map<String, Long>?> ->
+            val preferEncodedArg = args[5] as Boolean
+            api.requestImage(assetIdArg, requestIdArg, widthArg, heightArg, isVideoArg, preferEncodedArg) { result: Result<Map<String, Long>?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(LocalImagesPigeonUtils.wrapError(error))

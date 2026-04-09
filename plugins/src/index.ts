@@ -44,7 +44,7 @@ export function actionAddToAlbum() {
       authToken,
       assetId: data.asset.id,
       albumId: albumId,
-    })
+    }),
   );
 
   addAssetToAlbum(ptr.offset);
@@ -61,7 +61,7 @@ export function actionArchive() {
       authToken,
       id: data.asset.id,
       visibility: 'archive',
-    })
+    }),
   );
 
   updateAsset(ptr.offset);
