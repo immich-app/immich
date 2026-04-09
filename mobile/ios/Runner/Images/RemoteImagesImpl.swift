@@ -108,7 +108,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
           return request.completion(ImageProcessing.cancelledResult)
         }
 
-        request.completion(
+        return request.completion(
                  .success([
                    "pointer": Int64(Int(bitPattern: buffer.data)),
                    "width": Int64(buffer.width),
@@ -116,7 +116,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
                    "rowBytes": Int64(buffer.rowBytes),
                  ]))
       } catch {
-        request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
       }
     }
   }
