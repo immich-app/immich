@@ -218,6 +218,42 @@ export class MachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
+  async describeImage(imagePath: string): Promise<{ description: string; confidence: number; tags: string[] }> {
+    return this.postVlm('/vlm/describe', imagePath);
+  }
+
+  async estimateDate(imagePath: string): Promise<{ estimatedDate: string; confidence: number; reasoning: string }> {
+    return this.postVlm('/vlm/date-estimate', imagePath);
+  }
+
+  async tagScene(imagePath: string): Promise<{ tags: Array<{ tag: string; category: string; confidence: number }> }> {
+    return this.postVlm('/vlm/scene-tags', imagePath);
+  }
+
+  async analyzeVideo(
+    videoPath: string,
+  ): Promise<{ highlights: Array<{ timestampMs: number; description: string; score: number }> }> {
+    return this.postVlm('/vlm/video-analysis', videoPath);
+  }
+
+  private async postVlm<T>(endpoint: string, filePath: string): Promise<T> {
+    const fileBuffer = await readFile(filePath);
+    const formData = new FormData();
+    formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
+
+    for (const url of this.config.urls) {
+      try {
+        const response = await fetch(new URL(endpoint, url), { method: 'POST', body: formData });
+        if (response.ok) {
+          return response.json();
+        }
+      } catch (error: Error | unknown) {
+        this.logger.warn(`VLM request to "${url}${endpoint}" failed: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+    throw new Error(`VLM request '${endpoint}' failed for all URLs`);
+  }
+
   async ocr(imagePath: string, { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions) {
     const request = {
       [ModelTask.OCR]: {

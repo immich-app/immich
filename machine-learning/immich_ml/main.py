@@ -165,6 +165,11 @@ def get_entries(entries: str = Form()) -> InferenceEntries:
 
 app = FastAPI(lifespan=lifespan)
 
+# Mount VLM router if enabled
+if settings.vlm_enabled:
+    from .vlm import vlm_router
+    app.include_router(vlm_router)
+
 
 @app.get("/")
 async def root() -> ORJSONResponse:

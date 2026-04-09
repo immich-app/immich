@@ -79,6 +79,14 @@ class Settings(BaseSettings):
     ann_tuning_level: int = 2
     rknn: bool = True
     rknn_threads: int = 1
+    vlm_enabled: bool = False
+    vlm_provider: str = "ollama"  # ollama, openai, gemini
+    vlm_model: str = ""
+    vlm_url: str = "http://localhost:11434"
+    vlm_api_key: str = ""
+    vlm_max_tokens: int = 1024
+    vlm_temperature: float = 0.3
+    vlm_timeout: float = 60.0
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32

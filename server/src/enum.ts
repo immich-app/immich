@@ -575,6 +575,7 @@ export enum QueueName {
   Ocr = 'ocr',
   Workflow = 'workflow',
   Editor = 'editor',
+  AiDescription = 'aiDescription',
 }
 
 export enum QueueJobStatus {
@@ -664,6 +665,39 @@ export enum JobName {
 
   // Workflow
   WorkflowRun = 'WorkflowRun',
+
+  // AI Description & Analysis
+  AiDescribeQueueAll = 'AiDescribeQueueAll',
+  AiDescribe = 'AiDescribe',
+  AiDateEstimateQueueAll = 'AiDateEstimateQueueAll',
+  AiDateEstimate = 'AiDateEstimate',
+  AiSceneTagQueueAll = 'AiSceneTagQueueAll',
+  AiSceneTag = 'AiSceneTag',
+  AiAutoAlbumGenerate = 'AiAutoAlbumGenerate',
+  AiMemoryNarrative = 'AiMemoryNarrative',
+
+  // Photo Quality
+  PhotoQualityQueueAll = 'PhotoQualityQueueAll',
+  PhotoQuality = 'PhotoQuality',
+
+  // Video AI
+  VideoHighlightsQueueAll = 'VideoHighlightsQueueAll',
+  VideoHighlights = 'VideoHighlights',
+  VideoTranscribeQueueAll = 'VideoTranscribeQueueAll',
+  VideoTranscribe = 'VideoTranscribe',
+  VideoChaptersQueueAll = 'VideoChaptersQueueAll',
+  VideoChapters = 'VideoChapters',
+
+  // Integrations
+  WebhookDeliver = 'WebhookDeliver',
+  FrigateEventImport = 'FrigateEventImport',
+  FrigateSyncEvents = 'FrigateSyncEvents',
+
+  // Utility
+  StorageTierEvaluate = 'StorageTierEvaluate',
+  StorageTierMigrate = 'StorageTierMigrate',
+  BatchMetadataUpdate = 'BatchMetadataUpdate',
+  TripDetection = 'TripDetection',
 }
 
 export enum QueueCommand {
