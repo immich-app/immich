@@ -297,7 +297,7 @@ class _SaveEditsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isApplyingEdits = ref.watch(editorStateProvider.select((state) => state.isApplyingEdits));
-    final hasEdits = ref.watch(editorStateProvider.select((state) => state.hasEdits));
+    final hasUnsavedEdits = ref.watch(editorStateProvider.select((state) => state.hasUnsavedEdits));
 
     return isApplyingEdits
         ? const Padding(
@@ -308,7 +308,7 @@ class _SaveEditsButton extends ConsumerWidget {
             icon: Icons.done_rounded,
             color: ImmichColor.primary,
             variant: ImmichVariant.ghost,
-            disabled: !hasEdits,
+            disabled: !hasUnsavedEdits,
             onPressed: onSave,
           );
   }
