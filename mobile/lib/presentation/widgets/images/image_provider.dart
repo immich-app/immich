@@ -67,7 +67,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         if (isFinal) PaintingBinding.instance.imageCache.evict(this);
         return;
       }
-      if (isFinal) isFinished = true;
+      isFinished = isFinal;
       yield image;
     } catch (e, stack) {
       if (isCancelled) {
@@ -99,7 +99,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         if (isFinal) PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
-      if (isFinal) isFinished = true;
+      isFinished = isFinal;
       return codec;
     } catch (e) {
       if (!isCancelled) {
