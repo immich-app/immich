@@ -1,42 +1,30 @@
 import Foundation
 
-class ImageRequest {
-  private struct State {
+class ImageRequest: @unchecked Sendable {
+  private struct State: Sendable {
     var isCancelled = false
-    var callback: ((Result<[String: Int64]?, any Error>) -> Void)?
   }
 
+  let completion: @Sendable (Result<[String: Int64]?, any Error>) -> Void
   private let state: Mutex<State>
 
   var isCancelled: Bool {
-    state.withLock { $0.isCancelled }
+    get {
+      state.withLock { $0.isCancelled }
+    }
+    set {
+      state.withLock { $0.isCancelled = newValue }
+    }
   }
 
-  init(callback: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    self.state = Mutex(State(callback: callback))
+  init(completion: @escaping @Sendable (Result<[String: Int64]?, any Error>) -> Void) {
+    self.state = Mutex(State())
+    self.completion = completion
   }
 
   func cancel() {
-    let cb = state.withLock { state in
-      state.isCancelled = true
-      defer { state.callback = nil }
-      return state.callback
-    }
-    guard let cb else { return }
+    isCancelled = true
     onCancel()
-    cb(ImageProcessing.cancelledResult)
-  }
-
-  /// Delivers the result to the callback. Returns true if the callback was called, false if it was already consumed.
-  @discardableResult
-  func finish(with result: Result<[String: Int64]?, any Error>) -> Bool {
-    let cb = state.withLock { state in
-      defer { state.callback = nil }
-      return state.callback
-    }
-    guard let cb else { return false }
-    cb(result)
-    return true
   }
 
   func onCancel() {}

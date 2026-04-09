@@ -3,24 +3,24 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-class RemoteImageRequest: ImageRequest {
-  weak var task: URLSessionDataTask?
+final class RemoteImageRequest: ImageRequest {
+  let task: URLSessionDataTask
   let id: Int64
 
-  init(id: Int64, task: URLSessionDataTask, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
+  init(id: Int64, task: URLSessionDataTask, completion: @escaping @Sendable (Result<[String: Int64]?, any Error>) -> Void) {
     self.id = id
     self.task = task
-    super.init(callback: completion)
+    super.init(completion: completion)
   }
 
   override func onCancel() {
-    task?.cancel()
+    task.cancel()
   }
 }
 
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static let registry = RequestRegistry<RemoteImageRequest>()
-  private static var rgbaFormat = vImage_CGImageFormat(
+  private static let rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
     colorSpace: CGColorSpaceCreateDeviceRGB(),
@@ -57,64 +57,73 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return
     }
 
-    if request.isCancelled { return }
+    if request.isCancelled {
+      return request.completion(ImageProcessing.cancelledResult)
+    }
 
     if let error = error {
-      if (error as NSError).code == NSURLErrorCancelled {
-        request.finish(with: ImageProcessing.cancelledResult)
-      } else {
-        request.finish(with: .failure(error))
-      }
-      return
+      return request.completion(.failure(error))
     }
 
     guard let data = data else {
-      request.finish(with: .failure(PigeonError(code: "", message: "No data received", details: nil)))
-      return
+      return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
     if encoded {
       let length = data.count
       let pointer = malloc(length)!
       data.copyBytes(to: pointer.assumingMemoryBound(to: UInt8.self), count: length)
-      if !request.finish(with: .success([
-        "pointer": Int64(Int(bitPattern: pointer)),
-        "length": Int64(length),
-      ])) {
+
+      if request.isCancelled {
         free(pointer)
+        return request.completion(ImageProcessing.cancelledResult)
       }
-      return
+
+      return request.completion(
+        .success([
+          "pointer": Int64(Int(bitPattern: pointer)),
+          "length": Int64(length),
+        ]))
     }
 
     ImageProcessing.queue.addOperation {
-      if request.isCancelled { return }
+      if request.isCancelled {
+        return request.completion(ImageProcessing.cancelledResult)
+      }
 
       guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
             let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
-        request.finish(with: .failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
-        return
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
       }
 
-      if request.isCancelled { return }
+      if request.isCancelled {
+        return request.completion(ImageProcessing.cancelledResult)
+      }
 
       do {
         let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
-        if !request.finish(with: .success([
-          "pointer": Int64(Int(bitPattern: buffer.data)),
-          "width": Int64(buffer.width),
-          "height": Int64(buffer.height),
-          "rowBytes": Int64(buffer.rowBytes),
-        ])) {
+
+        if request.isCancelled {
           buffer.free()
+          return request.completion(ImageProcessing.cancelledResult)
         }
+
+        request.completion(
+                 .success([
+                   "pointer": Int64(Int(bitPattern: buffer.data)),
+                   "width": Int64(buffer.width),
+                   "height": Int64(buffer.height),
+                   "rowBytes": Int64(buffer.rowBytes),
+                 ]))
       } catch {
-        request.finish(with: .failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+        request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
       }
     }
   }
 
   func cancelRequest(requestId: Int64) {
-    Self.registry.remove(requestId: requestId)?.cancel()
+    // For now don't call .remove here since we call completion in the handleCompletion method
+    Self.registry.get(requestId: requestId)?.cancel()
   }
 
   func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
