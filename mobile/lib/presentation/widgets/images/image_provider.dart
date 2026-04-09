@@ -95,7 +95,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       isFinished = isFinal;
       return codec;
     } catch (e) {
-      if(isFinal){
+      if (isFinal) {
         isFinished = true;
         PaintingBinding.instance.imageCache.evict(this);
         rethrow;
