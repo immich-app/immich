@@ -78,8 +78,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   @override
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
-    isCancelled = false;
-
     if (key.isAnimated) {
       return AnimatedImageStreamCompleter(
         stream: _animatedCodec(key, decode),

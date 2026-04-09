@@ -68,8 +68,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
-    isCancelled = false;
-
     if (key.isAnimated) {
       return AnimatedImageStreamCompleter(
         stream: _animatedCodec(key, decode),
