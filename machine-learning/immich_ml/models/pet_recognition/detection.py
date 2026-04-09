@@ -18,8 +18,23 @@ class PetDetector(InferenceModel):
     use_type_subfolder = False
 
     def __init__(self, model_name: str, min_score: float = 0.5, **model_kwargs: Any) -> None:
-        if model_name == "pet-recognition":
+        detection_model_name = model_kwargs.get("detectionModelName", model_name)
+        if detection_model_name == "pet-recognition":
+            # Default to a compatible model
             model_name = "yolov8n"
+            self.hf_repo = "Quazim0t0/yolov8-onnx"
+            self.model_file = "yolo11n.onnx"
+        elif "/" in detection_model_name:
+            # Allow users to specify a custom Hugging Face repo
+            model_name = detection_model_name
+            self.hf_repo = detection_model_name
+            self.model_file = model_kwargs.get("modelFile", "model.onnx")
+        else:
+            model_name = detection_model_name
+
+        self.hf_repo = model_kwargs.get("hfRepo", self.hf_repo)
+        self.model_file = model_kwargs.get("modelFile", self.model_file)
+
         self.min_score = model_kwargs.pop("minScore", min_score)
         super().__init__(model_name, **model_kwargs)
 
@@ -44,6 +59,7 @@ class PetDetector(InferenceModel):
         mask = (scores >= self.min_score) & ((labels == 15) | (labels == 16))
         
         filtered_output = output[mask]
+        log.debug(f"Found {len(filtered_output)} pets")
         
         if len(filtered_output) == 0:
             return {

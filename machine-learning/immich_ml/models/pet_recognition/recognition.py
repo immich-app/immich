@@ -19,15 +19,29 @@ class PetRecognizer(InferenceModel):
     use_type_subfolder = False
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        if model_name == "pet-recognition":
-            # We use CLIP as a high-quality embedding placeholder
+        recognition_model_name = model_kwargs.get("recognitionModelName", model_name)
+        if recognition_model_name == "pet-recognition":
+            # Default to a compatible model
             model_name = "clip-vit-base-patch32"
+            self.hf_repo = "Xenova/clip-vit-base-patch32"
+            self.model_file = "onnx/vision_model.onnx"
+        elif "/" in recognition_model_name:
+            # Allow users to specify a custom Hugging Face repo
+            model_name = recognition_model_name
+            self.hf_repo = recognition_model_name
+            self.model_file = model_kwargs.get("modelFile", "model.onnx")
+        else:
+            model_name = recognition_model_name
+
+        self.hf_repo = model_kwargs.get("hfRepo", self.hf_repo)
+        self.model_file = model_kwargs.get("modelFile", self.model_file)
+
         super().__init__(model_name, **model_kwargs)
 
     def _predict(
         self, inputs: NDArray[np.uint8] | bytes | Image.Image, pets: PetDetectionOutput
     ) -> PetRecognitionOutput:
-        log.info(f"Running pet recognition for {len(pets['labels'])} pets...")
+        log.debug(f"Running pet recognition for {len(pets['labels'])} pets...")
         if pets["boxes"].shape[0] == 0:
             return []
 

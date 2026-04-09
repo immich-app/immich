@@ -33,6 +33,11 @@ export type ModelPayload = { imagePath: string } | { text: string };
 type ModelOptions = { modelName: string };
 
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
+export type PetDetectionOptions = {
+  detectionModelName: string;
+  recognitionModelName: string;
+  minScore: number;
+};
 export type OcrOptions = ModelOptions & {
   minDetectionScore: number;
   minRecognitionScore: number;
@@ -220,11 +225,11 @@ export class MachineLearningRepository {
     };
   }
 
-  async detectPets(imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+  async detectPets(imagePath: string, { detectionModelName, recognitionModelName, minScore }: PetDetectionOptions) {
     const request = {
       [ModelTask.PET_RECOGNITION]: {
-        [ModelType.DETECTION]: { modelName, options: { minScore } },
-        [ModelType.RECOGNITION]: { modelName },
+        [ModelType.DETECTION]: { modelName: detectionModelName, options: { minScore } },
+        [ModelType.RECOGNITION]: { modelName: recognitionModelName },
       },
     };
     const response = await this.predict<PetRecognitionResponse>({ imagePath }, request);

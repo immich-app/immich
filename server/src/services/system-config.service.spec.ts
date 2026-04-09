@@ -104,7 +104,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     petRecognition: {
       enabled: true,
-      modelName: 'pet-recognition',
+      detectionModelName: 'pet-recognition',
+      recognitionModelName: 'pet-recognition',
       minScore: 0.5,
       maxDistance: 0.5,
       minFaces: 3,

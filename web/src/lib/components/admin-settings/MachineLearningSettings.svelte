@@ -274,18 +274,57 @@
 
           <hr />
 
-          <SettingSelect
-            label={$t('admin.machine_learning_pet_recognition_model')}
-            desc={$t('admin.machine_learning_pet_recognition_model_description')}
-            name="pet-recognition-model"
-            bind:value={configToEdit.machineLearning.petRecognition.modelName}
-            options={[{ value: 'pet-recognition', text: 'pet-recognition' }]}
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_pet_detection_model')}
+            description={$t('admin.machine_learning_pet_recognition_model_description') + ' (Detection, e.g. user/repo-name)'}
+            bind:value={configToEdit.machineLearning.petRecognition.detectionModelName}
             disabled={disabled ||
               !configToEdit.machineLearning.enabled ||
               !configToEdit.machineLearning.petRecognition.enabled}
-            isEdited={configToEdit.machineLearning.petRecognition.modelName !==
-              config.machineLearning.petRecognition.modelName}
-          />
+            isEdited={configToEdit.machineLearning.petRecognition.detectionModelName !==
+              config.machineLearning.petRecognition.detectionModelName}
+          >
+            {#snippet trailingSnippet()}
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => (configToEdit.machineLearning.petRecognition.detectionModelName = 'pet-recognition')}
+                disabled={disabled ||
+                  !configToEdit.machineLearning.enabled ||
+                  !configToEdit.machineLearning.petRecognition.enabled ||
+                  configToEdit.machineLearning.petRecognition.detectionModelName === 'pet-recognition'}
+              >
+                {$t('default')}
+              </Button>
+            {/snippet}
+          </SettingInputField>
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_pet_recognition_model')}
+            description={$t('admin.machine_learning_pet_recognition_model_description') + ' (Recognition, e.g. user/repo-name)'}
+            bind:value={configToEdit.machineLearning.petRecognition.recognitionModelName}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.petRecognition.enabled}
+            isEdited={configToEdit.machineLearning.petRecognition.recognitionModelName !==
+              config.machineLearning.petRecognition.recognitionModelName}
+          >
+            {#snippet trailingSnippet()}
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => (configToEdit.machineLearning.petRecognition.recognitionModelName = 'pet-recognition')}
+                disabled={disabled ||
+                  !configToEdit.machineLearning.enabled ||
+                  !configToEdit.machineLearning.petRecognition.enabled ||
+                  configToEdit.machineLearning.petRecognition.recognitionModelName === 'pet-recognition'}
+              >
+                {$t('default')}
+              </Button>
+            {/snippet}
+          </SettingInputField>
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}

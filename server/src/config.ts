@@ -61,7 +61,8 @@ export type SystemConfig = {
     };
     petRecognition: {
       enabled: boolean;
-      modelName: string;
+      detectionModelName: string;
+      recognitionModelName: string;
       minScore: number;
       minFaces: number;
       maxDistance: number;
@@ -259,8 +260,9 @@ export const defaults = Object.freeze<SystemConfig>({
       interval: 30_000,
     },
     petRecognition: {
-      enabled: false,
-      modelName: 'pet-recognition',
+      enabled: process.env.IMMICH_PET_RECOGNITION_ENABLED === 'true',
+      detectionModelName: process.env.IMMICH_PET_DETECTION_MODEL_NAME || 'pet-recognition',
+      recognitionModelName: process.env.IMMICH_PET_RECOGNITION_MODEL_NAME || 'pet-recognition',
       minScore: 0.5,
       maxDistance: 0.5,
       minFaces: 3,

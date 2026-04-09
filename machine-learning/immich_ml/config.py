@@ -67,6 +67,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
         env_nested_delimiter="__",
         protected_namespaces=("settings_",),
+        secrets_dir="/run/secrets",
     )
 
     cache_folder: Path = (Path.home() / ".cache" / "immich_ml").resolve()
@@ -97,7 +98,7 @@ class Settings(BaseSettings):
 
 
 class NonPrefixedSettings(BaseSettings):
-    model_config = SettingsConfigDict(case_sensitive=False)
+    model_config = SettingsConfigDict(case_sensitive=False, secrets_dir="/run/secrets")
 
     immich_host: str = "[::]"
     immich_port: int = 3003

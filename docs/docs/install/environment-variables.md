@@ -179,6 +179,7 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_RKNN_THREADS`                             | How many threads of RKNN runtime should be spun up while inferencing.                                                                                        |               `1`               | machine learning |
 | `MACHINE_LEARNING_MODEL_ARENA`                              | Pre-allocates CPU memory to avoid memory fragmentation                                                                                                       |              true               | machine learning |
 | `MACHINE_LEARNING_OPENVINO_PRECISION`                       | If set to FP16, uses half-precision floating-point operations for faster inference with reduced accuracy (one of [`FP16`, `FP32`], applies only to OpenVINO) |             `FP32`              | machine learning |
+| `MACHINE_LEARNING_HF_TOKEN`                                 | Hugging Face token for pulling private or gated models                                                                                                       |                                 | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 
@@ -219,6 +220,7 @@ To use any of these, either set `CREDENTIALS_DIRECTORY` to a directory that cont
 | `DB_PASSWORD`      | `DB_PASSWORD_FILE`<sup>\*1</sup>            |
 | `DB_URL`           | `DB_URL_FILE`<sup>\*1</sup>                 |
 | `REDIS_PASSWORD`   | `REDIS_PASSWORD_FILE`<sup>\*2</sup>         |
+| `MACHINE_LEARNING_HF_TOKEN` | `MACHINE_LEARNING_HF_TOKEN_FILE` |
 
 \*1: See the [official documentation][docker-secrets-docs] for
 details on how to use Docker Secrets in the Postgres image.

@@ -445,7 +445,11 @@ export class PersonService extends BaseService {
       imageHeight,
       imageWidth,
       faces: detectedPets,
-    } = await this.machineLearningRepository.detectPets(previewFile.path, machineLearning.petRecognition);
+    } = await this.machineLearningRepository.detectPets(previewFile.path, {
+      ...machineLearning.petRecognition,
+      detectionModelName: machineLearning.petRecognition.detectionModelName,
+      recognitionModelName: machineLearning.petRecognition.recognitionModelName,
+    });
     this.logger.debug(`${detectedPets.length} pets detected in ${previewFile.path}`);
 
     const faces = detectedPets.map((pet) => ({ ...pet, type: PersonType.Pet }));

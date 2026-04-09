@@ -57,7 +57,18 @@ export class EnvDto {
   @ValidateBoolean({ optional: true })
   IMMICH_IGNORE_MOUNT_CHECK_ERRORS?: boolean;
 
-  @IsEnum(LogLevel)
+  @ValidateBoolean({ optional: true })
+  IMMICH_PET_RECOGNITION_ENABLED?: boolean;
+
+  @IsString()
+  @Optional()
+  IMMICH_PET_DETECTION_MODEL_NAME?: string;
+
+  @IsString()
+  @Optional()
+  IMMICH_PET_RECOGNITION_MODEL_NAME?: string;
+
+  @IsString()
   @Optional()
   IMMICH_LOG_LEVEL?: LogLevel;
 

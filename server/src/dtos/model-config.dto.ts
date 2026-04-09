@@ -56,7 +56,17 @@ export class FacialRecognitionConfig extends ModelConfig {
   minFaces!: number;
 }
 
-export class PetRecognitionConfig extends ModelConfig {
+export class PetRecognitionConfig extends TaskConfig {
+  @ApiProperty({ description: 'Name of the pet detection model' })
+  @IsString()
+  @IsNotEmpty()
+  detectionModelName!: string;
+
+  @ApiProperty({ description: 'Name of the pet recognition model' })
+  @IsString()
+  @IsNotEmpty()
+  recognitionModelName!: string;
+
   @IsNumber()
   @Min(0.1)
   @Max(1)
