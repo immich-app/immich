@@ -26,12 +26,14 @@ final class CustomImageCache implements ImageCache {
   void clear() {
     _small.clear();
     _large.clear();
+    _thumbhash.clear();
   }
 
   @override
   void clearLiveImages() {
     _small.clearLiveImages();
     _large.clearLiveImages();
+    _thumbhash.clearLiveImages();
   }
 
   /// Gets the cache for the given key
@@ -51,19 +53,19 @@ final class CustomImageCache implements ImageCache {
   }
 
   @override
-  int get currentSize => _small.currentSize + _large.currentSize;
+  int get currentSize => _small.currentSize + _large.currentSize + _thumbhash.currentSize;
 
   @override
-  int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes;
+  int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes + _thumbhash.currentSizeBytes;
 
   @override
   bool evict(Object key, {bool includeLive = true}) => _cacheForKey(key).evict(key, includeLive: includeLive);
 
   @override
-  int get liveImageCount => _small.liveImageCount + _large.liveImageCount;
+  int get liveImageCount => _small.liveImageCount + _large.liveImageCount + _thumbhash.liveImageCount;
 
   @override
-  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount;
+  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount + _thumbhash.pendingImageCount;
 
   @override
   ImageStreamCompleter? putIfAbsent(
