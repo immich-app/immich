@@ -109,7 +109,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-    yield* loadRequest(request, decode);
+    yield* loadRequest(request, decode, markFinished: false);
 
     if (!Store.get(StoreKey.loadOriginal, false)) {
       isFinished = true;
@@ -123,7 +123,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
     yield* loadRequest(request, decode);
-    isFinished = true;
   }
 
   Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -139,7 +138,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-    yield* loadRequest(previewRequest, decode);
+    yield* loadRequest(previewRequest, decode, markFinished: false);
 
     if (isCancelled) {
       return;
@@ -153,7 +152,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       throw StateError('Failed to load animated codec for local asset ${key.id}');
     }
     yield codec;
-    isFinished = true;
   }
 
   @override

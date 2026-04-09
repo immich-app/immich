@@ -51,7 +51,12 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     return null;
   }
 
-  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {bool evictOnError = true}) async* {
+  Stream<ImageInfo> loadRequest(
+    ImageRequest request,
+    ImageDecoderCallback decode, {
+    bool evictOnError = true,
+    bool markFinished = true,
+  }) async* {
     if (isCancelled) {
       this.request = null;
       return;
@@ -68,6 +73,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       } else if (image == null) {
         return;
       }
+      if (markFinished) isFinished = true;
       yield image;
     } catch (e, stack) {
       if (isCancelled) {
@@ -83,7 +89,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     }
   }
 
-  Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request, {bool markFinished = true}) async {
     if (isCancelled) {
       this.request = null;
       return null;
@@ -99,6 +105,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
+      if (markFinished) isFinished = true;
       return codec;
     } catch (e) {
       if (!isCancelled) {

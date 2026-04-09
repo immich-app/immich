@@ -112,7 +112,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
     );
     final loadOriginal = assetType == AssetType.image && AppSetting.get(Setting.loadOriginal);
-    yield* loadRequest(previewRequest, decode, evictOnError: !loadOriginal);
+    yield* loadRequest(previewRequest, decode, evictOnError: !loadOriginal, markFinished: false);
 
     if (!loadOriginal) {
       isFinished = true;
@@ -125,7 +125,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
     yield* loadRequest(originalRequest, decode);
-    isFinished = true;
   }
 
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -138,7 +137,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
     );
-    yield* loadRequest(previewRequest, decode, evictOnError: false);
+    yield* loadRequest(previewRequest, decode, evictOnError: false, markFinished: false);
 
     if (isCancelled) {
       return;
@@ -154,7 +153,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       throw StateError('Failed to load animated codec for asset ${key.assetId}');
     }
     yield codec;
-    isFinished = true;
   }
 
   @override
