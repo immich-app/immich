@@ -50,6 +50,10 @@ If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/a
 
 You'll also need your own certificate to authenticate https connections. If you're making Immich publicly accessible, [Let's Encrypt](https://letsencrypt.org/) can provide a free certificate for your domain and is the recommended option. Alternatively, a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) allows you to encrypt your connection to Immich, but it raises a security warning on the client's browser.
 
+:::tip Native HTTPS
+Instead of using a reverse proxy for TLS termination, Immich can also handle HTTPS natively. To enable this, set the `IMMICH_HTTPS_KEY_PATH` and `IMMICH_HTTPS_CERT_PATH` environment variables. See [here](/install/environment-variables/#https) for more details.
+:::
+
 A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) increases security by hiding the server IP address, which makes targeted attacks like [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) harder.
 
 ### Pros

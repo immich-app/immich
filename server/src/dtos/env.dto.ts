@@ -88,6 +88,14 @@ export class EnvDto {
 
   @IsString()
   @Optional()
+  IMMICH_HTTPS_KEY_PATH?: string;
+
+  @IsString()
+  @Optional()
+  IMMICH_HTTPS_CERT_PATH?: string;
+
+  @IsString()
+  @Optional()
   IMMICH_REPOSITORY?: string;
 
   @IsString()

@@ -1,9 +1,10 @@
+import { NestApplicationOptions } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmetMiddleware from 'helmet';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import sirv from 'sirv';
 import { IMMICH_SERVER_START, excludePaths, serverVersion } from 'src/constants';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
@@ -19,6 +20,18 @@ export function configureTelemetry() {
   if (telemetry.metrics.size > 0) {
     bootstrapTelemetry(telemetry.apiPort);
   }
+}
+
+export function getNestOptions(): NestApplicationOptions {
+  const { https } = new ConfigRepository().getEnv();
+  const options: NestApplicationOptions = { bufferLogs: true };
+  if (https.keyPath && https.certPath) {
+    options.httpsOptions = {
+      key: readFileSync(https.keyPath),
+      cert: readFileSync(https.certPath),
+    };
+  }
+  return options;
 }
 
 export async function configureExpress(

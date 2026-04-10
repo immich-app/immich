@@ -19,6 +19,8 @@ const resetEnv = () => {
     'IMMICH_MICROSERVICES_METRICS_PORT',
     'IMMICH_TELEMETRY_INCLUDE',
     'IMMICH_TELEMETRY_EXCLUDE',
+    'IMMICH_HTTPS_KEY_PATH',
+    'IMMICH_HTTPS_CERT_PATH',
 
     'DB_URL',
     'DB_HOSTNAME',
@@ -80,6 +82,23 @@ describe('getEnv', () => {
 
     expect(config.plugins.external).toEqual({ allow: false });
     expect(config.setup).toEqual({ allow: true });
+    expect(config.https).toEqual({ keyPath: undefined, certPath: undefined });
+  });
+
+  describe('IMMICH_HTTPS_KEY_PATH', () => {
+    it('should set key path', () => {
+      process.env.IMMICH_HTTPS_KEY_PATH = '/path/to/key.pem';
+      const config = getEnv();
+      expect(config.https.keyPath).toBe('/path/to/key.pem');
+    });
+  });
+
+  describe('IMMICH_HTTPS_CERT_PATH', () => {
+    it('should set cert path', () => {
+      process.env.IMMICH_HTTPS_CERT_PATH = '/path/to/cert.pem';
+      const config = getEnv();
+      expect(config.https.certPath).toBe('/path/to/cert.pem');
+    });
   });
 
   describe('IMMICH_MEDIA_LOCATION', () => {

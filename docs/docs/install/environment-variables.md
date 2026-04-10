@@ -70,6 +70,21 @@ Information on the current workers can be found [here](/administration/jobs-work
 | `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  | server, machine learning |
 | `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) | server, machine learning |
 
+## HTTPS
+
+| Variable                 | Description                        | Default | Containers |
+| :----------------------- | :--------------------------------- | :-----: | :--------- |
+| `IMMICH_HTTPS_KEY_PATH`  | Path to the HTTPS key file         |         | server     |
+| `IMMICH_HTTPS_CERT_PATH` | Path to the HTTPS certificate file |         | server     |
+
+:::info
+If both `IMMICH_HTTPS_KEY_PATH` and `IMMICH_HTTPS_CERT_PATH` are set, the Immich server will use HTTPS. Otherwise, it will use HTTP.
+:::
+
+:::info
+If using Let's Encrypt certificates, use `fullchain.cer` for `IMMICH_HTTPS_CERT_PATH`.
+:::
+
 ## Database
 
 | Variable                            | Description                                                                            |  Default   | Containers                     |

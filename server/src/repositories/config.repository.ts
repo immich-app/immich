@@ -31,6 +31,10 @@ export interface EnvData {
   host?: string;
   port: number;
   environment: ImmichEnvironment;
+  https: {
+    keyPath?: string;
+    certPath?: string;
+  };
   configFile?: string;
   logLevel?: LogLevel;
   logFormat?: LogFormat;
@@ -263,6 +267,10 @@ const getEnv = (): EnvData => {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
     environment,
+    https: {
+      keyPath: dto.IMMICH_HTTPS_KEY_PATH,
+      certPath: dto.IMMICH_HTTPS_CERT_PATH,
+    },
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,
     logFormat: dto.IMMICH_LOG_FORMAT || LogFormat.Console,

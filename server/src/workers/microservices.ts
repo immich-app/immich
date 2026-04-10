@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { isMainThread } from 'node:worker_threads';
+import { getNestOptions } from 'src/app.common';
 import { MicroservicesModule } from 'src/app.module';
 import { serverVersion } from 'src/constants';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
@@ -15,7 +16,7 @@ export async function bootstrap() {
     bootstrapTelemetry(telemetry.microservicesPort);
   }
 
-  const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
+  const app = await NestFactory.create(MicroservicesModule, getNestOptions());
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
   app.get(AppRepository).setCloseFn(() => app.close());

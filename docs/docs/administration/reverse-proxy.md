@@ -1,6 +1,12 @@
 # Reverse Proxy
 
-Users can deploy a custom reverse proxy that forwards requests to Immich. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Real-IP`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
+Users can deploy a custom reverse proxy that forwards requests to Immich. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. 
+
+:::info
+Immich also supports native HTTPS termination if `IMMICH_HTTPS_KEY_PATH` and `IMMICH_HTTPS_CERT_PATH` are set. See [Environment Variables](/install/environment-variables/#https) for more information.
+:::
+
+All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Real-IP`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
 
 :::caution
 Immich does not support being served on a sub-path such as `location /immich {`. It has to be served on the root path of a (sub)domain.
