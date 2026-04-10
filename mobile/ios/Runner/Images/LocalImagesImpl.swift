@@ -3,16 +3,6 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-final class LocalImageRequest: ImageRequest {
-  weak var operation: Operation?
-
-  override func onCancel() {
-    // only include if we can guarantee that for a queued operation that's
-    // cancelled we also call the callback with the cancelled result
-    // operation?.cancel()
-  }
-}
-
 class LocalImageApiImpl: LocalImageApi {
   private static let imageManager = PHImageManager.default()
   private static let fetchOptions = {
@@ -31,7 +21,7 @@ class LocalImageApiImpl: LocalImageApi {
     return requestOptions
   }()
 
-  private static let registry = RequestRegistry<LocalImageRequest>()
+  private static let registry = RequestRegistry<ImageRequest>()
 
   private static let rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
@@ -62,7 +52,7 @@ class LocalImageApiImpl: LocalImageApi {
   }
 
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    let request = LocalImageRequest(completion: completion)
+    let request = ImageRequest(completion: completion)
     let operation = BlockOperation {
       if request.isCancelled {
         return request.completion(ImageProcessing.cancelledResult)
@@ -164,7 +154,6 @@ class LocalImageApiImpl: LocalImageApi {
       }
     }
 
-    request.operation = operation
     Self.registry.add(requestId: requestId, request: request)
     ImageProcessing.queue.addOperation(operation)
   }

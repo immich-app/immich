@@ -24,10 +24,7 @@ class ImageRequest: @unchecked Sendable {
 
   func cancel() {
     isCancelled = true
-    onCancel()
   }
-
-  func onCancel() {}
 }
 
 struct RequestRegistry<T: AnyObject & Sendable>: ~Copyable, Sendable {
@@ -35,10 +32,6 @@ struct RequestRegistry<T: AnyObject & Sendable>: ~Copyable, Sendable {
 
   func add(requestId: Int64, request: T) {
     requests.withLock { $0[requestId] = request }
-  }
-
-  func get(requestId: Int64) -> T? {
-    requests.withLock { $0[requestId] }
   }
 
   @discardableResult
