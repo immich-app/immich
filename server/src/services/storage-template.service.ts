@@ -32,8 +32,6 @@ const storageTokens = {
   monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
 };
 
-const storageTemplateTimeZone = DateTime.local().zoneName;
-
 const storagePresets = [
   '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MM}}-{{dd}}/{{filename}}',
@@ -415,18 +413,16 @@ export class StorageTemplateService extends BaseService {
       lensModel: lensModel ?? '',
     };
 
-    const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone: storageTemplateTimeZone });
+    const dt = DateTime.fromJSDate(asset.fileCreatedAt);
 
     for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
       if (albumName) {
         // Album date tokens are rendered in the server time zone to match storage template datetime behavior.
         substitutions['album-startDate-' + token] = albumStartDate
-          ? DateTime.fromJSDate(albumStartDate, { zone: storageTemplateTimeZone }).toFormat(token)
+          ? DateTime.fromJSDate(albumStartDate).toFormat(token)
           : '';
-        substitutions['album-endDate-' + token] = albumEndDate
-          ? DateTime.fromJSDate(albumEndDate, { zone: storageTemplateTimeZone }).toFormat(token)
-          : '';
+        substitutions['album-endDate-' + token] = albumEndDate ? DateTime.fromJSDate(albumEndDate).toFormat(token) : '';
       }
     }
 
