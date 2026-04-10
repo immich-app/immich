@@ -11,15 +11,17 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { Theme } from '$lib/constants';
+  import { OpenQueryParam, Theme } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
+  import { Route } from '$lib/route';
   import { mapSettings } from '$lib/stores/preferences.store';
+  import { user } from '$lib/stores/user.store';
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { Icon, modalManager } from '@immich/ui';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { Icon, Link, modalManager, Text } from '@immich/ui';
+  import { mdiCog, mdiInformationOutline, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
@@ -325,109 +327,133 @@
 
 <OnEvents {onAssetsDelete} />
 
-<!--  We handle style loading ourselves so we set style blank here -->
-<MapLibre
-  {hash}
-  style=""
-  class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
-  {zoom}
-  {center}
-  bounds={initialBounds}
-  fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
-  attributionControl={false}
-  diffStyleUpdates={true}
-  onload={(event: Map) => {
-    event.setMaxZoom(18);
-    event.on('click', handleMapClick);
-    if (!simplified) {
-      event.addControl(new GlobeControl(), 'top-left');
-    }
-  }}
-  bind:map
->
-  {#snippet children({ map }: { map: Map })}
-    {#if showSimpleControls}
-      <NavigationControl position="top-left" showCompass={!simplified} />
+<!-- Use svelte:boundary instead of MapLibre onerror until https://github.com/dimfeld/svelte-maplibre/issues/279 is fixed -->
+<svelte:boundary>
+  <!--  We handle style loading ourselves so we set style blank here -->
+  <MapLibre
+    {hash}
+    style=""
+    class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
+    {zoom}
+    {center}
+    bounds={initialBounds}
+    fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
+    attributionControl={false}
+    diffStyleUpdates={true}
+    onload={(event: Map) => {
+      event.setMaxZoom(18);
+      event.on('click', handleMapClick);
+      if (!simplified) {
+        event.addControl(new GlobeControl(), 'top-left');
+      }
+    }}
+    bind:map
+  >
+    {#snippet children({ map }: { map: Map })}
+      {#if showSimpleControls}
+        <NavigationControl position="top-left" showCompass={!simplified} />
 
-      {#if !simplified}
-        <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
-        <ScaleControl />
-        <AttributionControl compact={false} />
+        {#if !simplified}
+          <GeolocateControl position="top-left" />
+          <FullscreenControl position="top-left" />
+          <ScaleControl />
+          <AttributionControl compact={false} />
+        {/if}
       {/if}
-    {/if}
 
-    {#if showSettings}
-      <Control>
-        <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}>
-            <Icon icon={mdiCog} size="100%" class="text-black/80" />
-          </ControlButton>
-        </ControlGroup>
-      </Control>
-    {/if}
+      {#if showSettings}
+        <Control>
+          <ControlGroup>
+            <ControlButton onclick={handleSettingsClick}>
+              <Icon icon={mdiCog} size="100%" class="text-black/80" />
+            </ControlButton>
+          </ControlGroup>
+        </Control>
+      {/if}
 
-    {#if onOpenInMapView && showSimpleControls}
-      <Control position="top-right">
-        <ControlGroup>
-          <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
-          </ControlButton>
-        </ControlGroup>
-      </Control>
-    {/if}
+      {#if onOpenInMapView && showSimpleControls}
+        <Control position="top-right">
+          <ControlGroup>
+            <ControlButton onclick={() => onOpenInMapView()}>
+              <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
+            </ControlButton>
+          </ControlGroup>
+        </Control>
+      {/if}
 
-    <GeoJSON
-      data={{
-        type: 'FeatureCollection',
-        features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
-      }}
-      id="geojson"
-      cluster={{ radius: 35, maxZoom: 18 }}
-    >
-      <MarkerLayer
-        applyToClusters
-        asButton
-        onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
-      >
-        {#snippet children({ feature })}
-          <div
-            class="rounded-full w-10 h-10 bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
-          >
-            {feature.properties?.point_count?.toLocaleString()}
-          </div>
-        {/snippet}
-      </MarkerLayer>
-      <MarkerLayer
-        applyToClusters={false}
-        asButton
-        onclick={(event) => {
-          if (!popup) {
-            handleAssetClick(event.feature.properties?.id, map);
-          }
+      <GeoJSON
+        data={{
+          type: 'FeatureCollection',
+          features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
         }}
+        id="geojson"
+        cluster={{ radius: 35, maxZoom: 18 }}
       >
-        {#snippet children({ feature }: { feature: Feature })}
-          {#if useLocationPin}
-            <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
-          {:else}
-            <img
-              src={getAssetMediaUrl({ id: feature.properties?.id })}
-              class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
-              alt={feature.properties?.city && feature.properties.country
-                ? $t('map_marker_for_images', {
-                    values: { city: feature.properties.city, country: feature.properties.country },
-                  })
-                : $t('map_marker_with_image')}
-            />
-          {/if}
-          {#if popup}
-            <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-              {@render popup?.({ marker: asMarker(feature) })}
-            </Popup>
-          {/if}
-        {/snippet}
-      </MarkerLayer>
-    </GeoJSON>
+        <MarkerLayer
+          applyToClusters
+          asButton
+          onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
+        >
+          {#snippet children({ feature })}
+            <div
+              class="rounded-full w-10 h-10 bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+            >
+              {feature.properties?.point_count?.toLocaleString()}
+            </div>
+          {/snippet}
+        </MarkerLayer>
+        <MarkerLayer
+          applyToClusters={false}
+          asButton
+          onclick={(event) => {
+            if (!popup) {
+              handleAssetClick(event.feature.properties?.id, map);
+            }
+          }}
+        >
+          {#snippet children({ feature }: { feature: Feature })}
+            {#if useLocationPin}
+              <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
+            {:else}
+              <img
+                src={getAssetMediaUrl({ id: feature.properties?.id })}
+                class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+                alt={feature.properties?.city && feature.properties.country
+                  ? $t('map_marker_for_images', {
+                      values: { city: feature.properties.city, country: feature.properties.country },
+                    })
+                  : $t('map_marker_with_image')}
+              />
+            {/if}
+            {#if popup}
+              <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
+                {@render popup?.({ marker: asMarker(feature) })}
+              </Popup>
+            {/if}
+          {/snippet}
+        </MarkerLayer>
+      </GeoJSON>
+    {/snippet}
+  </MapLibre>
+
+  {#snippet failed(_)}
+    <div
+      class={[
+        'flex place-content-center place-items-center text-warning',
+        simplified ? 'gap-4 px-6 text-sm' : 'h-full mx-auto gap-6',
+      ]}
+    >
+      <div>
+        <Icon icon={mdiInformationOutline} size={simplified ? '18' : '24'} />
+      </div>
+      <div>
+        <Text>
+          {$t('errors.enable_webgl_for_map', { values: { isAdmin: $user.isAdmin } })}
+        </Text>
+        {#if $user.isAdmin}
+          <Link href={Route.systemSettings({ isOpen: OpenQueryParam.LOCATION })}>{$t('go_to_settings')}</Link>
+        {/if}
+      </div>
+    </div>
   {/snippet}
-</MapLibre>
+</svelte:boundary>
