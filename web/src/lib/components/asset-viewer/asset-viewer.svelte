@@ -276,7 +276,6 @@
   const handleStopSlideshow = async () => {
     try {
       if (document.fullscreenElement) {
-        document.body.style.cursor = '';
         await document.exitFullscreen();
       }
     } catch (error) {

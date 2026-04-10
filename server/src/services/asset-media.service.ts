@@ -257,7 +257,9 @@ export class AssetMediaService extends BaseService {
       throw new NotFoundException('Asset media not found');
     }
 
-    const fileName = `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`;
+    const fileNameBase =
+      auth.sharedLink && !auth.sharedLink.showExif ? id : getFileNameWithoutExtension(originalFileName);
+    const fileName = `${fileNameBase}_${size}${getFilenameExtension(path)}`;
 
     return new ImmichFileResponse({
       fileName,

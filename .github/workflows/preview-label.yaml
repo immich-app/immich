@@ -19,7 +19,7 @@ jobs:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: mshick/add-pr-comment@ffd016c7e151d97d69d21a843022fd4cd5b96fe5 # v3.9.0
+      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'preview-status'
@@ -48,14 +48,14 @@ jobs:
               name: 'preview'
             })
 
-      - uses: mshick/add-pr-comment@ffd016c7e151d97d69d21a843022fd4cd5b96fe5 # v3.9.0
+      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
         if: ${{ github.event.pull_request.head.repo.fork }}
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'preview-status'
           message: 'PRs from forks cannot have preview environments.'
 
-      - uses: mshick/add-pr-comment@ffd016c7e151d97d69d21a843022fd4cd5b96fe5 # v3.9.0
+      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           github-token: ${{ steps.token.outputs.token }}

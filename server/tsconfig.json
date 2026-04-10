@@ -19,10 +19,12 @@
     "preserveWatchOutput": true,
     "paths": {
       "src/*": ["./src/*"],
+      "test/*": ["./test/*"]
     },
-    "baseUrl": "./",
+    "rootDir": ".",
     "jsx": "react",
     "types": ["vitest/globals"],
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "noErrorTruncation": true
   },
   "exclude": ["dist", "node_modules", "upload"]

@@ -38,7 +38,7 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
 
   Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
     final request = this.request = RemoteImageRequest(uri: key.url);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
@@ -105,7 +105,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -113,43 +112,43 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
     );
     final loadOriginal = assetType == AssetType.image && AppSetting.get(Setting.loadOriginal);
-    yield* loadRequest(previewRequest, decode, evictOnError: !loadOriginal);
+    yield* loadRequest(previewRequest, decode, isFinal: !loadOriginal);
 
     if (!loadOriginal) {
       return;
     }
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
-    yield* loadRequest(originalRequest, decode);
+    yield* loadRequest(originalRequest, decode, isFinal: true);
   }
 
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
     );
-    yield* loadRequest(previewRequest, decode, evictOnError: false);
+    yield* loadRequest(previewRequest, decode, isFinal: false);
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     // always try original for animated, since previews don't support animation
     final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
-    final codec = await loadCodecRequest(originalRequest);
+    final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
+      if (isCancelled) {
+        return;
+      }
       throw StateError('Failed to load animated codec for asset ${key.assetId}');
     }
     yield codec;
