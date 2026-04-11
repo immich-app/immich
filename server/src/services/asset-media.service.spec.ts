@@ -14,7 +14,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
-import { ImmichFileResponse } from 'src/utils/file';
+import { ImmichBufferResponse, ImmichFileResponse } from 'src/utils/file';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
@@ -566,6 +566,55 @@ describe(AssetMediaService.name, () => {
           cacheControl: CacheControl.PrivateWithCache,
         }),
       );
+    });
+  });
+
+  describe('downloadCompressedJpeg', () => {
+    it('should require the asset.download permission', async () => {
+      await expect(sut.downloadCompressedJpeg(authStub.admin, 'asset-1', { quality: 75 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        undefined,
+      );
+      expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+    });
+
+    it('should compress the edited image when requested', async () => {
+      const compressed = Buffer.from('compressed-jpeg');
+      const asset = AssetFactory.create({ originalPath: '/upload/photo.heic', originalFileName: 'photo.heic' });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue({ ...asset, editedPath: '/upload/photo-edited.webp' });
+      mocks.media.compressJpeg.mockResolvedValue(compressed);
+
+      await expect(sut.downloadCompressedJpeg(AuthFactory.create(), asset.id, { edited: true, quality: 75 })).resolves.toEqual(
+        new ImmichBufferResponse({
+          data: compressed,
+          fileName: 'photo-compressed-75.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithoutCache,
+        }),
+      );
+
+      expect(mocks.media.compressJpeg).toHaveBeenCalledWith('/upload/photo-edited.webp', 75);
+    });
+
+    it('should reject non-image assets', async () => {
+      const asset = AssetFactory.create({ originalPath: '/upload/video.mp4', originalFileName: 'video.mp4' });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await expect(sut.downloadCompressedJpeg(AuthFactory.create(), asset.id, { quality: 75 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.media.compressJpeg).not.toHaveBeenCalled();
     });
   });
 

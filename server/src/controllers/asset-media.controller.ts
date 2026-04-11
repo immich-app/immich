@@ -15,7 +15,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -33,7 +33,7 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
+import { AssetDownloadCompressedDto, AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
@@ -42,7 +42,7 @@ import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.inte
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadFiles } from 'src/types';
-import { ImmichFileResponse, sendFile } from 'src/utils/file';
+import { ImmichFileResponse, sendBuffer, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
@@ -110,6 +110,19 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
+  }
+
+  @Get(':id/compressed')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  async downloadCompressedAsset(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: AssetDownloadCompressedDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    await sendBuffer(res, next, () => this.service.downloadCompressedJpeg(auth, id, dto), this.logger);
   }
 
   @Put(':id/original')

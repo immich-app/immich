@@ -99,6 +99,7 @@
 
   const Actions = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
+  const hasSharedLinkMenuActions = $derived(Boolean(Actions.DownloadOriginal.$if?.()));
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
@@ -132,6 +133,7 @@
     <ActionButton action={Actions.StopMotionPhoto} />
     <ActionButton action={Actions.Copy} />
     <ActionButton action={Actions.SharedLinkDownload} />
+    <ActionButton action={Actions.DownloadCompressedJpeg} />
     <ActionButton action={Actions.Info} />
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />
@@ -144,6 +146,12 @@
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
+    {/if}
+
+    {#if sharedLink && hasSharedLinkMenuActions}
+      <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
+        <ActionMenuItem action={Actions.DownloadOriginal} />
+      </ButtonContextMenu>
     {/if}
 
     {#if !sharedLink}

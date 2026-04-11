@@ -4,10 +4,11 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
+import AssetDownloadCompressedModal from '$lib/modals/AssetDownloadCompressedModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
+import { getAssetCompressedDownloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -34,6 +35,7 @@ import {
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
+  mdiImageSizeSelectLarge,
   mdiImageRefreshOutline,
   mdiInformationOutline,
   mdiMagnifyMinusOutline,
@@ -98,6 +100,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const currentAuthUser = get(authUser);
   const userPreferences = get(preferences);
   const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
+  const canDownloadSharedLinkAsset = isOwner || !!sharedLink?.allowDownload;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -124,9 +127,22 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => handleDownloadAsset(asset, { edited: false }),
   };
 
+  const DownloadCompressedJpeg: ActionItem = {
+    title: $t('download_compressed_jpeg'),
+    icon: mdiImageSizeSelectLarge,
+    type: $t('assets'),
+    $if: () => asset.type === AssetTypeEnum.Image && (sharedLink ? canDownloadSharedLinkAsset : !!currentAuthUser),
+    onAction: async () => {
+      const quality = await modalManager.show(AssetDownloadCompressedModal, {});
+      if (quality !== undefined) {
+        await handleDownloadCompressedAsset(asset, quality);
+      }
+    },
+  };
+
   const SharedLinkDownload: ActionItem = {
     ...Download,
-    $if: () => isOwner || !!sharedLink?.allowDownload,
+    $if: () => canDownloadSharedLinkAsset,
   };
 
   const PlayMotionPhoto: ActionItem = {
@@ -277,6 +293,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Share,
     Download,
     DownloadOriginal,
+    DownloadCompressedJpeg,
     SharedLinkDownload,
     Offline,
     Info,
@@ -343,6 +360,28 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }
   }
+};
+
+export const handleDownloadCompressedAsset = async (asset: AssetResponseDto, quality: number) => {
+  const $t = await getFormatter();
+  const normalizedQuality = Math.max(1, Math.min(100, Math.round(quality)));
+  const filename = getCompressedAssetFilename(asset.originalFileName, normalizedQuality);
+
+  try {
+    toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
+    downloadUrl(
+      getAssetCompressedDownloadUrl({ id: asset.id, quality: normalizedQuality, edited: true }),
+      filename,
+    );
+  } catch (error) {
+    handleError(error, $t('errors.error_downloading', { values: { filename } }));
+  }
+};
+
+const getCompressedAssetFilename = (filename: string, quality: number) => {
+  const lastDotIndex = filename.lastIndexOf('.');
+  const baseName = lastDotIndex > 0 ? filename.slice(0, lastDotIndex) : filename;
+  return `${baseName}-compressed-${quality}.jpg`;
 };
 
 const handleFavorite = async (asset: AssetResponseDto) => {

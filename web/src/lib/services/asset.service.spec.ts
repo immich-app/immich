@@ -2,7 +2,7 @@ import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.servic
 import { user as userStore } from '$lib/stores/user.store';
 import { setSharedLink } from '$lib/utils';
 import { getFormatter } from '$lib/utils/i18n';
-import { getAssetInfo } from '@immich/sdk';
+import { AssetTypeEnum, getAssetInfo } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
@@ -57,6 +57,23 @@ describe('AssetService', () => {
       setSharedLink(sharedLinkFactory.build({ allowDownload: true }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
+    });
+
+    it('should allow compressed jpeg downloads in shared links when downloads are enabled', () => {
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image });
+      setSharedLink(sharedLinkFactory.build({ allowDownload: true }));
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadCompressedJpeg.$if?.()).toStrictEqual(true);
+    });
+
+    it('should not allow compressed jpeg downloads in shared links when downloads are disabled for non-owners', () => {
+      const ownerId = 'owner';
+      const user = userAdminFactory.build({ id: 'non-owner' });
+      const asset = assetFactory.build({ ownerId, type: AssetTypeEnum.Image });
+      userStore.set(user);
+      setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadCompressedJpeg.$if?.()).toStrictEqual(false);
     });
   });
 

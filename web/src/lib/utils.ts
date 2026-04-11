@@ -187,6 +187,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
 };
 
 type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
+type AssetCompressedUrlOptions = { id: string; quality: number; edited?: boolean };
 
 export const getAssetUrl = ({
   asset,
@@ -235,6 +236,11 @@ export const getAssetMediaUrl = (options: AssetUrlOptions) => {
   const isOriginal = size === AssetMediaSize.Original;
   const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
   return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
+};
+
+export const getAssetCompressedDownloadUrl = (options: AssetCompressedUrlOptions) => {
+  const { id, quality, edited = true } = options;
+  return createUrl(`/assets/${id}/compressed`, { ...authManager.params, quality, edited });
 };
 
 export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {

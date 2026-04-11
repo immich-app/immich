@@ -182,6 +182,22 @@ export class MediaRepository {
     await decoded.toFile(output);
   }
 
+  async compressJpeg(input: string | Buffer, quality: number): Promise<Buffer> {
+    const pipeline = await this.getImageDecodingPipeline(input, {
+      colorspace: Colorspace.Srgb,
+      processInvalidImages: false,
+    });
+
+    return pipeline
+      .flatten({ background: '#ffffff' })
+      .jpeg({
+        quality,
+        chromaSubsampling: quality >= 80 ? '4:4:4' : '4:2:0',
+        progressive: true,
+      })
+      .toBuffer();
+  }
+
   private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes

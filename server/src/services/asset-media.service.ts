@@ -20,7 +20,7 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
-import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
+import { AssetDownloadCompressedDto, AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFileType,
@@ -38,7 +38,12 @@ import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
+import {
+  getFilenameExtension,
+  getFileNameWithoutExtension,
+  ImmichBufferResponse,
+  ImmichFileResponse,
+} from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
 
@@ -217,6 +222,34 @@ export class AssetMediaService extends BaseService {
       fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
       contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
+    });
+  }
+
+  async downloadCompressedJpeg(auth: AuthDto, id: string, dto: AssetDownloadCompressedDto): Promise<ImmichBufferResponse> {
+    await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
+
+    if (auth.sharedLink) {
+      dto.edited = true;
+    }
+
+    const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
+      id,
+      dto.edited ?? false,
+    );
+
+    const path = editedPath ?? originalPath;
+    if (!mimeTypes.isImage(path)) {
+      throw new BadRequestException('Asset is not an image');
+    }
+
+    const data = await this.mediaRepository.compressJpeg(path, dto.quality);
+    const fileNameBase = auth.sharedLink && !auth.sharedLink.showExif ? id : getFileNameWithoutExtension(originalFileName);
+
+    return new ImmichBufferResponse({
+      data,
+      fileName: `${fileNameBase}-compressed-${dto.quality}.jpg`,
+      contentType: 'image/jpeg',
+      cacheControl: CacheControl.PrivateWithoutCache,
     });
   }
 

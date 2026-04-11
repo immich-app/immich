@@ -60,6 +60,10 @@
     await handlePasswordSubmit();
   };
 
+  $effect(() => {
+    setSharedLink(passwordRequired ? undefined : sharedLink);
+  });
+
   onDestroy(() => {
     setSharedLink(undefined);
   });

@@ -260,6 +260,15 @@ export class AssetDownloadOriginalDto {
   edited?: boolean;
 }
 
+export class AssetDownloadCompressedDto extends AssetDownloadOriginalDto {
+  @ApiProperty({ description: 'JPEG quality percentage from 1-100', minimum: 1, maximum: 100, type: 'integer' })
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  @Type(() => Number)
+  quality!: number;
+}
+
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.Image],
