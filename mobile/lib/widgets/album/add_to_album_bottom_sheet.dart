@@ -46,6 +46,12 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
             msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
           );
         }
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: 'Cannot add assets to album',
+          toastType: ToastType.error,
+        );
       }
       context.pop();
     }
