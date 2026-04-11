@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -21,7 +22,7 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
+import { UserAdminResponseDto, UserResponseDto, UserSearchDto, UserUpdateMeDto } from 'src/dtos/user.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -45,8 +46,8 @@ export class UserController {
     description: 'Retrieve a list of all users on the server.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  searchUsers(@Auth() auth: AuthDto): Promise<UserResponseDto[]> {
-    return this.service.search(auth);
+  searchUsers(@Auth() auth: AuthDto, @Query() dto: UserSearchDto): Promise<UserResponseDto[]> {
+    return this.service.search(auth, dto);
   }
 
   @Get('me')

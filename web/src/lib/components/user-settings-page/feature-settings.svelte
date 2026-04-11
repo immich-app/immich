@@ -36,6 +36,9 @@
   // Cast
   let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
 
+  // Transfer
+  let transferAllowReceiving = $state($preferences?.transfer?.allowReceiving ?? false);
+
   const handleSave = async () => {
     try {
       const data = await updateMyPreferences({
@@ -48,6 +51,7 @@
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
           cast: { gCastEnabled },
+          transfer: { allowReceiving: transferAllowReceiving },
         },
       });
 
@@ -162,6 +166,14 @@
           <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
+            </Field>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="transfer" title={$t('transfer')} subtitle={$t('transfer_description')}>
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+            <Field label={$t('transfer_allow_receiving')} description={$t('transfer_allow_receiving_description')}>
+              <Switch bind:checked={transferAllowReceiving} />
             </Field>
           </div>
         </SettingAccordion>

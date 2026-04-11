@@ -113,6 +113,7 @@ export enum Permission {
   AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
   AssetDerive = 'asset.derive',
+  AssetTransfer = 'asset.transfer',
 
   AssetEditGet = 'asset.edit.get',
   AssetEditCreate = 'asset.edit.create',
@@ -664,6 +665,9 @@ export enum JobName {
 
   // Workflow
   WorkflowRun = 'WorkflowRun',
+
+  // Ownership Transfer
+  AssetOwnershipTransfer = 'AssetOwnershipTransfer',
 }
 
 export enum QueueCommand {

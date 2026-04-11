@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -789,6 +789,128 @@ describe(AssetService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('transferOwnership', () => {
+    it('should reject transferring to yourself', async () => {
+      const auth = AuthFactory.create();
+      await expect(
+        sut.transferOwnership(auth, { ids: ['asset-1'], newOwnerId: auth.user.id }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should require asset write access', async () => {
+      const auth = AuthFactory.create();
+      const newOwnerId = newUuid();
+      await expect(sut.transferOwnership(auth, { ids: ['asset-1'], newOwnerId })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should reject if new owner not found', async () => {
+      const auth = AuthFactory.create();
+      const newOwnerId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.user.get.mockResolvedValue(void 0);
+
+      await expect(sut.transferOwnership(auth, { ids: ['asset-1'], newOwnerId })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should reject if new owner has not enabled receiving transfers', async () => {
+      const auth = AuthFactory.create();
+      const newOwnerId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.user.get.mockResolvedValue({ id: newOwnerId } as any);
+      mocks.user.getMetadata.mockResolvedValue([]);
+
+      await expect(sut.transferOwnership(auth, { ids: ['asset-1'], newOwnerId })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should transfer ownership when new owner has enabled receiving transfers', async () => {
+      const auth = AuthFactory.create();
+      const newOwnerId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.user.get.mockResolvedValue({ id: newOwnerId } as any);
+      mocks.user.getMetadata.mockResolvedValue([
+        { key: UserMetadataKey.Preferences, value: { transfer: { allowReceiving: true } } },
+      ]);
+
+      await sut.transferOwnership(auth, { ids: ['asset-1', 'asset-2'], newOwnerId });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { ownerId: newOwnerId });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.AssetOwnershipTransfer,
+          data: { id: 'asset-1', newOwnerId, oldOwnerId: auth.user.id },
+        },
+        {
+          name: JobName.AssetOwnershipTransfer,
+          data: { id: 'asset-2', newOwnerId, oldOwnerId: auth.user.id },
+        },
+      ]);
+    });
+  });
+
+  describe('handleOwnershipTransfer', () => {
+    it('should fail if asset not found', async () => {
+      mocks.asset.getById.mockResolvedValue(void 0);
+      await expect(
+        sut.handleOwnershipTransfer({ id: 'asset-1', newOwnerId: newUuid(), oldOwnerId: newUuid() }),
+      ).resolves.toBe(JobStatus.Failed);
+    });
+
+    it('should fail if new owner not found', async () => {
+      const asset = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.user.get.mockResolvedValue(void 0);
+      await expect(
+        sut.handleOwnershipTransfer({ id: asset.id, newOwnerId: newUuid(), oldOwnerId: newUuid() }),
+      ).resolves.toBe(JobStatus.Failed);
+    });
+
+    it('should update usage and queue storage migration', async () => {
+      const oldOwnerId = newUuid();
+      const newOwnerId = newUuid();
+      const asset = AssetFactory.from({ ownerId: newOwnerId }).exif({ fileSizeInByte: 5000 }).build();
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.user.get.mockResolvedValue({ id: newOwnerId } as any);
+
+      await expect(
+        sut.handleOwnershipTransfer({ id: asset.id, newOwnerId, oldOwnerId }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(oldOwnerId, -5000);
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(newOwnerId, 5000);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.StorageTemplateMigrationSingle,
+        data: { id: asset.id },
+      });
+    });
+
+    it('should handle live photo transfer', async () => {
+      const oldOwnerId = newUuid();
+      const newOwnerId = newUuid();
+      const motionVideoId = newUuid();
+      const asset = AssetFactory.from({ ownerId: newOwnerId, livePhotoVideoId: motionVideoId })
+        .exif({ fileSizeInByte: 3000 })
+        .build();
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.user.get.mockResolvedValue({ id: newOwnerId } as any);
+
+      await expect(
+        sut.handleOwnershipTransfer({ id: asset.id, newOwnerId, oldOwnerId }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([motionVideoId], { ownerId: newOwnerId });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetOwnershipTransfer,
+        data: { id: motionVideoId, newOwnerId, oldOwnerId },
+      });
     });
   });
 });

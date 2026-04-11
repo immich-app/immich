@@ -260,6 +260,11 @@ export class AssetDownloadOriginalDto {
   edited?: boolean;
 }
 
+export class AssetTransferDto extends BulkIdsDto {
+  @ValidateUUID({ description: 'New owner ID' })
+  newOwnerId!: string;
+}
+
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.Image],

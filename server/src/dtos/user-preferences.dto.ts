@@ -101,6 +101,11 @@ class CastUpdate {
   gCastEnabled?: boolean;
 }
 
+class TransferUpdate {
+  @ValidateBoolean({ optional: true, description: 'Whether to allow receiving ownership transfers' })
+  allowReceiving?: boolean;
+}
+
 export class UserPreferencesUpdateDto {
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })
@@ -185,6 +190,13 @@ export class UserPreferencesUpdateDto {
   @ValidateNested()
   @Type(() => CastUpdate)
   cast?: CastUpdate;
+
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
+  @Optional()
+  @ValidateNested()
+  @Type(() => TransferUpdate)
+  transfer?: TransferUpdate;
 }
 
 class AlbumsResponse {
@@ -262,6 +274,11 @@ class CastResponse {
   gCastEnabled: boolean = false;
 }
 
+class TransferResponse {
+  @ApiProperty({ description: 'Whether to allow receiving ownership transfers' })
+  allowReceiving: boolean = false;
+}
+
 export class UserPreferencesResponseDto implements UserPreferences {
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })
@@ -296,6 +313,9 @@ export class UserPreferencesResponseDto implements UserPreferences {
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })
   cast!: CastResponse;
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
+  transfer!: TransferResponse;
 }
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {

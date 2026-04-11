@@ -9,7 +9,7 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
+import { UserAdminResponseDto, UserResponseDto, UserSearchDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -20,7 +20,7 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 
 @Injectable()
 export class UserService extends BaseService {
-  async search(auth: AuthDto): Promise<UserResponseDto[]> {
+  async search(auth: AuthDto, dto: UserSearchDto = {}): Promise<UserResponseDto[]> {
     const config = await this.getConfig({ withCache: false });
 
     let users;
@@ -29,6 +29,10 @@ export class UserService extends BaseService {
     } else {
       const authUser = await this.userRepository.get(auth.user.id, {});
       users = authUser ? [authUser] : [];
+    }
+
+    if (dto.allowTransfer) {
+      users = users.filter((user) => getPreferences(user.metadata ?? []).transfer.allowReceiving);
     }
 
     return users.map((user) => mapUser(user));

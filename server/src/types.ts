@@ -218,6 +218,11 @@ export interface IBulkEntityJob {
   ids: string[];
 }
 
+export interface IAssetOwnershipTransferJob extends IEntityJob {
+  newOwnerId: string;
+  oldOwnerId: string;
+}
+
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }
@@ -389,7 +394,10 @@ export type JobItem =
   | { name: JobName.WorkflowRun; data: IWorkflowJob }
 
   // Editor
-  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
+
+  // Ownership Transfer
+  | { name: JobName.AssetOwnershipTransfer; data: IAssetOwnershipTransferJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -536,6 +544,9 @@ export type UserPreferences = {
   };
   cast: {
     gCastEnabled: boolean;
+  };
+  transfer: {
+    allowReceiving: boolean;
   };
 };
 

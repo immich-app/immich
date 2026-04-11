@@ -16,6 +16,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import StackAction from '$lib/components/timeline/actions/StackAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
+  import TransferAction from '$lib/components/timeline/actions/TransferAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
@@ -153,6 +154,7 @@
         {#if $preferences.tags.enabled}
           <TagAction menuItem />
         {/if}
+        <TransferAction menuItem onTransfer={(assetIds) => timelineManager.removeAssets(assetIds)} />
         <DeleteAssets
           menuItem
           onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}

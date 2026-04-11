@@ -17,6 +17,7 @@ import {
   AssetMetadataResponseDto,
   AssetMetadataUpsertDto,
   AssetStatsDto,
+  AssetTransferDto,
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto';
@@ -47,6 +48,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { getPreferences } from 'src/utils/preferences';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -628,5 +630,77 @@ export class AssetService extends BaseService {
 
     await this.assetEditRepository.replaceAll(id, []);
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
+  }
+
+  async transferOwnership(auth: AuthDto, dto: AssetTransferDto): Promise<void> {
+    const { ids, newOwnerId } = dto;
+
+    if (newOwnerId === auth.user.id) {
+      throw new BadRequestException('Cannot transfer assets to yourself');
+    }
+
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
+
+    // Check new owner exists and has transfer receiving enabled
+    const newOwner = await this.userRepository.get(newOwnerId, {});
+    if (!newOwner) {
+      throw new BadRequestException('New owner not found');
+    }
+
+    const newOwnerMetadata = await this.userRepository.getMetadata(newOwnerId);
+    const newOwnerPreferences = getPreferences(newOwnerMetadata);
+    if (!newOwnerPreferences.transfer.allowReceiving) {
+      throw new BadRequestException('New owner has not enabled receiving transfers');
+    }
+
+    // Update ownerId for all assets
+    await this.assetRepository.updateAll(ids, { ownerId: newOwnerId });
+
+    // Queue jobs for physical file movement for each asset
+    await this.jobRepository.queueAll(
+      ids.map((id) => ({
+        name: JobName.AssetOwnershipTransfer,
+        data: { id, newOwnerId, oldOwnerId: auth.user.id },
+      })),
+    );
+  }
+
+  @OnJob({ name: JobName.AssetOwnershipTransfer, queue: QueueName.BackgroundTask })
+  async handleOwnershipTransfer(job: JobOf<JobName.AssetOwnershipTransfer>): Promise<JobStatus> {
+    const { id, newOwnerId, oldOwnerId } = job;
+
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    if (!asset) {
+      return JobStatus.Failed;
+    }
+
+    const newOwner = await this.userRepository.get(newOwnerId, {});
+    if (!newOwner) {
+      return JobStatus.Failed;
+    }
+
+    // Update usage for both users
+    const fileSize = asset.exifInfo?.fileSizeInByte || 0;
+    if (fileSize > 0 && !asset.libraryId) {
+      await this.userRepository.updateUsage(oldOwnerId, -fileSize);
+      await this.userRepository.updateUsage(newOwnerId, fileSize);
+    }
+
+    // Queue storage template migration to move files to new owner's folder
+    await this.jobRepository.queue({
+      name: JobName.StorageTemplateMigrationSingle,
+      data: { id },
+    });
+
+    // Also handle live photo motion video
+    if (asset.livePhotoVideoId) {
+      await this.assetRepository.updateAll([asset.livePhotoVideoId], { ownerId: newOwnerId });
+      await this.jobRepository.queue({
+        name: JobName.AssetOwnershipTransfer,
+        data: { id: asset.livePhotoVideoId, newOwnerId, oldOwnerId },
+      });
+    }
+
+    return JobStatus.Success;
   }
 }

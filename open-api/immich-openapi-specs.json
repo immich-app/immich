@@ -3492,6 +3492,55 @@
         "x-immich-state": "Stable"
       }
     },
+    "/assets/transfer": {
+      "post": {
+        "description": "Transfer ownership of one or more assets to another user who has enabled receiving transfers.",
+        "operationId": "transferOwnership",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetTransferDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Transfer asset ownership",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.transfer",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/{id}": {
       "get": {
         "description": "Retrieve detailed information about a specific asset.",
@@ -14050,7 +14099,17 @@
       "get": {
         "description": "Retrieve a list of all users on the server.",
         "operationId": "searchUsers",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "allowTransfer",
+            "required": false,
+            "in": "query",
+            "description": "Filter to users with transfer receiving enabled",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -17278,6 +17337,28 @@
         ],
         "type": "object"
       },
+      "AssetTransferDto": {
+        "properties": {
+          "ids": {
+            "description": "IDs to process",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "newOwnerId": {
+            "description": "New owner ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ids",
+          "newOwnerId"
+        ],
+        "type": "object"
+      },
       "AssetTypeEnum": {
         "description": "Asset type",
         "enum": [
@@ -18316,7 +18397,8 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "WorkflowRun",
+          "AssetOwnershipTransfer"
         ],
         "type": "string"
       },
@@ -19825,6 +19907,7 @@
           "asset.replace",
           "asset.copy",
           "asset.derive",
+          "asset.transfer",
           "asset.edit.get",
           "asset.edit.create",
           "asset.edit.delete",
@@ -25353,6 +25436,28 @@
         ],
         "type": "string"
       },
+      "TransferResponse": {
+        "properties": {
+          "allowReceiving": {
+            "default": false,
+            "description": "Whether to allow receiving ownership transfers",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "allowReceiving"
+        ],
+        "type": "object"
+      },
+      "TransferUpdate": {
+        "properties": {
+          "allowReceiving": {
+            "description": "Whether to allow receiving ownership transfers",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "TrashResponseDto": {
         "properties": {
           "count": {
@@ -25873,6 +25978,9 @@
           },
           "tags": {
             "$ref": "#/components/schemas/TagsResponse"
+          },
+          "transfer": {
+            "$ref": "#/components/schemas/TransferResponse"
           }
         },
         "required": [
@@ -25886,7 +25994,8 @@
           "purchase",
           "ratings",
           "sharedLinks",
-          "tags"
+          "tags",
+          "transfer"
         ],
         "type": "object"
       },
@@ -25927,6 +26036,9 @@
           },
           "tags": {
             "$ref": "#/components/schemas/TagsUpdate"
+          },
+          "transfer": {
+            "$ref": "#/components/schemas/TransferUpdate"
           }
         },
         "type": "object"

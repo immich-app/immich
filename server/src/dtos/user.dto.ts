@@ -80,6 +80,11 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
   };
 };
 
+export class UserSearchDto {
+  @ValidateBoolean({ optional: true, description: 'Filter to users with transfer receiving enabled' })
+  allowTransfer?: boolean;
+}
+
 export class UserAdminSearchDto {
   @ValidateBoolean({ optional: true, description: 'Include deleted users' })
   withDeleted?: boolean;

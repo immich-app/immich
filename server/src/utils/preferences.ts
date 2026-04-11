@@ -49,6 +49,9 @@ const getDefaultPreferences = (): UserPreferences => {
     cast: {
       gCastEnabled: false,
     },
+    transfer: {
+      allowReceiving: false,
+    },
   };
 };
 

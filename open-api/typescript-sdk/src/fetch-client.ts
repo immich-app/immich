@@ -329,6 +329,10 @@ export type TagsResponse = {
     /** Whether tags appear in web sidebar */
     sidebarWeb: boolean;
 };
+export type TransferResponse = {
+    /** Whether to allow receiving ownership transfers */
+    allowReceiving: boolean;
+};
 export type UserPreferencesResponseDto = {
     albums: AlbumsResponse;
     cast: CastResponse;
@@ -341,6 +345,7 @@ export type UserPreferencesResponseDto = {
     ratings: RatingsResponse;
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
+    transfer: TransferResponse;
 };
 export type AlbumsUpdate = {
     /** Default asset order for albums */
@@ -408,6 +413,10 @@ export type TagsUpdate = {
     /** Whether tags appear in web sidebar */
     sidebarWeb?: boolean;
 };
+export type TransferUpdate = {
+    /** Whether to allow receiving ownership transfers */
+    allowReceiving?: boolean;
+};
 export type UserPreferencesUpdateDto = {
     albums?: AlbumsUpdate;
     avatar?: AvatarUpdate;
@@ -421,6 +430,7 @@ export type UserPreferencesUpdateDto = {
     ratings?: RatingsUpdate;
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
+    transfer?: TransferUpdate;
 };
 export type SessionResponseDto = {
     /** App version */
@@ -780,6 +790,12 @@ export type AssetBulkDeleteDto = {
     force?: boolean;
     /** IDs to process */
     ids: string[];
+};
+export type AssetTransferDto = {
+    /** IDs to process */
+    ids: string[];
+    /** New owner ID */
+    newOwnerId: string;
 };
 export type AssetMetadataUpsertItemDto = {
     /** Metadata key */
@@ -3957,6 +3973,18 @@ export function deleteAssets({ assetBulkDeleteDto }: {
     })));
 }
 /**
+ * Transfer asset ownership
+ */
+export function transferAssets({ assetTransferDto }: {
+    assetTransferDto: AssetTransferDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/transfer", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetTransferDto
+    })));
+}
+/**
  * Upload asset
  */
 export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }: {
@@ -6569,11 +6597,13 @@ export function restoreAssets({ bulkIdsDto }: {
 /**
  * Get all users
  */
-export function searchUsers(opts?: Oazapfts.RequestOpts) {
+export function searchUsers({ allowTransfer }: {
+    allowTransfer?: boolean;
+} = {}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UserResponseDto[];
-    }>("/users", {
+    }>(`/users${QS.query(QS.explode({ allowTransfer }))}`, {
         ...opts
     }));
 }
