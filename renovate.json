@@ -3,15 +3,24 @@
   "extends": ["local>immich-app/.github:renovate-config"],
   "packageRules": [
     {
-      "matchFileNames": ["machine-learning/**"],
+      "matchFileNames": [
+        "machine-learning/**"
+      ],
       "groupName": "machine-learning",
       "rangeStrategy": "in-range-only"
     },
     {
-      "matchFileNames": ["mobile/**"],
+      "matchFileNames": [
+        "mobile/**"
+      ],
       "groupName": "mobile",
-      "matchUpdateTypes": ["minor", "patch"],
-      "addLabels": ["📱mobile"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "addLabels": [
+        "📱mobile"
+      ]
     },
     {
       "matchPackageNames": ["ghcr.io/immich-app/postgres"],
@@ -34,5 +43,8 @@
     "mobile/ios",
     "mobile/android"
   ],
-  "ignoreDeps": ["http", "intl"]
+  "ignoreDeps": [
+    "http",
+    "intl"
+  ]
 }
