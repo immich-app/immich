@@ -35,23 +35,30 @@ class InferenceModel(ABC):
         self.model_name = clean_name(model_name)
         self.cache_dir = Path(cache_dir) if cache_dir is not None else self._cache_dir_default
         self.model_format = model_format if model_format is not None else self._model_format_default
+        self.hf_token = model_kwargs.get("hfToken") or settings.hf_token
+        self.model_file = model_kwargs.get("modelFile") or getattr(self, "model_file", None)
         if session is not None:
             self.session = session
 
     def download(self) -> None:
+        log.debug(f"Checking cache for {self.model_name} at {self.model_path}")
         if not self.cached:
             model_type = self.model_type.replace("-", " ")
-            log.info(f"Downloading {model_type} model '{self.model_name}' to {self.model_path}. This may take a while.")
+            log.warning(f"Downloading {model_type} model '{self.model_name}' to {self.model_path}. This may take a while.")
             self._download()
+        else:
+            log.warning(f"Model '{self.model_name}' is already cached at {self.model_path}")
 
     def load(self) -> None:
         if self.loaded:
             return
         self.load_attempts += 1
 
+        log.debug(f"Calling self.download() for {self.model_name}")
         self.download()
         attempt = f"Attempt #{self.load_attempts} to load" if self.load_attempts > 1 else "Loading"
-        log.info(f"{attempt} {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
+        log.warning(f"{attempt} {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory from {self.model_path}")
+        log.debug(f"Attempting to _load from {self.model_path}")
         self.session = self._load()
         self.loaded = True
 
@@ -75,18 +82,20 @@ class InferenceModel(ABC):
         }
 
         repo_id = getattr(self, "hf_repo", f"immich-app/{clean_name(self.model_name)}")
-        log.info(f"Downloading model '{self.model_name}' from Hugging Face repo '{repo_id}' to {self.model_path}")
+        log.info(f"Initiating download for model '{self.model_name}' from repo '{repo_id}' to {self.cache_dir}")
 
         try:
+            log.debug(f"Calling snapshot_download for '{repo_id}' (token provided: {bool(self.hf_token)})")
             snapshot_download(
                 repo_id,
                 cache_dir=self.cache_dir,
                 local_dir=self.cache_dir,
                 ignore_patterns=ignored_patterns.get(self.model_format, []),
-                token=settings.hf_token,
+                token=self.hf_token,
             )
+            log.info(f"Successfully finished snapshot_download for '{repo_id}'")
         except Exception as e:
-            log.error(f"Failed to download model '{self.model_name}' from Hugging Face repo '{repo_id}': {e}")
+            log.error(f"CRITICAL: Failed to download model '{self.model_name}' from Hugging Face repo '{repo_id}': {e}")
             raise e
 
     def _load(self) -> ModelSession:
