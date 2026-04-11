@@ -126,6 +126,7 @@
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
       case AssetAction.DELETE:
+      case AssetAction.TRANSFER:
       case AssetAction.ARCHIVE:
       case AssetAction.SET_VISIBILITY_LOCKED:
       case AssetAction.SET_VISIBILITY_TIMELINE: {

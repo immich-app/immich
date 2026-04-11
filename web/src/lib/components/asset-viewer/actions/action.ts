@@ -8,6 +8,7 @@ type ActionMap = {
   [AssetAction.TRASH]: { asset: TimelineAsset };
   [AssetAction.DELETE]: { asset: TimelineAsset };
   [AssetAction.RESTORE]: { asset: TimelineAsset };
+  [AssetAction.TRANSFER]: { asset: TimelineAsset };
   [AssetAction.STACK]: { stack: StackResponseDto };
   [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
   [AssetAction.SET_STACK_PRIMARY_ASSET]: { stack: StackResponseDto };

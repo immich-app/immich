@@ -297,6 +297,7 @@
   const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.DELETE:
+      case AssetAction.TRANSFER:
       case AssetAction.TRASH: {
         eventManager.emit('AssetsDelete', [asset.id]);
         break;

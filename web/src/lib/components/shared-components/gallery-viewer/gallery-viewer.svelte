@@ -300,6 +300,7 @@
     switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
+      case AssetAction.TRANSFER:
       case AssetAction.TRASH: {
         const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
         assets.splice(
