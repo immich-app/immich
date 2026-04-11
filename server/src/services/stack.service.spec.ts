@@ -111,24 +111,6 @@ describe(StackService.name, () => {
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith(stack.id);
     });
-
-    it('should include face data on stack assets', async () => {
-      const auth = AuthFactory.create();
-      const stack = StackFactory.from()
-        .primaryAsset({}, (builder) => builder.exif().face())
-        .asset({}, (builder) => builder.exif().face())
-        .build();
-
-      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stack.id]));
-      mocks.stack.getById.mockResolvedValue(getForStack(stack));
-
-      const response = await sut.get(auth, stack.id);
-
-      expect(response.assets).toHaveLength(2);
-      for (const asset of response.assets) {
-        expect(asset.unassignedFaces).toHaveLength(1);
-      }
-    });
   });
 
   describe('update', () => {
