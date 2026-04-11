@@ -70,6 +70,10 @@ export class EnvDto {
 
   @IsString()
   @Optional()
+  HF_TOKEN?: string;
+
+  @IsString()
+  @Optional()
   IMMICH_LOG_LEVEL?: LogLevel;
 
   @IsEnum(LogFormat)

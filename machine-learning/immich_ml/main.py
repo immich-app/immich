@@ -199,6 +199,7 @@ async def predict(
     entries: InferenceEntries = Depends(get_entries),
     image: bytes | None = File(default=None),
     text: str | None = Form(default=None),
+    hfToken: str | None = Form(default=None),
 ) -> Any:
     if image is not None:
         inputs: Image | str = await run(lambda: decode_pil(image))
@@ -206,17 +207,18 @@ async def predict(
         inputs = text
     else:
         raise HTTPException(400, "Either image or text must be provided")
-    response = await run_inference(inputs, entries)
+    response = await run_inference(inputs, entries, hfToken)
     return ORJSONResponse(response)
 
 
-async def run_inference(payload: Image | str, entries: InferenceEntries) -> InferenceResponse:
+async def run_inference(payload: Image | str, entries: InferenceEntries, hf_token: str | None) -> InferenceResponse:
     outputs: dict[ModelIdentity, Any] = {}
     response: InferenceResponse = {}
 
     async def _run_inference(entry: InferenceEntry) -> None:
+        options = {**entry["options"], "hfToken": hf_token}
         model = await model_cache.get(
-            entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"]
+            entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **options
         )
         inputs = [payload]
         for dep in model.depends:
@@ -226,7 +228,7 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
                 message = f"Task {entry['task']} of type {entry['type']} depends on output of {dep}"
                 raise HTTPException(400, message)
         model = await load(model)
-        output = await run(model.predict, *inputs, **entry["options"])
+        output = await run(model.predict, *inputs, **options)
         outputs[model.identity] = output
         response[entry["task"]] = output
 

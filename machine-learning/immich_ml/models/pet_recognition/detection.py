@@ -28,7 +28,7 @@ class PetDetector(InferenceModel):
             # Allow users to specify a custom Hugging Face repo
             model_name = detection_model_name
             self.hf_repo = detection_model_name
-            self.model_file = model_kwargs.get("modelFile", "model.onnx")
+            self.model_file = model_kwargs.get("modelFile", self.model_file)
         else:
             model_name = detection_model_name
 

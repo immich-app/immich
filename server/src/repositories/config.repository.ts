@@ -129,6 +129,7 @@ export interface EnvData {
 
   noColor: boolean;
   nodeVersion?: string;
+  hfToken?: string;
 }
 
 const productionKeys = {
@@ -385,6 +386,7 @@ const getEnv = (): EnvData => {
     },
 
     noColor: !!dto.NO_COLOR,
+    hfToken: dto.HF_TOKEN,
   };
 };
 

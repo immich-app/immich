@@ -29,7 +29,13 @@ class PetRecognizer(InferenceModel):
             # Allow users to specify a custom Hugging Face repo
             model_name = recognition_model_name
             self.hf_repo = recognition_model_name
-            self.model_file = model_kwargs.get("modelFile", "model.onnx")
+            
+            # MegaDescriptor and most other models use 'model.onnx'
+            # Xenova/clip (our default) uses 'onnx/vision_model.onnx'
+            if "megadescriptor" in recognition_model_name.lower():
+                self.model_file = "model.onnx"
+            else:
+                self.model_file = model_kwargs.get("modelFile", self.model_file)
         else:
             model_name = recognition_model_name
 

@@ -3,6 +3,7 @@ import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export interface BoundingBox {
@@ -110,7 +111,10 @@ export class MachineLearningRepository {
     return this._config;
   }
 
-  constructor(private logger: LoggingRepository) {
+  constructor(
+    private logger: LoggingRepository,
+    private configRepository: ConfigRepository,
+  ) {
     this.logger.setContext(MachineLearningRepository.name);
   }
 
@@ -266,6 +270,11 @@ export class MachineLearningRepository {
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));
+
+    const hfToken = this.configRepository.getEnv().hfToken;
+    if (hfToken) {
+      formData.append('hfToken', hfToken);
+    }
 
     if ('imagePath' in payload) {
       const fileBuffer = await readFile(payload.imagePath);

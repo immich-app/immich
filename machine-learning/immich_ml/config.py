@@ -106,11 +106,8 @@ class NonPrefixedSettings(BaseSettings):
     no_color: bool = False
 
 
-_clean_name = str.maketrans(":\\/", "___", ".")
-
-
 def clean_name(model_name: str) -> str:
-    return model_name.split("/")[-1].translate(_clean_name)
+    return model_name.split("/")[-1]
 
 
 LOG_LEVELS: dict[str, int] = {
@@ -155,8 +152,11 @@ class CustomRichHandler(RichHandler):
         return super().emit(record)
 
 
-log = logging.getLogger("ml.log")
+log = logging.getLogger()
 log.setLevel(LOG_LEVEL)
+for handler in log.handlers[:]:
+    log.removeHandler(handler)
+log.addHandler(CustomRichHandler())
 
 
 # patches this issue https://github.com/encode/uvicorn/discussions/1803
