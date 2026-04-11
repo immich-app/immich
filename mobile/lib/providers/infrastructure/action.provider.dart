@@ -450,6 +450,18 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> downloadCompressed(ActionSource source, {required int quality}) async {
+    final assets = _getAssets(source).where((asset) => asset.hasRemote && asset.isImage).toList(growable: false);
+    try {
+      final didEnqueue = await _service.downloadCompressed(assets, quality: quality);
+      final enqueueCount = didEnqueue.where((e) => e).length;
+      return ActionResult(count: enqueueCount, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to download compressed assets', error, stack);
+      return ActionResult(count: assets.length, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> upload(ActionSource source, {List<LocalAsset>? assets}) async {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
 

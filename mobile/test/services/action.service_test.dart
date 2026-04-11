@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -113,6 +114,28 @@ void main() {
       verify(() => assetMediaRepository.deleteAll(ids)).called(1);
       verifyNever(() => trashedLocalAssetRepository.applyTrashedAssets(any()));
       verifyNever(() => localAssetRepository.delete(any()));
+    });
+  });
+
+  group('ActionService.downloadCompressed', () {
+    test('delegates compressed download requests to the download repository', () async {
+      final asset = RemoteAsset(
+        id: 'remote-id',
+        name: 'test.jpg',
+        ownerId: 'owner-id',
+        checksum: 'checksum',
+        type: AssetType.image,
+        createdAt: DateTime(2025),
+        updatedAt: DateTime(2025),
+        isEdited: false,
+      );
+
+      when(() => downloadRepository.downloadCompressedAssets([asset], quality: 75)).thenAnswer((_) async => [true]);
+
+      final result = await sut.downloadCompressed([asset], quality: 75);
+
+      expect(result, [true]);
+      verify(() => downloadRepository.downloadCompressedAssets([asset], quality: 75)).called(1);
     });
   });
 }

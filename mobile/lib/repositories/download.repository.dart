@@ -134,4 +134,43 @@ class DownloadRepository {
     }
     return _downloader.enqueueAll(tasks.slice(0, taskIndex));
   }
+
+  Future<List<bool>> downloadCompressedAssets(List<BaseAsset> assets, {required int quality}) async {
+    if (assets.isEmpty) {
+      return Future.value(const []);
+    }
+
+    final headers = ApiService.getRequestHeaders();
+    final tasks = <DownloadTask>[];
+
+    for (final asset in assets) {
+      final remoteId = asset.remoteId;
+      if (remoteId == null || !asset.isImage) {
+        continue;
+      }
+
+      tasks.add(
+        DownloadTask(
+          taskId: '$remoteId-compressed-$quality',
+          url: getCompressedDownloadUrlForRemoteId(remoteId, quality: quality),
+          headers: headers,
+          filename: _buildCompressedFilename(asset.name, quality),
+          updates: Updates.statusAndProgress,
+          group: kDownloadGroupImage,
+        ),
+      );
+    }
+
+    if (tasks.isEmpty) {
+      return Future.value(const []);
+    }
+
+    return _downloader.enqueueAll(tasks);
+  }
+
+  String _buildCompressedFilename(String originalName, int quality) {
+    final dotIndex = originalName.lastIndexOf('.');
+    final baseName = dotIndex > 0 ? originalName.substring(0, dotIndex) : originalName;
+    return '$baseName-compressed-$quality.jpg';
+  }
 }

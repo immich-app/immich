@@ -46,6 +46,10 @@ String getOriginalUrlForRemoteId(final String id, {bool edited = true}) {
   return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/original?edited=$edited';
 }
 
+String getCompressedDownloadUrlForRemoteId(final String id, {required int quality, bool edited = true}) {
+  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/compressed?quality=$quality&edited=$edited';
+}
+
 String getThumbnailUrlForRemoteId(
   final String id, {
   AssetMediaSize type = AssetMediaSize.thumbnail,

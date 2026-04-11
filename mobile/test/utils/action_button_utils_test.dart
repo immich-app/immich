@@ -386,6 +386,93 @@ void main() {
       });
     });
 
+    group('download compressed button', () {
+      test('should show for merged image assets', () {
+        final mergedAsset = createLocalAsset(remoteId: 'remote-id');
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.downloadCompressed.shouldShow(context), isTrue);
+      });
+
+      test('should show for remote-only image assets', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.downloadCompressed.shouldShow(context), isTrue);
+      });
+
+      test('should not show for local-only assets', () {
+        final localAsset = createLocalAsset();
+        final context = ActionButtonContext(
+          asset: localAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.downloadCompressed.shouldShow(context), isFalse);
+      });
+
+      test('should not show for remote videos', () {
+        final remoteAsset = createRemoteAsset(type: AssetType.video);
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.downloadCompressed.shouldShow(context), isFalse);
+      });
+
+      test('should not show in locked view', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.downloadCompressed.shouldShow(context), isFalse);
+      });
+    });
+
     group('similar photos button', () {
       test('should show when not locked and has remote', () {
         final remoteAsset = createRemoteAsset();

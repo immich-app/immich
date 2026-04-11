@@ -16,6 +16,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_compressed_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
@@ -75,6 +76,7 @@ enum ActionButtonType {
   setProfilePicture,
   viewInTimeline,
   download,
+  downloadCompressed,
   upload,
   openInBrowser,
   unstack,
@@ -110,6 +112,10 @@ enum ActionButtonType {
         !context.isInLockedView && //
             context.asset.hasRemote && //
             !context.asset.hasLocal,
+      ActionButtonType.downloadCompressed =>
+        !context.isInLockedView && //
+            context.asset.hasRemote && //
+            context.asset.isImage,
       ActionButtonType.trash =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -201,6 +207,11 @@ enum ActionButtonType {
         menuItem: menuItem,
       ),
       ActionButtonType.download => DownloadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.downloadCompressed => DownloadCompressedActionButton(
+        source: context.source,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
       ActionButtonType.trash => TrashActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.deletePermanent => DeletePermanentActionButton(
         source: context.source,

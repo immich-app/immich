@@ -240,6 +240,10 @@ class ActionService {
     return _downloadRepository.downloadAllAssets(assets);
   }
 
+  Future<List<bool>> downloadCompressed(List<BaseAsset> assets, {required int quality}) {
+    return _downloadRepository.downloadCompressedAssets(assets, quality: quality);
+  }
+
   Future<bool> setAlbumCover(String albumId, String assetId) async {
     final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
     await _remoteAlbumRepository.update(updatedAlbum);
