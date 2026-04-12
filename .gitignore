@@ -30,3 +30,6 @@ vite.config.js.timestamp-*
 .devcontainer/.env*
 *.tsbuildinfo
 *.tsbuildInfo
+
+# Local immich-test Docker stack (docker-compose.immich-test.yml)
+.immich-test-data/

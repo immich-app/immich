@@ -1,5 +1,5 @@
 # Standalone test stack (do not merge with docker-compose.yml — Compose merges `ports` by appending).
-# Usage from this directory:
+# Copy immich-test.env.example to immich-test.env (gitignored), set paths and DB_PASSWORD, then:
 #   docker compose -f docker-compose.immich-test.yml --env-file immich-test.env up -d
 # UI: http://localhost:3283
 
