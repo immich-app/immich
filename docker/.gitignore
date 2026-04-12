@@ -1,3 +1,1 @@
 .env
-# Local env filename sometimes used with personal compose experiments (never commit)
-immich-test.env
