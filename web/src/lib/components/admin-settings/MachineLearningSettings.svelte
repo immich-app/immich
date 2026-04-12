@@ -17,6 +17,26 @@
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
+
+  /** Video sampling fractions must stay within server/API bounds (open interval 0, 1). */
+  const MIN_SAMPLING_FRAC = 0.000001;
+  const MAX_SAMPLING_FRAC = 0.999999;
+
+  function clampSamplingFraction(n: number): number {
+    return Math.min(MAX_SAMPLING_FRAC, Math.max(MIN_SAMPLING_FRAC, n));
+  }
+
+  function setVideoSamplingPreset(fractions: number[]): void {
+    configToEdit.machineLearning.videoSampling.samplingFractions = fractions.map(clampSamplingFraction);
+  }
+
+  /** Human-friendly percent for the hint line (avoids long tails on common values). */
+  function formatSamplingPercentHint(fraction: number): string {
+    const pct = fraction * 100;
+    const abs = Math.abs(pct);
+    const maxFrac = abs >= 10 && abs < 99.999 ? 2 : 6;
+    return pct.toLocaleString(undefined, { maximumFractionDigits: maxFrac });
+  }
 </script>
 
 <div class="mt-2">
@@ -115,14 +135,54 @@
         subtitle={$t('admin.machine_learning_video_sampling_description')}
       >
         <div class="ms-4 mt-4 flex flex-col gap-4">
+          <p class="immich-form-label max-w-prose text-sm leading-relaxed">
+            {$t('admin.machine_learning_video_sampling_fractions_hint')}
+          </p>
+
+          <div class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-primary"
+              >{$t('admin.machine_learning_video_sampling_presets')}</span
+            >
+            <div class="flex flex-wrap gap-2">
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => setVideoSamplingPreset([0.25, 0.5, 0.75])}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                >{$t('admin.machine_learning_video_sampling_preset_quarters')}</Button
+              >
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => setVideoSamplingPreset([1 / 3, 2 / 3])}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                >{$t('admin.machine_learning_video_sampling_preset_thirds')}</Button
+              >
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => setVideoSamplingPreset([0.5])}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                >{$t('admin.machine_learning_video_sampling_preset_center')}</Button
+              >
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => setVideoSamplingPreset([0.1, 0.9])}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                >{$t('admin.machine_learning_video_sampling_preset_early_late')}</Button
+              >
+            </div>
+          </div>
+
           {#each configToEdit.machineLearning.videoSampling.samplingFractions as _, i (i)}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={i === 0 ? $t('admin.machine_learning_video_sampling_fractions') : undefined}
+              label={$t('admin.machine_learning_video_sampling_row', { values: { n: i + 1 } })}
               bind:value={configToEdit.machineLearning.videoSampling.samplingFractions[i]}
-              step="0.01"
-              min={0.000001}
-              max={0.999999}
+              step="any"
+              min={MIN_SAMPLING_FRAC}
+              max={MAX_SAMPLING_FRAC}
               disabled={disabled || !configToEdit.machineLearning.enabled}
               isEdited={!isEqual(
                 configToEdit.machineLearning.videoSampling.samplingFractions,
@@ -130,11 +190,11 @@
               )}
             >
               {#snippet descriptionSnippet()}
-                {#if i === 0}
-                  <p class="immich-form-label pb-2 text-sm">
-                    {$t('admin.machine_learning_video_sampling_fractions_hint')}
-                  </p>
-                {/if}
+                <p class="immich-form-label pb-2 text-xs text-muted">
+                  {$t('admin.machine_learning_video_sampling_percent_equivalent', {
+                    values: { percent: formatSamplingPercentHint(configToEdit.machineLearning.videoSampling.samplingFractions[i]) },
+                  })}
+                </p>
               {/snippet}
               {#snippet trailingSnippet()}
                 {#if configToEdit.machineLearning.videoSampling.samplingFractions.length > 1}
