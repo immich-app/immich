@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { initInput } from '$lib/actions/focus';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { handleAddUsersToAlbum } from '$lib/services/album.service';
   import { searchUsers, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
@@ -39,6 +40,8 @@
     users = await searchUsers();
     loading = false;
   });
+
+  const onkeydown = async (e: KeyboardEvent) => {};
 </script>
 
 <FormModal
@@ -55,6 +58,13 @@
     </div>
   {:else}
     <Stack>
+      <input
+        class="border-b-4 border-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:focus:border-immich-dark-primary"
+        placeholder={$t('search')}
+        {onkeydown}
+        use:initInput
+      />
+      <!-- bind:value={search} -->
       {#each filteredUsers as user (user.id)}
         <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>
           <UserAvatar {user} size="md" />
