@@ -169,7 +169,7 @@
         >
           <button
             type="button"
-            class="flex ps-2"
+            class="flex rounded-full ps-2 outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary"
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
             title={`${$user.name} (${$user.email})`}
           >

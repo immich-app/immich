@@ -73,7 +73,7 @@
     type="button"
     aria-expanded={isOpen}
     {onclick}
-    class="flex w-full place-items-center justify-between text-start"
+    class="flex w-full place-items-center justify-between rounded-xl text-start outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary"
   >
     <div>
       <div class="flex gap-2 place-items-center">

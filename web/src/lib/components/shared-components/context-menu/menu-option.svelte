@@ -53,7 +53,7 @@
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
+  class="w-full p-4 text-start text-sm font-medium {textColor} outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
     ? activeColor
     : 'bg-slate-100'}"
   role="menuitem"

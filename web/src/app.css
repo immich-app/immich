@@ -81,6 +81,12 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+
+  /* Provide a consistent focus-visible outline for all interactive elements */
+  :focus-visible {
+    outline: 2px solid var(--immich-ui-primary-500, currentColor);
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
@@ -153,8 +159,8 @@
   }
 
   input:focus-visible {
-    outline-offset: 0px !important;
-    outline: none !important;
+    outline: 2px solid var(--immich-ui-primary-500, currentColor);
+    outline-offset: 0px;
   }
 
   .text-white-shadow {
