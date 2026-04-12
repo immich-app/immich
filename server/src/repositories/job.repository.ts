@@ -91,7 +91,7 @@ export class JobRepository {
       this.workers[queueName] = new Worker(
         queueName,
         (job) => this.eventRepository.emit('JobRun', queueName, job as JobItem),
-        { ...bull.config, concurrency: 1 },
+        { ...bull.config, concurrency: 1, lockDuration: 600_000, stalledInterval: 600_000 },
       );
     }
   }
