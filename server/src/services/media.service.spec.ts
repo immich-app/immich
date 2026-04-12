@@ -1626,6 +1626,31 @@ describe(MediaService.name, () => {
       expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, thumbnailPath: expect.any(String) });
     });
 
+    it('should extract at timestampMs 0 for video faces (seek-at-start)', async () => {
+      const person = PersonFactory.create();
+      const extractedFramePath = '/tmp/immich-facedet-test/frame-0.jpeg';
+
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.videoThumbnailAtTimestampZero);
+      mocks.media.extractVideoFramesForFaceDetection.mockResolvedValue({
+        tempDir: '/tmp/immich-facedet-test',
+        frames: [{ path: extractedFramePath, timestampMs: 0, frameIndex: 0 }],
+      });
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.extractVideoFramesForFaceDetection).toHaveBeenCalledWith(
+        personThumbnailStub.videoThumbnailAtTimestampZero.originalPath,
+        personThumbnailStub.videoThumbnailAtTimestampZero.assetId,
+        [{ timestampMs: 0, frameIndex: 0 }],
+        expect.any(Object),
+      );
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedFramePath, expect.any(Object));
+    });
+
     it('should generate a thumbnail without going negative', async () => {
       const person = PersonFactory.create();
 

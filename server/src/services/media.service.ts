@@ -438,6 +438,8 @@ export class MediaService extends BaseService {
 
     try {
       if (data.type === AssetType.Video) {
+        // Faces detected on sampled frames store timestampMs; crop must use that same instant (not the asset preview),
+        // which may be a different moment. Same extractor as multi-frame face detection (see PersonService.handleDetectFaces).
         if (timestampMs != null && timestampMs >= 0 && assetId) {
           const result = await this.mediaRepository.extractVideoFramesForFaceDetection(
             originalPath,

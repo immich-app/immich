@@ -182,7 +182,7 @@
     "machine_learning_facial_recognition_setting": "Enable facial recognition",
     "machine_learning_facial_recognition_setting_description": "If disabled, images will not be encoded for facial recognition and will not populate the People section in the Explore page.",
     "machine_learning_video_multi_frame_face_detection": "Multi-frame video face detection",
-    "machine_learning_video_multi_frame_face_detection_description": "When enabled, face detection samples multiple positions in each video using your configured video sampling fractions. When disabled, only the preview frame is used. Re-run face detection jobs after changing this setting.",
+    "machine_learning_video_multi_frame_face_detection_description": "When enabled, face detection samples multiple positions in each video using your configured video sampling fractions. Each face stores its time offset; People face thumbnails are cropped from that same frame when an offset exists (otherwise the asset preview image is used). When disabled, only the preview frame is used. Re-run face detection jobs after changing this setting.",
     "machine_learning_max_detection_distance": "Maximum detection distance",
     "machine_learning_max_detection_distance_description": "Maximum distance between two images to consider them duplicates, ranging from 0.001-0.1. Higher values will detect more duplicates, but may result in false positives.",
     "machine_learning_max_recognition_distance": "Maximum recognition distance",

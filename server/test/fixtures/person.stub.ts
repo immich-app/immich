@@ -121,4 +121,20 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
     timestampMs: 7500,
   }),
+  /** Ensures timestamp 0 is not treated as falsy — still extract at video start for person thumbnail. */
+  videoThumbnailAtTimestampZero: Object.freeze({
+    ...faceThumbBase,
+    ownerId: userStub.admin.id,
+    x1: 100,
+    y1: 100,
+    x2: 200,
+    y2: 200,
+    oldHeight: 500,
+    oldWidth: 400,
+    type: AssetType.Video,
+    originalPath: '/original/path.mp4',
+    exifOrientation: '1',
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    timestampMs: 0,
+  }),
 };

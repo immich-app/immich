@@ -1,6 +1,6 @@
 # Testing improved video face detection (isolated from your main Immich)
 
-This fork samples **three frames per video** (at ~25%, ~50%, and ~75% of duration), runs the **same** facial-recognition ML pipeline Immich already uses, and stores `timestampMs` / `frameIndex` on `asset_face`. No extra services, no “phone home” beyond what a normal Immich stack already does (e.g. ML model cache in the machine-learning container).
+With multi-frame video face detection enabled, the server samples **several frames per video** at fractions of the duration (defaults **0.25 / 0.5 / 0.75**, configurable under **Admin → Machine learning → Video sampling**). It runs the **same** facial-recognition ML pipeline upstream Immich uses, and stores `timestampMs` / `frameIndex` on `asset_face`. No extra services, no “phone home” beyond what a normal Immich stack already does (e.g. ML model cache in the machine-learning container).
 
 Use a **separate** stack so your production library, database, and ports stay untouched.
 
@@ -27,7 +27,7 @@ Build **your** server image from this repo when you want to validate the fork (s
 
 ## 2. Test media
 
-- Use a **short video you already own** (phone clip, screen recording) where **faces are visible** toward the **start**, **middle**, and **end** so the 25/50/75% samples have something to detect.
+- Use a **short video you already own** (phone clip, screen recording) where **faces are visible** toward the **start**, **middle**, and **end** so the default sampling positions (or your configured fractions) have something to detect.
 - No special sample files or extra downloads are required beyond what a normal Immich install already uses (e.g. ML models in the machine-learning container cache on first use, same as production).
 
 ## 3. Apply migrations and run
@@ -76,9 +76,13 @@ In **People**, faces detected from mid/end of a clip should still cluster into p
 
 | Situation | Expected behavior |
 |-----------|---------------------|
-| Video + valid `duration` + extraction succeeds | Up to **three** detection passes at ~25%, ~50%, ~75% duration; faces get non-null `timestampMs` / `frameIndex` where applicable |
+| Video + valid `duration` + extraction succeeds | Up to **N** detection passes (N = number of sampling fractions, max 5); faces get non-null `timestampMs` / `frameIndex` where applicable |
 | Video but duration missing/invalid, or all extractions fail | Falls back to **one** pass using the existing **preview** image (same as classic behavior); `timestampMs` / `frameIndex` stay null for those rows |
 | Still images | Unchanged: single preview; temporal columns null |
+
+### People thumbnails (person face tiles)
+
+When `timestampMs` is set on the face row used for a person’s thumbnail, the **PersonGenerateThumbnail** job seeks to that time and extracts a frame with the **same** `extractVideoFramesForFaceDetection` helper as face detection, then crops the face—so the People UI matches the sampled moment, not necessarily the asset’s grid preview frame. If `timestampMs` is null (preview-only detection), cropping uses the preview image as before.
 
 ## 7. Unit tests (developers)
 
