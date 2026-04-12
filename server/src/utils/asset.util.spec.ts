@@ -1,5 +1,9 @@
 import { VideoSamplingStrategy } from 'src/enum';
-import { MAX_VIDEO_SAMPLING_FRAMES, resolveVideoSamplingFractions } from 'src/utils/asset.util';
+import {
+  dedupeSamplingOffsetsMs,
+  MAX_VIDEO_SAMPLING_FRAMES,
+  resolveVideoSamplingFractions,
+} from 'src/utils/asset.util';
 
 describe(resolveVideoSamplingFractions.name, () => {
   it('uses explicit fractions', () => {
@@ -33,6 +37,10 @@ describe(resolveVideoSamplingFractions.name, () => {
         fractionStep: 0.1,
       }),
     ).toEqual([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]);
+  });
+
+  it('dedupes identical ms offsets', () => {
+    expect(dedupeSamplingOffsetsMs([0, 0, 100, 100, 200])).toEqual([0, 100, 200]);
   });
 
   it('caps at MAX_VIDEO_SAMPLING_FRAMES', () => {

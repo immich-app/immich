@@ -42,6 +42,7 @@ import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import {
+  dedupeSamplingOffsetsMs,
   getDimensions,
   getVideoSamplingOffsetsMs,
   parseAssetDurationStringToMs,
@@ -396,8 +397,14 @@ export class PersonService extends BaseService {
           durationMs > 0
         ) {
           const fractions = resolveVideoSamplingFractions(machineLearning.videoSampling);
-          const offsets = getVideoSamplingOffsetsMs(durationMs, fractions);
-          const samples = offsets.map((timestampMs, frameIndex) => ({ timestampMs, frameIndex }));
+          const offsetsMs = getVideoSamplingOffsetsMs(durationMs, fractions);
+          const offsetsDeduped = dedupeSamplingOffsetsMs(offsetsMs);
+          if (offsetsDeduped.length < offsetsMs.length) {
+            this.logger.warn(
+              `Video face detection: collapsed ${offsetsMs.length - offsetsDeduped.length} duplicate seek times (duration rounding) for asset ${asset.id}; using ${offsetsDeduped.length} unique offsets`,
+            );
+          }
+          const samples = offsetsDeduped.map((timestampMs, frameIndex) => ({ timestampMs, frameIndex }));
           const result = await this.mediaRepository.extractVideoFramesForFaceDetection(asset.originalPath, asset.id, samples, {
             previewSize: image.preview.size,
             previewFormat: image.preview.format,
@@ -405,6 +412,12 @@ export class PersonService extends BaseService {
           });
           tempDir = result.tempDir;
           extracted = result.frames;
+          const previewFallback = extracted.length === 0;
+          const previewExtra =
+            extracted.length > 0 && machineLearning.videoSampling.includeAssetPreviewFrame;
+          this.logger.log(
+            `Video face detection sampling asset=${asset.id} requestedSamples=${samples.length} extractedFrames=${extracted.length} previewPass=${previewFallback || previewExtra} (fallback=${previewFallback} extraPreview=${previewExtra && !previewFallback})`,
+          );
         }
 
         const includePreview = machineLearning.videoSampling.includeAssetPreviewFrame;

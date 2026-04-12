@@ -54,7 +54,10 @@ Run DB migrations the same way you do for any Immich upgrade (e.g. server entryp
 On the **test** stack only, check **immich_server** logs for lines like:
 
 - Face detection frame extract (warnings if a seek fails are OK; fallback uses preview).
+- `Video face detection sampling asset=<uuid> requestedSamples=N extractedFrames=M previewPass=…` — confirms how many seeks were requested vs successful extractions (after deduplicating duplicate millisecond offsets on very short clips).
+- `Video face detection: collapsed … duplicate seek times` — only if duration rounding made multiple sampling fractions map to the same timestamp.
 - `faces detected` / `Detected … new faces` for the asset.
+- Facial recognition: `only matched the face itself`, `Deferring non-core face` (debug), or `Creating new person for face` — explains person assignment vs skipped faces.
 
 ### Database (optional)
 
@@ -76,7 +79,7 @@ In **People**, faces detected from mid/end of a clip should still cluster into p
 
 | Situation | Expected behavior |
 |-----------|---------------------|
-| Video + valid `duration` + extraction succeeds | Up to **N** detection passes (N = number of sampling fractions, max 5); faces get non-null `timestampMs` / `frameIndex` where applicable |
+| Video + valid `duration` + extraction succeeds | Up to **N** detection passes (N = resolved sampling positions after dedupe, max 32); faces get non-null `timestampMs` / `frameIndex` where applicable |
 | Video but duration missing/invalid, or all extractions fail | Falls back to **one** pass using the existing **preview** image (same as classic behavior); `timestampMs` / `frameIndex` stay null for those rows |
 | Still images | Unchanged: single preview; temporal columns null |
 
@@ -94,6 +97,47 @@ npm run test -- --run src/services/person.service.spec.ts
 ```
 
 This includes a test that multi-frame extraction triggers multiple `detectFaces` calls for video assets when extraction returns frames.
+
+## 8. Face rows vs People tab (verification)
+
+**Face Detection** creates **`asset_face` rows** (possibly many per video—one per detected face per frame). **Facial Recognition** assigns those rows to **people**. The **People** explorer only lists a person if they are **named** or have at least **“Minimum recognized faces”** instances (see **Administration → Machine learning → Facial recognition**). So many **new faces** in logs can still yield **few people** until clustering completes or settings allow singletons.
+
+### 8.1 Record settings (from the UI)
+
+| Setting | Where |
+|--------|--------|
+| Video sampling strategy / counts / include preview | **Administration → Machine learning → Video sampling** |
+| Multi-frame video face detection | **Administration → Machine learning → Facial recognition** |
+| Minimum recognized faces (`minFaces`) | **Administration → Machine learning → Facial recognition** |
+| Face Detection / Facial Recognition job actions | **Administration → Jobs** |
+
+### 8.2 SQL checks (replace asset id)
+
+```sql
+-- Face rows for one video asset
+SELECT count(*) AS face_rows,
+       count(DISTINCT "timestampMs") AS distinct_timestamps,
+       count(*) FILTER (WHERE "personId" IS NULL) AS faces_without_person
+FROM asset_face
+WHERE "assetId" = '<your-video-asset-id>'
+  AND "deletedAt" IS NULL;
+
+-- Distinct people linked to faces on that asset
+SELECT count(DISTINCT "personId") AS distinct_people
+FROM asset_face
+WHERE "assetId" = '<your-video-asset-id>'
+  AND "deletedAt" IS NULL
+  AND "personId" IS NOT NULL;
+```
+
+### 8.3 Log patterns (Facial Recognition)
+
+Search server logs for: `only matched the face itself`, `Deferring non-core face`, `Skipping face`, `does not have an embedding`. These indicate recognition **skipped** or **deferred**, not a failure of video sampling.
+
+### 8.4 If too few people appear
+
+- Lower **Minimum recognized faces** temporarily (e.g. to **1**) and re-run **Facial Recognition** (queue all or per-asset), understanding this can increase false “people.”
+- Ensure the **Facial Recognition** queue has finished after **Face Detection**.
 
 ---
 

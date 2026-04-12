@@ -325,3 +325,19 @@ export const getVideoSamplingOffsetsMs = (durationMs: number, fractions: number[
   const q = (ratio: number) => Math.min(d, Math.max(0, Math.floor(ratio * d)));
   return fractions.map((ratio) => q(ratio));
 };
+
+/**
+ * After {@link getVideoSamplingOffsetsMs}, several ratios can map to the same integer millisecond
+ * on very short clips; dedupe preserves first-seen order so we do not run redundant ffmpeg seeks.
+ */
+export const dedupeSamplingOffsetsMs = (offsetsMs: number[]): number[] => {
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const ms of offsetsMs) {
+    if (!seen.has(ms)) {
+      seen.add(ms);
+      out.push(ms);
+    }
+  }
+  return out;
+};
