@@ -12,6 +12,7 @@ import {
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
+  VideoSamplingStrategy,
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
@@ -59,9 +60,13 @@ export type SystemConfig = {
       timeout: number;
       interval: number;
     };
-    /** Shared fractions in (0,1) along video duration for multi-frame face detection and CLIP encoding. */
+    /** Video sampling for multi-frame face detection and CLIP encoding. */
     videoSampling: {
+      strategy: VideoSamplingStrategy;
       samplingFractions: number[];
+      uniformFrameCount: number;
+      fractionStep: number;
+      includeAssetPreviewFrame: boolean;
     };
     clip: {
       enabled: boolean;
@@ -259,7 +264,11 @@ export const defaults = Object.freeze<SystemConfig>({
       interval: 30_000,
     },
     videoSampling: {
+      strategy: VideoSamplingStrategy.Fractions,
       samplingFractions: [0.25, 0.5, 0.75],
+      uniformFrameCount: 8,
+      fractionStep: 0.1,
+      includeAssetPreviewFrame: false,
     },
     clip: {
       enabled: true,

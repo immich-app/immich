@@ -18604,23 +18604,56 @@
         ],
         "type": "object"
       },
+      "VideoSamplingStrategy": {
+        "description": "How sampling positions along video duration are chosen.",
+        "enum": [
+          "fractions",
+          "uniformCount",
+          "fixedStep"
+        ],
+        "type": "string"
+      },
       "VideoSamplingConfig": {
         "properties": {
+          "strategy": {
+            "$ref": "#/components/schemas/VideoSamplingStrategy"
+          },
           "samplingFractions": {
-            "description": "Ordered fractions strictly between 0 and 1 along the video duration (e.g. 0.25, 0.5, 0.75). Used for both face detection and CLIP smart search when multi-frame video processing is enabled.",
+            "description": "When strategy is fractions: ordered positions strictly between 0 and 1 along the video duration. Ignored for other strategies.",
             "items": {
               "format": "double",
               "maximum": 0.999999,
               "minimum": 0.000001,
               "type": "number"
             },
-            "maxItems": 5,
+            "maxItems": 24,
             "minItems": 1,
             "type": "array"
+          },
+          "uniformFrameCount": {
+            "description": "When strategy is uniformCount: number of evenly spaced samples in (0, 1), e.g. 8 → i/9 for i = 1..8.",
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "fractionStep": {
+            "description": "When strategy is fixedStep: sample at step, 2×step, … while below 1 (e.g. 0.1 → 0.1 … 0.9).",
+            "format": "double",
+            "maximum": 0.5,
+            "minimum": 0.01,
+            "type": "number"
+          },
+          "includeAssetPreviewFrame": {
+            "description": "Also use the generated video preview image (tile thumbnail) as an extra face-detection / CLIP sample alongside time-based frames.",
+            "type": "boolean"
           }
         },
         "required": [
-          "samplingFractions"
+          "strategy",
+          "samplingFractions",
+          "uniformFrameCount",
+          "fractionStep",
+          "includeAssetPreviewFrame"
         ],
         "type": "object"
       },

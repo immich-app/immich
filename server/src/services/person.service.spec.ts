@@ -971,6 +971,41 @@ describe(PersonService.name, () => {
       expect(mocks.media.removeFaceDetectionTempDir).toHaveBeenCalledWith('/tmp/facedet-test');
     });
 
+    it('should run face detection on preview in addition to sampled frames when includeAssetPreviewFrame is set', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          videoSampling: { includeAssetPreviewFrame: true },
+        },
+      });
+      const asset = AssetFactory.from({
+        type: AssetType.Video,
+        duration: '0:01:00.000',
+        originalPath: '/library/video.mp4',
+      })
+        .file({ type: AssetFileType.Preview })
+        .exif()
+        .build();
+      mocks.media.extractVideoFramesForFaceDetection.mockResolvedValue({
+        tempDir: '/tmp/facedet-test',
+        frames: [
+          { path: '/tmp/f0.webp', timestampMs: 15_000, frameIndex: 0 },
+          { path: '/tmp/f1.webp', timestampMs: 30_000, frameIndex: 1 },
+          { path: '/tmp/f2.webp', timestampMs: 45_000, frameIndex: 2 },
+        ],
+      });
+      mocks.machineLearning.detectFaces.mockResolvedValue({ faces: [], imageHeight: 720, imageWidth: 1280 });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(getForDetectedFaces(asset));
+
+      await sut.handleDetectFaces({ id: asset.id });
+
+      expect(mocks.machineLearning.detectFaces).toHaveBeenCalledTimes(4);
+      expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
+        asset.files[0].path,
+        expect.objectContaining({ minScore: 0.7 }),
+      );
+      expect(mocks.media.removeFaceDetectionTempDir).toHaveBeenCalledWith('/tmp/facedet-test');
+    });
+
     it('should use preview only for video when multi-frame detection is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: { facialRecognition: { videoMultiFrameDetectionEnabled: false } },

@@ -41,7 +41,12 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getDimensions, getVideoSamplingOffsetsMs, parseAssetDurationStringToMs } from 'src/utils/asset.util';
+import {
+  getDimensions,
+  getVideoSamplingOffsetsMs,
+  parseAssetDurationStringToMs,
+  resolveVideoSamplingFractions,
+} from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -390,7 +395,8 @@ export class PersonService extends BaseService {
           durationMs != null &&
           durationMs > 0
         ) {
-          const offsets = getVideoSamplingOffsetsMs(durationMs, machineLearning.videoSampling.samplingFractions);
+          const fractions = resolveVideoSamplingFractions(machineLearning.videoSampling);
+          const offsets = getVideoSamplingOffsetsMs(durationMs, fractions);
           const samples = offsets.map((timestampMs, frameIndex) => ({ timestampMs, frameIndex }));
           const result = await this.mediaRepository.extractVideoFramesForFaceDetection(asset.originalPath, asset.id, samples, {
             previewSize: image.preview.size,
@@ -401,11 +407,15 @@ export class PersonService extends BaseService {
           extracted = result.frames;
         }
 
+        const includePreview = machineLearning.videoSampling.includeAssetPreviewFrame;
         if (extracted.length > 0) {
           for (const fr of extracted) {
             await processPass(fr.path, fr.timestampMs, fr.frameIndex);
           }
-        } else {
+        }
+        const needPreviewFallback = extracted.length === 0;
+        const needPreviewExtra = extracted.length > 0 && includePreview;
+        if (needPreviewFallback || needPreviewExtra) {
           await processPass(previewFile.path, null, null);
         }
       } else {

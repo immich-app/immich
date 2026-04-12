@@ -27,8 +27,23 @@
   }
 
   function setVideoSamplingPreset(fractions: number[]): void {
+    configToEdit.machineLearning.videoSampling.strategy = 'fractions';
     configToEdit.machineLearning.videoSampling.samplingFractions = fractions.map(clampSamplingFraction);
   }
+
+  function setUniformFramePreset(count: number): void {
+    configToEdit.machineLearning.videoSampling.strategy = 'uniformCount';
+    configToEdit.machineLearning.videoSampling.uniformFrameCount = count;
+  }
+
+  function setFixedStepPreset(step: number): void {
+    configToEdit.machineLearning.videoSampling.strategy = 'fixedStep';
+    configToEdit.machineLearning.videoSampling.fractionStep = step;
+  }
+
+  const videoSamplingEdited = $derived(
+    !isEqual(configToEdit.machineLearning.videoSampling, config.machineLearning.videoSampling),
+  );
 
   /** Human-friendly percent for the hint line (avoids long tails on common values). */
   function formatSamplingPercentHint(fraction: number): string {
@@ -139,6 +154,28 @@
             {$t('admin.machine_learning_video_sampling_fractions_hint')}
           </p>
 
+          <SettingSelect
+            label={$t('admin.machine_learning_video_sampling_strategy')}
+            desc={$t('admin.machine_learning_video_sampling_strategy_description')}
+            name="video-sampling-strategy"
+            bind:value={configToEdit.machineLearning.videoSampling.strategy}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+            isEdited={videoSamplingEdited}
+            options={[
+              { value: 'fractions', text: $t('admin.machine_learning_video_sampling_strategy_fractions') },
+              { value: 'uniformCount', text: $t('admin.machine_learning_video_sampling_strategy_uniform') },
+              { value: 'fixedStep', text: $t('admin.machine_learning_video_sampling_strategy_fixed_step') },
+            ]}
+          />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_video_sampling_include_preview')}
+            subtitle={$t('admin.machine_learning_video_sampling_include_preview_description')}
+            bind:checked={configToEdit.machineLearning.videoSampling.includeAssetPreviewFrame}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+            isEdited={videoSamplingEdited}
+          />
+
           <div class="flex flex-col gap-2">
             <span class="text-sm font-medium text-primary"
               >{$t('admin.machine_learning_video_sampling_presets')}</span
@@ -172,59 +209,98 @@
                 disabled={disabled || !configToEdit.machineLearning.enabled}
                 >{$t('admin.machine_learning_video_sampling_preset_early_late')}</Button
               >
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => setUniformFramePreset(8)}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                >{$t('admin.machine_learning_video_sampling_preset_uniform_8')}</Button
+              >
+              <Button
+                size="small"
+                shape="round"
+                onclick={() => setFixedStepPreset(0.1)}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                >{$t('admin.machine_learning_video_sampling_preset_step_01')}</Button
+              >
             </div>
           </div>
 
-          {#each configToEdit.machineLearning.videoSampling.samplingFractions as _, i (i)}
+          {#if configToEdit.machineLearning.videoSampling.strategy === 'fractions'}
+            {#each configToEdit.machineLearning.videoSampling.samplingFractions as _, i (i)}
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label={$t('admin.machine_learning_video_sampling_row', { values: { n: i + 1 } })}
+                bind:value={configToEdit.machineLearning.videoSampling.samplingFractions[i]}
+                step="any"
+                min={MIN_SAMPLING_FRAC}
+                max={MAX_SAMPLING_FRAC}
+                disabled={disabled || !configToEdit.machineLearning.enabled}
+                isEdited={videoSamplingEdited}
+              >
+                {#snippet descriptionSnippet()}
+                  <p class="immich-form-label pb-2 text-xs text-muted">
+                    {$t('admin.machine_learning_video_sampling_percent_equivalent', {
+                      values: {
+                        percent: formatSamplingPercentHint(configToEdit.machineLearning.videoSampling.samplingFractions[i]),
+                      },
+                    })}
+                  </p>
+                {/snippet}
+                {#snippet trailingSnippet()}
+                  {#if configToEdit.machineLearning.videoSampling.samplingFractions.length > 1}
+                    <IconButton
+                      aria-label={$t('remove')}
+                      onclick={() => configToEdit.machineLearning.videoSampling.samplingFractions.splice(i, 1)}
+                      icon={mdiTrashCanOutline}
+                      color="danger"
+                    />
+                  {/if}
+                {/snippet}
+              </SettingInputField>
+            {/each}
+            <div class="flex justify-end">
+              <Button
+                class="mb-2"
+                size="small"
+                shape="round"
+                leadingIcon={mdiPlus}
+                onclick={() => {
+                  if (configToEdit.machineLearning.videoSampling.samplingFractions.length < 24) {
+                    configToEdit.machineLearning.videoSampling.samplingFractions.push(0.5);
+                  }
+                }}
+                disabled={disabled ||
+                  !configToEdit.machineLearning.enabled ||
+                  configToEdit.machineLearning.videoSampling.samplingFractions.length >= 24}
+                >{$t('add')}</Button
+              >
+            </div>
+          {:else if configToEdit.machineLearning.videoSampling.strategy === 'uniformCount'}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.machine_learning_video_sampling_row', { values: { n: i + 1 } })}
-              bind:value={configToEdit.machineLearning.videoSampling.samplingFractions[i]}
-              step="any"
-              min={MIN_SAMPLING_FRAC}
-              max={MAX_SAMPLING_FRAC}
+              label={$t('admin.machine_learning_video_sampling_uniform_count')}
+              description={$t('admin.machine_learning_video_sampling_uniform_count_description')}
+              bind:value={configToEdit.machineLearning.videoSampling.uniformFrameCount}
+              step="1"
+              min={1}
+              max={32}
               disabled={disabled || !configToEdit.machineLearning.enabled}
-              isEdited={!isEqual(
-                configToEdit.machineLearning.videoSampling.samplingFractions,
-                config.machineLearning.videoSampling.samplingFractions,
-              )}
-            >
-              {#snippet descriptionSnippet()}
-                <p class="immich-form-label pb-2 text-xs text-muted">
-                  {$t('admin.machine_learning_video_sampling_percent_equivalent', {
-                    values: { percent: formatSamplingPercentHint(configToEdit.machineLearning.videoSampling.samplingFractions[i]) },
-                  })}
-                </p>
-              {/snippet}
-              {#snippet trailingSnippet()}
-                {#if configToEdit.machineLearning.videoSampling.samplingFractions.length > 1}
-                  <IconButton
-                    aria-label={$t('remove')}
-                    onclick={() => configToEdit.machineLearning.videoSampling.samplingFractions.splice(i, 1)}
-                    icon={mdiTrashCanOutline}
-                    color="danger"
-                  />
-                {/if}
-              {/snippet}
-            </SettingInputField>
-          {/each}
-          <div class="flex justify-end">
-            <Button
-              class="mb-2"
-              size="small"
-              shape="round"
-              leadingIcon={mdiPlus}
-              onclick={() => {
-                if (configToEdit.machineLearning.videoSampling.samplingFractions.length < 5) {
-                  configToEdit.machineLearning.videoSampling.samplingFractions.push(0.5);
-                }
-              }}
-              disabled={disabled ||
-                !configToEdit.machineLearning.enabled ||
-                configToEdit.machineLearning.videoSampling.samplingFractions.length >= 5}
-              >{$t('add')}</Button
-            >
-          </div>
+              isEdited={videoSamplingEdited}
+            />
+          {:else}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('admin.machine_learning_video_sampling_fraction_step')}
+              description={$t('admin.machine_learning_video_sampling_fraction_step_description')}
+              bind:value={configToEdit.machineLearning.videoSampling.fractionStep}
+              step="any"
+              min={0.01}
+              max={0.5}
+              disabled={disabled || !configToEdit.machineLearning.enabled}
+              isEdited={videoSamplingEdited}
+            />
+          {/if}
         </div>
       </SettingAccordion>
 

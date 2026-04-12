@@ -2539,11 +2539,20 @@ export type MachineLearningAvailabilityChecksDto = {
     interval: number;
     timeout: number;
 };
+export type VideoSamplingStrategy = 'fractions' | 'uniformCount' | 'fixedStep';
 export type VideoSamplingConfig = {
+    /** How sampling positions along the timeline are chosen. */
+    strategy: VideoSamplingStrategy;
     /**
-     * Ordered fractions strictly between 0 and 1 along the video duration (e.g. 0.25, 0.5, 0.75). Used for both face detection and CLIP smart search when multi-frame video processing is enabled.
+     * When strategy is fractions: ordered positions strictly between 0 and 1. Ignored for other strategies.
      */
     samplingFractions: number[];
+    /** When strategy is uniformCount: number of evenly spaced samples in (0, 1), e.g. 8 → eight interior positions. */
+    uniformFrameCount: number;
+    /** When strategy is fixedStep: step between samples (e.g. 0.1 → 0.1, 0.2, …). */
+    fractionStep: number;
+    /** Also use the generated video preview (tile) as an extra face-detection / CLIP sample. */
+    includeAssetPreviewFrame: boolean;
 };
 export type ClipConfig = {
     /** Whether the task is enabled */

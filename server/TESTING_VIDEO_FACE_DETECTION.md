@@ -1,6 +1,6 @@
 # Testing improved video face detection (isolated from your main Immich)
 
-With multi-frame video face detection enabled, the server samples **several frames per video** at fractions of the duration (defaults **0.25 / 0.5 / 0.75**, configurable under **Admin → Machine learning → Video sampling**). It runs the **same** facial-recognition ML pipeline upstream Immich uses, and stores `timestampMs` / `frameIndex` on `asset_face`. No extra services, no “phone home” beyond what a normal Immich stack already does (e.g. ML model cache in the machine-learning container).
+With multi-frame video face detection enabled, the server samples **several frames per video** using **Admin → Machine learning → Video sampling** (defaults: explicit fractions **0.25 / 0.5 / 0.75**; you can switch to evenly spaced counts, fixed steps like 0.1, and optionally include the video **preview** image as an extra pass). It runs the **same** facial-recognition ML pipeline upstream Immich uses, and stores `timestampMs` / `frameIndex` on `asset_face`. No extra services, no “phone home” beyond what a normal Immich stack already does (e.g. ML model cache in the machine-learning container).
 
 Use a **separate** stack so your production library, database, and ports stay untouched.
 

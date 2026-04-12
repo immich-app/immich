@@ -13,6 +13,7 @@ import {
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
+  VideoSamplingStrategy,
 } from 'src/enum';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { DeepPartial } from 'src/types';
@@ -91,7 +92,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
       timeout: 2000,
     },
     videoSampling: {
+      strategy: VideoSamplingStrategy.Fractions,
       samplingFractions: [0.25, 0.5, 0.75],
+      uniformFrameCount: 8,
+      fractionStep: 0.1,
+      includeAssetPreviewFrame: false,
     },
     clip: {
       enabled: true,

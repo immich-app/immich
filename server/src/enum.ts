@@ -30,6 +30,16 @@ export enum ImmichQuery {
   SessionKey = 'sessionKey',
 }
 
+/** How video duration fractions are chosen for multi-frame face detection and CLIP sampling. */
+export enum VideoSamplingStrategy {
+  /** Explicit list of fractions in (0, 1). */
+  Fractions = 'fractions',
+  /** Evenly spaced interior samples: i/(n+1) for i = 1..n. */
+  UniformCount = 'uniformCount',
+  /** Every `fractionStep` from the start while below 1 (e.g. 0.1 → 0.1, 0.2, …). */
+  FixedStep = 'fixedStep',
+}
+
 export enum AssetType {
   Image = 'IMAGE',
   Video = 'VIDEO',

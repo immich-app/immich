@@ -6,7 +6,11 @@ import { AssetType, AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobSta
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getVideoSamplingOffsetsMs, parseAssetDurationStringToMs } from 'src/utils/asset.util';
+import {
+  getVideoSamplingOffsetsMs,
+  parseAssetDurationStringToMs,
+  resolveVideoSamplingFractions,
+} from 'src/utils/asset.util';
 import { averageL2NormalizeClipEmbeddings } from 'src/utils/clip-embedding.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 
@@ -121,7 +125,8 @@ export class SmartInfoService extends BaseService {
         const durationMs = parseAssetDurationStringToMs(asset.duration);
         let framePaths: string[] = [];
         if (durationMs != null && durationMs > 0) {
-          const offsets = getVideoSamplingOffsetsMs(durationMs, machineLearning.videoSampling.samplingFractions);
+          const fractions = resolveVideoSamplingFractions(machineLearning.videoSampling);
+          const offsets = getVideoSamplingOffsetsMs(durationMs, fractions);
           const samples = offsets.map((timestampMs, frameIndex) => ({ timestampMs, frameIndex }));
           const result = await this.mediaRepository.extractVideoFramesForFaceDetection(
             asset.originalPath,
@@ -135,6 +140,10 @@ export class SmartInfoService extends BaseService {
           );
           tempDir = result.tempDir;
           framePaths = result.frames.map((f) => f.path);
+        }
+
+        if (machineLearning.videoSampling.includeAssetPreviewFrame && asset.files[0] && framePaths.length > 0) {
+          framePaths.push(asset.files[0].path);
         }
 
         if (framePaths.length > 0) {

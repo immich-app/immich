@@ -4,7 +4,7 @@ import { AssetFile } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, Permission, VideoSamplingStrategy } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -260,6 +260,63 @@ export const parseAssetDurationStringToMs = (duration: string | null | undefined
     return null;
   }
   return Number.isFinite(ms) ? Math.round(ms) : null;
+};
+
+/** Hard cap on distinct time-based frame extractions per video (face detection + CLIP). */
+export const MAX_VIDEO_SAMPLING_FRAMES = 32;
+
+export type VideoSamplingConfigInput = {
+  strategy: VideoSamplingStrategy;
+  samplingFractions: number[];
+  uniformFrameCount: number;
+  fractionStep: number;
+};
+
+const clampOpenUnit = (x: number): number => Math.min(0.999999, Math.max(0.000001, x));
+
+const sortUniqueFractions = (fractions: number[]): number[] => {
+  const sorted = [...fractions].map(clampOpenUnit).sort((a, b) => a - b);
+  const out: number[] = [];
+  for (const f of sorted) {
+    if (out.length === 0 || Math.abs(f - out[out.length - 1]!) > 1e-9) {
+      out.push(f);
+    }
+  }
+  return out;
+};
+
+/**
+ * Resolves configured video sampling into ordered unique fractions in (0, 1) for seek positions.
+ */
+export const resolveVideoSamplingFractions = (vs: VideoSamplingConfigInput): number[] => {
+  let raw: number[] = [];
+  switch (vs.strategy) {
+    case VideoSamplingStrategy.Fractions:
+      raw = [...vs.samplingFractions];
+      break;
+    case VideoSamplingStrategy.UniformCount: {
+      const n = vs.uniformFrameCount;
+      if (n >= 1) {
+        for (let i = 1; i <= n; i++) {
+          raw.push(i / (n + 1));
+        }
+      }
+      break;
+    }
+    case VideoSamplingStrategy.FixedStep: {
+      const step = vs.fractionStep;
+      if (step > 0) {
+        for (let i = 1; i * step < 1 - 1e-9 && raw.length < MAX_VIDEO_SAMPLING_FRAMES; i++) {
+          const v = Number((i * step).toFixed(9));
+          raw.push(clampOpenUnit(v));
+        }
+      }
+      break;
+    }
+    default:
+      raw = [...vs.samplingFractions];
+  }
+  return sortUniqueFractions(raw).slice(0, MAX_VIDEO_SAMPLING_FRAMES);
 };
 
 /** Sample timestamps in ms along [0, durationMs] from fractional positions in (0, 1). */
