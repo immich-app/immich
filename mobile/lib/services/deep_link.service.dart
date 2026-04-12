@@ -80,6 +80,49 @@ class DeepLinkService {
     ]);
   }
 
+  /// Resolves a deep link URI to a [PageRouteInfo] without wrapping it in a
+  /// [DeepLink]. Used by the splash screen to navigate after initialization
+  /// when a deep link was deferred during cold start.
+  Future<PageRouteInfo<dynamic>?> resolveRoute(Uri uri, WidgetRef ref) async {
+    if (uri.scheme == "immich") {
+      final intent = uri.host;
+      final queryParams = uri.queryParameters;
+
+      return switch (intent) {
+        "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
+        "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
+        "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+        "people" => await _buildPeopleDeepLink(queryParams['id'] ?? ''),
+        "activity" => await _buildActivityDeepLink(queryParams['albumId'] ?? ''),
+        _ => null,
+      };
+    }
+
+    if (uri.host == "my.immich.app") {
+      final path = uri.path;
+
+      const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+      final assetRegex = RegExp('/photos/($uuidRegex)');
+      final albumRegex = RegExp('/albums/($uuidRegex)');
+      final peopleRegex = RegExp('/people/($uuidRegex)');
+
+      if (assetRegex.hasMatch(path)) {
+        final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
+        return _buildAssetDeepLink(assetId, ref);
+      } else if (albumRegex.hasMatch(path)) {
+        final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
+        return _buildAlbumDeepLink(albumId);
+      } else if (peopleRegex.hasMatch(path)) {
+        final peopleId = peopleRegex.firstMatch(path)?.group(1) ?? '';
+        return _buildPeopleDeepLink(peopleId);
+      } else if (path == "/memory") {
+        return _buildMemoryDeepLink(null);
+      }
+    }
+
+    return null;
+  }
+
   Future<DeepLink> handleScheme(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
     // get everything after the scheme, since Uri cannot parse path
     final intent = link.uri.host;

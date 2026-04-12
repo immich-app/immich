@@ -19,9 +19,11 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
@@ -409,6 +411,16 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
         }
       }
 
+      // If a deep link arrived during cold start, resolve it now that auth
+      // and the API connection are ready. The URI was stashed by
+      // _deepLinkBuilder in main.dart.
+      final pendingUri = ref.read(pendingDeepLinkProvider);
+      if (pendingUri != null) {
+        ref.read(pendingDeepLinkProvider.notifier).state = null;
+        await _navigatePendingDeepLink(pendingUri);
+        return;
+      }
+
       unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
 
@@ -420,6 +432,24 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (hasPermission) {
       // Resume backup (if enable) then navigate
       await ref.watch(backupProvider.notifier).resumeBackup();
+    }
+  }
+
+  /// Navigates to a deep link that was deferred during cold start. Called after
+  /// auth and the API connection have been established so asset / album / people
+  /// lookups can succeed and the viewer has a working server connection.
+  Future<void> _navigatePendingDeepLink(Uri uri) async {
+    final deepLinkHandler = ref.read(deepLinkServiceProvider);
+    final route = await deepLinkHandler.resolveRoute(uri, ref);
+
+    if (route != null) {
+      // Push the home route underneath so the user can navigate back from the
+      // deep-linked view.
+      final homeRoute = Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute();
+      unawaited(context.router.replaceAll([homeRoute, route]));
+    } else {
+      // Resolution still failed (e.g. asset was deleted). Fall back to home.
+      unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
   }
 

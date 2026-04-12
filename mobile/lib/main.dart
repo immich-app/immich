@@ -185,6 +185,17 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
+    // On cold start, the app hasn't initialized the API connection yet (that
+    // happens inside SplashScreen.resumeSession). If we try to resolve asset /
+    // album / people deep links now they will either fail (asset not in local
+    // DB yet) or the viewer will open without a working server connection and
+    // appear "stuck". Instead, stash the URI and let the splash screen handle
+    // it after auth & sync are ready.
+    if (isColdStart && _isNavigableDeepLink(deepLink.uri)) {
+      ref.read(pendingDeepLinkProvider.notifier).state = deepLink.uri;
+      return DeepLink.defaultPath;
+    }
+
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 
@@ -198,6 +209,26 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     }
 
     return DeepLink.path(deepLink.path);
+  }
+
+  /// Returns true when the deep link points to a specific resource (asset,
+  /// album, person, memory, activity) that requires the server connection to
+  /// be established before we can navigate to it.
+  bool _isNavigableDeepLink(Uri uri) {
+    if (uri.scheme == "immich") {
+      const navigableIntents = {'asset', 'album', 'people', 'memory', 'activity'};
+      return navigableIntents.contains(uri.host);
+    }
+
+    if (uri.host == "my.immich.app") {
+      final path = uri.path;
+      return path.startsWith('/photos/') ||
+          path.startsWith('/albums/') ||
+          path.startsWith('/people/') ||
+          path == '/memory';
+    }
+
+    return false;
   }
 
   @override
