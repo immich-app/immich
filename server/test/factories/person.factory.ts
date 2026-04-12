@@ -28,7 +28,7 @@ export class PersonFactory {
     });
   }
 
-  build() {
+  build(): Selectable<PersonTable> {
     return { ...this.value };
   }
 }

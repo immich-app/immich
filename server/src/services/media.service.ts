@@ -407,7 +407,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
   async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
+    const { machineLearning, metadata, image, ffmpeg: ffmpegConfig } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.Skipped;
     }
@@ -418,52 +418,103 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const {
+      ownerId,
+      x1,
+      y1,
+      x2,
+      y2,
+      oldWidth,
+      oldHeight,
+      exifOrientation,
+      previewPath,
+      originalPath,
+      assetId,
+      timestampMs,
+    } = data;
+
+    let faceDetectionTempDir = '';
     let inputImage: string | Buffer;
-    if (data.type === AssetType.Video) {
-      if (!previewPath) {
-        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
-        return JobStatus.Failed;
+
+    try {
+      if (data.type === AssetType.Video) {
+        if (timestampMs != null && timestampMs >= 0 && assetId) {
+          const result = await this.mediaRepository.extractVideoFramesForFaceDetection(
+            originalPath,
+            assetId,
+            [{ timestampMs, frameIndex: 0 }],
+            {
+              previewSize: image.preview.size,
+              previewFormat: image.preview.format,
+              ffmpeg: ffmpegConfig,
+            },
+          );
+          faceDetectionTempDir = result.tempDir;
+          const frame = result.frames[0];
+          if (frame) {
+            inputImage = frame.path;
+          } else if (previewPath) {
+            this.logger.warn(
+              `Person thumbnail frame extract at ${timestampMs}ms failed for person ${id}; falling back to preview`,
+            );
+            inputImage = previewPath;
+          } else {
+            this.logger.error(`Could not generate person thumbnail for video ${id}: frame extract failed and no preview`);
+            return JobStatus.Failed;
+          }
+        } else {
+          if (!previewPath) {
+            this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+            return JobStatus.Failed;
+          }
+          inputImage = previewPath;
+        }
+      } else if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
+        const extracted = await this.extractImage(originalPath, image.preview.size);
+        inputImage = extracted ? extracted.buffer : originalPath;
+      } else {
+        inputImage = originalPath;
       }
-      inputImage = previewPath;
-    } else if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
-      const extracted = await this.extractImage(originalPath, image.preview.size);
-      inputImage = extracted ? extracted.buffer : originalPath;
-    } else {
-      inputImage = originalPath;
+
+      const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
+        colorspace: image.colorspace,
+        processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+        // if this is an extracted image, it may not have orientation metadata
+        orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
+      });
+
+      const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+      this.storageCore.ensureFolders(thumbnailPath);
+
+      const fr = machineLearning.facialRecognition;
+      const thumbSize = fr.personThumbnailSize ?? FACE_THUMBNAIL_SIZE;
+      const cropPad = fr.personThumbnailCropPaddingFactor ?? 1.1;
+
+      const thumbnailOptions: GenerateThumbnailOptions = {
+        colorspace: image.colorspace,
+        format: ImageFormat.Jpeg,
+        raw: info,
+        quality: image.thumbnail.quality,
+        progressive: false,
+        processInvalidImages: false,
+        size: thumbSize,
+        edits: [
+          {
+            action: AssetEditAction.Crop,
+            parameters: this.getCrop(
+              { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
+              { x1, y1, x2, y2 },
+              cropPad,
+            ),
+          },
+        ],
+      };
+
+      await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
+      await this.personRepository.update({ id, thumbnailPath });
+    } finally {
+      await this.mediaRepository.removeFaceDetectionTempDir(faceDetectionTempDir);
     }
-
-    const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
-      colorspace: image.colorspace,
-      processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-      // if this is an extracted image, it may not have orientation metadata
-      orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
-    });
-
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
-    this.storageCore.ensureFolders(thumbnailPath);
-
-    const thumbnailOptions: GenerateThumbnailOptions = {
-      colorspace: image.colorspace,
-      format: ImageFormat.Jpeg,
-      raw: info,
-      quality: image.thumbnail.quality,
-      progressive: false,
-      processInvalidImages: false,
-      size: FACE_THUMBNAIL_SIZE,
-      edits: [
-        {
-          action: AssetEditAction.Crop,
-          parameters: this.getCrop(
-            { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
-            { x1, y1, x2, y2 },
-          ),
-        },
-      ],
-    };
-
-    await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
 
     return JobStatus.Success;
   }
@@ -471,6 +522,7 @@ export class MediaService extends BaseService {
   private getCrop(
     dims: { old: ImageDimensions; new: ImageDimensions },
     { x1, y1, x2, y2 }: BoundingBox,
+    cropPaddingFactor = 1.1,
   ): CropParameters {
     // face bounding boxes can spill outside the image dimensions
     const clampedX1 = clamp(x1, 0, dims.old.width);
@@ -487,8 +539,7 @@ export class MediaService extends BaseService {
     const middleX = Math.round(widthScale * clampedX1 + halfWidth);
     const middleY = Math.round(heightScale * clampedY1 + halfHeight);
 
-    // zoom out 10%
-    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
+    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * cropPaddingFactor);
 
     // get the longest distance from the center of the image without overflowing
     const newHalfSize = Math.min(

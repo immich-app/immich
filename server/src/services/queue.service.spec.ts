@@ -142,7 +142,12 @@ describe(QueueService.name, () => {
 
       await sut.runCommandLegacy(QueueName.SmartSearch, { command: QueueCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SmartSearchQueueAll, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: JobName.SmartSearchQueueAll,
+          data: expect.objectContaining({ force: false }),
+        }),
+      );
     });
 
     it('should handle a start metadata extraction command', async () => {
@@ -184,7 +189,12 @@ describe(QueueService.name, () => {
 
       await sut.runCommandLegacy(QueueName.FaceDetection, { command: QueueCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetDetectFacesQueueAll, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: JobName.AssetDetectFacesQueueAll,
+          data: expect.objectContaining({ force: false }),
+        }),
+      );
     });
 
     it('should handle a start facial recognition command', async () => {

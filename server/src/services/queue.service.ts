@@ -183,7 +183,7 @@ export class QueueService extends BaseService {
     return { name, isPaused, statistics };
   }
 
-  private async start(name: QueueName, { force }: QueueCommandDto): Promise<void> {
+  private async start(name: QueueName, { force, videosOnly }: QueueCommandDto): Promise<void> {
     const isActive = await this.jobRepository.isActive(name);
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
@@ -225,7 +225,7 @@ export class QueueService extends BaseService {
       }
 
       case QueueName.FaceDetection: {
-        return this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force } });
+        return this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force, videosOnly } });
       }
 
       case QueueName.FacialRecognition: {

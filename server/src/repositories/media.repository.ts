@@ -3,12 +3,15 @@ import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
-import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
+import { FACE_DETECTION_FFMPEG_TIMEOUT_MS, ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { Colorspace, ImageFormat, LogLevel, RawExtractedFormat, TranscodeTarget } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
@@ -16,9 +19,13 @@ import {
   GenerateThumbnailOptions,
   ImageDimensions,
   ProbeOptions,
+  AudioStreamInfo,
   TranscodeCommand,
+  VideoFormat,
   VideoInfo,
+  VideoStreamInfo,
 } from 'src/types';
+import { FaceDetectionFrameConfig } from 'src/utils/media';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
 
@@ -277,9 +284,32 @@ export class MediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        this.configureFfmpegCall(input, output, options)
-          .on('error', reject)
-          .on('end', () => resolve())
+        const cmd = this.configureFfmpegCall(input, output, options);
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        let settled = false;
+        const finish = (fn: () => void) => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          if (timeout) {
+            clearTimeout(timeout);
+          }
+          fn();
+        };
+        if (options.timeoutMs && options.timeoutMs > 0) {
+          timeout = setTimeout(() => {
+            try {
+              cmd.kill?.('SIGKILL');
+            } catch {
+              // ignore
+            }
+            finish(() => reject(new Error(`ffmpeg timed out after ${options.timeoutMs}ms`)));
+          }, options.timeoutMs);
+        }
+        cmd
+          .on('error', (err) => finish(() => reject(err)))
+          .on('end', () => finish(() => resolve()))
           .run();
       });
     }
@@ -312,14 +342,81 @@ export class MediaRepository {
     });
   }
 
+  /**
+   * Extract still frames at given timestamps for ML face detection. Caller must remove `tempDir` when done
+   * (`removeFaceDetectionTempDir`). Failed seeks are logged and skipped.
+   */
+  async extractVideoFramesForFaceDetection(
+    originalPath: string,
+    assetId: string,
+    samples: { timestampMs: number; frameIndex: number }[],
+    options: { previewSize: number; previewFormat: ImageFormat; ffmpeg: SystemConfigFFmpegDto },
+  ): Promise<{ tempDir: string; frames: { path: string; timestampMs: number; frameIndex: number }[] }> {
+    if (samples.length === 0) {
+      return { tempDir: '', frames: [] };
+    }
+
+    const { format, audioStreams, videoStreams } = await this.probe(originalPath);
+    const mainVideoStream = this.pickMainStream(videoStreams);
+    if (!mainVideoStream) {
+      throw new Error(`No video streams found for face detection on asset ${assetId}`);
+    }
+
+    const mainAudioStream = this.pickMainStream(audioStreams);
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), `immich-facedet-${assetId}-`));
+    const ext = options.previewFormat === ImageFormat.Webp ? 'webp' : 'jpeg';
+    const previewConfig = FaceDetectionFrameConfig.create({
+      ...options.ffmpeg,
+      targetResolution: options.previewSize.toString(),
+    });
+    const frames: { path: string; timestampMs: number; frameIndex: number }[] = [];
+
+    for (const s of samples) {
+      const outPath = path.join(tmpDir, `frame-${s.frameIndex}.${ext}`);
+      const cmd = previewConfig.getCommand(TranscodeTarget.Video, mainVideoStream, mainAudioStream, format);
+      const withOpts: TranscodeCommand = {
+        ...cmd,
+        seekInputSeconds: s.timestampMs / 1000,
+        timeoutMs: FACE_DETECTION_FFMPEG_TIMEOUT_MS,
+      };
+      try {
+        await this.transcode(originalPath, outPath, withOpts);
+        frames.push({ path: outPath, timestampMs: s.timestampMs, frameIndex: s.frameIndex });
+      } catch (error) {
+        this.logger.warn(
+          `Face detection frame extract failed at ${s.timestampMs}ms for asset ${assetId}: ${error instanceof Error ? error.message : error}`,
+        );
+      }
+    }
+
+    return { tempDir: tmpDir, frames };
+  }
+
+  async removeFaceDetectionTempDir(tempDir: string): Promise<void> {
+    if (!tempDir) {
+      return;
+    }
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
+
+  private pickMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T | undefined {
+    return streams
+      .filter((stream) => stream.codecName !== 'unknown')
+      .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
+  }
+
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
     const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
     return { width, height, isTransparent: hasAlpha };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
+    const seekPrefix =
+      options.seekInputSeconds != null && options.seekInputSeconds > 0
+        ? ['-ss', options.seekInputSeconds.toFixed(4)]
+        : [];
     const ffmpegCall = ffmpeg(input, { niceness: 10 })
-      .inputOptions(options.inputOptions)
+      .inputOptions([...seekPrefix, ...options.inputOptions])
       .outputOptions(options.outputOptions)
       .output(output)
       .on('start', (command: string) => this.logger.debug(command))

@@ -168,6 +168,9 @@ export const getForAssetFace = (face: ReturnType<AssetFaceFactory['build']>) => 
 export const getForDetectedFaces = (asset: ReturnType<AssetFactory['build']>) => ({
   id: asset.id,
   visibility: asset.visibility,
+  type: asset.type,
+  duration: asset.duration,
+  originalPath: asset.originalPath,
   exifInfo: getDehydrated(asset.exifInfo),
   faces: asset.faces.map((face) => getDehydrated(face)),
   files: asset.files.map((file) => getDehydrated(file)),

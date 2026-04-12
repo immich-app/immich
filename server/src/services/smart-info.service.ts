@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetType, AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { getVideoSamplingOffsetsMs, parseAssetDurationStringToMs } from 'src/utils/asset.util';
+import { averageL2NormalizeClipEmbeddings } from 'src/utils/clip-embedding.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -65,7 +67,7 @@ export class SmartInfoService extends BaseService {
   }
 
   @OnJob({ name: JobName.SmartSearchQueueAll, queue: QueueName.SmartSearch })
-  async handleQueueEncodeClip({ force }: JobOf<JobName.SmartSearchQueueAll>): Promise<JobStatus> {
+  async handleQueueEncodeClip({ force, videosOnly }: JobOf<JobName.SmartSearchQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -78,7 +80,7 @@ export class SmartInfoService extends BaseService {
     }
 
     let queue: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForEncodeClip(force);
+    const assets = this.assetJobRepository.streamForEncodeClip(force, videosOnly);
     for await (const asset of assets) {
       queue.push({ name: JobName.SmartSearch, data: { id: asset.id } });
       if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
@@ -94,7 +96,7 @@ export class SmartInfoService extends BaseService {
 
   @OnJob({ name: JobName.SmartSearch, queue: QueueName.SmartSearch })
   async handleEncodeClip({ id }: JobOf<JobName.SmartSearch>): Promise<JobStatus> {
-    const { machineLearning } = await this.getConfig({ withCache: true });
+    const { machineLearning, image, ffmpeg: ffmpegConfig } = await this.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.Skipped;
     }
@@ -108,7 +110,48 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
+    let embedding: string;
+    let tempDir = '';
+    try {
+      if (
+        asset.type === AssetType.Video &&
+        machineLearning.clip.videoMultiFrameEncodingEnabled &&
+        asset.originalPath
+      ) {
+        const durationMs = parseAssetDurationStringToMs(asset.duration);
+        let framePaths: string[] = [];
+        if (durationMs != null && durationMs > 0) {
+          const offsets = getVideoSamplingOffsetsMs(durationMs, machineLearning.videoSampling.samplingFractions);
+          const samples = offsets.map((timestampMs, frameIndex) => ({ timestampMs, frameIndex }));
+          const result = await this.mediaRepository.extractVideoFramesForFaceDetection(
+            asset.originalPath,
+            asset.id,
+            samples,
+            {
+              previewSize: image.preview.size,
+              previewFormat: image.preview.format,
+              ffmpeg: ffmpegConfig,
+            },
+          );
+          tempDir = result.tempDir;
+          framePaths = result.frames.map((f) => f.path);
+        }
+
+        if (framePaths.length > 0) {
+          const vectors: string[] = [];
+          for (const path of framePaths) {
+            vectors.push(await this.machineLearningRepository.encodeImage(path, machineLearning.clip));
+          }
+          embedding = averageL2NormalizeClipEmbeddings(vectors);
+        } else {
+          embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
+        }
+      } else {
+        embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
+      }
+    } finally {
+      await this.mediaRepository.removeFaceDetectionTempDir(tempDir);
+    }
 
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
       this.logger.verbose(`Waiting for CLIP dimension size to be updated`);

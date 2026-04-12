@@ -59,9 +59,14 @@ export type SystemConfig = {
       timeout: number;
       interval: number;
     };
+    /** Shared fractions in (0,1) along video duration for multi-frame face detection and CLIP encoding. */
+    videoSampling: {
+      samplingFractions: number[];
+    };
     clip: {
       enabled: boolean;
       modelName: string;
+      videoMultiFrameEncodingEnabled: boolean;
     };
     duplicateDetection: {
       enabled: boolean;
@@ -73,6 +78,9 @@ export type SystemConfig = {
       minScore: number;
       minFaces: number;
       maxDistance: number;
+      videoMultiFrameDetectionEnabled: boolean;
+      personThumbnailSize: number;
+      personThumbnailCropPaddingFactor: number;
     };
     ocr: {
       enabled: boolean;
@@ -250,9 +258,13 @@ export const defaults = Object.freeze<SystemConfig>({
       timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
       interval: 30_000,
     },
+    videoSampling: {
+      samplingFractions: [0.25, 0.5, 0.75],
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+      videoMultiFrameEncodingEnabled: true,
     },
     duplicateDetection: {
       enabled: true,
@@ -264,6 +276,9 @@ export const defaults = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.5,
       minFaces: 3,
+      videoMultiFrameDetectionEnabled: true,
+      personThumbnailSize: 250,
+      personThumbnailCropPaddingFactor: 1.1,
     },
     ocr: {
       enabled: true,

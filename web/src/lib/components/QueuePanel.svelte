@@ -28,6 +28,7 @@
     allText?: string;
     refreshText?: string;
     missingText: string;
+    videosOnlyMissingText?: string;
     disabled?: boolean;
     handleCommand?: (jobId: QueueName, jobCommand: QueueCommandDto) => Promise<void>;
   };
@@ -52,6 +53,7 @@
     [QueueName.SmartSearch]: {
       allText: $t('all'),
       missingText: $t('missing'),
+      videosOnlyMissingText: $t('admin.queue_videos_only'),
       disabled: !featureFlags.smartSearch,
     },
     [QueueName.DuplicateDetection]: {
@@ -63,6 +65,7 @@
       allText: $t('reset'),
       refreshText: $t('refresh'),
       missingText: $t('missing'),
+      videosOnlyMissingText: $t('admin.queue_videos_only'),
       disabled: !featureFlags.facialRecognition,
     },
     [QueueName.FacialRecognition]: {

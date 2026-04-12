@@ -13,5 +13,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     probe: vitest.fn(),
     transcode: vitest.fn(),
     getImageMetadata: vitest.fn(),
+    extractVideoFramesForFaceDetection: vitest.fn().mockResolvedValue({ tempDir: '', frames: [] }),
+    removeFaceDetectionTempDir: vitest.fn().mockResolvedValue(undefined),
   };
 };

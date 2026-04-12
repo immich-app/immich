@@ -90,9 +90,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
       interval: 30_000,
       timeout: 2000,
     },
+    videoSampling: {
+      samplingFractions: [0.25, 0.5, 0.75],
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+      videoMultiFrameEncodingEnabled: true,
     },
     duplicateDetection: {
       enabled: true,
@@ -104,6 +108,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.5,
       minFaces: 3,
+      videoMultiFrameDetectionEnabled: true,
+      personThumbnailSize: 250,
+      personThumbnailCropPaddingFactor: 1.1,
     },
     ocr: {
       enabled: true,

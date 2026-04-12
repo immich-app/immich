@@ -2,8 +2,14 @@ import { AssetFileType, AssetType } from 'src/enum';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { userStub } from 'test/fixtures/user.stub';
 
+const faceThumbBase = {
+  assetId: 'aaaaaaaa-bbbb-4ccc-dddd-eeeeeeeeeeee',
+  timestampMs: null as number | null,
+};
+
 export const personThumbnailStub = {
   newThumbnailStart: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: 5,
     y1: 5,
@@ -17,6 +23,7 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   newThumbnailMiddle: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: 100,
     y1: 100,
@@ -30,6 +37,7 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   newThumbnailEnd: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: 300,
     y1: 300,
@@ -43,6 +51,7 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   rawEmbeddedThumbnail: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: 100,
     y1: 100,
@@ -56,6 +65,7 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   negativeCoordinate: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: -176,
     y1: -230,
@@ -69,6 +79,7 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   overflowingCoordinate: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: 2097,
     y1: 0,
@@ -82,6 +93,7 @@ export const personThumbnailStub = {
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   videoThumbnail: Object.freeze({
+    ...faceThumbBase,
     ownerId: userStub.admin.id,
     x1: 100,
     y1: 100,
@@ -93,5 +105,20 @@ export const personThumbnailStub = {
     originalPath: '/original/path.mp4',
     exifOrientation: '1',
     previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+  }),
+  videoThumbnailAtTimestamp: Object.freeze({
+    ...faceThumbBase,
+    ownerId: userStub.admin.id,
+    x1: 100,
+    y1: 100,
+    x2: 200,
+    y2: 200,
+    oldHeight: 500,
+    oldWidth: 400,
+    type: AssetType.Video,
+    originalPath: '/original/path.mp4',
+    exifOrientation: '1',
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
+    timestampMs: 7500,
   }),
 };

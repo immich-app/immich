@@ -518,6 +518,10 @@ export type AssetFaceWithoutPersonResponseDto = {
     imageWidth: number;
     /** Face detection source type */
     sourceType?: SourceType;
+    /** Video timestamp in ms for this detection; omitted for still images */
+    timestampMs?: number | null;
+    /** Zero-based index of the temporal sample for video face detection */
+    frameIndex?: number | null;
 };
 export type PersonWithFacesResponseDto = {
     /** Person date of birth */
@@ -1216,6 +1220,10 @@ export type AssetFaceResponseDto = {
     person: (PersonResponseDto) | null;
     /** Face detection source type */
     sourceType?: SourceType;
+    /** Video timestamp in ms for this detection; omitted for still images */
+    timestampMs?: number | null;
+    /** Zero-based index of the temporal sample for video face detection */
+    frameIndex?: number | null;
 };
 export type AssetFaceCreateDto = {
     /** Asset ID */
@@ -1296,6 +1304,10 @@ export type QueueCommandDto = {
     command: QueueCommand;
     /** Force the command execution (if applicable) */
     force?: boolean;
+    /**
+     * When starting face detection or smart search jobs, only queue video assets (ignored for other queues)
+     */
+    videosOnly?: boolean;
 };
 export type LibraryResponseDto = {
     /** Number of assets */
@@ -2527,11 +2539,22 @@ export type MachineLearningAvailabilityChecksDto = {
     interval: number;
     timeout: number;
 };
+export type VideoSamplingConfig = {
+    /**
+     * Ordered fractions strictly between 0 and 1 along the video duration (e.g. 0.25, 0.5, 0.75). Used for both face detection and CLIP smart search when multi-frame video processing is enabled.
+     */
+    samplingFractions: number[];
+};
 export type ClipConfig = {
     /** Whether the task is enabled */
     enabled: boolean;
     /** Name of the model to use */
     modelName: string;
+    /**
+     * When enabled, CLIP encodes multiple sampled frames per video and averages them into one embedding.
+     * When disabled, only the preview image is used.
+     */
+    videoMultiFrameEncodingEnabled: boolean;
 };
 export type DuplicateDetectionConfig = {
     /** Whether the task is enabled */
@@ -2550,6 +2573,15 @@ export type FacialRecognitionConfig = {
     minScore: number;
     /** Name of the model to use */
     modelName: string;
+    /**
+     * When enabled, face detection runs on multiple frames per video at the fractions configured under machine learning video sampling.
+     * When disabled, only the preview image is used.
+     */
+    videoMultiFrameDetectionEnabled: boolean;
+    /** Output size in pixels for square People face thumbnails */
+    personThumbnailSize: number;
+    /** Padding factor around the detected face box when building People thumbnails (1.1 ≈ 10% zoom-out) */
+    personThumbnailCropPaddingFactor: number;
 };
 export type OcrConfig = {
     /** Whether the task is enabled */
@@ -2565,6 +2597,7 @@ export type OcrConfig = {
 };
 export type SystemConfigMachineLearningDto = {
     availabilityChecks: MachineLearningAvailabilityChecksDto;
+    videoSampling: VideoSamplingConfig;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     /** Enabled */

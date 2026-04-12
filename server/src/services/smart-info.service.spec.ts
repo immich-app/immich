@@ -1,5 +1,5 @@
 import { SystemConfig } from 'src/config';
-import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -161,7 +161,7 @@ describe(SmartInfoService.name, () => {
       await sut.handleQueueEncodeClip({ force: false });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SmartSearch, data: { id: asset.id } }]);
-      expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(false);
+      expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(false, undefined);
       expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
     });
 
@@ -172,7 +172,7 @@ describe(SmartInfoService.name, () => {
       await sut.handleQueueEncodeClip({ force: true });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SmartSearch, data: { id: asset.id } }]);
-      expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(true);
+      expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(true, undefined);
       expect(mocks.database.setDimensionSize).toHaveBeenCalledExactlyOnceWith(512);
     });
   });
@@ -246,6 +246,57 @@ describe(SmartInfoService.name, () => {
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
       expect(mocks.search.upsert).toHaveBeenCalledWith(asset.id, '[0.01, 0.02, 0.03]');
+    });
+
+    it('should encode multiple video frames and pool CLIP embeddings when extraction succeeds', async () => {
+      const asset = AssetFactory.from({
+        type: AssetType.Video,
+        duration: '0:01:00.000',
+        originalPath: '/library/video.mp4',
+      })
+        .file({ type: AssetFileType.Preview })
+        .build();
+      mocks.media.extractVideoFramesForFaceDetection.mockResolvedValue({
+        tempDir: '/tmp/clip-test',
+        frames: [
+          { path: '/tmp/f0.webp', timestampMs: 15_000, frameIndex: 0 },
+          { path: '/tmp/f1.webp', timestampMs: 30_000, frameIndex: 1 },
+          { path: '/tmp/f2.webp', timestampMs: 45_000, frameIndex: 2 },
+        ],
+      });
+      mocks.machineLearning.encodeImage.mockResolvedValue('[1,0,0]');
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
+
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.encodeImage).toHaveBeenCalledTimes(3);
+      expect(mocks.search.upsert).toHaveBeenCalledWith(asset.id, '[1,0,0]');
+      expect(mocks.media.removeFaceDetectionTempDir).toHaveBeenCalledWith('/tmp/clip-test');
+    });
+
+    it('should use preview only for CLIP when multi-frame encoding is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { clip: { videoMultiFrameEncodingEnabled: false } },
+      });
+      const asset = AssetFactory.from({
+        type: AssetType.Video,
+        duration: '0:01:00.000',
+        originalPath: '/library/video.mp4',
+      })
+        .file({ type: AssetFileType.Preview })
+        .build();
+      mocks.media.extractVideoFramesForFaceDetection.mockResolvedValue({
+        tempDir: '/tmp/clip-test',
+        frames: [{ path: '/tmp/f0.webp', timestampMs: 15_000, frameIndex: 0 }],
+      });
+      mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
+
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Success);
+
+      expect(mocks.media.extractVideoFramesForFaceDetection).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.encodeImage).toHaveBeenCalledTimes(1);
+      expect(mocks.media.removeFaceDetectionTempDir).toHaveBeenCalledWith('');
     });
   });
 

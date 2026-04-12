@@ -110,6 +110,65 @@
       </SettingAccordion>
 
       <SettingAccordion
+        key="video-sampling"
+        title={$t('admin.machine_learning_video_sampling')}
+        subtitle={$t('admin.machine_learning_video_sampling_description')}
+      >
+        <div class="ms-4 mt-4 flex flex-col gap-4">
+          {#each configToEdit.machineLearning.videoSampling.samplingFractions as _, i (i)}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={i === 0 ? $t('admin.machine_learning_video_sampling_fractions') : undefined}
+              bind:value={configToEdit.machineLearning.videoSampling.samplingFractions[i]}
+              step="0.01"
+              min={0.000001}
+              max={0.999999}
+              disabled={disabled || !configToEdit.machineLearning.enabled}
+              isEdited={!isEqual(
+                configToEdit.machineLearning.videoSampling.samplingFractions,
+                config.machineLearning.videoSampling.samplingFractions,
+              )}
+            >
+              {#snippet descriptionSnippet()}
+                {#if i === 0}
+                  <p class="immich-form-label pb-2 text-sm">
+                    {$t('admin.machine_learning_video_sampling_fractions_hint')}
+                  </p>
+                {/if}
+              {/snippet}
+              {#snippet trailingSnippet()}
+                {#if configToEdit.machineLearning.videoSampling.samplingFractions.length > 1}
+                  <IconButton
+                    aria-label={$t('remove')}
+                    onclick={() => configToEdit.machineLearning.videoSampling.samplingFractions.splice(i, 1)}
+                    icon={mdiTrashCanOutline}
+                    color="danger"
+                  />
+                {/if}
+              {/snippet}
+            </SettingInputField>
+          {/each}
+          <div class="flex justify-end">
+            <Button
+              class="mb-2"
+              size="small"
+              shape="round"
+              leadingIcon={mdiPlus}
+              onclick={() => {
+                if (configToEdit.machineLearning.videoSampling.samplingFractions.length < 5) {
+                  configToEdit.machineLearning.videoSampling.samplingFractions.push(0.5);
+                }
+              }}
+              disabled={disabled ||
+                !configToEdit.machineLearning.enabled ||
+                configToEdit.machineLearning.videoSampling.samplingFractions.length >= 5}
+              >{$t('add')}</Button
+            >
+          </div>
+        </div>
+      </SettingAccordion>
+
+      <SettingAccordion
         key="smart-search"
         title={$t('admin.machine_learning_smart_search')}
         subtitle={$t('admin.machine_learning_smart_search_description')}
@@ -142,6 +201,19 @@
               </p>
             {/snippet}
           </SettingInputField>
+
+          <hr />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_clip_video_multi_frame')}
+            subtitle={$t('admin.machine_learning_clip_video_multi_frame_description')}
+            bind:checked={configToEdit.machineLearning.clip.videoMultiFrameEncodingEnabled}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.clip.enabled}
+            isEdited={configToEdit.machineLearning.clip.videoMultiFrameEncodingEnabled !==
+              config.machineLearning.clip.videoMultiFrameEncodingEnabled}
+          />
         </div>
       </SettingAccordion>
 
@@ -186,6 +258,19 @@
             subtitle={$t('admin.machine_learning_facial_recognition_setting_description')}
             bind:checked={configToEdit.machineLearning.facialRecognition.enabled}
             disabled={disabled || !configToEdit.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_video_multi_frame_face_detection')}
+            subtitle={$t('admin.machine_learning_video_multi_frame_face_detection_description')}
+            bind:checked={configToEdit.machineLearning.facialRecognition.videoMultiFrameDetectionEnabled}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.facialRecognition.enabled}
+            isEdited={configToEdit.machineLearning.facialRecognition.videoMultiFrameDetectionEnabled !==
+              config.machineLearning.facialRecognition.videoMultiFrameDetectionEnabled}
           />
 
           <hr />
@@ -250,6 +335,38 @@
               !configToEdit.machineLearning.facialRecognition.enabled}
             isEdited={configToEdit.machineLearning.facialRecognition.minFaces !==
               config.machineLearning.facialRecognition.minFaces}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_person_thumbnail_size')}
+            description={$t('admin.machine_learning_person_thumbnail_size_description')}
+            bind:value={configToEdit.machineLearning.facialRecognition.personThumbnailSize}
+            step="1"
+            min={32}
+            max={2048}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.facialRecognition.enabled}
+            isEdited={configToEdit.machineLearning.facialRecognition.personThumbnailSize !==
+              config.machineLearning.facialRecognition.personThumbnailSize}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_person_thumbnail_padding')}
+            description={$t('admin.machine_learning_person_thumbnail_padding_description')}
+            bind:value={configToEdit.machineLearning.facialRecognition.personThumbnailCropPaddingFactor}
+            step="0.01"
+            min={1}
+            max={2}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.facialRecognition.enabled}
+            isEdited={configToEdit.machineLearning.facialRecognition.personThumbnailCropPaddingFactor !==
+              config.machineLearning.facialRecognition.personThumbnailCropPaddingFactor}
           />
         </div>
       </SettingAccordion>

@@ -202,12 +202,13 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [], stream: true })
-  streamForEncodeClip(force?: boolean) {
+  streamForEncodeClip(force?: boolean, videosOnly?: boolean) {
     return this.assetsWithPreviews()
       .select(['asset.id'])
       .$if(!force, (qb) =>
         qb.where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'asset.id')))),
       )
+      .$if(videosOnly === true, (qb) => qb.where('asset.type', '=', AssetType.Video))
       .stream();
   }
 
@@ -215,7 +216,7 @@ export class AssetJobRepository {
   getForClipEncoding(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.visibility'])
+      .select(['asset.id', 'asset.visibility', 'asset.type', 'asset.duration', 'asset.originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -225,7 +226,7 @@ export class AssetJobRepository {
   getForDetectFacesJob(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.visibility'])
+      .select(['asset.id', 'asset.visibility', 'asset.type', 'asset.duration', 'asset.originalPath'])
       .$call(withExifInner)
       .select((eb) => withFaces(eb, true, true))
       .select((eb) => withFiles(eb, AssetFileType.Preview))
@@ -425,9 +426,10 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [], stream: true })
-  streamForDetectFacesJob(force?: boolean) {
+  streamForDetectFacesJob(force?: boolean, videosOnly?: boolean) {
     return this.assetsWithPreviews()
       .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .$if(videosOnly === true, (qb) => qb.where('asset.type', '=', AssetType.Video))
       .select(['asset.id'])
       .orderBy('asset.fileCreatedAt', 'desc')
       .stream();

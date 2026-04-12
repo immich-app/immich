@@ -19,6 +19,7 @@
     mdiPause,
     mdiPlay,
     mdiSelectionSearch,
+    mdiVideoOutline,
   } from '@mdi/js';
   import { type Component } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -30,10 +31,21 @@
     allText?: string;
     refreshText?: string;
     missingText: string;
+    /** When set, shows an extra start action that queues only video assets (face detection / smart search). */
+    videosOnlyMissingText?: string;
     onCommand: (command: QueueCommandDto) => void;
   }
 
-  let { queue, description, disabled = false, allText, refreshText, missingText, onCommand }: Props = $props();
+  let {
+    queue,
+    description,
+    disabled = false,
+    allText,
+    refreshText,
+    missingText,
+    videosOnlyMissingText,
+    onCommand,
+  }: Props = $props();
 
   const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
   const { statistics } = $derived(queue);
@@ -182,6 +194,15 @@
         <Icon icon={mdiSelectionSearch} size="24" />
         <span>{missingText}</span>
       </QueueCardButton>
+      {#if videosOnlyMissingText}
+        <QueueCardButton
+          color="light-gray"
+          onClick={() => onCommand({ command: QueueCommand.Start, force: false, videosOnly: true })}
+        >
+          <Icon icon={mdiVideoOutline} size="24" />
+          <span>{videosOnlyMissingText}</span>
+        </QueueCardButton>
+      {/if}
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}

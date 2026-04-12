@@ -447,10 +447,14 @@ export class SyncAssetFaceV2 extends SyncAssetFaceV1 {
   deletedAt!: Date | null;
   @ApiProperty({ description: 'Is the face visible in the asset' })
   isVisible!: boolean;
+  @ApiProperty({ type: 'integer', nullable: true, description: 'Video timestamp in ms for this face' })
+  timestampMs!: number | null;
+  @ApiProperty({ type: 'integer', nullable: true, description: 'Temporal sample index for video face detection' })
+  frameIndex!: number | null;
 }
 
 export function syncAssetFaceV2ToV1(faceV2: SyncAssetFaceV2): SyncAssetFaceV1 {
-  const { deletedAt: _, isVisible: __, ...faceV1 } = faceV2;
+  const { deletedAt: _, isVisible: __, timestampMs: ___, frameIndex: ____, ...faceV1 } = faceV2;
 
   return faceV1;
 }

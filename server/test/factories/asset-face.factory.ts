@@ -29,6 +29,8 @@ export class AssetFaceFactory {
       isVisible: true,
       personId: null,
       sourceType: SourceType.MachineLearning,
+      timestampMs: null,
+      frameIndex: null,
       updatedAt: newDate(),
       updateId: newUuidV7(),
       ...dto,

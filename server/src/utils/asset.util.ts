@@ -234,3 +234,37 @@ export const getDimensions = ({
 export const isPanorama = (asset: { projectionType: string | null; originalFileName: string }) => {
   return asset.projectionType === 'EQUIRECTANGULAR' || asset.originalFileName.toLowerCase().endsWith('.insp');
 };
+
+/** Parse `asset.duration` (e.g. from metadata) to milliseconds. */
+export const parseAssetDurationStringToMs = (duration: string | null | undefined): number | null => {
+  if (duration == null || duration.trim() === '') {
+    return null;
+  }
+  const segments = duration
+    .trim()
+    .split(':')
+    .map((s) => Number.parseFloat(s));
+  if (segments.some((n) => Number.isNaN(n))) {
+    return null;
+  }
+  let ms = 0;
+  if (segments.length === 3) {
+    const [h, m, s] = segments;
+    ms = ((h * 60 + m) * 60 + s) * 1000;
+  } else if (segments.length === 2) {
+    const [m, s] = segments;
+    ms = (m * 60 + s) * 1000;
+  } else if (segments.length === 1) {
+    ms = segments[0]! * 1000;
+  } else {
+    return null;
+  }
+  return Number.isFinite(ms) ? Math.round(ms) : null;
+};
+
+/** Sample timestamps in ms along [0, durationMs] from fractional positions in (0, 1). */
+export const getVideoSamplingOffsetsMs = (durationMs: number, fractions: number[]): number[] => {
+  const d = Math.max(0, durationMs);
+  const q = (ratio: number) => Math.min(d, Math.max(0, Math.floor(ratio * d)));
+  return fractions.map((ratio) => q(ratio));
+};

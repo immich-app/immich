@@ -131,6 +131,10 @@ export interface TranscodeCommand {
     frameCount: number;
     percentInterval: number;
   };
+  /** Input seek in seconds (applied before decode; used for face-detection frame grabs). */
+  seekInputSeconds?: number;
+  /** Abort ffmpeg after this many milliseconds (SIGKILL). */
+  timeoutMs?: number;
 }
 
 export interface BitrateDistribution {
@@ -149,7 +153,7 @@ export interface VideoCodecSWConfig {
   getCommand(
     target: TranscodeTarget,
     videoStream: VideoStreamInfo,
-    audioStream: AudioStreamInfo,
+    audioStream?: AudioStreamInfo,
     format?: VideoFormat,
   ): TranscodeCommand;
 }
@@ -180,6 +184,8 @@ export type JobOf<T extends JobName> = Jobs[T];
 
 export interface IBaseJob {
   force?: boolean;
+  /** When true, only video assets are queued (face detection / smart search queue-all jobs). */
+  videosOnly?: boolean;
 }
 
 export interface IDelayedJob extends IBaseJob {

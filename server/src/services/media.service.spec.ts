@@ -1559,7 +1559,8 @@ describe(MediaService.name, () => {
 
       expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(person.id);
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.any(String), {
+      expect(mocks.media.extractVideoFramesForFaceDetection).not.toHaveBeenCalled();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.videoThumbnail.previewPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
@@ -1588,6 +1589,40 @@ describe(MediaService.name, () => {
         },
         expect.any(String),
       );
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, thumbnailPath: expect.any(String) });
+    });
+
+    it('should extract a frame at timestampMs for video faces when set', async () => {
+      const person = PersonFactory.create();
+      const extractedFramePath = '/tmp/immich-facedet-test/frame-0.jpeg';
+
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.videoThumbnailAtTimestamp);
+      mocks.media.extractVideoFramesForFaceDetection.mockResolvedValue({
+        tempDir: '/tmp/immich-facedet-test',
+        frames: [{ path: extractedFramePath, timestampMs: 7500, frameIndex: 0 }],
+      });
+      mocks.media.generateThumbnail.mockResolvedValue();
+      const data = Buffer.from('');
+      const info = { width: 1000, height: 1000 } as OutputInfo;
+      mocks.media.decodeImage.mockResolvedValue({ data, info });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.extractVideoFramesForFaceDetection).toHaveBeenCalledWith(
+        personThumbnailStub.videoThumbnailAtTimestamp.originalPath,
+        personThumbnailStub.videoThumbnailAtTimestamp.assetId,
+        [{ timestampMs: 7500, frameIndex: 0 }],
+        expect.objectContaining({
+          previewSize: expect.any(Number),
+          previewFormat: expect.any(String),
+        }),
+      );
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedFramePath, {
+        colorspace: Colorspace.P3,
+        orientation: undefined,
+        processInvalidImages: false,
+      });
+      expect(mocks.media.removeFaceDetectionTempDir).toHaveBeenCalledWith('/tmp/immich-facedet-test');
       expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, thumbnailPath: expect.any(String) });
     });
 

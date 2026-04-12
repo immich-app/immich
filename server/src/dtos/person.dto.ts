@@ -139,6 +139,13 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY2!: number;
   @ValidateEnum({ enum: SourceType, name: 'SourceType', optional: true, description: 'Face detection source type' })
   sourceType?: SourceType;
+  @ApiPropertyOptional({ type: 'integer', description: 'Video timestamp in ms for this detection; omitted for still images' })
+  timestampMs?: number | null;
+  @ApiPropertyOptional({
+    type: 'integer',
+    description: 'Zero-based index of the temporal sample for video face detection',
+  })
+  frameIndex?: number | null;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
@@ -259,6 +266,8 @@ export function mapFacesWithoutPerson(
       assetDimensions ?? { width: face.imageWidth, height: face.imageHeight },
     ),
     sourceType: face.sourceType,
+    timestampMs: face.timestampMs ?? undefined,
+    frameIndex: face.frameIndex ?? undefined,
   };
 }
 

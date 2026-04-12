@@ -15,7 +15,13 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
+import {
+  CLIPConfig,
+  DuplicateDetectionConfig,
+  FacialRecognitionConfig,
+  OcrConfig,
+  VideoSamplingConfig,
+} from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -319,6 +325,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   availabilityChecks!: MachineLearningAvailabilityChecksDto;
+
+  @Type(() => VideoSamplingConfig)
+  @ValidateNested()
+  @IsObject()
+  videoSampling!: VideoSamplingConfig;
 
   @Type(() => CLIPConfig)
   @ValidateNested()

@@ -271,6 +271,7 @@ export class PersonRepository {
       .innerJoin('asset', 'asset_face.assetId', 'asset.id')
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select([
+        'asset.id as assetId',
         'person.ownerId',
         'asset_face.boundingBoxX1 as x1',
         'asset_face.boundingBoxY1 as y1',
@@ -278,6 +279,7 @@ export class PersonRepository {
         'asset_face.boundingBoxY2 as y2',
         'asset_face.imageWidth as oldWidth',
         'asset_face.imageHeight as oldHeight',
+        'asset_face.timestampMs',
         'asset.type',
         'asset.originalPath',
         'asset_exif.orientation as exifOrientation',

@@ -14,6 +14,13 @@ export class QueueCommandDto {
 
   @ValidateBoolean({ optional: true, description: 'Force the command execution (if applicable)' })
   force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
+
+  @ValidateBoolean({
+    optional: true,
+    description:
+      'When starting face detection or smart search jobs, only queue video assets (ignored for other queues)',
+  })
+  videosOnly?: boolean;
 }
 
 export class QueueUpdateDto {

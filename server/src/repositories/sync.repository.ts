@@ -482,6 +482,8 @@ class AssetFaceSync extends BaseSync {
         'boundingBoxY2',
         'sourceType',
         'isVisible',
+        'timestampMs',
+        'frameIndex',
         'asset_face.deletedAt',
         'asset_face.updateId',
       ])

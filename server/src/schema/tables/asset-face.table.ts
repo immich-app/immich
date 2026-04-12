@@ -33,6 +33,7 @@ import { PersonTable } from 'src/schema/tables/person.table';
   where: '"deletedAt" IS NULL AND "isVisible" IS TRUE',
 })
 @Index({ columns: ['personId', 'assetId'] })
+@Index({ name: 'asset_face_assetId_timestampMs_idx', columns: ['assetId', 'timestampMs'] })
 export class AssetFaceTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -86,4 +87,12 @@ export class AssetFaceTable {
 
   @Column({ type: 'boolean', default: true })
   isVisible!: Generated<boolean>;
+
+  /** Millisecond offset in source video; null for still images / legacy rows */
+  @Column({ type: 'integer', nullable: true })
+  timestampMs!: number | null;
+
+  /** Sample index for video face detection (0 = first temporal sample); null for images */
+  @Column({ type: 'integer', nullable: true })
+  frameIndex!: number | null;
 }

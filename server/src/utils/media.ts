@@ -451,6 +451,21 @@ export class ThumbnailConfig extends BaseConfig {
   }
 }
 
+/** Single-frame extract at `-ss` seek: scale + tonemap only (no scene/thumbnail filters). */
+export class FaceDetectionFrameConfig extends ThumbnailConfig {
+  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+    return new FaceDetectionFrameConfig(config);
+  }
+
+  override getBaseOutputOptions() {
+    return ['-frames:v 1', '-update 1'];
+  }
+
+  override getFilterOptions(videoStream: VideoStreamInfo): string[] {
+    return BaseConfig.prototype.getFilterOptions.call(this, videoStream);
+  }
+}
+
 export class H264Config extends BaseConfig {
   getOutputThreadOptions() {
     const options = super.getOutputThreadOptions();

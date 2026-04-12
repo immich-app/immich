@@ -18191,6 +18191,23 @@
           "modelName": {
             "description": "Name of the model to use",
             "type": "string"
+          },
+          "personThumbnailCropPaddingFactor": {
+            "description": "Padding factor around the detected face box when building People thumbnails (1.1 ≈ 10% zoom-out)",
+            "format": "double",
+            "maximum": 2,
+            "minimum": 1,
+            "type": "number"
+          },
+          "personThumbnailSize": {
+            "description": "Output size in pixels for square People face thumbnails",
+            "maximum": 2048,
+            "minimum": 32,
+            "type": "integer"
+          },
+          "videoMultiFrameDetectionEnabled": {
+            "description": "When enabled, face detection runs on multiple frames per video at the fractions configured under machine learning video sampling. When disabled, only the preview image is used.",
+            "type": "boolean"
           }
         },
         "required": [
@@ -18198,7 +18215,10 @@
           "maxDistance",
           "minFaces",
           "minScore",
-          "modelName"
+          "modelName",
+          "personThumbnailCropPaddingFactor",
+          "personThumbnailSize",
+          "videoMultiFrameDetectionEnabled"
         ],
         "type": "object"
       },
@@ -18581,6 +18601,26 @@
           "enabled",
           "interval",
           "timeout"
+        ],
+        "type": "object"
+      },
+      "VideoSamplingConfig": {
+        "properties": {
+          "samplingFractions": {
+            "description": "Ordered fractions strictly between 0 and 1 along the video duration (e.g. 0.25, 0.5, 0.75). Used for both face detection and CLIP smart search when multi-frame video processing is enabled.",
+            "items": {
+              "format": "double",
+              "maximum": 0.999999,
+              "minimum": 0.000001,
+              "type": "number"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "samplingFractions"
         ],
         "type": "object"
       },
@@ -20533,6 +20573,10 @@
           },
           "force": {
             "description": "Force the command execution (if applicable)",
+            "type": "boolean"
+          },
+          "videosOnly": {
+            "description": "When starting face detection or smart search jobs, only queue video assets (ignored for other queues)",
             "type": "boolean"
           }
         },
@@ -24452,6 +24496,9 @@
             },
             "minItems": 1,
             "type": "array"
+          },
+          "videoSampling": {
+            "$ref": "#/components/schemas/VideoSamplingConfig"
           }
         },
         "required": [
@@ -24461,7 +24508,8 @@
           "enabled",
           "facialRecognition",
           "ocr",
-          "urls"
+          "urls",
+          "videoSampling"
         ],
         "type": "object"
       },

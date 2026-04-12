@@ -23,6 +23,7 @@ import {
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
 import {
+  AssetType,
   AssetVisibility,
   CacheControl,
   JobName,
@@ -40,7 +41,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
+import { getDimensions, getVideoSamplingOffsetsMs, parseAssetDurationStringToMs } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -267,7 +268,7 @@ export class PersonService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetDetectFacesQueueAll, queue: QueueName.FaceDetection })
-  async handleQueueDetectFaces({ force }: JobOf<JobName.AssetDetectFacesQueueAll>): Promise<JobStatus> {
+  async handleQueueDetectFaces({ force, videosOnly }: JobOf<JobName.AssetDetectFacesQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -280,7 +281,7 @@ export class PersonService extends BaseService {
     }
 
     let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
+    const assets = this.assetJobRepository.streamForDetectFacesJob(force, videosOnly);
     for await (const asset of assets) {
       jobs.push({ name: JobName.AssetDetectFaces, data: { id: asset.id } });
 
@@ -301,7 +302,7 @@ export class PersonService extends BaseService {
 
   @OnJob({ name: JobName.AssetDetectFaces, queue: QueueName.FaceDetection })
   async handleDetectFaces({ id }: JobOf<JobName.AssetDetectFaces>): Promise<JobStatus> {
-    const { machineLearning } = await this.getConfig({ withCache: true });
+    const { machineLearning, image, ffmpeg: ffmpegConfig } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
     }
@@ -316,12 +317,6 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
-      previewFile.path,
-      machineLearning.facialRecognition,
-    );
-    this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
-
     const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
     const embeddings: FaceSearchTable[] = [];
     const mlFaceIds = new Set<string>();
@@ -332,34 +327,94 @@ export class PersonService extends BaseService {
       }
     }
 
-    const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
-    const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
-    for (const { boundingBox, embedding } of faces) {
-      const scaledBox = {
-        x1: boundingBox.x1 * widthScale,
-        y1: boundingBox.y1 * heightScale,
-        x2: boundingBox.x2 * widthScale,
-        y2: boundingBox.y2 * heightScale,
-      };
-      const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
+    const sameTimestamp = (a: number | null | undefined, b: number | null | undefined) =>
+      (a ?? null) === (b ?? null);
 
-      if (match && !mlFaceIds.delete(match.id)) {
-        embeddings.push({ faceId: match.id, embedding });
-      } else if (!match) {
-        const faceId = this.cryptoRepository.randomUUID();
-        facesToAdd.push({
-          id: faceId,
-          assetId: asset.id,
-          imageHeight,
-          imageWidth,
-          boundingBoxX1: boundingBox.x1,
-          boundingBoxY1: boundingBox.y1,
-          boundingBoxX2: boundingBox.x2,
-          boundingBoxY2: boundingBox.y2,
-        });
-        embeddings.push({ faceId, embedding });
+    const processPass = async (
+      imagePath: string,
+      timestampMs: number | null,
+      frameIndex: number | null,
+    ): Promise<void> => {
+      const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
+        imagePath,
+        machineLearning.facialRecognition,
+      );
+      this.logger.debug(`${faces.length} faces detected in ${imagePath} (timestampMs=${timestampMs ?? 'n/a'})`);
+
+      const refForScale = asset.faces.find(
+        (f) =>
+          f.sourceType === SourceType.MachineLearning && sameTimestamp(f.timestampMs ?? null, timestampMs),
+      );
+      const heightScale = imageHeight / (refForScale?.imageHeight || imageHeight);
+      const widthScale = imageWidth / (refForScale?.imageWidth || imageWidth);
+
+      for (const { boundingBox, embedding } of faces) {
+        const scaledBox = {
+          x1: boundingBox.x1 * widthScale,
+          y1: boundingBox.y1 * heightScale,
+          x2: boundingBox.x2 * widthScale,
+          y2: boundingBox.y2 * heightScale,
+        };
+        const match = asset.faces.find(
+          (face) => sameTimestamp(face.timestampMs ?? null, timestampMs) && this.iou(face, scaledBox) > 0.5,
+        );
+
+        if (match && !mlFaceIds.delete(match.id)) {
+          embeddings.push({ faceId: match.id, embedding });
+        } else if (!match) {
+          const faceId = this.cryptoRepository.randomUUID();
+          facesToAdd.push({
+            id: faceId,
+            assetId: asset.id,
+            imageHeight,
+            imageWidth,
+            boundingBoxX1: boundingBox.x1,
+            boundingBoxY1: boundingBox.y1,
+            boundingBoxX2: boundingBox.x2,
+            boundingBoxY2: boundingBox.y2,
+            timestampMs: timestampMs ?? null,
+            frameIndex: frameIndex ?? null,
+          });
+          embeddings.push({ faceId, embedding });
+        }
       }
+    };
+
+    let tempDir = '';
+    try {
+      if (asset.type === AssetType.Video) {
+        const durationMs = parseAssetDurationStringToMs(asset.duration);
+        let extracted: { path: string; timestampMs: number; frameIndex: number }[] = [];
+        if (
+          machineLearning.facialRecognition.videoMultiFrameDetectionEnabled &&
+          durationMs != null &&
+          durationMs > 0
+        ) {
+          const offsets = getVideoSamplingOffsetsMs(durationMs, machineLearning.videoSampling.samplingFractions);
+          const samples = offsets.map((timestampMs, frameIndex) => ({ timestampMs, frameIndex }));
+          const result = await this.mediaRepository.extractVideoFramesForFaceDetection(asset.originalPath, asset.id, samples, {
+            previewSize: image.preview.size,
+            previewFormat: image.preview.format,
+            ffmpeg: ffmpegConfig,
+          });
+          tempDir = result.tempDir;
+          extracted = result.frames;
+        }
+
+        if (extracted.length > 0) {
+          for (const fr of extracted) {
+            await processPass(fr.path, fr.timestampMs, fr.frameIndex);
+          }
+        } else {
+          await processPass(previewFile.path, null, null);
+        }
+      } else {
+        await processPass(previewFile.path, null, null);
+      }
+    } finally {
+      await this.mediaRepository.removeFaceDetectionTempDir(tempDir);
     }
+
     const faceIdsToRemove = [...mlFaceIds];
 
     if (facesToAdd.length > 0 || faceIdsToRemove.length > 0 || embeddings.length > 0) {

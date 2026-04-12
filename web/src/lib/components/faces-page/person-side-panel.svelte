@@ -58,6 +58,13 @@
 
   const thumbnailWidth = '90px';
 
+  const formatVideoFaceTimestamp = (ms: number) => {
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
@@ -308,6 +315,12 @@
                   {:else}
                     <span class={personName === $t('face_unassigned') ? 'dark:text-gray-500' : ''}>{personName}</span>
                   {/if}
+                </p>
+              {/if}
+
+              {#if assetType === AssetTypeEnum.Video && face.timestampMs != null}
+                <p class="relative mt-0.5 max-w-24 truncate text-xs text-gray-500 dark:text-gray-400">
+                  {$t('face_video_sample_time', { values: { time: formatVideoFaceTimestamp(face.timestampMs) } })}
                 </p>
               {/if}
 
