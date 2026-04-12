@@ -205,7 +205,7 @@ export class QueueService extends BaseService {
       }
 
       case QueueName.SmartSearch: {
-        return this.jobRepository.queue({ name: JobName.SmartSearchQueueAll, data: { force } });
+        return this.jobRepository.queue({ name: JobName.SmartSearchQueueAll, data: { force, videosOnly } });
       }
 
       case QueueName.DuplicateDetection: {

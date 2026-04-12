@@ -197,7 +197,7 @@
       {#if videosOnlyMissingText}
         <QueueCardButton
           color="light-gray"
-          onClick={() => onCommand({ command: QueueCommand.Start, force: false, videosOnly: true })}
+          onClick={() => onCommand({ command: QueueCommand.Start, force: true, videosOnly: true })}
         >
           <Icon icon={mdiVideoOutline} size="24" />
           <span>{videosOnlyMissingText}</span>

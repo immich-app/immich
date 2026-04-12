@@ -111,6 +111,8 @@ This includes a test that multi-frame extraction triggers multiple `detectFaces`
 | Minimum recognized faces (`minFaces`) | **Administration → Machine learning → Facial recognition** |
 | Face Detection / Facial Recognition job actions | **Administration → Jobs** |
 
+**Queue actions (this fork):** **All videos** on Face Detection or Smart Search re-runs processing for **video assets only** (photo faces / photo CLIP rows are left alone). **Reset** on Face Detection still clears all ML faces and re-runs everything. **Missing** only queues work that never finished.
+
 ### 8.2 SQL checks (replace asset id)
 
 ```sql

@@ -97,15 +97,26 @@
     const item = asQueueItem($t, { name });
 
     switch (name) {
-      case QueueName.FaceDetection:
+      case QueueName.FaceDetection: {
+        if (dto.force) {
+          const prompt = dto.videosOnly
+            ? $t('admin.confirm_reprocess_video_faces')
+            : $t('admin.confirm_reprocess_all_faces');
+          const confirmed = await modalManager.showDialog({ prompt });
+          if (!confirmed) {
+            return;
+          }
+        }
+        break;
+      }
       case QueueName.FacialRecognition: {
         if (dto.force) {
           const confirmed = await modalManager.showDialog({ prompt: $t('admin.confirm_reprocess_all_faces') });
           if (!confirmed) {
             return;
           }
-          break;
         }
+        break;
       }
     }
 

@@ -594,6 +594,24 @@ describe(PersonService.name, () => {
       ]);
     });
 
+    it('should reprocess videos without global face wipe when videosOnly', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
+
+      await sut.handleQueueDetectFaces({ force: true, videosOnly: true });
+
+      expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
+      expect(mocks.person.delete).not.toHaveBeenCalled();
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
+      expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true, true);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.AssetDetectFaces,
+          data: { id: asset.id },
+        },
+      ]);
+    });
+
     it('should refresh all assets', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));

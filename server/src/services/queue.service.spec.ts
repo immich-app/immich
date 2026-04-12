@@ -150,6 +150,22 @@ describe(QueueService.name, () => {
       );
     });
 
+    it('should forward videosOnly for smart search queue-all', async () => {
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.runCommandLegacy(QueueName.SmartSearch, {
+        command: QueueCommand.Start,
+        force: true,
+        videosOnly: true,
+      });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SmartSearchQueueAll,
+        data: { force: true, videosOnly: true },
+      });
+    });
+
     it('should handle a start metadata extraction command', async () => {
       mocks.job.isActive.mockResolvedValue(false);
       mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());

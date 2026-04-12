@@ -280,7 +280,8 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    if (force) {
+    // Full reset clears all ML faces and people. Video-only re-run re-queues videos without wiping photo faces.
+    if (force && !videosOnly) {
       await this.personRepository.deleteFaces({ sourceType: SourceType.MachineLearning });
       await this.handlePersonCleanup();
       await this.personRepository.vacuum({ reindexVectors: true });
@@ -333,9 +334,6 @@ export class PersonService extends BaseService {
       }
     }
 
-    const sameTimestamp = (a: number | null | undefined, b: number | null | undefined) =>
-      (a ?? null) === (b ?? null);
-
     const processPass = async (
       imagePath: string,
       timestampMs: number | null,
@@ -349,7 +347,8 @@ export class PersonService extends BaseService {
 
       const refForScale = asset.faces.find(
         (f) =>
-          f.sourceType === SourceType.MachineLearning && sameTimestamp(f.timestampMs ?? null, timestampMs),
+          f.sourceType === SourceType.MachineLearning &&
+          this.faceTimestampEquals(f.timestampMs ?? null, timestampMs),
       );
       const heightScale = imageHeight / (refForScale?.imageHeight || imageHeight);
       const widthScale = imageWidth / (refForScale?.imageWidth || imageWidth);
@@ -362,7 +361,8 @@ export class PersonService extends BaseService {
           y2: boundingBox.y2 * heightScale,
         };
         const match = asset.faces.find(
-          (face) => sameTimestamp(face.timestampMs ?? null, timestampMs) && this.iou(face, scaledBox) > 0.5,
+          (face) =>
+            this.faceTimestampEquals(face.timestampMs ?? null, timestampMs) && this.iou(face, scaledBox) > 0.5,
         );
 
         if (match && !mlFaceIds.delete(match.id)) {
@@ -459,6 +459,10 @@ export class PersonService extends BaseService {
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, facesRecognizedAt: new Date() });
 
     return JobStatus.Success;
+  }
+
+  private faceTimestampEquals(a: number | null | undefined, b: number | null | undefined): boolean {
+    return (a ?? null) === (b ?? null);
   }
 
   private iou(
