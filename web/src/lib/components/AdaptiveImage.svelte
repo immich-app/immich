@@ -98,13 +98,13 @@
     return { width: 1, height: 1 };
   });
 
-  const { width, height, left, top } = $derived.by(() => {
+  const { width, height, insetInlineStart, top } = $derived.by(() => {
     const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
     const { width, height } = scaleFn(imageDimensions, container);
     return {
       width: width + 'px',
       height: height + 'px',
-      left: (container.width - width) / 2 + 'px',
+      insetInlineStart: (container.width - width) / 2 + 'px',
       top: (container.height - height) / 2 + 'px',
     };
   });
@@ -151,7 +151,13 @@
 <div class="relative h-full w-full overflow-hidden will-change-transform" bind:this={ref}>
   {@render backdrop?.()}
 
-  <div class="absolute inset-0 pointer-events-none" style:left style:top style:width style:height>
+  <div
+    class="absolute inset-0 pointer-events-none"
+    style:inset-inline-start={insetInlineStart}
+    style:top
+    style:width
+    style:height
+  >
     {#if show.alphaBackground}
       <AlphaBackground />
     {/if}
