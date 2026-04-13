@@ -9,6 +9,7 @@ import type { ZoomImageWheelState } from '@zoom-image/core';
 import { cubicOut } from 'svelte/easing';
 
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
+const isShowAssetPath = new PersistedLocalStorage<boolean>('asset-viewer-show-path', false);
 
 const createDefaultZoomState = (): ZoomImageWheelState => ({
   currentRotation: 0,
@@ -63,6 +64,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
     return isShowDetailPanel.current;
   }
 
+  get isShowAssetPath() {
+    return isShowAssetPath.current;
+  }
+
   get isFaceEditMode() {
     return this.#isFaceEditMode;
   }
@@ -99,6 +104,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   private set isShowDetailPanel(value: boolean) {
     isShowDetailPanel.current = value;
+  }
+
+  private set isShowAssetPath(value: boolean) {
+    isShowAssetPath.current = value;
   }
 
   onZoomChange(state: ZoomImageWheelState) {
@@ -145,6 +154,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   closeActivityPanel() {
     this.isShowActivityPanel = false;
+  }
+
+  toggleAssetPath() {
+    this.isShowAssetPath = !this.isShowAssetPath;
   }
 
   toggleDetailPanel() {
