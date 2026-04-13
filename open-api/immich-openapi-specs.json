@@ -4214,6 +4214,13 @@
             "name": "size",
             "required": false,
             "in": "query",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Specifying 'original' is deprecated. Use the original endpoint directly instead"
+              }
+            ],
             "schema": {
               "$ref": "#/components/schemas/AssetMediaSize"
             }

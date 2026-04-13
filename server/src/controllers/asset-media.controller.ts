@@ -126,6 +126,16 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    if (dto.size === AssetMediaSize.Original) {
+      this.logger.deprecate(
+        'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
+      );
+      const [_, reqSearch] = req.url.split('?');
+      const redirSearchParams = new URLSearchParams(reqSearch);
+      redirSearchParams.delete('size');
+      return res.redirect('original' + '?' + redirSearchParams.toString());
+    }
+
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
 
     if (viewThumbnailRes instanceof ImmichFileResponse) {

@@ -166,10 +166,15 @@ describe(AssetMediaController.name, () => {
     });
 
     // TODO figure out how to deal with `sendFile`
-    describe.skip('GET /assets/:id/thumbnail', () => {
-      it('should be an authenticated route', async () => {
+    describe('GET /assets/:id/thumbnail', () => {
+      it.skip('should be an authenticated route', async () => {
         await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
         expect(ctx.authenticate).toHaveBeenCalled();
+      });
+
+      it('should redirect if size=original is requested', async () => {
+        const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
+        expect(status).toBe(302);
       });
     });
   });

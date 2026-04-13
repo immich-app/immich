@@ -1,4 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
+import { HistoryBuilder } from 'src/decorators';
 import { AssetMetadataUpsertItemSchema } from 'src/dtos/asset.dto';
 import { AssetVisibilitySchema } from 'src/enum';
 import { isoDatetimeToDate, JsonParsed, stringToBool } from 'src/validation';
@@ -19,7 +20,11 @@ const AssetMediaSizeSchema = z.enum(AssetMediaSize).describe('Asset media size')
 
 const AssetMediaOptionsSchema = z
   .object({
-    size: AssetMediaSizeSchema.optional(),
+    size: AssetMediaSizeSchema.optional().meta(
+      new HistoryBuilder()
+        .updated('v3', "Specifying 'original' is deprecated. Use the original endpoint directly instead")
+        .getExtensions(),
+    ),
     edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
   })
   .meta({ id: 'AssetMediaOptionsDto' });
