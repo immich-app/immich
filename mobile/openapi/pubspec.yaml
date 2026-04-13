@@ -15,3 +15,5 @@ dependencies:
   meta: '>=1.1.8 <2.0.0'
   immich_mobile:
     path: ../
+dev_dependencies:
+  build_runner: ^2.13.1

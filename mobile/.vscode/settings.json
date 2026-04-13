@@ -1,15 +1,5 @@
 {
-  "dart.flutterSdkPath": ".fvm/versions/3.35.7",
-  "dart.lineLength": 120,
-  "[dart]": {
-    "editor.rulers": [
-      120
-    ]
-  },
-  "search.exclude": {
-    "**/.fvm": true
-  },
-  "files.watcherExclude": {
-    "**/.fvm": true
-  }
+  "dart.flutterSdkPath": "/home/joel/.local/share/mise/installs/flutter/3.38.10",
+  "dart.getFlutterSdkCommand": null,
+  "dart.analyzerLogFile": "analyzer.log"
 }
