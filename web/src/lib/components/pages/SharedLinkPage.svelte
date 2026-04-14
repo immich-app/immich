@@ -1,13 +1,12 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { navigate } from '$lib/utils/navigation';
   import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Logo, PasswordInput } from '@immich/ui';
   import { onDestroy, tick } from 'svelte';
@@ -46,10 +45,7 @@
         sharedLink.description ||
         $t('shared_photos_and_videos_count', { values: { assetCount: sharedLink.assets.length } });
       await tick();
-      await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
-        { forceNavigate: true, replaceState: true },
-      );
+      await invalidateAll();
     } catch (error) {
       handleError(error, $t('errors.unable_to_get_shared_link'));
     }
@@ -101,10 +97,10 @@
   </header>
 {/if}
 
-{#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
+{#if !passwordRequired && sharedLink?.type === SharedLinkType.Album}
   <AlbumViewer {sharedLink} />
 {/if}
-{#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
+{#if !passwordRequired && sharedLink?.type === SharedLinkType.Individual}
   <div class="immich-scrollbar">
     <IndividualSharedViewer {sharedLink} {isOwned} />
   </div>
