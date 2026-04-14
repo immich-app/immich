@@ -438,6 +438,16 @@ describe('/shared-links', () => {
       expect(body).toEqual(errorDto.badRequest('Invalid shared link type'));
     });
 
+    it('should reject guests removing assets from an individual shared link', async () => {
+      const { status, body } = await request(app)
+        .delete(`/shared-links/${linkWithAssets.id}/assets`)
+        .query({ key: linkWithAssets.key })
+        .send({ assetIds: [asset1.id] });
+
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.forbidden);
+    });
+
     it('should remove assets from a shared link (individual)', async () => {
       const { status, body } = await request(app)
         .delete(`/shared-links/${linkWithAssets.id}/assets`)

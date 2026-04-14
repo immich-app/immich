@@ -5,9 +5,11 @@ import { QueueOptions } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
+import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
@@ -58,6 +60,10 @@ export interface EnvData {
     config: ClsModuleOptions;
   };
 
+  helmet: {
+    config?: HelmetOptions;
+  };
+
   database: {
     config: DatabaseConnectionParams;
     skipMigrations: boolean;
@@ -67,6 +73,10 @@ export interface EnvData {
   licensePublicKey: {
     client: string;
     server: string;
+  };
+
+  versionCheck: {
+    url: string;
   };
 
   network: {
@@ -141,6 +151,25 @@ const TELEMETRY_TYPES = new Set(Object.values(ImmichTelemetry));
 const asSet = <T>(value: string | undefined, defaults: T[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
   return new Set(values.length === 0 ? defaults : (values as T[]));
+};
+
+const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) => {
+  // default is off
+  if (!helmetFile || helmetFile === 'false') {
+    return;
+  }
+
+  helmetFile =
+    helmetFile === 'true'
+      ? // eslint-disable-next-line unicorn/prefer-module
+        join(__dirname, '..', '..', 'helmet.json')
+      : helmetFile;
+
+  try {
+    return JSON.parse(readFileSync(helmetFile).toString()) as HelmetOptions;
+  } catch (error) {
+    throw new Error(`Failed to read helmet file: ${helmetFile}`, { cause: error });
+  }
 };
 
 const getEnv = (): EnvData => {
@@ -289,7 +318,15 @@ const getEnv = (): EnvData => {
       vectorExtension,
     },
 
+    helmet: {
+      config: resolveHelmetFile(dto.IMMICH_HELMET_FILE),
+    },
+
     licensePublicKey: isProd ? productionKeys : stagingKeys,
+
+    versionCheck: {
+      url: isProd ? 'https://version.immich.cloud/version' : 'https://version.dev.immich.cloud/version',
+    },
 
     network: {
       trustedProxies: dto.IMMICH_TRUSTED_PROXIES ?? ['linklocal', 'uniquelocal'],

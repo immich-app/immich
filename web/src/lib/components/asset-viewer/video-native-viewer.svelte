@@ -3,7 +3,7 @@
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import {
     autoPlayVideo,
     loopVideo as loopVideoPreference,
@@ -50,6 +50,7 @@
   );
   let isScrubbing = $state(false);
   let showVideo = $state(false);
+  let hasFocused = $state(false);
 
   onMount(() => {
     // Show video after mount to ensure fading in.
@@ -59,6 +60,7 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     if (assetFileUrl) {
+      hasFocused = false;
       videoPlayer?.load();
     }
   });
@@ -113,7 +115,7 @@
   let containerHeight = $state(0);
 
   $effect(() => {
-    if (isFaceEditMode.value) {
+    if (assetViewerManager.isFaceEditMode) {
       videoPlayer?.pause();
     }
   });
@@ -151,7 +153,10 @@
         onseeking={() => (isScrubbing = true)}
         onseeked={() => (isScrubbing = false)}
         onplaying={(e) => {
-          e.currentTarget.focus();
+          if (!hasFocused) {
+            e.currentTarget.focus();
+            hasFocused = true;
+          }
         }}
         onclose={() => onClose()}
         muted={$videoViewerMuted}
@@ -167,7 +172,7 @@
         </div>
       {/if}
 
-      {#if isFaceEditMode.value}
+      {#if assetViewerManager.isFaceEditMode}
         <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
       {/if}
     {/if}

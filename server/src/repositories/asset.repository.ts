@@ -1,5 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import {
+  ExpressionBuilder,
+  Insertable,
+  Kysely,
+  NotNull,
+  Selectable,
+  SelectQueryBuilder,
+  ShallowDehydrateObject,
+  sql,
+  Updateable,
+  UpdateResult,
+} from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
@@ -25,6 +36,7 @@ import {
   withExif,
   withFaces,
   withFacesAndPeople,
+  withFilePath,
   withFiles,
   withLibrary,
   withOwner,
@@ -35,6 +47,13 @@ import {
 import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
+
+export interface BoundingBox {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
 
 interface AssetStatsOptions {
   isFavorite?: boolean;
@@ -64,6 +83,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  bbox?: BoundingBox;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -119,6 +139,34 @@ interface GetByIdsRelations {
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
   sql<T>`nullif(array(select distinct unnest(${eb.ref('asset_exif.lockedProperties')} || ${columns})), '{}')`;
+
+const getBoundingCircle = (bbox: BoundingBox) => {
+  const { west, south, east, north } = bbox;
+  const eastUnwrapped = west <= east ? east : east + 360;
+  const centerLongitude = (((west + eastUnwrapped) / 2 + 540) % 360) - 180;
+  const centerLatitude = (south + north) / 2;
+  const radius = sql<number>`greatest(
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${south}, ${west})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${south}, ${east})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${north}, ${west})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${north}, ${east}))
+  )`;
+
+  return { centerLatitude, centerLongitude, radius };
+};
+
+const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T>, bbox: BoundingBox) => {
+  const { west, south, east, north } = bbox;
+  const withLatitude = qb.where('asset_exif.latitude', '>=', south).where('asset_exif.latitude', '<=', north);
+
+  if (west <= east) {
+    return withLatitude.where('asset_exif.longitude', '>=', west).where('asset_exif.longitude', '<=', east);
+  }
+
+  return withLatitude.where((eb) =>
+    eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
+  );
+};
 
 @Injectable()
 export class AssetRepository {
@@ -332,8 +380,10 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
-  createAll(assets: Insertable<AssetTable>[]) {
-    return this.db.insertInto('asset').values(assets).returningAll().execute();
+  @ChunkedArray({ chunkSize: 4000 })
+  async createAll(assets: Insertable<AssetTable>[]) {
+    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    return ids.map(({ id }) => id);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })
@@ -358,7 +408,7 @@ export class AssetRepository {
             (qb) =>
               qb
                 .selectFrom('asset')
-                .selectAll('asset')
+                .select(['asset.id', 'asset.localDateTime'])
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
@@ -377,9 +427,7 @@ export class AssetRepository {
                 .as('a'),
             (join) => join.onTrue(),
           )
-          .innerJoin('asset_exif', 'a.id', 'asset_exif.assetId')
-          .selectAll('a')
-          .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo')),
+          .selectAll('a'),
       )
       .selectFrom('res')
       .select(sql<number>`date_part('year', ("localDateTime" at time zone 'UTC')::date)::int`.as('year'))
@@ -510,7 +558,11 @@ export class AssetRepository {
                   eb
                     .selectFrom('asset as stacked')
                     .selectAll('stack')
-                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+                    .select((eb) =>
+                      eb
+                        .fn<ShallowDehydrateObject<Selectable<AssetTable>>>('array_agg', [eb.table('stacked')])
+                        .as('assets'),
+                    )
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
@@ -519,7 +571,7 @@ export class AssetRepository {
                     .as('stacked_assets'),
                 (join) => join.on('stack.id', 'is not', null),
               )
-              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack')),
+              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
           ),
       )
       .$if(!!files, (qb) => qb.select(withFiles))
@@ -651,6 +703,20 @@ export class AssetRepository {
           .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .$if(!!options.bbox, (qb) => {
+            const bbox = options.bbox!;
+            const circle = getBoundingCircle(bbox);
+
+            const withBoundingCircle = qb
+              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+              .where(
+                sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+                '@>',
+                sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+              );
+
+            return withBoundingBox(withBoundingCircle, bbox);
+          })
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
@@ -686,6 +752,7 @@ export class AssetRepository {
     params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
+    const order = options.order ?? 'desc';
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -725,6 +792,18 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.bbox, (qb) => {
+            const bbox = options.bbox!;
+            const circle = getBoundingCircle(bbox);
+
+            const withBoundingCircle = qb.where(
+              sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+              '@>',
+              sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+            );
+
+            return withBoundingBox(withBoundingCircle, bbox);
+          })
           .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
@@ -771,7 +850,8 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('asset.fileCreatedAt', options.order ?? 'desc'),
+          .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
+          .orderBy('asset.fileCreatedAt', order),
       )
       .with('agg', (qb) =>
         qb
@@ -942,8 +1022,21 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFile({ assetId, type }: { assetId: string; type: AssetFileType }): Promise<void> {
-    await this.db.deleteFrom('asset_file').where('assetId', '=', asUuid(assetId)).where('type', '=', type).execute();
+  async deleteFile({
+    assetId,
+    type,
+    edited,
+  }: {
+    assetId: string;
+    type: AssetFileType;
+    edited?: boolean;
+  }): Promise<void> {
+    await this.db
+      .deleteFrom('asset_file')
+      .where('assetId', '=', asUuid(assetId))
+      .where('type', '=', type)
+      .$if(edited !== undefined, (qb) => qb.where('isEdited', '=', edited!))
+      .execute();
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
@@ -1062,7 +1155,8 @@ export class AssetRepository {
   async getForVideo(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .select(['asset.originalPath'])
+      .select((eb) => withFilePath(eb, AssetFileType.EncodedVideo).as('encodedVideoPath'))
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();

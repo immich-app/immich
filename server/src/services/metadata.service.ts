@@ -8,12 +8,13 @@ import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AssetFace, AssetFile } from 'src/database';
+import { Asset, AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetFileType,
   AssetType,
   AssetVisibility,
+  ChecksumAlgorithm,
   DatabaseLock,
   ExifOrientation,
   ImmichWorker,
@@ -289,8 +290,10 @@ export class MetadataService extends BaseService {
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
-      make: exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
-      model: exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? null,
+      make:
+        exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
+      model:
+        exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
@@ -301,7 +304,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -325,10 +328,9 @@ export class MetadataService extends BaseService {
           fileCreatedAt: dates.dateTimeOriginal ?? undefined,
           fileModifiedAt: stats.mtime,
 
-          // only update the dimensions if they don't already exist
-          // we don't want to overwrite width/height that are modified by edits
-          width: asset.width == null ? assetWidth : undefined,
-          height: asset.height == null ? assetHeight : undefined,
+          // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
+          width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
+          height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
         }),
       async () => {
         await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
@@ -447,11 +449,10 @@ export class MetadataService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = _.pick(
       {
         description: asset.exifInfo.description,
-        // the kysely type is wrong here; fixed in 0.28.3
-        dateTimeOriginal: asset.exifInfo.dateTimeOriginal as string | null,
+        dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
-        rating: asset.exifInfo.rating,
+        rating: asset.exifInfo.rating ?? 0,
         tags: asset.exifInfo.tags,
         timeZone: asset.exifInfo.timeZone,
       },
@@ -466,7 +467,7 @@ export class MetadataService extends BaseService {
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
-        TagsList: tags?.length ? tags : undefined,
+        TagsList: tags,
       },
       _.isUndefined,
     );
@@ -675,6 +676,7 @@ export class MetadataService extends BaseService {
             fileModifiedAt: stats.mtime,
             localDateTime: dates.localDateTime,
             checksum,
+            checksumAlgorithm: ChecksumAlgorithm.sha1File,
             ownerId: asset.ownerId,
             originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
             originalFileName: `${parse(asset.originalFileName).name}.mp4`,
@@ -829,7 +831,7 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTaggedFaces(
-    asset: { id: string; ownerId: string; faces: AssetFace[]; originalPath: string },
+    asset: { id: string; ownerId: string; faces: { id: string; sourceType: SourceType }[]; originalPath: string },
     tags: ImmichTags,
   ) {
     if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {

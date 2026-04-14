@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { OnRestore } from '$lib/utils/actions';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreAssets } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
@@ -13,19 +13,17 @@
 
   let { onRestore }: Props = $props();
 
-  const { getAssets, clearSelect } = getAssetControlContext();
-
   let loading = $state(false);
 
   const handleRestore = async () => {
     loading = true;
 
     try {
-      const ids = [...getAssets()].map((a) => a.id);
+      const ids = assetMultiSelectManager.assets.map((a) => a.id);
       await restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
-      toastManager.success($t('assets_restored_count', { values: { count: ids.length } }));
-      clearSelect();
+      toastManager.primary($t('assets_restored_count', { values: { count: ids.length } }));
+      assetMultiSelectManager.clear();
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_assets'));
     } finally {

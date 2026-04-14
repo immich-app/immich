@@ -53,7 +53,7 @@
 
       $preferences = { ...data };
 
-      toastManager.success($t('saved_settings'));
+      toastManager.primary($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }

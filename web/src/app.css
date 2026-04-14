@@ -49,6 +49,7 @@
 }
 
 @theme {
+  --font-sans: 'GoogleSans', sans-serif;
   --font-mono: 'GoogleSansCode', monospace;
 
   --spacing-18: 4.5rem;
@@ -100,7 +101,7 @@
   }
 
   :root {
-    font-family: 'GoogleSans', sans-serif;
+    font-family: var(--font-sans);
     letter-spacing: 0.1px;
 
     /* Used by layouts to ensure proper spacing between navbar and content */
@@ -127,25 +128,24 @@
 
   /* Track */
   html::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 16px;
+    background-color: var(--immich-ui-light-100);
+    border-radius: 4px;
   }
 
   /* Handle */
   html::-webkit-scrollbar-thumb {
-    background: rgba(85, 86, 87, 0.408);
-    border-radius: 16px;
+    background-color: color-mix(in oklab, var(--immich-ui-light-600) 40%, transparent);
+    border-radius: 4px;
   }
 
   /* Handle on hover */
   html::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
-    border-radius: 16px;
+    background-color: color-mix(in oklab, var(--immich-ui-primary-500) 70%, transparent);
   }
 
   body {
     margin: 0;
-    color: #3a3a3a;
+    color: var(--immich-ui-dark);
   }
 
   body.asset-viewer-open {

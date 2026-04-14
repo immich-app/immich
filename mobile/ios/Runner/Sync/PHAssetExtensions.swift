@@ -1,6 +1,17 @@
 import Photos
 
 extension PHAsset {
+  var platformPlaybackStyle: PlatformAssetPlaybackStyle {
+    switch playbackStyle {
+    case .image: return .image
+    case .imageAnimated: return .imageAnimated
+    case .livePhoto: return .livePhoto
+    case .video: return .video
+    case .videoLooping: return .videoLooping
+    @unknown default: return .unknown
+    }
+  }
+
   func toPlatformAsset() -> PlatformAsset {
     return PlatformAsset(
       id: localIdentifier,
@@ -15,7 +26,8 @@ extension PHAsset {
       isFavorite: isFavorite,
       adjustmentTime: adjustmentTimestamp,
       latitude: location?.coordinate.latitude,
-      longitude: location?.coordinate.longitude
+      longitude: location?.coordinate.longitude,
+      playbackStyle: platformPlaybackStyle
     )
   }
 
@@ -26,7 +38,7 @@ extension PHAsset {
   var filename: String? {
     return value(forKey: "filename") as? String
   }
-  
+
   var adjustmentTimestamp: Int64? {
     if let date = value(forKey: "adjustmentTimestamp") as? Date {
       return Int64(date.timeIntervalSince1970)

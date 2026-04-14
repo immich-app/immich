@@ -129,7 +129,7 @@ export const handleEmptyQueue = async (queue: QueueResponseDto) => {
     await emptyQueue({ name: queue.name, queueDeleteDto: { failed: false } });
     const response = await getQueue({ name: queue.name });
     eventManager.emit('QueueUpdate', response);
-    toastManager.success($t('admin.cleared_jobs', { values: { job: item.title } }));
+    toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }
@@ -155,7 +155,7 @@ const handleRemoveFailedJobs = async (queue: QueueResponseDto) => {
     await emptyQueue({ name: queue.name, queueDeleteDto: { failed: true } });
     const response = await getQueue({ name: queue.name });
     eventManager.emit('QueueUpdate', response);
-    toastManager.success();
+    toastManager.primary();
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }

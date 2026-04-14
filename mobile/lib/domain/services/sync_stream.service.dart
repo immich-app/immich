@@ -216,6 +216,10 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
+      case SyncEntityType.assetEditV1:
+        return _syncStreamRepository.updateAssetEditsV1(data.cast());
+      case SyncEntityType.assetEditDeleteV1:
+        return _syncStreamRepository.deleteAssetEditsV1(data.cast());
       case SyncEntityType.assetMetadataV1:
         return _syncStreamRepository.updateAssetsMetadataV1(data.cast());
       case SyncEntityType.assetMetadataDeleteV1:
@@ -347,39 +351,43 @@ class SyncStreamService {
     }
   }
 
-  Future<void> handleWsAssetEditReadyV1Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) return;
-
-    _logger.info('Processing batch of ${batchData.length} AssetEditReadyV1 events');
-
-    final List<SyncAssetV1> assets = [];
+  Future<void> handleWsAssetEditReadyV1(dynamic data) async {
+    _logger.info('Processing AssetEditReadyV1 event');
 
     try {
-      for (final data in batchData) {
-        if (data is! Map<String, dynamic>) {
-          continue;
-        }
-
-        final payload = data;
-        final assetData = payload['asset'];
-
-        if (assetData == null) {
-          continue;
-        }
-
-        final asset = SyncAssetV1.fromJson(assetData);
-
-        if (asset != null) {
-          assets.add(asset);
-        }
+      if (data is! Map<String, dynamic>) {
+        throw ArgumentError("Invalid data format for AssetEditReadyV1 event");
       }
 
-      if (assets.isNotEmpty) {
-        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-edit');
-        _logger.info('Successfully processed ${assets.length} edited assets');
+      final payload = data;
+
+      if (payload['asset'] == null) {
+        throw ArgumentError("Missing 'asset' field in AssetEditReadyV1 event data");
       }
+
+      final asset = SyncAssetV1.fromJson(payload['asset']);
+      if (asset == null) {
+        throw ArgumentError("Failed to parse 'asset' field in AssetEditReadyV1 event data");
+      }
+
+      List<SyncAssetEditV1> assetEdits = [];
+
+      // Edits are only send on v2.6.0+
+      if (payload['edit'] != null && payload['edit'] is List<dynamic>) {
+        assetEdits = (payload['edit'] as List<dynamic>)
+            .map((e) => SyncAssetEditV1.fromJson(e))
+            .whereType<SyncAssetEditV1>()
+            .toList();
+      }
+
+      await _syncStreamRepository.updateAssetsV1([asset], debugLabel: 'websocket-edit');
+      await _syncStreamRepository.replaceAssetEditsV1(asset.id, assetEdits, debugLabel: 'websocket-edit');
+
+      _logger.info(
+        'Successfully processed AssetEditReadyV1 event for asset ${asset.id} with ${assetEdits.length} edits',
+      );
     } catch (error, stackTrace) {
-      _logger.severe("Error processing AssetEditReadyV1 websocket batch events", error, stackTrace);
+      _logger.severe("Error processing AssetEditReadyV1 websocket event", error, stackTrace);
     }
   }
 

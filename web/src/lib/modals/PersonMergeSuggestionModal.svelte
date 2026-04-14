@@ -38,7 +38,7 @@
         id: personToBeMergedInto.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
-      toastManager.success($t('merge_people_successfully'));
+      toastManager.primary($t('merge_people_successfully'));
       onClose([personToMerge, personToBeMergedInto]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));

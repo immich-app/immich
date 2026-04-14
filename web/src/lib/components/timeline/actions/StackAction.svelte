@@ -1,8 +1,8 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
   import { deleteStack, stackAssets } from '$lib/utils/asset-utils';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { mdiImageMultipleOutline, mdiImageOffOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -15,17 +15,14 @@
 
   let { unstack = false, onStack, onUnstack }: Props = $props();
 
-  const { clearSelect, getOwnedAssets } = getAssetControlContext();
-
   const handleStack = async () => {
-    const selectedAssets = [...getOwnedAssets()];
-    const result = await stackAssets(selectedAssets);
+    const result = await stackAssets(assetMultiSelectManager.ownedAssets);
     onStack?.(result);
-    clearSelect();
+    assetMultiSelectManager.clear();
   };
 
   const handleUnstack = async () => {
-    const selectedAssets = [...getOwnedAssets()];
+    const selectedAssets = assetMultiSelectManager.ownedAssets;
     if (selectedAssets.length !== 1) {
       return;
     }
@@ -37,7 +34,7 @@
     if (unstackedAssets) {
       onUnstack?.(unstackedAssets.map((a) => toTimelineAsset(a)));
     }
-    clearSelect();
+    assetMultiSelectManager.clear();
   };
 </script>
 

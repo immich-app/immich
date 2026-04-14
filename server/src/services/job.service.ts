@@ -98,6 +98,7 @@ export class JobService extends BaseService {
 
       case JobName.AssetEditThumbnailGeneration: {
         const asset = await this.assetRepository.getById(item.data.id);
+        const edits = await this.assetEditRepository.getWithSyncInfo(item.data.id);
 
         if (asset) {
           this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, {
@@ -122,6 +123,7 @@ export class JobService extends BaseService {
               height: asset.height,
               isEdited: asset.isEdited,
             },
+            edit: edits,
           });
         }
 
@@ -184,8 +186,8 @@ export class JobService extends BaseService {
                 exifImageHeight: exif.exifImageHeight,
                 fileSizeInByte: exif.fileSizeInByte,
                 orientation: exif.orientation,
-                dateTimeOriginal: exif.dateTimeOriginal,
-                modifyDate: exif.modifyDate,
+                dateTimeOriginal: exif.dateTimeOriginal ? new Date(exif.dateTimeOriginal) : null,
+                modifyDate: exif.modifyDate ? new Date(exif.modifyDate) : null,
                 timeZone: exif.timeZone,
                 latitude: exif.latitude,
                 longitude: exif.longitude,

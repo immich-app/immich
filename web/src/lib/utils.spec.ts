@@ -74,6 +74,32 @@ describe('utils', () => {
       expect(url).toContain(asset.id);
     });
 
+    it('should return original URL for video assets with forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset, forceOriginal: true });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for video assets without forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).toContain(asset.id);
+    });
+
     it('should return thumbnail URL for static images in shared link even with download and showMetadata permissions', () => {
       const asset = assetFactory.build({
         originalPath: 'image.gif',

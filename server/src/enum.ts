@@ -37,6 +37,11 @@ export enum AssetType {
   Other = 'OTHER',
 }
 
+export enum ChecksumAlgorithm {
+  sha1File = 'sha1', // sha1 checksum of the whole file contents
+  sha1Path = 'sha1-path', // sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated
+}
+
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
@@ -45,6 +50,7 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
+  EncodedVideo = 'encoded_video',
 }
 
 export enum AlbumUserRole {
@@ -409,7 +415,9 @@ export enum VideoCodec {
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  LibOpus = 'libopus',
+  /** @deprecated Use `Opus` instead */
+  Libopus = 'libopus',
+  Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
 
@@ -699,6 +707,7 @@ export enum DatabaseLock {
   BackupDatabase = 42,
   MaintenanceOperation = 621,
   MemoryCreation = 777,
+  VersionCheck = 800,
 }
 
 export enum MaintenanceAction {
@@ -720,6 +729,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AssetEditsV1 = 'AssetEditsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
@@ -745,6 +755,8 @@ export enum SyncEntityType {
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+  AssetEditV1 = 'AssetEditV1',
+  AssetEditDeleteV1 = 'AssetEditDeleteV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
 
@@ -837,6 +849,7 @@ export enum AssetVisibility {
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
+  VersionCheck = 'VersionCheck',
 }
 
 export enum ApiTag {

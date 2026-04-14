@@ -368,6 +368,10 @@ class ApiClient {
           return DownloadUpdate.fromJson(value);
         case 'DuplicateDetectionConfig':
           return DuplicateDetectionConfig.fromJson(value);
+        case 'DuplicateResolveDto':
+          return DuplicateResolveDto.fromJson(value);
+        case 'DuplicateResolveGroupDto':
+          return DuplicateResolveGroupDto.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
         case 'EmailNotificationsResponse':
@@ -676,6 +680,10 @@ class ApiClient {
           return SyncAlbumV1.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
+        case 'SyncAssetEditDeleteV1':
+          return SyncAssetEditDeleteV1.fromJson(value);
+        case 'SyncAssetEditV1':
+          return SyncAssetEditV1.fromJson(value);
         case 'SyncAssetExifV1':
           return SyncAssetExifV1.fromJson(value);
         case 'SyncAssetFaceDeleteV1':

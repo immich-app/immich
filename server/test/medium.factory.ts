@@ -3,6 +3,7 @@ import { Insertable, Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
+import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
@@ -11,6 +12,7 @@ import {
   AlbumUserRole,
   AssetType,
   AssetVisibility,
+  ChecksumAlgorithm,
   MemoryType,
   SourceType,
   SyncEntityType,
@@ -24,6 +26,7 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
@@ -77,6 +80,9 @@ import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.reposito
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock, wait } from 'test/utils';
 import { Mocked } from 'vitest';
+
+// eslint-disable-next-line unicorn/prefer-module
+export const testAssetsDir = resolve(__dirname, '../../e2e/test-assets');
 
 interface ClassConstructor<T = any> extends Function {
   new (...args: any[]): T;
@@ -216,9 +222,9 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { result };
   }
 
-  async newAlbum(dto: Insertable<AlbumTable>) {
+  async newAlbum(dto: Insertable<AlbumTable>, assetIds?: string[]) {
     const album = mediumFactory.albumInsert(dto);
-    const result = await this.get(AlbumRepository).create(album, [], []);
+    const result = await this.get(AlbumRepository).create(album, assetIds ?? [], []);
     return { album, result };
   }
 
@@ -231,6 +237,14 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const { albumId, userId, role = AlbumUserRole.Editor } = dto;
     const result = await this.get(AlbumUserRepository).create({ albumId, userId, role });
     return { albumUser: { albumId, userId, role }, result };
+  }
+
+  async softDeleteAsset(assetId: string) {
+    await this.database.updateTable('asset').set({ deletedAt: new Date() }).where('id', '=', assetId).execute();
+  }
+
+  async softDeleteAlbum(albumId: string) {
+    await this.database.updateTable('album').set({ deletedAt: new Date() }).where('id', '=', albumId).execute();
   }
 
   async newJobStatus(dto: Partial<Insertable<AssetJobStatusTable>> & { assetId: string }) {
@@ -487,6 +501,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       });
     }
 
+    case CronRepository: {
+      return automock(CronRepository, { args: [undefined, { setContext: () => {} }], strict: false });
+    }
+
     case EmailRepository: {
       return automock(EmailRepository, { args: [{ setContext: () => {} }] });
     }
@@ -535,6 +553,7 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
+    checksumAlgorithm: ChecksumAlgorithm.sha1File,
     type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
     ownerId: 'not-a-valid-uuid',

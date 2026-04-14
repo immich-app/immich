@@ -15,6 +15,7 @@ import {
   getBaseUrl,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -112,6 +113,10 @@ export const fileUploadHandler = async ({
       promises.push(
         uploadExecutionQueue.addTask(() => fileUploader({ assetFile: file, deviceAssetId, albumId, isLockedAssets })),
       );
+    } else {
+      toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
+        timeout: 10_000,
+      });
     }
   }
 
@@ -211,7 +216,7 @@ async function fileUploader({
       uploadAssetsStore.track('success');
     }
 
-    if (albumId) {
+    if (albumId && !authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_adding_to_album') });
       await addAssetsToAlbums([albumId], [responseData.id], { notify: false });
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_added_to_album') });

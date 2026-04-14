@@ -491,7 +491,7 @@ export class PersonService extends BaseService {
       embedding: face.faceSearch.embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
       numResults: machineLearning.facialRecognition.minFaces,
-      minBirthDate: face.asset.fileCreatedAt ?? undefined,
+      minBirthDate: new Date(face.asset.fileCreatedAt),
     });
 
     // `matches` also includes the face itself
@@ -519,7 +519,7 @@ export class PersonService extends BaseService {
         maxDistance: machineLearning.facialRecognition.maxDistance,
         numResults: 1,
         hasPerson: true,
-        minBirthDate: face.asset.fileCreatedAt ?? undefined,
+        minBirthDate: new Date(face.asset.fileCreatedAt),
       });
 
       if (matchWithPerson.length > 0) {
@@ -595,7 +595,7 @@ export class PersonService extends BaseService {
           update.birthDate = mergePerson.birthDate;
         }
 
-        if (Object.keys(update).length > 0) {
+        if (Object.keys(update).length > 1) {
           primaryPerson = await this.personRepository.update(update);
         }
 
@@ -631,7 +631,11 @@ export class PersonService extends BaseService {
       this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
     ]);
 
-    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    const [asset, person] = await Promise.all([
+      this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true }),
+      this.findOrFail(dto.personId),
+    ]);
+
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -689,6 +693,10 @@ export class PersonService extends BaseService {
       boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
+
+    if (!person.faceAssetId) {
+      await this.createNewFeaturePhoto([person.id]);
+    }
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {

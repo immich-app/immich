@@ -5,7 +5,7 @@
   import { ocrManager, type OcrBoundingBox } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-  import { calculateBoundingBoxMatrix, getOcrBoundingBoxesAtSize, type Point } from '$lib/utils/ocr-utils';
+  import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '$lib/utils/ocr-utils';
   import {
     EquirectangularAdapter,
     Viewer,
@@ -19,6 +19,7 @@
   import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
   import { SettingsPlugin } from '@photo-sphere-viewer/settings-plugin';
   import '@photo-sphere-viewer/settings-plugin/index.css';
+  import { escape } from 'lodash-es';
   import { onDestroy, onMount } from 'svelte';
 
   // Adapted as well as possible from classlist 'border-solid border-white border-3 rounded-lg'
@@ -127,7 +128,7 @@
       markersPlugin.clearMarkers();
     }
 
-    const boxes = getOcrBoundingBoxesAtSize(ocrData, {
+    const boxes = getOcrBoundingBoxes(ocrData, {
       width: viewer.state.textureData.panoData.croppedWidth,
       height: viewer.state.textureData.panoData.croppedHeight,
     });
@@ -138,7 +139,7 @@
 
       const fontSize = (1.4 * width) / box.text.length; // fits almost all strings within the box, depends on font family
       const transform = `matrix3d(${matrix.join(',')})`;
-      const content = `<div class="${OCR_TOOLTIP_HTML_CLASS}" style="font-size: ${fontSize}px; width: ${width}px; height: ${height}px; transform: ${transform}; transform-origin: 0 0;">${box.text}</div>`;
+      const content = `<div class="${OCR_TOOLTIP_HTML_CLASS}" style="font-size: ${fontSize}px; width: ${width}px; height: ${height}px; transform: ${transform}; transform-origin: 0 0;">${escape(box.text)}</div>`;
 
       if (updateOnly) {
         markersPlugin.updateMarker({

@@ -1,10 +1,10 @@
 {
   "name": "immich-i18n",
-  "version": "2.5.6",
+  "version": "2.7.4",
   "private": true,
   "scripts": {
-    "format": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format": "prettier --cache --check .",
+    "format:fix": "prettier --cache --write --list-different ."
   },
   "devDependencies": {
     "prettier": "^3.7.4",

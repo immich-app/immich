@@ -7,16 +7,15 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
-/// Expects [currentAssetNotifier] to be set before navigating to this page
+/// Expects the current asset to be set via [assetViewerProvider] before navigating to this page
 @RoutePage()
 class DriftMemoryPage extends HookConsumerWidget {
   final List<DriftMemory> memories;
@@ -26,11 +25,7 @@ class DriftMemoryPage extends HookConsumerWidget {
 
   static void setMemory(WidgetRef ref, DriftMemory memory) {
     if (memory.assets.isNotEmpty) {
-      ref.read(currentAssetNotifier.notifier).setAsset(memory.assets.first);
-
-      if (memory.assets.first.isVideo) {
-        ref.read(videoPlaybackValueProvider.notifier).reset();
-      }
+      ref.read(assetViewerProvider.notifier).setAsset(memory.assets.first);
     }
   }
 
@@ -172,11 +167,7 @@ class DriftMemoryPage extends HookConsumerWidget {
 
       final asset = currentMemory.value.assets[otherIndex];
       currentAsset.value = asset;
-      ref.read(currentAssetNotifier.notifier).setAsset(asset);
-      // if (asset.isVideo || asset.isMotionPhoto) {
-      if (asset.isVideo) {
-        ref.read(videoPlaybackValueProvider.notifier).reset();
-      }
+      ref.read(assetViewerProvider.notifier).setAsset(asset);
     }
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
@@ -216,6 +207,11 @@ class DriftMemoryPage extends HookConsumerWidget {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   DriftMemoryPage.setMemory(ref, memories[pageNumber]);
                 });
+
+                // Update currentAsset to the first asset of the new memory
+                if (memories[pageNumber].assets.isNotEmpty) {
+                  currentAsset.value = memories[pageNumber].assets.first;
+                }
               }
 
               currentAssetPage.value = 0;
@@ -273,7 +269,12 @@ class DriftMemoryPage extends HookConsumerWidget {
                               children: [
                                 Container(
                                   color: Colors.black,
-                                  child: DriftMemoryCard(asset: asset, title: title, showTitle: index == 0),
+                                  child: DriftMemoryCard(
+                                    asset: asset,
+                                    title: title,
+                                    showTitle: index == 0,
+                                    isCurrent: mIndex == currentMemoryIndex.value && index == currentAssetPage.value,
+                                  ),
                                 ),
                                 Positioned.fill(
                                   child: Row(

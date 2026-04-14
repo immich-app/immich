@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
@@ -25,10 +26,9 @@ import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
 import 'package:isar/isar.dart' hide Index;
-
-import 'db.repository.drift.dart';
 
 // #zoneTxn is the symbol used by Isar to mark a transaction within the current zone
 // ref: isar/isar_common.dart
@@ -67,6 +67,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
+    AssetEditEntity,
     TrashSyncEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
@@ -99,7 +100,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -233,9 +234,17 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v20.assetFaceEntity, v20.assetFaceEntity.deletedAt);
           },
           from20To21: (m, v21) async {
-            await m.create(v21.trashSyncEntity);
-            await m.createIndex(v21.idxTrashSyncIsSyncApproved);
-            await m.createIndex(v21.idxTrashSyncChecksumStatus);
+            await m.addColumn(v21.localAssetEntity, v21.localAssetEntity.playbackStyle);
+            await m.addColumn(v21.trashedLocalAssetEntity, v21.trashedLocalAssetEntity.playbackStyle);
+          },
+          from21To22: (m, v22) async {
+            await m.createTable(v22.assetEditEntity);
+            await m.createIndex(v22.idxAssetEditAssetId);
+          },
+          from22To23: (m, v23) async {
+            await m.create(v23.trashSyncEntity);
+            await m.createIndex(v23.idxTrashSyncIsSyncApproved);
+            await m.createIndex(v23.idxTrashSyncChecksumStatus);
           },
         ),
       );

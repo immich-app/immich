@@ -83,6 +83,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/mp2t', extension: '.m2t' },
     { mimetype: 'video/mp2t', extension: '.m2ts' },
     { mimetype: 'video/mp2t', extension: '.mts' },
+    { mimetype: 'video/mp2t', extension: '.ts' },
     { mimetype: 'video/mp4', extension: '.mp4' },
     { mimetype: 'video/mpeg', extension: '.mpe' },
     { mimetype: 'video/mpeg', extension: '.mpeg' },

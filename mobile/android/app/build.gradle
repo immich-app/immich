@@ -3,6 +3,7 @@ plugins {
   id "kotlin-android"
   id "dev.flutter.flutter-gradle-plugin"
   id 'com.google.devtools.ksp'
+  id 'org.jetbrains.kotlin.plugin.serialization'
   id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
 
 }
@@ -81,6 +82,7 @@ android {
 
     release {
       signingConfig signingConfigs.release
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
   namespace 'app.alextran.immich'
@@ -111,6 +113,8 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
   implementation 'org.chromium.net:cronet-embedded:143.7445.0'
+  implementation("androidx.media3:media3-datasource-okhttp:1.10.0")
+  implementation("androidx.media3:media3-datasource-cronet:1.10.0")
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
   implementation "androidx.work:work-runtime-ktx:$work_version"
   implementation "androidx.concurrent:concurrent-futures:$concurrent_version"

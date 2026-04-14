@@ -233,6 +233,9 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.VersionCheck: {
+        return { jobId: JobName.VersionCheck };
+      }
       default: {
         return null;
       }

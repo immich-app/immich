@@ -1,9 +1,9 @@
 {
   "name": "immich-monorepo",
-  "version": "2.5.6",
+  "version": "2.7.4",
   "description": "Monorepo for Immich",
   "private": true,
-  "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937",
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
   "engines": {
     "pnpm": ">=10.0.0"
   }
