@@ -253,9 +253,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> startForegroundBackup(String userId) {
-    // Cancel any existing backup before starting a new one
+    // Ignore duplicate start calls while upload is active.
     if (_cancelToken != null) {
-      stopForegroundBackup();
+      _logger.info("Foreground backup already running, skipping duplicate start");
+      return Future.value();
     }
 
     state = state.copyWith(error: BackupError.none);
