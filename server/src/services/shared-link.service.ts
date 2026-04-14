@@ -221,22 +221,44 @@ export class SharedLinkService extends BaseService {
     return results;
   }
 
-  async getMetadataTags(auth: AuthDto, defaultDomain?: string): Promise<null | OpenGraphTags> {
+  async getMetadataTags(
+    auth: AuthDto,
+    { defaultDomain, assetId: requestedAssetId }: { defaultDomain?: string; assetId?: string } = {},
+  ): Promise<null | OpenGraphTags> {
     if (!auth.sharedLink || auth.sharedLink.password) {
       return null;
     }
 
     const config = await this.getConfig({ withCache: true });
     const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
-    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets?.length || 0;
-    const imagePath = assetId
-      ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
-      : '/feature-panel.png';
+
+    const albumAssets = sharedLink.album?.assets ?? [];
+    const linkAssets = sharedLink.assets;
+    const isAssetInShare = (id: string) =>
+      linkAssets.some((asset) => asset.id === id) || albumAssets.some((asset) => asset.id === id);
+
+    const scopedAssetId = requestedAssetId && isAssetInShare(requestedAssetId) ? requestedAssetId : undefined;
+    const fallbackAssetId = sharedLink.album?.albumThumbnailAssetId || linkAssets[0]?.id;
+    const assetId = scopedAssetId ?? fallbackAssetId;
+    const assetCount = linkAssets.length > 0 ? linkAssets.length : albumAssets.length;
+    const key = sharedLink.key.toString('base64url');
+    const imagePath = assetId ? `/api/assets/${assetId}/thumbnail?key=${key}` : '/feature-panel.png';
+
+    const albumName = sharedLink.album?.albumName;
+    const defaultTitle = albumName ?? 'Public Share';
+    const defaultDescription = sharedLink.description || `${assetCount} shared photos & videos`;
+
+    let title = defaultTitle;
+    let description = defaultDescription;
+
+    if (scopedAssetId) {
+      title = albumName ? `Photo in ${albumName}` : 'Shared photo';
+      description = sharedLink.description || (albumName ? `Photo in ${albumName}` : 'Shared photo');
+    }
 
     return {
-      title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
-      description: sharedLink.description || `${assetCount} shared photos & videos`,
+      title,
+      description,
       imageUrl: new URL(imagePath, getExternalDomain(config.server, defaultDomain)).href,
     };
   }

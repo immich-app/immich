@@ -77,23 +77,23 @@ export class ApiService {
 
       let meta: OpenGraphTags | null = null;
 
-      const shareKey = request.url.match(/^\/share\/(.+)$/);
+      const shareKey = request.path.match(/^\/share\/([^/]+)(?:\/photos\/([^/]+))?/);
       if (shareKey) {
         try {
-          const key = shareKey[1];
+          const [, key, assetId] = shareKey;
           const auth = await this.authService.validateSharedLinkKey(key);
-          meta = await this.sharedLinkService.getMetadataTags(auth, defaultDomain);
+          meta = await this.sharedLinkService.getMetadataTags(auth, { defaultDomain, assetId });
         } catch {
           status = 404;
         }
       }
 
-      const shareSlug = request.url.match(/^\/s\/(.+)$/);
+      const shareSlug = request.path.match(/^\/s\/([^/]+)(?:\/photos\/([^/]+))?/);
       if (shareSlug) {
         try {
-          const slug = shareSlug[1];
+          const [, slug, assetId] = shareSlug;
           const auth = await this.authService.validateSharedLinkSlug(slug);
-          meta = await this.sharedLinkService.getMetadataTags(auth, defaultDomain);
+          meta = await this.sharedLinkService.getMetadataTags(auth, { defaultDomain, assetId });
         } catch {
           status = 404;
         }

@@ -394,5 +394,50 @@ describe(SharedLinkService.name, () => {
 
       expect(mocks.sharedLink.get).toHaveBeenCalled();
     });
+
+    it('should honor the defaultDomain option', async () => {
+      const sharedLink = SharedLinkFactory.from({ description: null })
+        .asset({}, (builder) => builder.exif())
+        .build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+
+      await expect(
+        sut.getMetadataTags(authStub.adminSharedLink, { defaultDomain: 'https://example.com' }),
+      ).resolves.toEqual({
+        description: '1 shared photos & videos',
+        imageUrl: `https://example.com/api/assets/${sharedLink.assets[0].id}/thumbnail?key=${sharedLink.key.toString('base64url')}`,
+        title: 'Public Share',
+      });
+    });
+
+    it('should scope metadata to a specific asset when the assetId belongs to an individual share', async () => {
+      const sharedLink = SharedLinkFactory.from({ description: null })
+        .asset({}, (builder) => builder.exif())
+        .asset({}, (builder) => builder.exif())
+        .build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+      const assetId = sharedLink.assets[1].id;
+
+      await expect(sut.getMetadataTags(authStub.adminSharedLink, { assetId })).resolves.toEqual({
+        description: 'Shared photo',
+        imageUrl: `https://my.immich.app/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`,
+        title: 'Shared photo',
+      });
+    });
+
+    it('should fall back to the album thumbnail when the requested assetId is not part of the share', async () => {
+      const sharedLink = SharedLinkFactory.from({ description: null })
+        .asset({}, (builder) => builder.exif())
+        .build();
+      mocks.sharedLink.get.mockResolvedValue(getForSharedLink(sharedLink));
+
+      await expect(
+        sut.getMetadataTags(authStub.adminSharedLink, { assetId: 'not-in-share' }),
+      ).resolves.toEqual({
+        description: '1 shared photos & videos',
+        imageUrl: `https://my.immich.app/api/assets/${sharedLink.assets[0].id}/thumbnail?key=${sharedLink.key.toString('base64url')}`,
+        title: 'Public Share',
+      });
+    });
   });
 });

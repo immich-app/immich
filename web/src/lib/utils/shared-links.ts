@@ -35,16 +35,19 @@ export const loadSharedLink = async ({
     const [sharedLink, asset] = await Promise.all([getMySharedLink({ key, slug }), getAssetInfoFromParam(params)]);
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
-    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetPath = assetId ? getAssetMediaUrl({ id: assetId }) : '/feature-panel.png';
+    const previewAssetId = asset?.id || sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
+    const assetPath = previewAssetId ? getAssetMediaUrl({ id: previewAssetId }) : '/feature-panel.png';
+    const albumTitle = sharedLink.album ? sharedLink.album.albumName : $t('public_share');
+    const fallbackDescription =
+      sharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } });
 
     return {
       ...common,
       sharedLink,
       asset,
       meta: {
-        title: sharedLink.album ? sharedLink.album.albumName : $t('public_share'),
-        description: sharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } }),
+        title: albumTitle,
+        description: asset ? sharedLink.description || albumTitle : fallbackDescription,
         imageUrl: assetPath,
       },
     };
