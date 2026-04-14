@@ -12,6 +12,13 @@
 #
 # Or after cloning:
 #   ./scripts/test-og-share-links.sh
+#
+# Teardown (removes containers, networks, volumes, dev images, and the
+# working directory — leaves no Docker state behind):
+#   ./scripts/test-og-share-links.sh --teardown
+#
+# Teardown keeping the checkout (useful for re-running):
+#   KEEP_CHECKOUT=1 ./scripts/test-og-share-links.sh --teardown
 
 set -euo pipefail
 
@@ -25,12 +32,51 @@ ADMIN_PASSWORD="${ADMIN_PASSWORD:-password}"
 ADMIN_NAME="${ADMIN_NAME:-Admin}"
 READINESS_TIMEOUT="${READINESS_TIMEOUT:-900}"   # seconds, first build is slow
 COMPOSE_FILE="docker/docker-compose.dev.yml"
+COMPOSE_PROJECT="immich-dev"
+DEV_IMAGES=(immich-server-dev:latest immich-web-dev:latest immich-machine-learning-dev:latest)
 
 log()  { printf '\033[1;34m[og-test]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[og-test]\033[0m %s\n' "$*" >&2; }
 die()  { printf '\033[1;31m[og-test]\033[0m %s\n' "$*" >&2; exit 1; }
 
 need() { command -v "$1" >/dev/null 2>&1 || die "required command missing: $1"; }
+
+teardown() {
+  log "Tearing down the dev stack"
+  if [ -f "$CHECKOUT_DIR/$COMPOSE_FILE" ]; then
+    (cd "$CHECKOUT_DIR" && docker compose -f "$COMPOSE_FILE" down -v --remove-orphans) || true
+  else
+    warn "compose file not found; falling back to project-name removal"
+    # Best-effort: remove by project label
+    docker ps -a --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" -q \
+      | xargs -r docker rm -fv
+    docker volume ls --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" -q \
+      | xargs -r docker volume rm
+    docker network ls --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" -q \
+      | xargs -r docker network rm || true
+  fi
+
+  log "Removing dev images built from source"
+  for img in "${DEV_IMAGES[@]}"; do
+    docker image rm "$img" >/dev/null 2>&1 || true
+  done
+
+  if [ "${KEEP_CHECKOUT:-0}" != "1" ] && [ -d "$CHECKOUT_DIR" ]; then
+    log "Removing checkout directory: $CHECKOUT_DIR"
+    rm -rf "$CHECKOUT_DIR"
+  fi
+
+  log "Teardown complete."
+  log "Note: base images (postgres, valkey) and the Docker build cache are kept."
+  log "To prune those too:  docker image prune -a   &&   docker builder prune"
+}
+
+if [ "${1:-}" = "--teardown" ] || [ "${1:-}" = "-d" ]; then
+  need docker
+  docker compose version >/dev/null 2>&1 || die "docker compose v2 plugin is required"
+  teardown
+  exit 0
+fi
 
 for cmd in git docker curl jq python3; do need "$cmd"; done
 docker compose version >/dev/null 2>&1 || die "docker compose v2 plugin is required"
@@ -204,4 +250,6 @@ log "ALL CHECKS PASSED"
 log "  album  URL: $ALBUM_URL"
 log "  asset  URL: $ASSET_URL"
 log ""
-log "Tear down with:  docker compose -f $COMPOSE_FILE down -v"
+log "Tear down everything (containers, volumes, dev images, checkout) with:"
+log "  $0 --teardown"
+log "Or keep the repo:   KEEP_CHECKOUT=1 $0 --teardown"
