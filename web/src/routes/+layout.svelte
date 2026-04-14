@@ -8,6 +8,7 @@
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
@@ -15,7 +16,6 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
@@ -112,7 +112,7 @@
   const { serverRestarting } = websocketStore;
 
   $effect.pre(() => {
-    if ($user || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
+    if (authManager.authenticated || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
@@ -182,7 +182,7 @@
       icon: mdiServer,
       onAction: () => goto(Route.systemStatistics()),
     },
-  ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
+  ].map((route) => ({ ...route, type: $t('page'), $if: () => authManager.user.isAdmin }));
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>

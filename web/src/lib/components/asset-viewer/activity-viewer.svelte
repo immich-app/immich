@@ -5,13 +5,14 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
+  import { ReactionType, type ActivityResponseDto, type AssetTypeEnum } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
@@ -39,7 +40,6 @@
   };
 
   interface Props {
-    user: UserResponseDto;
     assetId?: string | undefined;
     albumId: string;
     assetType?: AssetTypeEnum | undefined;
@@ -47,7 +47,7 @@
     disabled: boolean;
   }
 
-  let { user, assetId = undefined, albumId, assetType = undefined, albumOwnerId, disabled }: Props = $props();
+  let { assetId = undefined, albumId, assetType = undefined, albumOwnerId, disabled }: Props = $props();
 
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
@@ -147,7 +147,7 @@
                   />
                 </a>
               {/if}
-              {#if reaction.user.id === user.id || albumOwnerId === user.id}
+              {#if reaction.user.id === authManager.user.id || albumOwnerId === authManager.user.id}
                 <div class="me-4">
                   <ButtonContextMenu
                     icon={mdiDotsVertical}
@@ -200,7 +200,7 @@
                     />
                   </a>
                 {/if}
-                {#if reaction.user.id === user.id || albumOwnerId === user.id}
+                {#if reaction.user.id === authManager.user.id || albumOwnerId === authManager.user.id}
                   <div class="me-4">
                     <ButtonContextMenu
                       icon={mdiDotsVertical}
@@ -238,7 +238,7 @@
     <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
       <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
         <div>
-          <UserAvatar {user} size="md" noTitle />
+          <UserAvatar user={authManager.user} size="md" noTitle />
         </div>
         <form class="flex w-full items-center max-h-56 gap-1" {onsubmit}>
           <Textarea

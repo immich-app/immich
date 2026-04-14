@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
   import { FormModal, toastManager } from '@immich/ui';
@@ -68,10 +68,10 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
+      await createProfileImage({ createProfileImageDto: { file } });
       toastManager.primary($t('profile_picture_set'));
-      $user.profileImagePath = profileImagePath;
-      $user.profileChangedAt = profileChangedAt;
+
+      await authManager.refresh();
 
       onClose();
     } catch (error) {

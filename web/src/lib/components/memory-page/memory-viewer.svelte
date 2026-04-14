@@ -27,7 +27,6 @@
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
-  import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
@@ -104,7 +103,8 @@
       });
     } else {
       progressBarController = new Tween<number>(0, {
-        duration: (from: number, to: number) => (to ? $preferences.memories.duration * 1000 * (to - from) : 0),
+        duration: (from: number, to: number) =>
+          to ? authManager.preferences.memories.duration * 1000 * (to - from) : 0,
       });
     }
   };
@@ -362,7 +362,7 @@
           unarchive={assetMultiSelectManager.isAllArchived}
           onArchive={handleDeleteOrArchiveAssets}
         />
-        {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
         {/if}
         <DeleteAssets menuItem onAssetDelete={handleDeleteOrArchiveAssets} />

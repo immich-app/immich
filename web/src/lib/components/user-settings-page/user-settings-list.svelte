@@ -8,7 +8,6 @@
   import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
   import { OpenQueryParam, QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
   import {
@@ -120,7 +119,7 @@
       subtitle={$t('manage_your_oauth_connection')}
       isOpen={oauthOpen || undefined}
     >
-      <OAuthSettings user={$user} />
+      <OAuthSettings />
     </SettingAccordion>
   {/if}
 
@@ -139,7 +138,7 @@
     title={$t('partner_sharing')}
     subtitle={$t('manage_sharing_with_partners')}
   >
-    <PartnerSettings user={$user} />
+    <PartnerSettings />
   </SettingAccordion>
 
   <SettingAccordion

@@ -19,10 +19,10 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { preferences } from '$lib/stores/user.store';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -158,7 +158,7 @@
             unarchive={assetMultiSelectManager.isAllArchived}
             onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
           />
-          {#if $preferences.tags.enabled}
+          {#if authManager.preferences.tags.enabled}
             <TagAction menuItem />
           {/if}
           <DeleteAssets

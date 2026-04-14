@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
   import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
@@ -8,37 +8,37 @@
   import { fade } from 'svelte/transition';
 
   // Albums
-  let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
+  let defaultAssetOrder = $state(authManager.preferences.albums?.defaultAssetOrder ?? AssetOrder.Desc);
 
   // Folders
-  let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
-  let foldersSidebar = $state($preferences?.folders?.sidebarWeb ?? false);
+  let foldersEnabled = $state(authManager.preferences.folders?.enabled ?? false);
+  let foldersSidebar = $state(authManager.preferences.folders?.sidebarWeb ?? false);
 
   // Memories
-  let memoriesEnabled = $state($preferences?.memories?.enabled ?? true);
-  let memoriesDuration = $state($preferences?.memories?.duration ?? 5);
+  let memoriesEnabled = $state(authManager.preferences.memories?.enabled ?? true);
+  let memoriesDuration = $state(authManager.preferences.memories?.duration ?? 5);
 
   // People
-  let peopleEnabled = $state($preferences?.people?.enabled ?? false);
-  let peopleSidebar = $state($preferences?.people?.sidebarWeb ?? false);
+  let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
+  let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
 
   // Ratings
-  let ratingsEnabled = $state($preferences?.ratings?.enabled ?? false);
+  let ratingsEnabled = $state(authManager.preferences.ratings?.enabled ?? false);
 
   // Shared links
-  let sharedLinksEnabled = $state($preferences?.sharedLinks?.enabled ?? true);
-  let sharedLinkSidebar = $state($preferences?.sharedLinks?.sidebarWeb ?? false);
+  let sharedLinksEnabled = $state(authManager.preferences.sharedLinks?.enabled ?? true);
+  let sharedLinkSidebar = $state(authManager.preferences.sharedLinks?.sidebarWeb ?? false);
 
   // Tags
-  let tagsEnabled = $state($preferences?.tags?.enabled ?? false);
-  let tagsSidebar = $state($preferences?.tags?.sidebarWeb ?? false);
+  let tagsEnabled = $state(authManager.preferences.tags?.enabled ?? false);
+  let tagsSidebar = $state(authManager.preferences.tags?.sidebarWeb ?? false);
 
   // Cast
-  let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
+  let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
 
   const handleSave = async () => {
     try {
-      const data = await updateMyPreferences({
+      const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
@@ -51,8 +51,7 @@
         },
       });
 
-      $preferences = { ...data };
-
+      authManager.setPreferences(response);
       toastManager.primary($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));

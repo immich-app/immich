@@ -17,7 +17,6 @@
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { user } from '$lib/stores/user.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
@@ -629,7 +628,7 @@
     </div>
   {/if}
 
-  {#if isShared && album && assetViewerManager.isShowActivityPanel && $user}
+  {#if isShared && album && assetViewerManager.isShowActivityPanel && authManager.authenticated}
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
@@ -637,7 +636,6 @@
       translate="yes"
     >
       <ActivityViewer
-        user={$user}
         disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}

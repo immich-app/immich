@@ -1,10 +1,10 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { Route } from '$lib/route';
-  import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
@@ -39,7 +39,7 @@
     class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-t-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <div class="relative">
-      <UserAvatar user={$user} size="xl" />
+      <UserAvatar user={authManager.user} size="xl" />
       <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
         <IconButton
           color="primary"
@@ -56,9 +56,9 @@
     </div>
     <div>
       <p class="text-center text-lg font-medium text-primary">
-        {$user.name}
+        {authManager.user.name}
       </p>
-      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
+      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{authManager.user.email}</p>
     </div>
 
     <div class="flex flex-col gap-1">
@@ -76,7 +76,7 @@
           {$t('account_settings')}
         </div>
       </Button>
-      {#if $user.isAdmin}
+      {#if authManager.user.isAdmin}
         <Button
           href={Route.systemSettings()}
           onclick={onClose}

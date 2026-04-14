@@ -1,11 +1,10 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { user } from '$lib/stores/user.store';
 import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { get } from 'svelte/store';
 
 type MemoryIndex = {
   memoryIndex: number;
@@ -31,7 +30,7 @@ class MemoryManager {
     });
 
     // loaded event might have already happened
-    if (get(user)) {
+    if (authManager.authenticated) {
       void this.initialize();
     }
   }

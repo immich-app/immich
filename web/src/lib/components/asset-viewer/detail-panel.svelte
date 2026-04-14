@@ -12,7 +12,6 @@
   import { Route } from '$lib/route';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
@@ -56,7 +55,7 @@
   let { asset, currentAlbum = null }: Props = $props();
 
   let showEditFaces = $state(false);
-  let isOwner = $derived($user?.id === asset.ownerId);
+  let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
@@ -164,7 +163,7 @@
         </div>
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {#if $user?.isAdmin}
+            {#if authManager.authenticated && authManager.user.isAdmin}
               {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
@@ -563,7 +562,7 @@
   {/if}
 {/await}
 
-{#if $preferences?.tags?.enabled}
+{#if authManager.authenticated && authManager.preferences.tags.enabled}
   <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
     <DetailPanelTags {asset} {isOwner} />
   </section>

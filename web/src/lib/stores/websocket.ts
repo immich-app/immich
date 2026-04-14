@@ -17,7 +17,6 @@ import {
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
-import { user } from './user.store';
 
 interface AppRestartEvent {
   isMaintenanceMode: boolean;
@@ -88,7 +87,11 @@ websocket
 
 export const openWebsocketConnection = () => {
   try {
-    if (get(user) || get(websocketStore.serverRestarting) || page.url.pathname.startsWith(Route.maintenanceMode())) {
+    if (
+      authManager.authenticated ||
+      get(websocketStore.serverRestarting) ||
+      page.url.pathname.startsWith(Route.maintenanceMode())
+    ) {
       websocket.connect();
     }
   } catch (error) {

@@ -1,7 +1,6 @@
 <script lang="ts">
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { user } from '$lib/stores/user.store';
   import { updateMyUser } from '@immich/sdk';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -32,7 +31,7 @@
   <form onsubmit={onSubmit} class="flex flex-col gap-4">
     <Alert color="primary" size="small" class="mb-2">
       <Stack gap={4}>
-        <Text>{$t('hi_user', { values: { name: $user.name, email: $user.email } })}</Text>
+        <Text>{$t('hi_user', { values: { name: authManager.user.name, email: authManager.user.email } })}</Text>
         <Text>{$t('change_password_description')}</Text>
       </Stack>
     </Alert>

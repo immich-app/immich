@@ -21,11 +21,11 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { foldersStore } from '$lib/stores/folders.svelte';
-  import { preferences } from '$lib/stores/user.store';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
   import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
@@ -149,7 +149,7 @@
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-        {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
         {/if}
         <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />

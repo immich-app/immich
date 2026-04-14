@@ -2,10 +2,10 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
-  import { preferences } from '$lib/stores/user.store';
   import { NavbarGroup, NavbarItem } from '@immich/ui';
   import {
     mdiAccount,
@@ -47,11 +47,11 @@
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />
   {/if}
 
-  {#if $preferences.people.enabled && $preferences.people.sidebarWeb}
+  {#if authManager.preferences.people.enabled && authManager.preferences.people.sidebarWeb}
     <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />
   {/if}
 
-  {#if $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
+  {#if authManager.preferences.sharedLinks.enabled && authManager.preferences.sharedLinks.sidebarWeb}
     <NavbarItem title={$t('shared_links')} href={Route.sharedLinks()} icon={mdiLink} />
   {/if}
 
@@ -79,11 +79,11 @@
     {/snippet}
   </NavbarItem>
 
-  {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
+  {#if authManager.preferences.tags.enabled && authManager.preferences.tags.sidebarWeb}
     <NavbarItem title={$t('tags')} href={Route.tags()} icon={{ icon: mdiTagMultipleOutline, flipped: true }} />
   {/if}
 
-  {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
+  {#if authManager.preferences.folders.enabled && authManager.preferences.folders.sidebarWeb}
     <NavbarItem title={$t('folders')} href={Route.folders()} icon={{ icon: mdiFolderOutline, flipped: true }} />
   {/if}
 

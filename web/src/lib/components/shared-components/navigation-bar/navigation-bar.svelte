@@ -15,7 +15,6 @@
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { user } from '$lib/stores/user.store';
   import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -171,10 +170,10 @@
             type="button"
             class="flex ps-2"
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
-            title={`${$user.name} (${$user.email})`}
+            title="{authManager.user.name} ({authManager.user.email})"
           >
-            {#key $user}
-              <UserAvatar user={$user} size="md" noTitle interactive />
+            {#key authManager.user}
+              <UserAvatar user={authManager.user} size="md" noTitle interactive />
             {/key}
           </button>
 

@@ -1,17 +1,14 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { user } from '$lib/stores/user.store';
-import { AssetVisibility, type UserAdminResponseDto } from '@immich/sdk';
+import { AssetVisibility } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import { fromStore } from 'svelte/store';
 
 export type AssetMultiSelectOptions = {
   resetOnNavigate?: boolean;
 };
 export class AssetMultiSelectManager {
   #selectedMap = new SvelteMap<string, TimelineAsset>();
-  #user = fromStore<UserAdminResponseDto | undefined>(user);
-  #userId = $derived(this.#user.current?.id);
 
   selectAll = $state(false);
   startAsset = $state<TimelineAsset | null>(null);
@@ -23,12 +20,16 @@ export class AssetMultiSelectManager {
   selectionActive = $derived(this.#selectedMap.size > 0);
 
   assets = $derived(Array.from(this.#selectedMap.values()));
-  ownedAssets = $derived(this.#userId ? this.assets.filter((asset) => asset.ownerId === this.#userId) : this.assets);
+  ownedAssets = $derived(
+    authManager.authenticated ? this.assets.filter((asset) => asset.ownerId === authManager.user.id) : this.assets,
+  );
 
   isAllTrashed = $derived(this.assets.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.assets.every((asset) => asset.visibility === AssetVisibility.Archive));
   isAllFavorite = $derived(this.assets.every((asset) => asset.isFavorite));
-  isAllUserOwned = $derived(this.assets.every((asset) => asset.ownerId === this.#userId));
+  isAllUserOwned = $derived(
+    authManager.authenticated && this.assets.every((asset) => asset.ownerId === authManager.user.id),
+  );
 
   #unsubscribe?: () => void;
 
@@ -44,7 +45,9 @@ export class AssetMultiSelectManager {
   }
 
   getOwnedAssets() {
-    return this.#userId ? this.assets.filter((asset) => asset.ownerId === this.#userId) : this.assets;
+    return authManager.authenticated
+      ? this.assets.filter((asset) => asset.ownerId === authManager.user.id)
+      : this.assets;
   }
 
   hasSelectedAsset(assetId: string) {

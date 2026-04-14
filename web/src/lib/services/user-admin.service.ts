@@ -1,11 +1,11 @@
 import { goto } from '$app/navigation';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
 import { Route } from '$lib/route';
-import { user as authUser } from '$lib/stores/user.store';
 import type { HeaderButtonActionItem } from '$lib/types';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -32,7 +32,6 @@ import {
 } from '@mdi/js';
 import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
 
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -64,7 +63,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     title: $t('delete'),
     type: $t('command'),
     color: 'danger',
-    $if: () => get(authUser).id !== user.id && !user.deletedAt,
+    $if: () => authManager.user.id !== user.id && !user.deletedAt,
     onAction: () => modalManager.show(UserDeleteConfirmModal, { user }),
     shortcuts: { key: 'Backspace' },
     shortcutOptions: { ignoreInputFields: true },
@@ -89,7 +88,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     icon: mdiLockReset,
     title: $t('reset_password'),
     type: $t('command'),
-    $if: () => get(authUser).id !== user.id,
+    $if: () => authManager.user.id !== user.id,
     onAction: () => handleResetPasswordUserAdmin(user),
   };
 

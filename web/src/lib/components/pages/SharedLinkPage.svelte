@@ -4,7 +4,7 @@
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import { user } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -32,7 +32,7 @@
 
   let { sharedLink, passwordRequired, key, slug, meta } = $state(data);
   let { title, description } = $state(meta);
-  let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
+  let isOwned = $derived(authManager.authenticated && authManager.user.id === sharedLink?.userId);
   let password = $state('');
 
   const handlePasswordSubmit = async () => {

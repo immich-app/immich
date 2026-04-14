@@ -6,7 +6,6 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { user as authUser, preferences } from '$lib/stores/user.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
@@ -46,7 +45,6 @@ import {
   mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
 
 export const getAssetBulkActions = ($t: MessageFormatter) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
@@ -95,15 +93,14 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
   const sharedLink = getSharedLink();
-  const currentAuthUser = get(authUser);
-  const userPreferences = get(preferences);
-  const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
+  const authUser = authManager.authenticated ? authManager.user : undefined;
+  const isOwner = !!(authUser && authUser.id === asset.ownerId);
 
   const Share: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
     type: $t('assets'),
-    $if: () => !!(currentAuthUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
+    $if: () => !!(authUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
 
@@ -112,7 +109,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     icon: mdiDownload,
     shortcuts: { key: 'd', shift: true },
     type: $t('assets'),
-    $if: () => !!currentAuthUser,
+    $if: () => !!authUser,
     onAction: () => handleDownloadAsset(asset, { edited: true }),
   };
 
@@ -120,7 +117,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('download_original'),
     icon: mdiDownloadBox,
     type: $t('assets'),
-    $if: () => !!currentAuthUser && asset.isEdited,
+    $if: () => !!authUser && asset.isEdited,
     onAction: () => handleDownloadAsset(asset, { edited: false }),
   };
 
@@ -218,7 +215,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('add_tag'),
     icon: mdiTagPlusOutline,
     type: $t('assets'),
-    $if: () => userPreferences.tags.enabled,
+    $if: () => authManager.authenticated && authManager.preferences.tags.enabled,
     onAction: () => modalManager.show(AssetTagModal, { assetIds: [asset.id] }),
     shortcuts: { key: 't' },
   };
@@ -315,7 +312,10 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
 
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
-    if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
+    if (
+      !isAndroidMotionVideo(motionAsset) ||
+      (authManager.authenticated && authManager.preferences.download.includeEmbeddedVideos)
+    ) {
       const motionFilename = motionAsset.originalFileName;
       const lastDotIndex = motionFilename.lastIndexOf('.');
       const motionDownloadFilename =
