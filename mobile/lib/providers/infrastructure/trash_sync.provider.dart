@@ -4,9 +4,8 @@ import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-
-import 'db.provider.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});
 
