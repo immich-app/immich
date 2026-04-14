@@ -152,6 +152,7 @@ void main() {
         durationInSeconds: 0,
         orientation: 0,
         isFavorite: false,
+        playbackStyle: PlatformAssetPlaybackStyle.image,
       );
 
       final localAssetToTrash = LocalAssetStub.image2.copyWith(id: 'local-trash', checksum: 'checksum-review');
