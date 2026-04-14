@@ -23,8 +23,7 @@
   const filteredUsers = $derived(
     users.filter(
       (user) =>
-        !excludedUserIds.includes(user.id) &&
-        (search.length <= 0 || normalizeSearchString(user.name).includes(normalizeSearchString(search))),
+        !excludedUserIds.includes(user.id) && normalizeSearchString(user.name).includes(normalizeSearchString(search)),
     ),
   );
   const selectedUsers = new SvelteMap<string, UserResponseDto>();
