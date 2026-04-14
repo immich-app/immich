@@ -3,7 +3,7 @@
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import type { QueueSnapshot } from '$lib/types';
   import type { QueueResponseDto } from '@immich/sdk';
-  import { LoadingSpinner, Theme, theme } from '@immich/ui';
+  import { LoadingSpinner, Theme, themeManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import uPlot, { type AlignedData, type Axis } from 'uplot';
@@ -55,7 +55,7 @@
   const data = $derived(normalizeData(queueManager.snapshots));
 
   let chartElement: HTMLDivElement | undefined = $state();
-  let isDark = $derived(theme.value === Theme.Dark);
+  let isDark = $derived(themeManager.value === Theme.Dark);
   let plot: uPlot;
 
   const axisOptions: Axis = {
@@ -138,7 +138,7 @@
 
   const onThemeChange = () => plot?.redraw(false);
 
-  $effect(() => theme.value && onThemeChange());
+  $effect(() => themeManager.value && onThemeChange());
 
   onMount(() => {
     plot = new uPlot(options, data as AlignedData, chartElement);

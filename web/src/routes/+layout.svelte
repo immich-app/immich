@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
+  import { getPagesProvider, getSettingsProvider } from '$lib/commands';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -10,38 +11,31 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteProvider,
+    CORE_PAGE_COMMANDS,
     defaultProvider,
+    MOBILE_APP_COMMANDS,
     modalManager,
-    screencastManager,
+    OTHER_SITE_COMMANDS,
+    PROJECT_SUPPORT_COMMANDS,
     ScreencastOverlay,
     setLocale,
     setTranslations,
-    siteCommands,
+    SOCIAL_COMMANDS,
+    Theme,
+    themeManager,
     toastManager,
     TooltipProvider,
-    type ActionItem,
   } from '@immich/ui';
-  import {
-    mdiAccountMultipleOutline,
-    mdiBookshelf,
-    mdiCog,
-    mdiKeyboard,
-    mdiServer,
-    mdiSync,
-    mdiThemeLightDark,
-  } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -63,7 +57,7 @@
       prompt_default: $t('are_you_sure_to_do_this'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
-      dark_theme: themeManager.isDark ? $t('light_theme') : $t('dark_theme'),
+      dark_theme: themeManager.value === Theme.Dark ? $t('light_theme') : $t('dark_theme'),
       open_menu: $t('open'),
       command_palette_prompt_default: $t('command_palette_prompt'),
       command_palette_to_select: $t('command_palette_to_select'),
@@ -87,10 +81,6 @@
   let { children }: Props = $props();
 
   let showNavigationLoadingBar = $state(false);
-
-  const getMyImmichLink = () => {
-    return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
-  };
 
   toastManager.setOptions({ class: 'top-16 fixed' });
 
@@ -149,61 +139,6 @@
       }
     }
   };
-
-  const commands: ActionItem[] = [
-    {
-      title: $t('theme'),
-      description: $t('toggle_theme_description'),
-      icon: mdiThemeLightDark,
-      onAction: () => themeManager.toggleTheme(),
-      shortcuts: { shift: true, key: 't' },
-    },
-    {
-      title: $t('screencast_mode_title'),
-      description: $t('screencast_mode_description'),
-      icon: mdiKeyboard,
-      onAction: () => screencastManager.toggle(),
-    },
-    {
-      title: $t('my_immich_title'),
-      description: $t('my_immich_description'),
-      onAction: () => copyToClipboard(getMyImmichLink().toString()),
-      shortcuts: { ctrl: true, shift: true, key: 'm' },
-    },
-  ];
-
-  const adminPages: ActionItem[] = [
-    {
-      title: $t('admin.user_management'),
-      description: $t('admin.users_page_description'),
-      icon: mdiAccountMultipleOutline,
-      onAction: () => goto(Route.users()),
-    },
-    {
-      title: $t('admin.system_settings'),
-      description: $t('admin.settings_page_description'),
-      icon: mdiCog,
-      onAction: () => goto(Route.systemSettings()),
-    },
-    {
-      title: $t('admin.queues'),
-      description: $t('admin.queues_page_description'),
-      icon: mdiSync,
-      onAction: () => goto(Route.queues()),
-    },
-    {
-      title: $t('external_libraries'),
-      description: $t('admin.external_libraries_page_description'),
-      icon: mdiBookshelf,
-      onAction: () => goto(Route.libraries()),
-    },
-    {
-      title: $t('server_stats'),
-      description: $t('admin.server_stats_page_description'),
-      icon: mdiServer,
-      onAction: () => goto(Route.systemStatistics()),
-    },
-  ].map((route) => ({ ...route, $if: () => authManager.authenticated && authManager.user.isAdmin }));
 </script>
 
 <OnEvents {onWebsocketConnect} />
@@ -266,9 +201,13 @@
 
   <CommandPaletteProvider
     providers={[
-      defaultProvider({ name: $t('command'), actions: commands }),
-      defaultProvider({ name: $t('page'), actions: adminPages }),
-      defaultProvider({ name: $t('link'), actions: siteCommands }),
+      getPagesProvider($t),
+      getSettingsProvider($t),
+      defaultProvider({ name: $t('documentation'), types: ['doc', 'documentation'], actions: CORE_PAGE_COMMANDS }),
+      defaultProvider({ name: $t('support'), actions: PROJECT_SUPPORT_COMMANDS }),
+      defaultProvider({ name: 'Socials', types: ['social', 'socials'], actions: SOCIAL_COMMANDS }),
+      defaultProvider({ name: $t('mobile_app'), actions: MOBILE_APP_COMMANDS }),
+      defaultProvider({ name: 'Sites', types: ['site', 'sites'], actions: OTHER_SITE_COMMANDS }),
     ]}
   />
 </TooltipProvider>

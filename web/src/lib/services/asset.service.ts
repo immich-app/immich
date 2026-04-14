@@ -99,7 +99,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Share: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
-    type: $t('assets'),
     $if: () => !!(authUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
@@ -108,7 +107,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('download'),
     icon: mdiDownload,
     shortcuts: { key: 'd', shift: true },
-    type: $t('assets'),
     $if: () => !!authUser,
     onAction: () => handleDownloadAsset(asset, { edited: true }),
   };
@@ -116,7 +114,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const DownloadOriginal: ActionItem = {
     title: $t('download_original'),
     icon: mdiDownloadBox,
-    type: $t('assets'),
     $if: () => !!authUser && asset.isEdited,
     onAction: () => handleDownloadAsset(asset, { edited: false }),
   };
@@ -208,7 +205,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Tag: ActionItem = {
     title: $t('add_tag'),
     icon: mdiTagPlusOutline,
-    type: $t('assets'),
     $if: () => authManager.authenticated && authManager.preferences.tags.enabled,
     onAction: () => modalManager.show(AssetTagModal, { assetIds: [asset.id] }),
     shortcuts: { key: 't' },

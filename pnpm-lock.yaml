@@ -741,8 +741,8 @@ importers:
         specifier: workspace:*
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.71.0
-        version: 0.71.0(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)
+        specifier: ^0.76.0
+        version: 0.76.0(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.3.0
         version: 0.3.0
@@ -3042,13 +3042,13 @@ packages:
     resolution: {integrity: sha512-UWhy/+Lf8C1dJip5wPfFytI3Vq/9UyDKQE1ROjXwVhT6E/CPgBkRLwHPetjYGPJ4o1JVVpRLnEEJCXdvzqVpGw==}
     hasBin: true
 
-  '@immich/svelte-markdown-preprocess@0.3.0':
-    resolution: {integrity: sha512-6xspWnOgaTi+TasteJgI6DjOGjBQQI30mOYiY/FnyEjczNbrV6r5SFWjNbR+JY+Umn7MsPcZf5yzomK+q5AThg==}
+  '@immich/svelte-markdown-preprocess@0.4.1':
+    resolution: {integrity: sha512-/N5dhu3fnRZUoZ+Z9hrIV61o9wi6Uf70TDxqiinXNYlXfqP81p1o77Z5mhbxtNigTNcp6GwpGeHAXRHQrU9JAQ==}
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.71.0':
-    resolution: {integrity: sha512-L5of/qSNlliTLAF4aoHYXsshs+JLeuX9+r685RED6LsZIR0mObb33SJcniGlPqbi5oyELI+7Qp/cEoyS7TPqwg==}
+  '@immich/ui@0.76.0':
+    resolution: {integrity: sha512-ghxfbC47UPMwQJ65maOUYdduQ/G/zo87Oc2ZUKe6o8KgoHsWxLVjQUw44T3dZdFOhvyS8SsIlkGLuagVcrM9Bg==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -15225,16 +15225,16 @@ snapshots:
       pg-connection-string: 2.12.0
       postgres: 3.4.8
 
-  '@immich/svelte-markdown-preprocess@0.3.0(svelte@5.55.1)':
+  '@immich/svelte-markdown-preprocess@0.4.1(svelte@5.55.1)':
     dependencies:
       front-matter: 4.0.2
       marked: 17.0.5
       node-emoji: 2.2.0
       svelte: 5.55.1
 
-  '@immich/ui@0.71.0(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)':
+  '@immich/ui@0.76.0(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)':
     dependencies:
-      '@immich/svelte-markdown-preprocess': 0.3.0(svelte@5.55.1)
+      '@immich/svelte-markdown-preprocess': 0.4.1(svelte@5.55.1)
       '@internationalized/date': 3.12.0
       '@mdi/js': 7.4.47
       bits-ui: 2.16.3(@internationalized/date@3.12.0)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)

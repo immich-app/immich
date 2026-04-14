@@ -2219,6 +2219,8 @@
   "sync_status": "Sync Status",
   "sync_status_subtitle": "View and manage the sync system",
   "sync_upload_album_setting_subtitle": "Create and upload your photos and videos to the selected albums on Immich",
+  "system_theme": "System theme",
+  "system_theme_command_description": "Use the system theme ({value})",
   "tag": "Tag",
   "tag_assets": "Tag assets",
   "tag_created": "Created tag: {tag}",
