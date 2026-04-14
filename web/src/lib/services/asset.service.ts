@@ -47,12 +47,10 @@ import {
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getAssetBulkActions = ($t: MessageFormatter) => {
-  const assets = assetMultiSelectManager.assets;
-  const assetIds = assets.map((asset) => asset.id);
-  const isAllVideos = assets.every((asset) => asset.isVideo);
+  const ownedAssets = assetMultiSelectManager.ownedAssets;
 
   const onAction = async (name: AssetJobName) => {
-    await handleRunAssetJob({ name, assetIds });
+    await handleRunAssetJob({ name, assetIds: ownedAssets.map(({ id }) => id) });
     assetMultiSelectManager.clear();
   };
 
@@ -60,7 +58,8 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
+    onAction: () =>
+      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -85,7 +84,7 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     title: $t('refresh_encoded_videos'),
     icon: mdiCogRefreshOutline,
     onAction: () => onAction(AssetJobName.TranscodeVideo),
-    $if: () => isAllVideos,
+    $if: () => ownedAssets.every((asset) => asset.isVideo),
   };
 
   return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
