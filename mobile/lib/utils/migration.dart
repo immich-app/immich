@@ -25,8 +25,10 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/platform/network_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -35,7 +37,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 24;
+const int targetVersion = 25;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -107,6 +109,16 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (version < 24 && Store.isBetaTimelineEnabled) {
     await _applyLocalAssetOrientation(drift);
+  }
+
+  if (version < 25) {
+    final accessToken = Store.tryGet(StoreKey.accessToken);
+    if (accessToken != null && accessToken.isNotEmpty) {
+      final serverUrls = ApiService.getServerUrls();
+      if (serverUrls.isNotEmpty) {
+        await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
+      }
+    }
   }
 
   if (version < 22 && !Store.isBetaTimelineEnabled) {

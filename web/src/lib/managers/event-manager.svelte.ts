@@ -20,6 +20,7 @@ import type {
 
 export type Events = {
   AppInit: [];
+  AppNavigate: [];
 
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];

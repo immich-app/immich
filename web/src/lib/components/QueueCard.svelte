@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import QueueCardBadge from '$lib/components/QueueCardBadge.svelte';
   import QueueCardButton from '$lib/components/QueueCardButton.svelte';
   import Badge from '$lib/elements/Badge.svelte';
@@ -105,7 +106,10 @@
 
       <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
         <div
-          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-s-lg sm:rounded-e-none"
+          class={cleanClass(
+            commonClasses,
+            'rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-s-lg sm:rounded-e-none',
+          )}
         >
           <p>{$t('active')}</p>
           <p class="text-2xl">
@@ -114,7 +118,10 @@
         </div>
 
         <div
-          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg"
+          class={cleanClass(
+            commonClasses,
+            'flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg',
+          )}
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}

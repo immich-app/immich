@@ -3,6 +3,7 @@ import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { PersonFactory } from 'test/factories/person.factory';
+import { getForAsset } from 'test/mappers';
 
 describe('mapAsset', () => {
   describe('peopleWithFaces', () => {
@@ -41,7 +42,7 @@ describe('mapAsset', () => {
         })
         .build();
 
-      const result = mapAsset(asset);
+      const result = mapAsset(getForAsset(asset));
 
       expect(result.people).toBeDefined();
       expect(result.people).toHaveLength(1);
@@ -80,7 +81,7 @@ describe('mapAsset', () => {
         .edit({ action: AssetEditAction.Crop, parameters: { x: 50, y: 50, width: 500, height: 400 } })
         .build();
 
-      const result = mapAsset(asset);
+      const result = mapAsset(getForAsset(asset));
 
       expect(result.unassignedFaces).toBeDefined();
       expect(result.unassignedFaces).toHaveLength(1);
@@ -130,7 +131,7 @@ describe('mapAsset', () => {
         .exif({ exifImageWidth: 1000, exifImageHeight: 800 })
         .build();
 
-      const result = mapAsset(asset);
+      const result = mapAsset(getForAsset(asset));
 
       expect(result.people).toBeDefined();
       expect(result.people).toHaveLength(2);
@@ -179,7 +180,7 @@ describe('mapAsset', () => {
         .exif({ exifImageWidth: 1000, exifImageHeight: 800 })
         .build();
 
-      const result = mapAsset(asset);
+      const result = mapAsset(getForAsset(asset));
 
       expect(result.people).toBeDefined();
       expect(result.people).toHaveLength(1);

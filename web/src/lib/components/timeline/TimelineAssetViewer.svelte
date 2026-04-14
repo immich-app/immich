@@ -2,11 +2,11 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
@@ -17,8 +17,6 @@
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-
-  let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
   interface Props {
     timelineManager: TimelineManager;
@@ -65,7 +63,7 @@
   };
 
   let assetCursor = $state<AssetCursor>({
-    current: $viewingAsset,
+    current: assetViewerManager.asset!,
     previousAsset: undefined,
     nextAsset: undefined,
   });
@@ -82,9 +80,10 @@
 
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    $viewingAsset;
-    untrack(() => handlePromiseError(loadCloseAssets($viewingAsset)));
+    const asset = assetViewerManager.asset;
+    if (asset) {
+      untrack(() => handlePromiseError(loadCloseAssets(asset)));
+    }
   });
 
   const handleRandom = async () => {
@@ -99,8 +98,26 @@
 
   const handleClose = async (asset: { id: string }) => {
     invisible = true;
-    $gridScrollTarget = { at: asset.id };
-    await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
+    assetViewerManager.gridScrollTarget = { at: asset.id };
+    await navigate({
+      targetRoute: 'current',
+      assetId: null,
+      assetGridRouteSearchParams: assetViewerManager.gridScrollTarget,
+    });
+  };
+
+  const handleRemoveFromAlbum = async (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+
+    if (!assetIds.includes(assetCursor.current.id)) {
+      return;
+    }
+
+    // keep the cleanup workflow in viewer by moving to adjacent asset first
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    (await navigateToAsset(assetCursor?.nextAsset)) ||
+      (await navigateToAsset(assetCursor?.previousAsset)) ||
+      (await handleClose(assetCursor.current));
   };
 
   const handlePreAction = async (action: Action) => {
@@ -188,7 +205,7 @@
 
     const restoredAsset = assets[0];
     const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
-    assetViewingStore.setAsset(asset);
+    assetViewerManager.setAsset(asset);
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
@@ -232,6 +249,7 @@
     }}
     onUndoDelete={handleUndoDelete}
     onRandom={handleRandom}
+    onRemoveFromAlbum={handleRemoveFromAlbum}
     onClose={handleClose}
   />
 {/await}

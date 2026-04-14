@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset } from 'src/database';
+import { Asset, AuthSharedLink } from 'src/database';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -27,6 +27,7 @@ import {
   AssetStatus,
   AssetVisibility,
   CacheControl,
+  ChecksumAlgorithm,
   JobName,
   Permission,
   StorageFolder,
@@ -151,6 +152,10 @@ export class AssetMediaService extends BaseService {
       }
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 
+      if (auth.sharedLink) {
+        await this.addToSharedLink(auth.sharedLink, asset.id);
+      }
+
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
       return { id: asset.id, status: AssetMediaStatus.CREATED };
@@ -252,7 +257,9 @@ export class AssetMediaService extends BaseService {
       throw new NotFoundException('Asset media not found');
     }
 
-    const fileName = `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`;
+    const fileNameBase =
+      auth.sharedLink && !auth.sharedLink.showExif ? id : getFileNameWithoutExtension(originalFileName);
+    const fileName = `${fileNameBase}_${size}${getFilenameExtension(path)}`;
 
     return new ImmichFileResponse({
       fileName,
@@ -322,6 +329,12 @@ export class AssetMediaService extends BaseService {
     };
   }
 
+  private async addToSharedLink(sharedLink: AuthSharedLink, assetId: string) {
+    await (sharedLink.albumId
+      ? this.albumRepository.addAssetIds(sharedLink.albumId, [assetId])
+      : this.sharedLinkRepository.addAssets(sharedLink.id, [assetId]));
+  }
+
   private async handleUploadError(
     error: any,
     auth: AuthDto,
@@ -341,6 +354,12 @@ export class AssetMediaService extends BaseService {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
+
+      if (auth.sharedLink) {
+        await this.addToSharedLink(auth.sharedLink, duplicateId);
+      }
+
+      this.logger.debug(`Duplicate asset upload rejected: existing asset ${duplicateId}`);
       return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
     }
 
@@ -409,6 +428,7 @@ export class AssetMediaService extends BaseService {
       deviceId: asset.deviceId,
       type: asset.type,
       checksum: asset.checksum,
+      checksumAlgorithm: asset.checksumAlgorithm,
       fileCreatedAt: asset.fileCreatedAt,
       localDateTime: asset.localDateTime,
       fileModifiedAt: asset.fileModifiedAt,
@@ -430,6 +450,7 @@ export class AssetMediaService extends BaseService {
       libraryId: null,
 
       checksum: file.checksum,
+      checksumAlgorithm: ChecksumAlgorithm.sha1File,
       originalPath: file.originalPath,
 
       deviceAssetId: dto.deviceAssetId,

@@ -727,7 +727,7 @@ void main() {
         expect(ActionButtonType.setAlbumCover.shouldShow(context), isTrue);
       });
 
-      test('should not show when not owner', () {
+      test('should show when not owner', () {
         final album = createRemoteAlbum();
         final context = ActionButtonContext(
           asset: mergedAsset,
@@ -742,7 +742,7 @@ void main() {
           selectedCount: 1,
         );
 
-        expect(ActionButtonType.setAlbumCover.shouldShow(context), isFalse);
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isTrue);
       });
 
       test('should not show when in locked view', () {

@@ -161,6 +161,8 @@ part 'model/download_response.dart';
 part 'model/download_response_dto.dart';
 part 'model/download_update.dart';
 part 'model/duplicate_detection_config.dart';
+part 'model/duplicate_resolve_dto.dart';
+part 'model/duplicate_resolve_group_dto.dart';
 part 'model/duplicate_response_dto.dart';
 part 'model/email_notifications_response.dart';
 part 'model/email_notifications_update.dart';

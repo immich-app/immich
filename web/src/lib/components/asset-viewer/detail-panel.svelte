@@ -10,7 +10,6 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { Route } from '$lib/route';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -56,7 +55,6 @@
 
   let { asset, currentAlbum = null }: Props = $props();
 
-  let showAssetPath = $state(false);
   let showEditFaces = $state(false);
   let isOwner = $derived($user?.id === asset.ownerId);
   let people = $derived(asset.people || []);
@@ -129,8 +127,6 @@
     // Remove the last part of the path to get the parent path
     return Route.folders({ path: getParentPath(asset.originalPath) });
   };
-
-  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
   const handleChangeDate = async () => {
     if (!isOwner) {
@@ -208,7 +204,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
+            onclick={() => assetViewerManager.toggleFaceEditMode()}
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}
@@ -228,8 +224,9 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
+            {@const isHighlighted = people[index].faces.some((f) => $boundingBoxesArray.some((b) => b.id === f.id))}
             <a
-              class="w-22"
+              class="group w-22 outline-none"
               href={Route.viewPerson(person, { previousRoute })}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
@@ -246,6 +243,8 @@
                   widthStyle="90px"
                   heightStyle="90px"
                   hidden={person.isHidden}
+                  highlighted={isHighlighted}
+                  class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
                 />
               </div>
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
@@ -367,11 +366,11 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={toggleAssetPath}
+              onclick={() => assetViewerManager.toggleAssetPath()}
             />
           {/if}
         </p>
-        {#if showAssetPath}
+        {#if assetViewerManager.isShowAssetPath}
           <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">

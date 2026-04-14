@@ -2,43 +2,45 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import Portal from '$lib/elements/Portal.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
-  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
+
   interface Props {
     assets: AssetResponseDto[];
+    suggestedKeepAssetIds: string[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
-  const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
+  let { assets, suggestedKeepAssetIds, onResolve, onStack }: Props = $props();
+  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
+  let selectedAssetIds = $state(new SvelteSet<string>());
+  let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  let selectedAssetIds = $state<string[]>([]);
-  let trashCount = $derived(assets.length - selectedAssetIds.length);
-
-  $effect(() => {
-    if (assets.length === 0) {
-      selectedAssetIds = [];
+  onMount(() => {
+    if (suggestedKeepAssetIds.length > 0) {
+      for (const id of suggestedKeepAssetIds) {
+        selectedAssetIds.add(id);
+      }
       return;
     }
 
-    const suggestedAsset = suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
-
-    selectedAssetIds = [suggestedAsset.id];
+    if (assets.length > 0) {
+      selectedAssetIds.add(assets[0].id);
+    }
   });
 
   onDestroy(() => {
-    assetViewingStore.showAssetViewer(false);
+    assetViewerManager.showAssetViewer(false);
   });
 
   const onRandom = async () => {
@@ -52,27 +54,29 @@
   };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
-    selectedAssetIds = selectedAssetIds.includes(asset.id)
-      ? selectedAssetIds.filter((id) => id !== asset.id)
-      : [...selectedAssetIds, asset.id];
+    if (selectedAssetIds.has(asset.id)) {
+      selectedAssetIds.delete(asset.id);
+    } else {
+      selectedAssetIds.add(asset.id);
+    }
   };
 
   const onSelectNone = () => {
-    selectedAssetIds = [];
+    selectedAssetIds.clear();
   };
 
   const onSelectAll = () => {
-    selectedAssetIds = assets.map((asset) => asset.id);
+    selectedAssetIds = new SvelteSet(assets.map((asset) => asset.id));
   };
 
   const onViewAsset = async ({ id }: AssetResponseDto) => {
     const asset = await getAssetInfo({ ...authManager.params, id });
-    setAsset(asset);
+    assetViewerManager.setAsset(asset);
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
   const handleResolve = () => {
-    const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.includes(id));
+    const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
     const duplicateAssetIds = assets.map((asset) => asset.id);
     onResolve(duplicateAssetIds, trashIds);
   };
@@ -82,9 +86,9 @@
   };
 
   const assetCursor = $derived({
-    current: $viewingAsset,
-    nextAsset: getNextAsset(assets, $viewingAsset),
-    previousAsset: getPreviousAsset(assets, $viewingAsset),
+    current: assetViewerManager.asset!,
+    nextAsset: getNextAsset(assets, assetViewerManager.asset),
+    previousAsset: getPreviousAsset(assets, assetViewerManager.asset),
   });
 </script>
 
@@ -101,7 +105,7 @@
   ]}
 />
 
-<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-5xl mx-auto mb-4 py-6 px-0.2">
+<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-256 mx-auto mb-4 py-6 px-0.2">
   <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
@@ -146,7 +150,7 @@
         leadingIcon={mdiImageMultipleOutline}
         class="rounded-e-full"
         onclick={handleStack}
-        disabled={selectedAssetIds.length !== 1}
+        disabled={selectedAssetIds.size !== 1}
       >
         {$t('stack')}
       </Button>
@@ -156,19 +160,13 @@
   <div class="overflow-x-auto p-2">
     <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
       {#each assets as asset (asset.id)}
-        <DuplicateAsset
-          {assets}
-          {asset}
-          {onSelectAsset}
-          isSelected={selectedAssetIds.includes(asset.id)}
-          {onViewAsset}
-        />
+        <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
       {/each}
     </div>
   </div>
 </div>
 
-{#if $showAssetViewer}
+{#if assetViewerManager.isViewing}
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
@@ -176,7 +174,7 @@
         showNavigation={assets.length > 1}
         {onRandom}
         onClose={() => {
-          assetViewingStore.showAssetViewer(false);
+          assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}
       />

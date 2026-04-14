@@ -100,11 +100,11 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
       return;
     }
     state = state.copyWith(showingDetails: showing, showingControls: showing ? true : state.showingControls);
-    if (showing) {
-      final heroTag = state.currentAsset?.heroTag;
-      if (heroTag != null) {
-        ref.read(videoPlayerProvider(heroTag).notifier).pause();
-      }
+
+    final heroTag = state.currentAsset?.heroTag;
+    if (heroTag != null) {
+      final notifier = ref.read(videoPlayerProvider(heroTag).notifier);
+      showing ? notifier.hold() : notifier.release();
     }
   }
 

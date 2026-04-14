@@ -438,6 +438,7 @@ with
           and "stack"."primaryAssetId" != "asset"."id"
       )
     order by
+      (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
       "asset"."fileCreatedAt" desc
   ),
   "agg" as (
@@ -628,8 +629,17 @@ order by
 
 -- AssetRepository.getForVideo
 select
-  "asset"."encodedVideoPath",
-  "asset"."originalPath"
+  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'encoded_video'
+      and "asset_file"."isEdited" = false
+  ) as "encodedVideoPath"
 from
   "asset"
 where

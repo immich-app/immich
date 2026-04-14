@@ -184,7 +184,7 @@ interface NetworkApi {
   fun removeCertificate(callback: (Result<Unit>) -> Unit)
   fun hasCertificate(): Boolean
   fun getClientPointer(): Long
-  fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>)
+  fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>, token: String?)
 
   companion object {
     /** The codec used by NetworkApi. */
@@ -287,8 +287,9 @@ interface NetworkApi {
             val args = message as List<Any?>
             val headersArg = args[0] as Map<String, String>
             val serverUrlsArg = args[1] as List<String>
+            val tokenArg = args[2] as String?
             val wrapped: List<Any?> = try {
-              api.setRequestHeaders(headersArg, serverUrlsArg)
+              api.setRequestHeaders(headersArg, serverUrlsArg, tokenArg)
               listOf(null)
             } catch (exception: Throwable) {
               NetworkPigeonUtils.wrapError(exception)

@@ -14,8 +14,10 @@
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
+    "paths": {
+      "src/*": ["./src/*"]
+    },
     "esModuleInterop": true,
-    "baseUrl": "./"
   },
   "include": ["src/**/*.ts", "vitest*.config.ts"],
   "exclude": ["dist", "node_modules"]

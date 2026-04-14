@@ -30,17 +30,17 @@
     "postcss": "^8.4.25",
     "prism-react-renderer": "^2.3.1",
     "raw-loader": "^4.0.2",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwindcss": "^3.2.4",
     "url": "^0.11.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "~3.9.0",
-    "@docusaurus/tsconfig": "^3.7.0",
+    "@docusaurus/tsconfig": "^3.10.0",
     "@docusaurus/types": "^3.7.0",
     "prettier": "^3.7.4",
-    "typescript": "^5.1.6"
+    "typescript": "^6.0.0"
   },
   "browserslist": {
     "production": [
@@ -58,6 +58,6 @@
     "node": ">=20"
   },
   "volta": {
-    "node": "24.13.1"
+    "node": "24.14.1"
   }
 }

@@ -1,3 +1,5 @@
+import 'package:immich_mobile/domain/models/exif.model.dart';
+
 part 'local_asset.model.dart';
 part 'remote_asset.model.dart';
 
@@ -46,6 +48,7 @@ sealed class BaseAsset {
   bool get isVideo => type == AssetType.video;
 
   bool get isMotionPhoto => livePhotoVideoId != null;
+  bool get isAnimatedImage => playbackStyle == AssetPlaybackStyle.imageAnimated;
 
   AssetPlaybackStyle get playbackStyle {
     if (isVideo) return AssetPlaybackStyle.video;
