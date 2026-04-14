@@ -49,7 +49,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'Cannot add assets to album',
+          msg: 'error_adding_assets_to_album'.tr(),
           toastType: ToastType.error,
         );
       }
