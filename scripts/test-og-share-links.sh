@@ -226,8 +226,15 @@ B64
 
   log ""
   log "=== Thumbnail fetch with the embedded key returns 200 ==="
-  CODE=$(curl -s -o /dev/null -w '%{http_code}' "$IMG_URL")
-  [ "$CODE" = "200" ] || die "FAIL: thumbnail fetch returned HTTP $CODE"
+  # Thumbnails are generated asynchronously by a background worker, so
+  # poll briefly after upload.
+  CODE=000
+  for i in $(seq 1 30); do
+    CODE=$(curl -s -o /dev/null -w '%{http_code}' "$IMG_URL")
+    [ "$CODE" = "200" ] && break
+    sleep 2
+  done
+  [ "$CODE" = "200" ] || die "FAIL: thumbnail fetch returned HTTP $CODE after polling"
 
   log ""
   log "ALL CHECKS PASSED"
