@@ -70,41 +70,6 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('getRandom', () => {
-    it('should get own random assets', async () => {
-      mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
-
-      await sut.getRandom(authStub.admin, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
-    });
-
-    it('should not include partner assets if not in timeline', async () => {
-      const partner = PartnerFactory.create({ inTimeline: false });
-      const auth = AuthFactory.create({ id: partner.sharedWithId });
-
-      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
-      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
-
-      await sut.getRandom(auth, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id], 1);
-    });
-
-    it('should include partner assets if in timeline', async () => {
-      const partner = PartnerFactory.create({ inTimeline: true });
-      const auth = AuthFactory.create({ id: partner.sharedWithId });
-
-      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
-      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
-
-      await sut.getRandom(auth, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id, partner.sharedById], 1);
-    });
-  });
-
   describe('get', () => {
     it('should allow owner access', async () => {
       const asset = AssetFactory.create();

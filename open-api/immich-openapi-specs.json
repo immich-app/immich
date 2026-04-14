@@ -3363,69 +3363,6 @@
         "x-immich-state": "Beta"
       }
     },
-    "/assets/random": {
-      "get": {
-        "deprecated": true,
-        "description": "Retrieve a specified number of random assets for the authenticated user.",
-        "operationId": "getRandom",
-        "parameters": [
-          {
-            "name": "count",
-            "required": false,
-            "in": "query",
-            "description": "Number of random assets to return",
-            "schema": {
-              "minimum": 1,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Get random assets",
-        "tags": [
-          "Assets",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Deprecated",
-            "replacementId": "searchAssets"
-          }
-        ],
-        "x-immich-permission": "asset.read",
-        "x-immich-state": "Deprecated"
-      }
-    },
     "/assets/statistics": {
       "get": {
         "description": "Retrieve various statistics about the assets owned by the authenticated user.",

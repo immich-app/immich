@@ -60,16 +60,6 @@ export class AssetService extends BaseService {
     return mapStats(stats);
   }
 
-  async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { auth }));
-  }
-
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
