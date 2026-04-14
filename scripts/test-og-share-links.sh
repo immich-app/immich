@@ -4,20 +4,29 @@
 # End-to-end verification for the OG-tag fix on per-asset shared-link URLs
 # (issue #27786). Three subcommands:
 #
-#   setup      Clone the dev branch, build images, start the stack,
-#              wait for the server to become healthy.
+#   setup      Clone the dev branch, build a PRODUCTION immich-server image
+#              from source, start a minimal prod-style stack (server +
+#              Valkey + Postgres, no machine-learning), wait for the server
+#              to become healthy.
 #   test       Seed an admin user + album + shared link via the REST API
 #              and assert OG tags on /share/<key>/photos/<assetId>.
-#   teardown   Remove containers, volumes, networks, dev-built images,
-#              pulled base images, the Docker build cache, and the
-#              checkout directory. Returns the host to its pre-setup
-#              state (modulo unrelated Docker state).
+#   teardown   Remove containers, volumes, networks, the built image, the
+#              Docker build cache, and the checkout directory. Cleans up
+#              state from both the og-test stack AND any leftover dev
+#              stack from earlier attempts.
+#
+# WHY A PRODUCTION BUILD?
+#   The SvelteKit frontend has SSR disabled; OG tags are injected by a
+#   NestJS middleware that reads /build/www/index.html. Only the
+#   production server image (server/Dockerfile) copies the built web UI
+#   into that path — the dev image does not. So this test must use a
+#   from-source production build to exercise the code path.
 #
 # Typical flow from an empty working directory:
 #
 #   curl -fsSLo og.sh https://raw.githubusercontent.com/liotier/immich/claude/fix-shared-album-links-SdKg5/scripts/test-og-share-links.sh
 #   chmod +x og.sh
-#   ./og.sh setup       # ~10-15 min on first run
+#   ./og.sh setup       # ~10-15 min on first run (full server image build)
 #   ./og.sh test        # a few seconds
 #   ./og.sh teardown    # prompts before pruning shared Docker state
 #
@@ -38,10 +47,18 @@ SERVER_URL="${SERVER_URL:-http://localhost:2283}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-password}"
 ADMIN_NAME="${ADMIN_NAME:-Admin}"
-READINESS_TIMEOUT="${READINESS_TIMEOUT:-900}"   # seconds, first build is slow
-COMPOSE_FILE="docker/docker-compose.dev.yml"
-COMPOSE_PROJECT="immich-dev"
-DEV_IMAGES=(immich-server-dev:latest immich-web-dev:latest immich-machine-learning-dev:latest)
+READINESS_TIMEOUT="${READINESS_TIMEOUT:-1800}"   # seconds; first prod build can be slow
+
+COMPOSE_FILE="scripts/docker-compose.og-test.yml"
+COMPOSE_PROJECT="immich-og-test"
+OG_TEST_IMAGE="immich-server:og-test"
+
+# Legacy dev-stack state (from earlier iterations of this script) that
+# teardown should also clear, so users upgrading from the dev-based
+# version get a clean slate.
+LEGACY_COMPOSE_FILE="docker/docker-compose.dev.yml"
+LEGACY_COMPOSE_PROJECT="immich-dev"
+LEGACY_DEV_IMAGES=(immich-server-dev:latest immich-web-dev:latest immich-machine-learning-dev:latest)
 
 log()  { printf '\033[1;34m[og-test]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[og-test]\033[0m %s\n' "$*" >&2; }
@@ -50,7 +67,7 @@ die()  { printf '\033[1;31m[og-test]\033[0m %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "required command missing: $1"; }
 
 usage() {
-  sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'
   exit "${1:-1}"
 }
 
@@ -82,16 +99,17 @@ cmd_setup() {
   fi
   mkdir -p library postgres
 
-  # --- up ---
-  log "Starting dev stack (first run builds images; 10-15 min is normal)"
-  docker compose -f "$COMPOSE_FILE" up -d --build
+  # --- up (production build from source) ---
+  log "Building immich-server from source and starting og-test stack"
+  log "First build compiles the server + web UI — 10-15 min is normal"
+  docker compose --env-file docker/.env -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT" up -d --build
 
   # --- wait for readiness ---
   log "Waiting for $SERVER_URL/api/server/ping (up to ${READINESS_TIMEOUT}s)"
   deadline=$(( $(date +%s) + READINESS_TIMEOUT ))
   until curl -fsS --max-time 5 "$SERVER_URL/api/server/ping" >/dev/null 2>&1; do
     if [ "$(date +%s)" -gt "$deadline" ]; then
-      docker compose -f "$COMPOSE_FILE" logs --tail=100 immich-server || true
+      docker compose --env-file docker/.env -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT" logs --tail=100 immich-server || true
       die "server did not become ready within ${READINESS_TIMEOUT}s"
     fi
     sleep 3
@@ -222,22 +240,33 @@ B64
 # =========================================================================
 # TEARDOWN
 # =========================================================================
+# Brings down a compose project by file if present, otherwise by project label.
+_down_project() {
+  local file="$1" project="$2"
+  if [ -f "$CHECKOUT_DIR/$file" ]; then
+    local env_flag=()
+    [ -f "$CHECKOUT_DIR/docker/.env" ] && env_flag=(--env-file docker/.env)
+    (cd "$CHECKOUT_DIR" && docker compose "${env_flag[@]}" -f "$file" -p "$project" down -v --remove-orphans) || true
+  else
+    docker ps -a     --filter "label=com.docker.compose.project=$project" -q | xargs -r docker rm -fv
+    docker volume ls --filter "label=com.docker.compose.project=$project" -q | xargs -r docker volume rm
+    docker network ls --filter "label=com.docker.compose.project=$project" -q | xargs -r docker network rm || true
+  fi
+}
+
 cmd_teardown() {
   need docker
   docker compose version >/dev/null 2>&1 || die "docker compose v2 plugin is required"
 
-  log "Step 1/4: bringing down the compose project"
-  if [ -f "$CHECKOUT_DIR/$COMPOSE_FILE" ]; then
-    (cd "$CHECKOUT_DIR" && docker compose -f "$COMPOSE_FILE" down -v --remove-orphans) || true
-  else
-    warn "compose file not found; removing by project label instead"
-    docker ps -a    --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" -q | xargs -r docker rm -fv
-    docker volume ls --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" -q | xargs -r docker volume rm
-    docker network ls --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" -q | xargs -r docker network rm || true
-  fi
+  log "Step 1/4: bringing down the og-test compose project"
+  _down_project "$COMPOSE_FILE" "$COMPOSE_PROJECT"
 
-  log "Step 2/4: removing dev images built from source"
-  for img in "${DEV_IMAGES[@]}"; do
+  log "Step 1b/4: bringing down any leftover dev-stack state (harmless if absent)"
+  _down_project "$LEGACY_COMPOSE_FILE" "$LEGACY_COMPOSE_PROJECT"
+
+  log "Step 2/4: removing locally built images"
+  docker image rm "$OG_TEST_IMAGE" >/dev/null 2>&1 || true
+  for img in "${LEGACY_DEV_IMAGES[@]}"; do
     docker image rm "$img" >/dev/null 2>&1 || true
   done
 
