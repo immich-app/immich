@@ -500,10 +500,7 @@ class ActionNotifier extends Notifier<void> {
     try {
       final resolvedCount = await _service.resolveRemoteTrash(selectedChecksums, isSyncApproved: isSyncApproved);
       final isSuccess = resolvedCount == selectedChecksums.length;
-      return ActionResult(
-        count: resolvedCount,
-        success: isSuccess,
-      );
+      return ActionResult(count: resolvedCount, success: isSuccess);
     } catch (error, stack) {
       _logger.severe('Failed to ${isSyncApproved ? 'allow' : 'deny'} to move assets to trash', error, stack);
       return ActionResult(count: selectedChecksums.length, success: false, error: error.toString());

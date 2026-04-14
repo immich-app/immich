@@ -289,9 +289,7 @@ class ActionService {
       return 0;
     }
     final mediaUrls = await Future.wait(
-      assetsToTrash.map(
-            (e) => _storageRepository.getAssetEntityForAsset(e.asset).then((e) => e?.getMediaUrl()),
-      ),
+      assetsToTrash.map((e) => _storageRepository.getAssetEntityForAsset(e.asset).then((e) => e?.getMediaUrl())),
     );
     final trashUrls = mediaUrls.nonNulls;
     _logger.info("Moving assets to trash: ${trashUrls.join(", ")}");
