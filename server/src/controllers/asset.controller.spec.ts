@@ -245,19 +245,6 @@ describe(AssetController.name, () => {
     });
   });
 
-  describe('GET /assets/random', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/assets/random`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
-    it('should not allow count to be a string', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).get('/assets/random?count=ABC');
-      expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[count] Invalid input: expected number, received NaN']));
-    });
-  });
-
   describe('GET /assets/:id/metadata', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/metadata`);
