@@ -8,7 +8,6 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   Req,
   Res,
@@ -28,10 +27,8 @@ import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
-  AssetMediaReplaceDto,
   AssetMediaSize,
   CheckExistingAssetsDto,
-  UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -110,36 +107,6 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
-  }
-
-  @Put(':id/original')
-  @UseInterceptors(FileUploadInterceptor)
-  @ApiConsumes('multipart/form-data')
-  @ApiResponse({
-    status: 200,
-    description: 'Asset replaced successfully',
-    type: AssetMediaResponseDto,
-  })
-  @Endpoint({
-    summary: 'Replace asset',
-    description: 'Replace the asset with new file, without changing its id.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'copyAsset' }),
-  })
-  @Authenticated({ permission: Permission.AssetReplace, sharedLink: true })
-  async replaceAsset(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
-    files: UploadFiles,
-    @Body() dto: AssetMediaReplaceDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AssetMediaResponseDto> {
-    const { file } = getFiles(files);
-    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
-    if (responseDto.status === AssetMediaStatus.DUPLICATE) {
-      res.status(HttpStatus.OK);
-    }
-    return responseDto;
   }
 
   @Get(':id/thumbnail')

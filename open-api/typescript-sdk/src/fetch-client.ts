@@ -1010,22 +1010,6 @@ export type AssetOcrResponseDto = {
     /** Normalized y coordinate of box corner 4 (0-1) */
     y4: number;
 };
-export type AssetMediaReplaceDto = {
-    /** Asset file data */
-    assetData: Blob;
-    /** Device asset ID */
-    deviceAssetId: string;
-    /** Device ID */
-    deviceId: string;
-    /** Duration (for videos) */
-    duration?: string;
-    /** File creation date */
-    fileCreatedAt: string;
-    /** File modification date */
-    fileModifiedAt: string;
-    /** Filename */
-    filename?: string;
-};
 export type SignUpDto = {
     /** User email */
     email: string;
@@ -4273,27 +4257,6 @@ export function downloadAsset({ edited, id, key, slug }: {
     }));
 }
 /**
- * Replace asset
- */
-export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
-    id: string;
-    key?: string;
-    slug?: string;
-    assetMediaReplaceDto: AssetMediaReplaceDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetMediaResponseDto;
-    }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
-        key,
-        slug
-    }))}`, oazapfts.multipart({
-        ...opts,
-        method: "PUT",
-        body: assetMediaReplaceDto
-    })));
-}
-/**
  * View asset thumbnail
  */
 export function viewAsset({ edited, id, key, size, slug }: {
@@ -6932,7 +6895,6 @@ export enum Permission {
     AssetView = "asset.view",
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
-    AssetReplace = "asset.replace",
     AssetCopy = "asset.copy",
     AssetDerive = "asset.derive",
     AssetEditGet = "asset.edit.get",

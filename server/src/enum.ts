@@ -146,7 +146,6 @@ export enum Permission {
   AssetView = 'asset.view',
   AssetDownload = 'asset.download',
   AssetUpload = 'asset.upload',
-  AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
   AssetDerive = 'asset.derive',
 

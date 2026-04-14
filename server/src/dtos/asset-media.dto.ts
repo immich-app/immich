@@ -53,8 +53,6 @@ const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
     .meta({ type: 'string', format: 'binary' }),
 }).meta({ id: 'AssetMediaCreateDto' });
 
-const AssetMediaReplaceSchema = AssetMediaBaseSchema.meta({ id: 'AssetMediaReplaceDto' });
-
 const AssetBulkUploadCheckItemSchema = z
   .object({
     id: z.string().describe('Asset ID'),
@@ -77,6 +75,5 @@ const CheckExistingAssetsSchema = z
 
 export class AssetMediaOptionsDto extends createZodDto(AssetMediaOptionsSchema) {}
 export class AssetMediaCreateDto extends createZodDto(AssetMediaCreateSchema) {}
-export class AssetMediaReplaceDto extends createZodDto(AssetMediaReplaceSchema) {}
 export class AssetBulkUploadCheckDto extends createZodDto(AssetBulkUploadCheckSchema) {}
 export class CheckExistingAssetsDto extends createZodDto(CheckExistingAssetsSchema) {}

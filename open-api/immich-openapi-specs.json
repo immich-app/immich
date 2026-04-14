@@ -4271,90 +4271,6 @@
         ],
         "x-immich-permission": "asset.download",
         "x-immich-state": "Stable"
-      },
-      "put": {
-        "deprecated": true,
-        "description": "Replace the asset with new file, without changing its id.",
-        "operationId": "replaceAsset",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetMediaReplaceDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetMediaResponseDto"
-                }
-              }
-            },
-            "description": "Asset replaced successfully"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Replace asset",
-        "tags": [
-          "Assets",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Deprecated",
-            "replacementId": "copyAsset"
-          }
-        ],
-        "x-immich-permission": "asset.replace",
-        "x-immich-state": "Deprecated"
       }
     },
     "/assets/{id}/thumbnail": {
@@ -16818,53 +16734,6 @@
         ],
         "type": "object"
       },
-      "AssetMediaReplaceDto": {
-        "properties": {
-          "assetData": {
-            "description": "Asset file data",
-            "format": "binary",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "description": "Device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          },
-          "duration": {
-            "description": "Duration (for videos)",
-            "type": "string"
-          },
-          "fileCreatedAt": {
-            "description": "File creation date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          },
-          "fileModifiedAt": {
-            "description": "File modification date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          },
-          "filename": {
-            "description": "Filename",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetData",
-          "deviceAssetId",
-          "deviceId",
-          "fileCreatedAt",
-          "fileModifiedAt"
-        ],
-        "type": "object"
-      },
       "AssetMediaResponseDto": {
         "properties": {
           "id": {
@@ -20023,7 +19892,6 @@
           "asset.view",
           "asset.download",
           "asset.upload",
-          "asset.replace",
           "asset.copy",
           "asset.derive",
           "asset.edit.get",

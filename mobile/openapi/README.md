@@ -113,7 +113,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | Get random assets
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | Play asset video
 *AssetsApi* | [**removeAssetEdits**](doc//AssetsApi.md#removeassetedits) | **DELETE** /assets/{id}/edits | Remove edits from an existing asset
-*AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace asset
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | Run an asset job
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | Update an asset
 *AssetsApi* | [**updateAssetMetadata**](doc//AssetsApi.md#updateassetmetadata) | **PUT** /assets/{id}/metadata | Update asset metadata
@@ -149,7 +148,6 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**getFullSyncForUser**](doc//DeprecatedApi.md#getfullsyncforuser) | **POST** /sync/full-sync | Get full sync for user
 *DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | Get random assets
-*DeprecatedApi* | [**replaceAsset**](doc//DeprecatedApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace asset
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
