@@ -10,7 +10,6 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-
 void showTrashResultToast(BuildContext context, ActionResult result) {
   if (!context.mounted) return;
   final message = result.success
