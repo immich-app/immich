@@ -21,10 +21,13 @@
   let users: UserResponseDto[] = $state([]);
   const excludedUserIds = $derived([album.ownerId, ...album.albumUsers.map(({ user: { id } }) => id)]);
   const filteredUsers = $derived(
-    users.filter(
-      (user) =>
-        !excludedUserIds.includes(user.id) && normalizeSearchString(user.name).includes(normalizeSearchString(search)),
-    ),
+    users
+      .filter(
+        (user) =>
+          !excludedUserIds.includes(user.id) &&
+          normalizeSearchString(user.name).includes(normalizeSearchString(search)),
+      )
+      .sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)),
   );
   const selectedUsers = new SvelteMap<string, UserResponseDto>();
   let loading = $state(true);
