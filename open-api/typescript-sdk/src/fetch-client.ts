@@ -4051,21 +4051,6 @@ export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
     })));
 }
 /**
- * Get random assets
- */
-export function getRandom({ count }: {
-    count?: number;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/assets/random${QS.query(QS.explode({
-        count
-    }))}`, {
-        ...opts
-    }));
-}
-/**
  * Get asset statistics
  */
 export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
