@@ -10,7 +10,7 @@
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
@@ -25,18 +25,21 @@
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+  let lastAutoSelectionKey = '';
 
-  onMount(() => {
-    if (suggestedKeepAssetIds.length > 0) {
-      for (const id of suggestedKeepAssetIds) {
-        selectedAssetIds.add(id);
-      }
+  $effect(() => {
+    const assetIdsKey = assets.map(({ id }) => id).join('|');
+    const suggestedKeepAssetIdsKey = suggestedKeepAssetIds.join('|');
+    const nextAutoSelectionKey = `${assetIdsKey}::${suggestedKeepAssetIdsKey}`;
+
+    if (nextAutoSelectionKey === lastAutoSelectionKey) {
       return;
     }
+    lastAutoSelectionKey = nextAutoSelectionKey;
 
-    if (assets.length > 0) {
-      selectedAssetIds.add(assets[0].id);
-    }
+    selectedAssetIds = new SvelteSet(
+      suggestedKeepAssetIds.length > 0 ? suggestedKeepAssetIds : assets.slice(0, 1).map((asset) => asset.id),
+    );
   });
 
   onDestroy(() => {

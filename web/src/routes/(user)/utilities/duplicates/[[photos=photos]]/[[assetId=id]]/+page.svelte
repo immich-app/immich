@@ -7,9 +7,12 @@
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import { suggestBestDuplicateKeepAssetIds } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
@@ -18,7 +21,7 @@
     mdiCheckOutline,
     mdiChevronLeft,
     mdiChevronRight,
-    mdiInformationOutline,
+    mdiCogOutline,
     mdiKeyboard,
     mdiPageFirst,
     mdiPageLast,
@@ -55,7 +58,6 @@
   };
 
   let duplicates = $state(data.duplicates);
-  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -96,6 +98,9 @@
     toastManager.primary(message);
   };
 
+  const getSuggestedKeepAssetIds = (assets: AssetResponseDto[]) =>
+    suggestBestDuplicateKeepAssetIds(assets, duplicateTiePreference.value);
+
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     const forceDelete = !featureFlagsManager.value.trash;
     const shouldConfirmDelete = trashIds.length > 0 && forceDelete;
@@ -134,11 +139,16 @@
   };
 
   const handleDeduplicateAll = async () => {
-    // Use server-provided suggestedKeepAssetIds from each group
-    const idsToDelete = duplicates.flatMap((group) => {
-      const keepIds = new Set(group.suggestedKeepAssetIds);
-      return group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id));
+    const groupsToResolve = duplicates.map((group) => {
+      const keepAssetIds = getSuggestedKeepAssetIds(group.assets);
+      const keepIds = new Set(keepAssetIds);
+      return {
+        duplicateId: group.duplicateId,
+        keepAssetIds,
+        trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
+      };
     });
+    const idsToDelete = groupsToResolve.flatMap((group) => group.trashAssetIds);
 
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
@@ -151,21 +161,12 @@
 
     return withConfirmation(
       async () => {
-        // Resolve all groups in a single batch request
         const response = await resolveDuplicates({
           duplicateResolveDto: {
-            groups: duplicates.map((group) => {
-              const keepIds = new Set(group.suggestedKeepAssetIds);
-              return {
-                duplicateId: group.duplicateId,
-                keepAssetIds: group.suggestedKeepAssetIds,
-                trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
-              };
-            }),
+            groups: groupsToResolve,
           },
         });
 
-        // Count failures and show appropriate message
         const failedCount = response.filter(({ success }) => !success).length;
         if (failedCount > 0) {
           toastManager.danger($t('errors.unable_to_resolve_duplicate'));
@@ -278,7 +279,7 @@
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
-          suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
+          suggestedKeepAssetIds={getSuggestedKeepAssetIds(duplicates[duplicatesIndex].assets)}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
