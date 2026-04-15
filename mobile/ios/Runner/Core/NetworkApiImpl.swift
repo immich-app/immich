@@ -10,11 +10,14 @@ enum ImportError: Error {
 }
 
 class NetworkApiImpl: NetworkApi {
-  weak var viewController: UIViewController?
   private var activeImporter: CertImporter?
-  
-  init(viewController: UIViewController?) {
-    self.viewController = viewController
+
+  private var viewController: UIViewController? {
+    UIApplication.shared.connectedScenes
+      .compactMap { $0 as? UIWindowScene }
+      .flatMap { $0.windows }
+      .first { $0.isKeyWindow }?
+      .rootViewController
   }
   
   func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<Void, any Error>) -> Void) {
