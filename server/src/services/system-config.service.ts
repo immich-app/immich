@@ -15,15 +15,6 @@ export class SystemConfigService extends BaseService {
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
     await this.eventRepository.emit('ConfigInit', { newConfig: config });
-
-    if (
-      process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT ||
-      process.env.IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
-    ) {
-      this.logger.deprecate(
-        'IMMICH_MACHINE_LEARNING_PING_TIMEOUT and MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME have been moved to system config(`machineLearning.availabilityChecks`) and will be removed in a future release.',
-      );
-    }
   }
 
   @OnEvent({ name: 'AppShutdown' })
