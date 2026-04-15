@@ -108,7 +108,7 @@
       type="button"
       class="text-center mt-4 underline text-xs text-primary"
       onclick={async () => {
-        onClose();
+        onClose?.();
         if (info) {
           await modalManager.show(HelpAndFeedbackModal, { info });
         }
