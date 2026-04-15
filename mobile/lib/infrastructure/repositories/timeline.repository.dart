@@ -33,8 +33,9 @@ class TimelineMapOptions {
 
 class DriftTimelineRepository extends DriftDatabaseRepository {
   final Drift _db;
+  final DateTime? _effectiveCutoffDate;
 
-  const DriftTimelineRepository(super._db) : _db = _db;
+  DriftTimelineRepository(this._db, [this._effectiveCutoffDate]) : super(_db);
 
   Stream<List<String>> watchTimelineUserIds(String userId) {
     final query = _db.partnerEntity.selectOnly()
@@ -48,26 +49,58 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .map((users) => users..add(userId));
   }
 
-  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
-    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
-    origin: TimelineOrigin.main,
-  );
+  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) {
+    final cutoffDate = _effectiveCutoffDate;
+    final applyCutoff = cutoffDate != null ? 1 : 0;
+    final cutoffDateForSql = cutoffDate ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
-  Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    return (
+      bucketSource: () =>
+          _watchMainBucket(userIds, groupBy: groupBy, applyCutoff: applyCutoff, cutoffDate: cutoffDateForSql),
+      assetSource: (offset, count) => _getMainBucketAssets(
+        userIds,
+        offset: offset,
+        count: count,
+        applyCutoff: applyCutoff,
+        cutoffDate: cutoffDateForSql,
+      ),
+      origin: TimelineOrigin.main,
+    );
+  }
+
+  Stream<List<Bucket>> _watchMainBucket(
+    List<String> userIds, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+    required int applyCutoff,
+    required DateTime cutoffDate,
+  }) {
     if (groupBy == GroupAssetsBy.none) {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
-      final date = row.bucketDate.truncateDate(groupBy);
-      return TimeBucket(date: date, assetCount: row.assetCount);
-    }).watch();
+    return _db.mergedAssetDrift
+        .mergedBucket(userIds: userIds, groupBy: groupBy.index, applyCutoff: applyCutoff, cutoffDate: cutoffDate)
+        .map((row) {
+          final date = row.bucketDate.truncateDate(groupBy);
+          return TimeBucket(date: date, assetCount: row.assetCount);
+        })
+        .watch();
   }
 
-  Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {
+  Future<List<BaseAsset>> _getMainBucketAssets(
+    List<String> userIds, {
+    required int offset,
+    required int count,
+    required int applyCutoff,
+    required DateTime cutoffDate,
+  }) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
+        .mergedAsset(
+          userIds: userIds,
+          applyCutoff: applyCutoff,
+          cutoffDate: cutoffDate,
+          limit: (_) => Limit(count, offset),
+        )
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(

@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
+import 'package:immich_mobile/providers/backup/backup_settings.provider.dart';
 import 'package:logging/logging.dart';
 
 @RoutePage()
@@ -23,6 +24,8 @@ class DriftBackupOptionsPage extends ConsumerWidget {
     bool hasPopped = false;
     final previousWifiReqForVideos = Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false;
     final previousWifiReqForPhotos = Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false;
+    final previousEffectiveCutoffDate = ref.read(backupEffectiveCutoffDateProvider);
+
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         // There is an issue with Flutter where the pop event
@@ -30,9 +33,11 @@ class DriftBackupOptionsPage extends ConsumerWidget {
 
         final currentWifiReqForVideos = Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false;
         final currentWifiReqForPhotos = Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false;
+        final currentEffectiveCutoffDate = ref.read(backupEffectiveCutoffDateProvider);
 
         if (currentWifiReqForVideos == previousWifiReqForVideos &&
-            currentWifiReqForPhotos == previousWifiReqForPhotos) {
+            currentWifiReqForPhotos == previousWifiReqForPhotos &&
+            currentEffectiveCutoffDate == previousEffectiveCutoffDate) {
           return;
         }
 

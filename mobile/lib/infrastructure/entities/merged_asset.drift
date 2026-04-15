@@ -4,7 +4,7 @@ import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
 
-mergedAsset: 
+mergedAsset(:apply_cutoff AS INTEGER, :cutoff_date AS DATETIME): 
 SELECT
 	rae.id as remote_id,
 	(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1) as local_id,
@@ -81,10 +81,14 @@ AND NOT EXISTS (
     INNER JOIN local_album_entity la on laa.album_id = la.id
     WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
 )
+AND (
+	:apply_cutoff = 0
+	OR CAST(STRFTIME('%s', lae.created_at) AS INTEGER) >= CAST(STRFTIME('%s', :cutoff_date) AS INTEGER)
+)
 ORDER BY created_at DESC
 LIMIT $limit;
 
-mergedBucket(:group_by AS INTEGER):
+mergedBucket(:group_by AS INTEGER, :apply_cutoff AS INTEGER, :cutoff_date AS DATETIME):
 SELECT
 	COUNT(*) as asset_count,
 	bucket_date
@@ -133,6 +137,10 @@ FROM
 		SELECT 1 FROM local_album_asset_entity laa
 		INNER JOIN local_album_entity la on laa.album_id = la.id
 		WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+	)
+	AND (
+		:apply_cutoff = 0
+		OR CAST(STRFTIME('%s', lae.created_at) AS INTEGER) >= CAST(STRFTIME('%s', :cutoff_date) AS INTEGER)
 	)
 )
 GROUP BY bucket_date

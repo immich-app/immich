@@ -9,10 +9,11 @@ import 'package:immich_mobile/infrastructure/repositories/remote_album.repositor
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/providers/backup/backup_settings.provider.dart';
 
-final localAlbumRepository = Provider<DriftLocalAlbumRepository>(
-  (ref) => DriftLocalAlbumRepository(ref.watch(driftProvider)),
-);
+final localAlbumRepository = Provider<DriftLocalAlbumRepository>((ref) {
+  return DriftLocalAlbumRepository(ref.watch(driftProvider), ref.watch(backupEffectiveCutoffDateProvider));
+});
 
 final localAlbumServiceProvider = Provider<LocalAlbumService>(
   (ref) => LocalAlbumService(ref.watch(localAlbumRepository)),

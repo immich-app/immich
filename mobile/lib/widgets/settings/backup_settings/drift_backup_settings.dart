@@ -13,6 +13,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
+import 'package:immich_mobile/providers/backup/backup_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -48,6 +49,13 @@ class DriftBackupSettings extends ConsumerWidget {
           icon: Icons.sync,
         ),
         const _AlbumSyncActionButton(),
+        const Divider(),
+        SettingGroupTitle(
+          title: "backup_cutoff_date".t(context: context),
+          icon: Icons.date_range,
+        ),
+        const _EnableBackupCutoffDateButton(),
+        const _BackupCutoffDatePicker(),
       ],
     );
   }
@@ -260,6 +268,81 @@ class _BackupOnlyWhenChargingButton extends ConsumerWidget {
       onChanged: (value) {
         ref.read(backgroundWorkerFgServiceProvider).configure(requireCharging: value ?? false);
       },
+    );
+  }
+}
+
+class _EnableBackupCutoffDateButton extends ConsumerWidget {
+  const _EnableBackupCutoffDateButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const _SettingsSwitchTile(
+      appSettingsEnum: AppSettingsEnum.backupCutoffDateEnabled,
+      titleKey: "backup_enable_global_cutoff",
+      subtitleKey: "backup_enable_global_cutoff_subtitle",
+    );
+  }
+}
+
+class _BackupCutoffDatePicker extends ConsumerWidget {
+  const _BackupCutoffDatePicker();
+
+  DateTime _clampDate(DateTime date, DateTime firstDate, DateTime lastDate) {
+    if (date.isBefore(firstDate)) {
+      return firstDate;
+    }
+    if (date.isAfter(lastDate)) {
+      return lastDate;
+    }
+    return date;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isCutoffEnabled = ref.watch(backupCutoffDateEnabledProvider).value ?? false;
+    final currentCutoffMs =
+        ref.watch(backupCutoffDateMsProvider).value ?? DateTime.now().toUtc().millisecondsSinceEpoch;
+    final selectedDate = DateTime.fromMillisecondsSinceEpoch(currentCutoffMs, isUtc: true).toLocal();
+    final selectedDateText = DateFormat.yMMMMd(context.locale.toString()).format(selectedDate);
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: isCutoffEnabled
+          ? Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: SettingListTile(
+                title: "backup_cutoff_date_picker_title".t(context: context),
+                subtitle:
+                    "${"backup_cutoff_date_picker_subtitle_first".t(context: context)} $selectedDateText ${"backup_cutoff_date_picker_subtitle_second".t(context: context)}",
+                trailing: Icon(
+                  Icons.calendar_month_outlined,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                  size: 27,
+                ),
+                onTap: () async {
+                  final now = DateTime.now();
+                  final firstDate = DateTime(1900);
+                  final lastDate = now;
+                  final initialDate = _clampDate(selectedDate, firstDate, lastDate);
+
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: initialDate,
+                    firstDate: firstDate,
+                    lastDate: lastDate,
+                  );
+
+                  if (!context.mounted || pickedDate == null) {
+                    return;
+                  }
+
+                  await ref.read(backupSettingsProvider).setCutoffDateUtc(pickedDate);
+                },
+              ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 }
