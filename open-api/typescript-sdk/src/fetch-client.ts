@@ -2321,29 +2321,6 @@ export type SyncAckSetDto = {
     /** Acknowledgment IDs (max 1000) */
     acks: string[];
 };
-export type AssetDeltaSyncDto = {
-    /** Sync assets updated after this date */
-    updatedAfter: string;
-    /** User IDs to sync */
-    userIds: string[];
-};
-export type AssetDeltaSyncResponseDto = {
-    /** Deleted asset IDs */
-    deleted: string[];
-    /** Whether full sync is needed */
-    needsFullSync: boolean;
-    upserted: AssetResponseDto[];
-};
-export type AssetFullSyncDto = {
-    /** Last asset ID (pagination) */
-    lastId?: string;
-    /** Maximum number of assets to return */
-    limit: number;
-    /** Sync assets updated until this date */
-    updatedUntil: string;
-    /** Filter by user ID */
-    userId?: string;
-};
 export type SyncStreamDto = {
     /** Reset sync state */
     reset?: boolean;
@@ -6095,36 +6072,6 @@ export function sendSyncAck({ syncAckSetDto }: {
     })));
 }
 /**
- * Get delta sync for user
- */
-export function getDeltaSync({ assetDeltaSyncDto }: {
-    assetDeltaSyncDto: AssetDeltaSyncDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetDeltaSyncResponseDto;
-    }>("/sync/delta-sync", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: assetDeltaSyncDto
-    })));
-}
-/**
- * Get full sync for user
- */
-export function getFullSyncForUser({ assetFullSyncDto }: {
-    assetFullSyncDto: AssetFullSyncDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>("/sync/full-sync", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: assetFullSyncDto
-    })));
-}
-/**
  * Stream sync changes
  */
 export function getSyncStream({ syncStreamDto }: {
@@ -7120,7 +7067,6 @@ export enum JobName {
     AssetFileMigration = "AssetFileMigration",
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
-    AuditLogCleanup = "AuditLogCleanup",
     AuditTableCleanup = "AuditTableCleanup",
     DatabaseBackup = "DatabaseBackup",
     FacialRecognitionQueueAll = "FacialRecognitionQueueAll",

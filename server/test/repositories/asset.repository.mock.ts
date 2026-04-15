@@ -33,8 +33,6 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getTimeBucket: vitest.fn(),
     getTimeBuckets: vitest.fn(),
     getAssetIdByCity: vitest.fn(),
-    getAllForUserFullSync: vitest.fn(),
-    getChangedDeltaSync: vitest.fn(),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
     deleteFile: vitest.fn(),

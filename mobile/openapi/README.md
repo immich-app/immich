@@ -143,8 +143,6 @@ Class | Method | HTTP request | Description
 *DatabaseBackupsAdminApi* | [**uploadDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#uploaddatabasebackup) | **POST** /admin/database-backups/upload | Upload database backup
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *DeprecatedApi* | [**getAllUserAssetsByDeviceId**](doc//DeprecatedApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
-*DeprecatedApi* | [**getDeltaSync**](doc//DeprecatedApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
-*DeprecatedApi* | [**getFullSyncForUser**](doc//DeprecatedApi.md#getfullsyncforuser) | **POST** /sync/full-sync | Get full sync for user
 *DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
@@ -263,8 +261,6 @@ Class | Method | HTTP request | Description
 *StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | Retrieve stacks
 *StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | Update a stack
 *SyncApi* | [**deleteSyncAck**](doc//SyncApi.md#deletesyncack) | **DELETE** /sync/ack | Delete acknowledgements
-*SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
-*SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | Get full sync for user
 *SyncApi* | [**getSyncAck**](doc//SyncApi.md#getsyncack) | **GET** /sync/ack | Retrieve acknowledgements
 *SyncApi* | [**getSyncStream**](doc//SyncApi.md#getsyncstream) | **POST** /sync/stream | Stream sync changes
 *SyncApi* | [**sendSyncAck**](doc//SyncApi.md#sendsyncack) | **POST** /sync/ack | Acknowledge changes
@@ -352,8 +348,6 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetCopyDto](doc//AssetCopyDto.md)
- - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
- - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetEditAction](doc//AssetEditAction.md)
  - [AssetEditActionItemDto](doc//AssetEditActionItemDto.md)
  - [AssetEditActionItemDtoParameters](doc//AssetEditActionItemDtoParameters.md)
@@ -366,7 +360,6 @@ Class | Method | HTTP request | Description
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
  - [AssetFaceWithoutPersonResponseDto](doc//AssetFaceWithoutPersonResponseDto.md)
- - [AssetFullSyncDto](doc//AssetFullSyncDto.md)
  - [AssetIdErrorReason](doc//AssetIdErrorReason.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)

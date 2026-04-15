@@ -106,19 +106,6 @@ interface AssetExploreFieldOptions {
   minAssetsPerField: number;
 }
 
-interface AssetFullSyncOptions {
-  ownerId: string;
-  lastId?: string;
-  updatedUntil: Date;
-  limit: number;
-}
-
-interface AssetDeltaSyncOptions {
-  userIds: string[];
-  updatedAfter: Date;
-  limit: number;
-}
-
 interface AssetGetByChecksumOptions {
   ownerId: string;
   checksum: Buffer;
@@ -903,70 +890,6 @@ export class AssetRepository {
       .execute();
 
     return { fieldName: 'exifInfo.city', items };
-  }
-
-  @GenerateSql({
-    params: [
-      {
-        ownerId: DummyValue.UUID,
-        lastId: DummyValue.UUID,
-        updatedUntil: DummyValue.DATE,
-        limit: 10,
-      },
-    ],
-  })
-  getAllForUserFullSync(options: AssetFullSyncOptions) {
-    const { ownerId, lastId, updatedUntil, limit } = options;
-    return this.db
-      .selectFrom('asset')
-      .selectAll('asset')
-      .$call(withExif)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('asset as stacked')
-            .selectAll('stack')
-            .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
-      )
-      .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack'))
-      .where('asset.ownerId', '=', asUuid(ownerId))
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where('asset.updatedAt', '<=', updatedUntil)
-      .$if(!!lastId, (qb) => qb.where('asset.id', '>', lastId!))
-      .orderBy('asset.id')
-      .limit(limit)
-      .execute();
-  }
-
-  @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE, limit: 100 }] })
-  async getChangedDeltaSync(options: AssetDeltaSyncOptions) {
-    return this.db
-      .selectFrom('asset')
-      .selectAll('asset')
-      .$call(withExif)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('asset as stacked')
-            .selectAll('stack')
-            .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
-      )
-      .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
-      .where('asset.ownerId', '=', anyUuid(options.userIds))
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where('asset.updatedAt', '>', options.updatedAfter)
-      .limit(options.limit)
-      .execute();
   }
 
   async upsertFile(
