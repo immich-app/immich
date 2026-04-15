@@ -47,6 +47,7 @@
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
   import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
+  import ProjectionButton from './projection-button.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
 
@@ -423,6 +424,21 @@
       ocrManager.hasOcrData,
   );
 
+  const showProjectionButton = $derived(
+    $slideshowState === SlideshowState.None &&
+      !assetViewerManager.isShowEditor &&
+      (viewerKind === 'ImagePanaramaViewer' ||
+        (asset.type === AssetTypeEnum.Video && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR)),
+  );
+
+  const isPanoramaVideoViewer = $derived(
+    (viewerKind === 'VideoViewer' || viewerKind === 'StackVideoViewer' || viewerKind === 'LiveVideoViewer') &&
+      asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR,
+  );
+
+  const showBottomRightControls = $derived(showOcrButton || showProjectionButton);
+  const controlsBottomMargin = $derived(isPanoramaVideoViewer && showProjectionButton ? '3.5rem' : '1.5rem');
+
   const { Tag, TagPeople } = $derived(getAssetActions($t, asset));
   const showDetailPanel = $derived(
     asset.hasMetadata &&
@@ -561,9 +577,17 @@
       </div>
     {/if}
 
-    {#if showOcrButton}
-      <div class="absolute bottom-0 end-0 mb-6 me-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
-        <OcrButton />
+    {#if showBottomRightControls}
+      <div
+        class="absolute bottom-0 end-0 me-6 flex flex-col items-end gap-2 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]"
+        style={`margin-bottom: ${controlsBottomMargin};`}
+      >
+        {#if showProjectionButton}
+          <ProjectionButton />
+        {/if}
+        {#if showOcrButton}
+          <OcrButton />
+        {/if}
       </div>
     {/if}
   </div>
