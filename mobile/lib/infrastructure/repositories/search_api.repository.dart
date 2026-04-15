@@ -16,6 +16,8 @@ class SearchApiRepository extends ApiRepository {
       type = AssetTypeEnum.VIDEO;
     }
 
+    final dateRange = filter.date.asDateTimeRange();
+
     if ((filter.context != null && filter.context!.isNotEmpty) ||
         (filter.assetId != null && filter.assetId!.isNotEmpty)) {
       return _api.searchSmart(
@@ -28,14 +30,14 @@ class SearchApiRepository extends ApiRepository {
           city: filter.location.city,
           make: filter.camera.make,
           model: filter.camera.model,
-          takenAfter: filter.date.takenAfter,
-          takenBefore: filter.date.takenBefore,
+          takenAfter: dateRange?.start,
+          takenBefore: dateRange?.end,
           visibility: filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline,
           rating: filter.rating.rating,
           isFavorite: filter.display.isFavorite ? true : null,
           isNotInAlbum: filter.display.isNotInAlbum ? true : null,
           personIds: filter.people.map((e) => e.id).toList(),
-          tagIds: filter.tagIds,
+          tagIds: filter.tags.map((t) => t.id).toList(),
           type: type,
           page: page,
           size: 100,
@@ -53,14 +55,14 @@ class SearchApiRepository extends ApiRepository {
         city: filter.location.city,
         make: filter.camera.make,
         model: filter.camera.model,
-        takenAfter: filter.date.takenAfter,
-        takenBefore: filter.date.takenBefore,
+        takenAfter: dateRange?.start,
+        takenBefore: dateRange?.end,
         visibility: filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline,
         rating: filter.rating.rating,
         isFavorite: filter.display.isFavorite ? true : null,
         isNotInAlbum: filter.display.isNotInAlbum ? true : null,
         personIds: filter.people.map((e) => e.id).toList(),
-        tagIds: filter.tagIds,
+        tagIds: filter.tags.map((t) => t.id).toList(),
         type: type,
         page: page,
         size: 1000,

@@ -2,7 +2,9 @@
 import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/models/search/date_filter.model.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -214,11 +216,11 @@ class SearchFilter {
   String? ocr;
   String? language;
   String? assetId;
-  List<String>? tagIds;
+  List<Tag> tags;
   Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
-  SearchDateFilter date;
+  DateFilterInputModel date;
   SearchRatingFilter rating;
   SearchDisplayFilters display;
 
@@ -232,7 +234,7 @@ class SearchFilter {
     this.ocr,
     this.language,
     this.assetId,
-    this.tagIds,
+    this.tags = const [],
     required this.people,
     required this.location,
     required this.camera,
@@ -248,15 +250,14 @@ class SearchFilter {
         (description == null || (description!.isEmpty)) &&
         (assetId == null || (assetId!.isEmpty)) &&
         (ocr == null || (ocr!.isEmpty)) &&
-        (tagIds ?? []).isEmpty &&
+        tags.isEmpty &&
         people.isEmpty &&
         location.country == null &&
         location.state == null &&
         location.city == null &&
         camera.make == null &&
         camera.model == null &&
-        date.takenBefore == null &&
-        date.takenAfter == null &&
+        date.isEmpty &&
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
@@ -272,10 +273,10 @@ class SearchFilter {
     String? ocr,
     String? assetId,
     Set<PersonDto>? people,
-    List<String>? tagIds,
+    List<Tag>? tags,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
-    SearchDateFilter? date,
+    DateFilterInputModel? date,
     SearchDisplayFilters? display,
     SearchRatingFilter? rating,
     AssetType? mediaType,
@@ -294,13 +295,13 @@ class SearchFilter {
       display: display ?? this.display,
       rating: rating ?? this.rating,
       mediaType: mediaType ?? this.mediaType,
-      tagIds: tagIds ?? this.tagIds,
+      tags: tags ?? this.tags,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tags: $tags, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -314,7 +315,7 @@ class SearchFilter {
         other.ocr == ocr &&
         other.assetId == assetId &&
         other.people == people &&
-        other.tagIds == tagIds &&
+        other.tags == tags &&
         other.location == location &&
         other.camera == camera &&
         other.date == date &&
@@ -332,7 +333,7 @@ class SearchFilter {
         ocr.hashCode ^
         assetId.hashCode ^
         people.hashCode ^
-        tagIds.hashCode ^
+        tags.hashCode ^
         location.hashCode ^
         camera.hashCode ^
         date.hashCode ^

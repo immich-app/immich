@@ -8,6 +8,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/models/search/date_filter.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -111,7 +112,7 @@ class PlaceTile extends StatelessWidget {
             people: {},
             location: SearchLocationFilter(city: name),
             camera: SearchCameraFilter(),
-            date: SearchDateFilter(),
+            date: const EmptyDateFilter(),
             display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
             rating: SearchRatingFilter(),
             mediaType: AssetType.other,

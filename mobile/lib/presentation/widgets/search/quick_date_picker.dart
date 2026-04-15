@@ -2,85 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-
-sealed class DateFilterInputModel {
-  DateTimeRange<DateTime> asDateTimeRange();
-
-  String asHumanReadable(BuildContext context) {
-    // General implementation for arbitrary date and time ranges
-    // If date range is less than 24 hours, set the end date to the end of the day
-    final date = asDateTimeRange();
-    if (date.end.difference(date.start).inHours < 24) {
-      return DateFormat.yMMMd().format(date.start.toLocal());
-    } else {
-      return 'search_filter_date_interval'.t(
-        context: context,
-        args: {
-          "start": DateFormat.yMMMd().format(date.start.toLocal()),
-          "end": DateFormat.yMMMd().format(date.end.toLocal()),
-        },
-      );
-    }
-  }
-}
-
-class RecentMonthRangeFilter extends DateFilterInputModel {
-  final int monthDelta;
-  RecentMonthRangeFilter(this.monthDelta);
-
-  @override
-  DateTimeRange<DateTime> asDateTimeRange() {
-    final now = DateTime.now();
-    // Note that DateTime's constructor properly handles month overflow.
-    final from = DateTime(now.year, now.month - monthDelta, 1);
-    return DateTimeRange<DateTime>(start: from, end: now);
-  }
-
-  @override
-  String asHumanReadable(BuildContext context) {
-    return 'last_months'.t(context: context, args: {"count": monthDelta.toString()});
-  }
-}
-
-class YearFilter extends DateFilterInputModel {
-  final int year;
-  YearFilter(this.year);
-
-  @override
-  DateTimeRange<DateTime> asDateTimeRange() {
-    final now = DateTime.now();
-    final from = DateTime(year, 1, 1);
-
-    if (now.year == year) {
-      // To not go beyond today if the user picks the current year
-      return DateTimeRange<DateTime>(start: from, end: now);
-    }
-
-    final to = DateTime(year, 12, 31, 23, 59, 59);
-    return DateTimeRange<DateTime>(start: from, end: to);
-  }
-
-  @override
-  String asHumanReadable(BuildContext context) {
-    return 'in_year'.tr(namedArgs: {"year": year.toString()});
-  }
-}
-
-class CustomDateFilter extends DateFilterInputModel {
-  final DateTime start;
-  final DateTime end;
-
-  CustomDateFilter(this.start, this.end);
-
-  factory CustomDateFilter.fromRange(DateTimeRange<DateTime> range) {
-    return CustomDateFilter(range.start, range.end);
-  }
-
-  @override
-  DateTimeRange<DateTime> asDateTimeRange() {
-    return DateTimeRange<DateTime>(start: start, end: end);
-  }
-}
+import 'package:immich_mobile/models/search/date_filter.model.dart';
 
 enum _QuickPickerType { last1Month, last3Months, last9Months, year, custom }
 
@@ -102,7 +24,7 @@ class QuickDatePicker extends HookWidget {
   });
 
   static int _initialYearFromModel(DateFilterInputModel? model) {
-    return model?.asDateTimeRange().start.year ?? DateTime.now().year;
+    return model?.asDateTimeRange()?.start.year ?? DateTime.now().year;
   }
 
   static _QuickPickerType? _selectionFromModel(DateFilterInputModel? model) {
@@ -149,7 +71,7 @@ class QuickDatePicker extends HookWidget {
   // Even if it's already toggled it should always open the full date picker, RadioListTiles don't do that by default
   // so we wrap it in a InkWell
   Widget _exactPicker(BuildContext context) {
-    final hasPreviousInput = currentInput != null && currentInput is CustomDateFilter;
+    final hasPreviousInput = currentInput is CustomDateFilter;
 
     return InkWell(
       onTap: onRequestPicker,
@@ -182,9 +104,9 @@ class QuickDatePicker extends HookWidget {
               if (value == null) return;
               final _ = switch (value) {
                 _QuickPickerType.custom => onRequestPicker(),
-                _QuickPickerType.last1Month => onSelect(RecentMonthRangeFilter(1)),
-                _QuickPickerType.last3Months => onSelect(RecentMonthRangeFilter(3)),
-                _QuickPickerType.last9Months => onSelect(RecentMonthRangeFilter(9)),
+                _QuickPickerType.last1Month => onSelect(const RecentMonthRangeFilter(1)),
+                _QuickPickerType.last3Months => onSelect(const RecentMonthRangeFilter(3)),
+                _QuickPickerType.last9Months => onSelect(const RecentMonthRangeFilter(9)),
                 // When a year is selected the combobox triggers onSelect() on its own.
                 // Here we handle the radio button being selected which can only ever be the initial year
                 _QuickPickerType.year => onSelect(YearFilter(_initialYear)),

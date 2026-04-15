@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/models/search/date_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -34,7 +35,7 @@ class SimilarPhotosActionButton extends ConsumerWidget {
           people: {},
           location: SearchLocationFilter(),
           camera: SearchCameraFilter(),
-          date: SearchDateFilter(),
+          date: const EmptyDateFilter(),
           display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
           rating: SearchRatingFilter(),
           mediaType: AssetType.image,

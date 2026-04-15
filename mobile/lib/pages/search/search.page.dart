@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/models/search/date_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -40,7 +41,7 @@ class SearchPage extends HookConsumerWidget {
         people: prefilter?.people ?? {},
         location: prefilter?.location ?? SearchLocationFilter(),
         camera: prefilter?.camera ?? SearchCameraFilter(),
-        date: prefilter?.date ?? SearchDateFilter(),
+        date: prefilter?.date ?? const EmptyDateFilter(),
         display: prefilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         mediaType: prefilter?.mediaType ?? AssetType.other,
         rating: prefilter?.rating ?? SearchRatingFilter(),
@@ -242,15 +243,17 @@ class SearchPage extends HookConsumerWidget {
       final firstDate = DateTime(1900);
       final lastDate = DateTime.now();
 
+      final stored = filter.value.date.asDateTimeRange();
+      final dateRange = stored != null
+          ? DateTimeRange(start: DateUtils.dateOnly(stored.start), end: DateUtils.dateOnly(stored.end))
+          : DateTimeRange(start: lastDate, end: lastDate);
+
       final date = await showDateRangePicker(
         context: context,
         firstDate: firstDate,
         lastDate: lastDate,
         currentDate: DateTime.now(),
-        initialDateRange: DateTimeRange(
-          start: filter.value.date.takenAfter ?? lastDate,
-          end: filter.value.date.takenBefore ?? lastDate,
-        ),
+        initialDateRange: dateRange,
         helpText: 'search_filter_date_title'.tr(),
         cancelText: 'cancel'.tr(),
         confirmText: 'select'.tr(),
@@ -264,7 +267,7 @@ class SearchPage extends HookConsumerWidget {
       );
 
       if (date == null) {
-        filter.value = filter.value.copyWith(date: SearchDateFilter());
+        filter.value = filter.value.copyWith(date: const EmptyDateFilter());
 
         dateRangeCurrentFilterWidget.value = null;
         unawaited(search());
@@ -272,10 +275,7 @@ class SearchPage extends HookConsumerWidget {
       }
 
       filter.value = filter.value.copyWith(
-        date: SearchDateFilter(
-          takenAfter: date.start,
-          takenBefore: date.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
-        ),
+        date: CustomDateFilter.fromRange(date),
       );
 
       // If date range is less than 24 hours, set the end date to the end of the day
