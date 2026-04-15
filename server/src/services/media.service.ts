@@ -228,7 +228,22 @@ export class MediaService extends BaseService {
       generated = await this.generateVideoThumbnails(asset, config);
     } else if (asset.type === AssetType.Image) {
       this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
-      generated = await this.generateImageThumbnails(asset, config);
+      try {
+        generated = await this.generateImageThumbnails(asset, config);
+      } catch (error) {
+        const message = error instanceof Error ? error.message.toLowerCase() : '';
+
+        if (
+          message.includes('vipsjpeg') ||
+          message.includes('premature end of jpeg') ||
+          message.includes('corrupt') ||
+          message.includes('unsupported')
+        ) {
+          this.logger.warn(`Skipping thumbnail generation for corrupt image ${id}: ${message}`);
+          return JobStatus.Skipped;
+        }
+        throw error;
+      }
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
       return JobStatus.Skipped;
