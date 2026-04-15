@@ -561,6 +561,17 @@ export class MetadataService extends BaseService {
     // never use duration from sidecar
     delete sidecarTags?.Duration;
 
+    // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
+    // prefer irot/imir (ExifTool QuickTime:Rotation/Mirroring) mapped to ExifOrientation.
+    if (mimeTypes.isHeifBasedImage(asset.originalPath)) {
+      const orientation = this.getHeifBasedOrientation(mediaTags);
+      if (orientation === null) {
+        delete mediaTags.Orientation;
+      } else {
+        mediaTags.Orientation = orientation;
+      }
+    }
+
     return { ...mediaTags, ...videoTags, ...sidecarTags };
   }
 
@@ -1056,5 +1067,48 @@ export class MetadataService extends BaseService {
     }
 
     return tags;
+  }
+
+  private getHeifBasedOrientation(exifTags: ImmichTags): ExifOrientation | null {
+    // https://exiftool.org/TagNames/QuickTime.html#ItemPropCont
+    const mirroring = ((value: unknown): 'none' | 'verticalMirror' | 'horizontalMirror' =>
+      value === 1 ? 'horizontalMirror' : value === 0 ? 'verticalMirror' : 'none')(
+      (exifTags as Record<string, unknown>).Mirroring,
+    );
+    const rotation = typeof exifTags.Rotation === 'number' ? exifTags.Rotation : undefined;
+    const orientationByRotation: Partial<
+      Record<number, { none: ExifOrientation; verticalMirror: ExifOrientation; horizontalMirror: ExifOrientation }>
+    > = {
+      0: {
+        none: ExifOrientation.Horizontal,
+        verticalMirror: ExifOrientation.MirrorVertical,
+        horizontalMirror: ExifOrientation.MirrorHorizontal,
+      },
+      1: {
+        none: ExifOrientation.Rotate270CW,
+        verticalMirror: ExifOrientation.MirrorHorizontalRotate270CW,
+        horizontalMirror: ExifOrientation.MirrorHorizontalRotate90CW,
+      },
+      2: {
+        none: ExifOrientation.Rotate180,
+        verticalMirror: ExifOrientation.MirrorHorizontal,
+        horizontalMirror: ExifOrientation.MirrorVertical,
+      },
+      3: {
+        none: ExifOrientation.Rotate90CW,
+        verticalMirror: ExifOrientation.MirrorHorizontalRotate90CW,
+        horizontalMirror: ExifOrientation.MirrorHorizontalRotate270CW,
+      },
+    };
+
+    const mirrorFallback = {
+      none: null,
+      verticalMirror: ExifOrientation.MirrorVertical,
+      horizontalMirror: ExifOrientation.MirrorHorizontal,
+    };
+
+    return (
+      (rotation === undefined ? undefined : orientationByRotation[rotation]?.[mirroring]) ?? mirrorFallback[mirroring]
+    );
   }
 }
