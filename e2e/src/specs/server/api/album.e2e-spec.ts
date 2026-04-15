@@ -135,7 +135,6 @@ describe('/albums', () => {
       expect(status).toEqual(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining({ isFavorite: false })],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         lastModifiedAssetTimestamp: expect.any(String),
         startDate: expect.any(String),
@@ -310,7 +309,6 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         lastModifiedAssetTimestamp: expect.any(String),
         startDate: expect.any(String),
@@ -366,7 +364,6 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user2Albums[0],
-        assets: [],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         assetCount: 1,
         lastModifiedAssetTimestamp: expect.any(String),
@@ -407,7 +404,6 @@ describe('/albums', () => {
         shared: false,
         albumUsers: [],
         hasSharedLink: false,
-        assets: [],
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,
