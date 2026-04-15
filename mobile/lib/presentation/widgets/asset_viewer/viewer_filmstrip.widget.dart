@@ -181,8 +181,7 @@ class _ViewerFilmstripState extends ConsumerState<ViewerFilmstrip> {
     if (_isScrubbing) {
       _isScrubbing = false;
       // Softly snap to the current thumbnail (user might have left the scroll in an intermediate position).
-      // Note we could end up here due to exact drag or an inertia fling. But the inertia fling should due
-      // to simulation always end at exact centered position, so snapping should be a no-op in that case.
+      // Note we could end up here due to exact drag or an inertia fling.
       _scrollToCurrentIndex();
     } else {
       // Re-center on the selected thumbnail if a tap animation was
