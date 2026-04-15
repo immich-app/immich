@@ -16,7 +16,6 @@ import {
   AssetStatsDto,
   AssetStatsResponseDto,
   DeviceIdDto,
-  RandomAssetsDto,
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';

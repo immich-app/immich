@@ -1,7 +1,6 @@
 import {
   AssetMediaResponseDto,
   AssetMediaStatus,
-  AssetResponseDto,
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
@@ -19,7 +18,7 @@ import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, tempDir, TEN_TIMES, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -377,57 +376,6 @@ describe('/asset', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({ images: 1, videos: 0, total: 1 });
-    });
-  });
-
-  describe('GET /assets/random', () => {
-    beforeAll(async () => {
-      await Promise.all([
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-      ]);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
-    });
-
-    it.each(TEN_TIMES)('should return 1 random assets', async () => {
-      const { status, body } = await request(app)
-        .get('/assets/random')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(200);
-
-      const assets: AssetResponseDto[] = body;
-      expect(assets.length).toBe(1);
-      expect(assets[0].ownerId).toBe(user1.userId);
-    });
-
-    it.each(TEN_TIMES)('should return 2 random assets', async () => {
-      const { status, body } = await request(app)
-        .get('/assets/random?count=2')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(200);
-
-      const assets: AssetResponseDto[] = body;
-      expect(assets.length).toBe(2);
-
-      for (const asset of assets) {
-        expect(asset.ownerId).toBe(user1.userId);
-      }
-    });
-
-    it.skip('should return 1 asset if there are 10 assets in the database but user 2 only has 1', async () => {
-      const { status, body } = await request(app)
-        .get('/assets/random')
-        .set('Authorization', `Bearer ${user2.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
     });
   });
 

@@ -58,12 +58,6 @@ const UpdateAssetSchema = UpdateAssetBaseSchema.extend({
   livePhotoVideoId: z.uuidv4().nullish().describe('Live photo video ID'),
 }).meta({ id: 'UpdateAssetDto' });
 
-const RandomAssetsSchema = z
-  .object({
-    count: z.coerce.number().min(1).optional().describe('Number of random assets to return'),
-  })
-  .meta({ id: 'RandomAssetsDto' });
-
 const AssetBulkDeleteSchema = BulkIdsSchema.extend({
   force: z.boolean().optional().describe('Force delete even if in use'),
 }).meta({ id: 'AssetBulkDeleteDto' });
@@ -191,7 +185,6 @@ export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
 export class DeviceIdDto extends createZodDto(DeviceIdSchema) {}
 export class AssetBulkUpdateDto extends createZodDto(AssetBulkUpdateSchema) {}
 export class UpdateAssetDto extends createZodDto(UpdateAssetSchema) {}
-export class RandomAssetsDto extends createZodDto(RandomAssetsSchema) {}
 export class AssetBulkDeleteDto extends createZodDto(AssetBulkDeleteSchema) {}
 export class AssetIdsDto extends createZodDto(AssetIdsSchema) {}
 export class AssetJobsDto extends createZodDto(AssetJobsSchema) {}

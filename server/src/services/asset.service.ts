@@ -39,7 +39,6 @@ import { requireElevatedPermission } from 'src/utils/access';
 import {
   getAssetFiles,
   getDimensions,
-  getMyPartnerIds,
   isPanorama,
   onAfterUnlink,
   onBeforeLink,
