@@ -7,7 +7,7 @@
         "machine-learning/**"
       ],
       "groupName": "machine-learning",
-      "rangeStrategy": "in-range-only",
+      "rangeStrategy": "in-range-only"
     },
     {
       "matchFileNames": [

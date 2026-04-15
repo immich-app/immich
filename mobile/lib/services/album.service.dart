@@ -212,6 +212,10 @@ class AlbumService {
     try {
       final result = await _albumApiRepository.addAssets(album.remoteId!, assets.map((asset) => asset.remoteId!));
 
+      if (result.added.isEmpty && result.duplicates.isEmpty) {
+        return null;
+      }
+
       final List<Asset> addedAssets = result.added
           .map((id) => assets.firstWhere((asset) => asset.remoteId == id))
           .toList();
