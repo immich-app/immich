@@ -1205,57 +1205,8 @@ export type FaceDto = {
     /** Face ID */
     id: string;
 };
-export type QueueStatisticsDto = {
-    /** Number of active jobs */
-    active: number;
-    /** Number of completed jobs */
-    completed: number;
-    /** Number of delayed jobs */
-    delayed: number;
-    /** Number of failed jobs */
-    failed: number;
-    /** Number of paused jobs */
-    paused: number;
-    /** Number of waiting jobs */
-    waiting: number;
-};
-export type QueueStatusLegacyDto = {
-    /** Whether the queue is currently active (has running jobs) */
-    isActive: boolean;
-    /** Whether the queue is paused */
-    isPaused: boolean;
-};
-export type QueueResponseLegacyDto = {
-    jobCounts: QueueStatisticsDto;
-    queueStatus: QueueStatusLegacyDto;
-};
-export type QueuesResponseLegacyDto = {
-    backgroundTask: QueueResponseLegacyDto;
-    backupDatabase: QueueResponseLegacyDto;
-    duplicateDetection: QueueResponseLegacyDto;
-    editor: QueueResponseLegacyDto;
-    faceDetection: QueueResponseLegacyDto;
-    facialRecognition: QueueResponseLegacyDto;
-    library: QueueResponseLegacyDto;
-    metadataExtraction: QueueResponseLegacyDto;
-    migration: QueueResponseLegacyDto;
-    notifications: QueueResponseLegacyDto;
-    ocr: QueueResponseLegacyDto;
-    search: QueueResponseLegacyDto;
-    sidecar: QueueResponseLegacyDto;
-    smartSearch: QueueResponseLegacyDto;
-    storageTemplateMigration: QueueResponseLegacyDto;
-    thumbnailGeneration: QueueResponseLegacyDto;
-    videoConversion: QueueResponseLegacyDto;
-    workflow: QueueResponseLegacyDto;
-};
 export type JobCreateDto = {
     name: ManualJobName;
-};
-export type QueueCommandDto = {
-    command: QueueCommand;
-    /** Force the command execution (if applicable) */
-    force?: boolean;
 };
 export type LibraryResponseDto = {
     /** Number of assets */
@@ -1610,6 +1561,20 @@ export type PluginResponseDto = {
 export type PluginTriggerResponseDto = {
     contextType: PluginContextType;
     "type": PluginTriggerType;
+};
+export type QueueStatisticsDto = {
+    /** Number of active jobs */
+    active: number;
+    /** Number of completed jobs */
+    completed: number;
+    /** Number of delayed jobs */
+    delayed: number;
+    /** Number of failed jobs */
+    failed: number;
+    /** Number of paused jobs */
+    paused: number;
+    /** Number of waiting jobs */
+    waiting: number;
 };
 export type QueueResponseDto = {
     /** Whether the queue is paused */
@@ -4554,17 +4519,6 @@ export function reassignFacesById({ id, faceDto }: {
     })));
 }
 /**
- * Retrieve queue counts and status
- */
-export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: QueuesResponseLegacyDto;
-    }>("/jobs", {
-        ...opts
-    }));
-}
-/**
  * Create a manual job
  */
 export function createJob({ jobCreateDto }: {
@@ -4574,22 +4528,6 @@ export function createJob({ jobCreateDto }: {
         ...opts,
         method: "POST",
         body: jobCreateDto
-    })));
-}
-/**
- * Run jobs
- */
-export function runQueueCommandLegacy({ name, queueCommandDto }: {
-    name: QueueName;
-    queueCommandDto: QueueCommandDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: QueueResponseLegacyDto;
-    }>(`/jobs/${encodeURIComponent(name)}`, oazapfts.json({
-        ...opts,
-        method: "PUT",
-        body: queueCommandDto
     })));
 }
 /**
@@ -7041,33 +6979,6 @@ export enum ManualJobName {
     MemoryCreate = "memory-create",
     BackupDatabase = "backup-database"
 }
-export enum QueueName {
-    ThumbnailGeneration = "thumbnailGeneration",
-    MetadataExtraction = "metadataExtraction",
-    VideoConversion = "videoConversion",
-    FaceDetection = "faceDetection",
-    FacialRecognition = "facialRecognition",
-    SmartSearch = "smartSearch",
-    DuplicateDetection = "duplicateDetection",
-    BackgroundTask = "backgroundTask",
-    StorageTemplateMigration = "storageTemplateMigration",
-    Migration = "migration",
-    Search = "search",
-    Sidecar = "sidecar",
-    Library = "library",
-    Notifications = "notifications",
-    BackupDatabase = "backupDatabase",
-    Ocr = "ocr",
-    Workflow = "workflow",
-    Editor = "editor"
-}
-export enum QueueCommand {
-    Start = "start",
-    Pause = "pause",
-    Resume = "resume",
-    Empty = "empty",
-    ClearFailed = "clear-failed"
-}
 export enum MemorySearchOrder {
     Asc = "asc",
     Desc = "desc",
@@ -7097,6 +7008,26 @@ export enum PluginContextType {
 export enum PluginTriggerType {
     AssetCreate = "AssetCreate",
     PersonRecognized = "PersonRecognized"
+}
+export enum QueueName {
+    ThumbnailGeneration = "thumbnailGeneration",
+    MetadataExtraction = "metadataExtraction",
+    VideoConversion = "videoConversion",
+    FaceDetection = "faceDetection",
+    FacialRecognition = "facialRecognition",
+    SmartSearch = "smartSearch",
+    DuplicateDetection = "duplicateDetection",
+    BackgroundTask = "backgroundTask",
+    StorageTemplateMigration = "storageTemplateMigration",
+    Migration = "migration",
+    Search = "search",
+    Sidecar = "sidecar",
+    Library = "library",
+    Notifications = "notifications",
+    BackupDatabase = "backupDatabase",
+    Ocr = "ocr",
+    Workflow = "workflow",
+    Editor = "editor"
 }
 export enum QueueJobStatus {
     Active = "active",

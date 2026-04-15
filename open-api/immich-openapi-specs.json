@@ -5525,61 +5525,6 @@
       }
     },
     "/jobs": {
-      "get": {
-        "deprecated": true,
-        "description": "Retrieve the counts of the current queue, as well as the current status.",
-        "operationId": "getQueuesLegacy",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/QueuesResponseLegacyDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Retrieve queue counts and status",
-        "tags": [
-          "Jobs",
-          "Deprecated"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          },
-          {
-            "version": "v2.4.0",
-            "state": "Deprecated"
-          }
-        ],
-        "x-immich-permission": "job.read",
-        "x-immich-state": "Deprecated"
-      },
       "post": {
         "description": "Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.",
         "operationId": "createJob",
@@ -5631,82 +5576,6 @@
         ],
         "x-immich-permission": "job.create",
         "x-immich-state": "Stable"
-      }
-    },
-    "/jobs/{name}": {
-      "put": {
-        "deprecated": true,
-        "description": "Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.",
-        "operationId": "runQueueCommandLegacy",
-        "parameters": [
-          {
-            "name": "name",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "$ref": "#/components/schemas/QueueName"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/QueueCommandDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/QueueResponseLegacyDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Run jobs",
-        "tags": [
-          "Jobs",
-          "Deprecated"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          },
-          {
-            "version": "v2.4.0",
-            "state": "Deprecated"
-          }
-        ],
-        "x-immich-permission": "job.create",
-        "x-immich-state": "Deprecated"
       }
     },
     "/libraries": {
@@ -20539,32 +20408,6 @@
         },
         "type": "object"
       },
-      "QueueCommand": {
-        "description": "Queue command to execute",
-        "enum": [
-          "start",
-          "pause",
-          "resume",
-          "empty",
-          "clear-failed"
-        ],
-        "type": "string"
-      },
-      "QueueCommandDto": {
-        "properties": {
-          "command": {
-            "$ref": "#/components/schemas/QueueCommand"
-          },
-          "force": {
-            "description": "Force the command execution (if applicable)",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "command"
-        ],
-        "type": "object"
-      },
       "QueueDeleteDto": {
         "properties": {
           "failed": {
@@ -20669,21 +20512,6 @@
         ],
         "type": "object"
       },
-      "QueueResponseLegacyDto": {
-        "properties": {
-          "jobCounts": {
-            "$ref": "#/components/schemas/QueueStatisticsDto"
-          },
-          "queueStatus": {
-            "$ref": "#/components/schemas/QueueStatusLegacyDto"
-          }
-        },
-        "required": [
-          "jobCounts",
-          "queueStatus"
-        ],
-        "type": "object"
-      },
       "QueueStatisticsDto": {
         "properties": {
           "active": {
@@ -20733,23 +20561,6 @@
         ],
         "type": "object"
       },
-      "QueueStatusLegacyDto": {
-        "properties": {
-          "isActive": {
-            "description": "Whether the queue is currently active (has running jobs)",
-            "type": "boolean"
-          },
-          "isPaused": {
-            "description": "Whether the queue is paused",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isActive",
-          "isPaused"
-        ],
-        "type": "object"
-      },
       "QueueUpdateDto": {
         "properties": {
           "isPaused": {
@@ -20757,85 +20568,6 @@
             "type": "boolean"
           }
         },
-        "type": "object"
-      },
-      "QueuesResponseLegacyDto": {
-        "properties": {
-          "backgroundTask": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "backupDatabase": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "duplicateDetection": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "editor": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "faceDetection": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "facialRecognition": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "library": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "metadataExtraction": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "migration": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "notifications": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "ocr": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "search": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "sidecar": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "smartSearch": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "storageTemplateMigration": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "thumbnailGeneration": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "videoConversion": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
-          "workflow": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          }
-        },
-        "required": [
-          "backgroundTask",
-          "backupDatabase",
-          "duplicateDetection",
-          "editor",
-          "faceDetection",
-          "facialRecognition",
-          "library",
-          "metadataExtraction",
-          "migration",
-          "notifications",
-          "ocr",
-          "search",
-          "sidecar",
-          "smartSearch",
-          "storageTemplateMigration",
-          "thumbnailGeneration",
-          "videoConversion",
-          "workflow"
-        ],
         "type": "object"
       },
       "RandomSearchDto": {

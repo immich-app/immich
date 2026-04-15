@@ -3,12 +3,6 @@ import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  mapQueueLegacy,
-  mapQueuesLegacy,
-  QueueResponseLegacyDto,
-  QueuesResponseLegacyDto,
-} from 'src/dtos/queue-legacy.dto';
-import {
   QueueCommandDto,
   QueueDeleteDto,
   QueueJobResponseDto,
@@ -23,7 +17,6 @@ import {
   ImmichWorker,
   JobName,
   QueueCleanType,
-  QueueCommand,
   QueueName,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
@@ -99,49 +92,8 @@ export class QueueService extends BaseService {
     this.services = services;
   }
 
-  async runCommandLegacy(name: QueueName, dto: QueueCommandDto): Promise<QueueResponseLegacyDto> {
-    this.logger.debug(`Handling command: queue=${name},command=${dto.command},force=${dto.force}`);
-
-    switch (dto.command) {
-      case QueueCommand.Start: {
-        await this.start(name, dto);
-        break;
-      }
-
-      case QueueCommand.Pause: {
-        await this.jobRepository.pause(name);
-        break;
-      }
-
-      case QueueCommand.Resume: {
-        await this.jobRepository.resume(name);
-        break;
-      }
-
-      case QueueCommand.Empty: {
-        await this.jobRepository.empty(name);
-        break;
-      }
-
-      case QueueCommand.ClearFailed: {
-        const failedJobs = await this.jobRepository.clear(name, QueueCleanType.Failed);
-        this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
-        break;
-      }
-    }
-
-    const response = await this.getByName(name);
-
-    return mapQueueLegacy(response);
-  }
-
   async getAll(_auth: AuthDto): Promise<QueueResponseDto[]> {
     return Promise.all(Object.values(QueueName).map((name) => this.getByName(name)));
-  }
-
-  async getAllLegacy(auth: AuthDto): Promise<QueuesResponseLegacyDto> {
-    const responses = await this.getAll(auth);
-    return mapQueuesLegacy(responses);
   }
 
   get(auth: AuthDto, name: QueueName): Promise<QueueResponseDto> {
