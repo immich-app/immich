@@ -145,8 +145,6 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**getAllUserAssetsByDeviceId**](doc//DeprecatedApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
 *DeprecatedApi* | [**getDeltaSync**](doc//DeprecatedApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
 *DeprecatedApi* | [**getFullSyncForUser**](doc//DeprecatedApi.md#getfullsyncforuser) | **POST** /sync/full-sync | Get full sync for user
-*DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
-*DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Delete a duplicate
@@ -158,8 +156,6 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | Re-assign a face to another person
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | Create a manual job
-*JobsApi* | [**getQueuesLegacy**](doc//JobsApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
-*JobsApi* | [**runQueueCommandLegacy**](doc//JobsApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *LibrariesApi* | [**createLibrary**](doc//LibrariesApi.md#createlibrary) | **POST** /libraries | Create a library
 *LibrariesApi* | [**deleteLibrary**](doc//LibrariesApi.md#deletelibrary) | **DELETE** /libraries/{id} | Delete a library
 *LibrariesApi* | [**getAllLibraries**](doc//LibrariesApi.md#getalllibraries) | **GET** /libraries | Retrieve libraries
@@ -511,18 +507,13 @@ Class | Method | HTTP request | Description
  - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
- - [QueueCommand](doc//QueueCommand.md)
- - [QueueCommandDto](doc//QueueCommandDto.md)
  - [QueueDeleteDto](doc//QueueDeleteDto.md)
  - [QueueJobResponseDto](doc//QueueJobResponseDto.md)
  - [QueueJobStatus](doc//QueueJobStatus.md)
  - [QueueName](doc//QueueName.md)
  - [QueueResponseDto](doc//QueueResponseDto.md)
- - [QueueResponseLegacyDto](doc//QueueResponseLegacyDto.md)
  - [QueueStatisticsDto](doc//QueueStatisticsDto.md)
- - [QueueStatusLegacyDto](doc//QueueStatusLegacyDto.md)
  - [QueueUpdateDto](doc//QueueUpdateDto.md)
- - [QueuesResponseLegacyDto](doc//QueuesResponseLegacyDto.md)
  - [RandomSearchDto](doc//RandomSearchDto.md)
  - [RatingsResponse](doc//RatingsResponse.md)
  - [RatingsUpdate](doc//RatingsUpdate.md)

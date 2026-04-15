@@ -1,6 +1,5 @@
 import { AuthApiKey, AuthSharedLink, AuthUser, Exif, Library, UserAdmin } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { AssetFileType, Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
 
@@ -99,16 +98,6 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
 
   return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
 };
-
-const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
-  active: 0,
-  completed: 0,
-  failed: 0,
-  delayed: 0,
-  waiting: 0,
-  paused: 0,
-  ...dto,
-});
 
 const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
   const {
@@ -236,7 +225,6 @@ export const factory = {
   assetOcr: assetOcrFactory,
   auth: authFactory,
   library: libraryFactory,
-  queueStatistics: queueStatisticsFactory,
   versionHistory: versionHistoryFactory,
   jobAssets: {
     sidecarWrite: assetSidecarWriteFactory,

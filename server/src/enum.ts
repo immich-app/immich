@@ -826,23 +826,6 @@ export enum JobName {
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
 
-export enum QueueCommand {
-  Start = 'start',
-  /** @deprecated Use `updateQueue` instead */
-  Pause = 'pause',
-  /** @deprecated Use `updateQueue` instead */
-  Resume = 'resume',
-  /** @deprecated Use `emptyQueue` instead */
-  Empty = 'empty',
-  /** @deprecated Use `emptyQueue` instead */
-  ClearFailed = 'clear-failed',
-}
-
-export const QueueCommandSchema = z
-  .enum(QueueCommand)
-  .describe('Queue command to execute')
-  .meta({ id: 'QueueCommand' });
-
 export enum JobStatus {
   Success = 'success',
   Failed = 'failed',

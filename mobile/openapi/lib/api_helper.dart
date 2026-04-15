@@ -148,9 +148,6 @@ String parameterToString(dynamic value) {
   if (value is PluginTriggerType) {
     return PluginTriggerTypeTypeTransformer().encode(value).toString();
   }
-  if (value is QueueCommand) {
-    return QueueCommandTypeTransformer().encode(value).toString();
-  }
   if (value is QueueJobStatus) {
     return QueueJobStatusTypeTransformer().encode(value).toString();
   }
