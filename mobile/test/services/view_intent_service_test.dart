@@ -13,6 +13,7 @@ void main() {
   const attachment = ViewIntentAttachment(
     path: '/tmp/file.jpg',
     type: ViewIntentAttachmentType.image,
+    mimeType: 'image/jpeg',
     localAssetId: '42',
   );
 

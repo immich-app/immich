@@ -7,12 +7,9 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/models/view_intent/view_intent_attachment.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -89,8 +86,8 @@ class ViewIntentHandler {
         return;
       }
     }
-
-    final fallbackAsset = _toViewIntentAsset(attachment);
+    final checksum = localAssetId != null ? await _computeChecksum(localAssetId) : null;
+    final fallbackAsset = _toViewIntentAsset(attachment).copyWith(checksum: checksum);
     _logger.fine('openAssetViewer for fallbackAsset');
     _openAssetViewer(fallbackAsset, _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink), 0);
   }
@@ -135,13 +132,9 @@ class ViewIntentHandler {
   void _openAssetViewer(BaseAsset asset, TimelineService timelineService, int initialIndex) {
     _ref.read(assetViewerProvider.notifier).reset();
     _ref.read(assetViewerProvider.notifier).setAsset(asset);
-    _ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo || asset.isMotionPhoto) {
-      _ref.read(videoPlaybackValueProvider.notifier).reset();
-      _ref.read(videoPlayerControlsProvider.notifier).pause();
-    }
+
     if (asset.isVideo) {
-      _ref.read(assetViewerProvider.notifier).setControls(false);
+      _ref.read(assetViewerProvider.notifier).setControls(true);
     }
 
     _router.push(AssetViewerRoute(initialIndex: initialIndex, timelineService: timelineService));
@@ -163,13 +156,14 @@ class ViewIntentHandler {
     final now = DateTime.now();
 
     return LocalAsset(
-      id: attachment.path,
+      id: attachment.localAssetId ?? '',
       name: attachment.fileName,
       checksum: null,
       type: attachment.isVideo ? AssetType.video : AssetType.image,
       createdAt: now,
       updatedAt: now,
       isEdited: false,
+      playbackStyle: attachment.playbackStyle,
     );
   }
 }

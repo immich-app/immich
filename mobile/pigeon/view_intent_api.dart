@@ -3,8 +3,6 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/platform/view_intent_api.g.dart',
-    swiftOut: 'ios/Runner/ViewIntent/ViewIntent.g.swift',
-    swiftOptions: SwiftOptions(includeErrorClass: false),
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/viewintent/ViewIntent.g.kt',
     kotlinOptions: KotlinOptions(package: 'app.alextran.immich.viewintent'),
     dartOptions: DartOptions(),

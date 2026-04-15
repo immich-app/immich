@@ -18,6 +18,7 @@ class ViewHandlerRepository {
       return ViewIntentAttachment(
         path: result.path,
         type: result.type == ViewIntentType.image ? ViewIntentAttachmentType.image : ViewIntentAttachmentType.video,
+        mimeType: result.mimeType,
         localAssetId: result.localAssetId,
       );
     } catch (_) {
