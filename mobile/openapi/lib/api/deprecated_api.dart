@@ -73,68 +73,6 @@ class DeprecatedApi {
     return null;
   }
 
-  /// Retrieve assets by device ID
-  ///
-  /// Get all asset of a device that are in the database, ID only.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] deviceId (required):
-  ///   Device ID
-  Future<Response> getAllUserAssetsByDeviceIdWithHttpInfo(String deviceId,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/assets/device/{deviceId}'
-      .replaceAll('{deviceId}', deviceId);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve assets by device ID
-  ///
-  /// Get all asset of a device that are in the database, ID only.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] deviceId (required):
-  ///   Device ID
-  Future<List<String>?> getAllUserAssetsByDeviceId(String deviceId,) async {
-    final response = await getAllUserAssetsByDeviceIdWithHttpInfo(deviceId,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
-        .cast<String>()
-        .toList(growable: false);
-
-    }
-    return null;
-  }
-
   /// Retrieve queue counts and status
   ///
   /// Retrieve the counts of the current queue, as well as the current status.

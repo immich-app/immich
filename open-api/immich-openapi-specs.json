@@ -3084,126 +3084,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/assets/device/{deviceId}": {
-      "get": {
-        "deprecated": true,
-        "description": "Get all asset of a device that are in the database, ID only.",
-        "operationId": "getAllUserAssetsByDeviceId",
-        "parameters": [
-          {
-            "name": "deviceId",
-            "required": true,
-            "in": "path",
-            "description": "Device ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Retrieve assets by device ID",
-        "tags": [
-          "Assets",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v2",
-            "state": "Deprecated"
-          }
-        ],
-        "x-immich-state": "Deprecated"
-      }
-    },
-    "/assets/exist": {
-      "post": {
-        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
-        "operationId": "checkExistingAssets",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckExistingAssetsDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckExistingAssetsResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Check existing assets",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "asset.upload",
-        "x-immich-state": "Stable"
-      }
-    },
     "/assets/jobs": {
       "post": {
         "description": "Run a specific job on a set of assets.",
@@ -9252,15 +9132,6 @@
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
               "example": "2024-01-01T00:00:00.000Z",
-              "type": "string"
-            }
-          },
-          {
-            "name": "deviceId",
-            "required": false,
-            "in": "query",
-            "description": "Device ID to filter by",
-            "schema": {
               "type": "string"
             }
           },
@@ -16343,14 +16214,6 @@
             "format": "binary",
             "type": "string"
           },
-          "deviceAssetId": {
-            "description": "Device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          },
           "duration": {
             "description": "Duration (for videos)",
             "type": "string"
@@ -16401,8 +16264,6 @@
         },
         "required": [
           "assetData",
-          "deviceAssetId",
-          "deviceId",
           "fileCreatedAt",
           "fileModifiedAt"
         ],
@@ -16718,14 +16579,6 @@
             "format": "date-time",
             "type": "string"
           },
-          "deviceAssetId": {
-            "description": "Device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          },
           "duplicateId": {
             "description": "Duplicate group ID",
             "nullable": true,
@@ -16907,8 +16760,6 @@
         "required": [
           "checksum",
           "createdAt",
-          "deviceAssetId",
-          "deviceId",
           "duration",
           "fileCreatedAt",
           "fileModifiedAt",
@@ -17181,42 +17032,6 @@
         "required": [
           "newPassword",
           "password"
-        ],
-        "type": "object"
-      },
-      "CheckExistingAssetsDto": {
-        "properties": {
-          "deviceAssetIds": {
-            "description": "Device asset IDs to check",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 1,
-            "type": "array"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetIds",
-          "deviceId"
-        ],
-        "type": "object"
-      },
-      "CheckExistingAssetsResponseDto": {
-        "properties": {
-          "existingIds": {
-            "description": "Existing asset IDs",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "existingIds"
         ],
         "type": "object"
       },
@@ -18792,14 +18607,6 @@
           },
           "description": {
             "description": "Filter by description text",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "description": "Filter by device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID to filter by",
             "type": "string"
           },
           "encodedVideoPath": {
@@ -20675,10 +20482,6 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
-          "deviceId": {
-            "description": "Device ID to filter by",
-            "type": "string"
-          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -22054,10 +21857,6 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
-          "deviceId": {
-            "description": "Device ID to filter by",
-            "type": "string"
-          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -22335,10 +22134,6 @@
           },
           "description": {
             "description": "Filter by description text",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID to filter by",
             "type": "string"
           },
           "isEncoded": {

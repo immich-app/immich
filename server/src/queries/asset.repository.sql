@@ -242,17 +242,6 @@ where
 limit
   $3
 
--- AssetRepository.getAllByDeviceId
-select
-  "deviceAssetId"
-from
-  "asset"
-where
-  "ownerId" = $1::uuid
-  and "deviceId" = $2
-  and "visibility" != $3
-  and "deletedAt" is null
-
 -- AssetRepository.getLivePhotoCount
 select
   count(*) as "count"
@@ -312,9 +301,8 @@ limit
 -- AssetRepository.updateAll
 update "asset"
 set
-  "deviceId" = $1
 where
-  "id" = any ($2::uuid[])
+  "id" = any ($1::uuid[])
 
 -- AssetRepository.getByChecksum
 select

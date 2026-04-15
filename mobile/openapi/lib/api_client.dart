@@ -330,10 +330,6 @@ class ApiClient {
           return CastUpdate.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'CheckExistingAssetsDto':
-          return CheckExistingAssetsDto.fromJson(value);
-        case 'CheckExistingAssetsResponseDto':
-          return CheckExistingAssetsResponseDto.fromJson(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
         case 'ContributorCountResponseDto':

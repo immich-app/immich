@@ -21,8 +21,6 @@ const createAsset = (
   width: 1920,
   height: 1080,
   createdAt: new Date().toISOString(),
-  deviceAssetId: 'device-asset-1',
-  deviceId: 'device-1',
   ownerId: 'owner-1',
   originalPath: '/path/to/asset',
   originalFileName: 'asset.jpg',

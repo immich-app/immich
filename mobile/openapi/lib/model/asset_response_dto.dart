@@ -15,8 +15,6 @@ class AssetResponseDto {
   AssetResponseDto({
     required this.checksum,
     required this.createdAt,
-    required this.deviceAssetId,
-    required this.deviceId,
     this.duplicateId,
     required this.duration,
     this.exifInfo,
@@ -55,12 +53,6 @@ class AssetResponseDto {
 
   /// The UTC timestamp when the asset was originally uploaded to Immich.
   DateTime createdAt;
-
-  /// Device asset ID
-  String deviceAssetId;
-
-  /// Device ID
-  String deviceId;
 
   /// Duplicate group ID
   String? duplicateId;
@@ -179,8 +171,6 @@ class AssetResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
     other.checksum == checksum &&
     other.createdAt == createdAt &&
-    other.deviceAssetId == deviceAssetId &&
-    other.deviceId == deviceId &&
     other.duplicateId == duplicateId &&
     other.duration == duration &&
     other.exifInfo == exifInfo &&
@@ -218,8 +208,6 @@ class AssetResponseDto {
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
     (createdAt.hashCode) +
-    (deviceAssetId.hashCode) +
-    (deviceId.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (duration.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
@@ -253,14 +241,12 @@ class AssetResponseDto {
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'deviceAssetId'] = this.deviceAssetId;
-      json[r'deviceId'] = this.deviceId;
     if (this.duplicateId != null) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
@@ -350,8 +336,6 @@ class AssetResponseDto {
       return AssetResponseDto(
         checksum: mapValueOfType<String>(json, r'checksum')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
-        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
@@ -436,8 +420,6 @@ class AssetResponseDto {
   static const requiredKeys = <String>{
     'checksum',
     'createdAt',
-    'deviceAssetId',
-    'deviceId',
     'duration',
     'fileCreatedAt',
     'fileModifiedAt',
