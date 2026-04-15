@@ -4,7 +4,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { ocrManager, type OcrBoundingBox } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalFile, panoramaFisheyeProjection } from '$lib/stores/preferences.store';
   import { calculateBoundingBoxMatrix, getOcrBoundingBoxes, type Point } from '$lib/utils/ocr-utils';
   import {
     EquirectangularAdapter,
@@ -40,6 +40,34 @@
 
   const OCR_TOOLTIP_HTML_CLASS =
     'flex items-center justify-center text-white bg-black/50 cursor-text pointer-events-auto whitespace-pre-wrap wrap-break-word select-text';
+
+  type ProjectionPreset = {
+    minFov: number;
+    maxFov: number;
+    zoomSpeed: number;
+    fisheye: number | false;
+    moveSpeed: number;
+  };
+
+  const FISHEYE_PRESET: ProjectionPreset = {
+    minFov: 5,
+    maxFov: 140,
+    zoomSpeed: 0.5,
+    fisheye: 2,
+    moveSpeed: 2,
+  };
+
+  const PLANAR_PRESET: ProjectionPreset = {
+    minFov: 15,
+    maxFov: 90,
+    zoomSpeed: 0.5,
+    fisheye: false,
+    moveSpeed: 1,
+  };
+
+  const getProjectionPreset = (isFisheye: boolean): ProjectionPreset => {
+    return isFisheye ? FISHEYE_PRESET : PLANAR_PRESET;
+  };
 
   type Props = {
     panorama: string | { source: string };
@@ -163,6 +191,84 @@
     return viewer.dataHelper.sphericalCoordsToViewerCoords(spherical);
   };
 
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+  const ANGULAR_SAMPLE = (2 * Math.PI) / 180;
+
+  const getProjectedScale = (position: { yaw: number; pitch: number }) => {
+    if (!viewer) {
+      return 0;
+    }
+
+    const left = viewer.dataHelper.sphericalCoordsToViewerCoords({
+      yaw: position.yaw - ANGULAR_SAMPLE,
+      pitch: position.pitch,
+    });
+    const right = viewer.dataHelper.sphericalCoordsToViewerCoords({
+      yaw: position.yaw + ANGULAR_SAMPLE,
+      pitch: position.pitch,
+    });
+    const up = viewer.dataHelper.sphericalCoordsToViewerCoords({
+      yaw: position.yaw,
+      pitch: position.pitch + ANGULAR_SAMPLE,
+    });
+    const down = viewer.dataHelper.sphericalCoordsToViewerCoords({
+      yaw: position.yaw,
+      pitch: position.pitch - ANGULAR_SAMPLE,
+    });
+
+    if (!left || !right || !up || !down) {
+      return 0;
+    }
+
+    const horizontal = Math.hypot(right.x - left.x, right.y - left.y);
+    const vertical = Math.hypot(up.x - down.x, up.y - down.y);
+
+    return (horizontal + vertical) / 2;
+  };
+
+  const applyProjectionPreset = (preset: ProjectionPreset) => {
+    if (!viewer) {
+      return;
+    }
+
+    const position = viewer.getPosition();
+    const targetScale = getProjectedScale(position);
+
+    viewer.setOptions({
+      minFov: preset.minFov,
+      maxFov: preset.maxFov,
+      zoomSpeed: preset.zoomSpeed,
+      fisheye: preset.fisheye,
+      moveSpeed: preset.moveSpeed,
+    });
+
+    viewer.rotate(position);
+
+    // Fisheye changes camera position, so preserving FOV alone is insufficient.
+    // Match projected center scale by solving for zoom in the target projection.
+    let low = 0;
+    let high = 100;
+
+    for (let i = 0; i < 12; i++) {
+      const mid = (low + high) / 2;
+      viewer.zoom(mid);
+      const midScale = getProjectedScale(position);
+
+      if (midScale < targetScale) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+
+    const mappedZoom = clamp((low + high) / 2, 0, 100);
+    viewer.zoom(mappedZoom);
+    viewer.needsUpdate();
+
+    updateOcrBoxes(ocrManager.showOverlay, ocrManager.data, true);
+  };
+
   const onZoom = () => {
     viewer?.animate({ zoom: assetViewerManager.zoom > 1 ? 50 : 83.3, speed: 250 });
   };
@@ -172,6 +278,8 @@
     if (!container) {
       return;
     }
+
+    const projection = getProjectionPreset($panoramaFisheyeProjection);
 
     viewer = new Viewer({
       adapter,
@@ -206,11 +314,13 @@
       touchmoveTwoFingers: false,
       mousewheelCtrlKey: false,
       navbar,
-      minFov: 15,
-      maxFov: 90,
-      zoomSpeed: 0.5,
-      fisheye: false,
+      minFov: projection.minFov,
+      maxFov: projection.maxFov,
+      zoomSpeed: projection.zoomSpeed,
+      fisheye: projection.fisheye,
+      moveSpeed: projection.moveSpeed,
     });
+
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel is 0-100
@@ -241,6 +351,18 @@
       viewer.removeEventListener(events.ZoomUpdatedEvent.type, updateHandler);
       viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
     };
+  });
+
+  let previousProjectionState = $state<boolean>($panoramaFisheyeProjection);
+  $effect(() => {
+    const isFisheye = $panoramaFisheyeProjection;
+
+    if (!viewer || isFisheye === previousProjectionState) {
+      return;
+    }
+
+    previousProjectionState = isFisheye;
+    applyProjectionPreset(getProjectionPreset(isFisheye));
   });
 
   onDestroy(() => {
