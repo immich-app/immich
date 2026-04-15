@@ -7,7 +7,8 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
 
 RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
-  pnpm config set store-dir "$PNPM_HOME"
+  pnpm config set store-dir "$PNPM_HOME" && \
+  pnpm config set registry https://npm.raccoon.sh
 
 FROM builder AS server
 
@@ -103,6 +104,8 @@ ENV IMMICH_REPOSITORY_URL=https://github.com/immich-app/immich
 ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
+
+RUN apt-get update && apt-get install -y restic
 
 VOLUME /data
 EXPOSE 2283

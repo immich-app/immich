@@ -82,6 +82,8 @@ jobs:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run package manager install
         run: pnpm install
       - name: Run linter
@@ -126,6 +128,8 @@ jobs:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Setup typescript-sdk
         run: pnpm install && pnpm run build
         working-directory: ./open-api/typescript-sdk
@@ -173,6 +177,8 @@ jobs:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
@@ -215,6 +221,8 @@ jobs:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
@@ -259,6 +267,8 @@ jobs:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
@@ -297,6 +307,8 @@ jobs:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Install dependencies
         run: pnpm --filter=immich-i18n install --frozen-lockfile
       - name: Format
@@ -345,6 +357,8 @@ jobs:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
@@ -392,6 +406,8 @@ jobs:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run pnpm install
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
       - name: Run medium tests
@@ -431,6 +447,8 @@ jobs:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
@@ -503,6 +521,8 @@ jobs:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
@@ -668,6 +688,8 @@ jobs:
           node-version-file: './.github/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Run pnpm install
         run: pnpm install --frozen-lockfile
       - name: Run formatter
@@ -719,6 +741,8 @@ jobs:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
       - name: Build the app
@@ -781,6 +805,8 @@ jobs:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Configure npm registry
+        run: pnpm set registry https://npm.raccoon.sh/
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
       - name: Build the app

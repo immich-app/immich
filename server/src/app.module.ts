@@ -6,6 +6,7 @@ import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { OrchestrationApiModule } from 'orchestration-api/dist';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
@@ -20,6 +21,7 @@ import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
+import { YuccaAdminGuard } from 'src/middleware/yucca-admin.guard';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -50,7 +52,12 @@ const commonMiddleware = [
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
 
-const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
+const apiMiddleware = [
+  FileUploadInterceptor,
+  ...commonMiddleware,
+  { provide: APP_GUARD, useClass: YuccaAdminGuard },
+  { provide: APP_GUARD, useClass: AuthGuard },
+];
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, otel } = configRepository.getEnv();
@@ -102,14 +109,37 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
 }
 
 @Module({
-  imports: [...bullImports, ...commonImports, ScheduleModule.forRoot()],
+  imports: [
+    ...bullImports,
+    ...commonImports,
+    ScheduleModule.forRoot(),
+    OrchestrationApiModule.forRoot({
+      // TODO: db init must happen elsewhere...
+
+      yuccaProductionApi: 'https://staging.fubar.computer',
+      // yuccaProductionApi: 'http://100.64.0.6:5173', // TODO
+      statePath: '/yucca', // TODO
+      requireWsAuth: true,
+      requireLock: true,
+    }),
+  ],
   controllers: [...controllers],
   providers: [...common, ...apiMiddleware, { provide: IWorker, useValue: ImmichWorker.Api }],
 })
 export class ApiModule extends BaseModule {}
 
 @Module({
-  imports: [...commonImports],
+  imports: [
+    ...commonImports,
+    OrchestrationApiModule.forRoot({
+      yuccaProductionApi: 'https://staging.fubar.computer',
+      // yuccaProductionApi: 'http://100.64.0.6:5173', // TODO
+      statePath: '/yucca', // TODO
+      externalBaseUrl: 'https://my.immich.app',
+      requireWsAuth: true,
+      requireLock: true,
+    }),
+  ],
   controllers: [MaintenanceWorkerController],
   providers: [
     ConfigRepository,

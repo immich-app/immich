@@ -879,6 +879,7 @@ export enum DatabaseLock {
   MaintenanceOperation = 621,
   MemoryCreation = 777,
   VersionCheck = 800,
+  YuccaModuleConfig = 900,
 }
 
 export const DatabaseLockSchema = z.enum(DatabaseLock).describe('Database lock').meta({ id: 'DatabaseLock' });

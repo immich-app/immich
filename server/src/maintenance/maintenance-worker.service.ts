@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
+import { EventsGateway } from 'orchestration-api/dist';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import {
@@ -55,6 +56,7 @@ export class MaintenanceWorkerService {
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
     private databaseBackupService: DatabaseBackupService,
+    private readonly eventsGateway: EventsGateway,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -76,6 +78,14 @@ export class MaintenanceWorkerService {
     };
 
     StorageCore.setMediaLocation(this.detectMediaLocation());
+
+    this.eventsGateway.setAuthFn(async (client) => {
+      await this.authenticate(client.request.headers);
+
+      return {
+        user: { isAdmin: true },
+      };
+    });
 
     this.maintenanceWebsocketRepository.setAuthFn(async (client) => this.authenticate(client.request.headers));
     this.maintenanceWebsocketRepository.setStatusUpdateFn((status) => (this.#status = status));

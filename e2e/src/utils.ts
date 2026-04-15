@@ -32,6 +32,7 @@ import {
   createUserAdmin,
   deleteAssets,
   deleteDatabaseBackup,
+  deleteLibrary,
   getAssetInfo,
   getConfig,
   getConfigDefaults,
@@ -467,6 +468,8 @@ export const utils = {
   updateLibrary: (accessToken: string, id: string, dto: UpdateLibraryDto) =>
     updateLibrary({ id, updateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
+  deleteLibrary: (accessToken: string, id: string) => deleteLibrary({ id }, { headers: asBearerAuth(accessToken) }),
+
   createPartner: (accessToken: string, id: string) =>
     createPartner({ partnerCreateDto: { sharedWithId: id } }, { headers: asBearerAuth(accessToken) }),
 
@@ -568,6 +571,10 @@ export const utils = {
 
   async move(source: string, dest: string) {
     return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
+  async mkdir(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mkdir', '-p', path]).promise;
   },
 
   createBackup: async (accessToken: string) => {
