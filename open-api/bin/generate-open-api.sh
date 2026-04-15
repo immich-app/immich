@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 OPENAPI_GENERATOR_VERSION=v7.12.0
 
+set -euo pipefail
+
 # usage: ./bin/generate-open-api.sh
 
 function dart {
@@ -39,9 +41,9 @@ function typescript {
   pnpm --filter immich sync:open-api
 )
 
-if [[ $1 == 'dart' ]]; then
+if [[ $# -ge 1 ]] && [[ $1 == 'dart' ]]; then
   dart
-elif [[ $1 == 'typescript' ]]; then
+elif [[ $# -ge 1 ]] && [[ $1 == 'typescript' ]]; then
   typescript
 else
   dart
