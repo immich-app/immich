@@ -113,45 +113,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     state = const WebsocketState(isConnected: false, socket: null);
   }
 
-  void stopListenToEvent(String eventName) {
-    state.socket?.off(eventName);
-  }
-
-  void stopListenToOldEvents() {
-    state.socket?.off('on_upload_success');
-    state.socket?.off('on_asset_delete');
-    state.socket?.off('on_asset_trash');
-    state.socket?.off('on_asset_restore');
-    state.socket?.off('on_asset_update');
-    state.socket?.off('on_asset_stack_update');
-    state.socket?.off('on_asset_hidden');
-  }
-
-  void startListeningToOldEvents() {
-    state.socket?.on('on_upload_success', _handleOnUploadSuccess);
-    state.socket?.on('on_asset_delete', _handleOnAssetDelete);
-    state.socket?.on('on_asset_trash', _handleOnAssetTrash);
-    state.socket?.on('on_asset_restore', _handleServerUpdates);
-    state.socket?.on('on_asset_update', _handleServerUpdates);
-    state.socket?.on('on_asset_stack_update', _handleServerUpdates);
-    state.socket?.on('on_asset_hidden', _handleOnAssetHidden);
-  }
-
-  void stopListeningToBetaEvents() {
-    state.socket?.off('AssetUploadReadyV1');
-    state.socket?.off('AssetEditReadyV1');
-  }
-
-  void startListeningToBetaEvents() {
-    state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
-    state.socket?.on('AssetEditReadyV1', _handleSyncAssetEditReady);
-  }
-
-  void listenUploadEvent() {
-    dPrint(() => "Start listening to event on_upload_success");
-    state.socket?.on('on_upload_success', _handleOnUploadSuccess);
-  }
-
   Future<void> waitForEvent(String event, bool Function(dynamic)? predicate, Duration timeout) {
     final completer = Completer<void>();
 
@@ -171,69 +132,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         completer.completeError(TimeoutException("Timeout waiting for event: $event"));
       },
     );
-  }
-
-  void addPendingChange(PendingAction action, dynamic value) {
-    final now = DateTime.now();
-    state = state.copyWith(
-      pendingChanges: [...state.pendingChanges, PendingChange(now.millisecondsSinceEpoch.toString(), action, value)],
-    );
-    _debounce.run(handlePendingChanges);
-  }
-
-  Future<void> _handlePendingTrashes() async {
-    final trashChanges = state.pendingChanges.where((c) => c.action == PendingAction.assetTrash).toList();
-    if (trashChanges.isNotEmpty) {
-      List<String> remoteIds = trashChanges.expand((a) => (a.value as List).map((e) => e.toString())).toList();
-
-      await _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
-      await _ref.read(assetProvider.notifier).getAllAsset();
-
-      state = state.copyWith(pendingChanges: state.pendingChanges.whereNot((c) => trashChanges.contains(c)).toList());
-    }
-  }
-
-  Future<void> _handlePendingDeletes() async {
-    final deleteChanges = state.pendingChanges.where((c) => c.action == PendingAction.assetDelete).toList();
-    if (deleteChanges.isNotEmpty) {
-      List<String> remoteIds = deleteChanges.map((a) => a.value.toString()).toList();
-      await _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
-      state = state.copyWith(pendingChanges: state.pendingChanges.whereNot((c) => deleteChanges.contains(c)).toList());
-    }
-  }
-
-  Future<void> _handlePendingUploaded() async {
-    final uploadedChanges = state.pendingChanges.where((c) => c.action == PendingAction.assetUploaded).toList();
-    if (uploadedChanges.isNotEmpty) {
-      List<AssetResponseDto?> remoteAssets = uploadedChanges.map((a) => AssetResponseDto.fromJson(a.value)).toList();
-      for (final dto in remoteAssets) {
-        if (dto != null) {
-          final newAsset = Asset.remote(dto);
-          await _ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
-        }
-      }
-      state = state.copyWith(
-        pendingChanges: state.pendingChanges.whereNot((c) => uploadedChanges.contains(c)).toList(),
-      );
-    }
-  }
-
-  Future<void> _handlingPendingHidden() async {
-    final hiddenChanges = state.pendingChanges.where((c) => c.action == PendingAction.assetHidden).toList();
-    if (hiddenChanges.isNotEmpty) {
-      List<String> remoteIds = hiddenChanges.map((a) => a.value.toString()).toList();
-      final db = _ref.watch(dbProvider);
-      await db.writeTxn(() => db.assets.deleteAllByRemoteId(remoteIds));
-
-      state = state.copyWith(pendingChanges: state.pendingChanges.whereNot((c) => hiddenChanges.contains(c)).toList());
-    }
-  }
-
-  Future<void> handlePendingChanges() async {
-    await _handlePendingUploaded();
-    await _handlePendingDeletes();
-    await _handlingPendingHidden();
-    await _handlePendingTrashes();
   }
 
   void _handleOnConfigUpdate(dynamic _) {
