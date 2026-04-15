@@ -44,6 +44,9 @@ class RemoteAsset extends BaseAsset {
   String get heroTag => '${localId ?? checksum}_$id';
 
   @override
+  bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage;
+
+  @override
   String toString() {
     return '''Asset {
     id: $id,

@@ -2,14 +2,9 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { Insertable } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { Writable } from 'node:stream';
-import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetDeltaSyncDto,
-  AssetDeltaSyncResponseDto,
-  AssetFullSyncDto,
   SyncAckDeleteDto,
   SyncAckSetDto,
   syncAssetFaceV2ToV1,
@@ -17,23 +12,12 @@ import {
   SyncItem,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
-import {
-  AssetVisibility,
-  DatabaseAction,
-  EntityType,
-  JobName,
-  Permission,
-  QueueName,
-  SyncEntityType,
-  SyncRequestType,
-} from 'src/enum';
+import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
 import { SyncQueryOptions } from 'src/repositories/sync.repository';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
-import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
-import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
@@ -66,7 +50,6 @@ const sendEntityBackfillCompleteAck = (response: Writable, ackType: SyncEntityTy
   send(response, { type: SyncEntityType.SyncAckV1, data: {}, ackType, ids: [id, COMPLETE_ID] });
 };
 
-const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 export const SYNC_TYPES_ORDER = [
   SyncRequestType.AuthUsersV1,
   SyncRequestType.UsersV1,
@@ -886,69 +869,5 @@ export class SyncService extends BaseService {
         }),
       },
     ]);
-  }
-
-  async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
-    // mobile implementation is faster if this is a single id
-    const userId = dto.userId || auth.user.id;
-    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [userId] });
-    const assets = await this.assetRepository.getAllForUserFullSync({
-      ownerId: userId,
-      updatedUntil: dto.updatedUntil,
-      lastId: dto.lastId,
-      limit: dto.limit,
-    });
-    return assets.map((a) => mapAsset(a, { auth, stripMetadata: false, withStack: true }));
-  }
-
-  async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    // app has not synced in the last 100 days
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.updatedAfter));
-    if (duration > AUDIT_LOG_MAX_DURATION) {
-      return FULL_SYNC;
-    }
-
-    // app does not have the correct partners synced
-    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
-    const userIds = [auth.user.id, ...partnerIds];
-    if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
-      return FULL_SYNC;
-    }
-
-    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: dto.userIds });
-
-    const limit = 10_000;
-    const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
-
-    // too many changes, need to do a full sync
-    if (upserted.length === limit) {
-      return FULL_SYNC;
-    }
-
-    const deleted = await this.auditRepository.getAfter(dto.updatedAfter, {
-      userIds,
-      entityType: EntityType.Asset,
-      action: DatabaseAction.Delete,
-    });
-
-    const result = {
-      needsFullSync: false,
-      upserted: upserted
-        // do not return archived assets for partner users
-        .filter(
-          (a) =>
-            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.Timeline),
-        )
-        .map((a) =>
-          mapAsset(a, {
-            auth,
-            stripMetadata: false,
-            // ignore stacks for non partner users
-            withStack: a.ownerId === auth.user.id,
-          }),
-        ),
-      deleted,
-    };
-    return result;
   }
 }

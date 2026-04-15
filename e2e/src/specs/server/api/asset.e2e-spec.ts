@@ -1091,8 +1091,6 @@ describe('/asset', () => {
       const { body, status } = await request(app)
         .post('/assets')
         .set('Authorization', `Bearer ${quotaUser.accessToken}`)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
         .field('fileCreatedAt', new Date().toISOString())
         .field('fileModifiedAt', new Date().toISOString())
         .attach('assetData', makeRandomImage(), 'example.jpg');
@@ -1109,8 +1107,6 @@ describe('/asset', () => {
       const { body, status } = await request(app)
         .post('/assets')
         .set('Authorization', `Bearer ${quotaUser.accessToken}`)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
         .field('fileCreatedAt', new Date().toISOString())
         .field('fileModifiedAt', new Date().toISOString())
         .attach('assetData', randomBytes(2014), 'example.jpg');
@@ -1162,31 +1158,6 @@ describe('/asset', () => {
 
       const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
       expect(video.checksum).toStrictEqual(checksum);
-    });
-  });
-
-  describe('POST /assets/exist', () => {
-    it('ignores invalid deviceAssetIds', async () => {
-      const response = await utils.checkExistingAssets(user1.accessToken, {
-        deviceId: 'test-assets-exist',
-        deviceAssetIds: ['invalid', 'INVALID'],
-      });
-
-      expect(response.existingIds).toHaveLength(0);
-    });
-
-    it('returns the IDs of existing assets', async () => {
-      await utils.createAsset(user1.accessToken, {
-        deviceId: 'test-assets-exist',
-        deviceAssetId: 'test-asset-0',
-      });
-
-      const response = await utils.checkExistingAssets(user1.accessToken, {
-        deviceId: 'test-assets-exist',
-        deviceAssetIds: ['test-asset-0'],
-      });
-
-      expect(response.existingIds).toEqual(['test-asset-0']);
     });
   });
 });

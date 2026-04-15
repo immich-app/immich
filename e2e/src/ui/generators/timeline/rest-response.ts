@@ -315,11 +315,9 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
 
   return {
     id: asset.id,
-    deviceAssetId: `device-${asset.id}`,
     ownerId: asset.ownerId,
     owner: owner || defaultOwner,
     libraryId: `library-${asset.ownerId}`,
-    deviceId: `device-${asset.ownerId}`,
     type: asset.isVideo ? AssetTypeEnum.Video : AssetTypeEnum.Image,
     originalPath: `/original/${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`,
     originalFileName: `${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`,

@@ -36,8 +36,6 @@ export enum UploadFieldName {
 }
 
 const AssetMediaBaseSchema = z.object({
-  deviceAssetId: z.string().describe('Device asset ID'),
-  deviceId: z.string().describe('Device ID'),
   fileCreatedAt: isoDatetimeToDate.describe('File creation date'),
   fileModifiedAt: isoDatetimeToDate.describe('File modification date'),
   duration: z.string().optional().describe('Duration (for videos)'),
@@ -71,14 +69,6 @@ const AssetBulkUploadCheckSchema = z
   })
   .meta({ id: 'AssetBulkUploadCheckDto' });
 
-const CheckExistingAssetsSchema = z
-  .object({
-    deviceAssetIds: z.array(z.string()).min(1).describe('Device asset IDs to check'),
-    deviceId: z.string().describe('Device ID'),
-  })
-  .meta({ id: 'CheckExistingAssetsDto' });
-
 export class AssetMediaOptionsDto extends createZodDto(AssetMediaOptionsSchema) {}
 export class AssetMediaCreateDto extends createZodDto(AssetMediaCreateSchema) {}
 export class AssetBulkUploadCheckDto extends createZodDto(AssetBulkUploadCheckSchema) {}
-export class CheckExistingAssetsDto extends createZodDto(CheckExistingAssetsSchema) {}

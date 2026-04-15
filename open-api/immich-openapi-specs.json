@@ -2227,6 +2227,77 @@
         "x-immich-state": "Stable"
       }
     },
+    "/albums/{id}/map-markers": {
+      "get": {
+        "description": "Retrieve map marker information for a specific album by its ID.",
+        "operationId": "getAlbumMapMarkers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve album map markers",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "album.read"
+      }
+    },
     "/albums/{id}/user/{userId}": {
       "delete": {
         "description": "Remove a user from an album. Use an ID of \"me\" to leave a shared album.",
@@ -2441,7 +2512,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/APIKeyResponseDto"
+                    "$ref": "#/components/schemas/ApiKeyResponseDto"
                   },
                   "type": "array"
                 }
@@ -2490,7 +2561,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/APIKeyCreateDto"
+                "$ref": "#/components/schemas/ApiKeyCreateDto"
               }
             }
           },
@@ -2501,7 +2572,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyCreateResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyCreateResponseDto"
                 }
               }
             },
@@ -2551,7 +2622,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyResponseDto"
                 }
               }
             },
@@ -2663,7 +2734,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyResponseDto"
                 }
               }
             },
@@ -2721,7 +2792,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/APIKeyUpdateDto"
+                "$ref": "#/components/schemas/ApiKeyUpdateDto"
               }
             }
           },
@@ -2732,7 +2803,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyResponseDto"
                 }
               }
             },
@@ -3081,126 +3152,6 @@
           }
         ],
         "x-immich-permission": "asset.copy",
-        "x-immich-state": "Stable"
-      }
-    },
-    "/assets/device/{deviceId}": {
-      "get": {
-        "deprecated": true,
-        "description": "Get all asset of a device that are in the database, ID only.",
-        "operationId": "getAllUserAssetsByDeviceId",
-        "parameters": [
-          {
-            "name": "deviceId",
-            "required": true,
-            "in": "path",
-            "description": "Device ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Retrieve assets by device ID",
-        "tags": [
-          "Assets",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v2",
-            "state": "Deprecated"
-          }
-        ],
-        "x-immich-state": "Deprecated"
-      }
-    },
-    "/assets/exist": {
-      "post": {
-        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
-        "operationId": "checkExistingAssets",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckExistingAssetsDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckExistingAssetsResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Check existing assets",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "asset.upload",
         "x-immich-state": "Stable"
       }
     },
@@ -9256,15 +9207,6 @@
             }
           },
           {
-            "name": "deviceId",
-            "required": false,
-            "in": "query",
-            "description": "Device ID to filter by",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "isEncoded",
             "required": false,
             "in": "query",
@@ -12294,123 +12236,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/sync/delta-sync": {
-      "post": {
-        "deprecated": true,
-        "description": "Retrieve changed assets since the last sync for the authenticated user.",
-        "operationId": "getDeltaSync",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetDeltaSyncDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetDeltaSyncResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Get delta sync for user",
-        "tags": [
-          "Sync",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v2",
-            "state": "Deprecated"
-          }
-        ],
-        "x-immich-state": "Deprecated"
-      }
-    },
-    "/sync/full-sync": {
-      "post": {
-        "deprecated": true,
-        "description": "Retrieve all assets for a full synchronization for the authenticated user.",
-        "operationId": "getFullSyncForUser",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetFullSyncDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Get full sync for user",
-        "tags": [
-          "Sync",
-          "Deprecated"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v2",
-            "state": "Deprecated"
-          }
-        ],
-        "x-immich-state": "Deprecated"
-      }
-    },
     "/sync/stream": {
       "post": {
         "description": "Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.",
@@ -14077,7 +13902,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "description": "Update the current user making teh API request.",
+        "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
         "requestBody": {
@@ -15336,100 +15161,6 @@
       }
     },
     "schemas": {
-      "APIKeyCreateDto": {
-        "properties": {
-          "name": {
-            "description": "API key name",
-            "type": "string"
-          },
-          "permissions": {
-            "description": "List of permissions",
-            "items": {
-              "$ref": "#/components/schemas/Permission"
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "required": [
-          "permissions"
-        ],
-        "type": "object"
-      },
-      "APIKeyCreateResponseDto": {
-        "properties": {
-          "apiKey": {
-            "$ref": "#/components/schemas/APIKeyResponseDto"
-          },
-          "secret": {
-            "description": "API key secret (only shown once)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "apiKey",
-          "secret"
-        ],
-        "type": "object"
-      },
-      "APIKeyResponseDto": {
-        "properties": {
-          "createdAt": {
-            "description": "Creation date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          },
-          "id": {
-            "description": "API key ID",
-            "type": "string"
-          },
-          "name": {
-            "description": "API key name",
-            "type": "string"
-          },
-          "permissions": {
-            "description": "List of permissions",
-            "items": {
-              "$ref": "#/components/schemas/Permission"
-            },
-            "type": "array"
-          },
-          "updatedAt": {
-            "description": "Last update date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "createdAt",
-          "id",
-          "name",
-          "permissions",
-          "updatedAt"
-        ],
-        "type": "object"
-      },
-      "APIKeyUpdateDto": {
-        "properties": {
-          "name": {
-            "description": "API key name",
-            "type": "string"
-          },
-          "permissions": {
-            "description": "List of permissions",
-            "items": {
-              "$ref": "#/components/schemas/Permission"
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "type": "object"
-      },
       "ActivityCreateDto": {
         "description": "Activity create",
         "properties": {
@@ -15810,6 +15541,100 @@
         },
         "type": "object"
       },
+      "ApiKeyCreateDto": {
+        "properties": {
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "permissions"
+        ],
+        "type": "object"
+      },
+      "ApiKeyCreateResponseDto": {
+        "properties": {
+          "apiKey": {
+            "$ref": "#/components/schemas/ApiKeyResponseDto"
+          },
+          "secret": {
+            "description": "API key secret (only shown once)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "secret"
+        ],
+        "type": "object"
+      },
+      "ApiKeyResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "API key ID",
+            "type": "string"
+          },
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "name",
+          "permissions",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ApiKeyUpdateDto": {
+        "properties": {
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "AssetBulkDeleteDto": {
         "properties": {
           "force": {
@@ -16028,59 +15853,6 @@
         "required": [
           "sourceId",
           "targetId"
-        ],
-        "type": "object"
-      },
-      "AssetDeltaSyncDto": {
-        "properties": {
-          "updatedAfter": {
-            "description": "Sync assets updated after this date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          },
-          "userIds": {
-            "description": "User IDs to sync",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "updatedAfter",
-          "userIds"
-        ],
-        "type": "object"
-      },
-      "AssetDeltaSyncResponseDto": {
-        "description": "Asset delta sync response",
-        "properties": {
-          "deleted": {
-            "description": "Deleted asset IDs",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "needsFullSync": {
-            "description": "Whether full sync is needed",
-            "type": "boolean"
-          },
-          "upserted": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "deleted",
-          "needsFullSync",
-          "upserted"
         ],
         "type": "object"
       },
@@ -16429,40 +16201,6 @@
         ],
         "type": "object"
       },
-      "AssetFullSyncDto": {
-        "properties": {
-          "lastId": {
-            "description": "Last asset ID (pagination)",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          },
-          "limit": {
-            "description": "Maximum number of assets to return",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "updatedUntil": {
-            "description": "Sync assets updated until this date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          },
-          "userId": {
-            "description": "Filter by user ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "limit",
-          "updatedUntil"
-        ],
-        "type": "object"
-      },
       "AssetIdErrorReason": {
         "description": "Error reason if failed",
         "enum": [
@@ -16547,14 +16285,6 @@
             "format": "binary",
             "type": "string"
           },
-          "deviceAssetId": {
-            "description": "Device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          },
           "duration": {
             "description": "Duration (for videos)",
             "type": "string"
@@ -16605,8 +16335,6 @@
         },
         "required": [
           "assetData",
-          "deviceAssetId",
-          "deviceId",
           "fileCreatedAt",
           "fileModifiedAt"
         ],
@@ -16922,14 +16650,6 @@
             "format": "date-time",
             "type": "string"
           },
-          "deviceAssetId": {
-            "description": "Device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          },
           "duplicateId": {
             "description": "Duplicate group ID",
             "nullable": true,
@@ -17111,8 +16831,6 @@
         "required": [
           "checksum",
           "createdAt",
-          "deviceAssetId",
-          "deviceId",
           "duration",
           "fileCreatedAt",
           "fileModifiedAt",
@@ -17385,42 +17103,6 @@
         "required": [
           "newPassword",
           "password"
-        ],
-        "type": "object"
-      },
-      "CheckExistingAssetsDto": {
-        "properties": {
-          "deviceAssetIds": {
-            "description": "Device asset IDs to check",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 1,
-            "type": "array"
-          },
-          "deviceId": {
-            "description": "Device ID",
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetIds",
-          "deviceId"
-        ],
-        "type": "object"
-      },
-      "CheckExistingAssetsResponseDto": {
-        "properties": {
-          "existingIds": {
-            "description": "Existing asset IDs",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "existingIds"
         ],
         "type": "object"
       },
@@ -18207,7 +17889,6 @@
           "AssetFileMigration",
           "AssetGenerateThumbnailsQueueAll",
           "AssetGenerateThumbnails",
-          "AuditLogCleanup",
           "AuditTableCleanup",
           "DatabaseBackup",
           "FacialRecognitionQueueAll",
@@ -18997,14 +18678,6 @@
           },
           "description": {
             "description": "Filter by description text",
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "description": "Filter by device asset ID",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID to filter by",
             "type": "string"
           },
           "encodedVideoPath": {
@@ -20880,10 +20553,6 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
-          "deviceId": {
-            "description": "Device ID to filter by",
-            "type": "string"
-          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -22259,10 +21928,6 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
-          "deviceId": {
-            "description": "Device ID to filter by",
-            "type": "string"
-          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -22540,10 +22205,6 @@
           },
           "description": {
             "description": "Filter by description text",
-            "type": "string"
-          },
-          "deviceId": {
-            "description": "Device ID to filter by",
             "type": "string"
           },
           "isEncoded": {

@@ -404,8 +404,6 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   const { baseUrl, headers } = defaults;
 
   const formData = new FormData();
-  formData.append('deviceAssetId', `${basename(input)}-${stats.size}`.replaceAll(/\s+/g, ''));
-  formData.append('deviceId', 'CLI');
   formData.append('fileCreatedAt', stats.mtime.toISOString());
   formData.append('fileModifiedAt', stats.mtime.toISOString());
   formData.append('fileSize', String(stats.size));

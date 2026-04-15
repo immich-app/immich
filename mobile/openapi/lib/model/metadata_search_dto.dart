@@ -20,8 +20,6 @@ class MetadataSearchDto {
     this.createdAfter,
     this.createdBefore,
     this.description,
-    this.deviceAssetId,
-    this.deviceId,
     this.encodedVideoPath,
     this.id,
     this.isEncoded,
@@ -103,24 +101,6 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? description;
-
-  /// Filter by device asset ID
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? deviceAssetId;
-
-  /// Device ID to filter by
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? deviceId;
 
   /// Filter by encoded video file path
   ///
@@ -403,8 +383,6 @@ class MetadataSearchDto {
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
     other.description == description &&
-    other.deviceAssetId == deviceAssetId &&
-    other.deviceId == deviceId &&
     other.encodedVideoPath == encodedVideoPath &&
     other.id == id &&
     other.isEncoded == isEncoded &&
@@ -451,8 +429,6 @@ class MetadataSearchDto {
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (deviceAssetId == null ? 0 : deviceAssetId!.hashCode) +
-    (deviceId == null ? 0 : deviceId!.hashCode) +
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
     (id == null ? 0 : id!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
@@ -490,7 +466,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -528,16 +504,6 @@ class MetadataSearchDto {
       json[r'description'] = this.description;
     } else {
     //  json[r'description'] = null;
-    }
-    if (this.deviceAssetId != null) {
-      json[r'deviceAssetId'] = this.deviceAssetId;
-    } else {
-    //  json[r'deviceAssetId'] = null;
-    }
-    if (this.deviceId != null) {
-      json[r'deviceId'] = this.deviceId;
-    } else {
-    //  json[r'deviceId'] = null;
     }
     if (this.encodedVideoPath != null) {
       json[r'encodedVideoPath'] = this.encodedVideoPath;
@@ -743,8 +709,6 @@ class MetadataSearchDto {
         createdAfter: mapDateTime(json, r'createdAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         createdBefore: mapDateTime(json, r'createdBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         description: mapValueOfType<String>(json, r'description'),
-        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
-        deviceId: mapValueOfType<String>(json, r'deviceId'),
         encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
         id: mapValueOfType<String>(json, r'id'),
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),

@@ -14,12 +14,10 @@ import { isValidInteger } from 'src/validation';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
-  deviceAssetId?: string;
   id?: string;
 }
 
 export interface SearchUserIdOptions {
-  deviceId?: string;
   libraryId?: string | null;
   userIds?: string[];
 }

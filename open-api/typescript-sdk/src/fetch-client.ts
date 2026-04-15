@@ -557,10 +557,6 @@ export type AssetResponseDto = {
     checksum: string;
     /** The UTC timestamp when the asset was originally uploaded to Immich. */
     createdAt: string;
-    /** Device asset ID */
-    deviceAssetId: string;
-    /** Device ID */
-    deviceId: string;
     /** Duplicate group ID */
     duplicateId?: string | null;
     /** Video duration (for videos) */
@@ -714,6 +710,20 @@ export type BulkIdResponseDto = {
     /** Whether operation succeeded */
     success: boolean;
 };
+export type MapMarkerResponseDto = {
+    /** City name */
+    city: string | null;
+    /** Country name */
+    country: string | null;
+    /** Asset ID */
+    id: string;
+    /** Latitude */
+    lat: number;
+    /** Longitude */
+    lon: number;
+    /** State/Province name */
+    state: string | null;
+};
 export type UpdateAlbumUserDto = {
     role: AlbumUserRole;
 };
@@ -773,10 +783,6 @@ export type AssetMetadataUpsertItemDto = {
 export type AssetMediaCreateDto = {
     /** Asset file data */
     assetData: Blob;
-    /** Device asset ID */
-    deviceAssetId: string;
-    /** Device ID */
-    deviceId: string;
     /** Duration (for videos) */
     duration?: string;
     /** File creation date */
@@ -862,16 +868,6 @@ export type AssetCopyDto = {
     stack?: boolean;
     /** Target asset ID */
     targetId: string;
-};
-export type CheckExistingAssetsDto = {
-    /** Device asset IDs to check */
-    deviceAssetIds: string[];
-    /** Device ID */
-    deviceId: string;
-};
-export type CheckExistingAssetsResponseDto = {
-    /** Existing asset IDs */
-    existingIds: string[];
 };
 export type AssetJobsDto = {
     /** Asset IDs */
@@ -1323,20 +1319,6 @@ export type ValidateLibraryResponseDto = {
     /** Validation results for import paths */
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
-export type MapMarkerResponseDto = {
-    /** City name */
-    city: string | null;
-    /** Country name */
-    country: string | null;
-    /** Asset ID */
-    id: string;
-    /** Latitude */
-    lat: number;
-    /** Longitude */
-    lon: number;
-    /** State/Province name */
-    state: string | null;
-};
 export type MapReverseGeocodeResponseDto = {
     /** City name */
     city: string | null;
@@ -1661,10 +1643,6 @@ export type MetadataSearchDto = {
     createdBefore?: string;
     /** Filter by description text */
     description?: string;
-    /** Filter by device asset ID */
-    deviceAssetId?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded video file path */
     encodedVideoPath?: string;
     /** Filter by asset ID */
@@ -1790,8 +1768,6 @@ export type RandomSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1856,8 +1832,6 @@ export type SmartSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1928,8 +1902,6 @@ export type StatisticsSearchDto = {
     createdBefore?: string;
     /** Filter by description text */
     description?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -2320,29 +2292,6 @@ export type SyncAckDto = {
 export type SyncAckSetDto = {
     /** Acknowledgment IDs (max 1000) */
     acks: string[];
-};
-export type AssetDeltaSyncDto = {
-    /** Sync assets updated after this date */
-    updatedAfter: string;
-    /** User IDs to sync */
-    userIds: string[];
-};
-export type AssetDeltaSyncResponseDto = {
-    /** Deleted asset IDs */
-    deleted: string[];
-    /** Whether full sync is needed */
-    needsFullSync: boolean;
-    upserted: AssetResponseDto[];
-};
-export type AssetFullSyncDto = {
-    /** Last asset ID (pagination) */
-    lastId?: string;
-    /** Maximum number of assets to return */
-    limit: number;
-    /** Sync assets updated until this date */
-    updatedUntil: string;
-    /** Filter by user ID */
-    userId?: string;
 };
 export type SyncStreamDto = {
     /** Reset sync state */
@@ -3785,6 +3734,24 @@ export function addAssetsToAlbum({ id, bulkIdsDto }: {
     })));
 }
 /**
+ * Retrieve album map markers
+ */
+export function getAlbumMapMarkers({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MapMarkerResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/map-markers${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Remove user from album
  */
 export function removeUserFromAlbum({ id, userId }: {
@@ -3979,34 +3946,6 @@ export function copyAsset({ assetCopyDto }: {
         ...opts,
         method: "PUT",
         body: assetCopyDto
-    })));
-}
-/**
- * Retrieve assets by device ID
- */
-export function getAllUserAssetsByDeviceId({ deviceId }: {
-    deviceId: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: string[];
-    }>(`/assets/device/${encodeURIComponent(deviceId)}`, {
-        ...opts
-    }));
-}
-/**
- * Check existing assets
- */
-export function checkExistingAssets({ checkExistingAssetsDto }: {
-    checkExistingAssetsDto: CheckExistingAssetsDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: CheckExistingAssetsResponseDto;
-    }>("/assets/exist", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: checkExistingAssetsDto
     })));
 }
 /**
@@ -5388,13 +5327,12 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
-    deviceId?: string;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -5431,7 +5369,6 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         country,
         createdAfter,
         createdBefore,
-        deviceId,
         isEncoded,
         isFavorite,
         isMotion,
@@ -6092,36 +6029,6 @@ export function sendSyncAck({ syncAckSetDto }: {
         ...opts,
         method: "POST",
         body: syncAckSetDto
-    })));
-}
-/**
- * Get delta sync for user
- */
-export function getDeltaSync({ assetDeltaSyncDto }: {
-    assetDeltaSyncDto: AssetDeltaSyncDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetDeltaSyncResponseDto;
-    }>("/sync/delta-sync", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: assetDeltaSyncDto
-    })));
-}
-/**
- * Get full sync for user
- */
-export function getFullSyncForUser({ assetFullSyncDto }: {
-    assetFullSyncDto: AssetFullSyncDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>("/sync/full-sync", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: assetFullSyncDto
     })));
 }
 /**
@@ -7120,7 +7027,6 @@ export enum JobName {
     AssetFileMigration = "AssetFileMigration",
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
-    AuditLogCleanup = "AuditLogCleanup",
     AuditTableCleanup = "AuditTableCleanup",
     DatabaseBackup = "DatabaseBackup",
     FacialRecognitionQueueAll = "FacialRecognitionQueueAll",

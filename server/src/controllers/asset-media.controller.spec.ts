@@ -9,8 +9,6 @@ import { automock, ControllerContext, controllerSetup, mockBaseService } from 't
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
   const dto: Record<string, any> = {
-    deviceAssetId: 'example-image',
-    deviceId: 'TEST',
     fileCreatedAt: new Date().toISOString(),
     fileModifiedAt: new Date().toISOString(),
     isFavorite: 'false',
@@ -84,28 +82,6 @@ describe(AssetMediaController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(
         factory.responses.badRequest(['[metadata] Invalid input: expected JSON string, received string']),
-      );
-    });
-
-    it('should require `deviceAssetId`', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto({ omit: 'deviceAssetId' }) });
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        factory.responses.badRequest(['[deviceAssetId] Invalid input: expected string, received undefined']),
-      );
-    });
-
-    it('should require `deviceId`', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto({ omit: 'deviceId' }) });
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        factory.responses.badRequest(['[deviceId] Invalid input: expected string, received undefined']),
       );
     });
 
