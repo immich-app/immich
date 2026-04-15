@@ -15,6 +15,7 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
@@ -100,6 +101,17 @@ export class AlbumController {
   })
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
+  }
+
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
+  @Get(':id/map-markers')
+  @Endpoint({
+    summary: 'Retrieve album map markers',
+    description: 'Retrieve map marker information for a specific album by its ID.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  getAlbumMapMarkers(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MapMarkerResponseDto[]> {
+    return this.service.getMapMarkers(auth, id);
   }
 
   @Put(':id/assets')

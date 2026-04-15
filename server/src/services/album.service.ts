@@ -17,6 +17,7 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
@@ -92,6 +93,16 @@ export class AlbumService extends BaseService {
       lastModifiedAssetTimestamp: asDateString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
       contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
+  }
+
+  async getMapMarkers(auth: AuthDto, id: string): Promise<MapMarkerResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+
+    if (auth.sharedLink && !auth.sharedLink.showExif) {
+      return [];
+    }
+
+    return this.mapRepository.getAlbumMapMarkers(id);
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
