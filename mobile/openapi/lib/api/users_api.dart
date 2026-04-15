@@ -731,7 +731,7 @@ class UsersApi {
 
   /// Update current user
   ///
-  /// Update the current user making teh API request.
+  /// Update the current user making the API request.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -765,7 +765,7 @@ class UsersApi {
 
   /// Update current user
   ///
-  /// Update the current user making teh API request.
+  /// Update the current user making the API request.
   ///
   /// Parameters:
   ///

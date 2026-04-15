@@ -182,14 +182,6 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
-        case 'APIKeyCreateDto':
-          return APIKeyCreateDto.fromJson(value);
-        case 'APIKeyCreateResponseDto':
-          return APIKeyCreateResponseDto.fromJson(value);
-        case 'APIKeyResponseDto':
-          return APIKeyResponseDto.fromJson(value);
-        case 'APIKeyUpdateDto':
-          return APIKeyUpdateDto.fromJson(value);
         case 'ActivityCreateDto':
           return ActivityCreateDto.fromJson(value);
         case 'ActivityResponseDto':
@@ -220,6 +212,14 @@ class ApiClient {
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':
           return AlbumsUpdate.fromJson(value);
+        case 'ApiKeyCreateDto':
+          return ApiKeyCreateDto.fromJson(value);
+        case 'ApiKeyCreateResponseDto':
+          return ApiKeyCreateResponseDto.fromJson(value);
+        case 'ApiKeyResponseDto':
+          return ApiKeyResponseDto.fromJson(value);
+        case 'ApiKeyUpdateDto':
+          return ApiKeyUpdateDto.fromJson(value);
         case 'AssetBulkDeleteDto':
           return AssetBulkDeleteDto.fromJson(value);
         case 'AssetBulkUpdateDto':

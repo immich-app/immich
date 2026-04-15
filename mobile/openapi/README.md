@@ -56,10 +56,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = APIKeysApi();
-final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | 
+final apiKeyCreateDto = ApiKeyCreateDto(); // ApiKeyCreateDto | 
 
 try {
-    final result = api_instance.createApiKey(aPIKeyCreateDto);
+    final result = api_instance.createApiKey(apiKeyCreateDto);
     print(result);
 } catch (e) {
     print('Exception when calling APIKeysApi->createApiKey: $e\n');
@@ -326,10 +326,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [APIKeyCreateDto](doc//APIKeyCreateDto.md)
- - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
- - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
- - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
  - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
@@ -345,6 +341,10 @@ Class | Method | HTTP request | Description
  - [AlbumsAddAssetsResponseDto](doc//AlbumsAddAssetsResponseDto.md)
  - [AlbumsResponse](doc//AlbumsResponse.md)
  - [AlbumsUpdate](doc//AlbumsUpdate.md)
+ - [ApiKeyCreateDto](doc//ApiKeyCreateDto.md)
+ - [ApiKeyCreateResponseDto](doc//ApiKeyCreateResponseDto.md)
+ - [ApiKeyResponseDto](doc//ApiKeyResponseDto.md)
+ - [ApiKeyUpdateDto](doc//ApiKeyUpdateDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)

@@ -2441,7 +2441,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/APIKeyResponseDto"
+                    "$ref": "#/components/schemas/ApiKeyResponseDto"
                   },
                   "type": "array"
                 }
@@ -2490,7 +2490,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/APIKeyCreateDto"
+                "$ref": "#/components/schemas/ApiKeyCreateDto"
               }
             }
           },
@@ -2501,7 +2501,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyCreateResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyCreateResponseDto"
                 }
               }
             },
@@ -2551,7 +2551,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyResponseDto"
                 }
               }
             },
@@ -2663,7 +2663,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyResponseDto"
                 }
               }
             },
@@ -2721,7 +2721,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/APIKeyUpdateDto"
+                "$ref": "#/components/schemas/ApiKeyUpdateDto"
               }
             }
           },
@@ -2732,7 +2732,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                  "$ref": "#/components/schemas/ApiKeyResponseDto"
                 }
               }
             },
@@ -14077,7 +14077,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
-        "description": "Update the current user making teh API request.",
+        "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
         "requestBody": {
@@ -15336,100 +15336,6 @@
       }
     },
     "schemas": {
-      "APIKeyCreateDto": {
-        "properties": {
-          "name": {
-            "description": "API key name",
-            "type": "string"
-          },
-          "permissions": {
-            "description": "List of permissions",
-            "items": {
-              "$ref": "#/components/schemas/Permission"
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "required": [
-          "permissions"
-        ],
-        "type": "object"
-      },
-      "APIKeyCreateResponseDto": {
-        "properties": {
-          "apiKey": {
-            "$ref": "#/components/schemas/APIKeyResponseDto"
-          },
-          "secret": {
-            "description": "API key secret (only shown once)",
-            "type": "string"
-          }
-        },
-        "required": [
-          "apiKey",
-          "secret"
-        ],
-        "type": "object"
-      },
-      "APIKeyResponseDto": {
-        "properties": {
-          "createdAt": {
-            "description": "Creation date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          },
-          "id": {
-            "description": "API key ID",
-            "type": "string"
-          },
-          "name": {
-            "description": "API key name",
-            "type": "string"
-          },
-          "permissions": {
-            "description": "List of permissions",
-            "items": {
-              "$ref": "#/components/schemas/Permission"
-            },
-            "type": "array"
-          },
-          "updatedAt": {
-            "description": "Last update date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "createdAt",
-          "id",
-          "name",
-          "permissions",
-          "updatedAt"
-        ],
-        "type": "object"
-      },
-      "APIKeyUpdateDto": {
-        "properties": {
-          "name": {
-            "description": "API key name",
-            "type": "string"
-          },
-          "permissions": {
-            "description": "List of permissions",
-            "items": {
-              "$ref": "#/components/schemas/Permission"
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "type": "object"
-      },
       "ActivityCreateDto": {
         "description": "Activity create",
         "properties": {
@@ -15806,6 +15712,100 @@
         "properties": {
           "defaultAssetOrder": {
             "$ref": "#/components/schemas/AssetOrder"
+          }
+        },
+        "type": "object"
+      },
+      "ApiKeyCreateDto": {
+        "properties": {
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "permissions"
+        ],
+        "type": "object"
+      },
+      "ApiKeyCreateResponseDto": {
+        "properties": {
+          "apiKey": {
+            "$ref": "#/components/schemas/ApiKeyResponseDto"
+          },
+          "secret": {
+            "description": "API key secret (only shown once)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "secret"
+        ],
+        "type": "object"
+      },
+      "ApiKeyResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "API key ID",
+            "type": "string"
+          },
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "name",
+          "permissions",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ApiKeyUpdateDto": {
+        "properties": {
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "type": "object"
