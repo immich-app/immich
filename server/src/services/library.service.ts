@@ -266,7 +266,18 @@ export class LibraryService extends BaseService {
       ),
     );
 
-    const assetIds = await this.assetRepository.createAll(assetImports);
+    const assetIds: string[] = [];
+
+    for (let i = 0; i < assetImports.length; i += 1000) {
+      const chunk = assetImports.slice(i, i + 1000);
+
+      if (chunk.length === 0) {
+        continue;
+      }
+
+      const createdAssets = await this.assetRepository.createAll(chunk);
+      assetIds.push(...createdAssets.map((asset) => asset.id));
+    }
 
     const progressMessage =
       job.progressCounter && job.totalAssets
