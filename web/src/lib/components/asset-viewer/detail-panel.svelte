@@ -207,15 +207,22 @@
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}
-            <IconButton
-              aria-label={$t('edit_people')}
-              icon={mdiPencil}
-              size="medium"
-              shape="round"
-              color="secondary"
-              variant="ghost"
-              onclick={() => (showEditFaces = true)}
-            />
+            <div class="relative">
+              <IconButton
+                aria-label={$t('edit_people')}
+                icon={mdiPencil}
+                size="medium"
+                shape="round"
+                color="secondary"
+                variant="ghost"
+                onclick={() => (showEditFaces = true)}
+              />
+              {#if unassignedFaces.length > 0}
+                <div
+                  class="pointer-events-none absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-primary border-2 border-white dark:border-immich-dark-bg"
+                ></div>
+              {/if}
+            </div>
           {/if}
         </div>
       </div>
