@@ -2235,8 +2235,6 @@ export type SharedLinkResponseDto = {
     showMetadata: boolean;
     /** Custom URL slug */
     slug: string | null;
-    /** Access token */
-    token?: string | null;
     "type": SharedLinkType;
     /** Owner user ID */
     userId: string;

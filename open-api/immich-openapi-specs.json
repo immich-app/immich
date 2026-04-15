@@ -22127,27 +22127,6 @@
             "nullable": true,
             "type": "string"
           },
-          "token": {
-            "deprecated": true,
-            "description": "Access token",
-            "nullable": true,
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              },
-              {
-                "version": "v2.6.0",
-                "state": "Deprecated"
-              }
-            ],
-            "x-immich-state": "Deprecated"
-          },
           "type": {
             "$ref": "#/components/schemas/SharedLinkType"
           },

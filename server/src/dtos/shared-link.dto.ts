@@ -62,14 +62,6 @@ const SharedLinkResponseSchema = z
     id: z.string().describe('Shared link ID'),
     description: z.string().nullable().describe('Link description'),
     password: z.string().nullable().describe('Has password'),
-    token: z
-      .string()
-      .nullish()
-      .describe('Access token')
-      .meta({
-        ...new HistoryBuilder().added('v1').stable('v2').deprecated('v2.6.0').getExtensions(),
-        deprecated: true,
-      }),
     userId: z.string().describe('Owner user ID'),
     key: z.string().describe('Encryption key (base64url)'),
     type: SharedLinkTypeSchema,
