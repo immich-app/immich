@@ -3,7 +3,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
-  AlbumInfoDto,
   AlbumResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
@@ -66,12 +65,8 @@ export class AlbumController {
     description: 'Retrieve information about a specific album by its ID.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getAlbumInfo(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Query() dto: AlbumInfoDto,
-  ): Promise<AlbumResponseDto> {
-    return this.service.get(auth, id, dto);
+  getAlbumInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumResponseDto> {
+    return this.service.get(auth, id);
   }
 
   @Patch(':id')

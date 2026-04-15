@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { SharedLink } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
-import { AlbumResponseSchema, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
+import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto';
 import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkTypeSchema } from 'src/enum';
 import { emptyStringToNull, isoDatetimeToDate } from 'src/validation';
@@ -96,7 +96,7 @@ export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetad
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: assets.map((asset) => mapAsset(asset, { stripMetadata: options.stripAssetMetadata })),
-    album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
+    album: sharedLink.album ? mapAlbum(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,

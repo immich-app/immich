@@ -1956,15 +1956,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "withoutAssets",
-            "required": false,
-            "in": "query",
-            "description": "Exclude assets from response",
-            "schema": {
-              "type": "boolean"
-            }
           }
         ],
         "responses": {
@@ -15305,12 +15296,6 @@
             "minimum": 0,
             "type": "integer"
           },
-          "assets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            },
-            "type": "array"
-          },
           "contributorCounts": {
             "items": {
               "$ref": "#/components/schemas/ContributorCountResponseDto"
@@ -15378,7 +15363,6 @@
           "albumThumbnailAssetId",
           "albumUsers",
           "assetCount",
-          "assets",
           "createdAt",
           "description",
           "hasSharedLink",

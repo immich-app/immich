@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   AddUsersDto,
-  AlbumInfoDto,
   AlbumResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
@@ -10,8 +9,6 @@ import {
   GetAlbumsDto,
   mapAlbum,
   MapAlbumDto,
-  mapAlbumWithAssets,
-  mapAlbumWithoutAssets,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
@@ -64,7 +61,7 @@ export class AlbumService extends BaseService {
     }
 
     return albums.map((album) => ({
-      ...mapAlbumWithoutAssets(album),
+      ...mapAlbum(album),
       sharedLinks: undefined,
       startDate: asDateString(albumMetadata[album.id]?.startDate ?? undefined),
       endDate: asDateString(albumMetadata[album.id]?.endDate ?? undefined),
@@ -74,11 +71,10 @@ export class AlbumService extends BaseService {
     }));
   }
 
-  async get(auth: AuthDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
+  async get(auth: AuthDto, id: string): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
     await this.albumRepository.updateThumbnails();
-    const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
-    const album = await this.findOrFail(id, { withAssets });
+    const album = await this.findOrFail(id, { withAssets: false });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
     const hasSharedUsers = album.albumUsers && album.albumUsers.length > 0;
@@ -86,7 +82,7 @@ export class AlbumService extends BaseService {
     const isShared = hasSharedUsers || hasSharedLink;
 
     return {
-      ...mapAlbum(album, withAssets, auth),
+      ...mapAlbum(album),
       startDate: asDateString(albumMetadataForIds?.startDate ?? undefined),
       endDate: asDateString(albumMetadataForIds?.endDate ?? undefined),
       assetCount: albumMetadataForIds?.assetCount ?? 0,
@@ -144,7 +140,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId });
     }
 
-    return mapAlbumWithAssets(album);
+    return mapAlbum(album);
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
@@ -167,7 +163,7 @@ export class AlbumService extends BaseService {
       order: dto.order,
     });
 
-    return mapAlbumWithoutAssets({ ...updatedAlbum, assets: album.assets });
+    return mapAlbum({ ...updatedAlbum, assets: album.assets });
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -305,7 +301,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id, userId });
     }
 
-    return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);
+    return this.findOrFail(id, { withAssets: true }).then(mapAlbum);
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
