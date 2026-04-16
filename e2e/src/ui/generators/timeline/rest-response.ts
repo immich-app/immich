@@ -338,7 +338,6 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     livePhotoVideoId: asset.livePhotoVideoId,
     tags: [],
     people: [],
-    unassignedFaces: [],
     stack: asset.stack,
     isOffline: false,
     hasMetadata: true,
