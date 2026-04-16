@@ -307,6 +307,15 @@ describe(SystemConfigService.name, () => {
       });
     });
 
+    it('should reject an invalid issuer URL', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ oauth: { issuerUrl: 'accounts.google.com' } }));
+
+      await expect(sut.getSystemConfig()).rejects.toThrow(
+        '[oauth.issuerUrl] Issuer URL must be an empty string or a valid URL',
+      );
+    });
+
     it('should reject invalid cron expressions', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: 'foo' } } }));
