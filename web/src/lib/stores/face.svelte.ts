@@ -9,7 +9,7 @@ class FaceManager {
   #faceLoader = new CancellableTask();
   #cleared = false;
 
-  faceNameMap = $derived.by(() => {
+  readonly faceNameMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
 
@@ -23,7 +23,7 @@ class FaceManager {
     return map;
   });
 
-  people = $derived.by(() => {
+  readonly people = $derived.by(() => {
     const people = new SvelteSet<PersonResponseDto>();
 
     for (const face of this.data) {
