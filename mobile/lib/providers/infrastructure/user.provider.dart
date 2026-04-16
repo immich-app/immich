@@ -9,16 +9,15 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'user.provider.g.dart';
+final userApiRepositoryProvider = Provider((ref) => UserApiRepository(ref.watch(apiServiceProvider).usersApi));
 
-@Riverpod(keepAlive: true)
-UserApiRepository userApiRepository(Ref ref) => UserApiRepository(ref.watch(apiServiceProvider).usersApi);
-
-@Riverpod(keepAlive: true)
-UserService userService(Ref ref) =>
-    UserService(userApiRepository: ref.watch(userApiRepositoryProvider), storeService: ref.watch(storeServiceProvider));
+final userServiceProvider = Provider(
+  (ref) => UserService(
+    userApiRepository: ref.watch(userApiRepositoryProvider),
+    storeService: ref.watch(storeServiceProvider),
+  ),
+);
 
 /// Drifts
 final driftPartnerRepositoryProvider = Provider<DriftPartnerRepository>(
