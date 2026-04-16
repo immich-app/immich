@@ -816,8 +816,8 @@ importers:
         specifier: ^1.5.4
         version: 1.5.4
       simple-icons:
-        specifier: ^15.15.0
-        version: 15.22.0
+        specifier: ^16.0.0
+        version: 16.13.0
       socket.io-client:
         specifier: ~4.8.0
         version: 4.8.3
@@ -11031,10 +11031,6 @@ packages:
 
   simple-get@3.1.1:
     resolution: {integrity: sha512-CQ5LTKGfCpvE1K0n2us+kuMPbk/q0EKl82s4aheV9oXjFEz6W/Y7oQFVJuU6QG77hRT4Ghb5RURteF5vnWjupA==}
-
-  simple-icons@15.22.0:
-    resolution: {integrity: sha512-i/w5Ie4tENfGYbdCo2iJ+oies0vOFd8QXWHopKOUzudfLCvnmeheF2PpHp89Z2azpc+c2su3lMiWO/SpP+429A==}
-    engines: {node: '>=0.12.18'}
 
   simple-icons@16.13.0:
     resolution: {integrity: sha512-N4AMZvFERU5YLEtUudtUesiM2H4O5xQ9qfS3K0oOV5II5KVtxOUAlmZ7KqBgiTSGBgCVkuLD/Z9dJKBtnI3kKQ==}
@@ -24464,8 +24460,6 @@ snapshots:
       once: 1.4.0
       simple-concat: 1.0.1
     optional: true
-
-  simple-icons@15.22.0: {}
 
   simple-icons@16.13.0: {}
 
