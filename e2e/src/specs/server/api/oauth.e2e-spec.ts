@@ -259,7 +259,7 @@ describe(`/oauth`, () => {
         accessToken: expect.any(String),
         isAdmin: false,
         name: 'OAuth User',
-        userEmail: 'oauth-RS256-token@immich.app',
+        userEmail: 'oauth-rs256-token@immich.app',
         userId: expect.any(String),
       });
     });
