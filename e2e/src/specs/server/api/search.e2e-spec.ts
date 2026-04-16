@@ -74,7 +74,6 @@ describe('/search', () => {
       const bytes = await readFile(join(testAssetDir, filename));
       assets.push(
         await utils.createAsset(admin.accessToken, {
-          deviceAssetId: `test-${filename}`,
           assetData: { bytes, filename },
           ...dto,
         }),

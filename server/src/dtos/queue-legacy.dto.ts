@@ -1,79 +1,47 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { QueueResponseDto, QueueStatisticsDto } from 'src/dtos/queue.dto';
+import { createZodDto } from 'nestjs-zod';
+import { QueueResponseDto, QueueStatisticsSchema } from 'src/dtos/queue.dto';
 import { QueueName } from 'src/enum';
+import z from 'zod';
 
-export class QueueStatusLegacyDto {
-  @ApiProperty({ description: 'Whether the queue is currently active (has running jobs)' })
-  isActive!: boolean;
-  @ApiProperty({ description: 'Whether the queue is paused' })
-  isPaused!: boolean;
-}
+const QueueStatusLegacySchema = z
+  .object({
+    isActive: z.boolean().describe('Whether the queue is currently active (has running jobs)'),
+    isPaused: z.boolean().describe('Whether the queue is paused'),
+  })
+  .meta({ id: 'QueueStatusLegacyDto' });
 
-export class QueueResponseLegacyDto {
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  queueStatus!: QueueStatusLegacyDto;
+const QueueResponseLegacySchema = z
+  .object({
+    queueStatus: QueueStatusLegacySchema,
+    jobCounts: QueueStatisticsSchema,
+  })
+  .meta({ id: 'QueueResponseLegacyDto' });
 
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  jobCounts!: QueueStatisticsDto;
-}
+const QueuesResponseLegacySchema = z
+  .object({
+    [QueueName.ThumbnailGeneration]: QueueResponseLegacySchema,
+    [QueueName.MetadataExtraction]: QueueResponseLegacySchema,
+    [QueueName.VideoConversion]: QueueResponseLegacySchema,
+    [QueueName.SmartSearch]: QueueResponseLegacySchema,
+    [QueueName.StorageTemplateMigration]: QueueResponseLegacySchema,
+    [QueueName.Migration]: QueueResponseLegacySchema,
+    [QueueName.BackgroundTask]: QueueResponseLegacySchema,
+    [QueueName.Search]: QueueResponseLegacySchema,
+    [QueueName.DuplicateDetection]: QueueResponseLegacySchema,
+    [QueueName.FaceDetection]: QueueResponseLegacySchema,
+    [QueueName.FacialRecognition]: QueueResponseLegacySchema,
+    [QueueName.Sidecar]: QueueResponseLegacySchema,
+    [QueueName.Library]: QueueResponseLegacySchema,
+    [QueueName.Notification]: QueueResponseLegacySchema,
+    [QueueName.BackupDatabase]: QueueResponseLegacySchema,
+    [QueueName.Ocr]: QueueResponseLegacySchema,
+    [QueueName.Workflow]: QueueResponseLegacySchema,
+    [QueueName.Editor]: QueueResponseLegacySchema,
+  })
+  .meta({ id: 'QueuesResponseLegacyDto' });
 
-export class QueuesResponseLegacyDto implements Record<QueueName, QueueResponseLegacyDto> {
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.ThumbnailGeneration]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.MetadataExtraction]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.VideoConversion]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.SmartSearch]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.StorageTemplateMigration]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Migration]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.BackgroundTask]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Search]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.DuplicateDetection]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.FaceDetection]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.FacialRecognition]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Sidecar]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Library]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Notification]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.BackupDatabase]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Ocr]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Workflow]!: QueueResponseLegacyDto;
-
-  @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.Editor]!: QueueResponseLegacyDto;
-}
+export class QueueResponseLegacyDto extends createZodDto(QueueResponseLegacySchema) {}
+export class QueuesResponseLegacyDto extends createZodDto(QueuesResponseLegacySchema) {}
 
 export const mapQueueLegacy = (response: QueueResponseDto): QueueResponseLegacyDto => {
   return {

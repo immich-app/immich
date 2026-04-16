@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Partner direction
 class PartnerDirection {
   /// Instantiate a new enum with the provided [value].
   const PartnerDirection._(this.value);

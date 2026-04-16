@@ -21,8 +21,8 @@ class PartnerApiRepository extends ApiRepository {
     return response.map(UserConverter.fromPartnerDto).toList();
   }
 
-  Future<UserDto> create(String id) async {
-    final dto = await checkNull(_api.createPartnerDeprecated(id));
+  Future<UserDto> create(String sharedWithId) async {
+    final dto = await checkNull(_api.createPartner(PartnerCreateDto(sharedWithId: sharedWithId)));
     return UserConverter.fromPartnerDto(dto);
   }
 

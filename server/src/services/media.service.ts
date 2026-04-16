@@ -756,7 +756,13 @@ export class MediaService extends BaseService {
       return false;
     }
 
-    const name = formatLongName === 'QuickTime / MOV' ? VideoContainer.Mov : (formatName as VideoContainer);
+    const formatLongNameMapping: Record<string, VideoContainer> = {
+      'QuickTime / MOV': VideoContainer.Mov,
+      'Matroska / WebM': VideoContainer.Webm,
+    };
+
+    const name = (formatLongName ? formatLongNameMapping[formatLongName] : undefined) ?? (formatName as VideoContainer);
+
     return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 

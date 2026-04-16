@@ -1,4 +1,3 @@
-import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import type { TreeNode } from '$lib/utils/tree-utils';
@@ -20,13 +19,13 @@ import type {
 
 export type Events = {
   AppInit: [];
+  AppNavigate: [];
 
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
   AuthUserLoaded: [UserAdminResponseDto];
 
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
-  ThemeChange: [ThemeSetting];
 
   ApiKeyCreate: [ApiKeyResponseDto];
   ApiKeyUpdate: [ApiKeyResponseDto];
@@ -75,6 +74,7 @@ export type Events = {
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];
+  SessionDelete: [];
 
   SystemConfigUpdate: [SystemConfigDto];
 

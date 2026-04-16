@@ -1,23 +1,19 @@
 import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import type { ContentMetrics } from '$lib/utils/container-utils';
+import { mapNormalizedToContent, type Point, type Size } from '$lib/utils/container-utils';
 import { clamp } from 'lodash-es';
-
-export type Point = {
-  x: number;
-  y: number;
-};
+export type { Point } from '$lib/utils/container-utils';
 
 const distance = (p1: Point, p2: Point) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
 
 export type VerticalMode = 'none' | 'cjk' | 'rotated';
 
-export interface OcrBox {
+export type OcrBox = {
   id: string;
   points: Point[];
   text: string;
   confidence: number;
   verticalMode: VerticalMode;
-}
+};
 
 const CJK_PATTERN =
   /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uAC00-\uD7AF\uFF00-\uFFEF]/;
@@ -38,7 +34,7 @@ const getVerticalMode = (width: number, height: number, text: string): VerticalM
  * @param points - Array of 4 corner points of the bounding box
  * @returns 4x4 matrix to transform the div with text onto the polygon defined by the corner points, and size to set on the source div.
  */
-export const calculateBoundingBoxMatrix = (points: Point[]): { matrix: number[]; width: number; height: number } => {
+export const calculateBoundingBoxMatrix = (points: Point[]): Size & { matrix: number[] } => {
   const [topLeft, topRight, bottomRight, bottomLeft] = points;
 
   const width = Math.max(distance(topLeft, topRight), distance(bottomLeft, bottomRight));
@@ -163,7 +159,7 @@ export const calculateFittedFontSize = (
   return clamp(Math.min(scaleFromWidth, scaleFromHeight), MIN_FONT_SIZE, MAX_FONT_SIZE);
 };
 
-export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], metrics: ContentMetrics): OcrBox[] => {
+export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], imageSize: Size): OcrBox[] => {
   const boxes: OcrBox[] = [];
   for (const ocr of ocrData) {
     const points = [
@@ -171,10 +167,7 @@ export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], metrics: ContentM
       { x: ocr.x2, y: ocr.y2 },
       { x: ocr.x3, y: ocr.y3 },
       { x: ocr.x4, y: ocr.y4 },
-    ].map((point) => ({
-      x: point.x * metrics.contentWidth + metrics.offsetX,
-      y: point.y * metrics.contentHeight + metrics.offsetY,
-    }));
+    ].map((point) => mapNormalizedToContent(point, imageSize));
 
     const boxWidth = Math.max(distance(points[0], points[1]), distance(points[3], points[2]));
     const boxHeight = Math.max(distance(points[0], points[3]), distance(points[1], points[2]));
@@ -188,7 +181,7 @@ export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], metrics: ContentM
     });
   }
 
-  const rowThreshold = metrics.contentHeight * 0.02;
+  const rowThreshold = imageSize.height * 0.02;
   boxes.sort((a, b) => {
     const yDifference = a.points[0].y - b.points[0].y;
     if (Math.abs(yDifference) < rowThreshold) {

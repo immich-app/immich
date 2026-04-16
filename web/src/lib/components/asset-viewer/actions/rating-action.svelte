@@ -2,7 +2,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import { AssetAction } from '$lib/constants';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
@@ -42,7 +42,7 @@
 </script>
 
 <svelte:document
-  use:shortcuts={$preferences?.ratings.enabled
+  use:shortcuts={authManager.authenticated && authManager.preferences.ratings.enabled
     ? [
         { shortcut: { key: '0' }, onShortcut: () => rateAsset(null) },
         ...[1, 2, 3, 4, 5].map((rating) => ({

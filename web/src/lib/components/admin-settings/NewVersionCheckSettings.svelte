@@ -16,7 +16,7 @@
       <div class="ms-4 mt-4">
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
-          subtitle={$t('admin.version_check_implications')}
+          subtitle={$t('admin.version_check_implications', { values: { server: 'version.immich.cloud' } })}
           bind:checked={configToEdit.newVersionCheck.enabled}
           {disabled}
         />

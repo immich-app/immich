@@ -249,8 +249,7 @@ where
 select
   "asset"."id",
   "asset"."checksum",
-  "asset"."deviceAssetId",
-  "asset"."deviceId",
+  "asset"."checksumAlgorithm",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."isExternal",
@@ -264,6 +263,7 @@ select
   "asset"."type",
   "asset"."width",
   "asset"."height",
+  "asset"."isEdited",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -435,12 +435,13 @@ select
       "asset_file"
     where
       "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
+      and "asset_file"."type" = 'preview'
+      and "asset_file"."isEdited" = false
   ) as "previewFile"
 from
   "asset"
 where
-  "asset"."id" = $2
+  "asset"."id" = $1
 
 -- AssetJobRepository.getForSyncAssets
 select

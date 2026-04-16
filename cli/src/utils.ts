@@ -81,7 +81,7 @@ export const connect = async (url: string, key: string) => {
 
   const [error] = await withError(getMyUser());
   if (isHttpError(error)) {
-    logError(error, 'Failed to connect to server');
+    logError(error, `Failed to connect to server ${url}`);
     process.exit(1);
   }
 

@@ -1,12 +1,13 @@
 import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
-import { CallHandler, ExecutionContext, Provider, ValidationPipe } from '@nestjs/common';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { Test } from '@nestjs/testing';
-import { ClassConstructor } from 'class-transformer';
 import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer from 'multer';
+import { ClsService } from 'nestjs-cls';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
@@ -14,6 +15,7 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
+import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -23,7 +25,6 @@ import { AppRepository } from 'src/repositories/app.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
-import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -90,7 +91,7 @@ export type ControllerContext = {
   close: () => Promise<void>;
 };
 
-export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
+export const controllerSetup = async (controller: new (...args: any[]) => unknown, providers: Provider[]) => {
   const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
   const upload = multer({ storage: multer.memoryStorage() });
   const memoryFileInterceptor = {
@@ -113,9 +114,12 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
   const moduleRef = await Test.createTestingModule({
     controllers: [controller],
     providers: [
-      { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
+      { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+      { provide: APP_PIPE, useClass: ZodValidationPipe },
+      { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
+      { provide: ClsService, useValue: { getId: vi.fn() } },
       { provide: AuthService, useValue: { authenticate: vi.fn() } },
       ...providers,
     ],
@@ -158,14 +162,14 @@ const mockFn = (label: string, { strict }: { strict: boolean }) => {
   });
 };
 
-export const mockBaseService = <T extends BaseService>(service: ClassConstructor<T>) => {
+export const mockBaseService = <T extends BaseService>(service: new (...args: any[]) => T) => {
   return automock(service, { args: [{ setContext: () => {} }], strict: false });
 };
 
 export const automock = <T>(
-  Dependency: ClassConstructor<T>,
+  Dependency: new (...args: any[]) => T,
   options?: {
-    args?: ConstructorParameters<ClassConstructor<T>>;
+    args?: ConstructorParameters<new (...args: any[]) => T>;
     strict?: boolean;
   },
 ): AutoMocked<T> => {
@@ -214,7 +218,6 @@ export type ServiceOverrides = {
   albumUser: AlbumUserRepository;
   apiKey: ApiKeyRepository;
   app: AppRepository;
-  audit: AuditRepository;
   asset: AssetRepository;
   assetEdit: AssetEditRepository;
   assetJob: AssetJobRepository;
@@ -294,7 +297,6 @@ export const getMocks = () => {
     cron: automock(CronRepository, { args: [, loggerMock] }),
     crypto: newCryptoRepositoryMock(),
     activity: automock(ActivityRepository),
-    audit: automock(AuditRepository),
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
@@ -368,7 +370,6 @@ export const newTestService = <T extends BaseService>(
     overrides.asset || (mocks.asset as As<AssetRepository>),
     overrides.assetEdit || (mocks.assetEdit as As<AssetEditRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
-    overrides.audit || (mocks.audit as As<AuditRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
     overrides.cron || (mocks.cron as As<CronRepository>),
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),

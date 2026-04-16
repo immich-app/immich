@@ -14,12 +14,9 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { getAssetActions } from '$lib/services/asset.service';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { user } from '$lib/stores/user.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
@@ -71,6 +68,7 @@
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
     onClose?: (asset: AssetResponseDto) => void;
+    onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
 
@@ -86,10 +84,10 @@
     onAction,
     onUndoDelete,
     onClose,
+    onRemoveFromAlbum,
     onRandom,
   }: Props = $props();
 
-  const { setAssetId } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -175,7 +173,7 @@
 
   onDestroy(() => {
     activityManager.reset();
-    assetViewerManager.closeEditor();
+    assetViewerManager.resetPanelState();
     syncAssetViewerOpenClass(false);
     preloadManager.destroy();
   });
@@ -188,7 +186,7 @@
     if (editManager.hasAppliedEdits) {
       const refreshedAsset = await getAssetInfo({ id: asset.id });
       onAssetChange?.(refreshedAsset);
-      assetViewingStore.setAsset(refreshedAsset);
+      assetViewerManager.setAsset(refreshedAsset);
     }
     assetViewerManager.closeEditor();
   };
@@ -239,7 +237,7 @@
       }
 
       if ($slideshowRepeat && slideshowStartAssetId) {
-        await setAssetId(slideshowStartAssetId);
+        await assetViewerManager.setAssetId(slideshowStartAssetId);
         $restartSlideshowProgress = true;
         return;
       }
@@ -255,7 +253,7 @@
   let assetViewerHtmlElement = $state<HTMLElement>();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
-    handlePromiseError(setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
+    handlePromiseError(assetViewerManager.setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
   });
 
   const handleVideoStarted = () => {
@@ -277,7 +275,6 @@
   const handleStopSlideshow = async () => {
     try {
       if (document.fullscreenElement) {
-        document.body.style.cursor = '';
         await document.exitFullscreen();
       }
     } catch (error) {
@@ -339,7 +336,7 @@
     onAction?.(action);
   };
 
-  let isFullScreen = $derived(fullscreenElement !== null);
+  let isFullScreen = $derived(!!fullscreenElement);
 
   $effect(() => {
     if (album && !album.isActivityEnabled && activityManager.commentCount === 0) {
@@ -478,6 +475,7 @@
         {onUndoDelete}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
+        {onRemoveFromAlbum}
         {playOriginalVideo}
         {setPlayOriginalVideo}
       />
@@ -485,7 +483,7 @@
   {/if}
 
   {#if $slideshowState != SlideshowState.None}
-    <div class="absolute w-full flex justify-center">
+    <div class="absolute inset-s-0 top-0 flex w-full justify-start">
       <SlideshowBar
         {isFullScreen}
         assetType={previewStackedAsset?.type ?? asset.type}
@@ -497,7 +495,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !isFaceEditMode.value && previousAsset}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && previousAsset}
     <div class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -564,13 +562,13 @@
     {/if}
 
     {#if showOcrButton}
-      <div class="absolute bottom-0 end-0 mb-6 me-6">
+      <div class="absolute bottom-0 end-0 mb-6 me-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
         <OcrButton />
       </div>
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !isFaceEditMode.value && nextAsset}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && nextAsset}
     <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
@@ -580,17 +578,16 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
+      class={[
+        'row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light',
+        showDetailPanel ? 'w-90' : 'w-100',
+      ]}
       translate="yes"
     >
       {#if showDetailPanel}
-        <div class="w-90 h-full">
-          <DetailPanel {asset} currentAlbum={album} />
-        </div>
+        <DetailPanel {asset} currentAlbum={album} />
       {:else if assetViewerManager.isShowEditor}
-        <div class="w-100 h-full">
-          <EditorPanel {asset} onClose={closeEditor} />
-        </div>
+        <EditorPanel {asset} onClose={closeEditor} />
       {/if}
     </div>
   {/if}
@@ -631,7 +628,7 @@
     </div>
   {/if}
 
-  {#if isShared && album && assetViewerManager.isShowActivityPanel && $user}
+  {#if isShared && album && assetViewerManager.isShowActivityPanel && authManager.authenticated}
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
@@ -639,7 +636,6 @@
       translate="yes"
     >
       <ActivityViewer
-        user={$user}
         disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}

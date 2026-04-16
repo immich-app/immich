@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Reaction level
 class ReactionLevel {
   /// Instantiate a new enum with the provided [value].
   const ReactionLevel._(this.value);

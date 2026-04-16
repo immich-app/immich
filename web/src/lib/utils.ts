@@ -78,17 +78,40 @@ export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+let unsubscribeId = 0;
+const uploads: Record<number, () => void> = {};
+
+const trackUpload = (unsubscribe: () => void) => {
+  const id = unsubscribeId++;
+  uploads[id] = unsubscribe;
+  return () => {
+    delete uploads[id];
+  };
+};
+
+export const cancelUploadRequests = () => {
+  for (const unsubscribe of Object.values(uploads)) {
+    unsubscribe();
+  }
+};
+
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const unsubscribe = trackUpload(() => xhr.abort());
 
-    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('error', (error) => {
+      unsubscribe();
+      reject(error);
+    });
+
     xhr.addEventListener('load', () => {
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
+        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });

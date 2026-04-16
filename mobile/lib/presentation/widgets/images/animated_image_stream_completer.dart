@@ -3,24 +3,21 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show InformationCollector;
 import 'package:flutter/painting.dart';
+import 'package:immich_mobile/presentation/widgets/images/cache_aware_listener_tracker.mixin.dart';
 
 /// A [MultiFrameImageStreamCompleter] with support for listener tracking
 /// which makes resource cleanup possible when no longer needed.
 /// Codec is disposed through the MultiFrameImageStreamCompleter's internals onDispose method
-class AnimatedImageStreamCompleter extends MultiFrameImageStreamCompleter {
-  void Function()? _onLastListenerRemoved;
-  int _listenerCount = 0;
-  // True once any image or the codec has been provided.
-  // Until then the image cache holds one listener, so "last real listener gone"
-  // is _listenerCount == 1, not 0.
-  bool didProvideImage = false;
-
+class AnimatedImageStreamCompleter extends MultiFrameImageStreamCompleter with CacheAwareListenerTrackerMixin {
   AnimatedImageStreamCompleter._({
     required super.codec,
     required super.scale,
+    required bool hadInitialImage,
     super.informationCollector,
     void Function()? onLastListenerRemoved,
-  }) : _onLastListenerRemoved = onLastListenerRemoved;
+  }) {
+    setupListenerTracking(hadInitialImage: hadInitialImage, onLastListenerRemoved: onLastListenerRemoved);
+  }
 
   factory AnimatedImageStreamCompleter({
     required Stream<Object> stream,
@@ -33,23 +30,21 @@ class AnimatedImageStreamCompleter extends MultiFrameImageStreamCompleter {
     final self = AnimatedImageStreamCompleter._(
       codec: codecCompleter.future,
       scale: scale,
+      hadInitialImage: initialImage != null,
       informationCollector: informationCollector,
       onLastListenerRemoved: onLastListenerRemoved,
     );
 
     if (initialImage != null) {
-      self.didProvideImage = true;
       self.setImage(initialImage);
     }
 
     stream.listen(
       (item) {
         if (item is ImageInfo) {
-          self.didProvideImage = true;
           self.setImage(item);
         } else if (item is ui.Codec) {
           if (!codecCompleter.isCompleted) {
-            self.didProvideImage = true;
             codecCompleter.complete(item);
           }
         }
@@ -69,28 +64,5 @@ class AnimatedImageStreamCompleter extends MultiFrameImageStreamCompleter {
     );
 
     return self;
-  }
-
-  @override
-  void addListener(ImageStreamListener listener) {
-    super.addListener(listener);
-    _listenerCount++;
-  }
-
-  @override
-  void removeListener(ImageStreamListener listener) {
-    super.removeListener(listener);
-    _listenerCount--;
-
-    final bool onlyCacheListenerLeft = _listenerCount == 1 && !didProvideImage;
-    final bool noListenersAfterCodec = _listenerCount == 0 && didProvideImage;
-
-    if (onlyCacheListenerLeft || noListenersAfterCodec) {
-      final onLastListenerRemoved = _onLastListenerRemoved;
-      if (onLastListenerRemoved != null) {
-        _onLastListenerRemoved = null;
-        onLastListenerRemoved();
-      }
-    }
   }
 }

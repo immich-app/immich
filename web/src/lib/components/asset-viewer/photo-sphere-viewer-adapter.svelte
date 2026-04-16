@@ -19,6 +19,7 @@
   import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
   import { SettingsPlugin } from '@photo-sphere-viewer/settings-plugin';
   import '@photo-sphere-viewer/settings-plugin/index.css';
+  import { escape } from 'lodash-es';
   import { onDestroy, onMount } from 'svelte';
 
   // Adapted as well as possible from classlist 'border-solid border-white border-3 rounded-lg'
@@ -128,10 +129,8 @@
     }
 
     const boxes = getOcrBoundingBoxes(ocrData, {
-      contentWidth: viewer.state.textureData.panoData.croppedWidth,
-      contentHeight: viewer.state.textureData.panoData.croppedHeight,
-      offsetX: 0,
-      offsetY: 0,
+      width: viewer.state.textureData.panoData.croppedWidth,
+      height: viewer.state.textureData.panoData.croppedHeight,
     });
 
     for (const [index, box] of boxes.entries()) {
@@ -140,7 +139,7 @@
 
       const fontSize = (1.4 * width) / box.text.length; // fits almost all strings within the box, depends on font family
       const transform = `matrix3d(${matrix.join(',')})`;
-      const content = `<div class="${OCR_TOOLTIP_HTML_CLASS}" style="font-size: ${fontSize}px; width: ${width}px; height: ${height}px; transform: ${transform}; transform-origin: 0 0;">${box.text}</div>`;
+      const content = `<div class="${OCR_TOOLTIP_HTML_CLASS}" style="font-size: ${fontSize}px; width: ${width}px; height: ${height}px; transform: ${transform}; transform-origin: 0 0;">${escape(box.text)}</div>`;
 
       if (updateOnly) {
         markersPlugin.updateMarker({

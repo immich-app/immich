@@ -100,7 +100,7 @@ export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string =>
   return `${yearFull}-${monthFull}-01T00:00:00.000Z`;
 };
 
-export function formatMonthGroupTitle(_date: DateTime): string {
+export function formatTimelineMonthTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }

@@ -64,17 +64,17 @@ test.describe('Photo Viewer', () => {
     await expect(original).toHaveAttribute('src', /fullsize/);
   });
 
-  test('reloads photo when checksum changes', async ({ page }) => {
+  test('right-click targets the img element', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
 
     const preview = page.getByTestId('preview').filter({ visible: true });
     await expect(preview).toHaveAttribute('src', /.+/);
-    const initialSrc = await preview.getAttribute('src');
 
-    const websocketEvent = utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
-    await utils.replaceAsset(admin.accessToken, asset.id);
-    await websocketEvent;
-
-    await expect(preview).not.toHaveAttribute('src', initialSrc!);
+    const box = await preview.boundingBox();
+    const tagAtCenter = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, {
+      x: box!.x + box!.width / 2,
+      y: box!.y + box!.height / 2,
+    });
+    expect(tagAtCenter).toBe('IMG');
   });
 });

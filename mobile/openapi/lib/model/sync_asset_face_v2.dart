@@ -30,12 +30,28 @@ class SyncAssetFaceV2 {
   /// Asset ID
   String assetId;
 
+  /// Bounding box X1
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX1;
 
+  /// Bounding box X2
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX2;
 
+  /// Bounding box Y1
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY1;
 
+  /// Bounding box Y2
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY2;
 
   /// Face deleted at
@@ -44,8 +60,16 @@ class SyncAssetFaceV2 {
   /// Asset face ID
   String id;
 
+  /// Image height
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int imageHeight;
 
+  /// Image width
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int imageWidth;
 
   /// Is the face visible in the asset
@@ -99,7 +123,9 @@ class SyncAssetFaceV2 {
       json[r'boundingBoxY1'] = this.boundingBoxY1;
       json[r'boundingBoxY2'] = this.boundingBoxY2;
     if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
+      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.deletedAt!.millisecondsSinceEpoch
+        : this.deletedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'deletedAt'] = null;
     }
@@ -130,7 +156,7 @@ class SyncAssetFaceV2 {
         boundingBoxX2: mapValueOfType<int>(json, r'boundingBoxX2')!,
         boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
         boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,

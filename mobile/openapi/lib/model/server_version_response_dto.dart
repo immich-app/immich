@@ -19,12 +19,21 @@ class ServerVersionResponseDto {
   });
 
   /// Major version number
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int major;
 
   /// Minor version number
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int minor;
 
   /// Patch version number
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int patch_;
 
   @override

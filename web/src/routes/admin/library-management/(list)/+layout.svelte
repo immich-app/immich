@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidate } from '$app/navigation';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -7,7 +7,7 @@
   import { getLibrariesActions, getLibraryActions } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
+  import { type LibraryResponseDto } from '@immich/sdk';
   import {
     CommandPaletteDefaultProvider,
     Container,
@@ -33,30 +33,15 @@
 
   let { children, data }: Props = $props();
 
-  let libraries = $state(data.libraries);
-  let statistics = $state(data.statistics);
-  let owners = $state(data.owners);
+  let libraries = $derived([...data.libraries]);
+  let owners = $derived({ ...data.owners });
 
   const onLibraryCreate = async (library: LibraryResponseDto) => {
     await goto(Route.viewLibrary(library));
   };
 
-  const onLibraryUpdate = async (library: LibraryResponseDto) => {
-    const index = libraries.findIndex(({ id }) => id === library.id);
-
-    if (index === -1) {
-      return;
-    }
-
-    libraries[index] = await getLibrary({ id: library.id });
-    statistics[library.id] = await getLibraryStatistics({ id: library.id });
-  };
-
-  const onLibraryDelete = ({ id }: { id: string }) => {
-    libraries = libraries.filter((library) => library.id !== id);
-    delete statistics[id];
-    delete owners[id];
-  };
+  const onLibraryUpdate = () => invalidate('app:libraries');
+  const onLibraryDelete = () => invalidate('app:libraries');
 
   const { Create, ScanAll } = $derived(getLibrariesActions($t));
 
@@ -94,8 +79,6 @@
           </TableHeader>
           <TableBody>
             {#each libraries as library (library.id + library.name)}
-              {@const { photos, usage, videos } = statistics[library.id]}
-              {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
               {@const owner = owners[library.id]}
               <TableRow>
                 <TableCell class={classes.column1}>
@@ -104,9 +87,40 @@
                 <TableCell class={classes.column2}>
                   <Link href={Route.viewUser(owner)}>{owner.name}</Link>
                 </TableCell>
-                <TableCell class={classes.column3}>{photos.toLocaleString($locale)}</TableCell>
-                <TableCell class={classes.column4}>{videos.toLocaleString($locale)}</TableCell>
-                <TableCell class={classes.column5}>{diskUsage} {diskUsageUnit}</TableCell>
+                {#await data.statisticsPromise}
+                  <TableCell class={classes.column3}>
+                    <span class="skeleton-loader inline-block h-4 w-14"></span>
+                  </TableCell>
+                  <TableCell class={classes.column4}>
+                    <span class="skeleton-loader inline-block h-4 w-14"></span>
+                  </TableCell>
+                  <TableCell class={classes.column5}>
+                    <span class="skeleton-loader inline-block h-4 w-20"></span>
+                  </TableCell>
+                {:then loadedStats}
+                  {@const stats = loadedStats[library.id]}
+                  <TableCell class={classes.column3}>
+                    {stats.photos.toLocaleString($locale)}
+                  </TableCell>
+                  <TableCell class={classes.column4}>
+                    {stats.videos.toLocaleString($locale)}
+                  </TableCell>
+                  <TableCell class={classes.column5}>
+                    {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(stats.usage, 0)}
+                    {diskUsage}
+                    {diskUsageUnit}
+                  </TableCell>
+                {:catch}
+                  <TableCell class={classes.column3}>
+                    <span class="skeleton-loader inline-block h-4 w-14"></span>
+                  </TableCell>
+                  <TableCell class={classes.column4}>
+                    <span class="skeleton-loader inline-block h-4 w-14"></span>
+                  </TableCell>
+                  <TableCell class={classes.column5}>
+                    <span class="skeleton-loader inline-block h-4 w-20"></span>
+                  </TableCell>
+                {/await}
                 <TableCell class={classes.column6}>
                   <ContextMenuButton color="primary" aria-label={$t('open')} items={getActionsForLibrary(library)} />
                 </TableCell>
@@ -127,3 +141,37 @@
     </div>
   </Container>
 </AdminPageLayout>
+
+<style>
+  .skeleton-loader {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: rgba(156, 163, 175, 0.35);
+  }
+
+  .skeleton-loader::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0)
+    );
+    background-size: 200% 100%;
+    background-position: 200% 0;
+    animation: skeleton-animation 2000ms infinite;
+  }
+
+  @keyframes skeleton-animation {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+</style>

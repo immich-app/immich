@@ -563,9 +563,9 @@ describe(AlbumService.name, () => {
         },
       ]);
 
-      await sut.get(AuthFactory.create(album.owner), album.id, {});
+      await sut.get(AuthFactory.create(album.owner), album.id);
 
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: true });
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false });
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(album.owner.id, new Set([album.id]));
     });
 
@@ -584,9 +584,9 @@ describe(AlbumService.name, () => {
       ]);
 
       const auth = AuthFactory.from().sharedLink().build();
-      await sut.get(auth, album.id, {});
+      await sut.get(auth, album.id);
 
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: true });
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false });
       expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalledWith(auth.sharedLink!.id, new Set([album.id]));
     });
 
@@ -605,9 +605,9 @@ describe(AlbumService.name, () => {
         },
       ]);
 
-      await sut.get(AuthFactory.create(user), album.id, {});
+      await sut.get(AuthFactory.create(user), album.id);
 
-      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: true });
+      expect(mocks.album.getById).toHaveBeenCalledWith(album.id, { withAssets: false });
       expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         user.id,
         new Set([album.id]),
@@ -617,7 +617,7 @@ describe(AlbumService.name, () => {
 
     it('should throw an error for no access', async () => {
       const auth = AuthFactory.create();
-      await expect(sut.get(auth, 'album-123', {})).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.get(auth, 'album-123')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set(['album-123']));
       expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
@@ -715,31 +715,6 @@ describe(AlbumService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.album.update).not.toHaveBeenCalled();
-    });
-
-    it('should allow a shared link user to add assets', async () => {
-      const album = AlbumFactory.create();
-      const [asset1, asset2, asset3] = [AssetFactory.create(), AssetFactory.create(), AssetFactory.create()];
-      const auth = AuthFactory.from(album.owner).sharedLink({ allowUpload: true, userId: album.ownerId }).build();
-      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set([album.id]));
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id, asset3.id]));
-      mocks.album.getById.mockResolvedValue(getForAlbum(album));
-      mocks.album.getAssetIds.mockResolvedValueOnce(new Set());
-
-      await expect(sut.addAssets(auth, album.id, { ids: [asset1.id, asset2.id, asset3.id] })).resolves.toEqual([
-        { success: true, id: asset1.id },
-        { success: true, id: asset2.id },
-        { success: true, id: asset3.id },
-      ]);
-
-      expect(mocks.album.update).toHaveBeenCalledWith(album.id, {
-        id: album.id,
-        updatedAt: expect.any(Date),
-        albumThumbnailAssetId: asset1.id,
-      });
-      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
-
-      expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalledWith(auth.sharedLink?.id, new Set([album.id]));
     });
 
     it('should allow adding assets shared via partner sharing', async () => {
@@ -962,40 +937,6 @@ describe(AlbumService.name, () => {
       });
 
       expect(mocks.album.update).not.toHaveBeenCalled();
-    });
-
-    it('should not allow a shared link user to add assets to multiple albums', async () => {
-      const album1 = AlbumFactory.create();
-      const album2 = AlbumFactory.create();
-      const [asset1, asset2, asset3] = [AssetFactory.create(), AssetFactory.create(), AssetFactory.create()];
-      mocks.access.album.checkSharedLinkAccess.mockResolvedValueOnce(new Set([album1.id]));
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id, asset3.id]));
-      mocks.album.getById.mockResolvedValueOnce(getForAlbum(album1)).mockResolvedValueOnce(getForAlbum(album2));
-      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
-
-      const auth = AuthFactory.from(album1.owner).sharedLink({ allowUpload: true }).build();
-      await expect(
-        sut.addAssetsToAlbums(auth, {
-          albumIds: [album1.id, album2.id],
-          assetIds: [asset1.id, asset2.id, asset3.id],
-        }),
-      ).resolves.toEqual({ success: true, error: undefined });
-
-      expect(mocks.album.update).toHaveBeenCalledTimes(1);
-      expect(mocks.album.update).toHaveBeenNthCalledWith(1, album1.id, {
-        id: album1.id,
-        updatedAt: expect.any(Date),
-        albumThumbnailAssetId: asset1.id,
-      });
-      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-      ]);
-      expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalledWith(
-        auth.sharedLink?.id,
-        new Set([album1.id, album2.id]),
-      );
     });
 
     it('should allow adding assets shared via partner sharing', async () => {

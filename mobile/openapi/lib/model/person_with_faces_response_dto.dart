@@ -36,7 +36,6 @@ class PersonWithFacesResponseDto {
   ///
   String? color;
 
-  /// Face detections
   List<AssetFaceWithoutPersonResponseDto> faces;
 
   /// Person ID

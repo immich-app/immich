@@ -17,7 +17,6 @@ class SetMaintenanceModeDto {
     this.restoreBackupFilename,
   });
 
-  /// Maintenance action
   MaintenanceAction action;
 
   /// Restore backup filename

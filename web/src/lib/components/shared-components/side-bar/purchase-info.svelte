@@ -5,7 +5,6 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { Route } from '$lib/route';
-  import { preferences } from '$lib/stores/user.store';
   import { getAccountAge } from '$lib/utils/auth';
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
@@ -50,7 +49,8 @@
         },
       });
 
-      preferences.set(response);
+      authManager.setPreferences(response);
+
       showBuyButton = getButtonVisibility();
       showMessage = false;
     } catch (error) {
@@ -70,7 +70,7 @@
 </script>
 
 <div class="license-status ps-4 text-sm">
-  {#if authManager.isPurchased && $preferences.purchase.showSupportBadge}
+  {#if authManager.isPurchased && authManager.preferences.purchase.showSupportBadge}
     <button
       onclick={() => goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }))}
       class="w-full mt-2"

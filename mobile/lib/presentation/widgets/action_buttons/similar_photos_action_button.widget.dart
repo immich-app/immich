@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
@@ -24,20 +24,22 @@ class SimilarPhotosActionButton extends ConsumerWidget {
     }
 
     ref.invalidate(assetViewerProvider);
-    ref
-        .read(searchPreFilterProvider.notifier)
-        .setFilter(
-          SearchFilter(
-            assetId: assetId,
-            people: {},
-            location: SearchLocationFilter(),
-            camera: SearchCameraFilter(),
-            date: SearchDateFilter(),
-            display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
-            rating: SearchRatingFilter(),
-            mediaType: AssetType.image,
-          ),
-        );
+    ref.invalidate(paginatedSearchProvider);
+
+    ref.read(searchPreFilterProvider.notifier)
+      ..clear()
+      ..setFilter(
+        SearchFilter(
+          assetId: assetId,
+          people: {},
+          location: SearchLocationFilter(),
+          camera: SearchCameraFilter(),
+          date: SearchDateFilter(),
+          display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+          rating: SearchRatingFilter(),
+          mediaType: AssetType.image,
+        ),
+      );
 
     unawaited(context.navigateTo(const DriftSearchRoute()));
   }
