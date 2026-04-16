@@ -174,6 +174,14 @@
                 isEdited={!(configToEdit.oauth.timeout === config.oauth.timeout)}
               />
 
+              <SettingSwitch
+                title={$t('admin.oauth_allow_insecure_requests')}
+                subtitle={$t('admin.oauth_allow_insecure_requests_description')}
+                bind:checked={configToEdit.oauth.allowInsecureRequests}
+                disabled={disabled || !configToEdit.oauth.enabled}
+                isEdited={!(configToEdit.oauth.allowInsecureRequests === config.oauth.allowInsecureRequests)}
+              />
+
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_label_claim')}

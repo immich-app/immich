@@ -145,6 +145,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
     roleClaim: 'immich_role',
