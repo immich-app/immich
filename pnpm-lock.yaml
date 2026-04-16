@@ -63,7 +63,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^24.12.0
+        specifier: ^24.12.2
         version: 24.12.2
       '@vitest/coverage-v8':
         specifier: ^4.0.0
@@ -217,7 +217,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^24.12.0
+        specifier: ^24.12.2
         version: 24.12.2
       '@types/pg':
         specifier: ^8.15.1
@@ -320,7 +320,7 @@ importers:
         version: 1.2.0
     devDependencies:
       '@types/node':
-        specifier: ^24.12.0
+        specifier: ^24.12.2
         version: 24.12.2
       typescript:
         specifier: ^6.0.0
@@ -642,7 +642,7 @@ importers:
         specifier: ^2.0.0
         version: 2.1.0
       '@types/node':
-        specifier: ^24.12.0
+        specifier: ^24.12.2
         version: 24.12.2
       '@types/nodemailer':
         specifier: ^8.0.0
