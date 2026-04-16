@@ -149,6 +149,18 @@
       tools:node="remove" />
 
 
+    <!-- Document Provider (SAF) - works with ACTION_OPEN_DOCUMENT / ACTION_GET_CONTENT -->
+    <provider
+      android:name=".cloudprovider.ImmichDocumentProvider"
+      android:authorities="${applicationId}.documents"
+      android:exported="true"
+      android:grantUriPermissions="true"
+      android:permission="android.permission.MANAGE_DOCUMENTS">
+      <intent-filter>
+        <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+      </intent-filter>
+    </provider>
+
     <!-- Widgets -->
     <receiver
       android:name=".widget.RandomReceiver"
