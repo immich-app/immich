@@ -37,7 +37,6 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { Route } from '$lib/route';
   import {
     getAlbumActions,
@@ -66,6 +65,7 @@
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
+    mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
     mdiImageOutline,
@@ -376,23 +376,13 @@
                 ]}
 
                 <div class="my-3 flex gap-x-1">
-                  <!-- link -->
-                  {#if album.hasSharedLink && isOwned}
-                    <IconButton
-                      aria-label={$t('create_link_to_share')}
-                      color="secondary"
-                      size="medium"
-                      shape="round"
-                      icon={mdiLink}
-                      onclick={() => modalManager.show(SharedLinkCreateModal, { albumId: album.id })}
-                    />
-                  {/if}
-
-                  {#if isOwned}
+                  <button
+                    class="flex gap-x-1"
+                    type="button"
+                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                  >
                     {#each sortedAlbumUsers as user (user.id)}
-                      <button type="button" onclick={() => modalManager.show(AlbumOptionsModal, { album })}>
-                        <UserAvatar {user} size="md" />
-                      </button>
+                      <UserAvatar {user} size="md" />
                     {/each}
 
                     <!-- display ellipsis if there are readonly users too -->
@@ -402,17 +392,24 @@
                         aria-label={$t('view_all_users')}
                         color="secondary"
                         size="medium"
-                        icon={mdiDotsVertical}
-                        onclick={() => modalManager.show(AlbumOptionsModal, { album })}
+                        icon={mdiDotsHorizontal}
                       />
                     {/if}
-                  {:else}
-                    {#each sortedAlbumUsers as user (user.id)}
-                      <UserAvatar {user} size="md" />
-                    {/each}
-                  {/if}
 
-                  <ActionButton action={Share} />
+                    {#if album.hasSharedLink && isOwned}
+                      <IconButton
+                        aria-label={$t('shared_link_manage_links')}
+                        color="secondary"
+                        size="medium"
+                        shape="round"
+                        icon={mdiLink}
+                      />
+                    {/if}
+                  </button>
+
+                  {#if isOwned}
+                    <ActionButton action={Share} />
+                  {/if}
                 </div>
               {/if}
               <AlbumDescription
