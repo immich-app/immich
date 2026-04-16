@@ -163,7 +163,7 @@
     "prettier-plugin-organize-imports": "^4.0.0",
     "sql-formatter": "^15.0.0",
     "supertest": "^7.1.0",
-    "tailwindcss": "^3.4.0",
+    "tailwindcss": "^4.0.0",
     "testcontainers": "^11.0.0",
     "typescript": "^6.0.0",
     "typescript-eslint": "^8.28.0",
