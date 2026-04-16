@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import { AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum';
+import { asset_checksum_algorithm_enum, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import { asset_delete_audit } from 'src/schema/functions';
 import { LibraryTable } from 'src/schema/tables/library.table';
 import { StackTable } from 'src/schema/tables/stack.table';
@@ -65,14 +65,8 @@ export class AssetTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  @Column()
-  deviceAssetId!: string;
-
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
-
-  @Column()
-  deviceId!: string;
 
   @Column()
   type!: AssetType;
@@ -92,11 +86,11 @@ export class AssetTable {
   @Column({ type: 'character varying', nullable: true })
   duration!: string | null;
 
-  @Column({ type: 'character varying', nullable: true, default: '' })
-  encodedVideoPath!: string | null;
-
   @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum
+
+  @Column({ enum: asset_checksum_algorithm_enum })
+  checksumAlgorithm!: ChecksumAlgorithm;
 
   @ForeignKeyColumn(() => AssetTable, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   livePhotoVideoId!: string | null;

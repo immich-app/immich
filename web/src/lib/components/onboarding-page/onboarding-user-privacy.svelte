@@ -1,22 +1,17 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyPreferences } from '@immich/sdk';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
+  let gCastEnabled = $state(authManager.authenticated ? authManager.preferences.cast.gCastEnabled : false);
 
   onDestroy(async () => {
     try {
-      const data = await updateMyPreferences({
-        userPreferencesUpdateDto: {
-          cast: { gCastEnabled },
-        },
-      });
-
-      $preferences = { ...data };
+      const response = await updateMyPreferences({ userPreferencesUpdateDto: { cast: { gCastEnabled } } });
+      authManager.setPreferences(response);
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }

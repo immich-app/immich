@@ -13,14 +13,14 @@ part of openapi.api;
 class QueueJobResponseDto {
   /// Returns a new [QueueJobResponseDto] instance.
   QueueJobResponseDto({
-    required this.data,
+    this.data = const {},
     this.id,
     required this.name,
     required this.timestamp,
   });
 
   /// Job data payload
-  Object data;
+  Map<String, Object> data;
 
   /// Job ID
   ///
@@ -31,15 +31,17 @@ class QueueJobResponseDto {
   ///
   String? id;
 
-  /// Job name
   JobName name;
 
   /// Job creation timestamp
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int timestamp;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueJobResponseDto &&
-    other.data == data &&
+    _deepEquality.equals(other.data, data) &&
     other.id == id &&
     other.name == name &&
     other.timestamp == timestamp;
@@ -77,7 +79,7 @@ class QueueJobResponseDto {
       final json = value.cast<String, dynamic>();
 
       return QueueJobResponseDto(
-        data: mapValueOfType<Object>(json, r'data')!,
+        data: mapCastOfType<String, Object>(json, r'data')!,
         id: mapValueOfType<String>(json, r'id'),
         name: JobName.fromJson(json[r'name'])!,
         timestamp: mapValueOfType<int>(json, r'timestamp')!,

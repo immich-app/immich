@@ -4,6 +4,7 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
@@ -16,8 +17,6 @@
     SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { user } from '$lib/stores/user.store';
-  import { userInteraction } from '$lib/stores/user.svelte';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -98,7 +97,7 @@
 
     /** Group by owner */
     [AlbumGroupBy.Owner]: (order, albums): AlbumGroup[] => {
-      const currentUserId = $user.id;
+      const currentUserId = authManager.user.id;
       const groupedByOwnerIds = groupBy(albums, 'ownerId');
 
       const sortSign = order === SortOrder.Desc ? -1 : 1;
@@ -131,7 +130,7 @@
         return sharedAlbums;
       }
       default: {
-        const nonOwnedAlbums = sharedAlbums.filter((album) => album.ownerId !== $user.id);
+        const nonOwnedAlbums = sharedAlbums.filter((album) => album.ownerId !== authManager.user.id);
         return nonOwnedAlbums.length > 0 ? ownedAlbums.concat(nonOwnedAlbums) : ownedAlbums;
       }
     }
@@ -168,7 +167,7 @@
     albumGroupIds = groupedAlbums.map(({ id }) => id);
   });
 
-  let showFullContextMenu = $derived(allowEdit && selectedAlbum && selectedAlbum.ownerId === $user.id);
+  let showFullContextMenu = $derived(allowEdit && selectedAlbum && selectedAlbum.ownerId === authManager.user.id);
 
   onMount(async () => {
     if (allowEdit) {
@@ -233,14 +232,9 @@
     return albums;
   };
 
-  const onUpdate = (album: AlbumResponseDto) => {
+  const onAlbumUpdate = (album: AlbumResponseDto) => {
     ownedAlbums = findAndUpdate(ownedAlbums, album);
     sharedAlbums = findAndUpdate(sharedAlbums, album);
-  };
-
-  const onAlbumUpdate = (album: AlbumResponseDto) => {
-    onUpdate(album);
-    userInteraction.recentAlbums = findAndUpdate(userInteraction.recentAlbums || [], album);
   };
 
   const onAlbumDelete = (album: AlbumResponseDto) => {
@@ -250,7 +244,7 @@
 
   const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
     if (sharedLink.album) {
-      onUpdate(sharedLink.album);
+      onAlbumUpdate(sharedLink.album);
     }
   };
 </script>

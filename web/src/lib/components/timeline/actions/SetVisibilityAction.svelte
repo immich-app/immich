@@ -1,7 +1,7 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { OnSetVisibility } from '$lib/utils/actions';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { Button, modalManager } from '@immich/ui';
@@ -16,7 +16,6 @@
 
   let { onVisibilitySet, menuItem = false, unlock = false }: Props = $props();
   let loading = $state(false);
-  const { getAssets } = getAssetControlContext();
 
   const setLockedVisibility = async () => {
     const isConfirmed = await modalManager.showDialog({
@@ -33,7 +32,7 @@
 
     try {
       loading = true;
-      const assetIds = getAssets().map(({ id }) => id);
+      const assetIds = assetMultiSelectManager.assets.map(({ id }) => id);
 
       await updateAssets({
         assetBulkUpdateDto: {

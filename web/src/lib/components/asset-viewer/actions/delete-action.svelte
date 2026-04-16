@@ -40,7 +40,7 @@
         preAction({ type: AssetAction.DELETE, asset: timelineAsset });
         await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
         onAction({ type: AssetAction.DELETE, asset: timelineAsset });
-        toastManager.success($t('permanently_deleted_asset'));
+        toastManager.primary($t('permanently_deleted_asset'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_delete_asset'));
       }

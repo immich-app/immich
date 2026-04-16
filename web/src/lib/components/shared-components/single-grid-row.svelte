@@ -5,7 +5,7 @@
     children?: import('svelte').Snippet<[{ itemCount: number }]>;
   }
 
-  let { class: className = '', itemCount = $bindable(1), children }: Props = $props();
+  let { class: className, itemCount = $bindable(1), children }: Props = $props();
 
   let container: HTMLElement | undefined = $state();
   let contentRect: DOMRectReadOnly | undefined = $state();

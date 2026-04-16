@@ -80,12 +80,14 @@ Future<void> _processCloudIdMappingsInBatches(
           AssetMetadataBulkUpsertItemDto(
             assetId: mapping.remoteAssetId,
             key: kMobileMetadataKey,
-            value: RemoteAssetMobileAppMetadata(
-              cloudId: mapping.localAsset.cloudId,
-              createdAt: mapping.localAsset.createdAt.toIso8601String(),
-              adjustmentTime: mapping.localAsset.adjustmentTime?.toIso8601String(),
-              latitude: mapping.localAsset.latitude?.toString(),
-              longitude: mapping.localAsset.longitude?.toString(),
+            value: Map<String, Object>.from(
+              RemoteAssetMobileAppMetadata(
+                cloudId: mapping.localAsset.cloudId,
+                createdAt: mapping.localAsset.createdAt.toIso8601String(),
+                adjustmentTime: mapping.localAsset.adjustmentTime?.toIso8601String(),
+                latitude: mapping.localAsset.latitude?.toString(),
+                longitude: mapping.localAsset.longitude?.toString(),
+              ).toJson(),
             ),
           ),
         );

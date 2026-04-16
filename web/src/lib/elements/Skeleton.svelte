@@ -33,17 +33,6 @@
   :global(.dark) [data-skeleton] {
     background-image: url('/dark_skeleton.png');
   }
-  @keyframes delayedVisibility {
-    to {
-      visibility: visible;
-    }
-  }
-  [data-skeleton] {
-    visibility: hidden;
-    animation:
-      0s linear 0.1s forwards delayedVisibility,
-      pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
   .invisible [data-skeleton] {
     visibility: hidden !important;
   }

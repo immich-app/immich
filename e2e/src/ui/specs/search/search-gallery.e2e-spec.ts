@@ -6,6 +6,7 @@ import {
   generateTimelineData,
   TimelineAssetConfig,
   TimelineData,
+  toAssetResponseDto,
 } from 'src/ui/generators/timeline';
 import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
 import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';
@@ -30,6 +31,10 @@ test.describe('search gallery-viewer', () => {
   };
 
   test.beforeAll(async () => {
+    test.fail(
+      process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS !== '1',
+      'This test requires env var: PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1',
+    );
     adminUserId = faker.string.uuid();
     testContext.adminId = adminUserId;
     timelineRestData = generateTimelineData({ ...createDefaultTimelineConfig(), ownerId: adminUserId });
@@ -44,7 +49,10 @@ test.describe('search gallery-viewer', () => {
 
     await context.route('**/api/search/metadata', async (route, request) => {
       if (request.method() === 'POST') {
-        const searchAssets = assets.slice(0, 5).filter((asset) => !changes.assetDeletions.includes(asset.id));
+        const searchAssets = assets
+          .slice(0, 5)
+          .filter((asset) => !changes.assetDeletions.includes(asset.id))
+          .map((asset) => toAssetResponseDto(asset));
         return route.fulfill({
           status: 200,
           contentType: 'application/json',

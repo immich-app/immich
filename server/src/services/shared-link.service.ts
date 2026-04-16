@@ -151,7 +151,6 @@ export class SharedLinkService extends BaseService {
 
   async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-
     if (sharedLink.type !== SharedLinkType.Individual) {
       throw new BadRequestException('Invalid shared link type');
     }

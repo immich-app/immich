@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -106,6 +107,27 @@ describe(SearchService.name, () => {
 
       expect(response.assets.items.length).toBe(1);
       expect(response.assets.items[0].id).toBe(unstackedAsset.id);
+    });
+  });
+
+  describe('getSearchSuggestions', () => {
+    it('should filter out empty search suggestions', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+
+      const { asset: assetWithEmptyMake } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: assetWithEmptyMake.id, make: '' });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const suggestions = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.CAMERA_MAKE,
+        includeNull: true,
+      });
+
+      expect(suggestions).toEqual(['Canon', null]);
     });
   });
 });

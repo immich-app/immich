@@ -101,7 +101,7 @@ describe(`/oauth`, () => {
     it(`should throw an error if a redirect uri is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/authorize').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['redirectUri must be a string', 'redirectUri should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[redirectUri] Invalid input: expected string, received undefined']));
     });
 
     it('should return a redirect uri', async () => {
@@ -123,13 +123,13 @@ describe(`/oauth`, () => {
     it(`should throw an error if a url is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['url must be a string', 'url should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[url] Invalid input: expected string, received undefined']));
     });
 
     it(`should throw an error if the url is empty`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({ url: '' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['url should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[url] Too small: expected string to have >=1 characters']));
     });
 
     it(`should throw an error if the state is not provided`, async () => {
@@ -376,6 +376,25 @@ describe(`/oauth`, () => {
         isAdmin: false,
         name: 'OAuth User',
         userEmail: 'oauth-mobile-override@immich.app',
+        userId: expect.any(String),
+      });
+    });
+  });
+
+  describe('idTokenClaims', () => {
+    it('should use claims from the ID token if IDP includes them', async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+      });
+      const callbackParams = await loginWithOAuth(OAuthUser.ID_TOKEN_CLAIMS);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        name: 'ID Token User',
+        userEmail: 'oauth-id-token-claims@immich.app',
         userId: expect.any(String),
       });
     });

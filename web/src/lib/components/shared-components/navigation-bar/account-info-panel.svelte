@@ -1,10 +1,10 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { Route } from '$lib/route';
-  import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
@@ -14,12 +14,11 @@
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
 
-  interface Props {
-    onLogout: () => void;
+  type Props = {
     onClose?: () => void;
-  }
+  };
 
-  let { onLogout, onClose = () => {} }: Props = $props();
+  let { onClose }: Props = $props();
 
   let info: ServerAboutResponseDto | undefined = $state();
 
@@ -39,7 +38,7 @@
     class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-t-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <div class="relative">
-      <UserAvatar user={$user} size="xl" />
+      <UserAvatar user={authManager.user} size="xl" />
       <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
         <IconButton
           color="primary"
@@ -48,7 +47,7 @@
           size="tiny"
           shape="round"
           onclick={async () => {
-            onClose();
+            onClose?.();
             await modalManager.show(AvatarEditModal);
           }}
         />
@@ -56,9 +55,9 @@
     </div>
     <div>
       <p class="text-center text-lg font-medium text-primary">
-        {$user.name}
+        {authManager.user.name}
       </p>
-      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
+      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{authManager.user.email}</p>
     </div>
 
     <div class="flex flex-col gap-1">
@@ -76,7 +75,7 @@
           {$t('account_settings')}
         </div>
       </Button>
-      {#if $user.isAdmin}
+      {#if authManager.user.isAdmin}
         <Button
           href={Route.systemSettings()}
           onclick={onClose}
@@ -99,7 +98,7 @@
   <div class="mb-4 flex flex-col">
     <Button
       class="m-1 mx-4 rounded-none rounded-b-3xl bg-white p-3 dark:bg-immich-dark-primary/10"
-      onclick={onLogout}
+      href={Route.logout()}
       leadingIcon={mdiLogout}
       variant="ghost"
       color="secondary">{$t('sign_out')}</Button
@@ -109,7 +108,7 @@
       type="button"
       class="text-center mt-4 underline text-xs text-primary"
       onclick={async () => {
-        onClose();
+        onClose?.();
         if (info) {
           await modalManager.show(HelpAndFeedbackModal, { info });
         }

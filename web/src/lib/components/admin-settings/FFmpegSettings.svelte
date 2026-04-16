@@ -18,7 +18,7 @@
     VideoCodec,
     VideoContainer,
   } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Icon, Link } from '@immich/ui';
   import { mdiHelpCircleOutline } from '@mdi/js';
   import { isEqual, sortBy } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -38,17 +38,11 @@
           <FormatMessage key="admin.transcoding_codecs_learn_more">
             {#snippet children({ tag, message })}
               {#if tag === 'h264-link'}
-                <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
-                  {message}
-                </a>
+                <Link href="https://trac.ffmpeg.org/wiki/Encode/H.264">{message}</Link>
               {:else if tag === 'hevc-link'}
-                <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
-                  {message}
-                </a>
+                <Link href="https://trac.ffmpeg.org/wiki/Encode/H.265">{message}</Link>
               {:else if tag === 'vp9-link'}
-                <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
-                  {message}
-                </a>
+                <Link href="https://trac.ffmpeg.org/wiki/Encode/VP9">{message}</Link>
               {/if}
             {/snippet}
           </FormatMessage>
@@ -115,7 +109,7 @@
               options={[
                 { value: AudioCodec.Aac, text: 'AAC' },
                 { value: AudioCodec.Mp3, text: 'MP3' },
-                { value: AudioCodec.Libopus, text: 'Opus' },
+                { value: AudioCodec.Opus, text: 'Opus' },
                 { value: AudioCodec.PcmS16Le, text: 'PCM (16 bit)' },
               ]}
               isEdited={!isEqual(
@@ -174,7 +168,7 @@
               options={[
                 { value: AudioCodec.Aac, text: 'aac' },
                 { value: AudioCodec.Mp3, text: 'mp3' },
-                { value: AudioCodec.Libopus, text: 'opus' },
+                { value: AudioCodec.Opus, text: 'opus' },
               ]}
               name="acodec"
               isEdited={configToEdit.ffmpeg.targetAudioCodec !== config.ffmpeg.targetAudioCodec}

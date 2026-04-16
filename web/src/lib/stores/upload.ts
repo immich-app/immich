@@ -80,7 +80,32 @@ function createUploadStore() {
   };
 
   const removeItem = (id: string) => {
-    uploadAssets.update((uploadingAsset) => uploadingAsset.filter((a) => a.id != id));
+    uploadAssets.update((uploadingAsset) => {
+      const assetToRemove = uploadingAsset.find((a) => a.id === id);
+      if (assetToRemove) {
+        stats.update((stats) => {
+          switch (assetToRemove.state) {
+            case UploadState.DUPLICATED: {
+              stats.duplicates--;
+              break;
+            }
+
+            case UploadState.ERROR: {
+              stats.errors--;
+              break;
+            }
+
+            case UploadState.DONE: {
+              break;
+            }
+          }
+
+          return stats;
+        });
+      }
+
+      return uploadingAsset.filter((a) => a.id != id);
+    });
   };
 
   const dismissErrors = () =>

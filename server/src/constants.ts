@@ -2,7 +2,9 @@ import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
-import { ApiTag, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+import { ApiTag, AudioCodec, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+
+export const IMMICH_SERVER_START = 'Immich Server is listening';
 
 export const ErrorMessages = {
   InconsistentMediaLocation:
@@ -200,4 +202,12 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
   [ApiTag.Workflows]:
     'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
+};
+
+export const AUDIO_ENCODER: Record<AudioCodec, string> = {
+  [AudioCodec.Aac]: 'aac',
+  [AudioCodec.Mp3]: 'mp3',
+  [AudioCodec.Libopus]: 'libopus',
+  [AudioCodec.Opus]: 'libopus',
+  [AudioCodec.PcmS16le]: 'pcm_s16le',
 };

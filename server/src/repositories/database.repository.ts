@@ -431,7 +431,6 @@ export class DatabaseRepository {
         .updateTable('asset')
         .set((eb) => ({
           originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
-          encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
         }))
         .execute();
 

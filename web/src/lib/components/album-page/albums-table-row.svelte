@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { dateFormats } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
-  import { user } from '$lib/stores/user.store';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -43,7 +43,7 @@
         icon={mdiShareVariantOutline}
         size="16"
         class="inline ms-1 opacity-70"
-        title={album.ownerId === $user.id
+        title={album.ownerId === authManager.user.id
           ? $t('shared_by_you')
           : $t('shared_by_user', { values: { user: album.owner.name } })}
       />

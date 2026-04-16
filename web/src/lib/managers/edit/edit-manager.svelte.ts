@@ -142,7 +142,7 @@ export class EditManager {
 
       eventManager.emit('AssetEditsApplied', assetId);
 
-      toastManager.success(t('editor_edits_applied_success'));
+      toastManager.primary(t('editor_edits_applied_success'));
       this.hasAppliedEdits = true;
 
       return true;

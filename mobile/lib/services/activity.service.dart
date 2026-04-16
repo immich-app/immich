@@ -9,7 +9,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/repositories/activity_api.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:logging/logging.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as immich_store;
 
 class ActivityService with ErrorLoggerMixin {
   final ActivityApiRepository _activityApiRepository;
@@ -60,20 +59,16 @@ class ActivityService with ErrorLoggerMixin {
   }
 
   Future<AssetViewerRoute?> buildAssetViewerRoute(String assetId, WidgetRef ref) async {
-    if (immich_store.Store.isBetaTimelineEnabled) {
-      final asset = await _assetService.getRemoteAsset(assetId);
-      if (asset == null) {
-        return null;
-      }
-
-      AssetViewer.setAsset(ref, asset);
-      return AssetViewerRoute(
-        initialIndex: 0,
-        timelineService: _timelineFactory.fromAssets([asset], TimelineOrigin.albumActivities),
-        currentAlbum: ref.read(currentRemoteAlbumProvider),
-      );
+    final asset = await _assetService.getRemoteAsset(assetId);
+    if (asset == null) {
+      return null;
     }
 
-    return null;
+    AssetViewer.setAsset(ref, asset);
+    return AssetViewerRoute(
+      initialIndex: 0,
+      timelineService: _timelineFactory.fromAssets([asset], TimelineOrigin.albumActivities),
+      currentAlbum: ref.read(currentRemoteAlbumProvider),
+    );
   }
 }

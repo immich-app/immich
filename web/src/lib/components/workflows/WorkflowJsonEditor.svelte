@@ -1,7 +1,17 @@
 <script lang="ts">
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import type { WorkflowPayload } from '$lib/services/workflow.service';
-  import { Button, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, VStack } from '@immich/ui';
+  import {
+    Button,
+    Card,
+    CardBody,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    Icon,
+    Theme,
+    themeManager,
+    VStack,
+  } from '@immich/ui';
   import { mdiCodeJson } from '@mdi/js';
   import { JSONEditor, Mode, type Content, type OnChangeStatus } from 'svelte-jsoneditor';
 
@@ -15,7 +25,7 @@
 
   let content: Content = $derived({ json: jsonContent });
   let canApply = $state(false);
-  let editorClass = $derived(themeManager.isDark ? 'jse-theme-dark' : '');
+  let editorClass = $derived(themeManager.value === Theme.Dark ? 'jse-theme-dark' : '');
 
   const handleChange = (updated: Content, _: Content, status: OnChangeStatus) => {
     if (status.contentErrors) {

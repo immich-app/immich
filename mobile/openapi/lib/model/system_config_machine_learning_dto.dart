@@ -35,6 +35,7 @@ class SystemConfigMachineLearningDto {
 
   OcrConfig ocr;
 
+  /// ML service URLs
   List<String> urls;
 
   @override

@@ -50,9 +50,13 @@ class ExifResponseDto {
   String? description;
 
   /// Image height in pixels
+  ///
+  /// Minimum value: 0
   num? exifImageHeight;
 
   /// Image width in pixels
+  ///
+  /// Minimum value: 0
   num? exifImageWidth;
 
   /// Exposure time
@@ -62,6 +66,9 @@ class ExifResponseDto {
   num? fNumber;
 
   /// File size in bytes
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int? fileSizeInByte;
 
   /// Focal length in mm

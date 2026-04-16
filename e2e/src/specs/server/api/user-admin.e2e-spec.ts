@@ -287,7 +287,8 @@ describe('/admin/users', () => {
     it('should delete user', async () => {
       const { status, body } = await request(app)
         .delete(`/admin/users/${userToDelete.userId}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({});
 
       expect(status).toBe(200);
       expect(body).toMatchObject({

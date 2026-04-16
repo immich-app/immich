@@ -3,7 +3,6 @@
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingsLanguageSelector from '$lib/components/shared-components/settings/settings-language-selector.svelte';
   import { fallbackLocale, locales } from '$lib/constants';
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import {
     alwaysLoadOriginalFile,
     alwaysLoadOriginalVideo,
@@ -14,7 +13,7 @@
     showDeleteModal,
   } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
-  import { Field, Switch, Text } from '@immich/ui';
+  import { Field, Switch, Text, Theme, themeManager, ThemePreference } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -55,13 +54,21 @@
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,
   });
+
+  const handleToggleSystemTheme = (checked: boolean) => {
+    const current = themeManager.value === Theme.Dark ? ThemePreference.Dark : ThemePreference.Light;
+    themeManager.setPreference(checked ? ThemePreference.System : current);
+  };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <div class="sm:ms-8 flex flex-col gap-6">
       <Field label={$t('theme_selection')} description={$t('theme_selection_description')}>
-        <Switch checked={themeManager.theme.system} onCheckedChange={(checked) => themeManager.setSystem(checked)} />
+        <Switch
+          checked={themeManager.preference === ThemePreference.System}
+          onCheckedChange={handleToggleSystemTheme}
+        />
       </Field>
 
       <SettingsLanguageSelector showSettingDescription />

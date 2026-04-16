@@ -2,7 +2,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import type { ActivityResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Button } from '@immich/ui';
   import { mdiCommentOutline, mdiThumbUp, mdiThumbUpOutline } from '@mdi/js';
 
   interface Props {
@@ -16,21 +16,32 @@
   let { isLiked, numberOfComments, numberOfLikes, disabled, onFavorite }: Props = $props();
 </script>
 
-<div class="w-full flex p-4 items-center justify-center rounded-full gap-5 bg-subtle border bg-opacity-60">
-  <button type="button" class={disabled ? 'cursor-not-allowed' : ''} onclick={onFavorite} {disabled}>
-    <div class="flex gap-2 items-center justify-center">
-      <Icon icon={isLiked ? mdiThumbUp : mdiThumbUpOutline} size="24" class={isLiked ? 'text-primary' : 'text-fg'} />
-      {#if numberOfLikes}
-        <div class="text-l">{numberOfLikes.toLocaleString($locale)}</div>
-      {/if}
-    </div>
-  </button>
-  <button type="button" onclick={() => assetViewerManager.toggleActivityPanel()}>
-    <div class="flex gap-2 items-center justify-center">
-      <Icon icon={mdiCommentOutline} class="scale-x-[-1]" size="24" />
-      {#if numberOfComments}
-        <div class="text-l">{numberOfComments.toLocaleString($locale)}</div>
-      {/if}
-    </div>
-  </button>
+<div class="flex p-1 items-center justify-center rounded-full gap-1 bg-subtle/70 border">
+  <Button
+    {disabled}
+    onclick={onFavorite}
+    leadingIcon={isLiked ? mdiThumbUp : mdiThumbUpOutline}
+    shape="round"
+    size="large"
+    variant="ghost"
+    color={isLiked ? 'primary' : 'secondary'}
+    class="p-3 text-base"
+  >
+    {#if numberOfLikes}
+      {numberOfLikes.toLocaleString($locale)}
+    {/if}
+  </Button>
+  <Button
+    onclick={() => assetViewerManager.toggleActivityPanel()}
+    leadingIcon={mdiCommentOutline}
+    shape="round"
+    size="large"
+    variant="ghost"
+    color="secondary"
+    class="p-3 text-base"
+  >
+    {#if numberOfComments}
+      {numberOfComments.toLocaleString($locale)}
+    {/if}
+  </Button>
 </div>

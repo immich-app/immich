@@ -1,8 +1,8 @@
 <script lang="ts">
-  import StatsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import type { ServerStatsResponseDto } from '@immich/sdk';
+  import type { ServerStatsResponseDto, UserAdminResponseDto } from '@immich/sdk';
   import {
     Code,
     FormatBytes,
@@ -19,10 +19,28 @@
   import { t } from 'svelte-i18n';
 
   type Props = {
-    stats: ServerStatsResponseDto;
+    statsPromise: Promise<ServerStatsResponseDto>;
+    users: UserAdminResponseDto[];
   };
 
-  const { stats }: Props = $props();
+  const { statsPromise, users }: Props = $props();
+
+  const photosPromise = $derived.by(() => statsPromise.then((data) => ({ value: data.photos })));
+
+  const videosPromise = $derived.by(() => statsPromise.then((data) => ({ value: data.videos })));
+
+  const storagePromise = $derived.by(() =>
+    statsPromise.then((data) => {
+      const TiB = 1024 ** 4;
+      const [value, unit] = getBytesWithUnit(data.usage, data.usage > TiB ? 2 : 0);
+      return { value, unit };
+    }),
+  );
+
+  const getStorageUsageWithUnit = (usage: number) => {
+    const TiB = 1024 ** 4;
+    return getBytesWithUnit(usage, usage > TiB ? 2 : 0);
+  };
 
   const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
@@ -31,18 +49,26 @@
     return '0'.repeat(zeroLength);
   };
 
-  const TiB = 1024 ** 4;
-  let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0));
+  const getUserStatsPromise = async (userId: string) => {
+    const stats = await statsPromise;
+    return stats.usageByUser.find((userStats) => userStats.userId === userId);
+  };
 </script>
+
+{#snippet placeholder()}
+  <TableCell class="w-1/4"><span class="skeleton-loader inline-block h-4 w-16"></span></TableCell>
+  <TableCell class="w-1/4"><span class="skeleton-loader inline-block h-4 w-16"></span></TableCell>
+  <TableCell class="w-1/4"><span class="skeleton-loader inline-block h-4 w-24"></span></TableCell>
+{/snippet}
 
 <div class="flex flex-col gap-5 my-4">
   <div>
     <Text class="mb-2" fontWeight="medium">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between lg:flex gap-4">
-      <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
-      <StatsCard icon={mdiPlayCircle} title={$t('videos')} value={stats.videos} />
-      <StatsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
+      <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} valuePromise={photosPromise} />
+      <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
+      <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} valuePromise={storagePromise} />
     </div>
 
     <div class="mt-5 flex lg:hidden">
@@ -54,7 +80,13 @@
           </div>
 
           <div class="relative text-center font-mono text-2xl font-medium">
-            <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
+            {#await statsPromise}
+              <span class="text-gray-300 dark:text-gray-600 shimmer-text">{zeros(0)}</span>
+            {:then stats}
+              <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
+            {:catch}
+              <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
+            {/await}
           </div>
         </div>
         <div class="flex flex-wrap gap-x-12">
@@ -64,7 +96,13 @@
           </div>
 
           <div class="relative text-center font-mono text-2xl font-medium">
-            <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
+            {#await statsPromise}
+              <span class="text-gray-300 dark:text-gray-600 shimmer-text">{zeros(0)}</span>
+            {:then stats}
+              <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
+            {:catch}
+              <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
+            {/await}
           </div>
         </div>
         <div class="flex flex-wrap gap-x-5">
@@ -74,11 +112,20 @@
           </div>
 
           <div class="relative flex text-center font-mono text-2xl font-medium">
-            <span class="text-light-300">{zeros(statsUsage)}</span><span class="text-primary">{statsUsage}</span>
+            {#await statsPromise}
+              <span class="text-gray-300 dark:text-gray-600 shimmer-text">{zeros(0)}</span>
+            {:then stats}
+              {@const storageUsageWithUnit = getStorageUsageWithUnit(stats.usage)}
+              <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary"
+                >{storageUsageWithUnit[0]}</span
+              >
 
-            <div class="absolute -end-1.5 -bottom-4">
-              <Code color="muted" class="text-xs font-light font-mono">{statsUsageUnit}</Code>
-            </div>
+              <div class="absolute -end-1.5 -bottom-4">
+                <Code color="muted" class="text-xs font-light font-mono">{storageUsageWithUnit[1]}</Code>
+              </div>
+            {:catch}
+              <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
+            {/await}
           </div>
         </div>
       </div>
@@ -95,34 +142,97 @@
         <TableHeading class="w-1/4">{$t('usage')}</TableHeading>
       </TableHeader>
       <TableBody class="block max-h-80 overflow-y-auto">
-        {#each stats.usageByUser as user (user.userId)}
+        {#each users as user (user.id)}
           <TableRow>
-            <TableCell class="w-1/4">{user.userName}</TableCell>
-            <TableCell class="w-1/4">
-              {user.photos.toLocaleString($locale)} (<FormatBytes bytes={user.usagePhotos} />)</TableCell
-            >
-            <TableCell class="w-1/4">
-              {user.videos.toLocaleString($locale)} (<FormatBytes bytes={user.usageVideos} precision={0} />)</TableCell
-            >
-            <TableCell class="w-1/4">
-              <FormatBytes bytes={user.usage} precision={0} />
-              {#if user.quotaSizeInBytes !== null}
-                / <FormatBytes bytes={user.quotaSizeInBytes} precision={0} />
+            <TableCell class="w-1/4">{user.name}</TableCell>
+            {#await getUserStatsPromise(user.id)}
+              {@render placeholder()}
+            {:then userStats}
+              {#if userStats}
+                <TableCell class="w-1/4">
+                  {userStats.photos.toLocaleString($locale)} (<FormatBytes bytes={userStats.usagePhotos} />)</TableCell
+                >
+                <TableCell class="w-1/4">
+                  {userStats.videos.toLocaleString($locale)} (<FormatBytes
+                    bytes={userStats.usageVideos}
+                    precision={0}
+                  />)</TableCell
+                >
+                <TableCell class="w-1/4">
+                  <FormatBytes bytes={userStats.usage} precision={0} />
+                  {#if userStats.quotaSizeInBytes !== null}
+                    / <FormatBytes bytes={userStats.quotaSizeInBytes} precision={0} />
+                  {/if}
+                  <span class="text-primary">
+                    {#if userStats.quotaSizeInBytes !== null && userStats.quotaSizeInBytes >= 0}
+                      ({(userStats.quotaSizeInBytes === 0
+                        ? 1
+                        : userStats.usage / userStats.quotaSizeInBytes
+                      ).toLocaleString($locale, {
+                        style: 'percent',
+                        maximumFractionDigits: 0,
+                      })})
+                    {:else}
+                      ({$t('unlimited')})
+                    {/if}
+                  </span>
+                </TableCell>
+              {:else}
+                {@render placeholder()}
               {/if}
-              <span class="text-primary">
-                {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-                  ({(user.quotaSizeInBytes === 0 ? 1 : user.usage / user.quotaSizeInBytes).toLocaleString($locale, {
-                    style: 'percent',
-                    maximumFractionDigits: 0,
-                  })})
-                {:else}
-                  ({$t('unlimited')})
-                {/if}
-              </span>
-            </TableCell>
+            {/await}
           </TableRow>
         {/each}
       </TableBody>
     </Table>
   </div>
 </div>
+
+<style>
+  .skeleton-loader {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: rgba(156, 163, 175, 0.35);
+  }
+
+  .skeleton-loader::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0)
+    );
+    background-size: 200% 100%;
+    background-position: 200% 0;
+    animation: skeleton-animation 2000ms infinite;
+  }
+
+  @keyframes skeleton-animation {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  .shimmer-text {
+    mask-image: linear-gradient(90deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 1) 100%);
+    mask-size: 200% 100%;
+    animation: shimmer 2.25s infinite linear;
+  }
+
+  @keyframes shimmer {
+    from {
+      mask-position: 200% 0;
+    }
+    to {
+      mask-position: -200% 0;
+    }
+  }
+</style>

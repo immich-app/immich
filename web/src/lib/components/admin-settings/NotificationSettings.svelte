@@ -5,13 +5,13 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { sendTestEmailAdmin } from '@immich/sdk';
-  import { Button, LoadingSpinner, toastManager } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -45,7 +45,9 @@
         },
       });
 
-      toastManager.success($t('admin.notification_email_test_email_sent', { values: { email: $user.email } }));
+      toastManager.primary(
+        $t('admin.notification_email_test_email_sent', { values: { email: authManager.user.email } }),
+      );
 
       if (!disabled) {
         await handleSystemConfigSave({ notifications: configToEdit.notifications });
@@ -142,6 +144,7 @@
               <Button
                 size="small"
                 shape="round"
+                loading={isSending}
                 disabled={!configToEdit.notifications.smtp.enabled}
                 onclick={handleSendTestEmail}
               >
@@ -151,9 +154,6 @@
                   {$t('admin.notification_email_sent_test_email_button')}
                 {/if}
               </Button>
-              {#if isSending}
-                <LoadingSpinner />
-              {/if}
             </div>
           </div>
         </SettingAccordion>
