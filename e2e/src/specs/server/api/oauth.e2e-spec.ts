@@ -76,6 +76,7 @@ const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => 
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    allowInsecureRequests: true,
     ...dto,
   };
   await updateConfig({ systemConfigDto: { ...defaults, oauth: merged } }, options);
@@ -397,6 +398,25 @@ describe(`/oauth`, () => {
         userEmail: 'oauth-id-token-claims@immich.app',
         userId: expect.any(String),
       });
+    });
+  });
+
+  describe('allowInsecureRequests: false', () => {
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        allowInsecureRequests: false,
+      });
+    });
+
+    it('should reject OAuth discovery over HTTP', async () => {
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(500);
+      expect(body).toMatchObject({ statusCode: 500 });
     });
   });
 });
