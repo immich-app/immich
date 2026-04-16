@@ -15,7 +15,7 @@ import 'package:logging/logging.dart';
 /// via [IStoreRepository]
 class LogService {
   final LogRepository _logRepository;
-  final IStoreRepository _storeRepository;
+  final DriftStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -38,7 +38,7 @@ class LogService {
 
   static Future<LogService> init({
     required LogRepository logRepository,
-    required IStoreRepository storeRepository,
+    required DriftStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -51,7 +51,7 @@ class LogService {
 
   static Future<LogService> create({
     required LogRepository logRepository,
-    required IStoreRepository storeRepository,
+    required DriftStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);

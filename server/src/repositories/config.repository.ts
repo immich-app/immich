@@ -2,8 +2,6 @@ import { DatabaseConnectionParams } from '@immich/sql-tools';
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { QueueOptions } from 'bullmq';
-import { plainToInstance } from 'class-transformer';
-import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
 import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
@@ -13,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
-import { EnvDto } from 'src/dtos/env.dto';
+import { EnvSchema } from 'src/dtos/env.dto';
 import {
   DatabaseExtension,
   ImmichEnvironment,
@@ -173,15 +171,16 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
 };
 
 const getEnv = (): EnvData => {
-  const dto = plainToInstance(EnvDto, process.env);
-  const errors = validateSync(dto);
-  if (errors.length > 0) {
-    const messages = [`Invalid environment variables: `];
-    for (const error of errors) {
-      messages.push(`  - ${error.property}=${error.value} (${Object.values(error.constraints || {}).join(', ')})`);
+  const parseResult = EnvSchema.safeParse(process.env);
+  if (!parseResult.success) {
+    const messages = ['Invalid environment variables: '];
+    for (const issue of parseResult.error.issues) {
+      const path = issue.path.join('.');
+      messages.push(`  - [${path}] ${issue.message}`);
     }
     throw new Error(messages.join('\n'));
   }
+  const dto = parseResult.data;
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);

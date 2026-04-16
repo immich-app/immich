@@ -64,7 +64,7 @@ export class UserController {
   @Authenticated({ permission: Permission.UserUpdate })
   @Endpoint({
     summary: 'Update current user',
-    description: 'Update the current user making teh API request.',
+    description: 'Update the current user making the API request.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   updateMyUser(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {

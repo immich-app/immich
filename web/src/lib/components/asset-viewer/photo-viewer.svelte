@@ -1,9 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import { thumbhash } from '$lib/actions/thumbhash';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -242,10 +242,7 @@
   >
     {#snippet backdrop()}
       {#if blurredSlideshow}
-        <canvas
-          use:thumbhash={{ base64ThumbHash: asset.thumbhash! }}
-          class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw"
-        ></canvas>
+        <Thumbhash base64ThumbHash={asset.thumbhash!} class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw" />
       {/if}
     {/snippet}
     {#snippet overlays()}

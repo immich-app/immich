@@ -378,14 +378,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
-  dartx:
-    dependency: transitive
-    description:
-      name: dartx
-      sha256: "8b25435617027257d43e6508b5fe061012880ddfdaa75a71d607c3de2a13d244"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
   dbus:
     dependency: transitive
     description:
@@ -1012,40 +1004,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  isar:
-    dependency: "direct main"
-    description:
-      path: "packages/isar"
-      ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
-      resolved-ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
-      url: "https://github.com/immich-app/isar"
-    source: git
-    version: "3.1.8"
-  isar_community:
-    dependency: transitive
-    description:
-      name: isar_community
-      sha256: "28f59e54636c45ba0bb1b3b7f2656f1c50325f740cea6efcd101900be3fba546"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.3.0-dev.3"
-  isar_community_flutter_libs:
-    dependency: "direct main"
-    description:
-      name: isar_community_flutter_libs
-      sha256: c2934fe755bb3181cb67602fd5df0d080b3d3eb52799f98623aa4fc5acbea010
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.3.0-dev.3"
-  isar_generator:
-    dependency: "direct dev"
-    description:
-      path: "packages/isar_generator"
-      ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
-      resolved-ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
-      url: "https://github.com/immich-app/isar"
-    source: git
-    version: "3.1.8"
   jni:
     dependency: transitive
     description:
@@ -1909,14 +1867,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.0+1"
-  time:
-    dependency: transitive
-    description:
-      name: time
-      sha256: "370572cf5d1e58adcb3e354c47515da3f7469dac3a95b447117e728e7be6f461"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.5"
   timezone:
     dependency: "direct main"
     description:
@@ -2173,14 +2123,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.6.1"
-  xxh3:
-    dependency: transitive
-    description:
-      name: xxh3
-      sha256: "399a0438f5d426785723c99da6b16e136f4953fb1e9db0bf270bd41dd4619916"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
   yaml:
     dependency: transitive
     description:

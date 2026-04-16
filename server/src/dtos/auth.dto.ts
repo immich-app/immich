@@ -1,59 +1,43 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie, UserMetadataKey } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
-import { Optional, PinCode, toEmail, ValidateBoolean } from 'src/validation';
+import { toEmail } from 'src/validation';
+import z from 'zod';
 
 export type CookieResponse = {
   isSecure: boolean;
   values: Array<{ key: ImmichCookie; value: string | null }>;
 };
 
-export class AuthDto {
-  @ApiProperty({ description: 'Authenticated user' })
-  user!: AuthUser;
+export const pinCodeRegex = /^\d{6}$/;
 
-  @ApiPropertyOptional({ description: 'API key (if authenticated via API key)' })
+export type AuthDto = {
+  user: AuthUser;
   apiKey?: AuthApiKey;
-  @ApiPropertyOptional({ description: 'Shared link (if authenticated via shared link)' })
   sharedLink?: AuthSharedLink;
-  @ApiPropertyOptional({ description: 'Session (if authenticated via session)' })
   session?: AuthSession;
-}
+};
 
-export class LoginCredentialDto {
-  @ApiProperty({ example: 'testuser@email.com', description: 'User email' })
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  @IsNotEmpty()
-  email!: string;
+const LoginCredentialSchema = z
+  .object({
+    email: toEmail.describe('User email').meta({ example: 'testuser@email.com' }),
+    password: z.string().describe('User password').meta({ example: 'password' }),
+  })
+  .meta({ id: 'LoginCredentialDto' });
 
-  @ApiProperty({ example: 'password', description: 'User password' })
-  @IsString()
-  @IsNotEmpty()
-  password!: string;
-}
-
-export class LoginResponseDto {
-  @ApiProperty({ description: 'Access token' })
-  accessToken!: string;
-  @ApiProperty({ description: 'User ID' })
-  userId!: string;
-  @ApiProperty({ description: 'User email' })
-  userEmail!: string;
-  @ApiProperty({ description: 'User name' })
-  name!: string;
-  @ApiProperty({ description: 'Profile image path' })
-  profileImagePath!: string;
-  @ApiProperty({ description: 'Is admin user' })
-  isAdmin!: boolean;
-  @ApiProperty({ description: 'Should change password' })
-  shouldChangePassword!: boolean;
-  @ApiProperty({ description: 'Is onboarded' })
-  isOnboarded!: boolean;
-}
+const LoginResponseSchema = z
+  .object({
+    accessToken: z.string().describe('Access token'),
+    userId: z.string().describe('User ID'),
+    userEmail: toEmail.describe('User email'),
+    name: z.string().describe('User name'),
+    profileImagePath: z.string().describe('Profile image path'),
+    isAdmin: z.boolean().describe('Is admin user'),
+    shouldChangePassword: z.boolean().describe('Should change password'),
+    isOnboarded: z.boolean().describe('Is onboarded'),
+  })
+  .meta({ id: 'LoginResponseDto' });
 
 export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginResponseDto {
   const onboardingMetadata = entity.metadata.find(
@@ -72,115 +56,95 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
   };
 }
 
-export class LogoutResponseDto {
-  @ApiProperty({ description: 'Logout successful' })
-  successful!: boolean;
-  @ApiProperty({ description: 'Redirect URI' })
-  redirectUri!: string;
-}
+const LogoutResponseSchema = z
+  .object({
+    successful: z.boolean().describe('Logout successful'),
+    redirectUri: z.string().describe('Redirect URI'),
+  })
+  .meta({ id: 'LogoutResponseDto' });
 
-export class SignUpDto extends LoginCredentialDto {
-  @ApiProperty({ example: 'Admin', description: 'User name' })
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-}
+const SignUpSchema = LoginCredentialSchema.extend({
+  name: z.string().describe('User name').meta({ example: 'Admin' }),
+}).meta({ id: 'SignUpDto' });
 
-export class ChangePasswordDto {
-  @ApiProperty({ example: 'password', description: 'Current password' })
-  @IsString()
-  @IsNotEmpty()
-  password!: string;
+const ChangePasswordSchema = z
+  .object({
+    password: z.string().describe('Current password').meta({ example: 'password' }),
+    newPassword: z.string().min(8).describe('New password (min 8 characters)').meta({ example: 'password' }),
+    invalidateSessions: z.boolean().default(false).optional().describe('Invalidate all other sessions'),
+  })
+  .meta({ id: 'ChangePasswordDto' });
 
-  @ApiProperty({ example: 'password', description: 'New password (min 8 characters)' })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  newPassword!: string;
+const PinCodeSetupSchema = z
+  .object({
+    pinCode: z.string().regex(pinCodeRegex).describe('PIN code (4-6 digits)').meta({ example: '123456' }),
+  })
+  .meta({ id: 'PinCodeSetupDto' });
 
-  @ValidateBoolean({ optional: true, default: false, description: 'Invalidate all other sessions' })
-  invalidateSessions?: boolean;
-}
+const PinCodeResetSchema = z.object({
+  pinCode: z.string().regex(pinCodeRegex).optional().describe('New PIN code (4-6 digits)').meta({ example: '123456' }),
+  password: z
+    .string()
+    .optional()
+    .describe('User password (required if PIN code is not provided)')
+    .meta({ example: 'password' }),
+});
 
-export class PinCodeSetupDto {
-  @ApiProperty({ description: 'PIN code (4-6 digits)' })
-  @PinCode()
-  pinCode!: string;
-}
+const SessionUnlockSchema = PinCodeResetSchema.meta({ id: 'SessionUnlockDto' });
 
-export class PinCodeResetDto {
-  @ApiPropertyOptional({ description: 'New PIN code (4-6 digits)' })
-  @PinCode({ optional: true })
-  pinCode?: string;
+const PinCodeChangeSchema = PinCodeResetSchema.extend({
+  newPinCode: z.string().regex(pinCodeRegex).describe('New PIN code (4-6 digits)'),
+}).meta({ id: 'PinCodeChangeDto' });
 
-  @ApiPropertyOptional({ description: 'User password (required if PIN code is not provided)' })
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  password?: string;
-}
+const ValidateAccessTokenResponseSchema = z
+  .object({
+    authStatus: z.boolean().describe('Authentication status'),
+  })
+  .meta({ id: 'ValidateAccessTokenResponseDto' });
 
-export class SessionUnlockDto extends PinCodeResetDto {}
+const OAuthCallbackSchema = z
+  .object({
+    url: z.string().min(1).describe('OAuth callback URL'),
+    state: z.string().optional().describe('OAuth state parameter'),
+    codeVerifier: z.string().optional().describe('OAuth code verifier (PKCE)'),
+  })
+  .meta({ id: 'OAuthCallbackDto' });
 
-export class PinCodeChangeDto extends PinCodeResetDto {
-  @ApiProperty({ description: 'New PIN code (4-6 digits)' })
-  @PinCode()
-  newPinCode!: string;
-}
+const OAuthConfigSchema = z
+  .object({
+    redirectUri: z.string().describe('OAuth redirect URI'),
+    state: z.string().optional().describe('OAuth state parameter'),
+    codeChallenge: z.string().optional().describe('OAuth code challenge (PKCE)'),
+  })
+  .meta({ id: 'OAuthConfigDto' });
 
-export class ValidateAccessTokenResponseDto {
-  @ApiProperty({ description: 'Authentication status' })
-  authStatus!: boolean;
-}
+const OAuthAuthorizeResponseSchema = z
+  .object({
+    url: z.string().describe('OAuth authorization URL'),
+  })
+  .meta({ id: 'OAuthAuthorizeResponseDto' });
 
-export class OAuthCallbackDto {
-  @ApiProperty({ description: 'OAuth callback URL' })
-  @IsNotEmpty()
-  @IsString()
-  url!: string;
+const AuthStatusResponseSchema = z
+  .object({
+    pinCode: z.boolean().describe('Has PIN code set'),
+    password: z.boolean().describe('Has password set'),
+    isElevated: z.boolean().describe('Is elevated session'),
+    expiresAt: z.string().optional().describe('Session expiration date'),
+    pinExpiresAt: z.string().optional().describe('PIN expiration date'),
+  })
+  .meta({ id: 'AuthStatusResponseDto' });
 
-  @ApiPropertyOptional({ description: 'OAuth state parameter' })
-  @Optional()
-  @IsString()
-  state?: string;
-
-  @ApiPropertyOptional({ description: 'OAuth code verifier (PKCE)' })
-  @Optional()
-  @IsString()
-  codeVerifier?: string;
-}
-
-export class OAuthConfigDto {
-  @ApiProperty({ description: 'OAuth redirect URI' })
-  @IsNotEmpty()
-  @IsString()
-  redirectUri!: string;
-
-  @ApiPropertyOptional({ description: 'OAuth state parameter' })
-  @Optional()
-  @IsString()
-  state?: string;
-
-  @ApiPropertyOptional({ description: 'OAuth code challenge (PKCE)' })
-  @Optional()
-  @IsString()
-  codeChallenge?: string;
-}
-
-export class OAuthAuthorizeResponseDto {
-  @ApiProperty({ description: 'OAuth authorization URL' })
-  url!: string;
-}
-
-export class AuthStatusResponseDto {
-  @ApiProperty({ description: 'Has PIN code set' })
-  pinCode!: boolean;
-  @ApiProperty({ description: 'Has password set' })
-  password!: boolean;
-  @ApiProperty({ description: 'Is elevated session' })
-  isElevated!: boolean;
-  @ApiPropertyOptional({ description: 'Session expiration date' })
-  expiresAt?: string;
-  @ApiPropertyOptional({ description: 'PIN expiration date' })
-  pinExpiresAt?: string;
-}
+export class LoginCredentialDto extends createZodDto(LoginCredentialSchema) {}
+export class LoginResponseDto extends createZodDto(LoginResponseSchema) {}
+export class LogoutResponseDto extends createZodDto(LogoutResponseSchema) {}
+export class SignUpDto extends createZodDto(SignUpSchema) {}
+export class ChangePasswordDto extends createZodDto(ChangePasswordSchema) {}
+export class PinCodeSetupDto extends createZodDto(PinCodeSetupSchema) {}
+export class PinCodeResetDto extends createZodDto(PinCodeResetSchema) {}
+export class SessionUnlockDto extends createZodDto(SessionUnlockSchema) {}
+export class PinCodeChangeDto extends createZodDto(PinCodeChangeSchema) {}
+export class ValidateAccessTokenResponseDto extends createZodDto(ValidateAccessTokenResponseSchema) {}
+export class OAuthCallbackDto extends createZodDto(OAuthCallbackSchema) {}
+export class OAuthConfigDto extends createZodDto(OAuthConfigSchema) {}
+export class OAuthAuthorizeResponseDto extends createZodDto(OAuthAuthorizeResponseSchema) {}
+export class AuthStatusResponseDto extends createZodDto(AuthStatusResponseSchema) {}

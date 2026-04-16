@@ -56,10 +56,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = APIKeysApi();
-final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | 
+final apiKeyCreateDto = ApiKeyCreateDto(); // ApiKeyCreateDto | 
 
 try {
-    final result = api_instance.createApiKey(aPIKeyCreateDto);
+    final result = api_instance.createApiKey(apiKeyCreateDto);
     print(result);
 } catch (e) {
     print('Exception when calling APIKeysApi->createApiKey: $e\n');
@@ -89,6 +89,7 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**createAlbum**](doc//AlbumsApi.md#createalbum) | **POST** /albums | Create an album
 *AlbumsApi* | [**deleteAlbum**](doc//AlbumsApi.md#deletealbum) | **DELETE** /albums/{id} | Delete an album
 *AlbumsApi* | [**getAlbumInfo**](doc//AlbumsApi.md#getalbuminfo) | **GET** /albums/{id} | Retrieve an album
+*AlbumsApi* | [**getAlbumMapMarkers**](doc//AlbumsApi.md#getalbummapmarkers) | **GET** /albums/{id}/map-markers | Retrieve album map markers
 *AlbumsApi* | [**getAlbumStatistics**](doc//AlbumsApi.md#getalbumstatistics) | **GET** /albums/statistics | Retrieve album statistics
 *AlbumsApi* | [**getAllAlbums**](doc//AlbumsApi.md#getallalbums) | **GET** /albums | List all albums
 *AlbumsApi* | [**removeAssetFromAlbum**](doc//AlbumsApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | Remove assets from an album
@@ -96,24 +97,20 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | Update an album
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | Update user role
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | Check bulk upload
-*AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /assets/exist | Check existing assets
 *AssetsApi* | [**copyAsset**](doc//AssetsApi.md#copyasset) | **PUT** /assets/copy | Copy asset
 *AssetsApi* | [**deleteAssetMetadata**](doc//AssetsApi.md#deleteassetmetadata) | **DELETE** /assets/{id}/metadata/{key} | Delete asset metadata by key
 *AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | Delete assets
 *AssetsApi* | [**deleteBulkAssetMetadata**](doc//AssetsApi.md#deletebulkassetmetadata) | **DELETE** /assets/metadata | Delete asset metadata
 *AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | Download original asset
 *AssetsApi* | [**editAsset**](doc//AssetsApi.md#editasset) | **PUT** /assets/{id}/edits | Apply edits to an existing asset
-*AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
 *AssetsApi* | [**getAssetEdits**](doc//AssetsApi.md#getassetedits) | **GET** /assets/{id}/edits | Retrieve edits for an existing asset
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | Retrieve an asset
 *AssetsApi* | [**getAssetMetadata**](doc//AssetsApi.md#getassetmetadata) | **GET** /assets/{id}/metadata | Get asset metadata
 *AssetsApi* | [**getAssetMetadataByKey**](doc//AssetsApi.md#getassetmetadatabykey) | **GET** /assets/{id}/metadata/{key} | Retrieve asset metadata by key
 *AssetsApi* | [**getAssetOcr**](doc//AssetsApi.md#getassetocr) | **GET** /assets/{id}/ocr | Retrieve asset OCR data
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | Get asset statistics
-*AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | Get random assets
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | Play asset video
 *AssetsApi* | [**removeAssetEdits**](doc//AssetsApi.md#removeassetedits) | **DELETE** /assets/{id}/edits | Remove edits from an existing asset
-*AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace asset
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | Run an asset job
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | Update an asset
 *AssetsApi* | [**updateAssetMetadata**](doc//AssetsApi.md#updateassetmetadata) | **PUT** /assets/{id}/metadata | Update asset metadata
@@ -144,12 +141,7 @@ Class | Method | HTTP request | Description
 *DatabaseBackupsAdminApi* | [**startDatabaseRestoreFlow**](doc//DatabaseBackupsAdminApi.md#startdatabaserestoreflow) | **POST** /admin/database-backups/start-restore | Start database backup restore flow
 *DatabaseBackupsAdminApi* | [**uploadDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#uploaddatabasebackup) | **POST** /admin/database-backups/upload | Upload database backup
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
-*DeprecatedApi* | [**getAllUserAssetsByDeviceId**](doc//DeprecatedApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
-*DeprecatedApi* | [**getDeltaSync**](doc//DeprecatedApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
-*DeprecatedApi* | [**getFullSyncForUser**](doc//DeprecatedApi.md#getfullsyncforuser) | **POST** /sync/full-sync | Get full sync for user
 *DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
-*DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | Get random assets
-*DeprecatedApi* | [**replaceAsset**](doc//DeprecatedApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace asset
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
@@ -267,8 +259,6 @@ Class | Method | HTTP request | Description
 *StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | Retrieve stacks
 *StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | Update a stack
 *SyncApi* | [**deleteSyncAck**](doc//SyncApi.md#deletesyncack) | **DELETE** /sync/ack | Delete acknowledgements
-*SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
-*SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | Get full sync for user
 *SyncApi* | [**getSyncAck**](doc//SyncApi.md#getsyncack) | **GET** /sync/ack | Retrieve acknowledgements
 *SyncApi* | [**getSyncStream**](doc//SyncApi.md#getsyncstream) | **POST** /sync/stream | Stream sync changes
 *SyncApi* | [**sendSyncAck**](doc//SyncApi.md#sendsyncack) | **POST** /sync/ack | Acknowledge changes
@@ -330,10 +320,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [APIKeyCreateDto](doc//APIKeyCreateDto.md)
- - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
- - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
- - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
  - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
@@ -349,6 +335,10 @@ Class | Method | HTTP request | Description
  - [AlbumsAddAssetsResponseDto](doc//AlbumsAddAssetsResponseDto.md)
  - [AlbumsResponse](doc//AlbumsResponse.md)
  - [AlbumsUpdate](doc//AlbumsUpdate.md)
+ - [ApiKeyCreateDto](doc//ApiKeyCreateDto.md)
+ - [ApiKeyCreateResponseDto](doc//ApiKeyCreateResponseDto.md)
+ - [ApiKeyResponseDto](doc//ApiKeyResponseDto.md)
+ - [ApiKeyUpdateDto](doc//ApiKeyUpdateDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
@@ -356,8 +346,6 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetCopyDto](doc//AssetCopyDto.md)
- - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
- - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetEditAction](doc//AssetEditAction.md)
  - [AssetEditActionItemDto](doc//AssetEditActionItemDto.md)
  - [AssetEditActionItemDtoParameters](doc//AssetEditActionItemDtoParameters.md)
@@ -370,7 +358,7 @@ Class | Method | HTTP request | Description
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
  - [AssetFaceWithoutPersonResponseDto](doc//AssetFaceWithoutPersonResponseDto.md)
- - [AssetFullSyncDto](doc//AssetFullSyncDto.md)
+ - [AssetIdErrorReason](doc//AssetIdErrorReason.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
@@ -388,10 +376,12 @@ Class | Method | HTTP request | Description
  - [AssetMetadataUpsertItemDto](doc//AssetMetadataUpsertItemDto.md)
  - [AssetOcrResponseDto](doc//AssetOcrResponseDto.md)
  - [AssetOrder](doc//AssetOrder.md)
+ - [AssetRejectReason](doc//AssetRejectReason.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
+ - [AssetUploadAction](doc//AssetUploadAction.md)
  - [AssetVisibility](doc//AssetVisibility.md)
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
@@ -404,8 +394,6 @@ Class | Method | HTTP request | Description
  - [CastResponse](doc//CastResponse.md)
  - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
- - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
- - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [Colorspace](doc//Colorspace.md)
  - [ContributorCountResponseDto](doc//ContributorCountResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
@@ -440,7 +428,6 @@ Class | Method | HTTP request | Description
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
- - [LicenseResponseDto](doc//LicenseResponseDto.md)
  - [LogLevel](doc//LogLevel.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
@@ -504,6 +491,10 @@ Class | Method | HTTP request | Description
  - [PluginActionResponseDto](doc//PluginActionResponseDto.md)
  - [PluginContextType](doc//PluginContextType.md)
  - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
+ - [PluginJsonSchema](doc//PluginJsonSchema.md)
+ - [PluginJsonSchemaProperty](doc//PluginJsonSchemaProperty.md)
+ - [PluginJsonSchemaPropertyAdditionalProperties](doc//PluginJsonSchemaPropertyAdditionalProperties.md)
+ - [PluginJsonSchemaType](doc//PluginJsonSchemaType.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
  - [PluginTriggerResponseDto](doc//PluginTriggerResponseDto.md)
  - [PluginTriggerType](doc//PluginTriggerType.md)

@@ -130,12 +130,11 @@ describe('/albums', () => {
   describe('GET /albums', () => {
     it("should not show other users' favorites", async () => {
       const { status, body } = await request(app)
-        .get(`/albums/${user1Albums[0].id}?withoutAssets=false`)
+        .get(`/albums/${user1Albums[0].id}`)
         .set('Authorization', `Bearer ${user2.accessToken}`);
       expect(status).toEqual(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining({ isFavorite: false })],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         lastModifiedAssetTimestamp: expect.any(String),
         startDate: expect.any(String),
@@ -304,13 +303,12 @@ describe('/albums', () => {
   describe('GET /albums/:id', () => {
     it('should return album info for own album', async () => {
       const { status, body } = await request(app)
-        .get(`/albums/${user1Albums[0].id}?withoutAssets=false`)
+        .get(`/albums/${user1Albums[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         lastModifiedAssetTimestamp: expect.any(String),
         startDate: expect.any(String),
@@ -322,7 +320,7 @@ describe('/albums', () => {
 
     it('should return album info for shared album (editor)', async () => {
       const { status, body } = await request(app)
-        .get(`/albums/${user2Albums[0].id}?withoutAssets=false`)
+        .get(`/albums/${user2Albums[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -331,14 +329,14 @@ describe('/albums', () => {
 
     it('should return album info for shared album (viewer)', async () => {
       const { status, body } = await request(app)
-        .get(`/albums/${user1Albums[3].id}?withoutAssets=false`)
+        .get(`/albums/${user1Albums[3].id}`)
         .set('Authorization', `Bearer ${user2.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toMatchObject({ id: user1Albums[3].id });
     });
 
-    it('should return album info with assets when withoutAssets is undefined', async () => {
+    it('should return album info', async () => {
       const { status, body } = await request(app)
         .get(`/albums/${user1Albums[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
@@ -346,25 +344,6 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
-        assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
-        contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
-        lastModifiedAssetTimestamp: expect.any(String),
-        startDate: expect.any(String),
-        endDate: expect.any(String),
-        albumUsers: expect.any(Array),
-        shared: true,
-      });
-    });
-
-    it('should return album info without assets when withoutAssets is true', async () => {
-      const { status, body } = await request(app)
-        .get(`/albums/${user1Albums[0].id}?withoutAssets=true`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toEqual({
-        ...user1Albums[0],
-        assets: [],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         assetCount: 1,
         lastModifiedAssetTimestamp: expect.any(String),
@@ -379,13 +358,12 @@ describe('/albums', () => {
       await utils.deleteAssets(user1.accessToken, [user1Asset2.id]);
 
       const { status, body } = await request(app)
-        .get(`/albums/${user2Albums[0].id}?withoutAssets=true`)
+        .get(`/albums/${user2Albums[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user2Albums[0],
-        assets: [],
         contributorCounts: [{ userId: user1.userId, assetCount: 1 }],
         assetCount: 1,
         lastModifiedAssetTimestamp: expect.any(String),
@@ -426,7 +404,6 @@ describe('/albums', () => {
         shared: false,
         albumUsers: [],
         hasSharedLink: false,
-        assets: [],
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,

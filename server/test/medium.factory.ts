@@ -549,8 +549,6 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   const id = asset.id || newUuid();
   const now = newDate();
   const defaults: Insertable<AssetTable> = {
-    deviceAssetId: '',
-    deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
     checksumAlgorithm: ChecksumAlgorithm.sha1File,

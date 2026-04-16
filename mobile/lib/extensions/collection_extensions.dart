@@ -1,9 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/utils/hash.dart';
 
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({int Function(E a, E b)? compare, void Function(E a, E b)? onDuplicate}) {
@@ -37,31 +34,6 @@ extension IntListExtension on Iterable<int> {
     final list = Int64List(length);
     list.setAll(0, this);
     return list;
-  }
-}
-
-extension AssetListExtension on Iterable<Asset> {
-  /// Returns the assets that are already available in the Immich server
-  Iterable<Asset> remoteOnly({void Function()? errorCallback}) {
-    final bool onlyRemote = every((e) => e.isRemote);
-    if (!onlyRemote) {
-      if (errorCallback != null) errorCallback();
-      return where((a) => a.isRemote);
-    }
-    return this;
-  }
-
-  /// Returns the assets that are owned by the user passed to the [owner] param
-  /// If [owner] is null, an empty list is returned
-  Iterable<Asset> ownedOnly(UserDto? owner, {void Function()? errorCallback}) {
-    if (owner == null) return [];
-    final isarUserId = fastHash(owner.id);
-    final bool onlyOwned = every((e) => e.ownerId == isarUserId);
-    if (!onlyOwned) {
-      if (errorCallback != null) errorCallback();
-      return where((a) => a.ownerId == isarUserId);
-    }
-    return this;
   }
 }
 

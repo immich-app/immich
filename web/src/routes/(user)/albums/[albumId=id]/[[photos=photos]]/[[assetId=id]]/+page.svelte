@@ -133,7 +133,7 @@
   };
 
   const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    album = await getAlbumInfo({ id: album.id });
   };
 
   const setModeToView = async () => {
@@ -315,7 +315,6 @@
 
   const Close = $derived({
     title: $t('go_back'),
-    type: $t('command'),
     icon: mdiArrowLeft,
     onAction: handleEscape,
     $if: () => !assetViewerManager.isViewing,

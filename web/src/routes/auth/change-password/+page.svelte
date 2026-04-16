@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { Route } from '$lib/route';
   import { updateMyUser } from '@immich/sdk';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -23,7 +25,7 @@
     }
 
     await updateMyUser({ userUpdateMeDto: { password } });
-    await authManager.logout();
+    await goto(Route.logout());
   };
 </script>
 

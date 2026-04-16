@@ -115,9 +115,21 @@
         </div>
         <div class="col-span-full">
           <div class="flex flex-col lg:flex-row gap-4 w-full">
-            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics.images} />
-            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics.videos} />
-            <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
+            <ServerStatisticsCard
+              icon={mdiCameraIris}
+              title={$t('photos')}
+              valuePromise={Promise.resolve({ value: userStatistics.images })}
+            />
+            <ServerStatisticsCard
+              icon={mdiPlayCircle}
+              title={$t('videos')}
+              valuePromise={Promise.resolve({ value: userStatistics.videos })}
+            />
+            <ServerStatisticsCard
+              icon={mdiChartPie}
+              title={$t('storage')}
+              valuePromise={Promise.resolve({ value: statsUsage, unit: statsUsageUnit })}
+            />
           </div>
         </div>
 

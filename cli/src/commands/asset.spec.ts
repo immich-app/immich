@@ -4,7 +4,7 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, expect, it, MockedFunction, vi } from 'vitest';
 
-import { Action, checkBulkUpload, defaults, getSupportedMediaTypes, Reason } from '@immich/sdk';
+import { AssetRejectReason, AssetUploadAction, checkBulkUpload, defaults, getSupportedMediaTypes } from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
 
 import {
@@ -120,7 +120,7 @@ describe('checkForDuplicates', () => {
     vi.mocked(checkBulkUpload).mockResolvedValue({
       results: [
         {
-          action: Action.Accept,
+          action: AssetUploadAction.Accept,
           id: testFilePath,
         },
       ],
@@ -144,10 +144,10 @@ describe('checkForDuplicates', () => {
     vi.mocked(checkBulkUpload).mockResolvedValue({
       results: [
         {
-          action: Action.Reject,
+          action: AssetUploadAction.Reject,
           id: testFilePath,
           assetId: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
-          reason: Reason.Duplicate,
+          reason: AssetRejectReason.Duplicate,
         },
       ],
     });
@@ -167,7 +167,7 @@ describe('checkForDuplicates', () => {
     vi.mocked(checkBulkUpload).mockResolvedValue({
       results: [
         {
-          action: Action.Accept,
+          action: AssetUploadAction.Accept,
           id: testFilePath,
         },
       ],
@@ -187,7 +187,7 @@ describe('checkForDuplicates', () => {
     mocked.mockResolvedValue({
       results: [
         {
-          action: Action.Accept,
+          action: AssetUploadAction.Accept,
           id: testFilePath,
         },
       ],

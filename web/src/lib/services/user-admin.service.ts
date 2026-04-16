@@ -36,7 +36,6 @@ import type { MessageFormatter } from 'svelte-i18n';
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
     title: $t('create_user'),
-    type: $t('command'),
     icon: mdiPlusBoxOutline,
     onAction: () => goto(Route.newUser()),
     shortcuts: { shift: true, key: 'n' },
@@ -61,7 +60,6 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
     title: $t('delete'),
-    type: $t('command'),
     color: 'danger',
     $if: () => authManager.user.id !== user.id && !user.deletedAt,
     onAction: () => modalManager.show(UserDeleteConfirmModal, { user }),
@@ -75,7 +73,6 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const Restore: HeaderButtonActionItem = {
     icon: mdiDeleteRestore,
     title: $t('restore'),
-    type: $t('command'),
     color: 'primary',
     data: {
       title: $t('admin.user_restore_scheduled_removal', { values: { date: getDeleteDate(user.deletedAt!) } }),
@@ -87,14 +84,12 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const ResetPassword: ActionItem = {
     icon: mdiLockReset,
     title: $t('reset_password'),
-    type: $t('command'),
     $if: () => authManager.user.id !== user.id,
     onAction: () => handleResetPasswordUserAdmin(user),
   };
 
   const ResetPinCode: ActionItem = {
     icon: mdiLockSmart,
-    type: $t('command'),
     title: $t('reset_pin_code'),
     onAction: () => handleResetPinCodeUserAdmin(user),
   };

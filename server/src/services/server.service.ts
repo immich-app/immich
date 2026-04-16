@@ -138,6 +138,12 @@ export class ServerService extends BaseService {
   async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
+    serverStats.photos ??= 0;
+    serverStats.videos ??= 0;
+    serverStats.usage ??= 0;
+    serverStats.usagePhotos ??= 0;
+    serverStats.usageVideos ??= 0;
+    serverStats.usageByUser ??= [];
 
     for (const user of userStats) {
       const usage = new UsageByUserDto();

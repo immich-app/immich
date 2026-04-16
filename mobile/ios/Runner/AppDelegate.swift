@@ -24,32 +24,7 @@ import UIKit
     GeneratedPluginRegistrant.register(with: self)
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
     AppDelegate.registerPlugins(with: controller.engine, controller: controller)
-    BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
-
-    BackgroundServicePlugin.registerBackgroundProcessing()
     BackgroundWorkerApiImpl.registerBackgroundWorkers()
-
-    BackgroundServicePlugin.setPluginRegistrantCallback { registry in
-      if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
-        PathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-foundation")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.photo-manager") {
-        PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
-        SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.permission-handler-apple") {
-        PermissionHandlerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.permission-handler-apple")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.network-info-plus") {
-        FPPNetworkInfoPlusPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.network-info-plus")!)
-      }
-    }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
