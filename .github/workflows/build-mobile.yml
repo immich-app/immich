@@ -121,7 +121,7 @@ jobs:
           cache: true
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
         with:
           packages: ''
 
@@ -153,7 +153,7 @@ jobs:
           fi
 
       - name: Publish Android Artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
@@ -210,7 +210,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@3ff19f5e2baf30647122352b96108b1fbe250c64 # v1.299.0
+        uses: ruby/setup-ruby@e65c17d16e57e481586a6a5a0282698790062f92 # v1.300.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
@@ -291,7 +291,7 @@ jobs:
           security delete-keychain build.keychain || true
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa
