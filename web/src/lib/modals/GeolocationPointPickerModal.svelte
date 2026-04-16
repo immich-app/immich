@@ -65,7 +65,7 @@
   };
 
   const getLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
-    return [name, admin1Name, admin2Name].filter(isDefined).join(', ');
+    return [name, admin1Name, admin2Name].filter(Boolean).join(', ');
   };
 
   const handleSearchPlaces = () => {
