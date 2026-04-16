@@ -503,8 +503,8 @@ importers:
         specifier: ^3.16.0
         version: 3.20.1(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(@types/inquirer@8.2.12)(@types/node@24.12.2)(typescript@6.0.2)
       nestjs-cls:
-        specifier: ^5.0.0
-        version: 5.4.3(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+        specifier: ^6.0.0
+        version: 6.2.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
         specifier: 3.1.2
         version: 3.1.2(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(kysely@0.28.15)(reflect-metadata@0.2.2)
@@ -9360,8 +9360,8 @@ packages:
       '@nestjs/core': ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
       '@types/inquirer': ^8.1.3
 
-  nestjs-cls@5.4.3:
-    resolution: {integrity: sha512-yHEHyVoe6rsvj3XRPFonBKPXPjDREyHfKZ9PTStSLJTZAV3wey1Q89TquSj6QciqXB5387GiHv9DG+ja6iAUHw==}
+  nestjs-cls@6.2.0:
+    resolution: {integrity: sha512-b2Remha7gV5gId3ezjr2tupjqqgYK7/JqjqX6oZ0ZIDFATUggKH1/32+ul2lOe7FepnHasDONDoePuWEE64cug==}
     engines: {node: '>=18'}
     peerDependencies:
       '@nestjs/common': '>= 10 < 12'
@@ -22504,7 +22504,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  nestjs-cls@5.4.3(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2):
+  nestjs-cls@6.2.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2):
     dependencies:
       '@nestjs/common': 11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.18(@nestjs/common@11.1.17(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.17)(@nestjs/websockets@11.1.17)(reflect-metadata@0.2.2)(rxjs@7.8.2)
