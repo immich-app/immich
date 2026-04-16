@@ -1,29 +1,34 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/models/view_intent/view_intent_attachment.model.dart';
-import 'package:immich_mobile/repositories/view_handler.repository.dart';
+import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/services/view_intent_service.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockViewHandlerRepository extends Mock implements ViewHandlerRepository {}
+class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 
 void main() {
-  late MockViewHandlerRepository repository;
+  late MockViewIntentHostApi hostApi;
   late ViewIntentService service;
 
-  const attachment = ViewIntentAttachment(
+  final attachment = ViewIntentPayload(
     path: '/tmp/file.jpg',
-    type: ViewIntentAttachmentType.image,
+    type: ViewIntentType.image,
     mimeType: 'image/jpeg',
     localAssetId: '42',
   );
 
   setUp(() {
-    repository = MockViewHandlerRepository();
-    service = ViewIntentService(repository);
+    hostApi = MockViewIntentHostApi();
+    service = ViewIntentService(hostApi);
+  });
+
+  tearDown(() async {
+    clearInteractions(hostApi);
   });
 
   test('checkViewIntent does nothing when no attachment', () async {
-    when(() => repository.checkViewIntent()).thenAnswer((_) async => null);
+    when(() => hostApi.consumeViewIntent()).thenAnswer((_) async => null);
 
     var called = 0;
     service.onViewMedia = (_) async {
@@ -33,13 +38,13 @@ void main() {
     await service.checkViewIntent();
 
     expect(called, 0);
-    verify(() => repository.checkViewIntent()).called(1);
+    verify(() => hostApi.consumeViewIntent()).called(1);
   });
 
   test('checkViewIntent calls handler immediately when handler is set', () async {
-    when(() => repository.checkViewIntent()).thenAnswer((_) async => attachment);
+    when(() => hostApi.consumeViewIntent()).thenAnswer((_) async => attachment);
 
-    List<ViewIntentAttachment>? received;
+    List<ViewIntentPayload>? received;
     service.onViewMedia = (attachments) async {
       received = attachments;
     };
@@ -49,15 +54,15 @@ void main() {
     expect(received, isNotNull);
     expect(received, hasLength(1));
     expect(received!.first, attachment);
-    verify(() => repository.checkViewIntent()).called(1);
+    verify(() => hostApi.consumeViewIntent()).called(1);
   });
 
   test('checkViewIntent stores pending attachment when handler is not set', () async {
-    when(() => repository.checkViewIntent()).thenAnswer((_) async => attachment);
+    when(() => hostApi.consumeViewIntent()).thenAnswer((_) async => attachment);
 
     await service.checkViewIntent();
 
-    List<ViewIntentAttachment>? received;
+    List<ViewIntentPayload>? received;
     service.onViewMedia = (attachments) async {
       received = attachments;
     };
@@ -75,7 +80,7 @@ void main() {
     await service.flushPending();
 
     var called = 0;
-    List<ViewIntentAttachment>? received;
+    List<ViewIntentPayload>? received;
     service.onViewMedia = (attachments) async {
       called++;
       received = attachments;
@@ -87,5 +92,56 @@ void main() {
     expect(called, 1);
     expect(received, hasLength(1));
     expect(received!.first, attachment);
+  });
+
+  test('checkViewIntent swallows host api errors', () async {
+    when(() => hostApi.consumeViewIntent()).thenThrow(Exception('boom'));
+
+    var called = 0;
+    service.onViewMedia = (_) async {
+      called++;
+    };
+
+    await service.checkViewIntent();
+
+    expect(called, 0);
+    verify(() => hostApi.consumeViewIntent()).called(1);
+  });
+
+  test('setManagedTempFilePath cleans previous managed temp file', () async {
+    final tempRoot = await Directory.systemTemp.createTemp('view-intent-root');
+    final cacheDir = Directory('${tempRoot.path}/cache')..createSync();
+    addTearDown(() async {
+      if (await tempRoot.exists()) {
+        await tempRoot.delete(recursive: true);
+      }
+    });
+
+    final firstFile = File('${cacheDir.path}/view_intent_first.jpg')..writeAsStringSync('first');
+    final secondFile = File('${cacheDir.path}/view_intent_second.jpg')..writeAsStringSync('second');
+
+    await service.setManagedTempFilePath(firstFile.path);
+    await service.setManagedTempFilePath(secondFile.path);
+
+    expect(await firstFile.exists(), isFalse);
+    expect(await secondFile.exists(), isTrue);
+
+    await service.cleanupManagedTempFile();
+    expect(await secondFile.exists(), isFalse);
+  });
+
+  test('cleanupTempFile ignores non-managed paths', () async {
+    final tempDir = await Directory.systemTemp.createTemp('view-intent-test');
+    addTearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    final nonManagedFile = File('${tempDir.path}/plain_file.jpg')..writeAsStringSync('content');
+
+    await service.cleanupTempFile(nonManagedFile.path);
+
+    expect(await nonManagedFile.exists(), isTrue);
   });
 }

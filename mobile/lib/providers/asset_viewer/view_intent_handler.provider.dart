@@ -5,9 +5,11 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/models/view_intent/view_intent_attachment.model.dart';
+import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -51,14 +53,14 @@ class ViewIntentHandler {
     unawaited(_viewIntentService.flushPending());
   }
 
-  Future<void> onViewMedia(List<ViewIntentAttachment> attachments) async {
+  Future<void> onViewMedia(List<ViewIntentPayload> attachments) async {
     if (attachments.isEmpty) {
       return;
     }
     await handle(attachments.first);
   }
 
-  Future<void> handle(ViewIntentAttachment attachment) async {
+  Future<void> handle(ViewIntentPayload attachment) async {
     _logger.info('handle attachment: $attachment');
     if (!_ref.read(authProvider).isAuthenticated) {
       _viewIntentService.defer(attachment);
@@ -87,9 +89,14 @@ class ViewIntentHandler {
       }
     }
     final checksum = localAssetId != null ? await _computeChecksum(localAssetId) : null;
-    final fallbackAsset = _toViewIntentAsset(attachment).copyWith(checksum: checksum);
+    final fallbackAsset = _toViewIntentAsset(attachment, checksum);
     _logger.fine('openAssetViewer for fallbackAsset');
-    _openAssetViewer(fallbackAsset, _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink), 0);
+    _openAssetViewer(
+      fallbackAsset,
+      _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink),
+      0,
+      viewIntentFilePath: attachment.path,
+    );
   }
 
   Future<bool> _openFromMainTimeline(String localAssetId, {String? checksum}) async {
@@ -129,9 +136,21 @@ class ViewIntentHandler {
     return false;
   }
 
-  void _openAssetViewer(BaseAsset asset, TimelineService timelineService, int initialIndex) {
+  void _openAssetViewer(
+    BaseAsset asset,
+    TimelineService timelineService,
+    int initialIndex, {
+    String? viewIntentFilePath,
+  }) {
     _ref.read(assetViewerProvider.notifier).reset();
     _ref.read(assetViewerProvider.notifier).setAsset(asset);
+    if (viewIntentFilePath != null) {
+      _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
+      unawaited(_viewIntentService.setManagedTempFilePath(viewIntentFilePath));
+    } else {
+      _ref.read(viewIntentFilePathProvider.notifier).clear();
+      unawaited(_viewIntentService.cleanupManagedTempFile());
+    }
 
     if (asset.isVideo) {
       _ref.read(assetViewerProvider.notifier).setControls(true);
@@ -152,13 +171,13 @@ class ViewIntentHandler {
     }
   }
 
-  LocalAsset _toViewIntentAsset(ViewIntentAttachment attachment) {
+  LocalAsset _toViewIntentAsset(ViewIntentPayload attachment, String? checksum) {
     final now = DateTime.now();
-
     return LocalAsset(
-      id: attachment.localAssetId ?? '',
+      // todo Temp solution, need to provide FileBackedAsset extends BaseAsset for cover this case in right way
+      id: attachment.localAssetId ?? '-${attachment.path.hashCode.abs()}',
       name: attachment.fileName,
-      checksum: null,
+      checksum: checksum,
       type: attachment.isVideo ? AssetType.video : AssetType.image,
       createdAt: now,
       updatedAt: now,

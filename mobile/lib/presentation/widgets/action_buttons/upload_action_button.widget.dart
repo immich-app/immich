@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,9 +8,11 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -26,6 +29,7 @@ class UploadActionButton extends ConsumerWidget {
     }
 
     final isTimeline = source == ActionSource.timeline;
+    final viewerIntentFilePath = source == ActionSource.viewer ? ref.read(viewIntentFilePathProvider) : null;
     List<LocalAsset>? assets;
 
     if (source == ActionSource.timeline) {
@@ -44,13 +48,22 @@ class UploadActionButton extends ConsumerWidget {
       );
     }
 
-    final result = await ref.read(actionProvider.notifier).upload(source, assets: assets);
+    var success = false;
+    if (!isTimeline && viewerIntentFilePath != null) {
+      var hasError = false;
+      await ref.read(foregroundUploadServiceProvider).uploadShareIntent([
+        File(viewerIntentFilePath),
+      ], onError: (_, __) => hasError = true);
+      success = !hasError;
+    } else {
+      success = (await ref.read(actionProvider.notifier).upload(source, assets: assets)).success;
+    }
 
     if (!isTimeline && context.mounted) {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
-    if (context.mounted && !result.success) {
+    if (context.mounted && !success) {
       ImmichToast.show(
         context: context,
         msg: 'scaffold_body_error_occurred'.t(context: context),
