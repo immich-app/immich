@@ -84,7 +84,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -245,6 +245,10 @@ class Drift extends $Drift {
                 durationMs: v23.trashedLocalAssetEntity.durationMs * const Constant(1000),
               ),
             );
+          },
+          from23To24: (m, v24) async {
+            await customStatement('DROP INDEX IF EXISTS idx_remote_album_owner_id');
+            await m.alterTable(TableMigration(v24.remoteAlbumEntity));
           },
         ),
       );
