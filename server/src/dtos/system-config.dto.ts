@@ -181,7 +181,12 @@ const SystemConfigOAuthSchema = z
     timeout: z.int().min(1).describe('Timeout'),
     defaultStorageQuota: z.number().min(0).nullable().describe('Default storage quota'),
     enabled: configBool.describe('Enabled'),
-    issuerUrl: z.string().describe('Issuer URL'),
+    issuerUrl: z
+      .string()
+      .refine((url) => url.length === 0 || z.url().safeParse(url).success, {
+        error: 'Issuer URL must be an empty string or a valid URL',
+      })
+      .describe('Issuer URL'),
     scope: z.string().describe('Scope'),
     signingAlgorithm: z.string().describe('Signing algorithm'),
     profileSigningAlgorithm: z.string().describe('Profile signing algorithm'),
