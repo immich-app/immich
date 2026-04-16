@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/utils/semver.dart';
@@ -13,7 +16,6 @@ import 'package:openapi/api.dart';
 
 import '../../api.mocks.dart';
 import '../../service.mocks.dart';
-import '../../test_utils.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 
@@ -38,7 +40,8 @@ void main() {
   late int testBatchSize = 3;
 
   setUpAll(() async {
-    await StoreService.init(storeRepository: IsarStoreRepository(await TestUtils.initIsar()));
+    final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    await StoreService.init(storeRepository: DriftStoreRepository(db));
   });
 
   setUp(() {
@@ -137,7 +140,7 @@ void main() {
     bool abortWasCalledInCallback = false;
     final Completer<void> firstBatchReceived = Completer<void>();
 
-    Future<void> onDataCallback(List<SyncEvent> events, Function() abort, Function() _) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() abort, Function() _) async {
       onDataCallCount++;
       if (onDataCallCount == 1) {
         abort();
@@ -241,7 +244,7 @@ void main() {
     final streamError = Exception("Network Error");
     int onDataCallCount = 0;
 
-    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() __) async {
       onDataCallCount++;
     }
 
@@ -267,7 +270,7 @@ void main() {
     when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(errorBodyController.stream));
 
     int onDataCallCount = 0;
-    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() __) async {
       onDataCallCount++;
     }
 

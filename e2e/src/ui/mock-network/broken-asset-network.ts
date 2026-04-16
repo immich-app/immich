@@ -16,7 +16,6 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
   const now = new Date().toISOString();
   return {
     id: assetId,
-    deviceAssetId: `device-${assetId}`,
     ownerId,
     owner: {
       id: ownerId,
@@ -27,7 +26,6 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
       avatarColor: 'blue' as never,
     },
     libraryId: `library-${ownerId}`,
-    deviceId: `device-${ownerId}`,
     type: AssetTypeEnum.Image,
     originalPath: `/original/${assetId}.jpg`,
     originalFileName: `${assetId}.jpg`,

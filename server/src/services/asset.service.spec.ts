@@ -685,20 +685,6 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('getUserAssetsByDeviceId', () => {
-    it('get assets by device id', async () => {
-      const assets = [AssetFactory.create(), AssetFactory.create()];
-
-      mocks.asset.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
-
-      const deviceId = 'device-id';
-      const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
-
-      expect(result.length).toEqual(2);
-      expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
-    });
-  });
-
   describe('upsertMetadata', () => {
     it('should throw a bad request exception if duplicate keys are sent', async () => {
       const asset = AssetFactory.create();

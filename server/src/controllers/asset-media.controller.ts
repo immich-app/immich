@@ -21,14 +21,12 @@ import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
-  CheckExistingAssetsResponseDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaSize,
-  CheckExistingAssetsDto,
 } from 'src/dtos/asset-media.dto';
 import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -126,6 +124,16 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    if (dto.size === AssetMediaSize.Original) {
+      this.logger.deprecate(
+        'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
+      );
+      const [_, reqSearch] = req.url.split('?');
+      const redirSearchParams = new URLSearchParams(reqSearch);
+      redirSearchParams.delete('size');
+      return res.redirect('original' + '?' + redirSearchParams.toString());
+    }
+
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
 
     if (viewThumbnailRes instanceof ImmichFileResponse) {
@@ -167,21 +175,6 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
-  }
-
-  @Post('exist')
-  @Authenticated({ permission: Permission.AssetUpload })
-  @Endpoint({
-    summary: 'Check existing assets',
-    description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  @HttpCode(HttpStatus.OK)
-  checkExistingAssets(
-    @Auth() auth: AuthDto,
-    @Body() dto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return this.service.checkExistingAssets(auth, dto);
   }
 
   @Post('bulk-upload-check')

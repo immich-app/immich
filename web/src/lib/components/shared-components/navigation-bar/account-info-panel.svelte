@@ -14,12 +14,11 @@
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
 
-  interface Props {
-    onLogout: () => void;
+  type Props = {
     onClose?: () => void;
-  }
+  };
 
-  let { onLogout, onClose = () => {} }: Props = $props();
+  let { onClose }: Props = $props();
 
   let info: ServerAboutResponseDto | undefined = $state();
 
@@ -48,7 +47,7 @@
           size="tiny"
           shape="round"
           onclick={async () => {
-            onClose();
+            onClose?.();
             await modalManager.show(AvatarEditModal);
           }}
         />
@@ -99,7 +98,7 @@
   <div class="mb-4 flex flex-col">
     <Button
       class="m-1 mx-4 rounded-none rounded-b-3xl bg-white p-3 dark:bg-immich-dark-primary/10"
-      onclick={onLogout}
+      href={Route.logout()}
       leadingIcon={mdiLogout}
       variant="ghost"
       color="secondary">{$t('sign_out')}</Button
@@ -109,7 +108,7 @@
       type="button"
       class="text-center mt-4 underline text-xs text-primary"
       onclick={async () => {
-        onClose();
+        onClose?.();
         if (info) {
           await modalManager.show(HelpAndFeedbackModal, { info });
         }

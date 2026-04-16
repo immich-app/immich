@@ -9,8 +9,6 @@ import { automock, ControllerContext, controllerSetup, mockBaseService } from 't
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
   const dto: Record<string, any> = {
-    deviceAssetId: 'example-image',
-    deviceId: 'TEST',
     fileCreatedAt: new Date().toISOString(),
     fileModifiedAt: new Date().toISOString(),
     isFavorite: 'false',
@@ -87,28 +85,6 @@ describe(AssetMediaController.name, () => {
       );
     });
 
-    it('should require `deviceAssetId`', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto({ omit: 'deviceAssetId' }) });
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        factory.responses.badRequest(['[deviceAssetId] Invalid input: expected string, received undefined']),
-      );
-    });
-
-    it('should require `deviceId`', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto({ omit: 'deviceId' }) });
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        factory.responses.badRequest(['[deviceId] Invalid input: expected string, received undefined']),
-      );
-    });
-
     it('should require `fileCreatedAt`', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/assets')
@@ -166,10 +142,15 @@ describe(AssetMediaController.name, () => {
     });
 
     // TODO figure out how to deal with `sendFile`
-    describe.skip('GET /assets/:id/thumbnail', () => {
-      it('should be an authenticated route', async () => {
+    describe('GET /assets/:id/thumbnail', () => {
+      it.skip('should be an authenticated route', async () => {
         await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
         expect(ctx.authenticate).toHaveBeenCalled();
+      });
+
+      it('should redirect if size=original is requested', async () => {
+        const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
+        expect(status).toBe(302);
       });
     });
   });

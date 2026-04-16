@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart' as old_asset_entity;
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 
@@ -53,26 +52,6 @@ class CastNotifier extends StateNotifier<CastManagerState> {
 
   void loadMedia(RemoteAsset asset, bool reload) {
     _gCastService.loadMedia(asset, reload);
-  }
-
-  // TODO: remove this when we migrate to new timeline
-  void loadMediaOld(old_asset_entity.Asset asset, bool reload) {
-    final remoteAsset = RemoteAsset(
-      id: asset.remoteId.toString(),
-      name: asset.name,
-      ownerId: asset.ownerId.toString(),
-      checksum: asset.checksum,
-      type: asset.type == old_asset_entity.AssetType.image
-          ? AssetType.image
-          : asset.type == old_asset_entity.AssetType.video
-          ? AssetType.video
-          : AssetType.other,
-      createdAt: asset.fileCreatedAt,
-      updatedAt: asset.updatedAt,
-      isEdited: false,
-    );
-
-    _gCastService.loadMedia(remoteAsset, reload);
   }
 
   Future<void> connect(CastDestinationType type, dynamic device) async {
