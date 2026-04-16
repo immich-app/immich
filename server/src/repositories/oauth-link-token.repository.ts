@@ -13,7 +13,6 @@ export class OAuthLinkTokenRepository {
     return this.db.insertInto('oauth_link_token').values(dto).returningAll().executeTakeFirstOrThrow();
   }
 
-  // Atomic consume: delete and return in one query (single-use guarantee)
   consumeToken(token: Buffer) {
     return this.db
       .deleteFrom('oauth_link_token')

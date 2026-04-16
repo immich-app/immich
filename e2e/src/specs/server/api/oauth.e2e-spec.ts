@@ -364,9 +364,10 @@ describe(`/oauth`, () => {
         });
         const callbackParams = await loginWithOAuth('oauth-user3');
         const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
-        expect(status).toBe(400);
+        expect(status).toBe(403);
         expect(body.message).toBe('oauth_account_link_required');
         expect(body.userEmail).toBe('oauth-user3@immich.app');
+        expect(body.linkToken).toBeDefined();
       });
     });
   });

@@ -6,7 +6,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getServerErrorMessage } from '$lib/utils/handle-error';
-  import { linkOAuthAccount, login } from '@immich/sdk';
+  import { login } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -17,24 +17,22 @@
 
   let { data }: Props = $props();
 
+  let linkToken = $state(data.linkToken);
   let email = $state(data.email || authManager.user?.email || '');
   let password = $state('');
   let errorMessage = $state('');
   let loading = $state(false);
 
-  // Strip sensitive params from URL after reading — keeps linkToken out of browser history
-  history.replaceState(null, '', Route.authLink());
+  goto(Route.authLink(), { replaceState: true });
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
       errorMessage = '';
       loading = true;
-      const user = await login({ loginCredentialDto: { email, password } });
+      const user = await login({ loginCredentialDto: { email, password, linkToken } });
       eventManager.emit('AuthLogin', user);
-
-      const response = await linkOAuthAccount({ oAuthLinkDto: { linkToken: data.linkToken } });
-      authManager.setUser(response);
+      await authManager.refresh();
       toastManager.primary($t('linked_oauth_account'));
       await goto(Route.photos(), { invalidateAll: true });
     } catch (error) {

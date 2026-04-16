@@ -9,7 +9,6 @@ import {
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
-  OAuthLinkDto,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum';
@@ -85,22 +84,6 @@ export class OAuthController {
         { key: ImmichCookie.IsAuthenticated, value: 'true' },
       ],
     });
-  }
-
-  @Post('link')
-  @Authenticated()
-  @HttpCode(HttpStatus.OK)
-  @Endpoint({
-    summary: 'Link OAuth account',
-    description: 'Link an OAuth account to the authenticated user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  linkOAuthAccount(
-    @Req() request: Request,
-    @Auth() auth: AuthDto,
-    @Body() dto: OAuthLinkDto,
-  ): Promise<UserAdminResponseDto> {
-    return this.service.link(auth, dto, request.headers);
   }
 
   @Post('unlink')

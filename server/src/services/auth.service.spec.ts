@@ -88,6 +88,37 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
+
+    it('should link an OAuth account when linkToken is provided', async () => {
+      const user = UserFactory.create({ password: 'immich_password' });
+      const session = SessionFactory.create();
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(session);
+      mocks.oauthLinkToken.consumeToken.mockResolvedValue({
+        id: 'token-id',
+        oauthSub: 'oauth-sub-123',
+        userEmail: user.email,
+        token: Buffer.from('hashed'),
+        expiresAt: new Date(Date.now() + 600_000),
+        createdAt: new Date(),
+      });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.login({ email, password: 'password', linkToken: 'plain-token' }, loginDetails);
+
+      expect(mocks.oauthLinkToken.consumeToken).toHaveBeenCalledTimes(1);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: 'oauth-sub-123' });
+    });
+
+    it('should reject login with invalid linkToken', async () => {
+      const user = UserFactory.create({ password: 'immich_password' });
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.oauthLinkToken.consumeToken.mockResolvedValue(null as any);
+
+      await expect(sut.login({ email, password: 'password', linkToken: 'bad-token' }, loginDetails)).rejects.toThrow(
+        'Invalid or expired link token',
+      );
+    });
   });
 
   describe('changePassword', () => {
@@ -718,7 +749,7 @@ describe(AuthService.name, () => {
           {},
           loginDetails,
         ),
-      ).rejects.toThrow('oauth_account_link_required');
+      ).rejects.toThrow(ForbiddenException);
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).not.toHaveBeenCalled();
@@ -762,7 +793,7 @@ describe(AuthService.name, () => {
           {},
           loginDetails,
         ),
-      ).rejects.toThrow('oauth_account_link_required');
+      ).rejects.toThrow(ForbiddenException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.user.create).not.toHaveBeenCalled();

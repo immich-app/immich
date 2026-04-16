@@ -1008,6 +1008,8 @@ export type AssetOcrResponseDto = {
 export type SignUpDto = {
     /** User email */
     email: string;
+    /** OAuth link token to consume on successful login */
+    linkToken?: string;
     /** User name */
     name: string;
     /** User password */
@@ -1024,6 +1026,8 @@ export type ChangePasswordDto = {
 export type LoginCredentialDto = {
     /** User email */
     email: string;
+    /** OAuth link token to consume on successful login */
+    linkToken?: string;
     /** User password */
     password: string;
 };
@@ -1420,16 +1424,6 @@ export type OAuthCallbackDto = {
     state?: string;
     /** OAuth callback URL */
     url: string;
-};
-export type OAuthLinkDto = {
-    /** OAuth code verifier (PKCE) */
-    codeVerifier?: string;
-    /** OAuth link token from prior callback */
-    linkToken?: string;
-    /** OAuth state parameter */
-    state?: string;
-    /** OAuth callback URL */
-    url?: string;
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
@@ -4952,21 +4946,6 @@ export function finishOAuth({ oAuthCallbackDto }: {
         ...opts,
         method: "POST",
         body: oAuthCallbackDto
-    })));
-}
-/**
- * Link OAuth account
- */
-export function linkOAuthAccount({ oAuthLinkDto }: {
-    oAuthLinkDto: OAuthLinkDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserAdminResponseDto;
-    }>("/oauth/link", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: oAuthLinkDto
     })));
 }
 /**

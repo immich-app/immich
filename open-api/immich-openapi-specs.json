@@ -7439,65 +7439,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/oauth/link": {
-      "post": {
-        "description": "Link an OAuth account to the authenticated user.",
-        "operationId": "linkOAuthAccount",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthLinkDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserAdminResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Link OAuth account",
-        "tags": [
-          "Authentication"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-state": "Stable"
-      }
-    },
     "/oauth/mobile-redirect": {
       "get": {
         "description": "Requests to this URL are automatically forwarded to the mobile app, and is used in some cases for OAuth redirecting.",
@@ -18072,6 +18013,10 @@
             "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
             "type": "string"
           },
+          "linkToken": {
+            "description": "OAuth link token to consume on successful login",
+            "type": "string"
+          },
           "password": {
             "description": "User password",
             "example": "password",
@@ -19114,27 +19059,6 @@
         "required": [
           "redirectUri"
         ],
-        "type": "object"
-      },
-      "OAuthLinkDto": {
-        "properties": {
-          "codeVerifier": {
-            "description": "OAuth code verifier (PKCE)",
-            "type": "string"
-          },
-          "linkToken": {
-            "description": "OAuth link token from prior callback",
-            "type": "string"
-          },
-          "state": {
-            "description": "OAuth state parameter",
-            "type": "string"
-          },
-          "url": {
-            "description": "OAuth callback URL",
-            "type": "string"
-          }
-        },
         "type": "object"
       },
       "OAuthTokenEndpointAuthMethod": {
@@ -21873,6 +21797,10 @@
             "example": "testuser@email.com",
             "format": "email",
             "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "type": "string"
+          },
+          "linkToken": {
+            "description": "OAuth link token to consume on successful login",
             "type": "string"
           },
           "name": {

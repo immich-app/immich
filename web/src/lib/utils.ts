@@ -15,7 +15,6 @@ import {
   getBaseUrl,
   getPeopleThumbnailPath,
   getUserProfileImagePath,
-  linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
   type AssetResponseDto,
@@ -292,9 +291,6 @@ export const oauth = {
   },
   login: (location: Location) => {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
-  },
-  link: (location: Location) => {
-    return linkOAuthAccount({ oAuthLinkDto: { url: location.href } });
   },
   unlink: () => {
     return unlinkOAuthAccount();

@@ -75,6 +75,21 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
+    if (dto.linkToken) {
+      const hashedToken = this.cryptoRepository.hashSha256(dto.linkToken);
+      const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
+      if (!record) {
+        throw new BadRequestException('Invalid or expired link token');
+      }
+
+      const duplicate = await this.userRepository.getByOAuthId(record.oauthSub);
+      if (duplicate && duplicate.id !== user.id) {
+        throw new BadRequestException('This OAuth account has already been linked to another user.');
+      }
+
+      await this.userRepository.update(user.id, { oauthId: record.oauthSub });
+    }
+
     return this.createLoginResponse(user, details);
   }
 
@@ -330,9 +345,9 @@ export class AuthService extends BaseService {
           token: hashedToken,
           oauthSub: profile.sub,
           userEmail: emailUser.email,
-          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+          expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
         });
-        throw new BadRequestException({
+        throw new ForbiddenException({
           message: 'oauth_account_link_required',
           userEmail: emailUser.email,
           linkToken: plainToken,
