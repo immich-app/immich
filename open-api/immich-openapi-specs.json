@@ -16022,6 +16022,7 @@
         "type": "object"
       },
       "AssetFaceResponseDto": {
+        "description": "Asset face with person",
         "properties": {
           "boundingBoxX1": {
             "description": "Bounding box X1 coordinate",
@@ -16122,66 +16123,6 @@
         "required": [
           "assetId",
           "personId"
-        ],
-        "type": "object"
-      },
-      "AssetFaceWithoutPersonResponseDto": {
-        "description": "Asset face without person",
-        "properties": {
-          "boundingBoxX1": {
-            "description": "Bounding box X1 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxX2": {
-            "description": "Bounding box X2 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxY1": {
-            "description": "Bounding box Y1 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxY2": {
-            "description": "Bounding box Y2 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "id": {
-            "description": "Face ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          },
-          "imageHeight": {
-            "description": "Image height in pixels",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "imageWidth": {
-            "description": "Image width in pixels",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "sourceType": {
-            "$ref": "#/components/schemas/SourceType"
-          }
-        },
-        "required": [
-          "boundingBoxX1",
-          "boundingBoxX2",
-          "boundingBoxY1",
-          "boundingBoxY2",
-          "id",
-          "imageHeight",
-          "imageWidth"
         ],
         "type": "object"
       },
@@ -16755,7 +16696,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonWithFacesResponseDto"
+              "$ref": "#/components/schemas/PersonResponseDto"
             },
             "type": "array"
           },
@@ -16795,12 +16736,6 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
-          },
-          "unassignedFaces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
           },
           "updatedAt": {
             "description": "The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.",
@@ -19762,93 +19697,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "PersonWithFacesResponseDto": {
-        "properties": {
-          "birthDate": {
-            "description": "Person date of birth",
-            "format": "date",
-            "nullable": true,
-            "type": "string"
-          },
-          "color": {
-            "description": "Person color (hex)",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "faces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
-          },
-          "id": {
-            "description": "Person ID",
-            "type": "string"
-          },
-          "isFavorite": {
-            "description": "Is favorite",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "isHidden": {
-            "description": "Is hidden",
-            "type": "boolean"
-          },
-          "name": {
-            "description": "Person name",
-            "type": "string"
-          },
-          "thumbnailPath": {
-            "description": "Thumbnail path",
-            "type": "string"
-          },
-          "updatedAt": {
-            "description": "Last update date",
-            "format": "date-time",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.107.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          }
-        },
-        "required": [
-          "birthDate",
-          "faces",
-          "id",
-          "isHidden",
-          "name",
-          "thumbnailPath"
-        ],
         "type": "object"
       },
       "PinCodeChangeDto": {
