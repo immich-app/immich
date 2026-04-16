@@ -969,13 +969,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
-  immich_mobile_immich_lint:
-    dependency: "direct dev"
-    description:
-      path: immich_lint
-      relative: true
-    source: path
-    version: "0.0.0"
   immich_ui:
     dependency: "direct main"
     description:

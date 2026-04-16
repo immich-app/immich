@@ -104,8 +104,6 @@ dev_dependencies:
   flutter_native_splash: ^2.4.7
   flutter_test:
     sdk: flutter
-  immich_mobile_immich_lint:
-    path: './immich_lint'
   integration_test:
     sdk: flutter
   mocktail: ^1.0.4
