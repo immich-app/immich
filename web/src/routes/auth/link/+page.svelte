@@ -8,6 +8,7 @@
   import { getServerErrorMessage } from '$lib/utils/handle-error';
   import { login } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -23,7 +24,9 @@
   let errorMessage = $state('');
   let loading = $state(false);
 
-  goto(Route.authLink(), { replaceState: true });
+  onMount(async () => {
+    await goto(Route.authLink(), { replaceState: true });
+  });
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
