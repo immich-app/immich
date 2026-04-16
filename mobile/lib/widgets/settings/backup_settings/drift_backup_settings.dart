@@ -314,8 +314,10 @@ class _BackupCutoffDatePicker extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 8.0),
               child: SettingListTile(
                 title: "backup_cutoff_date_picker_title".t(context: context),
-                subtitle:
-                    "${"backup_cutoff_date_picker_subtitle_first".t(context: context)} $selectedDateText ${"backup_cutoff_date_picker_subtitle_second".t(context: context)}",
+                subtitle: "backup_cutoff_date_picker_subtitle".tr(
+                  context: context,
+                  namedArgs: {'date': selectedDateText},
+                ),
                 trailing: Icon(
                   Icons.calendar_month_outlined,
                   color: context.colorScheme.onSurface.withValues(alpha: 0.7),
