@@ -41,6 +41,12 @@ class AuthManager {
     return this.#preferences;
   }
 
+  constructor() {
+    eventManager.on({
+      SessionDelete: () => goto(Route.logout()),
+    });
+  }
+
   async load() {
     if (authManager.authenticated) {
       return;
@@ -84,30 +90,26 @@ class AuthManager {
   }
 
   async logout() {
-    let redirectUri;
+    let redirectUri = Route.login();
 
     try {
       const response = await logout();
       if (response.redirectUri) {
         redirectUri = response.redirectUri;
       }
-    } catch (error) {
-      console.log('Error logging out:', error);
+    } catch {
+      // noop
     }
 
-    redirectUri = redirectUri ?? Route.login();
-
-    try {
-      if (redirectUri.startsWith('/')) {
-        await goto(redirectUri);
-      } else {
-        globalThis.location.href = redirectUri;
-      }
-    } finally {
+    if (redirectUri.startsWith('/')) {
       this.isPurchased = false;
 
       this.reset();
       eventManager.emit('AuthLogout');
+
+      await goto(redirectUri);
+    } else {
+      globalThis.location.href = redirectUri;
     }
   }
 

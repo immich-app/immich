@@ -110,7 +110,7 @@ export const fileUploadHandler = async ({
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
       promises.push(
-        uploadExecutionQueue.addTask(() => fileUploader({ assetFile: file, deviceAssetId, albumId, isLockedAssets })),
+        uploadExecutionQueue.addTask(() => fileUploader({ deviceAssetId, assetFile: file, albumId, isLockedAssets })),
       );
     } else {
       toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
@@ -132,6 +132,7 @@ type FileUploaderParams = {
   albumId?: string;
   replaceAssetId?: string;
   isLockedAssets?: boolean;
+  // TODO rework the asset uploader and remove this
   deviceAssetId: string;
 };
 
@@ -151,8 +152,6 @@ async function fileUploader({
   try {
     const formData = new FormData();
     for (const [key, value] of Object.entries({
-      deviceAssetId,
-      deviceId: 'WEB',
       fileCreatedAt,
       fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',

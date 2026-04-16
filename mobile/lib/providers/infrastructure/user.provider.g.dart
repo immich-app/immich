@@ -6,23 +6,6 @@ part of 'user.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userRepositoryHash() => r'538791a4ad126ed086c9db682c67fc5c654d54f3';
-
-/// See also [userRepository].
-@ProviderFor(userRepository)
-final userRepositoryProvider = Provider<IsarUserRepository>.internal(
-  userRepository,
-  name: r'userRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$userRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef UserRepositoryRef = ProviderRef<IsarUserRepository>;
 String _$userApiRepositoryHash() => r'8a7340ca4544c8c6b20225c65bff2abb9e96baa2';
 
 /// See also [userApiRepository].
@@ -40,7 +23,7 @@ final userApiRepositoryProvider = Provider<UserApiRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UserApiRepositoryRef = ProviderRef<UserApiRepository>;
-String _$userServiceHash() => r'181414dddc7891be6237e13d568c287a804228d1';
+String _$userServiceHash() => r'47e607f3b484b51bcb634d47e3cbf1f6ef25da97';
 
 /// See also [userService].
 @ProviderFor(userService)

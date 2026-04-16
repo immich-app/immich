@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { thumbhash } from '$lib/actions/thumbhash';
   import { ProjectionType } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -10,7 +9,6 @@
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { TUNABLES } from '$lib/utils/tunables';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
@@ -27,6 +25,7 @@
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   interface Props {
@@ -74,10 +73,6 @@
     brokenAssetClass = '',
     dimmed = false,
   }: Props = $props();
-
-  let {
-    IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
-  } = TUNABLES;
 
   let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
   let element: HTMLElement | undefined = $state();
@@ -312,16 +307,14 @@
       {/if}
 
       {#if (!loaded || thumbError) && asset.thumbhash}
-        <canvas
-          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+        <Thumbhash
+          base64ThumbHash={asset.thumbhash}
           data-testid="thumbhash"
-          class="absolute top-0 object-cover group-focus-visible:rounded-lg"
-          style:width="{width}px"
-          style:height="{height}px"
-          class:rounded-xl={selected}
+          class={['absolute top-0 object-cover group-focus-visible:rounded-lg', { 'rounded-xl': selected }]}
+          style="width: {width}px; height: {height}px"
           draggable="false"
-          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-        ></canvas>
+          fadeOut
+        />
       {/if}
 
       <!-- icon overlay -->

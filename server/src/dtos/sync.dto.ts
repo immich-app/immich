@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { createZodDto } from 'nestjs-zod';
-import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto';
 import {
   AlbumUserRoleSchema,
@@ -16,36 +15,6 @@ import {
 } from 'src/enum';
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
-
-const AssetFullSyncSchema = z
-  .object({
-    lastId: z.uuidv4().optional().describe('Last asset ID (pagination)'),
-    updatedUntil: isoDatetimeToDate.describe('Sync assets updated until this date'),
-    limit: z.int().min(1).describe('Maximum number of assets to return'),
-    userId: z.uuidv4().optional().describe('Filter by user ID'),
-  })
-  .meta({ id: 'AssetFullSyncDto' });
-
-const AssetDeltaSyncSchema = z
-  .object({
-    updatedAfter: isoDatetimeToDate.describe('Sync assets updated after this date'),
-    userIds: z.array(z.uuidv4()).describe('User IDs to sync'),
-  })
-  .meta({ id: 'AssetDeltaSyncDto' });
-
-export class AssetFullSyncDto extends createZodDto(AssetFullSyncSchema) {}
-export class AssetDeltaSyncDto extends createZodDto(AssetDeltaSyncSchema) {}
-
-const AssetDeltaSyncResponseSchema = z
-  .object({
-    needsFullSync: z.boolean().describe('Whether full sync is needed'),
-    upserted: z.array(AssetResponseSchema),
-    deleted: z.array(z.string()).describe('Deleted asset IDs'),
-  })
-  .describe('Asset delta sync response')
-  .meta({ id: 'AssetDeltaSyncResponseDto' });
-
-export class AssetDeltaSyncResponseDto extends createZodDto(AssetDeltaSyncResponseSchema) {}
 
 export const extraSyncModels: Function[] = [];
 

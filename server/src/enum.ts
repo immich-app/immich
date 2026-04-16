@@ -88,21 +88,6 @@ export enum AssetOrder {
 
 export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ id: 'AssetOrder' });
 
-export enum DatabaseAction {
-  Create = 'CREATE',
-  Update = 'UPDATE',
-  Delete = 'DELETE',
-}
-
-export const DatabaseActionSchema = z.enum(DatabaseAction).describe('Database action').meta({ id: 'DatabaseAction' });
-
-export enum EntityType {
-  Asset = 'ASSET',
-  Album = 'ALBUM',
-}
-
-export const EntityTypeSchema = z.enum(EntityType).describe('Entity type').meta({ id: 'EntityType' });
-
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
@@ -761,7 +746,6 @@ export enum JobName {
   AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
-  AuditLogCleanup = 'AuditLogCleanup',
   AuditTableCleanup = 'AuditTableCleanup',
 
   DatabaseBackup = 'DatabaseBackup',

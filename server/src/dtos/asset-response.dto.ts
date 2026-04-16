@@ -72,8 +72,6 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .string()
       .meta({ format: 'date-time' })
       .describe('The UTC timestamp when the asset was originally uploaded to Immich.'),
-    deviceAssetId: z.string().describe('Device asset ID'),
-    deviceId: z.string().describe('Device ID'),
     ownerId: z.string().describe('Owner user ID'),
     owner: UserResponseSchema.optional(),
     libraryId: z
@@ -137,8 +135,6 @@ export type MapAsset = {
   status: AssetStatus;
   checksum: Buffer<ArrayBufferLike>;
   checksumAlgorithm: ChecksumAlgorithm;
-  deviceAssetId: string;
-  deviceId: string;
   duplicateId: string | null;
   duration: string | null;
   edits?: ShallowDehydrateObject<AssetEditActionItem>[];
@@ -239,10 +235,8 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
   return {
     id: entity.id,
     createdAt: asDateString(entity.createdAt),
-    deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
-    deviceId: entity.deviceId,
     libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,

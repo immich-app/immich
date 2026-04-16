@@ -182,14 +182,6 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
-        case 'APIKeyCreateDto':
-          return APIKeyCreateDto.fromJson(value);
-        case 'APIKeyCreateResponseDto':
-          return APIKeyCreateResponseDto.fromJson(value);
-        case 'APIKeyResponseDto':
-          return APIKeyResponseDto.fromJson(value);
-        case 'APIKeyUpdateDto':
-          return APIKeyUpdateDto.fromJson(value);
         case 'ActiveScheduleItemDto':
           return ActiveScheduleItemDto.fromJson(value);
         case 'ActivityCreateDto':
@@ -222,6 +214,14 @@ class ApiClient {
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':
           return AlbumsUpdate.fromJson(value);
+        case 'ApiKeyCreateDto':
+          return ApiKeyCreateDto.fromJson(value);
+        case 'ApiKeyCreateResponseDto':
+          return ApiKeyCreateResponseDto.fromJson(value);
+        case 'ApiKeyResponseDto':
+          return ApiKeyResponseDto.fromJson(value);
+        case 'ApiKeyUpdateDto':
+          return ApiKeyUpdateDto.fromJson(value);
         case 'AssetBulkDeleteDto':
           return AssetBulkDeleteDto.fromJson(value);
         case 'AssetBulkUpdateDto':
@@ -236,10 +236,6 @@ class ApiClient {
           return AssetBulkUploadCheckResult.fromJson(value);
         case 'AssetCopyDto':
           return AssetCopyDto.fromJson(value);
-        case 'AssetDeltaSyncDto':
-          return AssetDeltaSyncDto.fromJson(value);
-        case 'AssetDeltaSyncResponseDto':
-          return AssetDeltaSyncResponseDto.fromJson(value);
         case 'AssetEditAction':
           return AssetEditActionTypeTransformer().decode(value);
         case 'AssetEditActionItemDto':
@@ -264,8 +260,6 @@ class ApiClient {
           return AssetFaceUpdateItem.fromJson(value);
         case 'AssetFaceWithoutPersonResponseDto':
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
-        case 'AssetFullSyncDto':
-          return AssetFullSyncDto.fromJson(value);
         case 'AssetIdErrorReason':
           return AssetIdErrorReasonTypeTransformer().decode(value);
         case 'AssetIdsDto':
@@ -346,10 +340,6 @@ class ApiClient {
           return CastUpdate.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'CheckExistingAssetsDto':
-          return CheckExistingAssetsDto.fromJson(value);
-        case 'CheckExistingAssetsResponseDto':
-          return CheckExistingAssetsResponseDto.fromJson(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
         case 'ConfigureImmichIntegrationRequestDto':

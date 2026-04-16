@@ -10,9 +10,9 @@
 
 part of openapi.api;
 
-class APIKeyResponseDto {
-  /// Returns a new [APIKeyResponseDto] instance.
-  APIKeyResponseDto({
+class ApiKeyResponseDto {
+  /// Returns a new [ApiKeyResponseDto] instance.
+  ApiKeyResponseDto({
     required this.createdAt,
     required this.id,
     required this.name,
@@ -36,7 +36,7 @@ class APIKeyResponseDto {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is APIKeyResponseDto &&
+  bool operator ==(Object other) => identical(this, other) || other is ApiKeyResponseDto &&
     other.createdAt == createdAt &&
     other.id == id &&
     other.name == name &&
@@ -53,7 +53,7 @@ class APIKeyResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'APIKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt]';
+  String toString() => 'ApiKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -69,15 +69,15 @@ class APIKeyResponseDto {
     return json;
   }
 
-  /// Returns a new [APIKeyResponseDto] instance and imports its values from
+  /// Returns a new [ApiKeyResponseDto] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static APIKeyResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "APIKeyResponseDto");
+  static ApiKeyResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "ApiKeyResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      return APIKeyResponseDto(
+      return ApiKeyResponseDto(
         createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
@@ -88,11 +88,11 @@ class APIKeyResponseDto {
     return null;
   }
 
-  static List<APIKeyResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <APIKeyResponseDto>[];
+  static List<ApiKeyResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <ApiKeyResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = APIKeyResponseDto.fromJson(row);
+        final value = ApiKeyResponseDto.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -101,12 +101,12 @@ class APIKeyResponseDto {
     return result.toList(growable: growable);
   }
 
-  static Map<String, APIKeyResponseDto> mapFromJson(dynamic json) {
-    final map = <String, APIKeyResponseDto>{};
+  static Map<String, ApiKeyResponseDto> mapFromJson(dynamic json) {
+    final map = <String, ApiKeyResponseDto>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = APIKeyResponseDto.fromJson(entry.value);
+        final value = ApiKeyResponseDto.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -115,14 +115,14 @@ class APIKeyResponseDto {
     return map;
   }
 
-  // maps a json object with a list of APIKeyResponseDto-objects as value to a dart map
-  static Map<String, List<APIKeyResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<APIKeyResponseDto>>{};
+  // maps a json object with a list of ApiKeyResponseDto-objects as value to a dart map
+  static Map<String, List<ApiKeyResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<ApiKeyResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = APIKeyResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ApiKeyResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

@@ -127,8 +127,6 @@ export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']
   id: asset.id,
   checksum: asset.checksum,
   checksumAlgorithm: asset.checksumAlgorithm,
-  deviceAssetId: asset.deviceAssetId,
-  deviceId: asset.deviceId,
   fileCreatedAt: asset.fileCreatedAt,
   fileModifiedAt: asset.fileModifiedAt,
   isExternal: asset.isExternal,
