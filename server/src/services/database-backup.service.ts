@@ -283,6 +283,7 @@ export class DatabaseBackupService {
   async listBackups(): Promise<DatabaseBackupListResponseDto> {
     const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
     const files = await this.storageRepository.readdir(backupsFolder);
+    const timezone = DateTime.local().zoneName;
 
     const validFiles = files
       .filter((fn) => isValidDatabaseBackupName(fn))
@@ -292,7 +293,7 @@ export class DatabaseBackupService {
     const backups = await Promise.all(
       validFiles.map(async (filename) => {
         const stats = await this.storageRepository.stat(path.join(backupsFolder, filename));
-        return { filename, filesize: stats.size };
+        return { filename, filesize: stats.size, timezone };
       }),
     );
 

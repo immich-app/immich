@@ -25,7 +25,6 @@ class UserAdminCreateDto {
     this.storageLabel,
   });
 
-  /// Avatar color
   UserAvatarColor? avatarColor;
 
   /// User email
@@ -61,6 +60,7 @@ class UserAdminCreateDto {
   /// Storage quota in bytes
   ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
 
   /// Require password change on next login

@@ -9,6 +9,7 @@ import type { ZoomImageWheelState } from '@zoom-image/core';
 import { cubicOut } from 'svelte/easing';
 
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
+const isShowAssetPath = new PersistedLocalStorage<boolean>('asset-viewer-show-path', false);
 
 const createDefaultZoomState = (): ZoomImageWheelState => ({
   currentRotation: 0,
@@ -43,6 +44,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   isPlayingMotionPhoto = $state(false);
   isShowEditor = $state(false);
   #isFaceEditMode = $state(false);
+  #isEditFacesPanelOpen = $state(false);
   #viewingAssetStoreState = $state<AssetResponseDto>();
   #viewState = $state<boolean>(false);
   gridScrollTarget = $state<AssetGridRouteSearchParams | null | undefined>();
@@ -63,8 +65,16 @@ class AssetViewerManager extends BaseEventManager<Events> {
     return isShowDetailPanel.current;
   }
 
+  get isShowAssetPath() {
+    return isShowAssetPath.current;
+  }
+
   get isFaceEditMode() {
     return this.#isFaceEditMode;
+  }
+
+  get isEditFacesPanelOpen() {
+    return this.#isEditFacesPanelOpen;
   }
 
   get zoomState() {
@@ -99,6 +109,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   private set isShowDetailPanel(value: boolean) {
     isShowDetailPanel.current = value;
+  }
+
+  private set isShowAssetPath(value: boolean) {
+    isShowAssetPath.current = value;
   }
 
   onZoomChange(state: ZoomImageWheelState) {
@@ -147,6 +161,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.isShowActivityPanel = false;
   }
 
+  toggleAssetPath() {
+    this.isShowAssetPath = !this.isShowAssetPath;
+  }
+
   toggleDetailPanel() {
     this.closeActivityPanel();
     this.isShowDetailPanel = !this.isShowDetailPanel;
@@ -171,6 +189,20 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   closeFaceEditMode() {
     this.#isFaceEditMode = false;
+  }
+
+  openEditFacesPanel() {
+    this.#isEditFacesPanelOpen = true;
+  }
+
+  closeEditFacesPanel() {
+    this.#isEditFacesPanelOpen = false;
+  }
+
+  resetPanelState() {
+    this.closeEditor();
+    this.closeFaceEditMode();
+    this.closeEditFacesPanel();
   }
 
   setAsset(asset: AssetResponseDto) {

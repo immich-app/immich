@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
-import { ClassConstructor } from 'class-transformer';
 import _ from 'lodash';
 import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
@@ -152,7 +151,7 @@ export class EventRepository {
     this.logger.setContext(EventRepository.name);
   }
 
-  setup({ services }: { services: ClassConstructor<unknown>[] }) {
+  setup({ services }: { services: (new (...args: any[]) => unknown)[] }) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
     const items: Item<EmitEvent>[] = [];
     const worker = this.configRepository.getWorker();

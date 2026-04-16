@@ -57,6 +57,7 @@ class PeoplePicker extends HookConsumerWidget {
                   final isSelected = selectedPeople.value.contains(person);
 
                   return Padding(
+                    key: ValueKey(person.id),
                     padding: const EdgeInsets.only(bottom: 2.0),
                     child: LargeLeadingTile(
                       title: Text(
@@ -73,6 +74,7 @@ class PeoplePicker extends HookConsumerWidget {
                           shape: const CircleBorder(side: BorderSide.none),
                           elevation: 3,
                           child: CircleAvatar(
+                            key: ValueKey(person.id),
                             maxRadius: imageSize / 2,
                             backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                           ),

@@ -9,7 +9,7 @@
   import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
@@ -193,7 +193,7 @@
         <SearchDateSection bind:filters={filter.date} />
 
         <!-- RATING -->
-        {#if $preferences?.ratings.enabled}
+        {#if authManager.authenticated && authManager.preferences.ratings.enabled}
           <SearchRatingsSection bind:rating={filter.rating} />
         {/if}
 

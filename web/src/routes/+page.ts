@@ -1,9 +1,9 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
 import { redirect } from '@sveltejs/kit';
-import { loadUser } from '../lib/utils/auth';
 import type { PageLoad } from './$types';
 
 export const ssr = false;
@@ -17,8 +17,8 @@ export const load = (async ({ fetch }) => {
       redirect(307, Route.maintenanceMode());
     }
 
-    const authenticated = await loadUser();
-    if (authenticated) {
+    await authManager.load();
+    if (authManager.authenticated) {
       redirect(307, Route.photos());
     }
 

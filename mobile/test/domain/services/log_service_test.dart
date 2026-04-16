@@ -29,11 +29,11 @@ final _kWarnLog = LogMessage(
 void main() {
   late LogService sut;
   late LogRepository mockLogRepo;
-  late IsarStoreRepository mockStoreRepo;
+  late DriftStoreRepository mockStoreRepo;
 
   setUp(() async {
     mockLogRepo = MockLogRepository();
-    mockStoreRepo = MockStoreRepository();
+    mockStoreRepo = MockDriftStoreRepository();
 
     registerFallbackValue(_kInfoLog);
 

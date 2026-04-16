@@ -1,136 +1,87 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Memory } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetOrderWithRandom, MemoryType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { AssetOrderWithRandomSchema, MemoryType, MemoryTypeSchema } from 'src/enum';
+import { isoDatetimeToDate, stringToBool } from 'src/validation';
+import z from 'zod';
 
-class MemoryBaseDto {
-  @ValidateBoolean({ optional: true, description: 'Is memory saved' })
-  isSaved?: boolean;
-
-  @ValidateDate({ optional: true, description: 'Date when memory was seen' })
-  seenAt?: Date;
-}
-
-export class MemorySearchDto {
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type', optional: true })
-  type?: MemoryType;
-
-  @ValidateDate({ optional: true, description: 'Filter by date' })
-  for?: Date;
-
-  @ValidateBoolean({ optional: true, description: 'Include trashed memories' })
-  isTrashed?: boolean;
-
-  @ValidateBoolean({ optional: true, description: 'Filter by saved status' })
-  isSaved?: boolean;
-
-  @IsInt()
-  @IsPositive()
-  @Type(() => Number)
-  @Optional()
-  @ApiProperty({ type: 'integer', description: 'Number of memories to return' })
-  size?: number;
-
-  @ValidateEnum({ enum: AssetOrderWithRandom, name: 'MemorySearchOrder', description: 'Sort order', optional: true })
-  order?: AssetOrderWithRandom;
-}
-
-class OnThisDayDto {
-  @ApiProperty({ type: 'number', description: 'Year for on this day memory', minimum: 1 })
-  @IsInt()
-  @IsPositive()
-  year!: number;
-}
-
-type MemoryData = OnThisDayDto;
-
-export class MemoryUpdateDto extends MemoryBaseDto {
-  @ValidateDate({ optional: true, description: 'Memory date' })
-  memoryAt?: Date;
-}
-
-export class MemoryCreateDto extends MemoryBaseDto {
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type' })
-  type!: MemoryType;
-
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  @IsObject()
-  @ValidateNested()
-  @Type((options) => {
-    switch (options?.object.type) {
-      case MemoryType.OnThisDay: {
-        return OnThisDayDto;
-      }
-
-      default: {
-        return Object;
-      }
-    }
+const MemorySearchSchema = z
+  .object({
+    type: MemoryTypeSchema.optional(),
+    for: isoDatetimeToDate.optional().describe('Filter by date'),
+    isTrashed: stringToBool.optional().describe('Include trashed memories'),
+    isSaved: stringToBool.optional().describe('Filter by saved status'),
+    size: z.coerce.number().int().min(1).optional().describe('Number of memories to return'),
+    order: AssetOrderWithRandomSchema.optional(),
   })
-  data!: MemoryData;
+  .meta({ id: 'MemorySearchDto' });
 
-  @ValidateDate({ description: 'Memory date' })
-  memoryAt!: Date;
-
-  @ValidateDate({
-    optional: true,
-    description: 'Date when memory should be shown',
-    history: new HistoryBuilder().added('v2.6.0').stable('v2.6.0'),
+const OnThisDaySchema = z
+  .object({
+    year: z.int().min(1000).max(9999).describe('Year for on this day memory'),
   })
-  showAt?: Date;
+  .meta({ id: 'OnThisDayDto' });
 
-  @ValidateDate({
-    optional: true,
-    description: 'Date when memory should be hidden',
-    history: new HistoryBuilder().added('v2.6.0').stable('v2.6.0'),
+type MemoryData = z.infer<typeof OnThisDaySchema>;
+
+const MemoryUpdateSchema = z
+  .object({
+    isSaved: z.boolean().optional().describe('Is memory saved'),
+    seenAt: isoDatetimeToDate.optional().describe('Date when memory was seen'),
+    memoryAt: isoDatetimeToDate.optional().describe('Memory date'),
   })
-  hideAt?: Date;
+  .meta({ id: 'MemoryUpdateDto' });
 
-  @ValidateUUID({ optional: true, each: true, description: 'Asset IDs to associate with memory' })
-  assetIds?: string[];
-}
+const MemoryCreateSchema = z
+  .object({
+    type: MemoryTypeSchema,
+    data: OnThisDaySchema,
+    memoryAt: isoDatetimeToDate.describe('Memory date'),
+    assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs to associate with memory'),
+    isSaved: z.boolean().optional().describe('Is memory saved'),
+    seenAt: isoDatetimeToDate.optional().describe('Date when memory was seen'),
+    showAt: isoDatetimeToDate
+      .optional()
+      .describe('Date when memory should be shown')
+      .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
+    hideAt: isoDatetimeToDate
+      .optional()
+      .describe('Date when memory should be hidden')
+      .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
+  })
+  .meta({ id: 'MemoryCreateDto' });
 
-export class MemoryStatisticsResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Total number of memories' })
-  total!: number;
-}
+const MemoryStatisticsResponseSchema = z
+  .object({
+    total: z.int().describe('Total number of memories'),
+  })
+  .meta({ id: 'MemoryStatisticsResponseDto' });
 
-export class MemoryResponseDto {
-  @ApiProperty({ description: 'Memory ID' })
-  id!: string;
-  @ValidateDate({ description: 'Creation date' })
-  createdAt!: Date;
-  @ValidateDate({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ValidateDate({ optional: true, description: 'Deletion date' })
-  deletedAt?: Date;
-  @ValidateDate({ description: 'Memory date' })
-  memoryAt!: Date;
-  @ValidateDate({ optional: true, description: 'Date when memory was seen' })
-  seenAt?: Date;
-  @ValidateDate({ optional: true, description: 'Date when memory should be shown' })
-  showAt?: Date;
-  @ValidateDate({ optional: true, description: 'Date when memory should be hidden' })
-  hideAt?: Date;
-  @ApiProperty({ description: 'Owner user ID' })
-  ownerId!: string;
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type' })
-  type!: MemoryType;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  data!: MemoryData;
-  @ApiProperty({ description: 'Is memory saved' })
-  isSaved!: boolean;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  assets!: AssetResponseDto[];
-}
+const MemoryResponseSchema = z
+  .object({
+    id: z.string().describe('Memory ID'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
+    updatedAt: isoDatetimeToDate.describe('Last update date'),
+    deletedAt: isoDatetimeToDate.optional().describe('Deletion date'),
+    memoryAt: isoDatetimeToDate.describe('Memory date'),
+    seenAt: isoDatetimeToDate.optional().describe('Date when memory was seen'),
+    showAt: isoDatetimeToDate.optional().describe('Date when memory should be shown'),
+    hideAt: isoDatetimeToDate.optional().describe('Date when memory should be hidden'),
+    ownerId: z.string().describe('Owner user ID'),
+    type: MemoryTypeSchema,
+    data: OnThisDaySchema,
+    isSaved: z.boolean().describe('Is memory saved'),
+    assets: z.array(AssetResponseSchema),
+  })
+  .meta({ id: 'MemoryResponseDto' });
+
+export class MemorySearchDto extends createZodDto(MemorySearchSchema) {}
+export class MemoryUpdateDto extends createZodDto(MemoryUpdateSchema) {}
+export class MemoryCreateDto extends createZodDto(MemoryCreateSchema) {}
+export class MemoryStatisticsResponseDto extends createZodDto(MemoryStatisticsResponseSchema) {}
+export class MemoryResponseDto extends createZodDto(MemoryResponseSchema) {}
 
 export const mapMemory = (entity: Memory, auth: AuthDto): MemoryResponseDto => {
   return {

@@ -2,7 +2,9 @@ import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { calcNewDate } from '$lib/modals/timezone-utils';
+import { userAdminFactory } from '@test-data/factories/user-factory';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';
@@ -25,6 +27,8 @@ describe('DateSelectionModal component', () => {
     vi.stubGlobal('visualViewport', getVisualViewportMock());
     vi.resetAllMocks();
     Element.prototype.animate = getAnimateMock();
+
+    authManager.setUser(userAdminFactory.build());
   });
 
   afterAll(async () => {

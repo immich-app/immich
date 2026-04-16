@@ -13,11 +13,14 @@ part of openapi.api;
 class MemoriesResponse {
   /// Returns a new [MemoriesResponse] instance.
   MemoriesResponse({
-    this.duration = 5,
-    this.enabled = true,
+    required this.duration,
+    required this.enabled,
   });
 
   /// Memory duration in seconds
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int duration;
 
   /// Whether memories are enabled

@@ -13,6 +13,7 @@ import { SessionFactory } from 'test/factories/session.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { userStub } from 'test/fixtures/user.stub';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -209,11 +210,13 @@ describe(AuthService.name, () => {
     it('should sign up the admin', async () => {
       mocks.user.getAdmin.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue({
+        ...userStub.admin,
         ...dto,
         id: 'admin',
+        name: 'immich admin',
         createdAt: new Date('2021-01-01'),
         metadata: [] as UserMetadataItem[],
-      } as unknown as UserAdmin);
+      } as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
         avatarColor: expect.any(String),

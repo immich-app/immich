@@ -25,7 +25,7 @@ class TimelineApi {
   /// Parameters:
   ///
   /// * [String] timeBucket (required):
-  ///   Time bucket identifier in YYYY-MM-DD format (e.g., \"2024-01-01\" for January 2024)
+  ///   Time bucket identifier in YYYY-MM-DD format
   ///
   /// * [String] albumId:
   ///   Filter assets belonging to a specific album
@@ -142,7 +142,7 @@ class TimelineApi {
   /// Parameters:
   ///
   /// * [String] timeBucket (required):
-  ///   Time bucket identifier in YYYY-MM-DD format (e.g., \"2024-01-01\" for January 2024)
+  ///   Time bucket identifier in YYYY-MM-DD format
   ///
   /// * [String] albumId:
   ///   Filter assets belonging to a specific album

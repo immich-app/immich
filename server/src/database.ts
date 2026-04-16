@@ -104,7 +104,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: object;
+  data: Record<string, unknown>;
   ownerId: string;
   isSaved: boolean;
   assets: ShallowDehydrateObject<MapAsset>[];
@@ -114,8 +114,6 @@ export type Asset = {
   id: string;
   checksum: Buffer<ArrayBufferLike>;
   checksumAlgorithm: ChecksumAlgorithm;
-  deviceAssetId: string;
-  deviceId: string;
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
@@ -333,8 +331,6 @@ export const columns = {
     'asset.id',
     'asset.checksum',
     'asset.checksumAlgorithm',
-    'asset.deviceAssetId',
-    'asset.deviceId',
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
     'asset.isExternal',

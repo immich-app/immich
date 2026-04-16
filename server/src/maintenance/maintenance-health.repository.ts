@@ -36,15 +36,17 @@ export class MaintenanceHealthRepository {
         }
       });
 
-      worker.on('exit', (code, signal) => reject(`Server health check failed, server exited with ${signal ?? code}`));
-      worker.on('error', (error) => reject(`Server health check failed, process threw: ${error}`));
+      worker.on('exit', (code, signal) =>
+        reject(new Error(`Server health check failed, server exited with ${signal ?? code}`)),
+      );
+      worker.on('error', (error) => reject(new Error(`Server health check failed, process threw: ${error}`)));
 
       setTimeout(() => {
         if (worker.exitCode === null) {
-          reject('Server health check failed, took too long to start.');
+          reject(new Error('Server health check failed, took too long to start.'));
           worker.kill('SIGTERM');
         }
-      }, 20_000);
+      }, 180_000);
     });
   }
 }

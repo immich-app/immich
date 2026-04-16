@@ -12,7 +12,6 @@
   import { Route } from '$lib/route';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
@@ -55,9 +54,8 @@
 
   let { asset, currentAlbum = null }: Props = $props();
 
-  let showAssetPath = $state(false);
-  let showEditFaces = $state(false);
-  let isOwner = $derived($user?.id === asset.ownerId);
+  let showEditFaces = $derived(assetViewerManager.isEditFacesPanelOpen);
+  let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
@@ -105,7 +103,7 @@
       return;
     }
 
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
     previousId = asset.id;
   });
 
@@ -121,15 +119,13 @@
 
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     // Remove the last part of the path to get the parent path
     return Route.folders({ path: getParentPath(asset.originalPath) });
   };
-
-  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
   const handleChangeDate = async () => {
     if (!isOwner) {
@@ -167,7 +163,7 @@
         </div>
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {#if $user?.isAdmin}
+            {#if authManager.authenticated && authManager.user.isAdmin}
               {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
@@ -218,7 +214,7 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={() => (showEditFaces = true)}
+              onclick={() => assetViewerManager.openEditFacesPanel()}
             />
           {/if}
         </div>
@@ -369,11 +365,11 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={toggleAssetPath}
+              onclick={() => assetViewerManager.toggleAssetPath()}
             />
           {/if}
         </p>
-        {#if showAssetPath}
+        {#if assetViewerManager.isShowAssetPath}
           <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
@@ -566,7 +562,7 @@
   {/if}
 {/await}
 
-{#if $preferences?.tags?.enabled}
+{#if authManager.authenticated && authManager.preferences.tags.enabled}
   <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
     <DetailPanelTags {asset} {isOwner} />
   </section>
@@ -576,7 +572,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    onClose={() => (showEditFaces = false)}
+    onClose={() => assetViewerManager.closeEditFacesPanel()}
     onRefresh={handleRefreshPeople}
   />
 {/if}

@@ -35,7 +35,7 @@ jobs:
     needs: [get_body, should_run]
     if: ${{ needs.should_run.outputs.should_run == 'true' }}
     container:
-      image: ghcr.io/immich-app/mdq:main@sha256:df7188ba88abb0800d73cc97d3633280f0c0c3d4c441d678225067bf154150fb
+      image: ghcr.io/immich-app/mdq:main@sha256:557cca601891b8b7d78b940071d35aaf7aaeb9b327d19b22cf282118edbc5272
     outputs:
       checked: ${{ steps.get_checkbox.outputs.checked }}
     steps:

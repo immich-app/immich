@@ -51,7 +51,7 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
-            -f body="This PR has been automatically closed as the description doesn't follow our template. After you edit it to match the template, the PR will automatically be reopened." \
+            -f body="This PR has been automatically closed as the description doesn't follow [our template](https://github.com/immich-app/immich/blob/main/.github/pull_request_template.md). After you edit it to match the template, the PR will automatically be reopened." \
             -f query='
               mutation CommentAndClosePR($prId: ID!, $body: String!) {
                 addComment(input: {

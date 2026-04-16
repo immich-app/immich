@@ -19,8 +19,13 @@ class BulkIdResponseDto {
     required this.success,
   });
 
-  /// Error reason if failed
-  BulkIdResponseDtoErrorEnum? error;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  BulkIdErrorReason? error;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -80,7 +85,7 @@ class BulkIdResponseDto {
       final json = value.cast<String, dynamic>();
 
       return BulkIdResponseDto(
-        error: BulkIdResponseDtoErrorEnum.fromJson(json[r'error']),
+        error: BulkIdErrorReason.fromJson(json[r'error']),
         errorMessage: mapValueOfType<String>(json, r'errorMessage'),
         id: mapValueOfType<String>(json, r'id')!,
         success: mapValueOfType<bool>(json, r'success')!,
@@ -135,87 +140,4 @@ class BulkIdResponseDto {
     'success',
   };
 }
-
-/// Error reason if failed
-class BulkIdResponseDtoErrorEnum {
-  /// Instantiate a new enum with the provided [value].
-  const BulkIdResponseDtoErrorEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const duplicate = BulkIdResponseDtoErrorEnum._(r'duplicate');
-  static const noPermission = BulkIdResponseDtoErrorEnum._(r'no_permission');
-  static const notFound = BulkIdResponseDtoErrorEnum._(r'not_found');
-  static const unknown = BulkIdResponseDtoErrorEnum._(r'unknown');
-  static const validation = BulkIdResponseDtoErrorEnum._(r'validation');
-
-  /// List of all possible values in this [enum][BulkIdResponseDtoErrorEnum].
-  static const values = <BulkIdResponseDtoErrorEnum>[
-    duplicate,
-    noPermission,
-    notFound,
-    unknown,
-    validation,
-  ];
-
-  static BulkIdResponseDtoErrorEnum? fromJson(dynamic value) => BulkIdResponseDtoErrorEnumTypeTransformer().decode(value);
-
-  static List<BulkIdResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <BulkIdResponseDtoErrorEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = BulkIdResponseDtoErrorEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [BulkIdResponseDtoErrorEnum] to String,
-/// and [decode] dynamic data back to [BulkIdResponseDtoErrorEnum].
-class BulkIdResponseDtoErrorEnumTypeTransformer {
-  factory BulkIdResponseDtoErrorEnumTypeTransformer() => _instance ??= const BulkIdResponseDtoErrorEnumTypeTransformer._();
-
-  const BulkIdResponseDtoErrorEnumTypeTransformer._();
-
-  String encode(BulkIdResponseDtoErrorEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a BulkIdResponseDtoErrorEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  BulkIdResponseDtoErrorEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'duplicate': return BulkIdResponseDtoErrorEnum.duplicate;
-        case r'no_permission': return BulkIdResponseDtoErrorEnum.noPermission;
-        case r'not_found': return BulkIdResponseDtoErrorEnum.notFound;
-        case r'unknown': return BulkIdResponseDtoErrorEnum.unknown;
-        case r'validation': return BulkIdResponseDtoErrorEnum.validation;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [BulkIdResponseDtoErrorEnumTypeTransformer] instance.
-  static BulkIdResponseDtoErrorEnumTypeTransformer? _instance;
-}
-
 

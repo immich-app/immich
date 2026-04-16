@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyUser } from '@immich/sdk';
   import { Button, Field, Input, toastManager } from '@immich/ui';
@@ -8,7 +8,7 @@
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
 
-  let editedUser = $state(cloneDeep($user));
+  let editedUser = $state(cloneDeep(authManager.user));
   const bubble = createBubbler();
 
   const handleSaveProfile = async () => {
@@ -21,7 +21,7 @@
       });
 
       Object.assign(editedUser, data);
-      $user = data;
+      authManager.setUser(data);
 
       toastManager.primary($t('saved_profile'));
     } catch (error) {

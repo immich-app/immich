@@ -3,21 +3,6 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-class LocalImageRequest {
-  weak var operation: Operation?
-  var isCancelled = false
-  let callback: (Result<[String: Int64]?, any Error>) -> Void
-
-  init(callback: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    self.callback = callback
-  }
-
-  func cancel() {
-    isCancelled = true
-    operation?.cancel()
-  }
-}
-
 class LocalImageApiImpl: LocalImageApi {
   private static let imageManager = PHImageManager.default()
   private static let fetchOptions = {
@@ -36,9 +21,9 @@ class LocalImageApiImpl: LocalImageApi {
     return requestOptions
   }()
 
-  private static let registry = RequestRegistry<LocalImageRequest>()
+  private static let registry = RequestRegistry<ImageRequest>()
 
-  private static var rgbaFormat = vImage_CGImageFormat(
+  private static let rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
     colorSpace: CGColorSpaceCreateDeviceRGB(),
@@ -67,21 +52,20 @@ class LocalImageApiImpl: LocalImageApi {
   }
 
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
-    let request = LocalImageRequest(callback: completion)
+    let request = ImageRequest(completion: completion)
     let operation = BlockOperation {
       if request.isCancelled {
-        return completion(ImageProcessing.cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
 
       guard let asset = Self.requestAsset(assetId: assetId)
       else {
         Self.registry.remove(requestId: requestId)
-        completion(.failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
-        return
+        return request.completion(.failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
       }
 
       if request.isCancelled {
-        return completion(ImageProcessing.cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
 
       if preferEncoded {
@@ -100,12 +84,12 @@ class LocalImageApiImpl: LocalImageApi {
         )
 
         if request.isCancelled {
-          return completion(ImageProcessing.cancelledResult)
+          return request.completion(ImageProcessing.cancelledResult)
         }
 
         guard let data = imageData else {
           Self.registry.remove(requestId: requestId)
-          return completion(.failure(PigeonError(code: "", message: "Could not get image data for \(assetId)", details: nil)))
+          return request.completion(.failure(PigeonError(code: "", message: "Could not get image data for \(assetId)", details: nil)))
         }
 
         let length = data.count
@@ -114,15 +98,14 @@ class LocalImageApiImpl: LocalImageApi {
 
         if request.isCancelled {
           free(pointer)
-          return completion(ImageProcessing.cancelledResult)
+          return request.completion(ImageProcessing.cancelledResult)
         }
 
-        request.callback(.success([
+        Self.registry.remove(requestId: requestId)
+        return request.completion(.success([
           "pointer": Int64(Int(bitPattern: pointer)),
           "length": Int64(length),
         ]))
-        Self.registry.remove(requestId: requestId)
-        return
       }
 
       var image: UIImage?
@@ -137,17 +120,17 @@ class LocalImageApiImpl: LocalImageApi {
       )
 
       if request.isCancelled {
-        return completion(ImageProcessing.cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
 
       guard let image = image,
             let cgImage = image.cgImage else {
         Self.registry.remove(requestId: requestId)
-        return completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
+        return request.completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
       }
 
       if request.isCancelled {
-        return completion(ImageProcessing.cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
 
       do {
@@ -155,23 +138,22 @@ class LocalImageApiImpl: LocalImageApi {
 
         if request.isCancelled {
           buffer.free()
-          return completion(ImageProcessing.cancelledResult)
+          return request.completion(ImageProcessing.cancelledResult)
         }
 
-        request.callback(.success([
+        Self.registry.remove(requestId: requestId)
+        return request.completion(.success([
           "pointer": Int64(Int(bitPattern: buffer.data)),
           "width": Int64(buffer.width),
           "height": Int64(buffer.height),
           "rowBytes": Int64(buffer.rowBytes),
         ]))
-        Self.registry.remove(requestId: requestId)
       } catch {
         Self.registry.remove(requestId: requestId)
-        return completion(.failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for \(assetId): \(error)", details: nil)))
       }
     }
 
-    request.operation = operation
     Self.registry.add(requestId: requestId, request: request)
     ImageProcessing.queue.addOperation(operation)
   }

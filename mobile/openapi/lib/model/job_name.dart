@@ -38,7 +38,6 @@ class JobName {
   static const assetFileMigration = JobName._(r'AssetFileMigration');
   static const assetGenerateThumbnailsQueueAll = JobName._(r'AssetGenerateThumbnailsQueueAll');
   static const assetGenerateThumbnails = JobName._(r'AssetGenerateThumbnails');
-  static const auditLogCleanup = JobName._(r'AuditLogCleanup');
   static const auditTableCleanup = JobName._(r'AuditTableCleanup');
   static const databaseBackup = JobName._(r'DatabaseBackup');
   static const facialRecognitionQueueAll = JobName._(r'FacialRecognitionQueueAll');
@@ -97,7 +96,6 @@ class JobName {
     assetFileMigration,
     assetGenerateThumbnailsQueueAll,
     assetGenerateThumbnails,
-    auditLogCleanup,
     auditTableCleanup,
     databaseBackup,
     facialRecognitionQueueAll,
@@ -191,7 +189,6 @@ class JobNameTypeTransformer {
         case r'AssetFileMigration': return JobName.assetFileMigration;
         case r'AssetGenerateThumbnailsQueueAll': return JobName.assetGenerateThumbnailsQueueAll;
         case r'AssetGenerateThumbnails': return JobName.assetGenerateThumbnails;
-        case r'AuditLogCleanup': return JobName.auditLogCleanup;
         case r'AuditTableCleanup': return JobName.auditTableCleanup;
         case r'DatabaseBackup': return JobName.databaseBackup;
         case r'FacialRecognitionQueueAll': return JobName.facialRecognitionQueueAll;

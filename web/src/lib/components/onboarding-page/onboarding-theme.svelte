@@ -1,8 +1,6 @@
 <script lang="ts">
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
-  import { Theme } from '$lib/constants';
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
-  import { Icon } from '@immich/ui';
+  import { Icon, themeManager, ThemePreference } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -13,7 +11,7 @@
     <button
       type="button"
       class="w-1/2 aspect-square bg-light dark:bg-dark rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-primary dark:border dark:border-transparent"
-      onclick={() => themeManager.setTheme(Theme.LIGHT)}
+      onclick={() => themeManager.setPreference(ThemePreference.Light)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
@@ -25,7 +23,7 @@
     <button
       type="button"
       class="w-1/2 aspect-square bg-dark dark:bg-light rounded-3xl transition-all shadow-sm hover:shadow-xl dark:border-[3px] dark:border-immich-dark-primary border border-transparent"
-      onclick={() => themeManager.setTheme(Theme.DARK)}
+      onclick={() => themeManager.setPreference(ThemePreference.Dark)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
