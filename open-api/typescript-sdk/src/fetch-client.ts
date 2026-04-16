@@ -1421,6 +1421,16 @@ export type OAuthCallbackDto = {
     /** OAuth callback URL */
     url: string;
 };
+export type OAuthLinkDto = {
+    /** OAuth code verifier (PKCE) */
+    codeVerifier?: string;
+    /** OAuth link token from prior callback */
+    linkToken?: string;
+    /** OAuth state parameter */
+    state?: string;
+    /** OAuth callback URL */
+    url?: string;
+};
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
     /** User email */
@@ -4947,8 +4957,8 @@ export function finishOAuth({ oAuthCallbackDto }: {
 /**
  * Link OAuth account
  */
-export function linkOAuthAccount({ oAuthCallbackDto }: {
-    oAuthCallbackDto: OAuthCallbackDto;
+export function linkOAuthAccount({ oAuthLinkDto }: {
+    oAuthLinkDto: OAuthLinkDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4956,7 +4966,7 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
     }>("/oauth/link", oazapfts.json({
         ...opts,
         method: "POST",
-        body: oAuthCallbackDto
+        body: oAuthLinkDto
     })));
 }
 /**

@@ -9,7 +9,9 @@ export const load = (async ({ parent, url }) => {
   await parent();
 
   const continueUrl = url.searchParams.get('continue') || Route.photos();
-  if (authManager.authenticated) {
+  const isOAuthCallback = url.searchParams.has('code') || url.searchParams.has('error');
+  const isOAuthAutoLaunch = url.searchParams.has('autoLaunch');
+  if (authManager.authenticated && !isOAuthCallback && !isOAuthAutoLaunch) {
     redirect(307, continueUrl);
   }
 

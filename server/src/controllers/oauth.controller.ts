@@ -9,6 +9,7 @@ import {
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  OAuthLinkDto,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum';
@@ -97,7 +98,7 @@ export class OAuthController {
   linkOAuthAccount(
     @Req() request: Request,
     @Auth() auth: AuthDto,
-    @Body() dto: OAuthCallbackDto,
+    @Body() dto: OAuthLinkDto,
   ): Promise<UserAdminResponseDto> {
     return this.service.link(auth, dto, request.headers);
   }

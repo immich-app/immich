@@ -110,6 +110,18 @@ const OAuthCallbackSchema = z
   })
   .meta({ id: 'OAuthCallbackDto' });
 
+const OAuthLinkSchema = z
+  .object({
+    url: z.string().optional().describe('OAuth callback URL'),
+    state: z.string().optional().describe('OAuth state parameter'),
+    codeVerifier: z.string().optional().describe('OAuth code verifier (PKCE)'),
+    linkToken: z.string().optional().describe('OAuth link token from prior callback'),
+  })
+  .refine((data) => data.url || data.linkToken, {
+    message: 'Either url or linkToken is required',
+  })
+  .meta({ id: 'OAuthLinkDto' });
+
 const OAuthConfigSchema = z
   .object({
     redirectUri: z.string().describe('OAuth redirect URI'),
@@ -149,6 +161,7 @@ export class SessionUnlockDto extends createZodDto(SessionUnlockSchema) {}
 export class PinCodeChangeDto extends createZodDto(PinCodeChangeSchema) {}
 export class ValidateAccessTokenResponseDto extends createZodDto(ValidateAccessTokenResponseSchema) {}
 export class OAuthCallbackDto extends createZodDto(OAuthCallbackSchema) {}
+export class OAuthLinkDto extends createZodDto(OAuthLinkSchema) {}
 export class OAuthConfigDto extends createZodDto(OAuthConfigSchema) {}
 export class OAuthAuthorizeResponseDto extends createZodDto(OAuthAuthorizeResponseSchema) {}
 export class OAuthBackchannelLogoutDto extends createZodDto(OAuthBackchannelLogoutSchema) {}

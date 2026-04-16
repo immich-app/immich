@@ -1,14 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
+  import { OpenQueryParam } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { Route } from '$lib/route';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { login, type LoginResponseDto } from '@immich/sdk';
-  import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
+  import { isHttpError, login, type LoginResponseDto } from '@immich/sdk';
+  import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -43,6 +45,20 @@
     }
 
     if (oauth.isCallback(globalThis.location)) {
+      const params = new URLSearchParams(globalThis.location.search);
+      if (params.has('error')) {
+        if (authManager.authenticated) {
+          const message = params.get('error_description') || $t('errors.unable_to_link_oauth_account');
+          await goto(Route.userSettings({ isOpen: OpenQueryParam.OAUTH }));
+          toastManager.warning(message);
+        } else {
+          oauthError =
+            params.get('error_description') || params.get('error') || $t('errors.unable_to_complete_oauth_login');
+          oauthLoading = false;
+        }
+        return;
+      }
+
       try {
         const user = await oauth.login(globalThis.location);
 
@@ -54,6 +70,11 @@
         await onSuccess(user);
         return;
       } catch (error) {
+        if (isHttpError(error) && error.data?.message === 'oauth_account_link_required') {
+          const errorData = error.data as unknown as Record<string, string>;
+          await goto(Route.authLink({ linkToken: errorData.linkToken, email: errorData.userEmail }));
+          return;
+        }
         console.error('Error [login-form] [oauth.callback]', error);
         oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
         oauthLoading = false;

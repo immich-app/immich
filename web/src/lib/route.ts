@@ -51,6 +51,7 @@ export const Docs = {
 export const Route = {
   // auth
   login: (params?: { continue?: string; autoLaunch?: 0 | 1 }) => '/auth/login' + asQueryString(params),
+  authLink: (params?: { linkToken?: string; email?: string }) => '/auth/link' + asQueryString(params),
   logout: (params?: { continue?: string }) => '/auth/logout' + asQueryString(params),
   register: () => '/auth/register',
   changePassword: () => '/auth/change-password',

@@ -24,6 +24,11 @@ export class SessionService extends BaseService {
 
     this.logger.log(`Deleted ${sessions.length} expired session tokens`);
 
+    const expiredLinkTokens = await this.oauthLinkTokenRepository.cleanup();
+    if (expiredLinkTokens > 0) {
+      this.logger.log(`Deleted ${expiredLinkTokens} expired OAuth link tokens`);
+    }
+
     return JobStatus.Success;
   }
 

@@ -320,14 +320,23 @@ export class AuthService extends BaseService {
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
-    // link by email
     if (!user && normalizedEmail) {
       const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
-        if (emailUser.oauthId) {
-          throw new BadRequestException('User already exists, but is linked to another account.');
-        }
-        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
+        await this.oauthLinkTokenRepository.deleteByEmail(emailUser.email);
+        const plainToken = this.cryptoRepository.randomBytesAsText(32);
+        const hashedToken = this.cryptoRepository.hashSha256(plainToken);
+        await this.oauthLinkTokenRepository.create({
+          token: hashedToken,
+          oauthSub: profile.sub,
+          userEmail: emailUser.email,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        });
+        throw new BadRequestException({
+          message: 'oauth_account_link_required',
+          userEmail: emailUser.email,
+          linkToken: plainToken,
+        });
       }
     }
 

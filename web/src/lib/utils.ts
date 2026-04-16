@@ -294,7 +294,7 @@ export const oauth = {
     return finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
   link: (location: Location) => {
-    return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
+    return linkOAuthAccount({ oAuthLinkDto: { url: location.href } });
   },
   unlink: () => {
     return unlinkOAuthAccount();

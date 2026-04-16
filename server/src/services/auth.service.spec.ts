@@ -702,24 +702,28 @@ describe(AuthService.name, () => {
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
 
-    it('should link an existing user', async () => {
+    it('should reject when existing user found by email and create a link token', async () => {
       const user = UserFactory.create();
       const profile = OAuthProfileFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByEmail.mockResolvedValue(user);
-      mocks.user.update.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(SessionFactory.create());
+      mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
+      mocks.oauthLinkToken.create.mockResolvedValue({} as any);
 
-      await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
-        {},
-        loginDetails,
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).rejects.toThrow('oauth_account_link_required');
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
-      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.oauthLinkToken.deleteByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.oauthLinkToken.create).toHaveBeenCalledTimes(1);
     });
 
     it('should normalize the email from the OAuth profile before linking', async () => {
@@ -749,6 +753,8 @@ describe(AuthService.name, () => {
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
       mocks.user.getByEmail.mockResolvedValueOnce(user);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
+      mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
+      mocks.oauthLinkToken.create.mockResolvedValue({} as any);
 
       await expect(
         sut.callback(
@@ -756,7 +762,7 @@ describe(AuthService.name, () => {
           {},
           loginDetails,
         ),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow('oauth_account_link_required');
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.user.create).not.toHaveBeenCalled();

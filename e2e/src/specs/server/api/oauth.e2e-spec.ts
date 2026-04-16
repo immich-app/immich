@@ -356,19 +356,17 @@ describe(`/oauth`, () => {
         expect(body).toEqual(errorDto.badRequest('User does not exist and auto registering is disabled.'));
       });
 
-      it('should link to an existing user by email', async () => {
-        const { userId } = await utils.userSetup(admin.accessToken, {
+      it('should not auto-link to an existing user by email', async () => {
+        await utils.userSetup(admin.accessToken, {
           name: 'OAuth User 3',
           email: 'oauth-user3@immich.app',
           password: 'password',
         });
         const callbackParams = await loginWithOAuth('oauth-user3');
         const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
-        expect(status).toBe(201);
-        expect(body).toMatchObject({
-          userId,
-          userEmail: 'oauth-user3@immich.app',
-        });
+        expect(status).toBe(400);
+        expect(body.message).toBe('oauth_account_link_required');
+        expect(body.userEmail).toBe('oauth-user3@immich.app');
       });
     });
   });
