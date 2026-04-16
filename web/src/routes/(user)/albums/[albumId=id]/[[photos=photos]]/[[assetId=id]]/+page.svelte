@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, onNavigate } from '$app/navigation';
+  import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
@@ -330,7 +330,11 @@
   {onAlbumShare}
   {onAlbumUserUpdate}
   onAlbumUserDelete={refreshAlbum}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
+  onAlbumUpdate={(newAlbum) => {
+    album = newAlbum;
+
+    void invalidate('album:data');
+  }}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
