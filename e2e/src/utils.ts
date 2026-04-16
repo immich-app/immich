@@ -3,7 +3,6 @@ import {
   AssetMediaResponseDto,
   AssetResponseDto,
   AssetVisibility,
-  CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
   JobCreateDto,
@@ -20,7 +19,6 @@ import {
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
   ValidateLibraryDto,
-  checkExistingAssets,
   createAlbum,
   createApiKey,
   createJob,
@@ -343,8 +341,6 @@ export const utils = {
     },
   ) => {
     const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
       fileCreatedAt: new Date().toISOString(),
       fileModifiedAt: new Date().toISOString(),
       ...dto,
@@ -415,9 +411,6 @@ export const utils = {
   getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
-
-  checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
-    checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
   searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });

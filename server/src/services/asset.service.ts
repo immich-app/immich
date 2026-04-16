@@ -59,10 +59,6 @@ export class AssetService extends BaseService {
     return mapStats(stats);
   }
 
-  async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
-  }
-
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 

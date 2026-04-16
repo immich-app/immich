@@ -6,12 +6,6 @@ import { AssetStats } from 'src/repositories/asset.repository';
 import { IsNotSiblingOf, isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation';
 import z from 'zod';
 
-const DeviceIdSchema = z
-  .object({
-    deviceId: z.string().describe('Device ID'),
-  })
-  .meta({ id: 'DeviceIdDto' });
-
 const UpdateAssetBaseSchema = z
   .object({
     isFavorite: z.boolean().optional().describe('Mark as favorite'),
@@ -182,7 +176,6 @@ export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   };
 };
 
-export class DeviceIdDto extends createZodDto(DeviceIdSchema) {}
 export class AssetBulkUpdateDto extends createZodDto(AssetBulkUpdateSchema) {}
 export class UpdateAssetDto extends createZodDto(UpdateAssetSchema) {}
 export class AssetBulkDeleteDto extends createZodDto(AssetBulkDeleteSchema) {}

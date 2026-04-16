@@ -49,12 +49,5 @@ const AssetBulkUploadCheckResponseSchema = z
   })
   .meta({ id: 'AssetBulkUploadCheckResponseDto' });
 
-const CheckExistingAssetsResponseSchema = z
-  .object({
-    existingIds: z.array(z.string()).describe('Existing asset IDs'),
-  })
-  .meta({ id: 'CheckExistingAssetsResponseDto' });
-
 export class AssetMediaResponseDto extends createZodDto(AssetMediaResponseSchema) {}
 export class AssetBulkUploadCheckResponseDto extends createZodDto(AssetBulkUploadCheckResponseSchema) {}
-export class CheckExistingAssetsResponseDto extends createZodDto(CheckExistingAssetsResponseSchema) {}

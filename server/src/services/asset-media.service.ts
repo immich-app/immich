@@ -9,14 +9,12 @@ import {
   AssetMediaStatus,
   AssetRejectReason,
   AssetUploadAction,
-  CheckExistingAssetsResponseDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaSize,
-  CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
@@ -251,18 +249,6 @@ export class AssetMediaService extends BaseService {
     });
   }
 
-  async checkExistingAssets(
-    auth: AuthDto,
-    checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    const existingIds = await this.assetRepository.getByDeviceIds(
-      auth.user.id,
-      checkExistingAssetsDto.deviceId,
-      checkExistingAssetsDto.deviceAssetIds,
-    );
-    return { existingIds };
-  }
-
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
@@ -339,9 +325,6 @@ export class AssetMediaService extends BaseService {
       checksum: file.checksum,
       checksumAlgorithm: ChecksumAlgorithm.sha1File,
       originalPath: file.originalPath,
-
-      deviceAssetId: dto.deviceAssetId,
-      deviceId: dto.deviceId,
 
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,

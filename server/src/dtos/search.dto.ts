@@ -9,7 +9,6 @@ import z from 'zod';
 
 const BaseSearchSchema = z.object({
   libraryId: z.uuidv4().nullish().describe('Library ID to filter by'),
-  deviceId: z.string().optional().describe('Device ID to filter by'),
   type: AssetTypeSchema.optional(),
   isEncoded: z.boolean().optional().describe('Filter by encoded status'),
   isFavorite: z.boolean().optional().describe('Filter by favorite status'),
@@ -68,7 +67,6 @@ const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
 
 const MetadataSearchSchema = RandomSearchSchema.extend({
   id: z.uuidv4().optional().describe('Filter by asset ID'),
-  deviceAssetId: z.string().optional().describe('Filter by device asset ID'),
   description: z.string().trim().optional().describe('Filter by description text'),
   checksum: z.string().optional().describe('Filter by file checksum'),
   originalFileName: z.string().trim().optional().describe('Filter by original file name'),
