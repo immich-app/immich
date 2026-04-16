@@ -2,8 +2,11 @@ import { authenticate } from '$lib/utils/auth';
 import { getAlbumInfo } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params, url }) => {
+export const load = (async ({ params, url, depends }) => {
   await authenticate(url);
+
+  depends('album:data');
+
   const album = await getAlbumInfo({ id: params.albumId });
 
   return {
