@@ -118,7 +118,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
 
       yuccaProductionApi: 'https://staging.fubar.computer',
       // yuccaProductionApi: 'http://100.64.0.6:5173', // TODO
-      statePath: '/yucca', // TODO
+      statePath: '/data/yucca', // TODO
       requireWsAuth: true,
       requireLock: true,
     }),
@@ -134,7 +134,7 @@ export class ApiModule extends BaseModule {}
     OrchestrationApiModule.forRoot({
       yuccaProductionApi: 'https://staging.fubar.computer',
       // yuccaProductionApi: 'http://100.64.0.6:5173', // TODO
-      statePath: '/yucca', // TODO
+      statePath: '/data/yucca', // TODO
       externalBaseUrl: 'https://my.immich.app',
       requireWsAuth: true,
       requireLock: true,
