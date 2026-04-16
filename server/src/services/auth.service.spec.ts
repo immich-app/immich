@@ -757,24 +757,26 @@ describe(AuthService.name, () => {
       expect(mocks.oauthLinkToken.create).toHaveBeenCalledTimes(1);
     });
 
-    it('should normalize the email from the OAuth profile before linking', async () => {
+    it('should normalize the email from the OAuth profile before looking up user', async () => {
       const user = UserFactory.create();
       const profile = OAuthProfileFactory.create({ email: '  TEST@IMMICH.CLOUD  ' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByEmail.mockResolvedValue(user);
-      mocks.user.update.mockResolvedValue(user);
-      mocks.session.create.mockResolvedValue(SessionFactory.create());
+      mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
+      mocks.oauthLinkToken.create.mockResolvedValue({} as any);
 
-      await sut.callback(
-        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
-        {},
-        loginDetails,
-      );
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+          {},
+          loginDetails,
+        ),
+      ).rejects.toThrow(ForbiddenException);
 
       expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@immich.cloud');
-      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should not link to a user with a different oauth sub', async () => {
