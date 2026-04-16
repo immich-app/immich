@@ -178,10 +178,7 @@
           </button>
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel
-              onLogout={() => authManager.logout()}
-              onClose={() => (shouldShowAccountInfoPanel = false)}
-            />
+            <AccountInfoPanel onClose={() => (shouldShowAccountInfoPanel = false)} />
           {/if}
         </div>
       </section>

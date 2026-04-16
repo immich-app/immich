@@ -8,8 +8,6 @@
 	<array>
 		<string>app.alextran.immich.background.refreshUpload</string>
 		<string>app.alextran.immich.background.processingUpload</string>
-		<string>app.alextran.immich.backgroundFetch</string>
-		<string>app.alextran.immich.backgroundProcessing</string>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>

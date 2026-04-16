@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -186,6 +187,19 @@
 </script>
 
 <OnEvents {onPersonThumbnailReady} />
+
+<svelte:document
+  use:shortcut={{
+    shortcut: { key: 'Escape' },
+    onShortcut: () => {
+      if (showSelectedFaces) {
+        showSelectedFaces = false;
+      } else {
+        onClose();
+      }
+    },
+  }}
+/>
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}

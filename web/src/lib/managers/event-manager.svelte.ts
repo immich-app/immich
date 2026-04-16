@@ -74,6 +74,7 @@ export type Events = {
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];
+  SessionDelete: [];
 
   SystemConfigUpdate: [SystemConfigDto];
 

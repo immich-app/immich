@@ -133,7 +133,7 @@
   };
 
   const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    album = await getAlbumInfo({ id: album.id });
   };
 
   const setModeToView = async () => {

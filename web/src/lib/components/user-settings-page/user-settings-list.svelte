@@ -33,7 +33,7 @@
   import DeviceList from './device-list.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
-  import UserAPIKeyList from './user-api-key-list.svelte';
+  import UserApiKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
 
   interface Props {
@@ -72,7 +72,7 @@
   </SettingAccordion>
 
   <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
-    <UserAPIKeyList bind:keys />
+    <UserApiKeyList bind:keys />
   </SettingAccordion>
 
   <SettingAccordion

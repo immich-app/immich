@@ -8,7 +8,6 @@ export const albumFactory = Sync.makeFactory<AlbumResponseDto>({
   description: '',
   albumThumbnailAssetId: null,
   assetCount: Sync.each((index) => index % 5),
-  assets: [],
   createdAt: Sync.each(() => faker.date.past().toISOString()),
   updatedAt: Sync.each(() => faker.date.past().toISOString()),
   id: Sync.each(() => faker.string.uuid()),

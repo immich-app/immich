@@ -54,7 +54,7 @@
 
   let { asset, currentAlbum = null }: Props = $props();
 
-  let showEditFaces = $state(false);
+  let showEditFaces = $derived(assetViewerManager.isEditFacesPanelOpen);
   let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
@@ -103,7 +103,7 @@
       return;
     }
 
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
     previousId = asset.id;
   });
 
@@ -119,7 +119,7 @@
 
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
@@ -214,7 +214,7 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={() => (showEditFaces = true)}
+              onclick={() => assetViewerManager.openEditFacesPanel()}
             />
           {/if}
         </div>
@@ -572,7 +572,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    onClose={() => (showEditFaces = false)}
+    onClose={() => assetViewerManager.closeEditFacesPanel()}
     onRefresh={handleRefreshPeople}
   />
 {/if}

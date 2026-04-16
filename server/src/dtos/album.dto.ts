@@ -3,20 +3,13 @@ import _ from 'lodash';
 import { createZodDto } from 'nestjs-zod';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseSchema, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
 import { asDateString } from 'src/utils/date';
 import { stringToBool } from 'src/validation';
 import z from 'zod';
-
-const AlbumInfoSchema = z
-  .object({
-    withoutAssets: stringToBool.optional().describe('Exclude assets from response'),
-  })
-  .meta({ id: 'AlbumInfoDto' });
 
 const AlbumUserAddSchema = z
   .object({
@@ -122,7 +115,6 @@ export const AlbumResponseSchema = z
     shared: z.boolean().describe('Is shared album'),
     albumUsers: z.array(AlbumUserResponseSchema),
     hasSharedLink: z.boolean().describe('Has shared link'),
-    assets: z.array(AssetResponseSchema),
     owner: UserResponseSchema,
     assetCount: z.int().min(0).describe('Number of assets'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -141,7 +133,6 @@ export const AlbumResponseSchema = z
   })
   .meta({ id: 'AlbumResponseDto' });
 
-export class AlbumInfoDto extends createZodDto(AlbumInfoSchema) {}
 export class AddUsersDto extends createZodDto(AddUsersSchema) {}
 export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 export class CreateAlbumDto extends createZodDto(CreateAlbumSchema) {}
@@ -170,11 +161,7 @@ export type MapAlbumDto = {
   order: AssetOrder;
 };
 
-export const mapAlbum = (
-  entity: MaybeDehydrated<MapAlbumDto>,
-  withAssets: boolean,
-  auth?: AuthDto,
-): AlbumResponseDto => {
+export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto => {
   const albumUsers: AlbumUserResponseDto[] = [];
 
   if (entity.albumUsers) {
@@ -215,12 +202,8 @@ export const mapAlbum = (
     hasSharedLink,
     startDate: asDateString(startDate),
     endDate: asDateString(endDate),
-    assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
   };
 };
-
-export const mapAlbumWithAssets = (entity: MaybeDehydrated<MapAlbumDto>) => mapAlbum(entity, true);
-export const mapAlbumWithoutAssets = (entity: MaybeDehydrated<MapAlbumDto>) => mapAlbum(entity, false);

@@ -446,6 +446,303 @@ export type AlbumUserResponseDto = {
     role: AlbumUserRole;
     user: UserResponseDto;
 };
+export type ContributorCountResponseDto = {
+    /** Number of assets contributed */
+    assetCount: number;
+    /** User ID */
+    userId: string;
+};
+export type AlbumResponseDto = {
+    /** Album name */
+    albumName: string;
+    /** Thumbnail asset ID */
+    albumThumbnailAssetId: string | null;
+    albumUsers: AlbumUserResponseDto[];
+    /** Number of assets */
+    assetCount: number;
+    contributorCounts?: ContributorCountResponseDto[];
+    /** Creation date */
+    createdAt: string;
+    /** Album description */
+    description: string;
+    /** End date (latest asset) */
+    endDate?: string;
+    /** Has shared link */
+    hasSharedLink: boolean;
+    /** Album ID */
+    id: string;
+    /** Activity feed enabled */
+    isActivityEnabled: boolean;
+    /** Last modified asset timestamp */
+    lastModifiedAssetTimestamp?: string;
+    order?: AssetOrder;
+    owner: UserResponseDto;
+    /** Owner user ID */
+    ownerId: string;
+    /** Is shared album */
+    shared: boolean;
+    /** Start date (earliest asset) */
+    startDate?: string;
+    /** Last update date */
+    updatedAt: string;
+};
+export type AlbumUserCreateDto = {
+    role: AlbumUserRole;
+    /** User ID */
+    userId: string;
+};
+export type CreateAlbumDto = {
+    /** Album name */
+    albumName: string;
+    /** Album users */
+    albumUsers?: AlbumUserCreateDto[];
+    /** Initial asset IDs */
+    assetIds?: string[];
+    /** Album description */
+    description?: string;
+};
+export type AlbumsAddAssetsDto = {
+    /** Album IDs */
+    albumIds: string[];
+    /** Asset IDs */
+    assetIds: string[];
+};
+export type AlbumsAddAssetsResponseDto = {
+    error?: BulkIdErrorReason;
+    /** Operation success */
+    success: boolean;
+};
+export type AlbumStatisticsResponseDto = {
+    /** Number of non-shared albums */
+    notShared: number;
+    /** Number of owned albums */
+    owned: number;
+    /** Number of shared albums */
+    shared: number;
+};
+export type UpdateAlbumDto = {
+    /** Album name */
+    albumName?: string;
+    /** Album thumbnail asset ID */
+    albumThumbnailAssetId?: string;
+    /** Album description */
+    description?: string;
+    /** Enable activity feed */
+    isActivityEnabled?: boolean;
+    order?: AssetOrder;
+};
+export type BulkIdsDto = {
+    /** IDs to process */
+    ids: string[];
+};
+export type BulkIdResponseDto = {
+    error?: BulkIdErrorReason;
+    errorMessage?: string;
+    /** ID */
+    id: string;
+    /** Whether operation succeeded */
+    success: boolean;
+};
+export type MapMarkerResponseDto = {
+    /** City name */
+    city: string | null;
+    /** Country name */
+    country: string | null;
+    /** Asset ID */
+    id: string;
+    /** Latitude */
+    lat: number;
+    /** Longitude */
+    lon: number;
+    /** State/Province name */
+    state: string | null;
+};
+export type UpdateAlbumUserDto = {
+    role: AlbumUserRole;
+};
+export type AlbumUserAddDto = {
+    /** Album user role */
+    role?: AlbumUserRole;
+    /** User ID */
+    userId: string;
+};
+export type AddUsersDto = {
+    /** Album users to add */
+    albumUsers: AlbumUserAddDto[];
+};
+export type ApiKeyResponseDto = {
+    /** Creation date */
+    createdAt: string;
+    /** API key ID */
+    id: string;
+    /** API key name */
+    name: string;
+    /** List of permissions */
+    permissions: Permission[];
+    /** Last update date */
+    updatedAt: string;
+};
+export type ApiKeyCreateDto = {
+    /** API key name */
+    name?: string;
+    /** List of permissions */
+    permissions: Permission[];
+};
+export type ApiKeyCreateResponseDto = {
+    apiKey: ApiKeyResponseDto;
+    /** API key secret (only shown once) */
+    secret: string;
+};
+export type ApiKeyUpdateDto = {
+    /** API key name */
+    name?: string;
+    /** List of permissions */
+    permissions?: Permission[];
+};
+export type AssetBulkDeleteDto = {
+    /** Force delete even if in use */
+    force?: boolean;
+    /** IDs to process */
+    ids: string[];
+};
+export type AssetMetadataUpsertItemDto = {
+    /** Metadata key */
+    key: string;
+    /** Metadata value (object) */
+    value: {
+        [key: string]: any;
+    };
+};
+export type AssetMediaCreateDto = {
+    /** Asset file data */
+    assetData: Blob;
+    /** Duration (for videos) */
+    duration?: string;
+    /** File creation date */
+    fileCreatedAt: string;
+    /** File modification date */
+    fileModifiedAt: string;
+    /** Filename */
+    filename?: string;
+    /** Mark as favorite */
+    isFavorite?: boolean;
+    /** Live photo video ID */
+    livePhotoVideoId?: string;
+    /** Asset metadata items */
+    metadata?: AssetMetadataUpsertItemDto[];
+    /** Sidecar file data */
+    sidecarData?: Blob;
+    visibility?: AssetVisibility;
+};
+export type AssetMediaResponseDto = {
+    /** Asset media ID */
+    id: string;
+    status: AssetMediaStatus;
+};
+export type AssetBulkUpdateDto = {
+    /** Original date and time */
+    dateTimeOriginal?: string;
+    /** Relative time offset in seconds */
+    dateTimeRelative?: number;
+    /** Asset description */
+    description?: string;
+    /** Duplicate ID */
+    duplicateId?: string | null;
+    /** Asset IDs to update */
+    ids: string[];
+    /** Mark as favorite */
+    isFavorite?: boolean;
+    /** Latitude coordinate */
+    latitude?: number;
+    /** Longitude coordinate */
+    longitude?: number;
+    /** Rating in range [1-5], or null for unrated */
+    rating?: number | null;
+    /** Time zone (IANA timezone) */
+    timeZone?: string;
+    visibility?: AssetVisibility;
+};
+export type AssetBulkUploadCheckItem = {
+    /** Base64 or hex encoded SHA1 hash */
+    checksum: string;
+    /** Asset ID */
+    id: string;
+};
+export type AssetBulkUploadCheckDto = {
+    /** Assets to check */
+    assets: AssetBulkUploadCheckItem[];
+};
+export type AssetBulkUploadCheckResult = {
+    action: AssetUploadAction;
+    /** Existing asset ID if duplicate */
+    assetId?: string;
+    /** Asset ID */
+    id: string;
+    /** Whether existing asset is trashed */
+    isTrashed?: boolean;
+    reason?: AssetRejectReason;
+};
+export type AssetBulkUploadCheckResponseDto = {
+    /** Upload check results */
+    results: AssetBulkUploadCheckResult[];
+};
+export type AssetCopyDto = {
+    /** Copy album associations */
+    albums?: boolean;
+    /** Copy favorite status */
+    favorite?: boolean;
+    /** Copy shared links */
+    sharedLinks?: boolean;
+    /** Copy sidecar file */
+    sidecar?: boolean;
+    /** Source asset ID */
+    sourceId: string;
+    /** Copy stack association */
+    stack?: boolean;
+    /** Target asset ID */
+    targetId: string;
+};
+export type AssetJobsDto = {
+    /** Asset IDs */
+    assetIds: string[];
+    name: AssetJobName;
+};
+export type AssetMetadataBulkDeleteItemDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Metadata key */
+    key: string;
+};
+export type AssetMetadataBulkDeleteDto = {
+    /** Metadata items to delete */
+    items: AssetMetadataBulkDeleteItemDto[];
+};
+export type AssetMetadataBulkUpsertItemDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Metadata key */
+    key: string;
+    /** Metadata value (object) */
+    value: {
+        [key: string]: any;
+    };
+};
+export type AssetMetadataBulkUpsertDto = {
+    /** Metadata items to upsert */
+    items: AssetMetadataBulkUpsertItemDto[];
+};
+export type AssetMetadataBulkResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Metadata key */
+    key: string;
+    /** Last update date */
+    updatedAt: string;
+    /** Metadata value (object) */
+    value: {
+        [key: string]: any;
+    };
+};
 export type ExifResponseDto = {
     /** City name */
     city?: string | null;
@@ -557,10 +854,6 @@ export type AssetResponseDto = {
     checksum: string;
     /** The UTC timestamp when the asset was originally uploaded to Immich. */
     createdAt: string;
-    /** Device asset ID */
-    deviceAssetId: string;
-    /** Device ID */
-    deviceId: string;
     /** Duplicate group ID */
     duplicateId?: string | null;
     /** Video duration (for videos) */
@@ -615,304 +908,6 @@ export type AssetResponseDto = {
     visibility: AssetVisibility;
     /** Asset width */
     width: number | null;
-};
-export type ContributorCountResponseDto = {
-    /** Number of assets contributed */
-    assetCount: number;
-    /** User ID */
-    userId: string;
-};
-export type AlbumResponseDto = {
-    /** Album name */
-    albumName: string;
-    /** Thumbnail asset ID */
-    albumThumbnailAssetId: string | null;
-    albumUsers: AlbumUserResponseDto[];
-    /** Number of assets */
-    assetCount: number;
-    assets: AssetResponseDto[];
-    contributorCounts?: ContributorCountResponseDto[];
-    /** Creation date */
-    createdAt: string;
-    /** Album description */
-    description: string;
-    /** End date (latest asset) */
-    endDate?: string;
-    /** Has shared link */
-    hasSharedLink: boolean;
-    /** Album ID */
-    id: string;
-    /** Activity feed enabled */
-    isActivityEnabled: boolean;
-    /** Last modified asset timestamp */
-    lastModifiedAssetTimestamp?: string;
-    order?: AssetOrder;
-    owner: UserResponseDto;
-    /** Owner user ID */
-    ownerId: string;
-    /** Is shared album */
-    shared: boolean;
-    /** Start date (earliest asset) */
-    startDate?: string;
-    /** Last update date */
-    updatedAt: string;
-};
-export type AlbumUserCreateDto = {
-    role: AlbumUserRole;
-    /** User ID */
-    userId: string;
-};
-export type CreateAlbumDto = {
-    /** Album name */
-    albumName: string;
-    /** Album users */
-    albumUsers?: AlbumUserCreateDto[];
-    /** Initial asset IDs */
-    assetIds?: string[];
-    /** Album description */
-    description?: string;
-};
-export type AlbumsAddAssetsDto = {
-    /** Album IDs */
-    albumIds: string[];
-    /** Asset IDs */
-    assetIds: string[];
-};
-export type AlbumsAddAssetsResponseDto = {
-    error?: BulkIdErrorReason;
-    /** Operation success */
-    success: boolean;
-};
-export type AlbumStatisticsResponseDto = {
-    /** Number of non-shared albums */
-    notShared: number;
-    /** Number of owned albums */
-    owned: number;
-    /** Number of shared albums */
-    shared: number;
-};
-export type UpdateAlbumDto = {
-    /** Album name */
-    albumName?: string;
-    /** Album thumbnail asset ID */
-    albumThumbnailAssetId?: string;
-    /** Album description */
-    description?: string;
-    /** Enable activity feed */
-    isActivityEnabled?: boolean;
-    order?: AssetOrder;
-};
-export type BulkIdsDto = {
-    /** IDs to process */
-    ids: string[];
-};
-export type BulkIdResponseDto = {
-    error?: BulkIdErrorReason;
-    errorMessage?: string;
-    /** ID */
-    id: string;
-    /** Whether operation succeeded */
-    success: boolean;
-};
-export type UpdateAlbumUserDto = {
-    role: AlbumUserRole;
-};
-export type AlbumUserAddDto = {
-    /** Album user role */
-    role?: AlbumUserRole;
-    /** User ID */
-    userId: string;
-};
-export type AddUsersDto = {
-    /** Album users to add */
-    albumUsers: AlbumUserAddDto[];
-};
-export type ApiKeyResponseDto = {
-    /** Creation date */
-    createdAt: string;
-    /** API key ID */
-    id: string;
-    /** API key name */
-    name: string;
-    /** List of permissions */
-    permissions: Permission[];
-    /** Last update date */
-    updatedAt: string;
-};
-export type ApiKeyCreateDto = {
-    /** API key name */
-    name?: string;
-    /** List of permissions */
-    permissions: Permission[];
-};
-export type ApiKeyCreateResponseDto = {
-    apiKey: ApiKeyResponseDto;
-    /** API key secret (only shown once) */
-    secret: string;
-};
-export type ApiKeyUpdateDto = {
-    /** API key name */
-    name?: string;
-    /** List of permissions */
-    permissions?: Permission[];
-};
-export type AssetBulkDeleteDto = {
-    /** Force delete even if in use */
-    force?: boolean;
-    /** IDs to process */
-    ids: string[];
-};
-export type AssetMetadataUpsertItemDto = {
-    /** Metadata key */
-    key: string;
-    /** Metadata value (object) */
-    value: {
-        [key: string]: any;
-    };
-};
-export type AssetMediaCreateDto = {
-    /** Asset file data */
-    assetData: Blob;
-    /** Device asset ID */
-    deviceAssetId: string;
-    /** Device ID */
-    deviceId: string;
-    /** Duration (for videos) */
-    duration?: string;
-    /** File creation date */
-    fileCreatedAt: string;
-    /** File modification date */
-    fileModifiedAt: string;
-    /** Filename */
-    filename?: string;
-    /** Mark as favorite */
-    isFavorite?: boolean;
-    /** Live photo video ID */
-    livePhotoVideoId?: string;
-    /** Asset metadata items */
-    metadata?: AssetMetadataUpsertItemDto[];
-    /** Sidecar file data */
-    sidecarData?: Blob;
-    visibility?: AssetVisibility;
-};
-export type AssetMediaResponseDto = {
-    /** Asset media ID */
-    id: string;
-    status: AssetMediaStatus;
-};
-export type AssetBulkUpdateDto = {
-    /** Original date and time */
-    dateTimeOriginal?: string;
-    /** Relative time offset in seconds */
-    dateTimeRelative?: number;
-    /** Asset description */
-    description?: string;
-    /** Duplicate ID */
-    duplicateId?: string | null;
-    /** Asset IDs to update */
-    ids: string[];
-    /** Mark as favorite */
-    isFavorite?: boolean;
-    /** Latitude coordinate */
-    latitude?: number;
-    /** Longitude coordinate */
-    longitude?: number;
-    /** Rating in range [1-5], or null for unrated */
-    rating?: number | null;
-    /** Time zone (IANA timezone) */
-    timeZone?: string;
-    visibility?: AssetVisibility;
-};
-export type AssetBulkUploadCheckItem = {
-    /** Base64 or hex encoded SHA1 hash */
-    checksum: string;
-    /** Asset ID */
-    id: string;
-};
-export type AssetBulkUploadCheckDto = {
-    /** Assets to check */
-    assets: AssetBulkUploadCheckItem[];
-};
-export type AssetBulkUploadCheckResult = {
-    action: AssetUploadAction;
-    /** Existing asset ID if duplicate */
-    assetId?: string;
-    /** Asset ID */
-    id: string;
-    /** Whether existing asset is trashed */
-    isTrashed?: boolean;
-    reason?: AssetRejectReason;
-};
-export type AssetBulkUploadCheckResponseDto = {
-    /** Upload check results */
-    results: AssetBulkUploadCheckResult[];
-};
-export type AssetCopyDto = {
-    /** Copy album associations */
-    albums?: boolean;
-    /** Copy favorite status */
-    favorite?: boolean;
-    /** Copy shared links */
-    sharedLinks?: boolean;
-    /** Copy sidecar file */
-    sidecar?: boolean;
-    /** Source asset ID */
-    sourceId: string;
-    /** Copy stack association */
-    stack?: boolean;
-    /** Target asset ID */
-    targetId: string;
-};
-export type CheckExistingAssetsDto = {
-    /** Device asset IDs to check */
-    deviceAssetIds: string[];
-    /** Device ID */
-    deviceId: string;
-};
-export type CheckExistingAssetsResponseDto = {
-    /** Existing asset IDs */
-    existingIds: string[];
-};
-export type AssetJobsDto = {
-    /** Asset IDs */
-    assetIds: string[];
-    name: AssetJobName;
-};
-export type AssetMetadataBulkDeleteItemDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Metadata key */
-    key: string;
-};
-export type AssetMetadataBulkDeleteDto = {
-    /** Metadata items to delete */
-    items: AssetMetadataBulkDeleteItemDto[];
-};
-export type AssetMetadataBulkUpsertItemDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Metadata key */
-    key: string;
-    /** Metadata value (object) */
-    value: {
-        [key: string]: any;
-    };
-};
-export type AssetMetadataBulkUpsertDto = {
-    /** Metadata items to upsert */
-    items: AssetMetadataBulkUpsertItemDto[];
-};
-export type AssetMetadataBulkResponseDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Metadata key */
-    key: string;
-    /** Last update date */
-    updatedAt: string;
-    /** Metadata value (object) */
-    value: {
-        [key: string]: any;
-    };
 };
 export type UpdateAssetDto = {
     /** Original date and time */
@@ -1323,20 +1318,6 @@ export type ValidateLibraryResponseDto = {
     /** Validation results for import paths */
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
-export type MapMarkerResponseDto = {
-    /** City name */
-    city: string | null;
-    /** Country name */
-    country: string | null;
-    /** Asset ID */
-    id: string;
-    /** Latitude */
-    lat: number;
-    /** Longitude */
-    lon: number;
-    /** State/Province name */
-    state: string | null;
-};
 export type MapReverseGeocodeResponseDto = {
     /** City name */
     city: string | null;
@@ -1661,10 +1642,6 @@ export type MetadataSearchDto = {
     createdBefore?: string;
     /** Filter by description text */
     description?: string;
-    /** Filter by device asset ID */
-    deviceAssetId?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded video file path */
     encodedVideoPath?: string;
     /** Filter by asset ID */
@@ -1790,8 +1767,6 @@ export type RandomSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1856,8 +1831,6 @@ export type SmartSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1928,8 +1901,6 @@ export type StatisticsSearchDto = {
     createdBefore?: string;
     /** Filter by description text */
     description?: string;
-    /** Device ID to filter by */
-    deviceId?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -2320,29 +2291,6 @@ export type SyncAckDto = {
 export type SyncAckSetDto = {
     /** Acknowledgment IDs (max 1000) */
     acks: string[];
-};
-export type AssetDeltaSyncDto = {
-    /** Sync assets updated after this date */
-    updatedAfter: string;
-    /** User IDs to sync */
-    userIds: string[];
-};
-export type AssetDeltaSyncResponseDto = {
-    /** Deleted asset IDs */
-    deleted: string[];
-    /** Whether full sync is needed */
-    needsFullSync: boolean;
-    upserted: AssetResponseDto[];
-};
-export type AssetFullSyncDto = {
-    /** Last asset ID (pagination) */
-    lastId?: string;
-    /** Maximum number of assets to return */
-    limit: number;
-    /** Sync assets updated until this date */
-    updatedUntil: string;
-    /** Filter by user ID */
-    userId?: string;
 };
 export type SyncStreamDto = {
     /** Reset sync state */
@@ -3719,19 +3667,17 @@ export function deleteAlbum({ id }: {
 /**
  * Retrieve an album
  */
-export function getAlbumInfo({ id, key, slug, withoutAssets }: {
+export function getAlbumInfo({ id, key, slug }: {
     id: string;
     key?: string;
     slug?: string;
-    withoutAssets?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto;
     }>(`/albums/${encodeURIComponent(id)}${QS.query(QS.explode({
         key,
-        slug,
-        withoutAssets
+        slug
     }))}`, {
         ...opts
     }));
@@ -3783,6 +3729,24 @@ export function addAssetsToAlbum({ id, bulkIdsDto }: {
         method: "PUT",
         body: bulkIdsDto
     })));
+}
+/**
+ * Retrieve album map markers
+ */
+export function getAlbumMapMarkers({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MapMarkerResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/map-markers${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Remove user from album
@@ -3979,34 +3943,6 @@ export function copyAsset({ assetCopyDto }: {
         ...opts,
         method: "PUT",
         body: assetCopyDto
-    })));
-}
-/**
- * Retrieve assets by device ID
- */
-export function getAllUserAssetsByDeviceId({ deviceId }: {
-    deviceId: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: string[];
-    }>(`/assets/device/${encodeURIComponent(deviceId)}`, {
-        ...opts
-    }));
-}
-/**
- * Check existing assets
- */
-export function checkExistingAssets({ checkExistingAssetsDto }: {
-    checkExistingAssetsDto: CheckExistingAssetsDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: CheckExistingAssetsResponseDto;
-    }>("/assets/exist", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: checkExistingAssetsDto
     })));
 }
 /**
@@ -5388,13 +5324,12 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
-    deviceId?: string;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -5431,7 +5366,6 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         country,
         createdAfter,
         createdBefore,
-        deviceId,
         isEncoded,
         isFavorite,
         isMotion,
@@ -6092,36 +6026,6 @@ export function sendSyncAck({ syncAckSetDto }: {
         ...opts,
         method: "POST",
         body: syncAckSetDto
-    })));
-}
-/**
- * Get delta sync for user
- */
-export function getDeltaSync({ assetDeltaSyncDto }: {
-    assetDeltaSyncDto: AssetDeltaSyncDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetDeltaSyncResponseDto;
-    }>("/sync/delta-sync", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: assetDeltaSyncDto
-    })));
-}
-/**
- * Get full sync for user
- */
-export function getFullSyncForUser({ assetFullSyncDto }: {
-    assetFullSyncDto: AssetFullSyncDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>("/sync/full-sync", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: assetFullSyncDto
     })));
 }
 /**
@@ -6822,17 +6726,6 @@ export enum AlbumUserRole {
     Editor = "editor",
     Viewer = "viewer"
 }
-export enum SourceType {
-    MachineLearning = "machine-learning",
-    Exif = "exif",
-    Manual = "manual"
-}
-export enum AssetTypeEnum {
-    Image = "IMAGE",
-    Video = "VIDEO",
-    Audio = "AUDIO",
-    Other = "OTHER"
-}
 export enum BulkIdErrorReason {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
@@ -7016,6 +6909,17 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
+export enum SourceType {
+    MachineLearning = "machine-learning",
+    Exif = "exif",
+    Manual = "manual"
+}
+export enum AssetTypeEnum {
+    Image = "IMAGE",
+    Video = "VIDEO",
+    Audio = "AUDIO",
+    Other = "OTHER"
+}
 export enum AssetEditAction {
     Crop = "crop",
     Rotate = "rotate",
@@ -7120,7 +7024,6 @@ export enum JobName {
     AssetFileMigration = "AssetFileMigration",
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
-    AuditLogCleanup = "AuditLogCleanup",
     AuditTableCleanup = "AuditTableCleanup",
     DatabaseBackup = "DatabaseBackup",
     FacialRecognitionQueueAll = "FacialRecognitionQueueAll",

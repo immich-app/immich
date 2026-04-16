@@ -124,9 +124,6 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
     { capture: true, signal },
   );
 
-  if (options?.zoomTarget) {
-    options.zoomTarget.style.willChange = 'transform';
-  }
   node.style.overflow = 'visible';
   node.style.touchAction = 'none';
   return {
@@ -138,9 +135,6 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
     },
     destroy() {
       controller.abort();
-      if (options?.zoomTarget) {
-        options.zoomTarget.style.willChange = '';
-      }
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }
