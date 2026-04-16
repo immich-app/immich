@@ -34,7 +34,7 @@ function currentUrlWithoutAsset() {
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)
     ? Route.photos() + $page.url.search
-    : $page.url.pathname.replace(/(\/photos.*)$/, '') + $page.url.search;
+    : $page.url.pathname.replace(/^((?:(?!\/s\/).*)|\/s\/.+)\/photos.*$/, '$1') + $page.url.search;
 }
 
 export function currentUrlReplaceAssetId(assetId: string) {
