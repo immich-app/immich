@@ -144,9 +144,9 @@ describe(DownloadService.name, () => {
 
     it.each([
       { input: '../../../../tmp/pwn.jpg', expected: 'pwn.jpg' },
-      { input: 'C:\\temp\\abs3.jpg', expected: 'abs3.jpg' },
+      { input: String.raw`C:\temp\abs3.jpg`, expected: 'abs3.jpg' },
       { input: 'a/../../b.jpg', expected: 'b.jpg' },
-      { input: '..\\..\\win1.jpg', expected: 'win1.jpg' },
+      { input: String.raw`..\..\win1.jpg`, expected: 'win1.jpg' },
       { input: '/etc/passwd', expected: 'passwd' },
       { input: '..', expected: 'unnamed' },
       { input: '', expected: 'unnamed' },
