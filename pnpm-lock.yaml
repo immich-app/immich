@@ -345,8 +345,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@immich/sql-tools':
-        specifier: ^0.3.2
-        version: 0.3.4
+        specifier: ^0.5.1
+        version: 0.5.1
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(bullmq@5.74.1)
@@ -3171,8 +3171,8 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/sql-tools@0.3.4':
-    resolution: {integrity: sha512-lsJaFELmBEEd3VtsPGXGT8HCBLkthra3k4EalH6MQeCZv9+iTpK7WT2vJLA5a/ndo+cCbcgm+jxsceqZKCuyRQ==}
+  '@immich/sql-tools@0.5.1':
+    resolution: {integrity: sha512-1yb5w8IS0PIVgTZ75fAsbaH1JowNNB7d6h0h8ZLQt32Y35xBzmZef/IL9LVAWnWBObzwWi12+RLcg0gkMS6dpA==}
     hasBin: true
 
   '@immich/svelte-markdown-preprocess@0.4.1':
@@ -8059,6 +8059,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  graph-data-structure@4.5.0:
+    resolution: {integrity: sha512-OCeIzpK9JnV5js4gtDJgwebRbcOsZpoN9CNIwEooHkV/FNol+OykWPOugSTXBH/QICEW2N6U+6L2d9DcK4YBcw==}
 
   gray-matter@4.0.3:
     resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
@@ -15546,9 +15549,10 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/sql-tools@0.3.4':
+  '@immich/sql-tools@0.5.1':
     dependencies:
       commander: 14.0.3
+      graph-data-structure: 4.5.0
       kysely: 0.28.16
       kysely-postgres-js: 3.0.0(kysely@0.28.16)(postgres@3.4.9)
       pg-connection-string: 2.12.0
@@ -21060,6 +21064,8 @@ snapshots:
   graceful-fs@4.2.10: {}
 
   graceful-fs@4.2.11: {}
+
+  graph-data-structure@4.5.0: {}
 
   gray-matter@4.0.3:
     dependencies:

@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
-    "@immich/sql-tools": "^0.3.2",
+    "@immich/sql-tools": "^0.5.1",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
