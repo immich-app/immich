@@ -148,7 +148,6 @@ const createDto = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  duration: '0:00:00.000000',
 }) as AssetMediaCreateDto;
 
 const assetEntity = Object.freeze({
@@ -160,7 +159,7 @@ const assetEntity = Object.freeze({
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  duration: '0:00:00.000000',
+  duration: null,
   files: [] as AssetFile[],
   exifInfo: {
     latitude: 49.533_547,

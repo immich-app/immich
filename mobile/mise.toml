@@ -1,5 +1,5 @@
 [tools]
-flutter = "3.35.7"
+flutter = "3.41.6"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.30.0"
@@ -40,7 +40,13 @@ depends = [
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
-run = [{ task = "//:i18n:format-fix" }, { tasks = ["i18n:loader", "i18n:keys"] }]
+run = [
+  { task = "//:i18n:format-fix" },
+  { tasks = [
+    "i18n:loader",
+    "i18n:keys",
+  ] },
+]
 
 [tasks."codegen:app-icon"]
 description = "Generate app icons"

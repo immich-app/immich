@@ -291,7 +291,7 @@
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
-      {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
+      {:else if asset.isImage && asset.duration && mouseOver}
         <!-- GIF -->
         <div class="absolute h-full w-full pointer-events-none">
           <ImageThumbnail
@@ -369,7 +369,7 @@
           </div>
         {/if}
 
-        {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
+        {#if asset.isImage && asset.duration}
           <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon icon={mouseOver ? mdiMotionPauseOutline : mdiFileGifBox} size="24" />

@@ -219,7 +219,7 @@ export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkRes
 }
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
+  return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
