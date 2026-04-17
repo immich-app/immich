@@ -1,7 +1,7 @@
-import AlbumDescription from './album-description.svelte';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import { describe } from 'vitest';
+import AlbumDescription from './album-description.svelte';
 
 describe('AlbumDescription component', () => {
   it('shows an AutogrowTextarea component when isOwned is true', () => {
