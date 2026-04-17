@@ -1,12 +1,12 @@
 <script lang="ts">
   import { goto, invalidateAll } from '$app/navigation';
-  import AdminCard from '$lib/components/AdminCard.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import AdminCard from '../../AdminCard.svelte';
+  import AdminPageLayout from '../../AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import ServerStatisticsCard from '../../ServerStatisticsCard.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
-  import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
+  import FeatureSetting from './FeatureSetting.svelte';
   import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';

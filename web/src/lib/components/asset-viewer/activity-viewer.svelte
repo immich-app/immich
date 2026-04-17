@@ -18,7 +18,7 @@
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 

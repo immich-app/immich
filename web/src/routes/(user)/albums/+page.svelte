@@ -1,6 +1,6 @@
 <script lang="ts">
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import AlbumsControls from '$lib/components/album-page/albums-controls.svelte';
+  import AlbumsControls from './albums-controls.svelte';
   import Albums from '$lib/components/album-page/albums-list.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';

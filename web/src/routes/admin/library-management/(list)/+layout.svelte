@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto, invalidate } from '$app/navigation';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import AdminPageLayout from '../../AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { Route } from '$lib/route';

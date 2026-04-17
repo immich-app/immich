@@ -1,6 +1,6 @@
 <script lang="ts">
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import MaintenanceRestoreFlow from '$lib/components/maintenance/MaintenanceRestoreFlow.svelte';
+  import MaintenanceRestoreFlow from './MaintenanceRestoreFlow.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { handleSetMaintenanceMode } from '$lib/services/maintenance.service';
   import { maintenanceStore } from '$lib/stores/maintenance.store';

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto, invalidate } from '$app/navigation';
   import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
-  import AdminCard from '$lib/components/AdminCard.svelte';
-  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import AdminCard from '../../AdminCard.svelte';
+  import AdminPageLayout from '../../AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import ServerStatisticsCard from '../../ServerStatisticsCard.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
   import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';

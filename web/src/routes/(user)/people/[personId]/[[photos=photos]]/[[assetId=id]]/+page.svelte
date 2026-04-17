@@ -5,9 +5,9 @@
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
-  import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
-  import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
+  import EditNameInput from './edit-name-input.svelte';
+  import MergeFaceSelector from './merge-face-selector.svelte';
+  import UnMergeFaceSelector from './unmerge-face-selector.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
