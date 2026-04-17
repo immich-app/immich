@@ -34,8 +34,8 @@ const BaseSearchSchema = z.object({
   tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),
   albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs'),
   rating: z
-    .number()
-    .min(-1)
+    .int()
+    .min(1)
     .max(5)
     .nullish()
     .describe('Filter by rating [1-5], or null for unrated')
@@ -44,6 +44,7 @@ const BaseSearchSchema = z.object({
         .added('v1')
         .stable('v2')
         .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
+        .updated('v3', 'Using -1 as a rating is no longer valid.')
         .getExtensions(),
     }),
   ocr: z.string().optional().describe('Filter by OCR text content'),

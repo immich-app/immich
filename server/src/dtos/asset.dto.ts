@@ -14,11 +14,9 @@ const UpdateAssetBaseSchema = z
     latitude: latitudeSchema.optional().describe('Latitude coordinate'),
     longitude: longitudeSchema.optional().describe('Longitude coordinate'),
     rating: z
-      .number()
       .int()
-      .min(-1)
+      .min(1)
       .max(5)
-      .transform((value) => (value === 0 ? null : value))
       .nullish()
       .describe('Rating in range [1-5], or null for unrated')
       .meta({
@@ -26,6 +24,7 @@ const UpdateAssetBaseSchema = z
           .added('v1')
           .stable('v2')
           .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
+          .updated('v3', 'Using -1 as a rating is no longer valid.')
           .getExtensions(),
       }),
     description: z.string().optional().describe('Asset description'),

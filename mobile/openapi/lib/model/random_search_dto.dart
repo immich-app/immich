@@ -145,9 +145,9 @@ class RandomSearchDto {
 
   /// Filter by rating [1-5], or null for unrated
   ///
-  /// Minimum value: -1
+  /// Minimum value: 1
   /// Maximum value: 5
-  num? rating;
+  int? rating;
 
   /// Number of results to return
   ///
@@ -549,9 +549,7 @@ class RandomSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        rating: json[r'rating'] == null
-            ? null
-            : num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable

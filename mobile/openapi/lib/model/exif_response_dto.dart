@@ -102,7 +102,10 @@ class ExifResponseDto {
   String? projectionType;
 
   /// Rating
-  num? rating;
+  ///
+  /// Minimum value: 1
+  /// Maximum value: 5
+  int? rating;
 
   /// State/province name
   String? state;
@@ -321,9 +324,7 @@ class ExifResponseDto {
         modifyDate: mapDateTime(json, r'modifyDate', r''),
         orientation: mapValueOfType<String>(json, r'orientation'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
-        rating: json[r'rating'] == null
-            ? null
-            : num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         state: mapValueOfType<String>(json, r'state'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
       );

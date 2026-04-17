@@ -185,9 +185,9 @@ class SmartSearchDto {
 
   /// Filter by rating [1-5], or null for unrated
   ///
-  /// Minimum value: -1
+  /// Minimum value: 1
   /// Maximum value: 5
-  num? rating;
+  int? rating;
 
   /// Number of results to return
   ///
@@ -589,9 +589,7 @@ class SmartSearchDto {
             : const [],
         query: mapValueOfType<String>(json, r'query'),
         queryAssetId: mapValueOfType<String>(json, r'queryAssetId'),
-        rating: json[r'rating'] == null
-            ? null
-            : num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
