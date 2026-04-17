@@ -18,6 +18,7 @@ class QueueResponseDto {
     required this.statistics,
   });
 
+  /// Whether the queue is paused
   bool isPaused;
 
   QueueName name;

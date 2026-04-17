@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// List of permissions
 class Permission {
   /// Instantiate a new enum with the provided [value].
   const Permission._(this.value);
@@ -41,7 +41,6 @@ class Permission {
   static const assetPeriodView = Permission._(r'asset.view');
   static const assetPeriodDownload = Permission._(r'asset.download');
   static const assetPeriodUpload = Permission._(r'asset.upload');
-  static const assetPeriodReplace = Permission._(r'asset.replace');
   static const assetPeriodCopy = Permission._(r'asset.copy');
   static const assetPeriodDerive = Permission._(r'asset.derive');
   static const assetPeriodEditPeriodGet = Permission._(r'asset.edit.get');
@@ -72,6 +71,7 @@ class Permission {
   static const facePeriodRead = Permission._(r'face.read');
   static const facePeriodUpdate = Permission._(r'face.update');
   static const facePeriodDelete = Permission._(r'face.delete');
+  static const folderPeriodRead = Permission._(r'folder.read');
   static const jobPeriodCreate = Permission._(r'job.create');
   static const jobPeriodRead = Permission._(r'job.read');
   static const libraryPeriodCreate = Permission._(r'library.create');
@@ -82,6 +82,8 @@ class Permission {
   static const timelinePeriodRead = Permission._(r'timeline.read');
   static const timelinePeriodDownload = Permission._(r'timeline.download');
   static const maintenance = Permission._(r'maintenance');
+  static const mapPeriodRead = Permission._(r'map.read');
+  static const mapPeriodSearch = Permission._(r'map.search');
   static const memoryPeriodCreate = Permission._(r'memory.create');
   static const memoryPeriodRead = Permission._(r'memory.read');
   static const memoryPeriodUpdate = Permission._(r'memory.update');
@@ -197,7 +199,6 @@ class Permission {
     assetPeriodView,
     assetPeriodDownload,
     assetPeriodUpload,
-    assetPeriodReplace,
     assetPeriodCopy,
     assetPeriodDerive,
     assetPeriodEditPeriodGet,
@@ -228,6 +229,7 @@ class Permission {
     facePeriodRead,
     facePeriodUpdate,
     facePeriodDelete,
+    folderPeriodRead,
     jobPeriodCreate,
     jobPeriodRead,
     libraryPeriodCreate,
@@ -238,6 +240,8 @@ class Permission {
     timelinePeriodRead,
     timelinePeriodDownload,
     maintenance,
+    mapPeriodRead,
+    mapPeriodSearch,
     memoryPeriodCreate,
     memoryPeriodRead,
     memoryPeriodUpdate,
@@ -388,7 +392,6 @@ class PermissionTypeTransformer {
         case r'asset.view': return Permission.assetPeriodView;
         case r'asset.download': return Permission.assetPeriodDownload;
         case r'asset.upload': return Permission.assetPeriodUpload;
-        case r'asset.replace': return Permission.assetPeriodReplace;
         case r'asset.copy': return Permission.assetPeriodCopy;
         case r'asset.derive': return Permission.assetPeriodDerive;
         case r'asset.edit.get': return Permission.assetPeriodEditPeriodGet;
@@ -419,6 +422,7 @@ class PermissionTypeTransformer {
         case r'face.read': return Permission.facePeriodRead;
         case r'face.update': return Permission.facePeriodUpdate;
         case r'face.delete': return Permission.facePeriodDelete;
+        case r'folder.read': return Permission.folderPeriodRead;
         case r'job.create': return Permission.jobPeriodCreate;
         case r'job.read': return Permission.jobPeriodRead;
         case r'library.create': return Permission.libraryPeriodCreate;
@@ -429,6 +433,8 @@ class PermissionTypeTransformer {
         case r'timeline.read': return Permission.timelinePeriodRead;
         case r'timeline.download': return Permission.timelinePeriodDownload;
         case r'maintenance': return Permission.maintenance;
+        case r'map.read': return Permission.mapPeriodRead;
+        case r'map.search': return Permission.mapPeriodSearch;
         case r'memory.create': return Permission.memoryPeriodCreate;
         case r'memory.read': return Permission.memoryPeriodRead;
         case r'memory.update': return Permission.memoryPeriodUpdate;

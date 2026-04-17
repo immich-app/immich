@@ -14,22 +14,38 @@ class SystemConfigGeneratedImageDto {
   /// Returns a new [SystemConfigGeneratedImageDto] instance.
   SystemConfigGeneratedImageDto({
     required this.format,
+    this.progressive,
     required this.quality,
     required this.size,
   });
 
   ImageFormat format;
 
+  /// Progressive
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? progressive;
+
+  /// Quality
+  ///
   /// Minimum value: 1
   /// Maximum value: 100
   int quality;
 
+  /// Size
+  ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int size;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigGeneratedImageDto &&
     other.format == format &&
+    other.progressive == progressive &&
     other.quality == quality &&
     other.size == size;
 
@@ -37,15 +53,21 @@ class SystemConfigGeneratedImageDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (format.hashCode) +
+    (progressive == null ? 0 : progressive!.hashCode) +
     (quality.hashCode) +
     (size.hashCode);
 
   @override
-  String toString() => 'SystemConfigGeneratedImageDto[format=$format, quality=$quality, size=$size]';
+  String toString() => 'SystemConfigGeneratedImageDto[format=$format, progressive=$progressive, quality=$quality, size=$size]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'format'] = this.format;
+    if (this.progressive != null) {
+      json[r'progressive'] = this.progressive;
+    } else {
+    //  json[r'progressive'] = null;
+    }
       json[r'quality'] = this.quality;
       json[r'size'] = this.size;
     return json;
@@ -61,6 +83,7 @@ class SystemConfigGeneratedImageDto {
 
       return SystemConfigGeneratedImageDto(
         format: ImageFormat.fromJson(json[r'format'])!,
+        progressive: mapValueOfType<bool>(json, r'progressive'),
         quality: mapValueOfType<int>(json, r'quality')!,
         size: mapValueOfType<int>(json, r'size')!,
       );

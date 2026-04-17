@@ -176,6 +176,7 @@ select
     where
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = 'preview'
+      and "asset_file"."isEdited" = false
   ) as "previewPath"
 from
   "person"
@@ -194,18 +195,21 @@ where
   "asset_face"."id" = $2
 
 -- PersonRepository.getByName
+with
+  "similarity_threshold" as (
+    select
+      set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
+  )
 select
   "person".*
 from
+  "similarity_threshold",
   "person"
 where
-  (
-    "person"."ownerId" = $1
-    and (
-      lower("person"."name") like $2
-      or lower("person"."name") like $3
-    )
-  )
+  "person"."ownerId" = $1
+  and f_unaccent ("person"."name") %> f_unaccent ($2)
+order by
+  f_unaccent ("person"."name") <->>> f_unaccent ($3)
 limit
   $4
 
@@ -227,12 +231,12 @@ select
 from
   "asset_face"
   left join "asset" on "asset"."id" = "asset_face"."assetId"
-  and "asset_face"."personId" = $1
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
+  and "asset_face"."personId" = $1
 
 -- PersonRepository.getNumberOfPeople
 select
@@ -291,19 +295,6 @@ select
     from
       (
         select
-          "asset".*
-        from
-          "asset"
-        where
-          "asset"."id" = "asset_face"."assetId"
-      ) as obj
-  ) as "asset",
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
           "person".*
         from
           "person"
@@ -354,3 +345,14 @@ from
   "person"
 where
   "id" in ($1)
+
+-- PersonRepository.getForFeatureFaceUpdate
+select
+  "asset_face"."id"
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  and "asset"."isOffline" = $1
+where
+  "asset_face"."assetId" = $2
+  and "asset_face"."personId" = $3

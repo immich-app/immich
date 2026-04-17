@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import DetailPanelDate from '$lib/components/asset-viewer/detail-panel-date.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
@@ -8,21 +9,23 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { Route } from '$lib/route';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { handleError } from '$lib/utils/handle-error';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import {
-    mdiCalendar,
+    AssetMediaSize,
+    getAllAlbums,
+    getAssetInfo,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
+  import { Icon, IconButton, LoadingSpinner, Text } from '@immich/ui';
+  import {
     mdiCamera,
     mdiCameraIris,
     mdiClose,
@@ -38,29 +41,22 @@
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
   interface Props {
     asset: AssetResponseDto;
-    albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
   }
 
-  let { asset, albums = [], currentAlbum = null }: Props = $props();
+  let { asset, currentAlbum = null }: Props = $props();
 
-  let showAssetPath = $state(false);
-  let showEditFaces = $state(false);
-  let isOwner = $derived($user?.id === asset.ownerId);
+  let showEditFaces = $derived(assetViewerManager.isEditFacesPanelOpen);
+  let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
-  let timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
-  let dateTime = $derived(
-    timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset.localDateTime),
-  );
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -74,14 +70,33 @@
   let previousId: string | undefined = $state();
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
+  const refreshAlbums = async () => {
+    if (authManager.isSharedLink) {
+      return [];
+    }
+
+    try {
+      return await getAllAlbums({ assetId: asset.id });
+    } catch (error) {
+      handleError(error, 'Error getting asset album membership');
+      return [];
+    }
+  };
+
+  let albums = $derived(refreshAlbums());
+
   $effect(() => {
     if (!previousId) {
       previousId = asset.id;
+      return;
     }
-    if (asset.id !== previousId) {
-      showEditFaces = false;
-      previousId = asset.id;
+
+    if (asset.id === previousId) {
+      return;
     }
+
+    assetViewerManager.closeEditFacesPanel();
+    previousId = asset.id;
   });
 
   const getMegapixel = (width: number, height: number): number | undefined => {
@@ -96,28 +111,16 @@
 
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     // Remove the last part of the path to get the parent path
     return Route.folders({ path: getParentPath(asset.originalPath) });
   };
-
-  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
-
-  const handleChangeDate = async () => {
-    if (!isOwner) {
-      return;
-    }
-
-    await modalManager.show(AssetChangeDateModal, {
-      asset: toTimelineAsset(asset),
-      initialDate: dateTime,
-      initialTimeZone: timeZone,
-    });
-  };
 </script>
+
+<OnEvents onAlbumAddAssets={() => (albums = refreshAlbums())} />
 
 <section class="relative p-2">
   <div class="flex place-items-center gap-2">
@@ -140,7 +143,7 @@
         </div>
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {#if $user?.isAdmin}
+            {#if authManager.authenticated && authManager.user.isAdmin}
               {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
@@ -180,7 +183,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
+            onclick={() => assetViewerManager.toggleFaceEditMode()}
           />
 
           {#if people.length > 0 || unassignedFaces.length > 0}
@@ -191,7 +194,7 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={() => (showEditFaces = true)}
+              onclick={() => assetViewerManager.openEditFacesPanel()}
             />
           {/if}
         </div>
@@ -200,8 +203,9 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
+            {@const isHighlighted = people[index].faces.some((f) => $boundingBoxesArray.some((b) => b.id === f.id))}
             <a
-              class="w-22"
+              class="group w-22 outline-none"
               href={Route.viewPerson(person, { previousRoute })}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
@@ -218,6 +222,8 @@
                   widthStyle="90px"
                   heightStyle="90px"
                   hidden={person.isHidden}
+                  highlighted={isHighlighted}
+                  class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
                 />
               </div>
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
@@ -265,65 +271,7 @@
       <Text size="small" color="muted">{$t('no_exif_info_available')}</Text>
     {/if}
 
-    {#if dateTime}
-      <button
-        type="button"
-        class="flex w-full text-start justify-between place-items-start gap-4 py-4"
-        onclick={handleChangeDate}
-        title={isOwner ? $t('edit_date') : ''}
-        class:hover:text-primary={isOwner}
-      >
-        <div class="flex gap-4">
-          <div>
-            <Icon icon={mdiCalendar} size="24" />
-          </div>
-
-          <div>
-            <p>
-              {dateTime.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
-            <div class="flex gap-2 text-sm">
-              <p>
-                {dateTime.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    timeZoneName: timeZone ? 'longOffset' : undefined,
-                  },
-                  { locale: $locale },
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {#if isOwner}
-          <div class="p-1">
-            <Icon icon={mdiPencil} size="20" />
-          </div>
-        {/if}
-      </button>
-    {:else if !dateTime && isOwner}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div>
-            <Icon icon={mdiCalendar} size="24" />
-          </div>
-        </div>
-        <div class="p-1">
-          <Icon icon={mdiPencil} size="20" />
-        </div>
-      </div>
-    {/if}
+    <DetailPanelDate {asset} />
 
     <div class="flex gap-4 py-4">
       <div><Icon icon={mdiImageOutline} size="24" /></div>
@@ -339,11 +287,11 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={toggleAssetPath}
+              onclick={() => assetViewerManager.toggleAssetPath()}
             />
           {/if}
         </p>
-        {#if showAssetPath}
+        {#if assetViewerManager.isShowAssetPath}
           <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
@@ -502,39 +450,41 @@
   </section>
 {/if}
 
-{#if albums.length > 0}
-  <section class="px-6 py-6 dark:text-immich-dark-fg">
-    <div class="pb-4">
-      <Text size="small" color="muted">{$t('appears_in')}</Text>
-    </div>
-    {#each albums as album (album.id)}
-      <a href={Route.viewAlbum(album)}>
-        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
-          <div>
-            <img
-              alt={album.albumName}
-              class="h-12.5 w-12.5 rounded object-cover"
-              src={album.albumThumbnailAssetId &&
-                getAssetThumbnailUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
-              draggable="false"
-            />
-          </div>
+{#await albums then albums}
+  {#if albums.length > 0}
+    <section class="px-6 py-6 dark:text-immich-dark-fg">
+      <div class="pb-4">
+        <Text size="small" color="muted">{$t('appears_in')}</Text>
+      </div>
+      {#each albums as album (album.id)}
+        <a href={Route.viewAlbum(album)}>
+          <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
+            <div>
+              <img
+                alt={album.albumName}
+                class="h-12.5 w-12.5 rounded object-cover"
+                src={album.albumThumbnailAssetId &&
+                  getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
+                draggable="false"
+              />
+            </div>
 
-          <div class="mb-auto mt-auto">
-            <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-            <div class="flex flex-col gap-0 text-sm">
-              <div>
-                <AlbumListItemDetails {album} />
+            <div class="mb-auto mt-auto">
+              <p class="dark:text-immich-dark-primary">{album.albumName}</p>
+              <div class="flex flex-col gap-0 text-sm">
+                <div>
+                  <AlbumListItemDetails {album} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </a>
-    {/each}
-  </section>
-{/if}
+        </a>
+      {/each}
+    </section>
+  {/if}
+{/await}
 
-{#if $preferences?.tags?.enabled}
+{#if authManager.authenticated && authManager.preferences.tags.enabled}
   <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
     <DetailPanelTags {asset} {isOwner} />
   </section>
@@ -544,7 +494,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    onClose={() => (showEditFaces = false)}
+    onClose={() => assetViewerManager.closeEditFacesPanel()}
     onRefresh={handleRefreshPeople}
   />
 {/if}

@@ -17,8 +17,10 @@ class CLIPConfig {
     required this.modelName,
   });
 
+  /// Whether the task is enabled
   bool enabled;
 
+  /// Name of the model to use
   String modelName;
 
   @override

@@ -5,7 +5,9 @@ class ReleaseManager {
   value = $state<ReleaseEvent | undefined>();
 
   constructor() {
-    eventManager.on('ReleaseEvent', (event) => (this.value = event));
+    eventManager.on({
+      ReleaseEvent: (event) => (this.value = event),
+    });
   }
 }
 

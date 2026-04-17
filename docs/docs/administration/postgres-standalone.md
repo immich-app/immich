@@ -88,7 +88,7 @@ The easiest option is to have both extensions installed during the migration:
 <details>
 <summary>Migration steps (automatic)</summary>
 1. Ensure you still have pgvecto.rs installed
-2. Install `pgvector` (`>= 0.7.0, < 1.0.0`). The easiest way to do this is on Debian/Ubuntu by adding the [PostgreSQL Apt repository][pg-apt] and then running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`)
+2. Install `pgvector` (`>= 0.7, < 0.9`). The easiest way to do this is on Debian/Ubuntu by adding the [PostgreSQL Apt repository][pg-apt] and then running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`)
 3. [Install VectorChord][vchord-install]
 4. Add `shared_preload_libraries= 'vchord.so, vectors.so'` to your `postgresql.conf`, making sure to include _both_ `vchord.so` and `vectors.so`. You may include other libraries here as well if needed
 5. Restart the Postgres database

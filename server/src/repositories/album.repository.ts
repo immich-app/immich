@@ -1,12 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
+import {
+  ExpressionBuilder,
+  Insertable,
+  Kysely,
+  NotNull,
+  Selectable,
+  ShallowDehydrateObject,
+  sql,
+  Updateable,
+} from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns, Exif } from 'src/database';
+import { columns } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { withDefaultVisibility } from 'src/utils/database';
 
 export interface AlbumAssetCount {
@@ -44,9 +54,9 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'album'>) => {
 };
 
 const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) => {
-  return jsonArrayFrom(eb.selectFrom('shared_link').selectAll().whereRef('shared_link.albumId', '=', 'album.id')).as(
-    'sharedLinks',
-  );
+  return jsonArrayFrom(
+    eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
+  ).as('sharedLinks');
 };
 
 const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
@@ -56,7 +66,9 @@ const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
         .selectFrom('asset')
         .selectAll('asset')
         .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-        .select((eb) => eb.table('asset_exif').$castTo<Exif>().as('exifInfo'))
+        .select((eb) =>
+          eb.table('asset_exif').$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>().as('exifInfo'),
+        )
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
         .whereRef('album_asset.albumId', '=', 'album.id')
         .where('asset.deletedAt', 'is', null)
@@ -111,6 +123,44 @@ export class AlbumRepository {
       .select(withAlbumUsers)
       .orderBy('album.createdAt', 'desc')
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @ChunkedSet({ paramIndex: 1 })
+  async getByAssetIds(ownerId: string, assetIds: string[]): Promise<Map<string, string[]>> {
+    if (assetIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.db
+      .selectFrom('album')
+      .select('album.id')
+      .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+      .where((eb) =>
+        eb.or([
+          eb('album.ownerId', '=', ownerId),
+          eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', ownerId),
+          ),
+        ]),
+      )
+      .where('album_asset.assetId', 'in', assetIds)
+      .where('album.deletedAt', 'is', null)
+      .select('album_asset.assetId')
+      .execute();
+
+    // Group by assetId
+    const map = new Map<string, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.assetId) ?? [];
+      existing.push(row.id);
+      map.set(row.assetId, existing);
+    }
+
+    return map;
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -283,7 +333,7 @@ export class AlbumRepository {
 
       return tx
         .selectFrom('album')
-        .selectAll()
+        .selectAll('album')
         .where('id', '=', newAlbum.id)
         .select(withOwner)
         .select(withAssets)
@@ -318,6 +368,7 @@ export class AlbumRepository {
     await db
       .insertInto('album_asset')
       .values(assetIds.map((assetId) => ({ albumId, assetId })))
+      .onConflict((oc) => oc.doNothing())
       .execute();
   }
 
@@ -326,7 +377,12 @@ export class AlbumRepository {
     if (values.length === 0) {
       return;
     }
-    await this.db.insertInto('album_asset').values(values).execute();
+    await this.db
+      .insertInto('album_asset')
+      .values(values)
+      // Allow idempotent album sync without failing on existing album memberships.
+      .onConflict((oc) => oc.columns(['albumId', 'assetId']).doNothing())
+      .execute();
   }
 
   /**

@@ -403,6 +403,10 @@ typedef $$RemoteAssetCloudIdEntityTableProcessedTableManager =
       i1.RemoteAssetCloudIdEntityData,
       i0.PrefetchHooks Function({bool assetId})
     >;
+i0.Index get idxRemoteAssetCloudId => i0.Index(
+  'idx_remote_asset_cloud_id',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)',
+);
 
 class $RemoteAssetCloudIdEntityTable extends i2.RemoteAssetCloudIdEntity
     with

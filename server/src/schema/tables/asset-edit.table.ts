@@ -1,6 +1,3 @@
-import { AssetEditAction, AssetEditActionParameter } from 'src/dtos/editing.dto';
-import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   AfterDeleteTrigger,
   AfterInsertTrigger,
@@ -9,9 +6,17 @@ import {
   Generated,
   PrimaryGeneratedColumn,
   Table,
-} from 'src/sql-tools';
+  Timestamp,
+  Unique,
+  UpdateDateColumn,
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AssetEditAction, AssetEditParameters } from 'src/dtos/editing.dto';
+import { asset_edit_audit, asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_edit')
+@UpdatedAtTrigger('asset_edit_updatedAt')
 @AfterInsertTrigger({ scope: 'statement', function: asset_edit_insert, referencingNewTableAs: 'inserted_edit' })
 @AfterDeleteTrigger({
   scope: 'statement',
@@ -19,7 +24,14 @@ import {
   referencingOldTableAs: 'deleted_edit',
   when: 'pg_trigger_depth() = 0',
 })
-export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: asset_edit_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
+@Unique({ columns: ['assetId', 'sequence'] })
+export class AssetEditTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
@@ -27,8 +39,17 @@ export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
   assetId!: string;
 
   @Column()
-  action!: T;
+  action!: AssetEditAction;
 
   @Column({ type: 'jsonb' })
-  parameters!: AssetEditActionParameter[T];
+  parameters!: AssetEditParameters;
+
+  @Column({ type: 'integer' })
+  sequence!: number;
+
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
+
+  @UpdateIdColumn({ index: true })
+  updateId!: Generated<string>;
 }

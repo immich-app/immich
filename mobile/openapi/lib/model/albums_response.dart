@@ -13,7 +13,7 @@ part of openapi.api;
 class AlbumsResponse {
   /// Returns a new [AlbumsResponse] instance.
   AlbumsResponse({
-    this.defaultAssetOrder = AssetOrder.desc,
+    required this.defaultAssetOrder,
   });
 
   AssetOrder defaultAssetOrder;

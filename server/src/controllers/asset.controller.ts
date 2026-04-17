@@ -15,12 +15,10 @@ import {
   AssetMetadataUpsertDto,
   AssetStatsDto,
   AssetStatsResponseDto,
-  DeviceIdDto,
-  RandomAssetsDto,
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -31,28 +29,6 @@ import { UUIDParamDto } from 'src/validation';
 @Controller(RouteKey.Asset)
 export class AssetController {
   constructor(private service: AssetService) {}
-
-  @Get('random')
-  @Authenticated({ permission: Permission.AssetRead })
-  @Endpoint({
-    summary: 'Get random assets',
-    description: 'Retrieve a specified number of random assets for the authenticated user.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'searchAssets' }),
-  })
-  getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
-    return this.service.getRandom(auth, dto.count ?? 1);
-  }
-
-  @Get('/device/:deviceId')
-  @Endpoint({
-    summary: 'Retrieve assets by device ID',
-    description: 'Get all asset of a device that are in the database, ID only.',
-    history: new HistoryBuilder().added('v1').deprecated('v2'),
-  })
-  @Authenticated()
-  getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
-    return this.service.getUserAssetsByDeviceId(auth, deviceId);
-  }
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
@@ -66,7 +42,7 @@ export class AssetController {
   }
 
   @Post('jobs')
-  @Authenticated()
+  @Authenticated({ permission: Permission.JobCreate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Run an asset job',
@@ -235,7 +211,7 @@ export class AssetController {
     description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
     history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
   })
-  getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsDto> {
+  getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsResponseDto> {
     return this.service.getAssetEdits(auth, id);
   }
 
@@ -249,8 +225,8 @@ export class AssetController {
   editAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: AssetEditActionListDto,
-  ): Promise<AssetEditsDto> {
+    @Body() dto: AssetEditsCreateDto,
+  ): Promise<AssetEditsResponseDto> {
     return this.service.editAsset(auth, id, dto);
   }
 

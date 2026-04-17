@@ -2,18 +2,16 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 2.4.1+3030
+version: 2.7.5+3046
 
 environment:
-  sdk: '>=3.8.0 <4.0.0'
-  flutter: 3.35.7
+  sdk: '>=3.11.0 <4.0.0'
+  flutter: 3.41.6
 
 dependencies:
   async: ^2.13.0
   auto_route: ^9.2.0
   background_downloader: ^9.3.0
-  cached_network_image: ^3.4.1
-  cancellation_token_http: ^2.1.0
   cast: ^2.1.0
   collection: ^1.19.1
   connectivity_plus: ^6.1.3
@@ -26,7 +24,6 @@ dependencies:
   dynamic_color: ^1.8.1
   easy_localization: ^3.0.8
   ffi: ^2.1.4
-  file_picker: ^8.0.0+1
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.4.1
@@ -46,20 +43,13 @@ dependencies:
   immich_ui:
     path: './packages/ui'
   intl: ^0.20.2
-  isar:
-    git:
-      url: https://github.com/immich-app/isar
-      ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
-      path: packages/isar/
-  isar_community_flutter_libs: 3.3.0-dev.3
   local_auth: ^2.3.0
   logging: ^1.3.0
   maplibre_gl: ^0.22.0
-
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: 'e132bc3'
+      ref: 'cdf621bdb7edaf996e118a58a48f6441187d79c6'
   network_info_plus: ^6.1.3
   octo_image: ^2.1.0
   openapi:
@@ -72,13 +62,11 @@ dependencies:
   photo_manager: ^3.7.1
   pinput: ^5.0.2
   punycode: ^1.0.0
-  riverpod_annotation: ^2.6.1
   scroll_date_picker: ^3.8.0
   scrollable_positioned_list: ^0.3.8
   share_handler: ^0.0.25
   share_plus: ^10.1.4
   sliver_tools: ^0.2.12
-  socket_io_client: ^2.0.3+1
   stream_transform: ^2.1.1
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
@@ -86,11 +74,25 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.3.0
   worker_manager: ^7.2.7
+  web_socket: ^1.0.1
+  socket_io_client:
+    git:
+      url: https://github.com/mertalev/socket.io-client-dart
+      ref: 'e1d813a240b5d5b7e2f141b2b605c5429b7cd006' # https://github.com/rikulo/socket.io-client-dart/pull/435
+  cupertino_http:
+    git:
+      url: https://github.com/mertalev/http
+      ref: 'a0a933358517c6d01cff37fc2a2752ee2d744a3c' # https://github.com/dart-lang/http/pull/1876
+      path: pkgs/cupertino_http/
+  ok_http:
+    git:
+      url: https://github.com/mertalev/http
+      ref: '549c24b0a4d3881a9a44b70f4873450d43c1c4af' # https://github.com/dart-lang/http/pull/1877
+      path: pkgs/ok_http/
 
 dev_dependencies:
   auto_route_generator: ^9.0.0
   build_runner: ^2.4.8
-  custom_lint: ^0.7.5
   # Drift generator
   drift_dev: ^2.26.0
   fake_async: ^1.3.3
@@ -100,20 +102,11 @@ dev_dependencies:
   flutter_native_splash: ^2.4.7
   flutter_test:
     sdk: flutter
-  immich_mobile_immich_lint:
-    path: './immich_lint'
   integration_test:
     sdk: flutter
-  isar_generator:
-    git:
-      url: https://github.com/immich-app/isar
-      ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
-      path: packages/isar_generator/
   mocktail: ^1.0.4
   # Type safe platform code
   pigeon: ^26.0.2
-  riverpod_generator: ^2.6.1
-  riverpod_lint: ^2.6.1
 
 dependency_overrides:
   drift:

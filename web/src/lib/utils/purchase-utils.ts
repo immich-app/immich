@@ -1,32 +1,19 @@
-import { preferences } from '$lib/stores/user.store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { updateMyPreferences } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { get } from 'svelte/store';
-
 export const getButtonVisibility = (): boolean => {
-  const myPreferences = get(preferences);
-
-  if (!myPreferences) {
+  if (!authManager.authenticated) {
     return true;
   }
 
-  const { purchase } = myPreferences;
-
   const now = DateTime.now();
-  const hideUntilDate = DateTime.fromISO(purchase.hideBuyButtonUntil);
+  const hideUntilDate = DateTime.fromISO(authManager.preferences.purchase.hideBuyButtonUntil);
   const dayLeft = Number(now.diff(hideUntilDate, 'days').days.toFixed(0));
 
   return dayLeft > 0;
 };
 
 export const setSupportBadgeVisibility = async (value: boolean) => {
-  const response = await updateMyPreferences({
-    userPreferencesUpdateDto: {
-      purchase: {
-        showSupportBadge: value,
-      },
-    },
-  });
-
-  preferences.set(response);
+  const response = await updateMyPreferences({ userPreferencesUpdateDto: { purchase: { showSupportBadge: value } } });
+  authManager.setPreferences(response);
 };

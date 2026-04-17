@@ -129,16 +129,22 @@ class SearchApi {
   /// * [SearchSuggestionType] type (required):
   ///
   /// * [String] country:
+  ///   Filter by country
   ///
   /// * [bool] includeNull:
+  ///   Include null values in suggestions
   ///
   /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [String] model:
+  ///   Filter by camera model
   ///
   /// * [String] state:
+  ///   Filter by state/province
   Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? state, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions';
@@ -193,16 +199,22 @@ class SearchApi {
   /// * [SearchSuggestionType] type (required):
   ///
   /// * [String] country:
+  ///   Filter by country
   ///
   /// * [bool] includeNull:
+  ///   Include null values in suggestions
   ///
   /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [String] model:
+  ///   Filter by camera model
   ///
   /// * [String] state:
+  ///   Filter by state/province
   Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? state, }) async {
     final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -342,69 +354,96 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [List<String>] albumIds:
+  ///   Filter by album IDs
   ///
   /// * [String] city:
+  ///   Filter by city name
   ///
   /// * [String] country:
+  ///   Filter by country name
   ///
   /// * [DateTime] createdAfter:
+  ///   Filter by creation date (after)
   ///
   /// * [DateTime] createdBefore:
-  ///
-  /// * [String] deviceId:
+  ///   Filter by creation date (before)
   ///
   /// * [bool] isEncoded:
+  ///   Filter by encoded status
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isMotion:
+  ///   Filter by motion photo status
   ///
   /// * [bool] isNotInAlbum:
+  ///   Filter assets not in any album
   ///
   /// * [bool] isOffline:
+  ///   Filter by offline status
   ///
   /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] libraryId:
+  ///   Library ID to filter by
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [int] minFileSize:
+  ///   Minimum file size in bytes
   ///
   /// * [String] model:
+  ///   Filter by camera model
   ///
   /// * [String] ocr:
+  ///   Filter by OCR text content
   ///
   /// * [List<String>] personIds:
+  ///   Filter by person IDs
   ///
   /// * [num] rating:
+  ///   Filter by rating [1-5], or null for unrated
   ///
   /// * [num] size:
+  ///   Number of results to return
   ///
   /// * [String] state:
+  ///   Filter by state/province name
   ///
   /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
   ///
   /// * [DateTime] takenAfter:
+  ///   Filter by taken date (after)
   ///
   /// * [DateTime] takenBefore:
+  ///   Filter by taken date (before)
   ///
   /// * [DateTime] trashedAfter:
+  ///   Filter by trash date (after)
   ///
   /// * [DateTime] trashedBefore:
+  ///   Filter by trash date (before)
   ///
   /// * [AssetTypeEnum] type:
   ///
   /// * [DateTime] updatedAfter:
+  ///   Filter by update date (after)
   ///
   /// * [DateTime] updatedBefore:
+  ///   Filter by update date (before)
   ///
   /// * [AssetVisibility] visibility:
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted assets
   ///
   /// * [bool] withExif:
-  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
+  ///   Include EXIF data in response
+  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/large-assets';
 
@@ -429,9 +468,6 @@ class SearchApi {
     }
     if (createdBefore != null) {
       queryParams.addAll(_queryParams('', 'createdBefore', createdBefore));
-    }
-    if (deviceId != null) {
-      queryParams.addAll(_queryParams('', 'deviceId', deviceId));
     }
     if (isEncoded != null) {
       queryParams.addAll(_queryParams('', 'isEncoded', isEncoded));
@@ -533,70 +569,97 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [List<String>] albumIds:
+  ///   Filter by album IDs
   ///
   /// * [String] city:
+  ///   Filter by city name
   ///
   /// * [String] country:
+  ///   Filter by country name
   ///
   /// * [DateTime] createdAfter:
+  ///   Filter by creation date (after)
   ///
   /// * [DateTime] createdBefore:
-  ///
-  /// * [String] deviceId:
+  ///   Filter by creation date (before)
   ///
   /// * [bool] isEncoded:
+  ///   Filter by encoded status
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isMotion:
+  ///   Filter by motion photo status
   ///
   /// * [bool] isNotInAlbum:
+  ///   Filter assets not in any album
   ///
   /// * [bool] isOffline:
+  ///   Filter by offline status
   ///
   /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] libraryId:
+  ///   Library ID to filter by
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [int] minFileSize:
+  ///   Minimum file size in bytes
   ///
   /// * [String] model:
+  ///   Filter by camera model
   ///
   /// * [String] ocr:
+  ///   Filter by OCR text content
   ///
   /// * [List<String>] personIds:
+  ///   Filter by person IDs
   ///
   /// * [num] rating:
+  ///   Filter by rating [1-5], or null for unrated
   ///
   /// * [num] size:
+  ///   Number of results to return
   ///
   /// * [String] state:
+  ///   Filter by state/province name
   ///
   /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
   ///
   /// * [DateTime] takenAfter:
+  ///   Filter by taken date (after)
   ///
   /// * [DateTime] takenBefore:
+  ///   Filter by taken date (before)
   ///
   /// * [DateTime] trashedAfter:
+  ///   Filter by trash date (after)
   ///
   /// * [DateTime] trashedBefore:
+  ///   Filter by trash date (before)
   ///
   /// * [AssetTypeEnum] type:
   ///
   /// * [DateTime] updatedAfter:
+  ///   Filter by update date (after)
   ///
   /// * [DateTime] updatedBefore:
+  ///   Filter by update date (before)
   ///
   /// * [AssetVisibility] visibility:
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted assets
   ///
   /// * [bool] withExif:
-  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
-    final response = await searchLargeAssetsWithHttpInfo( albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, ocr: ocr, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, );
+  ///   Include EXIF data in response
+  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
+    final response = await searchLargeAssetsWithHttpInfo( albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, ocr: ocr, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -622,8 +685,10 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Person name to search for
   ///
   /// * [bool] withHidden:
+  ///   Include hidden people
   Future<Response> searchPersonWithHttpInfo(String name, { bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/person';
@@ -661,8 +726,10 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Person name to search for
   ///
   /// * [bool] withHidden:
+  ///   Include hidden people
   Future<List<PersonResponseDto>?> searchPerson(String name, { bool? withHidden, }) async {
     final response = await searchPersonWithHttpInfo(name,  withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -690,6 +757,7 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Place name to search for
   Future<Response> searchPlacesWithHttpInfo(String name,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/places';
@@ -724,6 +792,7 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Place name to search for
   Future<List<PlacesResponseDto>?> searchPlaces(String name,) async {
     final response = await searchPlacesWithHttpInfo(name,);
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -123,19 +123,18 @@ with
           ) as "year"
       )
     select
-      "a".*,
-      to_json("asset_exif") as "exifInfo"
+      "a".*
     from
       "today"
       inner join lateral (
         select
-          "asset".*
+          "asset"."id",
+          "asset"."localDateTime"
         from
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
         where
-          "asset_job_status"."previewAt" is not null
-          and (asset."localDateTime" at time zone 'UTC')::date = today.date
+          (asset."localDateTime" at time zone 'UTC')::date = today.date
           and "asset"."ownerId" = any ($4::uuid[])
           and "asset"."visibility" = $5
           and exists (
@@ -152,7 +151,6 @@ with
         limit
           $7
       ) as "a" on true
-      inner join "asset_exif" on "a"."id" = "asset_exif"."assetId"
   )
 select
   date_part(
@@ -244,17 +242,6 @@ where
 limit
   $3
 
--- AssetRepository.getAllByDeviceId
-select
-  "deviceAssetId"
-from
-  "asset"
-where
-  "ownerId" = $1::uuid
-  and "deviceId" = $2
-  and "visibility" != $3
-  and "deletedAt" is null
-
 -- AssetRepository.getLivePhotoCount
 select
   count(*) as "count"
@@ -314,9 +301,8 @@ limit
 -- AssetRepository.updateAll
 update "asset"
 set
-  "deviceId" = $1
 where
-  "id" = any ($2::uuid[])
+  "id" = any ($1::uuid[])
 
 -- AssetRepository.getByChecksum
 select
@@ -440,6 +426,7 @@ with
           and "stack"."primaryAssetId" != "asset"."id"
       )
     order by
+      (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
       "asset"."fileCreatedAt" desc
   ),
   "agg" as (
@@ -498,63 +485,6 @@ where
 limit
   $5
 
--- AssetRepository.getAllForUserFullSync
-select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
-from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
-  left join lateral (
-    select
-      "stack".*,
-      count("stacked") as "assetCount"
-    from
-      "asset" as "stacked"
-    where
-      "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
-where
-  "asset"."ownerId" = $1::uuid
-  and "asset"."visibility" != $2
-  and "asset"."updatedAt" <= $3
-  and "asset"."id" > $4
-order by
-  "asset"."id"
-limit
-  $5
-
--- AssetRepository.getChangedDeltaSync
-select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
-from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
-  left join lateral (
-    select
-      "stack".*,
-      count("stacked") as "assetCount"
-    from
-      "asset" as "stacked"
-    where
-      "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
-where
-  "asset"."ownerId" = any ($1::uuid[])
-  and "asset"."visibility" != $2
-  and "asset"."updatedAt" > $3
-limit
-  $4
-
 -- AssetRepository.detectOfflineExternalAssets
 update "asset"
 set
@@ -585,3 +515,159 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+-- AssetRepository.getForOriginal
+select
+  "asset"."id",
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" in ($3)
+
+-- AssetRepository.getForOriginals
+select
+  "asset"."id",
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" in ($3)
+
+-- AssetRepository.getForThumbnail
+select
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_file"."path" as "path"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
+where
+  "asset"."id" = $2
+order by
+  "asset_file"."isEdited" desc
+
+-- AssetRepository.getForVideo
+select
+  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'encoded_video'
+      and "asset_file"."isEdited" = false
+  ) as "encodedVideoPath"
+from
+  "asset"
+where
+  "asset"."id" = $1
+  and "asset"."type" = $2
+
+-- AssetRepository.getForOcr
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."orientation"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForEdit
+select
+  "asset"."type",
+  "asset"."livePhotoVideoId",
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."orientation",
+  "asset_exif"."projectionType"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForMetadataExtractionTags
+select
+  "asset_exif"."tags"
+from
+  "asset_exif"
+where
+  "asset_exif"."assetId" = $1
+
+-- AssetRepository.getForFaces
+select
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."orientation",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForUpdateTags
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "tag"."value"
+        from
+          "tag"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+        where
+          "asset"."id" = "tag_asset"."assetId"
+      ) as agg
+  ) as "tags"
+from
+  "asset"
+where
+  "asset"."id" = $1

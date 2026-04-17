@@ -17,8 +17,13 @@ class ContributorCountResponseDto {
     required this.userId,
   });
 
+  /// Number of assets contributed
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int assetCount;
 
+  /// User ID
   String userId;
 
   @override

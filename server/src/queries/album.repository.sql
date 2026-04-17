@@ -58,7 +58,7 @@ select
     from
       (
         select
-          *
+          "shared_link".*
         from
           "shared_link"
         where
@@ -164,6 +164,28 @@ order by
   "album"."createdAt" desc,
   "album"."createdAt" desc
 
+-- AlbumRepository.getByAssetIds
+select
+  "album"."id",
+  "album_asset"."assetId"
+from
+  "album"
+  inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+where
+  (
+    "album"."ownerId" = $1
+    or exists (
+      select
+      from
+        "album_user"
+      where
+        "album_user"."albumId" = "album"."id"
+        and "album_user"."userId" = $2
+    )
+  )
+  and "album_asset"."assetId" in ($3)
+  and "album"."deletedAt" is null
+
 -- AlbumRepository.getMetadataForIds
 select
   "album_asset"."albumId" as "albumId",
@@ -243,7 +265,7 @@ select
     from
       (
         select
-          *
+          "shared_link".*
         from
           "shared_link"
         where
@@ -316,7 +338,7 @@ select
     from
       (
         select
-          *
+          "shared_link".*
         from
           "shared_link"
         where

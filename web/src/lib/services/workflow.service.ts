@@ -397,7 +397,7 @@ export const handleToggleWorkflowEnabled = async (
     });
 
     eventManager.emit('WorkflowUpdate', updated);
-    toastManager.success($t('workflow_updated'));
+    toastManager.primary($t('workflow_updated'));
     return updated;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_workflow'));
@@ -419,7 +419,7 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
   try {
     await deleteWorkflow({ id: workflow.id });
     eventManager.emit('WorkflowDelete', workflow);
-    toastManager.success($t('workflow_deleted'));
+    toastManager.primary($t('workflow_deleted'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_workflow'));

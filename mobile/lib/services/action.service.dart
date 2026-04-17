@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -23,7 +24,6 @@ import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -214,6 +214,14 @@ class ActionService {
     return true;
   }
 
+  Future<bool> updateRating(String assetId, int rating) async {
+    // update remote first, then local to ensure consistency
+    await _assetApiRepository.updateRating(assetId, rating);
+    await _remoteAssetRepository.updateRating(assetId, rating);
+
+    return true;
+  }
+
   Future<void> stack(String userId, List<String> remoteIds) async {
     final stack = await _assetApiRepository.stack(remoteIds);
     await _remoteAssetRepository.stack(userId, stack);
@@ -224,12 +232,26 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) {
-    return _assetMediaRepository.shareAssets(assets, context);
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) {
+    return _assetMediaRepository.shareAssets(assets, context, cancelCompleter: cancelCompleter);
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
     return _downloadRepository.downloadAllAssets(assets);
+  }
+
+  Future<bool> setAlbumCover(String albumId, String assetId) async {
+    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
+    await _remoteAlbumRepository.update(updatedAlbum);
+    return true;
+  }
+
+  Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
+    if (edits.isEmpty) {
+      await _assetApiRepository.removeEdits(remoteId);
+    } else {
+      await _assetApiRepository.editAsset(remoteId, edits);
+    }
   }
 
   Future<int> _deleteLocalAssets(List<String> localIds) async {

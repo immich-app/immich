@@ -13,7 +13,7 @@ part of openapi.api;
 class NotificationCreateDto {
   /// Returns a new [NotificationCreateDto] instance.
   NotificationCreateDto({
-    this.data,
+    this.data = const {},
     this.description,
     this.level,
     this.readAt,
@@ -22,14 +22,10 @@ class NotificationCreateDto {
     required this.userId,
   });
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Object? data;
+  /// Additional notification data
+  Map<String, Object> data;
 
+  /// Notification description
   String? description;
 
   ///
@@ -40,8 +36,10 @@ class NotificationCreateDto {
   ///
   NotificationLevel? level;
 
+  /// Date when notification was read
   DateTime? readAt;
 
+  /// Notification title
   String title;
 
   ///
@@ -52,11 +50,12 @@ class NotificationCreateDto {
   ///
   NotificationType? type;
 
+  /// User ID to send notification to
   String userId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is NotificationCreateDto &&
-    other.data == data &&
+    _deepEquality.equals(other.data, data) &&
     other.description == description &&
     other.level == level &&
     other.readAt == readAt &&
@@ -67,7 +66,7 @@ class NotificationCreateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (data == null ? 0 : data!.hashCode) +
+    (data.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (level == null ? 0 : level!.hashCode) +
     (readAt == null ? 0 : readAt!.hashCode) +
@@ -80,11 +79,7 @@ class NotificationCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.data != null) {
       json[r'data'] = this.data;
-    } else {
-    //  json[r'data'] = null;
-    }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -96,7 +91,9 @@ class NotificationCreateDto {
     //  json[r'level'] = null;
     }
     if (this.readAt != null) {
-      json[r'readAt'] = this.readAt!.toUtc().toIso8601String();
+      json[r'readAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.readAt!.millisecondsSinceEpoch
+        : this.readAt!.toUtc().toIso8601String();
     } else {
     //  json[r'readAt'] = null;
     }
@@ -119,10 +116,10 @@ class NotificationCreateDto {
       final json = value.cast<String, dynamic>();
 
       return NotificationCreateDto(
-        data: mapValueOfType<Object>(json, r'data'),
+        data: mapCastOfType<String, Object>(json, r'data') ?? const {},
         description: mapValueOfType<String>(json, r'description'),
         level: NotificationLevel.fromJson(json[r'level']),
-        readAt: mapDateTime(json, r'readAt', r''),
+        readAt: mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         title: mapValueOfType<String>(json, r'title')!,
         type: NotificationType.fromJson(json[r'type']),
         userId: mapValueOfType<String>(json, r'userId')!,

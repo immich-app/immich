@@ -14,11 +14,16 @@ class DownloadResponse {
   /// Returns a new [DownloadResponse] instance.
   DownloadResponse({
     required this.archiveSize,
-    this.includeEmbeddedVideos = false,
+    required this.includeEmbeddedVideos,
   });
 
+  /// Maximum archive size in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int archiveSize;
 
+  /// Whether to include embedded videos in downloads
   bool includeEmbeddedVideos;
 
   @override

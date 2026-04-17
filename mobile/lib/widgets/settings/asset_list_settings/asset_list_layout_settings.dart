@@ -7,14 +7,12 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useDynamicLayout = useAppSettingsState(AppSettingsEnum.dynamicLayout);
     final tilesPerRow = useAppSettingsState(AppSettingsEnum.tilesPerRow);
 
     return Column(
@@ -23,11 +21,6 @@ class LayoutSettings extends HookConsumerWidget {
         SettingGroupTitle(
           title: "asset_list_layout_sub_title".t(context: context),
           icon: Icons.view_module_outlined,
-        ),
-        SettingsSwitchListTile(
-          valueNotifier: useDynamicLayout,
-          title: "asset_list_layout_settings_dynamic_layout_title".t(context: context),
-          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSliderListTile(
           valueNotifier: tilesPerRow,

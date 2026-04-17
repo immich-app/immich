@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
-  import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
@@ -16,12 +16,10 @@
 
   let { data }: Props = $props();
 
-  const user = $state(data.user);
-  let isAdmin = $state(user.isAdmin);
-  let name = $state(user.name);
-  let email = $state(user.email);
-  let storageLabel = $state(user.storageLabel || '');
-  const previousQuota = $state(user.quotaSizeInBytes);
+  const user = $derived(data.user);
+  let { isAdmin, name, email } = $derived(user);
+  let storageLabel = $derived(user.storageLabel || '');
+  const previousQuota = $derived(user.quotaSizeInBytes);
 
   let quotaSize = $derived(
     typeof user.quotaSizeInBytes === 'number' ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : undefined,
@@ -84,7 +82,7 @@
     </Link>
   </Text>
 
-  {#if user.id !== $authUser.id}
+  {#if user.id !== authManager.user.id}
     <Field label={$t('admin.admin_user')}>
       <Switch bind:checked={isAdmin} class="mt-4" />
     </Field>

@@ -17,6 +17,7 @@ class AssetJobsDto {
     required this.name,
   });
 
+  /// Asset IDs
   List<String> assetIds;
 
   AssetJobName name;

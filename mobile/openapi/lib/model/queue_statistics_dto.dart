@@ -21,16 +21,40 @@ class QueueStatisticsDto {
     required this.waiting,
   });
 
+  /// Number of active jobs
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int active;
 
+  /// Number of completed jobs
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int completed;
 
+  /// Number of delayed jobs
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int delayed;
 
+  /// Number of failed jobs
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int failed;
 
+  /// Number of paused jobs
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int paused;
 
+  /// Number of waiting jobs
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int waiting;
 
   @override

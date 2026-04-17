@@ -1,9 +1,11 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/domain/interfaces/db.interface.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
@@ -24,25 +26,8 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
-import 'package:isar/isar.dart' hide Index;
-
-import 'db.repository.drift.dart';
-
-// #zoneTxn is the symbol used by Isar to mark a transaction within the current zone
-// ref: isar/isar_common.dart
-const Symbol _kzoneTxn = #zoneTxn;
-
-class IsarDatabaseRepository implements IDatabaseRepository {
-  final Isar _db;
-  const IsarDatabaseRepository(Isar db) : _db = db;
-
-  // Isar do not support nested transactions. This is a workaround to prevent us from making nested transactions
-  // Reuse the current transaction if it is already active, else start a new transaction
-  @override
-  Future<T> transaction<T>(Future<T> Function() callback) =>
-      Zone.current[_kzoneTxn] == null ? _db.writeTxn(callback) : callback();
-}
 
 @DriftDatabase(
   tables: [
@@ -66,10 +51,11 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
+    AssetEditEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
-class Drift extends $Drift implements IDatabaseRepository {
+class Drift extends $Drift {
   Drift([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
@@ -97,7 +83,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -193,7 +179,13 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
           },
           from14To15: (m, v15) async {
-            await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
+            await m.alterTable(
+              TableMigration(
+                v15.trashedLocalAssetEntity,
+                columnTransformer: {v15.trashedLocalAssetEntity.source: Constant(TrashOrigin.localSync.index)},
+                newColumns: [v15.trashedLocalAssetEntity.source],
+              ),
+            );
           },
           from15To16: (m, v16) async {
             // Add i_cloud_id to local and remote asset tables
@@ -203,6 +195,34 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from16To17: (m, v17) async {
             await m.addColumn(v17.remoteAssetEntity, v17.remoteAssetEntity.isEdited);
+          },
+          from17To18: (m, v18) async {
+            await m.createIndex(v18.idxRemoteAssetCloudId);
+          },
+          from18To19: (m, v19) async {
+            await m.createIndex(v19.idxAssetFacePersonId);
+            await m.createIndex(v19.idxAssetFaceAssetId);
+            await m.createIndex(v19.idxLocalAlbumAssetAlbumAsset);
+            await m.createIndex(v19.idxPartnerSharedWithId);
+            await m.createIndex(v19.idxPersonOwnerId);
+            await m.createIndex(v19.idxRemoteAlbumOwnerId);
+            await m.createIndex(v19.idxRemoteAlbumAssetAlbumAsset);
+            await m.createIndex(v19.idxRemoteAssetStackId);
+            await m.createIndex(v19.idxRemoteAssetLocalDateTimeDay);
+            await m.createIndex(v19.idxRemoteAssetLocalDateTimeMonth);
+            await m.createIndex(v19.idxStackPrimaryAssetId);
+          },
+          from19To20: (m, v20) async {
+            await m.addColumn(v20.assetFaceEntity, v20.assetFaceEntity.isVisible);
+            await m.addColumn(v20.assetFaceEntity, v20.assetFaceEntity.deletedAt);
+          },
+          from20To21: (m, v21) async {
+            await m.addColumn(v21.localAssetEntity, v21.localAssetEntity.playbackStyle);
+            await m.addColumn(v21.trashedLocalAssetEntity, v21.trashedLocalAssetEntity.playbackStyle);
+          },
+          from21To22: (m, v22) async {
+            await m.createTable(v22.assetEditEntity);
+            await m.createIndex(v22.idxAssetEditAssetId);
           },
         ),
       );
@@ -219,15 +239,16 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 30000');
+      await customStatement('PRAGMA busy_timeout = 30000'); // 30s
+      await customStatement('PRAGMA cache_size = -32000'); // 32MB
+      await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
 }
 
-class DriftDatabaseRepository implements IDatabaseRepository {
+class DriftDatabaseRepository {
   final Drift _db;
   const DriftDatabaseRepository(this._db);
 
-  @override
   Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
 }

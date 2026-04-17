@@ -1,108 +1,66 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsDateString,
-  IsInt,
-  IsLatitude,
-  IsLongitude,
-  IsNotEmpty,
-  IsObject,
-  IsPositive,
-  IsString,
-  IsTimeZone,
-  Max,
-  Min,
-  ValidateIf,
-  ValidateNested,
-} from 'class-validator';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetType, AssetVisibility } from 'src/enum';
+import { createZodDto } from 'nestjs-zod';
+import { HistoryBuilder } from 'src/decorators';
+import { BulkIdsSchema } from 'src/dtos/asset-ids.response.dto';
+import { AssetType, AssetVisibilitySchema } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
+import { IsNotSiblingOf, isoDatetimeToDate, latitudeSchema, longitudeSchema, stringToBool } from 'src/validation';
+import z from 'zod';
 
-export class DeviceIdDto {
-  @IsNotEmpty()
-  @IsString()
-  deviceId!: string;
-}
+const UpdateAssetBaseSchema = z
+  .object({
+    isFavorite: z.boolean().optional().describe('Mark as favorite'),
+    visibility: AssetVisibilitySchema.optional(),
+    dateTimeOriginal: z.string().optional().describe('Original date and time'),
+    latitude: latitudeSchema.optional().describe('Latitude coordinate'),
+    longitude: longitudeSchema.optional().describe('Longitude coordinate'),
+    rating: z
+      .number()
+      .int()
+      .min(-1)
+      .max(5)
+      .transform((value) => (value === 0 ? null : value))
+      .nullish()
+      .describe('Rating in range [1-5], or null for unrated')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .stable('v2')
+          .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
+          .getExtensions(),
+      }),
+    description: z.string().optional().describe('Asset description'),
+  })
+  .refine(
+    (data) =>
+      (data.latitude === undefined && data.longitude === undefined) ||
+      (data.latitude !== undefined && data.longitude !== undefined),
+    { message: 'Latitude and longitude must be provided together' },
+  );
 
-const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
-  o.latitude !== undefined || o.longitude !== undefined;
-const ValidateGPS = () => ValidateIf(hasGPS);
+const AssetBulkUpdateBaseSchema = UpdateAssetBaseSchema.extend({
+  ids: z.array(z.uuidv4()).describe('Asset IDs to update'),
+  duplicateId: z.string().nullish().describe('Duplicate ID'),
+  dateTimeRelative: z.number().optional().describe('Relative time offset in seconds'),
+  timeZone: z.string().optional().describe('Time zone (IANA timezone)'),
+});
 
-export class UpdateAssetBase {
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
+const AssetBulkUpdateSchema = AssetBulkUpdateBaseSchema.pipe(
+  IsNotSiblingOf(AssetBulkUpdateBaseSchema, 'dateTimeRelative', ['dateTimeOriginal']),
+).meta({ id: 'AssetBulkUpdateDto' });
 
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
-  visibility?: AssetVisibility;
+const UpdateAssetSchema = UpdateAssetBaseSchema.extend({
+  livePhotoVideoId: z.uuidv4().nullish().describe('Live photo video ID'),
+}).meta({ id: 'UpdateAssetDto' });
 
-  @Optional()
-  @IsDateString()
-  dateTimeOriginal?: string;
+const AssetBulkDeleteSchema = BulkIdsSchema.extend({
+  force: z.boolean().optional().describe('Force delete even if in use'),
+}).meta({ id: 'AssetBulkDeleteDto' });
 
-  @ValidateGPS()
-  @IsLatitude()
-  @IsNotEmpty()
-  latitude?: number;
-
-  @ValidateGPS()
-  @IsLongitude()
-  @IsNotEmpty()
-  longitude?: number;
-
-  @Optional()
-  @IsInt()
-  @Max(5)
-  @Min(-1)
-  rating?: number;
-
-  @Optional()
-  @IsString()
-  description?: string;
-}
-
-export class AssetBulkUpdateDto extends UpdateAssetBase {
-  @ValidateUUID({ each: true })
-  ids!: string[];
-
-  @Optional()
-  duplicateId?: string | null;
-
-  @IsNotSiblingOf(['dateTimeOriginal'])
-  @Optional()
-  @IsInt()
-  dateTimeRelative?: number;
-
-  @IsNotSiblingOf(['dateTimeOriginal'])
-  @IsTimeZone()
-  @Optional()
-  timeZone?: string;
-}
-
-export class UpdateAssetDto extends UpdateAssetBase {
-  @ValidateUUID({ optional: true, nullable: true })
-  livePhotoVideoId?: string | null;
-}
-
-export class RandomAssetsDto {
-  @Optional()
-  @IsInt()
-  @IsPositive()
-  @Type(() => Number)
-  count?: number;
-}
-
-export class AssetBulkDeleteDto extends BulkIdsDto {
-  @ValidateBoolean({ optional: true })
-  force?: boolean;
-}
-
-export class AssetIdsDto {
-  @ValidateUUID({ each: true })
-  assetIds!: string[];
-}
+export const AssetIdsSchema = z
+  .object({
+    assetIds: z.array(z.uuidv4()).describe('Asset IDs'),
+  })
+  .meta({ id: 'AssetIdsDto' });
 
 export enum AssetJobName {
   REFRESH_FACES = 'refresh-faces',
@@ -111,127 +69,104 @@ export enum AssetJobName {
   TRANSCODE_VIDEO = 'transcode-video',
 }
 
-export class AssetJobsDto extends AssetIdsDto {
-  @ValidateEnum({ enum: AssetJobName, name: 'AssetJobName' })
-  name!: AssetJobName;
-}
+const AssetJobNameSchema = z.enum(AssetJobName).describe('Job name').meta({ id: 'AssetJobName' });
 
-export class AssetStatsDto {
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
-  visibility?: AssetVisibility;
+const AssetJobsSchema = AssetIdsSchema.extend({
+  name: AssetJobNameSchema,
+}).meta({ id: 'AssetJobsDto' });
 
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
+const AssetStatsSchema = z
+  .object({
+    visibility: AssetVisibilitySchema.optional(),
+    isFavorite: stringToBool.optional().describe('Filter by favorite status'),
+    isTrashed: stringToBool.optional().describe('Filter by trash status'),
+  })
+  .meta({ id: 'AssetStatsDto' });
 
-  @ValidateBoolean({ optional: true })
-  isTrashed?: boolean;
-}
+const AssetStatsResponseSchema = z
+  .object({
+    images: z.int().describe('Number of images'),
+    videos: z.int().describe('Number of videos'),
+    total: z.int().describe('Total number of assets'),
+  })
+  .meta({ id: 'AssetStatsResponseDto' });
 
-export class AssetStatsResponseDto {
-  @ApiProperty({ type: 'integer' })
-  images!: number;
+const AssetMetadataRouteParamsSchema = z
+  .object({
+    id: z.uuidv4().describe('Asset ID'),
+    key: z.string().describe('Metadata key'),
+  })
+  .meta({ id: 'AssetMetadataRouteParams' });
 
-  @ApiProperty({ type: 'integer' })
-  videos!: number;
+export const AssetMetadataUpsertItemSchema = z
+  .object({
+    key: z.string().describe('Metadata key'),
+    value: z.record(z.string(), z.unknown()).describe('Metadata value (object)'),
+  })
+  .meta({ id: 'AssetMetadataUpsertItemDto' });
 
-  @ApiProperty({ type: 'integer' })
-  total!: number;
-}
+const AssetMetadataUpsertSchema = z
+  .object({
+    items: z.array(AssetMetadataUpsertItemSchema).describe('Metadata items to upsert'),
+  })
+  .meta({ id: 'AssetMetadataUpsertDto' });
 
-export class AssetMetadataRouteParams {
-  @ValidateUUID()
-  id!: string;
+const AssetMetadataBulkUpsertItemSchema = z
+  .object({
+    assetId: z.uuidv4().describe('Asset ID'),
+    key: z.string().describe('Metadata key'),
+    value: z.record(z.string(), z.unknown()).describe('Metadata value (object)'),
+  })
+  .meta({ id: 'AssetMetadataBulkUpsertItemDto' });
 
-  @ValidateString()
-  key!: string;
-}
+const AssetMetadataBulkUpsertSchema = z
+  .object({
+    items: z.array(AssetMetadataBulkUpsertItemSchema).describe('Metadata items to upsert'),
+  })
+  .meta({ id: 'AssetMetadataBulkUpsertDto' });
 
-export class AssetMetadataUpsertDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetMetadataUpsertItemDto)
-  items!: AssetMetadataUpsertItemDto[];
-}
+const AssetMetadataBulkDeleteItemSchema = z
+  .object({
+    assetId: z.uuidv4().describe('Asset ID'),
+    key: z.string().describe('Metadata key'),
+  })
+  .meta({ id: 'AssetMetadataBulkDeleteItemDto' });
 
-export class AssetMetadataUpsertItemDto {
-  @ValidateString()
-  key!: string;
+const AssetMetadataBulkDeleteSchema = z
+  .object({
+    items: z.array(AssetMetadataBulkDeleteItemSchema).describe('Metadata items to delete'),
+  })
+  .meta({ id: 'AssetMetadataBulkDeleteDto' });
 
-  @IsObject()
-  value!: object;
-}
+const AssetMetadataResponseSchema = z
+  .object({
+    key: z.string().describe('Metadata key'),
+    value: z.record(z.string(), z.unknown()).describe('Metadata value (object)'),
+    updatedAt: isoDatetimeToDate.describe('Last update date'),
+  })
+  .meta({ id: 'AssetMetadataResponseDto' });
 
-export class AssetMetadataBulkUpsertDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetMetadataBulkUpsertItemDto)
-  items!: AssetMetadataBulkUpsertItemDto[];
-}
+const AssetMetadataBulkResponseSchema = AssetMetadataResponseSchema.extend({
+  assetId: z.string().describe('Asset ID'),
+}).meta({ id: 'AssetMetadataBulkResponseDto' });
 
-export class AssetMetadataBulkUpsertItemDto {
-  @ValidateUUID()
-  assetId!: string;
+const AssetCopySchema = z
+  .object({
+    sourceId: z.uuidv4().describe('Source asset ID'),
+    targetId: z.uuidv4().describe('Target asset ID'),
+    sharedLinks: z.boolean().default(true).optional().describe('Copy shared links'),
+    albums: z.boolean().default(true).optional().describe('Copy album associations'),
+    sidecar: z.boolean().default(true).optional().describe('Copy sidecar file'),
+    stack: z.boolean().default(true).optional().describe('Copy stack association'),
+    favorite: z.boolean().default(true).optional().describe('Copy favorite status'),
+  })
+  .meta({ id: 'AssetCopyDto' });
 
-  @ValidateString()
-  key!: string;
-
-  @IsObject()
-  value!: object;
-}
-
-export class AssetMetadataBulkDeleteDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetMetadataBulkDeleteItemDto)
-  items!: AssetMetadataBulkDeleteItemDto[];
-}
-
-export class AssetMetadataBulkDeleteItemDto {
-  @ValidateUUID()
-  assetId!: string;
-
-  @ValidateString()
-  key!: string;
-}
-
-export class AssetMetadataResponseDto {
-  @ValidateString()
-  key!: string;
-  value!: object;
-  updatedAt!: Date;
-}
-
-export class AssetMetadataBulkResponseDto extends AssetMetadataResponseDto {
-  assetId!: string;
-}
-
-export class AssetCopyDto {
-  @ValidateUUID()
-  sourceId!: string;
-
-  @ValidateUUID()
-  targetId!: string;
-
-  @ValidateBoolean({ optional: true, default: true })
-  sharedLinks?: boolean;
-
-  @ValidateBoolean({ optional: true, default: true })
-  albums?: boolean;
-
-  @ValidateBoolean({ optional: true, default: true })
-  sidecar?: boolean;
-
-  @ValidateBoolean({ optional: true, default: true })
-  stack?: boolean;
-
-  @ValidateBoolean({ optional: true, default: true })
-  favorite?: boolean;
-}
-
-export class AssetDownloadOriginalDto {
-  @ValidateBoolean({ optional: true, default: false })
-  edited?: boolean;
-}
+const AssetDownloadOriginalSchema = z
+  .object({
+    edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
+  })
+  .meta({ id: 'AssetDownloadOriginalDto' });
 
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
@@ -240,3 +175,19 @@ export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
     total: Object.values(stats).reduce((total, value) => total + value, 0),
   };
 };
+
+export class AssetBulkUpdateDto extends createZodDto(AssetBulkUpdateSchema) {}
+export class UpdateAssetDto extends createZodDto(UpdateAssetSchema) {}
+export class AssetBulkDeleteDto extends createZodDto(AssetBulkDeleteSchema) {}
+export class AssetIdsDto extends createZodDto(AssetIdsSchema) {}
+export class AssetJobsDto extends createZodDto(AssetJobsSchema) {}
+export class AssetStatsDto extends createZodDto(AssetStatsSchema) {}
+export class AssetStatsResponseDto extends createZodDto(AssetStatsResponseSchema) {}
+export class AssetMetadataRouteParams extends createZodDto(AssetMetadataRouteParamsSchema) {}
+export class AssetMetadataUpsertDto extends createZodDto(AssetMetadataUpsertSchema) {}
+export class AssetMetadataBulkUpsertDto extends createZodDto(AssetMetadataBulkUpsertSchema) {}
+export class AssetMetadataBulkDeleteDto extends createZodDto(AssetMetadataBulkDeleteSchema) {}
+export class AssetMetadataResponseDto extends createZodDto(AssetMetadataResponseSchema) {}
+export class AssetMetadataBulkResponseDto extends createZodDto(AssetMetadataBulkResponseSchema) {}
+export class AssetCopyDto extends createZodDto(AssetCopySchema) {}
+export class AssetDownloadOriginalDto extends createZodDto(AssetDownloadOriginalSchema) {}

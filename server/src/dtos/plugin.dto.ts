@@ -1,60 +1,59 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { PluginAction, PluginFilter } from 'src/database';
-import { PluginContext as PluginContextType, PluginTriggerType } from 'src/enum';
-import type { JSONSchema } from 'src/types/plugin-schema.types';
-import { ValidateEnum } from 'src/validation';
+import { PluginContextSchema, PluginTriggerTypeSchema } from 'src/enum';
+import { JSONSchemaSchema } from 'src/types/plugin-schema.types';
+import z from 'zod';
 
-export class PluginTriggerResponseDto {
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
-  type!: PluginTriggerType;
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
-  contextType!: PluginContextType;
-}
+const PluginTriggerResponseSchema = z
+  .object({
+    type: PluginTriggerTypeSchema,
+    contextType: PluginContextSchema,
+  })
+  .meta({ id: 'PluginTriggerResponseDto' });
 
-export class PluginResponseDto {
-  id!: string;
-  name!: string;
-  title!: string;
-  description!: string;
-  author!: string;
-  version!: string;
-  createdAt!: string;
-  updatedAt!: string;
-  filters!: PluginFilterResponseDto[];
-  actions!: PluginActionResponseDto[];
-}
+const PluginFilterResponseSchema = z
+  .object({
+    id: z.string().describe('Filter ID'),
+    pluginId: z.string().describe('Plugin ID'),
+    methodName: z.string().describe('Method name'),
+    title: z.string().describe('Filter title'),
+    description: z.string().describe('Filter description'),
+    supportedContexts: z.array(PluginContextSchema).describe('Supported contexts'),
+    schema: JSONSchemaSchema.nullable().describe('Filter schema'),
+  })
+  .meta({ id: 'PluginFilterResponseDto' });
 
-export class PluginFilterResponseDto {
-  id!: string;
-  pluginId!: string;
-  methodName!: string;
-  title!: string;
-  description!: string;
+const PluginActionResponseSchema = z
+  .object({
+    id: z.string().describe('Action ID'),
+    pluginId: z.string().describe('Plugin ID'),
+    methodName: z.string().describe('Method name'),
+    title: z.string().describe('Action title'),
+    description: z.string().describe('Action description'),
+    supportedContexts: z.array(PluginContextSchema).describe('Supported contexts'),
+    schema: JSONSchemaSchema.nullable().describe('Action schema'),
+  })
+  .meta({ id: 'PluginActionResponseDto' });
 
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
-  supportedContexts!: PluginContextType[];
-  schema!: JSONSchema | null;
-}
+const PluginResponseSchema = z
+  .object({
+    id: z.string().describe('Plugin ID'),
+    name: z.string().describe('Plugin name'),
+    title: z.string().describe('Plugin title'),
+    description: z.string().describe('Plugin description'),
+    author: z.string().describe('Plugin author'),
+    version: z.string().describe('Plugin version'),
+    createdAt: z.string().describe('Creation date'),
+    updatedAt: z.string().describe('Last update date'),
+    filters: z.array(PluginFilterResponseSchema).describe('Plugin filters'),
+    actions: z.array(PluginActionResponseSchema).describe('Plugin actions'),
+  })
+  .meta({ id: 'PluginResponseDto' });
 
-export class PluginActionResponseDto {
-  id!: string;
-  pluginId!: string;
-  methodName!: string;
-  title!: string;
-  description!: string;
+export class PluginTriggerResponseDto extends createZodDto(PluginTriggerResponseSchema) {}
+export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
 
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
-  supportedContexts!: PluginContextType[];
-  schema!: JSONSchema | null;
-}
-
-export class PluginInstallDto {
-  @IsString()
-  @IsNotEmpty()
-  manifestPath!: string;
-}
-
-export type MapPlugin = {
+type MapPlugin = {
   id: string;
   name: string;
   title: string;

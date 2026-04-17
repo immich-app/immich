@@ -16,6 +16,10 @@ class TagBulkAssetsResponseDto {
     required this.count,
   });
 
+  /// Number of assets tagged
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int count;
 
   @override

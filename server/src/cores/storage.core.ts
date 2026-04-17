@@ -34,6 +34,8 @@ export interface MoveRequest {
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
 
+export type ImagePathOptions = { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean };
+
 let instance: StorageCore | null;
 
 let mediaLocation: string | undefined;
@@ -110,14 +112,7 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.id}.jpeg`);
   }
 
-  static getImagePath(
-    asset: ThumbnailPathEntity,
-    {
-      fileType,
-      format,
-      isEdited,
-    }: { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean },
-  ) {
+  static getImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions) {
     return StorageCore.getNestedPath(
       StorageFolder.Thumbnails,
       asset.ownerId,
@@ -159,10 +154,11 @@ export class StorageCore {
   }
 
   async moveAssetVideo(asset: StorageAsset) {
+    const encodedVideoFile = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
     return this.moveFile({
       entityId: asset.id,
       pathType: AssetPathType.EncodedVideo,
-      oldPath: asset.encodedVideoPath,
+      oldPath: encodedVideoFile?.path || null,
       newPath: StorageCore.getEncodedVideoPath(asset),
     });
   }
@@ -308,21 +304,15 @@ export class StorageCore {
       case AssetPathType.Original: {
         return this.assetRepository.update({ id, originalPath: newPath });
       }
-      case AssetFileType.FullSize: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.FullSize, path: newPath });
-      }
-      case AssetFileType.Preview: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Preview, path: newPath });
-      }
-      case AssetFileType.Thumbnail: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Thumbnail, path: newPath });
-      }
-      case AssetPathType.EncodedVideo: {
-        return this.assetRepository.update({ id, encodedVideoPath: newPath });
-      }
+
+      case AssetFileType.FullSize:
+      case AssetFileType.EncodedVideo:
+      case AssetFileType.Thumbnail:
+      case AssetFileType.Preview:
       case AssetFileType.Sidecar: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: newPath });
+        return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
       }
+
       case PersonPathType.Face: {
         return this.personRepository.update({ id, thumbnailPath: newPath });
       }

@@ -17,6 +17,7 @@ class AssetMediaResponseDto {
     required this.status,
   });
 
+  /// Asset media ID
   String id;
 
   AssetMediaStatus status;

@@ -1,90 +1,91 @@
-import { IsString } from 'class-validator';
-import { NotificationLevel, NotificationType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import { NotificationLevel, NotificationLevelSchema, NotificationType, NotificationTypeSchema } from 'src/enum';
+import { isoDatetimeToDate, stringToBool } from 'src/validation';
+import z from 'zod';
 
-export class TestEmailResponseDto {
-  messageId!: string;
-}
-export class TemplateResponseDto {
-  name!: string;
-  html!: string;
-}
-export class TemplateDto {
-  @IsString()
-  template!: string;
-}
+const TestEmailResponseSchema = z
+  .object({
+    messageId: z.string().describe('Email message ID'),
+  })
+  .meta({ id: 'TestEmailResponseDto' });
 
-export class NotificationDto {
-  id!: string;
-  @ValidateDate()
-  createdAt!: Date;
-  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel' })
-  level!: NotificationLevel;
-  @ValidateEnum({ enum: NotificationType, name: 'NotificationType' })
-  type!: NotificationType;
-  title!: string;
-  description?: string;
-  data?: any;
-  readAt?: Date;
-}
+const TemplateResponseSchema = z
+  .object({
+    name: z.string().describe('Template name'),
+    html: z.string().describe('Template HTML content'),
+  })
+  .meta({ id: 'TemplateResponseDto' });
 
-export class NotificationSearchDto {
-  @ValidateUUID({ optional: true })
-  id?: string;
+const TemplateSchema = z
+  .object({
+    template: z.string().describe('Template name'),
+  })
+  .meta({ id: 'TemplateDto' });
 
-  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', optional: true })
-  level?: NotificationLevel;
+const NotificationSchema = z
+  .object({
+    id: z.string().describe('Notification ID'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
+    level: NotificationLevelSchema,
+    type: NotificationTypeSchema,
+    title: z.string().describe('Notification title'),
+    description: z.string().optional().describe('Notification description'),
+    data: z.record(z.string(), z.unknown()).optional().describe('Additional notification data'),
+    readAt: isoDatetimeToDate.optional().describe('Date when notification was read'),
+  })
+  .meta({ id: 'NotificationDto' });
 
-  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true })
-  type?: NotificationType;
+const NotificationSearchSchema = z
+  .object({
+    id: z.uuidv4().optional().describe('Filter by notification ID'),
+    level: NotificationLevelSchema.optional(),
+    type: NotificationTypeSchema.optional(),
+    unread: stringToBool.optional().describe('Filter by unread status'),
+  })
+  .meta({ id: 'NotificationSearchDto' });
 
-  @ValidateBoolean({ optional: true })
-  unread?: boolean;
-}
+const NotificationCreateSchema = z
+  .object({
+    level: NotificationLevelSchema.optional(),
+    type: NotificationTypeSchema.optional(),
+    title: z.string().describe('Notification title'),
+    description: z.string().nullish().describe('Notification description'),
+    data: z.record(z.string(), z.unknown()).optional().describe('Additional notification data'),
+    readAt: isoDatetimeToDate.nullish().describe('Date when notification was read'),
+    userId: z.uuidv4().describe('User ID to send notification to'),
+  })
+  .meta({ id: 'NotificationCreateDto' });
 
-export class NotificationCreateDto {
-  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', optional: true })
-  level?: NotificationLevel;
+const NotificationUpdateSchema = z
+  .object({
+    readAt: isoDatetimeToDate.nullish().describe('Date when notification was read'),
+  })
+  .meta({ id: 'NotificationUpdateDto' });
 
-  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true })
-  type?: NotificationType;
+const NotificationUpdateAllSchema = z
+  .object({
+    ids: z.array(z.uuidv4()).min(1).describe('Notification IDs to update'),
+    readAt: isoDatetimeToDate.nullish().describe('Date when notifications were read'),
+  })
+  .meta({ id: 'NotificationUpdateAllDto' });
 
-  @IsString()
-  title!: string;
+const NotificationDeleteAllSchema = z
+  .object({
+    ids: z.array(z.uuidv4()).min(1).describe('Notification IDs to delete'),
+  })
+  .meta({ id: 'NotificationDeleteAllDto' });
 
-  @IsString()
-  @Optional({ nullable: true })
-  description?: string | null;
+export class TestEmailResponseDto extends createZodDto(TestEmailResponseSchema) {}
+export class TemplateResponseDto extends createZodDto(TemplateResponseSchema) {}
+export class TemplateDto extends createZodDto(TemplateSchema) {}
+export class NotificationDto extends createZodDto(NotificationSchema) {}
+export class NotificationSearchDto extends createZodDto(NotificationSearchSchema) {}
+export class NotificationCreateDto extends createZodDto(NotificationCreateSchema) {}
+export class NotificationUpdateDto extends createZodDto(NotificationUpdateSchema) {}
+export class NotificationUpdateAllDto extends createZodDto(NotificationUpdateAllSchema) {}
+export class NotificationDeleteAllDto extends createZodDto(NotificationDeleteAllSchema) {}
 
-  @Optional({ nullable: true })
-  data?: any;
-
-  @ValidateDate({ optional: true, nullable: true })
-  readAt?: Date | null;
-
-  @ValidateUUID()
-  userId!: string;
-}
-
-export class NotificationUpdateDto {
-  @ValidateDate({ optional: true, nullable: true })
-  readAt?: Date | null;
-}
-
-export class NotificationUpdateAllDto {
-  @ValidateUUID({ each: true, optional: true })
-  ids!: string[];
-
-  @ValidateDate({ optional: true, nullable: true })
-  readAt?: Date | null;
-}
-
-export class NotificationDeleteAllDto {
-  @ValidateUUID({ each: true })
-  ids!: string[];
-}
-
-export type MapNotification = {
+type MapNotification = {
   id: string;
   createdAt: Date;
   updateId?: string;
@@ -95,6 +96,7 @@ export type MapNotification = {
   description: string | null;
   readAt: Date | null;
 };
+
 export const mapNotification = (notification: MapNotification): NotificationDto => {
   return {
     id: notification.id,

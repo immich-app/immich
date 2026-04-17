@@ -19,12 +19,15 @@ class MaintenanceDetectInstallStorageFolderDto {
     required this.writable,
   });
 
+  /// Number of files in the folder
   num files;
 
   StorageFolder folder;
 
+  /// Whether the folder is readable
   bool readable;
 
+  /// Whether the folder is writable
   bool writable;
 
   @override

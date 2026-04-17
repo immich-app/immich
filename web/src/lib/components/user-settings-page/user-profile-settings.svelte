@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyUser } from '@immich/sdk';
   import { Button, Field, Input, toastManager } from '@immich/ui';
@@ -8,7 +8,7 @@
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
 
-  let editedUser = $state(cloneDeep($user));
+  let editedUser = $state(cloneDeep(authManager.user));
   const bubble = createBubbler();
 
   const handleSaveProfile = async () => {
@@ -21,9 +21,9 @@
       });
 
       Object.assign(editedUser, data);
-      $user = data;
+      authManager.setUser(data);
 
-      toastManager.success($t('saved_profile'));
+      toastManager.primary($t('saved_profile'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_profile'));
     }
@@ -33,7 +33,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
-      <div class="ms-4 mt-4 flex flex-col gap-4">
+      <div class="sm:ms-8 flex flex-col gap-4">
         <Field label={$t('user_id')} disabled>
           <Input bind:value={editedUser.id} />
         </Field>

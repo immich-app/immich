@@ -1,6 +1,6 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
@@ -33,7 +33,6 @@
   let { assets, asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
-  let assetData = $derived(JSON.stringify(asset, null, 2));
 
   let locationParts = $derived([asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean));
 
@@ -112,9 +111,8 @@
     >
       <!-- THUMBNAIL-->
       <img
-        src={getAssetThumbnailUrl(asset.id)}
+        src={getAssetMediaUrl({ id: asset.id })}
         alt={$getAltText(toTimelineAsset(asset))}
-        title={assetData}
         class="h-60 object-cover w-full rounded-t-md"
         draggable="false"
       />
@@ -171,7 +169,7 @@
     <InfoRow
       icon={mdiImageOutline}
       highlight={hasDifferentValues.fileName}
-      title={$t('file_name', { values: { file_name: asset.originalFileName ?? '' } })}
+      title={$t('file_name_with_value', { values: { file_name: asset.originalFileName ?? '' } })}
     >
       {asset.originalFileName}
     </InfoRow>

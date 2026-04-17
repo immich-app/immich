@@ -18,10 +18,16 @@ class AssetStackResponseDto {
     required this.primaryAssetId,
   });
 
+  /// Number of assets in stack
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int assetCount;
 
+  /// Stack ID
   String id;
 
+  /// Primary asset ID
   String primaryAssetId;
 
   @override

@@ -1,6 +1,6 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
@@ -22,10 +22,8 @@
   let label = $derived(force ? $t('permanently_delete') : $t('delete'));
   let loading = $state(false);
 
-  const { clearSelect, getOwnedAssets } = getAssetControlContext();
-
   const onAction = async () => {
-    const assets = getOwnedAssets();
+    const assets = assetMultiSelectManager.ownedAssets;
 
     if (force && $showDeleteModal) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: assets.length });
@@ -36,7 +34,7 @@
 
     loading = true;
     await deleteAssets(force, onAssetDelete, assets, onUndoDelete);
-    clearSelect();
+    assetMultiSelectManager.clear();
     loading = false;
   };
 </script>

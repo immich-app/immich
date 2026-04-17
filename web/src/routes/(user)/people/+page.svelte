@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
@@ -158,7 +157,7 @@
             break;
           }
         }
-        toastManager.success($t('change_name_successfully'));
+        toastManager.primary($t('change_name_successfully'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -179,7 +178,7 @@
         return person;
       });
 
-      toastManager.success($t('changed_visibility_successfully'));
+      toastManager.primary($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -199,7 +198,7 @@
         return person;
       });
 
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
+      toastManager.primary(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
     }
@@ -214,6 +213,7 @@
   };
 
   let people = $derived(data.people.people);
+
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
@@ -380,18 +380,17 @@
 
 {#if selectHidden}
   <dialog
-    open
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="absolute start-0 top-0 h-full w-full bg-light"
-    aria-modal="true"
+    class="fixed inset-0 h-full w-full max-w-none max-h-none bg-light"
     aria-labelledby="manage-visibility-title"
-    use:focusTrap
+    {@attach (dialog) => dialog.showModal()}
   >
     <ManagePeopleVisibility
-      bind:people
+      {people}
       totalPeopleCount={data.people.total}
       titleId="manage-visibility-title"
       onClose={() => (selectHidden = false)}
+      onUpdate={(updatedPeople) => (people = updatedPeople.slice())}
       {loadNextPage}
     />
   </dialog>

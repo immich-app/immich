@@ -182,14 +182,6 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
-        case 'APIKeyCreateDto':
-          return APIKeyCreateDto.fromJson(value);
-        case 'APIKeyCreateResponseDto':
-          return APIKeyCreateResponseDto.fromJson(value);
-        case 'APIKeyResponseDto':
-          return APIKeyResponseDto.fromJson(value);
-        case 'APIKeyUpdateDto':
-          return APIKeyUpdateDto.fromJson(value);
         case 'ActivityCreateDto':
           return ActivityCreateDto.fromJson(value);
         case 'ActivityResponseDto':
@@ -220,6 +212,14 @@ class ApiClient {
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':
           return AlbumsUpdate.fromJson(value);
+        case 'ApiKeyCreateDto':
+          return ApiKeyCreateDto.fromJson(value);
+        case 'ApiKeyCreateResponseDto':
+          return ApiKeyCreateResponseDto.fromJson(value);
+        case 'ApiKeyResponseDto':
+          return ApiKeyResponseDto.fromJson(value);
+        case 'ApiKeyUpdateDto':
+          return ApiKeyUpdateDto.fromJson(value);
         case 'AssetBulkDeleteDto':
           return AssetBulkDeleteDto.fromJson(value);
         case 'AssetBulkUpdateDto':
@@ -234,24 +234,18 @@ class ApiClient {
           return AssetBulkUploadCheckResult.fromJson(value);
         case 'AssetCopyDto':
           return AssetCopyDto.fromJson(value);
-        case 'AssetDeltaSyncDto':
-          return AssetDeltaSyncDto.fromJson(value);
-        case 'AssetDeltaSyncResponseDto':
-          return AssetDeltaSyncResponseDto.fromJson(value);
         case 'AssetEditAction':
           return AssetEditActionTypeTransformer().decode(value);
-        case 'AssetEditActionCrop':
-          return AssetEditActionCrop.fromJson(value);
-        case 'AssetEditActionListDto':
-          return AssetEditActionListDto.fromJson(value);
-        case 'AssetEditActionListDtoEditsInner':
-          return AssetEditActionListDtoEditsInner.fromJson(value);
-        case 'AssetEditActionMirror':
-          return AssetEditActionMirror.fromJson(value);
-        case 'AssetEditActionRotate':
-          return AssetEditActionRotate.fromJson(value);
-        case 'AssetEditsDto':
-          return AssetEditsDto.fromJson(value);
+        case 'AssetEditActionItemDto':
+          return AssetEditActionItemDto.fromJson(value);
+        case 'AssetEditActionItemDtoParameters':
+          return AssetEditActionItemDtoParameters.fromJson(value);
+        case 'AssetEditActionItemResponseDto':
+          return AssetEditActionItemResponseDto.fromJson(value);
+        case 'AssetEditsCreateDto':
+          return AssetEditsCreateDto.fromJson(value);
+        case 'AssetEditsResponseDto':
+          return AssetEditsResponseDto.fromJson(value);
         case 'AssetFaceCreateDto':
           return AssetFaceCreateDto.fromJson(value);
         case 'AssetFaceDeleteDto':
@@ -264,8 +258,8 @@ class ApiClient {
           return AssetFaceUpdateItem.fromJson(value);
         case 'AssetFaceWithoutPersonResponseDto':
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
-        case 'AssetFullSyncDto':
-          return AssetFullSyncDto.fromJson(value);
+        case 'AssetIdErrorReason':
+          return AssetIdErrorReasonTypeTransformer().decode(value);
         case 'AssetIdsDto':
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
@@ -300,6 +294,8 @@ class ApiClient {
           return AssetOcrResponseDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
+        case 'AssetRejectReason':
+          return AssetRejectReasonTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStackResponseDto':
@@ -308,6 +304,8 @@ class ApiClient {
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AssetUploadAction':
+          return AssetUploadActionTypeTransformer().decode(value);
         case 'AssetVisibility':
           return AssetVisibilityTypeTransformer().decode(value);
         case 'AudioCodec':
@@ -332,10 +330,6 @@ class ApiClient {
           return CastUpdate.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'CheckExistingAssetsDto':
-          return CheckExistingAssetsDto.fromJson(value);
-        case 'CheckExistingAssetsResponseDto':
-          return CheckExistingAssetsResponseDto.fromJson(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
         case 'ContributorCountResponseDto':
@@ -356,6 +350,8 @@ class ApiClient {
           return DatabaseBackupDto.fromJson(value);
         case 'DatabaseBackupListResponseDto':
           return DatabaseBackupListResponseDto.fromJson(value);
+        case 'DownloadArchiveDto':
+          return DownloadArchiveDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -368,6 +364,10 @@ class ApiClient {
           return DownloadUpdate.fromJson(value);
         case 'DuplicateDetectionConfig':
           return DuplicateDetectionConfig.fromJson(value);
+        case 'DuplicateResolveDto':
+          return DuplicateResolveDto.fromJson(value);
+        case 'DuplicateResolveGroupDto':
+          return DuplicateResolveGroupDto.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
         case 'EmailNotificationsResponse':
@@ -398,8 +398,6 @@ class ApiClient {
           return LibraryStatsResponseDto.fromJson(value);
         case 'LicenseKeyDto':
           return LicenseKeyDto.fromJson(value);
-        case 'LicenseResponseDto':
-          return LicenseResponseDto.fromJson(value);
         case 'LogLevel':
           return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':
@@ -526,6 +524,14 @@ class ApiClient {
           return PluginContextTypeTypeTransformer().decode(value);
         case 'PluginFilterResponseDto':
           return PluginFilterResponseDto.fromJson(value);
+        case 'PluginJsonSchema':
+          return PluginJsonSchema.fromJson(value);
+        case 'PluginJsonSchemaProperty':
+          return PluginJsonSchemaProperty.fromJson(value);
+        case 'PluginJsonSchemaPropertyAdditionalProperties':
+          return PluginJsonSchemaPropertyAdditionalProperties.fromJson(value);
+        case 'PluginJsonSchemaType':
+          return PluginJsonSchemaTypeTypeTransformer().decode(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
         case 'PluginTriggerResponseDto':
@@ -608,8 +614,6 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerStorageResponseDto':
           return ServerStorageResponseDto.fromJson(value);
-        case 'ServerThemeDto':
-          return ServerThemeDto.fromJson(value);
         case 'ServerVersionHistoryResponseDto':
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
@@ -630,6 +634,8 @@ class ApiClient {
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
           return SharedLinkEditDto.fromJson(value);
+        case 'SharedLinkLoginDto':
+          return SharedLinkLoginDto.fromJson(value);
         case 'SharedLinkResponseDto':
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':
@@ -674,12 +680,18 @@ class ApiClient {
           return SyncAlbumV1.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
+        case 'SyncAssetEditDeleteV1':
+          return SyncAssetEditDeleteV1.fromJson(value);
+        case 'SyncAssetEditV1':
+          return SyncAssetEditV1.fromJson(value);
         case 'SyncAssetExifV1':
           return SyncAssetExifV1.fromJson(value);
         case 'SyncAssetFaceDeleteV1':
           return SyncAssetFaceDeleteV1.fromJson(value);
         case 'SyncAssetFaceV1':
           return SyncAssetFaceV1.fromJson(value);
+        case 'SyncAssetFaceV2':
+          return SyncAssetFaceV2.fromJson(value);
         case 'SyncAssetMetadataDeleteV1':
           return SyncAssetMetadataDeleteV1.fromJson(value);
         case 'SyncAssetMetadataV1':

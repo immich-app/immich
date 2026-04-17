@@ -24,13 +24,13 @@ class APIKeysApi {
   ///
   /// Parameters:
   ///
-  /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  Future<Response> createApiKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
+  /// * [ApiKeyCreateDto] apiKeyCreateDto (required):
+  Future<Response> createApiKeyWithHttpInfo(ApiKeyCreateDto apiKeyCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys';
 
     // ignore: prefer_final_locals
-    Object? postBody = aPIKeyCreateDto;
+    Object? postBody = apiKeyCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -56,9 +56,9 @@ class APIKeysApi {
   ///
   /// Parameters:
   ///
-  /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  Future<APIKeyCreateResponseDto?> createApiKey(APIKeyCreateDto aPIKeyCreateDto,) async {
-    final response = await createApiKeyWithHttpInfo(aPIKeyCreateDto,);
+  /// * [ApiKeyCreateDto] apiKeyCreateDto (required):
+  Future<ApiKeyCreateResponseDto?> createApiKey(ApiKeyCreateDto apiKeyCreateDto,) async {
+    final response = await createApiKeyWithHttpInfo(apiKeyCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -66,7 +66,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyCreateResponseDto',) as APIKeyCreateResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyCreateResponseDto',) as ApiKeyCreateResponseDto;
     
     }
     return null;
@@ -163,7 +163,7 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<APIKeyResponseDto?> getApiKey(String id,) async {
+  Future<ApiKeyResponseDto?> getApiKey(String id,) async {
     final response = await getApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -172,7 +172,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyResponseDto',) as ApiKeyResponseDto;
     
     }
     return null;
@@ -211,7 +211,7 @@ class APIKeysApi {
   /// List all API keys
   ///
   /// Retrieve all API keys of the current user.
-  Future<List<APIKeyResponseDto>?> getApiKeys() async {
+  Future<List<ApiKeyResponseDto>?> getApiKeys() async {
     final response = await getApiKeysWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -221,8 +221,8 @@ class APIKeysApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<APIKeyResponseDto>') as List)
-        .cast<APIKeyResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<ApiKeyResponseDto>') as List)
+        .cast<ApiKeyResponseDto>()
         .toList(growable: false);
 
     }
@@ -262,7 +262,7 @@ class APIKeysApi {
   /// Retrieve the current API key
   ///
   /// Retrieve the API key that is used to access this endpoint.
-  Future<APIKeyResponseDto?> getMyApiKey() async {
+  Future<ApiKeyResponseDto?> getMyApiKey() async {
     final response = await getMyApiKeyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -271,7 +271,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyResponseDto',) as ApiKeyResponseDto;
     
     }
     return null;
@@ -287,14 +287,14 @@ class APIKeysApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<Response> updateApiKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
+  /// * [ApiKeyUpdateDto] apiKeyUpdateDto (required):
+  Future<Response> updateApiKeyWithHttpInfo(String id, ApiKeyUpdateDto apiKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = aPIKeyUpdateDto;
+    Object? postBody = apiKeyUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -322,9 +322,9 @@ class APIKeysApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<APIKeyResponseDto?> updateApiKey(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
-    final response = await updateApiKeyWithHttpInfo(id, aPIKeyUpdateDto,);
+  /// * [ApiKeyUpdateDto] apiKeyUpdateDto (required):
+  Future<ApiKeyResponseDto?> updateApiKey(String id, ApiKeyUpdateDto apiKeyUpdateDto,) async {
+    final response = await updateApiKeyWithHttpInfo(id, apiKeyUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -332,7 +332,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyResponseDto',) as ApiKeyResponseDto;
     
     }
     return null;

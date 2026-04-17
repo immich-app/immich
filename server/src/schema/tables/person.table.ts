@@ -1,7 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { person_delete_audit } from 'src/schema/functions';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Check,
@@ -9,13 +5,23 @@ import {
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
+  Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { person_delete_audit } from 'src/schema/functions';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('person')
+@Index({
+  name: 'idx_person_name_trigram',
+  using: 'gin',
+  expression: 'f_unaccent("name") gin_trgm_ops',
+})
 @UpdatedAtTrigger('person_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',

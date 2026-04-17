@@ -3,13 +3,17 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
   const FreeUpSpaceSettings({super.key});
@@ -21,6 +25,26 @@ class FreeUpSpaceSettings extends ConsumerStatefulWidget {
 class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   CleanupStep _currentStep = CleanupStep.selectDate;
   bool _hasScanned = false;
+  bool _isKeepSettingsExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WakelockPlus.enable();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAlbumDefaults();
+    });
+  }
+
+  Future<void> _initializeAlbumDefaults() async {
+    final albums = await ref.read(localAlbumProvider.future);
+    final existingAlbumIds = albums.map((a) => a.id).toSet();
+    final albumsWithNames = albums.map((a) => (a.id, a.name)).toList();
+
+    final notifier = ref.read(cleanupProvider.notifier);
+    notifier.applyDefaultAlbumSelections(albumsWithNames);
+    notifier.cleanupStaleAlbumIds(existingAlbumIds);
+  }
 
   void _resetState() {
     ref.read(cleanupProvider.notifier).reset();
@@ -35,20 +59,16 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     }
 
     if (state.selectedDate != null) {
-      return CleanupStep.filterOptions;
+      return CleanupStep.scan;
     }
 
     return CleanupStep.selectDate;
   }
 
-  void _goToFiltersStep() {
-    ref.read(hapticFeedbackProvider.notifier).mediumImpact();
-    setState(() => _currentStep = CleanupStep.filterOptions);
-  }
-
   void _goToScanStep() {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     setState(() => _currentStep = CleanupStep.scan);
+    _scanAssets();
   }
 
   void _setPresetDate(int daysAgo) {
@@ -83,7 +103,15 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
     if (picked != null) {
       ref.read(cleanupProvider.notifier).setSelectedDate(picked);
+      setState(() => _hasScanned = false);
     }
+  }
+
+  void _onKeepSettingsChanged() {
+    setState(() {
+      _hasScanned = false;
+      _currentStep = CleanupStep.scan;
+    });
   }
 
   Future<void> _scanAssets() async {
@@ -127,6 +155,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
         context: context,
         builder: (ctx) => _DeleteSuccessDialog(deletedCount: deletedCount),
       );
+
+      if (mounted) {
+        context.router.popUntilRoot();
+      }
+      return;
     }
 
     setState(() => _currentStep = CleanupStep.selectDate);
@@ -138,6 +171,12 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   }
 
   @override
+  dispose() {
+    super.dispose();
+    WakelockPlus.disable();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(cleanupProvider);
     final hasDate = state.selectedDate != null;
@@ -145,6 +184,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     final subtitleStyle = context.textTheme.bodyMedium!.copyWith(
       color: context.textTheme.bodyMedium!.color!.withAlpha(215),
     );
+
     StepStyle styleForState(StepState stepState, {bool isDestructive = false}) {
       switch (stepState) {
         case StepState.complete:
@@ -174,28 +214,38 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     }
 
     final step1State = hasDate ? StepState.complete : StepState.indexed;
-    final step2State = hasDate ? StepState.complete : StepState.disabled;
-    final step3State = hasAssets
+    final step2State = hasAssets
         ? StepState.complete
         : hasDate
         ? StepState.indexed
         : StepState.disabled;
-    final step4State = hasAssets ? StepState.indexed : StepState.disabled;
+    final step3State = hasAssets ? StepState.indexed : StepState.disabled;
 
-    String getFilterSubtitle() {
+    final hasKeepSettings =
+        state.keepFavorites || state.keepAlbumIds.isNotEmpty || state.keepMediaType != AssetKeepType.none;
+
+    String getKeepSettingsSummary() {
       final parts = <String>[];
-      switch (state.filterType) {
-        case AssetFilterType.all:
-          parts.add('all'.t(context: context));
-        case AssetFilterType.photosOnly:
-          parts.add('photos_only'.t(context: context));
-        case AssetFilterType.videosOnly:
-          parts.add('videos_only'.t(context: context));
+
+      if (state.keepMediaType == AssetKeepType.photosOnly) {
+        parts.add('all_photos'.t(context: context));
+      } else if (state.keepMediaType == AssetKeepType.videosOnly) {
+        parts.add('all_videos'.t(context: context));
       }
+
       if (state.keepFavorites) {
-        parts.add('keep_favorites'.t(context: context));
+        parts.add('favorites'.t(context: context));
       }
-      return parts.join(' • ');
+
+      if (state.keepAlbumIds.isNotEmpty) {
+        parts.add('keep_albums_count'.t(context: context, args: {'count': state.keepAlbumIds.length.toString()}));
+      }
+
+      if (parts.isEmpty) {
+        return 'none'.t(context: context);
+      }
+
+      return parts.join(', ');
     }
 
     return PopScope(
@@ -219,6 +269,126 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                 child: Text('free_up_space_description'.t(context: context), style: context.textTheme.bodyMedium),
               ),
             ),
+
+            // Keep on device settings card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  side: BorderSide(
+                    color: hasKeepSettings
+                        ? context.colorScheme.primary.withValues(alpha: 0.5)
+                        : context.colorScheme.outlineVariant,
+                    width: hasKeepSettings ? 1.5 : 1,
+                  ),
+                ),
+                color: hasKeepSettings
+                    ? context.colorScheme.primaryContainer.withValues(alpha: 0.15)
+                    : context.colorScheme.surfaceContainerLow,
+                child: Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    initiallyExpanded: _isKeepSettingsExpanded,
+                    onExpansionChanged: (expanded) {
+                      setState(() => _isKeepSettingsExpanded = expanded);
+                    },
+                    leading: Icon(
+                      hasKeepSettings ? Icons.bookmark : Icons.bookmark_border,
+                      color: hasKeepSettings ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+                    ),
+                    title: Text(
+                      'keep_on_device'.t(context: context),
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: hasKeepSettings ? context.colorScheme.primary : null,
+                      ),
+                    ),
+                    subtitle: Text(
+                      hasKeepSettings
+                          ? 'keeping'.t(context: context, args: {'items': getKeepSettingsSummary()})
+                          : 'keep_on_device_hint'.t(context: context),
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: hasKeepSettings ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text('keep_description'.t(context: context), style: subtitleStyle),
+                            const SizedBox(height: 4),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                'keep_favorites'.t(context: context),
+                                style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+                              ),
+
+                              value: state.keepFavorites,
+                              onChanged: (value) {
+                                ref.read(cleanupProvider.notifier).setKeepFavorites(value);
+                                _onKeepSettingsChanged();
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _KeepAlbumsSection(
+                              albumIds: state.keepAlbumIds,
+                              onAlbumToggled: (albumId) {
+                                ref.read(cleanupProvider.notifier).toggleKeepAlbum(albumId);
+                                _onKeepSettingsChanged();
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'always_keep'.t(context: context),
+                              style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+                            ),
+                            const SizedBox(height: 4),
+                            SegmentedButton<AssetKeepType>(
+                              showSelectedIcon: false,
+                              segments: [
+                                const ButtonSegment(value: AssetKeepType.none, label: Text('—')),
+                                ButtonSegment(
+                                  value: AssetKeepType.photosOnly,
+                                  label: Text('photos'.t(context: context)),
+                                  icon: const Icon(Icons.photo),
+                                ),
+                                ButtonSegment(
+                                  value: AssetKeepType.videosOnly,
+                                  label: Text('videos'.t(context: context)),
+                                  icon: const Icon(Icons.videocam),
+                                ),
+                              ],
+                              selected: {state.keepMediaType},
+                              onSelectionChanged: (selection) {
+                                ref.read(cleanupProvider.notifier).setKeepMediaType(selection.first);
+                                _onKeepSettingsChanged();
+                              },
+                            ),
+                            if (state.keepMediaType != AssetKeepType.none) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                state.keepMediaType == AssetKeepType.photosOnly
+                                    ? 'always_keep_photos_hint'.t(context: context)
+                                    : 'always_keep_videos_hint'.t(context: context),
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
 
             Stepper(
               physics: const NeverScrollableScrollPhysics(),
@@ -314,7 +484,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: hasDate ? () => _goToFiltersStep() : null,
+                        onPressed: hasDate ? _goToScanStep : null,
                         icon: const Icon(Icons.arrow_forward),
                         label: Text('continue'.t(context: context)),
                         style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
@@ -325,11 +495,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   state: step1State,
                 ),
 
-                // Step 2: Select Filter Options
+                // Step 2: Scan Assets
                 Step(
                   stepStyle: styleForState(step2State),
                   title: Text(
-                    'filter_options'.t(context: context),
+                    'scan'.t(context: context),
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: step2State == StepState.complete
@@ -339,96 +509,20 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                           : context.colorScheme.onSurface,
                     ),
                   ),
-                  subtitle: hasDate
-                      ? Text(
-                          getFilterSubtitle(),
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.colorScheme.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      : null,
-                  content: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text('cleanup_filter_description'.t(context: context), style: subtitleStyle),
-                      const SizedBox(height: 16),
-                      SegmentedButton<AssetFilterType>(
-                        segments: [
-                          ButtonSegment(
-                            value: AssetFilterType.all,
-                            label: Text('all'.t(context: context)),
-                            icon: const Icon(Icons.photo_library),
-                          ),
-                          ButtonSegment(
-                            value: AssetFilterType.photosOnly,
-                            label: Text('photos'.t(context: context)),
-                            icon: const Icon(Icons.photo),
-                          ),
-                          ButtonSegment(
-                            value: AssetFilterType.videosOnly,
-                            label: Text('videos'.t(context: context)),
-                            icon: const Icon(Icons.videocam),
-                          ),
-                        ],
-                        selected: {state.filterType},
-                        onSelectionChanged: (selection) {
-                          ref.read(cleanupProvider.notifier).setFilterType(selection.first);
-                          setState(() => _hasScanned = false);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'keep_favorites'.t(context: context),
-                          style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
-                        ),
-                        subtitle: Text(
-                          'keep_favorites_description'.t(context: context),
-                          style: context.textTheme.bodyMedium!.copyWith(
-                            color: context.textTheme.bodyMedium!.color!.withAlpha(215),
-                          ),
-                        ),
-                        value: state.keepFavorites,
-                        onChanged: (value) {
-                          ref.read(cleanupProvider.notifier).setKeepFavorites(value);
-                          setState(() => _hasScanned = false);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: _goToScanStep,
-                        icon: const Icon(Icons.arrow_forward),
-                        label: Text('continue'.t(context: context)),
-                        style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
-                      ),
-                    ],
-                  ),
-                  isActive: hasDate,
-                  state: step2State,
-                ),
-
-                // Step 3: Scan Assets
-                Step(
-                  stepStyle: styleForState(step3State),
-                  title: Text(
-                    'scan'.t(context: context),
-                    style: context.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: step3State == StepState.complete
-                          ? context.colorScheme.primary
-                          : step3State == StepState.disabled
-                          ? context.colorScheme.onSurface.withValues(alpha: 0.38)
-                          : context.colorScheme.onSurface,
-                    ),
-                  ),
                   subtitle: _hasScanned
                       ? Text(
-                          'cleanup_found_assets'.t(
-                            context: context,
-                            args: {'count': state.assetsToDelete.length.toString()},
-                          ),
+                          state.totalBytes > 0
+                              ? 'cleanup_found_assets_with_size'.t(
+                                  context: context,
+                                  args: {
+                                    'count': state.assetsToDelete.length.toString(),
+                                    'size': formatBytes(state.totalBytes),
+                                  },
+                                )
+                              : 'cleanup_found_assets'.t(
+                                  context: context,
+                                  args: {'count': state.assetsToDelete.length.toString()},
+                                ),
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: state.assetsToDelete.isNotEmpty
                                 ? context.colorScheme.primary
@@ -503,17 +597,17 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                     ],
                   ),
                   isActive: hasDate,
-                  state: step3State,
+                  state: step2State,
                 ),
 
-                // Step 4: Delete Assets
+                // Step 3: Delete Assets
                 Step(
-                  stepStyle: styleForState(step4State, isDestructive: true),
+                  stepStyle: styleForState(step3State, isDestructive: true),
                   title: Text(
                     'move_to_device_trash'.t(context: context),
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: step4State == StepState.disabled
+                      color: step3State == StepState.disabled
                           ? context.colorScheme.onSurface.withValues(alpha: 0.38)
                           : context.colorScheme.error,
                     ),
@@ -529,15 +623,20 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                           border: Border.all(color: context.colorScheme.error.withValues(alpha: 0.3)),
                         ),
                         child: hasAssets
-                            ? Text(
-                                'cleanup_step4_summary'.t(
-                                  context: context,
-                                  args: {
-                                    'count': state.assetsToDelete.length.toString(),
-                                    'date': DateFormat.yMMMd().format(state.selectedDate!),
-                                  },
-                                ),
-                                style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'cleanup_step4_summary'.t(
+                                      context: context,
+                                      args: {
+                                        'count': state.assetsToDelete.length.toString(),
+                                        'date': DateFormat.yMMMd().format(state.selectedDate!),
+                                      },
+                                    ),
+                                    style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                                  ),
+                                ],
                               )
                             : null,
                       ),
@@ -573,10 +672,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                     ],
                   ),
                   isActive: hasAssets,
-                  state: step4State,
+                  state: step3State,
                 ),
               ],
             ),
+            const SizedBox(height: 60),
           ],
         ),
       ),
@@ -698,6 +798,110 @@ class _DatePresetCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _KeepAlbumsSection extends ConsumerWidget {
+  final Set<String> albumIds;
+  final ValueChanged<String> onAlbumToggled;
+
+  const _KeepAlbumsSection({required this.albumIds, required this.onAlbumToggled});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final albumsAsync = ref.watch(localAlbumProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'keep_albums'.t(context: context),
+          style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+        ),
+
+        const SizedBox(height: 8),
+        albumsAsync.when(
+          loading: () => const Center(
+            child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          error: (error, stack) => Text(
+            'error_loading_albums'.t(context: context),
+            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
+          ),
+          data: (albums) {
+            if (albums.isEmpty) {
+              return Text(
+                'no_albums_found'.t(context: context),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              );
+            }
+            return Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: context.colorScheme.outlineVariant),
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+              ),
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: albums.length,
+                  itemBuilder: (context, index) {
+                    final album = albums[index];
+                    final isSelected = albumIds.contains(album.id);
+                    return _AlbumTile(album: album, isSelected: isSelected, onToggle: () => onAlbumToggled(album.id));
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+        if (albumIds.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            'keep_albums_count'.t(context: context, args: {'count': albumIds.length.toString()}),
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AlbumTile extends StatelessWidget {
+  final LocalAlbum album;
+  final bool isSelected;
+  final VoidCallback onToggle;
+
+  const _AlbumTile({required this.album, required this.isSelected, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+      leading: Icon(
+        isSelected ? Icons.check_circle : Icons.circle_outlined,
+        color: isSelected ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+        size: 20,
+      ),
+      title: Text(
+        album.name,
+        style: context.textTheme.bodyMedium?.copyWith(color: isSelected ? context.colorScheme.primary : null),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Text(
+        album.assetCount.toString(),
+        style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceVariant),
+      ),
+      onTap: onToggle,
     );
   }
 }

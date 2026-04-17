@@ -357,6 +357,10 @@ typedef $$StackEntityTableProcessedTableManager =
       i1.StackEntityData,
       i0.PrefetchHooks Function({bool ownerId})
     >;
+i0.Index get idxStackPrimaryAssetId => i0.Index(
+  'idx_stack_primary_asset_id',
+  'CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)',
+);
 
 class $StackEntityTable extends i2.StackEntity
     with i0.TableInfo<$StackEntityTable, i1.StackEntityData> {

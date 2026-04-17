@@ -15,8 +15,6 @@ class AssetResponseDto {
   AssetResponseDto({
     required this.checksum,
     required this.createdAt,
-    required this.deviceAssetId,
-    required this.deviceId,
     this.duplicateId,
     required this.duration,
     this.exifInfo,
@@ -50,19 +48,17 @@ class AssetResponseDto {
     required this.width,
   });
 
-  /// base64 encoded sha1 hash
+  /// Base64 encoded SHA1 hash
   String checksum;
 
   /// The UTC timestamp when the asset was originally uploaded to Immich.
   DateTime createdAt;
 
-  String deviceAssetId;
-
-  String deviceId;
-
+  /// Duplicate group ID
   String? duplicateId;
 
-  String duration;
+  /// Video/gif duration in hh:mm:ss.SSS format (null for static images)
+  String? duration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -78,31 +74,45 @@ class AssetResponseDto {
   /// The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.
   DateTime fileModifiedAt;
 
+  /// Whether asset has metadata
   bool hasMetadata;
 
+  /// Asset height
+  ///
+  /// Minimum value: 0
   num? height;
 
+  /// Asset ID
   String id;
 
+  /// Is archived
   bool isArchived;
 
+  /// Is edited
   bool isEdited;
 
+  /// Is favorite
   bool isFavorite;
 
+  /// Is offline
   bool isOffline;
 
+  /// Is trashed
   bool isTrashed;
 
+  /// Library ID
   String? libraryId;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
   /// The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.
   DateTime localDateTime;
 
+  /// Original file name
   String originalFileName;
 
+  /// Original MIME type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -111,6 +121,7 @@ class AssetResponseDto {
   ///
   String? originalMimeType;
 
+  /// Original file path
   String originalPath;
 
   ///
@@ -121,10 +132,12 @@ class AssetResponseDto {
   ///
   UserResponseDto? owner;
 
+  /// Owner user ID
   String ownerId;
 
   List<PersonWithFacesResponseDto> people;
 
+  /// Is resized
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -137,6 +150,7 @@ class AssetResponseDto {
 
   List<TagResponseDto> tags;
 
+  /// Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.
   String? thumbhash;
 
   AssetTypeEnum type;
@@ -148,14 +162,15 @@ class AssetResponseDto {
 
   AssetVisibility visibility;
 
+  /// Asset width
+  ///
+  /// Minimum value: 0
   num? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
     other.checksum == checksum &&
     other.createdAt == createdAt &&
-    other.deviceAssetId == deviceAssetId &&
-    other.deviceId == deviceId &&
     other.duplicateId == duplicateId &&
     other.duration == duration &&
     other.exifInfo == exifInfo &&
@@ -193,10 +208,8 @@ class AssetResponseDto {
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
     (createdAt.hashCode) +
-    (deviceAssetId.hashCode) +
-    (deviceId.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
-    (duration.hashCode) +
+    (duration == null ? 0 : duration!.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
@@ -228,20 +241,22 @@ class AssetResponseDto {
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'deviceAssetId'] = this.deviceAssetId;
-      json[r'deviceId'] = this.deviceId;
     if (this.duplicateId != null) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
     //  json[r'duplicateId'] = null;
     }
+    if (this.duration != null) {
       json[r'duration'] = this.duration;
+    } else {
+    //  json[r'duration'] = null;
+    }
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
@@ -325,10 +340,8 @@ class AssetResponseDto {
       return AssetResponseDto(
         checksum: mapValueOfType<String>(json, r'checksum')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
-        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        duration: mapValueOfType<String>(json, r'duration')!,
+        duration: mapValueOfType<String>(json, r'duration'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
@@ -411,8 +424,6 @@ class AssetResponseDto {
   static const requiredKeys = <String>{
     'checksum',
     'createdAt',
-    'deviceAssetId',
-    'deviceId',
     'duration',
     'fileCreatedAt',
     'fileModifiedAt',

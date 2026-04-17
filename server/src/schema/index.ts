@@ -1,3 +1,4 @@
+import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
   album_delete_audit,
@@ -28,6 +29,7 @@ import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
+import { AssetEditAuditTable } from 'src/schema/tables/asset-edit-audit.table';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table';
@@ -38,7 +40,6 @@ import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AuditTable } from 'src/schema/tables/audit.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -72,7 +73,6 @@ import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
-import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @Database({ name: 'immich' })
@@ -88,6 +88,7 @@ export class ImmichDatabase {
     ApiKeyTable,
     AssetAuditTable,
     AssetEditTable,
+    AssetEditAuditTable,
     AssetFaceTable,
     AssetFaceAuditTable,
     AssetMetadataTable,
@@ -96,7 +97,6 @@ export class ImmichDatabase {
     AssetOcrTable,
     AssetTable,
     AssetFileTable,
-    AuditTable,
     AssetExifTable,
     FaceSearchTable,
     GeodataPlacesTable,
@@ -168,6 +168,8 @@ export interface Migrations {
 }
 
 export interface DB {
+  kysely_migrations: { timestamp: string; name: string };
+
   activity: ActivityTable;
 
   album: AlbumTable;
@@ -182,6 +184,7 @@ export interface DB {
   asset: AssetTable;
   asset_audit: AssetAuditTable;
   asset_edit: AssetEditTable;
+  asset_edit_audit: AssetEditAuditTable;
   asset_exif: AssetExifTable;
   asset_face: AssetFaceTable;
   asset_face_audit: AssetFaceAuditTable;
@@ -191,8 +194,6 @@ export interface DB {
   asset_job_status: AssetJobStatusTable;
   asset_ocr: AssetOcrTable;
   ocr_search: OcrSearchTable;
-
-  audit: AuditTable;
 
   face_search: FaceSearchTable;
 

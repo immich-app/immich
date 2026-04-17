@@ -16,6 +16,7 @@ import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { updateLockedColumns } from 'src/utils/database';
 import { upsertTags } from 'src/utils/tag';
 
 @Injectable()
@@ -150,10 +151,9 @@ export class TagService extends BaseService {
   }
 
   private async updateTags(assetId: string) {
-    const asset = await this.assetRepository.getById(assetId, { tags: true });
-    await this.assetRepository.upsertExif(
-      { assetId, tags: asset?.tags?.map(({ value }) => value) ?? [] },
-      { lockedPropertiesBehavior: 'append' },
-    );
+    const { tags } = await this.assetRepository.getForUpdateTags(assetId);
+    await this.assetRepository.upsertExif(updateLockedColumns({ assetId, tags: tags.map(({ value }) => value) }), {
+      lockedPropertiesBehavior: 'append',
+    });
   }
 }

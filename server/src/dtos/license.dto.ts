@@ -1,16 +1,12 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { UserLicenseSchema } from 'src/dtos/user.dto';
 
-export class LicenseKeyDto {
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/IM(SV|CL)(-[\dA-Za-z]{4}){8}/)
-  licenseKey!: string;
+const LicenseKeySchema = UserLicenseSchema.pick({
+  licenseKey: true,
+  activationKey: true,
+}).meta({ id: 'LicenseKeyDto' });
 
-  @IsString()
-  @IsNotEmpty()
-  activationKey!: string;
-}
+const LicenseResponseSchema = UserLicenseSchema.meta({ id: 'LicenseResponseDto' });
 
-export class LicenseResponseDto extends LicenseKeyDto {
-  activatedAt!: Date;
-}
+export class LicenseKeyDto extends createZodDto(LicenseKeySchema) {}
+export class LicenseResponseDto extends createZodDto(LicenseResponseSchema) {}

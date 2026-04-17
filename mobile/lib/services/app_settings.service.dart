@@ -35,6 +35,7 @@ enum AppSettingsEnum<T> {
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, "loadOriginalVideo", false),
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),
+  tapToNavigate<bool>(StoreKey.tapToNavigate, "tapToNavigate", false),
   mapThemeMode<int>(StoreKey.mapThemeMode, null, 0),
   mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),
   mapIncludeArchived<bool>(StoreKey.mapIncludeArchived, null, false),
@@ -54,7 +55,12 @@ enum AppSettingsEnum<T> {
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
+  cleanupKeepFavorites<bool>(StoreKey.cleanupKeepFavorites, null, true),
+  cleanupKeepMediaType<int>(StoreKey.cleanupKeepMediaType, null, 0),
+  cleanupKeepAlbumIds<String>(StoreKey.cleanupKeepAlbumIds, null, ""),
+  cleanupCutoffDaysAgo<int>(StoreKey.cleanupCutoffDaysAgo, null, -1),
+  cleanupDefaultsInitialized<bool>(StoreKey.cleanupDefaultsInitialized, null, false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

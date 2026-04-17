@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Upload status
 class AssetMediaStatus {
   /// Instantiate a new enum with the provided [value].
   const AssetMediaStatus._(this.value);

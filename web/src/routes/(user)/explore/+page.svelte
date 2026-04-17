@@ -5,7 +5,7 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import { Route } from '$lib/route';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
@@ -90,7 +90,7 @@
             <a class="relative" href={Route.search({ city: item.value })} draggable="false">
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
                 <img
-                  src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+                  src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
                   alt={item.value}
                   class="object-cover aspect-square w-full"
                 />

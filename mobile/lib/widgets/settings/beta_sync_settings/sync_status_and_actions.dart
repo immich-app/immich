@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -13,6 +15,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
@@ -27,6 +30,8 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final serverVersion = ref.watch(serverInfoProvider.select((value) => value.serverVersion));
+
     Future<void> exportDatabase() async {
       try {
         // WAL Checkpoint to ensure all changes are written to the database
@@ -84,25 +89,27 @@ class SyncStatusAndActions extends HookConsumerWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text("reset_sqlite".t(context: context)),
-            content: Text("reset_sqlite_confirmation".t(context: context)),
+            title: Text(context.t.reset_sqlite),
+            content: Text(context.t.reset_sqlite_confirmation),
             actions: [
-              TextButton(
-                onPressed: () => context.pop(),
-                child: Text("cancel".t(context: context)),
-              ),
+              TextButton(onPressed: () => context.pop(), child: Text(context.t.cancel)),
               TextButton(
                 onPressed: () async {
                   await ref.read(driftProvider).reset();
                   context.pop();
-                  context.scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text("reset_sqlite_success".t(context: context))),
+                  unawaited(
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(context.t.reset_sqlite_success),
+                        content: Text(context.t.reset_sqlite_done),
+                        actions: [TextButton(onPressed: () => ctx.pop(), child: Text(context.t.ok))],
+                      ),
+                    ),
                   );
                 },
-                child: Text(
-                  "confirm".t(context: context),
-                  style: TextStyle(color: context.colorScheme.error),
-                ),
+                child: Text(context.t.confirm, style: TextStyle(color: context.colorScheme.error)),
               ),
             ],
           );
@@ -135,6 +142,14 @@ class SyncStatusAndActions extends HookConsumerWidget {
             ref.read(backgroundSyncProvider).syncRemote();
           },
         ),
+        if (CurrentPlatform.isIOS && serverVersion.isAtLeast(major: 2, minor: 5))
+          SettingListTile(
+            title: "Sync Cloud Ids".t(context: context),
+            leading: const Icon(Icons.cloud_circle_rounded),
+            subtitle: "tap_to_run_job".t(context: context),
+            trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).cloudIdSyncStatus),
+            onTap: ref.read(backgroundSyncProvider).syncCloudIds,
+          ),
         SettingListTile(
           title: "hash_asset".t(context: context),
           leading: const Icon(Icons.tag),

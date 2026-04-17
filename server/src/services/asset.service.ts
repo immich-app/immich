@@ -21,7 +21,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetFileType,
@@ -39,13 +39,13 @@ import { requireElevatedPermission } from 'src/utils/access';
 import {
   getAssetFiles,
   getDimensions,
-  getMyPartnerIds,
   isPanorama,
   onAfterUnlink,
   onBeforeLink,
   onBeforeUnlink,
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
+import { extractTimeZone } from 'src/utils/date';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -57,20 +57,6 @@ export class AssetService extends BaseService {
 
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
-  }
-
-  async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { auth }));
-  }
-
-  async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
@@ -168,11 +154,12 @@ export class AssetService extends BaseService {
       },
       _.isUndefined,
     );
-    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
 
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
     }
+
+    const extractedTimeZone = extractTimeZone(dateTimeOriginal);
 
     if (
       (dateTimeRelative !== undefined && dateTimeRelative !== 0) ||
@@ -327,10 +314,11 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // Replace the parent of the stack children with a new asset
+    // replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
-      if (stackAssetIds.length > 2) {
+      // this only includes timeline visible assets and excludes the primary asset
+      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      if (stackAssetIds.length >= 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
           id: asset.stack.id,
@@ -367,7 +355,7 @@ export class AssetService extends BaseService {
       assetFiles.editedFullsizeFile?.path,
       assetFiles.editedPreviewFile?.path,
       assetFiles.editedThumbnailFile?.path,
-      asset.encodedVideoPath,
+      assetFiles.encodedVideoFile?.path,
     ];
 
     if (deleteOnDisk && !asset.isOffline) {
@@ -401,15 +389,19 @@ export class AssetService extends BaseService {
   async getOcr(auth: AuthDto, id: string): Promise<AssetOcrResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const ocr = await this.ocrRepository.getByAssetId(id);
-    const asset = await this.assetRepository.getById(id, { exifInfo: true, edits: true });
+    const asset = await this.assetRepository.getForOcr(id);
 
-    if (!asset || !asset.exifInfo || !asset.edits) {
+    if (!asset) {
       throw new BadRequestException('Asset not found');
     }
 
-    const dimensions = getDimensions(asset.exifInfo);
+    const dimensions = getDimensions({
+      exifImageHeight: asset.exifImageHeight,
+      exifImageWidth: asset.exifImageWidth,
+      orientation: asset.orientation,
+    });
 
-    return ocr.map((item) => transformOcrBoundingBox(item, asset.edits!, dimensions));
+    return ocr.map((item) => transformOcrBoundingBox(item, asset.edits, dimensions));
   }
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
@@ -509,15 +501,14 @@ export class AssetService extends BaseService {
     dateTimeOriginal?: string;
     latitude?: number;
     longitude?: number;
-    rating?: number;
+    rating?: number | null;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
     const writes = _.omitBy(
       {
         description,
         dateTimeOriginal,
-        timeZone: extractedTimeZone?.type === 'fixed' ? extractedTimeZone.name : undefined,
+        timeZone: extractTimeZone(dateTimeOriginal)?.name,
         latitude,
         longitude,
         rating,
@@ -537,19 +528,20 @@ export class AssetService extends BaseService {
     }
   }
 
-  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const edits = await this.assetEditRepository.getAll(id);
+
     return {
       assetId: id,
       edits,
     };
   }
 
-  async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsDto> {
+  async editAsset(auth: AuthDto, id: string, dto: AssetEditsCreateDto): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEditCreate, ids: [id] });
 
-    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    const asset = await this.assetRepository.getForEdit(id);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
@@ -575,21 +567,33 @@ export class AssetService extends BaseService {
     }
 
     // check that crop parameters will not go out of bounds
-    const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
+    const { width: assetWidth, height: assetHeight } = getDimensions(asset);
 
     if (!assetWidth || !assetHeight) {
       throw new BadRequestException('Asset dimensions are not available for editing');
     }
 
-    const crop = dto.edits.find((e) => e.action === AssetEditAction.Crop)?.parameters;
+    const edits = dto.edits as AssetEditActionItem[];
+    const crop = edits.find((e) => e.action === AssetEditAction.Crop);
     if (crop) {
-      const { x, y, width, height } = crop;
+      if (edits[0].action !== AssetEditAction.Crop) {
+        throw new BadRequestException('Crop action must be the first edit action');
+      }
+
+      // check that crop parameters will not go out of bounds
+      const { width: assetWidth, height: assetHeight } = getDimensions(asset);
+
+      if (!assetWidth || !assetHeight) {
+        throw new BadRequestException('Asset dimensions are not available for editing');
+      }
+
+      const { x, y, width, height } = crop.parameters;
       if (x + width > assetWidth || y + height > assetHeight) {
         throw new BadRequestException('Crop parameters are out of bounds');
       }
     }
 
-    const newEdits = await this.assetEditRepository.replaceAll(id, dto.edits);
+    const newEdits = await this.assetEditRepository.replaceAll(id, edits);
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
 
     // Return the asset and its applied edits

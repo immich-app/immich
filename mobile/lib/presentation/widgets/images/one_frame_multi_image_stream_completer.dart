@@ -6,11 +6,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:immich_mobile/presentation/widgets/images/cache_aware_listener_tracker.mixin.dart';
 
 /// An ImageStreamCompleter with support for loading multiple images.
-class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
-  void Function()? _onDispose;
-
+class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter with CacheAwareListenerTrackerMixin {
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
   /// The [initialImage] is an optional image that will be emitted synchronously
@@ -19,14 +18,18 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     Stream<ImageInfo> images, {
     ImageInfo? initialImage,
     InformationCollector? informationCollector,
-    void Function()? onDispose,
+    void Function()? onLastListenerRemoved,
   }) {
+    setupListenerTracking(hadInitialImage: initialImage != null, onLastListenerRemoved: onLastListenerRemoved);
+
     if (initialImage != null) {
       setImage(initialImage);
     }
-    _onDispose = onDispose;
+
     images.listen(
-      setImage,
+      (image) {
+        setImage(image);
+      },
       onError: (Object error, StackTrace stack) {
         reportError(
           context: ErrorDescription('resolving a single-frame image stream'),
@@ -37,15 +40,5 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
         );
       },
     );
-  }
-
-  @override
-  void onDisposed() {
-    final onDispose = _onDispose;
-    if (onDispose != null) {
-      _onDispose = null;
-      onDispose();
-    }
-    super.onDisposed();
   }
 }

@@ -51,14 +51,14 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@08bac802a312fc89808e0dd589271ca0974087b5 # pre-job-action-v2.0.0
+        uses: immich-app/devtools/actions/pre-job@f50e3b600b6ac1763ddb8f3dfc69093512b967a1 # pre-job-action-v2.0.3
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -79,12 +79,12 @@ jobs:
 
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
@@ -96,14 +96,14 @@ jobs:
         working-directory: ./mobile
         run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
 
-      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
-        uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
             ~/.gradle/caches
@@ -114,14 +114,14 @@ jobs:
           key: build-mobile-gradle-${{ runner.os }}-main
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
           cache: true
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
         with:
           packages: ''
 
@@ -153,14 +153,14 @@ jobs:
           fi
 
       - name: Publish Android Artifact
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
 
       - name: Save Gradle Cache
         id: cache-gradle-save
-        uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         if: github.ref == 'refs/heads/main'
         with:
           path: |
@@ -178,17 +178,20 @@ jobs:
       contents: read
     # Run on main branch or workflow_dispatch, or on PRs/other branches (build only, no upload)
     if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -207,7 +210,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@e65c17d16e57e481586a6a5a0282698790062f92 # v1.300.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
@@ -266,6 +269,8 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
           BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
           GITHUB_REF: ${{ github.ref }}
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
+          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 6
         working-directory: ./mobile/ios
         run: |
           # Only upload to TestFlight on main branch
@@ -286,7 +291,7 @@ jobs:
           security delete-keychain build.keychain || true
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa

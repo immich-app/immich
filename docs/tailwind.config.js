@@ -17,9 +17,9 @@ module.exports = {
 
         // Dark Theme
         'immich-dark-primary': '#adcbfa',
-        'immich-dark-bg': '#070a14',
+        'immich-dark-bg': '#000000',
         'immich-dark-fg': '#e5e7eb',
-        'immich-dark-gray': '#212121',
+        'immich-dark-gray': '#111111',
       },
     },
   },

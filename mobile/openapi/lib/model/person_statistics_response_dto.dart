@@ -16,6 +16,10 @@ class PersonStatisticsResponseDto {
     required this.assets,
   });
 
+  /// Number of assets
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int assets;
 
   @override

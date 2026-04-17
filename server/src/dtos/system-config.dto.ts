@@ -1,755 +1,380 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import {
-  ArrayMinSize,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsObject,
-  IsPositive,
-  IsString,
-  IsUrl,
-  Max,
-  Min,
-  ValidateIf,
-  ValidateNested,
-} from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { SystemConfig } from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
+import {
+  CLIPConfigSchema,
+  DuplicateDetectionConfigSchema,
+  FacialRecognitionConfigSchema,
+  OcrConfigSchema,
+} from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
-  CQMode,
-  Colorspace,
-  ImageFormat,
-  LogLevel,
-  OAuthTokenEndpointAuthMethod,
-  QueueName,
-  ToneMapping,
-  TranscodeHardwareAcceleration,
-  TranscodePolicy,
-  VideoCodec,
-  VideoContainer,
+  AudioCodecSchema,
+  ColorspaceSchema,
+  CQModeSchema,
+  ImageFormatSchema,
+  LogLevelSchema,
+  OAuthTokenEndpointAuthMethodSchema,
+  ToneMappingSchema,
+  TranscodeHardwareAccelerationSchema,
+  TranscodePolicySchema,
+  VideoCodecSchema,
+  VideoContainerSchema,
 } from 'src/enum';
-import { ConcurrentQueueName } from 'src/types';
-import { IsCronExpression, IsDateStringFormat, Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
-
-const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
-const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
-const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
-const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
-const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
-
-export class DatabaseBackupConfig {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateIf(isDatabaseBackupEnabled)
-  @IsNotEmpty()
-  @IsCronExpression()
-  @IsString()
-  cronExpression!: string;
-
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  keepLastAmount!: number;
-}
-
-export class SystemConfigBackupsDto {
-  @Type(() => DatabaseBackupConfig)
-  @ValidateNested()
-  @IsObject()
-  database!: DatabaseBackupConfig;
-}
-
-export class SystemConfigFFmpegDto {
-  @IsInt()
-  @Min(0)
-  @Max(51)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  crf!: number;
-
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  threads!: number;
-
-  @IsString()
-  preset!: string;
-
-  @ValidateEnum({ enum: VideoCodec, name: 'VideoCodec' })
-  targetVideoCodec!: VideoCodec;
-
-  @ValidateEnum({ enum: VideoCodec, name: 'VideoCodec', each: true })
-  acceptedVideoCodecs!: VideoCodec[];
-
-  @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec' })
-  targetAudioCodec!: AudioCodec;
-
-  @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec', each: true })
-  acceptedAudioCodecs!: AudioCodec[];
-
-  @ValidateEnum({ enum: VideoContainer, name: 'VideoContainer', each: true })
-  acceptedContainers!: VideoContainer[];
-
-  @IsString()
-  targetResolution!: string;
-
-  @IsString()
-  maxBitrate!: string;
-
-  @IsInt()
-  @Min(-1)
-  @Max(16)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  bframes!: number;
-
-  @IsInt()
-  @Min(0)
-  @Max(6)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  refs!: number;
-
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  gopSize!: number;
-
-  @ValidateBoolean()
-  temporalAQ!: boolean;
-
-  @ValidateEnum({ enum: CQMode, name: 'CQMode' })
-  cqMode!: CQMode;
-
-  @ValidateBoolean()
-  twoPass!: boolean;
-
-  @IsString()
-  preferredHwDevice!: string;
-
-  @ValidateEnum({ enum: TranscodePolicy, name: 'TranscodePolicy' })
-  transcode!: TranscodePolicy;
-
-  @ValidateEnum({ enum: TranscodeHardwareAcceleration, name: 'TranscodeHWAccel' })
-  accel!: TranscodeHardwareAcceleration;
-
-  @ValidateBoolean()
-  accelDecode!: boolean;
-
-  @ValidateEnum({ enum: ToneMapping, name: 'ToneMapping' })
-  tonemap!: ToneMapping;
-}
-
-class JobSettingsDto {
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  concurrency!: number;
-}
-
-class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> {
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.ThumbnailGeneration]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.MetadataExtraction]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.VideoConversion]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.SmartSearch]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Migration]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.BackgroundTask]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Search]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.FaceDetection]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Ocr]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Sidecar]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Library]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Notification]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Workflow]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.Editor]!: JobSettingsDto;
-}
-
-class SystemConfigLibraryScanDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateIf(isLibraryScanEnabled)
-  @IsNotEmpty()
-  @IsCronExpression()
-  @IsString()
-  cronExpression!: string;
-}
-
-class SystemConfigLibraryWatchDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-}
-
-class SystemConfigLibraryDto {
-  @Type(() => SystemConfigLibraryScanDto)
-  @ValidateNested()
-  @IsObject()
-  scan!: SystemConfigLibraryScanDto;
-
-  @Type(() => SystemConfigLibraryWatchDto)
-  @ValidateNested()
-  @IsObject()
-  watch!: SystemConfigLibraryWatchDto;
-}
-
-class SystemConfigLoggingDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateEnum({ enum: LogLevel, name: 'LogLevel' })
-  level!: LogLevel;
-}
-
-class MachineLearningAvailabilityChecksDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @IsInt()
-  timeout!: number;
-
-  @IsInt()
-  interval!: number;
-}
-
-class SystemConfigMachineLearningDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
-  @ArrayMinSize(1)
-  @ValidateIf((dto) => dto.enabled)
-  @ApiProperty({ type: 'array', items: { type: 'string', format: 'uri' }, minItems: 1 })
-  urls!: string[];
-
-  @Type(() => MachineLearningAvailabilityChecksDto)
-  @ValidateNested()
-  @IsObject()
-  availabilityChecks!: MachineLearningAvailabilityChecksDto;
-
-  @Type(() => CLIPConfig)
-  @ValidateNested()
-  @IsObject()
-  clip!: CLIPConfig;
-
-  @Type(() => DuplicateDetectionConfig)
-  @ValidateNested()
-  @IsObject()
-  duplicateDetection!: DuplicateDetectionConfig;
-
-  @Type(() => FacialRecognitionConfig)
-  @ValidateNested()
-  @IsObject()
-  facialRecognition!: FacialRecognitionConfig;
-
-  @Type(() => OcrConfig)
-  @ValidateNested()
-  @IsObject()
-  ocr!: OcrConfig;
-}
-
-enum MapTheme {
-  LIGHT = 'light',
-  DARK = 'dark',
-}
-
-export class MapThemeDto {
-  @ValidateEnum({ enum: MapTheme, name: 'MapTheme' })
-  theme!: MapTheme;
-}
-
-class SystemConfigMapDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @IsNotEmpty()
-  @IsUrl()
-  lightStyle!: string;
-
-  @IsNotEmpty()
-  @IsUrl()
-  darkStyle!: string;
-}
-
-class SystemConfigNewVersionCheckDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-}
-
-class SystemConfigNightlyTasksDto {
-  @IsDateStringFormat('HH:mm', { message: 'startTime must be in HH:mm format' })
-  startTime!: string;
-
-  @ValidateBoolean()
-  databaseCleanup!: boolean;
-
-  @ValidateBoolean()
-  missingThumbnails!: boolean;
-
-  @ValidateBoolean()
-  clusterNewFaces!: boolean;
-
-  @ValidateBoolean()
-  generateMemories!: boolean;
-
-  @ValidateBoolean()
-  syncQuotaUsage!: boolean;
-}
-
-class SystemConfigOAuthDto {
-  @ValidateBoolean()
-  autoLaunch!: boolean;
-
-  @ValidateBoolean()
-  autoRegister!: boolean;
-
-  @IsString()
-  buttonText!: string;
-
-  @ValidateIf(isOAuthEnabled)
-  @IsNotEmpty()
-  @IsString()
-  clientId!: string;
-
-  @ValidateIf(isOAuthEnabled)
-  @IsString()
-  clientSecret!: string;
-
-  @ValidateEnum({ enum: OAuthTokenEndpointAuthMethod, name: 'OAuthTokenEndpointAuthMethod' })
-  tokenEndpointAuthMethod!: OAuthTokenEndpointAuthMethod;
-
-  @IsInt()
-  @IsPositive()
-  @Optional()
-  @ApiProperty({ type: 'integer' })
-  timeout!: number;
-
-  @IsNumber()
-  @Min(0)
-  @Optional({ nullable: true })
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  defaultStorageQuota!: number | null;
-
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateIf(isOAuthEnabled)
-  @IsNotEmpty()
-  @IsString()
-  issuerUrl!: string;
-
-  @ValidateBoolean()
-  mobileOverrideEnabled!: boolean;
-
-  @ValidateIf(isOAuthOverrideEnabled)
-  @IsUrl()
-  mobileRedirectUri!: string;
-
-  @IsString()
-  scope!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  signingAlgorithm!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  profileSigningAlgorithm!: string;
-
-  @IsString()
-  storageLabelClaim!: string;
-
-  @IsString()
-  storageQuotaClaim!: string;
-
-  @IsString()
-  roleClaim!: string;
-}
-
-class SystemConfigPasswordLoginDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-}
-
-class SystemConfigReverseGeocodingDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-}
-
-class SystemConfigFacesDto {
-  @ValidateBoolean()
-  import!: boolean;
-}
-
-class SystemConfigMetadataDto {
-  @Type(() => SystemConfigFacesDto)
-  @ValidateNested()
-  @IsObject()
-  faces!: SystemConfigFacesDto;
-}
-
-class SystemConfigServerDto {
-  @ValidateIf((_, value: string) => value !== '')
-  @IsUrl({ require_tld: false, require_protocol: true, protocols: ['http', 'https'] })
-  externalDomain!: string;
-
-  @IsString()
-  loginPageMessage!: string;
-
-  @ValidateBoolean()
-  publicUsers!: boolean;
-}
-
-class SystemConfigSmtpTransportDto {
-  @ValidateBoolean()
-  ignoreCert!: boolean;
-
-  @IsNotEmpty()
-  @IsString()
-  host!: string;
-
-  @IsNumber()
-  @Min(0)
-  @Max(65_535)
-  port!: number;
-
-  @ValidateBoolean()
-  secure!: boolean;
-
-  @IsString()
-  username!: string;
-
-  @IsString()
-  password!: string;
-}
-
-export class SystemConfigSmtpDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateIf(isEmailNotificationEnabled)
-  @IsNotEmpty()
-  @IsString()
-  @IsNotEmpty()
-  from!: string;
-
-  @IsString()
-  replyTo!: string;
-
-  @ValidateIf(isEmailNotificationEnabled)
-  @Type(() => SystemConfigSmtpTransportDto)
-  @ValidateNested()
-  @IsObject()
-  transport!: SystemConfigSmtpTransportDto;
-}
-
-class SystemConfigNotificationsDto {
-  @Type(() => SystemConfigSmtpDto)
-  @ValidateNested()
-  @IsObject()
-  smtp!: SystemConfigSmtpDto;
-}
-
-class SystemConfigTemplateEmailsDto {
-  @IsString()
-  albumInviteTemplate!: string;
-
-  @IsString()
-  welcomeTemplate!: string;
-
-  @IsString()
-  albumUpdateTemplate!: string;
-}
-
-class SystemConfigTemplatesDto {
-  @Type(() => SystemConfigTemplateEmailsDto)
-  @ValidateNested()
-  @IsObject()
-  email!: SystemConfigTemplateEmailsDto;
-}
-
-class SystemConfigStorageTemplateDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateBoolean()
-  hashVerificationEnabled!: boolean;
-
-  @IsNotEmpty()
-  @IsString()
-  template!: string;
-}
-
-export class SystemConfigTemplateStorageOptionDto {
-  yearOptions!: string[];
-  monthOptions!: string[];
-  weekOptions!: string[];
-  dayOptions!: string[];
-  hourOptions!: string[];
-  minuteOptions!: string[];
-  secondOptions!: string[];
-  presetOptions!: string[];
-}
-
-export class SystemConfigThemeDto {
-  @IsString()
-  customCss!: string;
-}
-
-class SystemConfigGeneratedImageDto {
-  @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat' })
-  format!: ImageFormat;
-
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  quality!: number;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  size!: number;
-}
-
-class SystemConfigGeneratedFullsizeImageDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat' })
-  format!: ImageFormat;
-
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  quality!: number;
-}
-
-export class SystemConfigImageDto {
-  @Type(() => SystemConfigGeneratedImageDto)
-  @ValidateNested()
-  @IsObject()
-  thumbnail!: SystemConfigGeneratedImageDto;
-
-  @Type(() => SystemConfigGeneratedImageDto)
-  @ValidateNested()
-  @IsObject()
-  preview!: SystemConfigGeneratedImageDto;
-
-  @Type(() => SystemConfigGeneratedFullsizeImageDto)
-  @ValidateNested()
-  @IsObject()
-  fullsize!: SystemConfigGeneratedFullsizeImageDto;
-
-  @ValidateEnum({ enum: Colorspace, name: 'Colorspace' })
-  colorspace!: Colorspace;
-
-  @ValidateBoolean()
-  extractEmbedded!: boolean;
-}
-
-class SystemConfigTrashDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  days!: number;
-}
-
-class SystemConfigUserDto {
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  deleteDelay!: number;
-}
-
-export class SystemConfigDto implements SystemConfig {
-  @Type(() => SystemConfigBackupsDto)
-  @ValidateNested()
-  @IsObject()
-  backup!: SystemConfigBackupsDto;
-
-  @Type(() => SystemConfigFFmpegDto)
-  @ValidateNested()
-  @IsObject()
-  ffmpeg!: SystemConfigFFmpegDto;
-
-  @Type(() => SystemConfigLoggingDto)
-  @ValidateNested()
-  @IsObject()
-  logging!: SystemConfigLoggingDto;
-
-  @Type(() => SystemConfigMachineLearningDto)
-  @ValidateNested()
-  @IsObject()
-  machineLearning!: SystemConfigMachineLearningDto;
-
-  @Type(() => SystemConfigMapDto)
-  @ValidateNested()
-  @IsObject()
-  map!: SystemConfigMapDto;
-
-  @Type(() => SystemConfigNewVersionCheckDto)
-  @ValidateNested()
-  @IsObject()
-  newVersionCheck!: SystemConfigNewVersionCheckDto;
-
-  @Type(() => SystemConfigNightlyTasksDto)
-  @ValidateNested()
-  @IsObject()
-  nightlyTasks!: SystemConfigNightlyTasksDto;
-
-  @Type(() => SystemConfigOAuthDto)
-  @ValidateNested()
-  @IsObject()
-  oauth!: SystemConfigOAuthDto;
-
-  @Type(() => SystemConfigPasswordLoginDto)
-  @ValidateNested()
-  @IsObject()
-  passwordLogin!: SystemConfigPasswordLoginDto;
-
-  @Type(() => SystemConfigReverseGeocodingDto)
-  @ValidateNested()
-  @IsObject()
-  reverseGeocoding!: SystemConfigReverseGeocodingDto;
-
-  @Type(() => SystemConfigMetadataDto)
-  @ValidateNested()
-  @IsObject()
-  metadata!: SystemConfigMetadataDto;
-
-  @Type(() => SystemConfigStorageTemplateDto)
-  @ValidateNested()
-  @IsObject()
-  storageTemplate!: SystemConfigStorageTemplateDto;
-
-  @Type(() => SystemConfigJobDto)
-  @ValidateNested()
-  @IsObject()
-  job!: SystemConfigJobDto;
-
-  @Type(() => SystemConfigImageDto)
-  @ValidateNested()
-  @IsObject()
-  image!: SystemConfigImageDto;
-
-  @Type(() => SystemConfigTrashDto)
-  @ValidateNested()
-  @IsObject()
-  trash!: SystemConfigTrashDto;
-
-  @Type(() => SystemConfigThemeDto)
-  @ValidateNested()
-  @IsObject()
-  theme!: SystemConfigThemeDto;
-
-  @Type(() => SystemConfigLibraryDto)
-  @ValidateNested()
-  @IsObject()
-  library!: SystemConfigLibraryDto;
-
-  @Type(() => SystemConfigNotificationsDto)
-  @ValidateNested()
-  @IsObject()
-  notifications!: SystemConfigNotificationsDto;
-
-  @Type(() => SystemConfigTemplatesDto)
-  @ValidateNested()
-  @IsObject()
-  templates!: SystemConfigTemplatesDto;
-
-  @Type(() => SystemConfigServerDto)
-  @ValidateNested()
-  @IsObject()
-  server!: SystemConfigServerDto;
-
-  @Type(() => SystemConfigUserDto)
-  @ValidateNested()
-  @IsObject()
-  user!: SystemConfigUserDto;
-}
+import { isValidTime } from 'src/validation';
+import z from 'zod';
+
+/** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
+const configBool = z
+  .preprocess((val) => {
+    if (val === 'true') {
+      return true;
+    }
+    if (val === 'false') {
+      return false;
+    }
+    return val;
+  }, z.boolean())
+  .meta({ type: 'boolean' });
+
+const JobSettingsSchema = z
+  .object({
+    concurrency: z.int().min(1).describe('Concurrency'),
+  })
+  .meta({ id: 'JobSettingsDto' });
+
+const cronExpressionSchema = z
+  .string()
+  .regex(/(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}/, 'Invalid cron expression')
+  .describe('Cron expression');
+
+const DatabaseBackupSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    cronExpression: cronExpressionSchema,
+    keepLastAmount: z.number().min(1).describe('Keep last amount'),
+  })
+  .meta({ id: 'DatabaseBackupConfig' });
+
+const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
+
+const SystemConfigFFmpegSchema = z
+  .object({
+    crf: z.coerce.number().int().min(0).max(51).describe('CRF'),
+    threads: z.coerce.number().int().min(0).describe('Threads'),
+    preset: z.string().describe('Preset'),
+    targetVideoCodec: VideoCodecSchema,
+    acceptedVideoCodecs: z.array(VideoCodecSchema).describe('Accepted video codecs'),
+    targetAudioCodec: AudioCodecSchema,
+    acceptedAudioCodecs: z
+      .array(AudioCodecSchema)
+      .transform((value): AudioCodec[] => value.map((v) => (v === AudioCodec.Libopus ? AudioCodec.Opus : v)))
+      .describe('Accepted audio codecs'),
+    acceptedContainers: z.array(VideoContainerSchema).describe('Accepted containers'),
+    targetResolution: z.string().describe('Target resolution'),
+    maxBitrate: z.string().describe('Max bitrate'),
+    bframes: z.coerce.number().int().min(-1).max(16).describe('B-frames'),
+    refs: z.coerce.number().int().min(0).max(6).describe('References'),
+    gopSize: z.coerce.number().int().min(0).describe('GOP size'),
+    temporalAQ: configBool.describe('Temporal AQ'),
+    cqMode: CQModeSchema,
+    twoPass: configBool.describe('Two pass'),
+    preferredHwDevice: z.string().describe('Preferred hardware device'),
+    transcode: TranscodePolicySchema,
+    accel: TranscodeHardwareAccelerationSchema,
+    accelDecode: configBool.describe('Accelerated decode'),
+    tonemap: ToneMappingSchema,
+  })
+  .meta({ id: 'SystemConfigFFmpegDto' });
+
+const SystemConfigJobSchema = z
+  .object({
+    thumbnailGeneration: JobSettingsSchema,
+    metadataExtraction: JobSettingsSchema,
+    videoConversion: JobSettingsSchema,
+    faceDetection: JobSettingsSchema,
+    smartSearch: JobSettingsSchema,
+    backgroundTask: JobSettingsSchema,
+    migration: JobSettingsSchema,
+    search: JobSettingsSchema,
+    sidecar: JobSettingsSchema,
+    library: JobSettingsSchema,
+    notifications: JobSettingsSchema,
+    ocr: JobSettingsSchema,
+    workflow: JobSettingsSchema,
+    editor: JobSettingsSchema,
+  })
+  .meta({ id: 'SystemConfigJobDto' });
+
+const SystemConfigLibraryScanSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    cronExpression: cronExpressionSchema,
+  })
+  .meta({ id: 'SystemConfigLibraryScanDto' });
+
+const SystemConfigLibraryWatchSchema = z
+  .object({ enabled: configBool.describe('Enabled') })
+  .meta({ id: 'SystemConfigLibraryWatchDto' });
+
+const SystemConfigLibrarySchema = z
+  .object({ scan: SystemConfigLibraryScanSchema, watch: SystemConfigLibraryWatchSchema })
+  .meta({ id: 'SystemConfigLibraryDto' });
+
+const SystemConfigLoggingSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    level: LogLevelSchema,
+  })
+  .meta({ id: 'SystemConfigLoggingDto' });
+
+const MachineLearningAvailabilityChecksSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    timeout: z.number(),
+    interval: z.number(),
+  })
+  .meta({ id: 'MachineLearningAvailabilityChecksDto' });
+
+const SystemConfigMachineLearningSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    urls: z.array(z.string()).min(1).describe('ML service URLs'),
+    availabilityChecks: MachineLearningAvailabilityChecksSchema,
+    clip: CLIPConfigSchema,
+    duplicateDetection: DuplicateDetectionConfigSchema,
+    facialRecognition: FacialRecognitionConfigSchema,
+    ocr: OcrConfigSchema,
+  })
+  .meta({ id: 'SystemConfigMachineLearningDto' });
+
+const SystemConfigMapSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    lightStyle: z.url().describe('Light map style URL'),
+    darkStyle: z.url().describe('Dark map style URL'),
+  })
+  .meta({ id: 'SystemConfigMapDto' });
+
+const SystemConfigNewVersionCheckSchema = z
+  .object({ enabled: configBool.describe('Enabled') })
+  .meta({ id: 'SystemConfigNewVersionCheckDto' });
+
+const SystemConfigNightlyTasksSchema = z
+  .object({
+    startTime: isValidTime.describe('Start time'),
+    databaseCleanup: configBool.describe('Database cleanup'),
+    missingThumbnails: configBool.describe('Missing thumbnails'),
+    clusterNewFaces: configBool.describe('Cluster new faces'),
+    generateMemories: configBool.describe('Generate memories'),
+    syncQuotaUsage: configBool.describe('Sync quota usage'),
+  })
+  .meta({ id: 'SystemConfigNightlyTasksDto' });
+
+const SystemConfigOAuthSchema = z
+  .object({
+    autoLaunch: configBool.describe('Auto launch'),
+    autoRegister: configBool.describe('Auto register'),
+    buttonText: z.string().describe('Button text'),
+    clientId: z.string().describe('Client ID'),
+    clientSecret: z.string().describe('Client secret'),
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethodSchema,
+    timeout: z.int().min(1).describe('Timeout'),
+    allowInsecureRequests: configBool.describe('Allow insecure requests'),
+    defaultStorageQuota: z.number().min(0).nullable().describe('Default storage quota'),
+    enabled: configBool.describe('Enabled'),
+    issuerUrl: z
+      .string()
+      .refine((url) => url.length === 0 || z.url().safeParse(url).success, {
+        error: 'Issuer URL must be an empty string or a valid URL',
+      })
+      .describe('Issuer URL'),
+    scope: z.string().describe('Scope'),
+    signingAlgorithm: z.string().describe('Signing algorithm'),
+    profileSigningAlgorithm: z.string().describe('Profile signing algorithm'),
+    storageLabelClaim: z.string().describe('Storage label claim'),
+    storageQuotaClaim: z.string().describe('Storage quota claim'),
+    roleClaim: z.string().describe('Role claim'),
+    mobileOverrideEnabled: configBool.describe('Mobile override enabled'),
+    mobileRedirectUri: z.string().describe('Mobile redirect URI (set to empty string to disable)'),
+  })
+  .transform((value, ctx) => {
+    if (!value.mobileOverrideEnabled || value.mobileRedirectUri === '') {
+      return value;
+    }
+
+    if (!z.url().safeParse(value.mobileRedirectUri).success) {
+      ctx.issues.push({
+        code: 'custom',
+        message: 'Mobile redirect URI must be an empty string or a valid URL',
+        input: value.mobileRedirectUri,
+      });
+      return z.NEVER;
+    }
+
+    return value;
+  })
+  .meta({
+    id: 'SystemConfigOAuthDto',
+  });
+
+const SystemConfigPasswordLoginSchema = z
+  .object({ enabled: configBool.describe('Enabled') })
+  .meta({ id: 'SystemConfigPasswordLoginDto' });
+
+const SystemConfigReverseGeocodingSchema = z
+  .object({ enabled: configBool.describe('Enabled') })
+  .meta({ id: 'SystemConfigReverseGeocodingDto' });
+
+const SystemConfigFacesSchema = z
+  .object({ import: configBool.describe('Import') })
+  .meta({ id: 'SystemConfigFacesDto' });
+const SystemConfigMetadataSchema = z.object({ faces: SystemConfigFacesSchema }).meta({ id: 'SystemConfigMetadataDto' });
+
+const SystemConfigServerSchema = z
+  .object({
+    externalDomain: z
+      .string()
+      .refine((url) => url.length === 0 || z.url().safeParse(url).success, {
+        error: 'External domain must be an empty string or a valid URL',
+      })
+      .describe('External domain'),
+    loginPageMessage: z.string().describe('Login page message'),
+    publicUsers: configBool.describe('Public users'),
+  })
+  .meta({ id: 'SystemConfigServerDto' });
+
+const SystemConfigSmtpTransportSchema = z
+  .object({
+    ignoreCert: configBool.describe('Whether to ignore SSL certificate errors'),
+    host: z.string().describe('SMTP server hostname'),
+    port: z.number().min(0).max(65_535).describe('SMTP server port'),
+    secure: configBool.describe('Whether to use secure connection (TLS/SSL)'),
+    username: z.string().describe('SMTP username'),
+    password: z.string().describe('SMTP password'),
+  })
+  .meta({ id: 'SystemConfigSmtpTransportDto' });
+
+const SystemConfigSmtpSchema = z
+  .object({
+    enabled: configBool.describe('Whether SMTP email notifications are enabled'),
+    from: z.string().describe('Email address to send from'),
+    replyTo: z.string().describe('Email address for replies'),
+    transport: SystemConfigSmtpTransportSchema,
+  })
+  .meta({ id: 'SystemConfigSmtpDto' });
+
+const SystemConfigNotificationsSchema = z
+  .object({ smtp: SystemConfigSmtpSchema })
+  .meta({ id: 'SystemConfigNotificationsDto' });
+
+const SystemConfigTemplateEmailsSchema = z
+  .object({
+    albumInviteTemplate: z.string().describe('Album invite template'),
+    welcomeTemplate: z.string().describe('Welcome template'),
+    albumUpdateTemplate: z.string().describe('Album update template'),
+  })
+  .meta({ id: 'SystemConfigTemplateEmailsDto' });
+const SystemConfigTemplatesSchema = z
+  .object({ email: SystemConfigTemplateEmailsSchema })
+  .meta({ id: 'SystemConfigTemplatesDto' });
+
+const SystemConfigStorageTemplateSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    hashVerificationEnabled: configBool.describe('Hash verification enabled'),
+    template: z.string().describe('Template'),
+  })
+  .meta({ id: 'SystemConfigStorageTemplateDto' });
+
+const SystemConfigTemplateStorageOptionSchema = z
+  .object({
+    yearOptions: z.array(z.string()).describe('Available year format options for storage template'),
+    monthOptions: z.array(z.string()).describe('Available month format options for storage template'),
+    weekOptions: z.array(z.string()).describe('Available week format options for storage template'),
+    dayOptions: z.array(z.string()).describe('Available day format options for storage template'),
+    hourOptions: z.array(z.string()).describe('Available hour format options for storage template'),
+    minuteOptions: z.array(z.string()).describe('Available minute format options for storage template'),
+    secondOptions: z.array(z.string()).describe('Available second format options for storage template'),
+    presetOptions: z.array(z.string()).describe('Available preset template options'),
+  })
+  .meta({ id: 'SystemConfigTemplateStorageOptionDto' });
+
+const SystemConfigThemeSchema = z
+  .object({ customCss: z.string().describe('Custom CSS for theming') })
+  .meta({ id: 'SystemConfigThemeDto' });
+
+const SystemConfigGeneratedImageSchema = z
+  .object({
+    format: ImageFormatSchema,
+    quality: z.int().min(1).max(100).describe('Quality'),
+    size: z.int().min(1).describe('Size'),
+    progressive: configBool.default(false).optional().describe('Progressive'),
+  })
+  .meta({ id: 'SystemConfigGeneratedImageDto' });
+
+const SystemConfigGeneratedFullsizeImageSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    format: ImageFormatSchema,
+    quality: z.int().min(1).max(100).describe('Quality'),
+    progressive: configBool.default(false).optional().describe('Progressive'),
+  })
+  .meta({ id: 'SystemConfigGeneratedFullsizeImageDto' });
+
+const SystemConfigImageSchema = z
+  .object({
+    thumbnail: SystemConfigGeneratedImageSchema,
+    preview: SystemConfigGeneratedImageSchema,
+    fullsize: SystemConfigGeneratedFullsizeImageSchema,
+    colorspace: ColorspaceSchema,
+    extractEmbedded: configBool.describe('Extract embedded'),
+  })
+  .meta({ id: 'SystemConfigImageDto' });
+
+const SystemConfigTrashSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    days: z.int().min(0).describe('Days'),
+  })
+  .meta({ id: 'SystemConfigTrashDto' });
+
+const SystemConfigUserSchema = z
+  .object({
+    deleteDelay: z.int().min(1).describe('Delete delay'),
+  })
+  .meta({ id: 'SystemConfigUserDto' });
+
+export const SystemConfigSchema = z
+  .object({
+    backup: SystemConfigBackupsSchema,
+    ffmpeg: SystemConfigFFmpegSchema,
+    logging: SystemConfigLoggingSchema,
+    machineLearning: SystemConfigMachineLearningSchema,
+    map: SystemConfigMapSchema,
+    newVersionCheck: SystemConfigNewVersionCheckSchema,
+    nightlyTasks: SystemConfigNightlyTasksSchema,
+    oauth: SystemConfigOAuthSchema,
+    passwordLogin: SystemConfigPasswordLoginSchema,
+    reverseGeocoding: SystemConfigReverseGeocodingSchema,
+    metadata: SystemConfigMetadataSchema,
+    storageTemplate: SystemConfigStorageTemplateSchema,
+    job: SystemConfigJobSchema,
+    image: SystemConfigImageSchema,
+    trash: SystemConfigTrashSchema,
+    theme: SystemConfigThemeSchema,
+    library: SystemConfigLibrarySchema,
+    notifications: SystemConfigNotificationsSchema,
+    templates: SystemConfigTemplatesSchema,
+    server: SystemConfigServerSchema,
+    user: SystemConfigUserSchema,
+  })
+  .describe('System configuration')
+  .meta({ id: 'SystemConfigDto' });
+
+export class SystemConfigFFmpegDto extends createZodDto(SystemConfigFFmpegSchema) {}
+export class SystemConfigSmtpDto extends createZodDto(SystemConfigSmtpSchema) {}
+export class SystemConfigTemplateStorageOptionDto extends createZodDto(SystemConfigTemplateStorageOptionSchema) {}
+export class SystemConfigDto extends createZodDto(SystemConfigSchema) {}
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {
   return config;

@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
   import { Icon, LoadingSpinner } from '@immich/ui';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { Duration } from 'luxon';
+  import type { ClassValue } from 'svelte/elements';
 
   interface Props {
     url: string;
@@ -12,6 +14,7 @@
     curve?: boolean;
     playIcon?: string;
     pauseIcon?: string;
+    class?: ClassValue;
   }
 
   let {
@@ -23,6 +26,7 @@
     curve = false,
     playIcon = mdiPlayCircleOutline,
     pauseIcon = mdiPauseCircleOutline,
+    class: className,
   }: Props = $props();
 
   let remainingSeconds = $state(durationInSeconds);
@@ -32,14 +36,18 @@
 
   $effect(() => {
     if (!enablePlayback) {
-      // Reset remaining time when playback is disabled.
       remainingSeconds = durationInSeconds;
-
-      if (player) {
-        // Cancel video buffering.
-        player.src = '';
-      }
+      return;
     }
+    if (!player) {
+      return;
+    }
+    const video = player;
+    return () => {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    };
   });
   const onMouseEnter = () => {
     if (playbackOnIconHover) {
@@ -57,7 +65,7 @@
 {#if enablePlayback}
   <video
     bind:this={player}
-    class="h-full w-full object-cover"
+    class={cleanClass('h-full w-full object-cover', className)}
     class:rounded-xl={curve}
     muted
     autoplay
@@ -86,10 +94,10 @@
 {/if}
 
 <div
-  class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white text-shadow-[1px_1px_6px_rgb(0_0_0)]"
+  class="@container absolute inset-x-0 top-0 flex justify-end place-items-center gap-1 text-xs font-medium text-white text-shadow-[1px_1px_6px_rgb(0_0_0)]"
 >
   {#if showTime}
-    <span class="pt-2">
+    <span class="hidden @min-[100px]:inline pt-2">
       {#if remainingSeconds < 60}
         {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
       {:else if remainingSeconds < 3600}
@@ -101,10 +109,14 @@
   {/if}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="pe-2 pt-2 drop-shadow-[1px_1px_6px_rgb(0_0_0)]" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
+  <span
+    class="pe-2 pt-2 @max-[99px]:scale-75 @max-[99px]:pe-1 @max-[99px]:pt-1 drop-shadow-[1px_1px_6px_rgb(0_0_0)]"
+    onmouseenter={onMouseEnter}
+    onmouseleave={onMouseLeave}
+  >
     {#if enablePlayback}
       {#if loading}
-        <LoadingSpinner />
+        <LoadingSpinner size="large" />
       {:else if error}
         <Icon icon={mdiAlertCircleOutline} size="24" class="text-red-600" />
       {:else}

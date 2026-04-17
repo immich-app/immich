@@ -1,10 +1,12 @@
-import { langs } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
+import { langs } from '$lib/utils/i18n';
 
 class LanguageManager {
   constructor() {
-    eventManager.on('AppInit', () => lang.subscribe((lang) => this.setLanguage(lang)));
+    eventManager.on({
+      AppInit: () => lang.subscribe((lang) => this.setLanguage(lang)),
+    });
   }
 
   rtl = $state(false);

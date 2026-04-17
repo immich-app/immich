@@ -23,7 +23,7 @@ export class CryptoRepository {
   }
 
   hashSha256(value: string) {
-    return createHash('sha256').update(value).digest('base64');
+    return createHash('sha256').update(value).digest();
   }
 
   verifySha256(value: string, encryptedValue: string, publicKey: string) {

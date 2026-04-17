@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
   import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -23,6 +23,7 @@
     Heading,
     Icon,
     MenuItemType,
+    Meter,
     Stack,
     Text,
   } from '@immich/ui';
@@ -48,40 +49,29 @@
 
   const { children, data }: Props = $props();
 
-  let user = $state(data.user);
-  const userPreferences = $state(data.userPreferences);
-  const userStatistics = $state(data.userStatistics);
-  const userSessions = $state(data.userSessions);
-  const TiB = 1024 ** 4;
-  const usage = $derived(user.quotaUsageInBytes ?? 0);
-  let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usage, usage > TiB ? 2 : 0));
+  const { user, userPreferences, userStatistics, userSessions } = $derived(data);
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
-  const availableBytes = $derived(user.quotaSizeInBytes ?? 1);
-  let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
+  const availableBytes = $derived(user.quotaSizeInBytes ?? 0);
+  const TiB = 1024 ** 4;
+  const [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usedBytes, usedBytes > TiB ? 2 : 0));
 
   let editedLocale = $derived(findLocale($locale).code);
-  let createAtDate: Date = $derived(new Date(user.createdAt));
-  let updatedAtDate: Date = $derived(new Date(user.updatedAt));
-  let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
-  let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
+  let createAtDate = $derived(new Date(user.createdAt));
+  let updatedAtDate = $derived(new Date(user.updatedAt));
+  let userCreatedAtDateAndTime = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
+  let userUpdatedAtDateAndTime = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
 
-  const getUsageClass = () => {
-    if (usedPercentage >= 95) {
-      return 'bg-red-500';
-    }
-
-    if (usedPercentage > 80) {
-      return 'bg-yellow-500';
-    }
-
-    return 'bg-primary';
-  };
+  const storageUsageThresholds = [
+    { from: 0.8, className: 'bg-warning' },
+    { from: 0.95, className: 'bg-danger' },
+  ];
 
   const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
-  const onUpdate = (update: UserAdminResponseDto) => {
+  const onUpdate = async (update: UserAdminResponseDto) => {
     if (update.id === user.id) {
-      user = update;
+      data.user = update;
+      await invalidateAll();
     }
   };
 
@@ -125,9 +115,21 @@
         </div>
         <div class="col-span-full">
           <div class="flex flex-col lg:flex-row gap-4 w-full">
-            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics.images} />
-            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics.videos} />
-            <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
+            <ServerStatisticsCard
+              icon={mdiCameraIris}
+              title={$t('photos')}
+              valuePromise={Promise.resolve({ value: userStatistics.images })}
+            />
+            <ServerStatisticsCard
+              icon={mdiPlayCircle}
+              title={$t('videos')}
+              valuePromise={Promise.resolve({ value: userStatistics.videos })}
+            />
+            <ServerStatisticsCard
+              icon={mdiChartPie}
+              title={$t('storage')}
+              valuePromise={Promise.resolve({ value: statsUsage, unit: statsUsageUnit })}
+            />
           </div>
         </div>
 
@@ -172,36 +174,25 @@
 
         <AdminCard icon={mdiChartPieOutline} title={$t('storage_quota')}>
           {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-            <Text>
-              {$t('storage_usage', {
+            <Meter
+              size="small"
+              class="bg-gray-200 dark:bg-gray-700"
+              containerClass="p-4 gap-4 bg-gray-100 dark:bg-gray-800 rounded-lg leading-6"
+              label={$t('storage')}
+              valueLabel={$t('storage_usage', {
                 values: {
-                  used: getByteUnitString(usedBytes, $locale, 3),
-                  available: getByteUnitString(availableBytes, $locale, 3),
+                  used: getByteUnitString(usedBytes, $locale, 2),
+                  available: getByteUnitString(availableBytes, $locale, 2),
                 },
               })}
-            </Text>
+              value={usedBytes / availableBytes}
+              thresholds={storageUsageThresholds}
+            />
           {:else}
             <Text class="flex items-center gap-1">
               <Icon icon={mdiCheckCircle} size="1.25rem" class="text-success" />
               {$t('unlimited')}
             </Text>
-          {/if}
-
-          {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-            <div
-              class="storage-status p-4 mt-4 bg-gray-100 dark:bg-immich-dark-primary/10 rounded-lg text-sm w-full"
-              title={$t('storage_usage', {
-                values: {
-                  used: getByteUnitString(usedBytes, $locale, 3),
-                  available: getByteUnitString(availableBytes, $locale, 3),
-                },
-              })}
-            >
-              <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-              <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
-              </div>
-            </div>
           {/if}
         </AdminCard>
 

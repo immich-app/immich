@@ -22,6 +22,7 @@ class SystemConfigImageDto {
 
   Colorspace colorspace;
 
+  /// Extract embedded
   bool extractEmbedded;
 
   SystemConfigGeneratedFullsizeImageDto fullsize;

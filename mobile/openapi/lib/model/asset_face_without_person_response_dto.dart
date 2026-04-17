@@ -23,18 +23,43 @@ class AssetFaceWithoutPersonResponseDto {
     this.sourceType,
   });
 
+  /// Bounding box X1 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX1;
 
+  /// Bounding box X2 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX2;
 
+  /// Bounding box Y1 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY1;
 
+  /// Bounding box Y2 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY2;
 
+  /// Face ID
   String id;
 
+  /// Image height in pixels
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int imageHeight;
 
+  /// Image width in pixels
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int imageWidth;
 
   ///

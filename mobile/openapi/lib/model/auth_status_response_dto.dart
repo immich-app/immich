@@ -20,6 +20,7 @@ class AuthStatusResponseDto {
     this.pinExpiresAt,
   });
 
+  /// Session expiration date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -28,12 +29,16 @@ class AuthStatusResponseDto {
   ///
   String? expiresAt;
 
+  /// Is elevated session
   bool isElevated;
 
+  /// Has password set
   bool password;
 
+  /// Has PIN code set
   bool pinCode;
 
+  /// PIN expiration date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

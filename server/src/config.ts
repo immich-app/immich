@@ -15,7 +15,7 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
-export interface SystemConfig {
+export type SystemConfig = {
   backup: {
     database: {
       enabled: boolean;
@@ -111,6 +111,7 @@ export interface SystemConfig {
     profileSigningAlgorithm: string;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
     timeout: number;
+    allowInsecureRequests: boolean;
     storageLabelClaim: string;
     storageQuotaClaim: string;
     roleClaim: string;
@@ -187,7 +188,7 @@ export interface SystemConfig {
   user: {
     deleteDelay: number;
   };
-}
+};
 
 export type MachineLearningConfig = SystemConfig['machineLearning'];
 
@@ -206,7 +207,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.Opus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     targetResolution: '720',
     maxBitrate: '0',
@@ -247,7 +248,7 @@ export const defaults = Object.freeze<SystemConfig>({
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
     availabilityChecks: {
       enabled: true,
-      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      timeout: 2000,
       interval: 30_000,
     },
     clip: {
@@ -305,6 +306,7 @@ export const defaults = Object.freeze<SystemConfig>({
     roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
   },
   passwordLogin: {
     enabled: true,
@@ -319,11 +321,13 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Webp,
       size: 250,
       quality: 80,
+      progressive: false,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
+      progressive: false,
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
@@ -331,6 +335,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
       format: ImageFormat.Jpeg,
       quality: 80,
+      progressive: false,
     },
   },
   newVersionCheck: {

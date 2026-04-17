@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { isString } from 'class-validator';
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
@@ -261,6 +260,11 @@ export class AuthService extends BaseService {
   }
 
   async callback(dto: OAuthCallbackDto, headers: IncomingHttpHeaders, loginDetails: LoginDetails) {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
     const expectedState = dto.state ?? this.getCookieOauthState(headers);
     if (!expectedState?.length) {
       throw new BadRequestException('OAuth state is missing');
@@ -271,16 +275,16 @@ export class AuthService extends BaseService {
       throw new BadRequestException('OAuth code verifier is missing');
     }
 
-    const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
     const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
+    const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
     // link by email
-    if (!user && profile.email) {
-      const emailUser = await this.userRepository.getByEmail(profile.email);
+    if (!user && normalizedEmail) {
+      const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
         if (emailUser.oauthId) {
           throw new BadRequestException('User already exists, but is linked to another account.');
@@ -293,21 +297,21 @@ export class AuthService extends BaseService {
     if (!user) {
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.sub}/${profile.email || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
+          `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      if (!profile.email) {
+      if (!normalizedEmail) {
         throw new BadRequestException('OAuth profile does not have an email address');
       }
 
-      this.logger.log(`Registering new user: ${profile.sub}/${profile.email}`);
+      this.logger.log(`Registering new user: ${profile.sub}/${normalizedEmail}`);
 
       const storageLabel = this.getClaim(profile, {
         key: storageLabelClaim,
         default: '',
-        isValid: isString,
+        isValid: (value: unknown): value is string => typeof value === 'string',
       });
       const storageQuota = this.getClaim(profile, {
         key: storageQuotaClaim,
@@ -317,13 +321,16 @@ export class AuthService extends BaseService {
       const role = this.getClaim<'admin' | 'user'>(profile, {
         key: roleClaim,
         default: 'user',
-        isValid: (value: unknown) => isString(value) && ['admin', 'user'].includes(value),
+        isValid: (value: unknown) => typeof value === 'string' && ['admin', 'user'].includes(value),
       });
 
-      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.createUser({
-        name: userName,
-        email: profile.email,
+        name:
+          profile.name ||
+          `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
+          profile.preferred_username ||
+          normalizedEmail,
+        email: normalizedEmail,
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,
@@ -456,8 +463,8 @@ export class AuthService extends BaseService {
   }
 
   private async validateApiKey(key: string): Promise<AuthDto> {
-    const hashedKey = this.cryptoRepository.hashSha256(key);
-    const apiKey = await this.apiKeyRepository.getKey(hashedKey);
+    const hashed = this.cryptoRepository.hashSha256(key);
+    const apiKey = await this.apiKeyRepository.getKey(hashed);
     if (apiKey?.user) {
       return {
         user: apiKey.user,
@@ -476,9 +483,9 @@ export class AuthService extends BaseService {
     return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
-  private async validateSession(tokenValue: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
-    const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
-    const session = await this.sessionRepository.getByToken(hashedToken);
+  private async validateSession(token: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
+    const hashed = this.cryptoRepository.hashSha256(token);
+    const session = await this.sessionRepository.getByToken(hashed);
     if (session?.user) {
       const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
       const now = DateTime.now();
@@ -543,10 +550,10 @@ export class AuthService extends BaseService {
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
     const token = this.cryptoRepository.randomBytesAsText(32);
-    const tokenHashed = this.cryptoRepository.hashSha256(token);
+    const hashed = this.cryptoRepository.hashSha256(token);
 
     await this.sessionRepository.create({
-      token: tokenHashed,
+      token: hashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       appVersion: loginDetails.appVersion,

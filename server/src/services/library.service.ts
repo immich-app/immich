@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
-import path, { basename, isAbsolute, parse } from 'node:path';
+import path, { isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -17,7 +17,17 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { AssetStatus, AssetType, CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import {
+  AssetStatus,
+  AssetType,
+  ChecksumAlgorithm,
+  CronJob,
+  DatabaseLock,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  QueueName,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -256,13 +266,7 @@ export class LibraryService extends BaseService {
       ),
     );
 
-    const assetIds: string[] = [];
-
-    for (let i = 0; i < assetImports.length; i += 5000) {
-      // Chunk the imports to avoid the postgres limit of max parameters at once
-      const chunk = assetImports.slice(i, i + 5000);
-      await this.assetRepository.createAll(chunk).then((assets) => assetIds.push(...assets.map((asset) => asset.id)));
-    }
+    const assetIds = await this.assetRepository.createAll(assetImports);
 
     const progressMessage =
       job.progressCounter && job.totalAssets
@@ -279,6 +283,7 @@ export class LibraryService extends BaseService {
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
     const validation = new ValidateLibraryImportPathResponseDto();
     validation.importPath = importPath;
+    validation.isValid = false;
 
     if (StorageCore.isImmichPath(importPath)) {
       validation.message = 'Cannot use media upload folder for external libraries';
@@ -400,14 +405,12 @@ export class LibraryService extends BaseService {
       ownerId,
       libraryId,
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
+      checksumAlgorithm: ChecksumAlgorithm.sha1Path,
       originalPath: assetPath,
 
       fileCreatedAt: stat.mtime,
       fileModifiedAt: stat.mtime,
       localDateTime: stat.mtime,
-      // TODO: device asset id is deprecated, remove it
-      deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
-      deviceId: 'Library Import',
       type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
       originalFileName: parse(assetPath).base,
       isExternal: true,

@@ -42,7 +42,7 @@ export const handleCreateTag = async (tagValue: string) => {
       return;
     }
 
-    toastManager.success($t('tag_created', { values: { tag: tag.value } }));
+    toastManager.primary($t('tag_created', { values: { tag: tag.value } }));
     eventManager.emit('TagCreate', tag);
 
     return true;
@@ -61,7 +61,7 @@ export const handleUpdateTag = async (tag: TreeNode, dto: TagUpdateDto) => {
   try {
     const response = await updateTag({ id: tag.id, tagUpdateDto: dto });
 
-    toastManager.success($t('tag_updated', { values: { tag: tag.value } }));
+    toastManager.primary($t('tag_updated', { values: { tag: tag.value } }));
     eventManager.emit('TagUpdate', response);
 
     return true;
@@ -91,7 +91,7 @@ const handleDeleteTag = async (tag: TreeNode) => {
   try {
     await deleteTag({ id: tagId });
     eventManager.emit('TagDelete', tag);
-    toastManager.success();
+    toastManager.primary();
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }

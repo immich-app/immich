@@ -1,12 +1,12 @@
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
-import { plainToInstance, Transform, Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
-import { AssetVisibility } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import { HistoryBuilder } from 'src/decorators';
+import { AssetMetadataUpsertItemSchema } from 'src/dtos/asset.dto';
+import { AssetVisibilitySchema } from 'src/enum';
+import { isoDatetimeToDate, JsonParsed, stringToBool } from 'src/validation';
+import z from 'zod';
 
 export enum AssetMediaSize {
+  Original = 'original',
   /**
    * An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
    * or otherwise the original image itself.
@@ -16,13 +16,18 @@ export enum AssetMediaSize {
   THUMBNAIL = 'thumbnail',
 }
 
-export class AssetMediaOptionsDto {
-  @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
-  size?: AssetMediaSize;
+const AssetMediaSizeSchema = z.enum(AssetMediaSize).describe('Asset media size').meta({ id: 'AssetMediaSize' });
 
-  @ValidateBoolean({ optional: true, default: false })
-  edited?: boolean;
-}
+const AssetMediaOptionsSchema = z
+  .object({
+    size: AssetMediaSizeSchema.optional().meta(
+      new HistoryBuilder()
+        .updated('v3', "Specifying 'original' is deprecated. Use the original endpoint directly instead")
+        .getExtensions(),
+    ),
+    edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
+  })
+  .meta({ id: 'AssetMediaOptionsDto' });
 
 export enum UploadFieldName {
   ASSET_DATA = 'assetData',
@@ -30,89 +35,40 @@ export enum UploadFieldName {
   PROFILE_DATA = 'file',
 }
 
-class AssetMediaBase {
-  @IsNotEmpty()
-  @IsString()
-  deviceAssetId!: string;
+const AssetMediaBaseSchema = z.object({
+  fileCreatedAt: isoDatetimeToDate.describe('File creation date'),
+  fileModifiedAt: isoDatetimeToDate.describe('File modification date'),
+  duration: z.string().optional().describe('Duration (for videos)'),
+  filename: z.string().optional().describe('Filename'),
+  /** The properties below are added to correctly generate the API docs and client SDKs. Validation should be handled in the controller. */
+  [UploadFieldName.ASSET_DATA]: z.any().describe('Asset file data').meta({ type: 'string', format: 'binary' }),
+});
 
-  @IsNotEmpty()
-  @IsString()
-  deviceId!: string;
+const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
+  isFavorite: stringToBool.optional().describe('Mark as favorite'),
+  visibility: AssetVisibilitySchema.optional(),
+  livePhotoVideoId: z.uuidv4().optional().describe('Live photo video ID'),
+  metadata: JsonParsed.pipe(z.array(AssetMetadataUpsertItemSchema)).optional().describe('Asset metadata items'),
+  [UploadFieldName.SIDECAR_DATA]: z
+    .any()
+    .optional()
+    .describe('Sidecar file data')
+    .meta({ type: 'string', format: 'binary' }),
+}).meta({ id: 'AssetMediaCreateDto' });
 
-  @ValidateDate()
-  fileCreatedAt!: Date;
-
-  @ValidateDate()
-  fileModifiedAt!: Date;
-
-  @Optional()
-  @IsString()
-  duration?: string;
-
-  @Optional()
-  @IsString()
-  filename?: string;
-
-  // The properties below are added to correctly generate the API docs
-  // and client SDKs. Validation should be handled in the controller.
-  @ApiProperty({ type: 'string', format: 'binary' })
-  [UploadFieldName.ASSET_DATA]!: any;
-}
-
-export class AssetMediaCreateDto extends AssetMediaBase {
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
-
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
-  visibility?: AssetVisibility;
-
-  @ValidateUUID({ optional: true })
-  livePhotoVideoId?: string;
-
-  @Transform(({ value }) => {
-    try {
-      const json = JSON.parse(value);
-      const items = Array.isArray(json) ? json : [json];
-      return items.map((item) => plainToInstance(AssetMetadataUpsertItemDto, item));
-    } catch {
-      throw new BadRequestException(['metadata must be valid JSON']);
-    }
+const AssetBulkUploadCheckItemSchema = z
+  .object({
+    id: z.string().describe('Asset ID'),
+    checksum: z.string().describe('Base64 or hex encoded SHA1 hash'),
   })
-  @Optional()
-  @ValidateNested({ each: true })
-  @IsArray()
-  metadata?: AssetMetadataUpsertItemDto[];
+  .meta({ id: 'AssetBulkUploadCheckItem' });
 
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
-  [UploadFieldName.SIDECAR_DATA]?: any;
-}
+const AssetBulkUploadCheckSchema = z
+  .object({
+    assets: z.array(AssetBulkUploadCheckItemSchema).describe('Assets to check'),
+  })
+  .meta({ id: 'AssetBulkUploadCheckDto' });
 
-export class AssetMediaReplaceDto extends AssetMediaBase {}
-
-export class AssetBulkUploadCheckItem {
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
-
-  /** base64 or hex encoded sha1 hash */
-  @IsString()
-  @IsNotEmpty()
-  checksum!: string;
-}
-
-export class AssetBulkUploadCheckDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetBulkUploadCheckItem)
-  assets!: AssetBulkUploadCheckItem[];
-}
-
-export class CheckExistingAssetsDto {
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  deviceAssetIds!: string[];
-
-  @IsNotEmpty()
-  deviceId!: string;
-}
+export class AssetMediaOptionsDto extends createZodDto(AssetMediaOptionsSchema) {}
+export class AssetMediaCreateDto extends createZodDto(AssetMediaCreateSchema) {}
+export class AssetBulkUploadCheckDto extends createZodDto(AssetBulkUploadCheckSchema) {}

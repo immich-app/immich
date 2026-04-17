@@ -1,12 +1,15 @@
 import { Kysely } from 'kysely';
 import { JobStatus } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { TagService } from 'src/services/tag.service';
 import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
@@ -14,8 +17,8 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(TagService, {
     database: db || defaultDatabase,
-    real: [TagRepository, AccessRepository],
-    mock: [LoggingRepository],
+    real: [AssetRepository, TagRepository, AccessRepository],
+    mock: [EventRepository, LoggingRepository],
   });
 };
 
@@ -24,6 +27,32 @@ beforeAll(async () => {
 });
 
 describe(TagService.name, () => {
+  describe('addAssets', () => {
+    it('should lock exif column', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['tag-1'] });
+      const authDto = factory.auth({ user });
+
+      await sut.addAssets(authDto, tag.id, { ids: [asset.id] });
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select(['lockedProperties', 'tags'])
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({
+        lockedProperties: ['tags'],
+        tags: ['tag-1'],
+      });
+      await expect(ctx.get(TagRepository).getByValue(user.id, 'tag-1')).resolves.toEqual(
+        expect.objectContaining({ id: tag.id }),
+      );
+      await expect(ctx.get(TagRepository).getAssetIds(tag.id, [asset.id])).resolves.toContain(asset.id);
+    });
+  });
   describe('deleteEmptyTags', () => {
     it('single tag exists, not connected to any assets, and is deleted', async () => {
       const { sut, ctx } = setup();

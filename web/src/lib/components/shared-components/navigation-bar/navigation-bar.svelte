@@ -5,7 +5,6 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
@@ -13,11 +12,10 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { Button, IconButton, Logo } from '@immich/ui';
+  import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -79,7 +77,7 @@
         class="sidebar:hidden"
       />
       <a data-sveltekit-preload-data="hover" href={Route.photos()}>
-        <Logo variant={mobileDevice.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
+        <Logo variant={mediaQueryManager.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">
@@ -172,18 +170,15 @@
             type="button"
             class="flex ps-2"
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
-            title={`${$user.name} (${$user.email})`}
+            title="{authManager.user.name} ({authManager.user.email})"
           >
-            {#key $user}
-              <UserAvatar user={$user} size="md" noTitle interactive />
+            {#key authManager.user}
+              <UserAvatar user={authManager.user} size="md" noTitle interactive />
             {/key}
           </button>
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel
-              onLogout={() => authManager.logout()}
-              onClose={() => (shouldShowAccountInfoPanel = false)}
-            />
+            <AccountInfoPanel onClose={() => (shouldShowAccountInfoPanel = false)} />
           {/if}
         </div>
       </section>

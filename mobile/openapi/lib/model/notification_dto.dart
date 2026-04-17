@@ -14,7 +14,7 @@ class NotificationDto {
   /// Returns a new [NotificationDto] instance.
   NotificationDto({
     required this.createdAt,
-    this.data,
+    this.data = const {},
     this.description,
     required this.id,
     required this.level,
@@ -23,16 +23,13 @@ class NotificationDto {
     required this.type,
   });
 
+  /// Creation date
   DateTime createdAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Object? data;
+  /// Additional notification data
+  Map<String, Object> data;
 
+  /// Notification description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -41,10 +38,12 @@ class NotificationDto {
   ///
   String? description;
 
+  /// Notification ID
   String id;
 
   NotificationLevel level;
 
+  /// Date when notification was read
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -53,6 +52,7 @@ class NotificationDto {
   ///
   DateTime? readAt;
 
+  /// Notification title
   String title;
 
   NotificationType type;
@@ -60,7 +60,7 @@ class NotificationDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is NotificationDto &&
     other.createdAt == createdAt &&
-    other.data == data &&
+    _deepEquality.equals(other.data, data) &&
     other.description == description &&
     other.id == id &&
     other.level == level &&
@@ -72,7 +72,7 @@ class NotificationDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (createdAt.hashCode) +
-    (data == null ? 0 : data!.hashCode) +
+    (data.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (id.hashCode) +
     (level.hashCode) +
@@ -85,12 +85,10 @@ class NotificationDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.data != null) {
+      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAt.millisecondsSinceEpoch
+        : this.createdAt.toUtc().toIso8601String();
       json[r'data'] = this.data;
-    } else {
-    //  json[r'data'] = null;
-    }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -99,7 +97,9 @@ class NotificationDto {
       json[r'id'] = this.id;
       json[r'level'] = this.level;
     if (this.readAt != null) {
-      json[r'readAt'] = this.readAt!.toUtc().toIso8601String();
+      json[r'readAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.readAt!.millisecondsSinceEpoch
+        : this.readAt!.toUtc().toIso8601String();
     } else {
     //  json[r'readAt'] = null;
     }
@@ -117,12 +117,12 @@ class NotificationDto {
       final json = value.cast<String, dynamic>();
 
       return NotificationDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
-        data: mapValueOfType<Object>(json, r'data'),
+        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
+        data: mapCastOfType<String, Object>(json, r'data') ?? const {},
         description: mapValueOfType<String>(json, r'description'),
         id: mapValueOfType<String>(json, r'id')!,
         level: NotificationLevel.fromJson(json[r'level'])!,
-        readAt: mapDateTime(json, r'readAt', r''),
+        readAt: mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         title: mapValueOfType<String>(json, r'title')!,
         type: NotificationType.fromJson(json[r'type'])!,
       );

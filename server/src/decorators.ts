@@ -1,10 +1,10 @@
+import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiProperty, ApiPropertyOptions, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions';
-import { BeforeUpdateTrigger, Column, ColumnOptions } from 'src/sql-tools';
 import { setUnion } from 'src/utils/set';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
@@ -73,7 +73,8 @@ export function Chunked(
     const originalMethod = descriptor.value;
     const parameterIndex = options.paramIndex ?? 0;
     const chunkSize = options.chunkSize || DATABASE_PARAMETER_CHUNK_SIZE;
-    descriptor.value = async function (...arguments_: any[]) {
+    const mergeFn = options.mergeFn;
+    descriptor.value = function (...arguments_: any[]) {
       const argument = arguments_[parameterIndex];
 
       // Early return if argument length is less than or equal to the chunk size.
@@ -81,27 +82,27 @@ export function Chunked(
         (Array.isArray(argument) && argument.length <= chunkSize) ||
         (argument instanceof Set && argument.size <= chunkSize)
       ) {
-        return await originalMethod.apply(this, arguments_);
+        return originalMethod.apply(this, arguments_);
       }
 
       return Promise.all(
-        chunks(argument, chunkSize).map(async (chunk) => {
-          return await Reflect.apply(originalMethod, this, [
+        chunks(argument, chunkSize).map((chunk) => {
+          return Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
             ...arguments_.slice(parameterIndex + 1),
           ]);
         }),
-      ).then((results) => (options.mergeFn ? options.mergeFn(results) : results));
+      ).then((results) => (mergeFn ? mergeFn(results) : results));
     };
   };
 }
 
-export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator {
+export function ChunkedArray(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: _.flatten });
 }
 
-export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
+export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: (args: Set<any>[]) => setUnion(...args) });
 }
 
@@ -171,7 +172,7 @@ export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   return applyDecorators(...decorators);
 };
 
-type PropertyOptions = ApiPropertyOptions & { history?: HistoryBuilder };
+export type PropertyOptions = ApiPropertyOptions & { history?: HistoryBuilder };
 export const Property = ({ history, ...options }: PropertyOptions) => {
   const extensions = history?.getExtensions() ?? {};
 

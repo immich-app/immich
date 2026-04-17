@@ -1,237 +1,212 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { AssetOrder, UserAvatarColor } from 'src/enum';
+import { createZodDto } from 'nestjs-zod';
+import { AssetOrderSchema, UserAvatarColorSchema } from 'src/enum';
 import { UserPreferences } from 'src/types';
-import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
+import z from 'zod';
 
-class AvatarUpdate {
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true })
-  color?: UserAvatarColor;
-}
+const AlbumsUpdateSchema = z
+  .object({
+    defaultAssetOrder: AssetOrderSchema.optional(),
+  })
+  .optional()
+  .describe('Album preferences')
+  .meta({ id: 'AlbumsUpdate' });
 
-class MemoriesUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
+const AvatarUpdateSchema = z
+  .object({
+    color: UserAvatarColorSchema.optional(),
+  })
+  .optional()
+  .meta({ id: 'AvatarUpdate' });
 
-  @Optional()
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  duration?: number;
-}
+const MemoriesUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether memories are enabled'),
+    duration: z.int().min(1).optional().describe('Memory duration in seconds'),
+  })
+  .optional()
+  .meta({ id: 'MemoriesUpdate' });
 
-class RatingsUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
-}
+const RatingsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether ratings are enabled'),
+  })
+  .optional()
+  .meta({ id: 'RatingsUpdate' });
 
-class AlbumsUpdate {
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
-  defaultAssetOrder?: AssetOrder;
-}
+const FoldersUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether folders are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether folders appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'FoldersUpdate' });
 
-class FoldersUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
+const PeopleUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether people are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether people appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'PeopleUpdate' });
 
-  @ValidateBoolean({ optional: true })
-  sidebarWeb?: boolean;
-}
+const SharedLinksUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether shared links are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether shared links appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'SharedLinksUpdate' });
 
-class PeopleUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
+const TagsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether tags are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether tags appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'TagsUpdate' });
 
-  @ValidateBoolean({ optional: true })
-  sidebarWeb?: boolean;
-}
+const EmailNotificationsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether email notifications are enabled'),
+    albumInvite: z.boolean().optional().describe('Whether to receive email notifications for album invites'),
+    albumUpdate: z.boolean().optional().describe('Whether to receive email notifications for album updates'),
+  })
+  .optional()
+  .meta({ id: 'EmailNotificationsUpdate' });
 
-class SharedLinksUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
+const DownloadUpdateSchema = z
+  .object({
+    archiveSize: z.int().min(1).optional().describe('Maximum archive size in bytes'),
+    includeEmbeddedVideos: z.boolean().optional().describe('Whether to include embedded videos in downloads'),
+  })
+  .optional()
+  .meta({ id: 'DownloadUpdate' });
 
-  @ValidateBoolean({ optional: true })
-  sidebarWeb?: boolean;
-}
+const PurchaseUpdateSchema = z
+  .object({
+    showSupportBadge: z.boolean().optional().describe('Whether to show support badge'),
+    hideBuyButtonUntil: z.string().optional().describe('Date until which to hide buy button'),
+  })
+  .optional()
+  .meta({ id: 'PurchaseUpdate' });
 
-class TagsUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
+const CastUpdateSchema = z
+  .object({
+    gCastEnabled: z.boolean().optional().describe('Whether Google Cast is enabled'),
+  })
+  .optional()
+  .meta({ id: 'CastUpdate' });
 
-  @ValidateBoolean({ optional: true })
-  sidebarWeb?: boolean;
-}
+const UserPreferencesUpdateSchema = z
+  .object({
+    albums: AlbumsUpdateSchema,
+    avatar: AvatarUpdateSchema,
+    cast: CastUpdateSchema,
+    download: DownloadUpdateSchema,
+    emailNotifications: EmailNotificationsUpdateSchema,
+    folders: FoldersUpdateSchema,
+    memories: MemoriesUpdateSchema,
+    people: PeopleUpdateSchema,
+    purchase: PurchaseUpdateSchema,
+    ratings: RatingsUpdateSchema,
+    sharedLinks: SharedLinksUpdateSchema,
+    tags: TagsUpdateSchema,
+  })
+  .meta({ id: 'UserPreferencesUpdateDto' });
 
-class EmailNotificationsUpdate {
-  @ValidateBoolean({ optional: true })
-  enabled?: boolean;
+const AlbumsResponseSchema = z
+  .object({
+    defaultAssetOrder: AssetOrderSchema,
+  })
+  .meta({ id: 'AlbumsResponse' });
 
-  @ValidateBoolean({ optional: true })
-  albumInvite?: boolean;
+const FoldersResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether folders are enabled'),
+    sidebarWeb: z.boolean().describe('Whether folders appear in web sidebar'),
+  })
+  .meta({ id: 'FoldersResponse' });
 
-  @ValidateBoolean({ optional: true })
-  albumUpdate?: boolean;
-}
+const MemoriesResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether memories are enabled'),
+    duration: z.int().describe('Memory duration in seconds'),
+  })
+  .meta({ id: 'MemoriesResponse' });
 
-class DownloadUpdate implements Partial<DownloadResponse> {
-  @Optional()
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  archiveSize?: number;
+const PeopleResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether people are enabled'),
+    sidebarWeb: z.boolean().describe('Whether people appear in web sidebar'),
+  })
+  .meta({ id: 'PeopleResponse' });
 
-  @ValidateBoolean({ optional: true })
-  includeEmbeddedVideos?: boolean;
-}
+const RatingsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether ratings are enabled'),
+  })
+  .meta({ id: 'RatingsResponse' });
 
-class PurchaseUpdate {
-  @ValidateBoolean({ optional: true })
-  showSupportBadge?: boolean;
+const SharedLinksResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether shared links are enabled'),
+    sidebarWeb: z.boolean().describe('Whether shared links appear in web sidebar'),
+  })
+  .meta({ id: 'SharedLinksResponse' });
 
-  @IsDateString()
-  @Optional()
-  hideBuyButtonUntil?: string;
-}
+const TagsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether tags are enabled'),
+    sidebarWeb: z.boolean().describe('Whether tags appear in web sidebar'),
+  })
+  .meta({ id: 'TagsResponse' });
 
-class CastUpdate {
-  @ValidateBoolean({ optional: true })
-  gCastEnabled?: boolean;
-}
+const EmailNotificationsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether email notifications are enabled'),
+    albumInvite: z.boolean().describe('Whether to receive email notifications for album invites'),
+    albumUpdate: z.boolean().describe('Whether to receive email notifications for album updates'),
+  })
+  .meta({ id: 'EmailNotificationsResponse' });
 
-export class UserPreferencesUpdateDto {
-  @Optional()
-  @ValidateNested()
-  @Type(() => AlbumsUpdate)
-  albums?: AlbumsUpdate;
+const DownloadResponseSchema = z
+  .object({
+    archiveSize: z.int().describe('Maximum archive size in bytes'),
+    includeEmbeddedVideos: z.boolean().describe('Whether to include embedded videos in downloads'),
+  })
+  .meta({ id: 'DownloadResponse' });
 
-  @Optional()
-  @ValidateNested()
-  @Type(() => FoldersUpdate)
-  folders?: FoldersUpdate;
+const PurchaseResponseSchema = z
+  .object({
+    showSupportBadge: z.boolean().describe('Whether to show support badge'),
+    hideBuyButtonUntil: z.string().describe('Date until which to hide buy button'),
+  })
+  .meta({ id: 'PurchaseResponse' });
 
-  @Optional()
-  @ValidateNested()
-  @Type(() => MemoriesUpdate)
-  memories?: MemoriesUpdate;
+const CastResponseSchema = z
+  .object({
+    gCastEnabled: z.boolean().describe('Whether Google Cast is enabled'),
+  })
+  .meta({ id: 'CastResponse' });
 
-  @Optional()
-  @ValidateNested()
-  @Type(() => PeopleUpdate)
-  people?: PeopleUpdate;
+const UserPreferencesResponseSchema = z
+  .object({
+    albums: AlbumsResponseSchema,
+    folders: FoldersResponseSchema,
+    memories: MemoriesResponseSchema,
+    people: PeopleResponseSchema,
+    ratings: RatingsResponseSchema,
+    sharedLinks: SharedLinksResponseSchema,
+    tags: TagsResponseSchema,
+    emailNotifications: EmailNotificationsResponseSchema,
+    download: DownloadResponseSchema,
+    purchase: PurchaseResponseSchema,
+    cast: CastResponseSchema,
+  })
+  .meta({ id: 'UserPreferencesResponseDto' });
 
-  @Optional()
-  @ValidateNested()
-  @Type(() => RatingsUpdate)
-  ratings?: RatingsUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => SharedLinksUpdate)
-  sharedLinks?: SharedLinksUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => TagsUpdate)
-  tags?: TagsUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => AvatarUpdate)
-  avatar?: AvatarUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => EmailNotificationsUpdate)
-  emailNotifications?: EmailNotificationsUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => DownloadUpdate)
-  download?: DownloadUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => PurchaseUpdate)
-  purchase?: PurchaseUpdate;
-
-  @Optional()
-  @ValidateNested()
-  @Type(() => CastUpdate)
-  cast?: CastUpdate;
-}
-
-class AlbumsResponse {
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
-  defaultAssetOrder: AssetOrder = AssetOrder.Desc;
-}
-
-class RatingsResponse {
-  enabled: boolean = false;
-}
-
-class MemoriesResponse {
-  enabled: boolean = true;
-
-  @ApiProperty({ type: 'integer' })
-  duration: number = 5;
-}
-
-class FoldersResponse {
-  enabled: boolean = false;
-  sidebarWeb: boolean = false;
-}
-
-class PeopleResponse {
-  enabled: boolean = true;
-  sidebarWeb: boolean = false;
-}
-
-class TagsResponse {
-  enabled: boolean = true;
-  sidebarWeb: boolean = true;
-}
-
-class SharedLinksResponse {
-  enabled: boolean = true;
-  sidebarWeb: boolean = false;
-}
-
-class EmailNotificationsResponse {
-  enabled!: boolean;
-  albumInvite!: boolean;
-  albumUpdate!: boolean;
-}
-
-class DownloadResponse {
-  @ApiProperty({ type: 'integer' })
-  archiveSize!: number;
-
-  includeEmbeddedVideos: boolean = false;
-}
-
-class PurchaseResponse {
-  showSupportBadge!: boolean;
-  hideBuyButtonUntil!: string;
-}
-
-class CastResponse {
-  gCastEnabled: boolean = false;
-}
-
-export class UserPreferencesResponseDto implements UserPreferences {
-  albums!: AlbumsResponse;
-  folders!: FoldersResponse;
-  memories!: MemoriesResponse;
-  people!: PeopleResponse;
-  ratings!: RatingsResponse;
-  sharedLinks!: SharedLinksResponse;
-  tags!: TagsResponse;
-  emailNotifications!: EmailNotificationsResponse;
-  download!: DownloadResponse;
-  purchase!: PurchaseResponse;
-  cast!: CastResponse;
-}
+export class UserPreferencesUpdateDto extends createZodDto(UserPreferencesUpdateSchema) {}
+export class UserPreferencesResponseDto extends createZodDto(UserPreferencesResponseSchema) {}
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {
   return preferences;

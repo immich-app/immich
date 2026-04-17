@@ -1,4 +1,4 @@
-import { user } from '$lib/stores/user.store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
@@ -157,7 +157,7 @@ class ActivityManager {
     const [liked] = await getActivities({
       albumId,
       assetId,
-      userId: get(user).id,
+      userId: authManager.user.id,
       $type: ReactionType.Like,
       level: assetId ? undefined : ReactionLevel.Album,
     });

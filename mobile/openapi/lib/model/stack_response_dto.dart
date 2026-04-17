@@ -20,8 +20,10 @@ class StackResponseDto {
 
   List<AssetResponseDto> assets;
 
+  /// Stack ID
   String id;
 
+  /// Primary asset ID
   String primaryAssetId;
 
   @override

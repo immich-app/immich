@@ -1,9 +1,8 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import Image from '$lib/components/Image.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import type { ActionReturn } from 'svelte/action';
   import type { ClassValue } from 'svelte/elements';
 
   interface Props {
@@ -17,6 +16,7 @@
     circle?: boolean;
     hidden?: boolean;
     border?: boolean;
+    highlighted?: boolean;
     hiddenIconClass?: string;
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
@@ -35,6 +35,7 @@
     circle = false,
     hidden = false,
     border = false,
+    highlighted = false,
     hiddenIconClass = 'text-white',
     onComplete = undefined,
     class: imageClass = '',
@@ -49,51 +50,39 @@
     loaded = true;
     onComplete?.(false);
   };
+
   const setErrored = () => {
     errored = true;
     onComplete?.(true);
   };
 
-  function mount(elem: HTMLImageElement): ActionReturn {
-    if (elem.complete) {
-      loaded = true;
-      onComplete?.(false);
-    }
-    return {
-      destroy: () => preloadManager.cancelPreloadUrl(url),
-    };
-  }
+  let sharedClasses = $derived([
+    curve && 'rounded-xl',
+    circle && 'rounded-full',
+    shadow && 'shadow-lg',
+    (circle || !heightStyle) && 'aspect-square',
+    border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
+    'transition-shadow duration-150',
+    highlighted && 'ring-4 ring-immich-primary dark:ring-immich-dark-primary',
+  ]);
 
-  let optionalClasses = $derived(
-    [
-      curve && 'rounded-xl',
-      circle && 'rounded-full',
-      shadow && 'shadow-lg',
-      (circle || !heightStyle) && 'aspect-square',
-      border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
-      brokenAssetClass,
-    ]
-      .filter(Boolean)
-      .join(' '),
+  let style = $derived(
+    `width: ${widthStyle}; height: ${heightStyle ?? ''}; filter: ${hidden ? 'grayscale(50%)' : 'none'}; opacity: ${hidden ? '0.5' : '1'};`,
   );
 </script>
 
 {#if errored}
-  <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
+  <BrokenAsset class={[sharedClasses, brokenAssetClass]} width={widthStyle} height={heightStyle} />
 {:else}
-  <img
-    use:mount
-    onload={setLoaded}
-    onerror={setErrored}
-    style:width={widthStyle}
-    style:height={heightStyle}
-    style:filter={hidden ? 'grayscale(50%)' : 'none'}
-    style:opacity={hidden ? '0.5' : '1'}
+  <Image
     src={url}
+    onLoad={setLoaded}
+    onError={setErrored}
+    class={['object-cover bg-gray-300 dark:bg-gray-700', sharedClasses, imageClass]}
+    {style}
     alt={loaded || errored ? altText : ''}
-    {title}
-    class={['object-cover', optionalClasses, imageClass]}
-    draggable="false"
+    draggable={false}
+    title={title ?? undefined}
     loading={preload ? 'eager' : 'lazy'}
   />
 {/if}

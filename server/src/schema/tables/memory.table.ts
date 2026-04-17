@@ -1,7 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { MemoryType } from 'src/enum';
-import { memory_delete_audit } from 'src/schema/functions';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -13,7 +9,11 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { MemoryType } from 'src/enum';
+import { memory_delete_audit } from 'src/schema/functions';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('memory')
 @UpdatedAtTrigger('memory_updatedAt')
@@ -43,7 +43,7 @@ export class MemoryTable {
   type!: MemoryType;
 
   @Column({ type: 'jsonb' })
-  data!: object;
+  data!: Record<string, unknown>;
 
   /** unless set to true, will be automatically deleted in the future */
   @Column({ type: 'boolean', default: false })

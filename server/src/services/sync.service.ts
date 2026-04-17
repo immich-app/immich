@@ -2,37 +2,22 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { Insertable } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { Writable } from 'node:stream';
-import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetDeltaSyncDto,
-  AssetDeltaSyncResponseDto,
-  AssetFullSyncDto,
   SyncAckDeleteDto,
   SyncAckSetDto,
+  syncAssetFaceV2ToV1,
   SyncAssetV1,
   SyncItem,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
-import {
-  AssetVisibility,
-  DatabaseAction,
-  EntityType,
-  JobName,
-  Permission,
-  QueueName,
-  SyncEntityType,
-  SyncRequestType,
-} from 'src/enum';
+import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
 import { SyncQueryOptions } from 'src/repositories/sync.repository';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
-import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
-import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
@@ -65,7 +50,6 @@ const sendEntityBackfillCompleteAck = (response: Writable, ackType: SyncEntityTy
   send(response, { type: SyncEntityType.SyncAckV1, data: {}, ackType, ids: [id, COMPLETE_ID] });
 };
 
-const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 export const SYNC_TYPES_ORDER = [
   SyncRequestType.AuthUsersV1,
   SyncRequestType.UsersV1,
@@ -85,8 +69,10 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.MemoryToAssetsV1,
   SyncRequestType.PeopleV1,
   SyncRequestType.AssetFacesV1,
+  SyncRequestType.AssetFacesV2,
   SyncRequestType.UserMetadataV1,
   SyncRequestType.AssetMetadataV1,
+  SyncRequestType.AssetEditsV1,
 ];
 
 const throwSessionRequired = () => {
@@ -173,6 +159,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(options, response, checkpointMap),
       [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
+      [SyncRequestType.AssetEditsV1]: () => this.syncAssetEditsV1(options, response, checkpointMap),
       [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(options, response, checkpointMap, auth),
       [SyncRequestType.PartnerAssetExifsV1]: () =>
@@ -189,6 +176,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(options, response, checkpointMap),
       [SyncRequestType.AssetFacesV1]: async () => this.syncAssetFacesV1(options, response, checkpointMap),
+      [SyncRequestType.AssetFacesV2]: async () => this.syncAssetFacesV2(options, response, checkpointMap),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
     };
 
@@ -212,6 +200,7 @@ export class SyncService extends BaseService {
     await this.syncRepository.asset.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.assetFace.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.assetMetadata.cleanupAuditTable(pruneThreshold);
+    await this.syncRepository.assetEdit.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.memory.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.memoryToAsset.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.partner.cleanupAuditTable(pruneThreshold);
@@ -344,6 +333,21 @@ export class SyncService extends BaseService {
   private async syncAssetExifsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const upsertType = SyncEntityType.AssetExifV1;
     const upserts = this.syncRepository.assetExif.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncAssetEditsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AssetEditDeleteV1;
+    const deletes = this.syncRepository.assetEdit.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+    const upsertType = SyncEntityType.AssetEditV1;
+    const upserts = this.syncRepository.assetEdit.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
@@ -790,6 +794,21 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AssetFaceV1;
     const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
+      const v1 = syncAssetFaceV2ToV1(data);
+      send(response, { type: upsertType, ids: [updateId], data: v1 });
+    }
+  }
+
+  private async syncAssetFacesV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AssetFaceDeleteV1;
+    const deletes = this.syncRepository.assetFace.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AssetFaceV2;
+    const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
   }
@@ -850,69 +869,5 @@ export class SyncService extends BaseService {
         }),
       },
     ]);
-  }
-
-  async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
-    // mobile implementation is faster if this is a single id
-    const userId = dto.userId || auth.user.id;
-    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [userId] });
-    const assets = await this.assetRepository.getAllForUserFullSync({
-      ownerId: userId,
-      updatedUntil: dto.updatedUntil,
-      lastId: dto.lastId,
-      limit: dto.limit,
-    });
-    return assets.map((a) => mapAsset(a, { auth, stripMetadata: false, withStack: true }));
-  }
-
-  async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    // app has not synced in the last 100 days
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.updatedAfter));
-    if (duration > AUDIT_LOG_MAX_DURATION) {
-      return FULL_SYNC;
-    }
-
-    // app does not have the correct partners synced
-    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
-    const userIds = [auth.user.id, ...partnerIds];
-    if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
-      return FULL_SYNC;
-    }
-
-    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: dto.userIds });
-
-    const limit = 10_000;
-    const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
-
-    // too many changes, need to do a full sync
-    if (upserted.length === limit) {
-      return FULL_SYNC;
-    }
-
-    const deleted = await this.auditRepository.getAfter(dto.updatedAfter, {
-      userIds,
-      entityType: EntityType.Asset,
-      action: DatabaseAction.Delete,
-    });
-
-    const result = {
-      needsFullSync: false,
-      upserted: upserted
-        // do not return archived assets for partner users
-        .filter(
-          (a) =>
-            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.Timeline),
-        )
-        .map((a) =>
-          mapAsset(a, {
-            auth,
-            stripMetadata: false,
-            // ignore stacks for non partner users
-            withStack: a.ownerId === auth.user.id,
-          }),
-        ),
-      deleted,
-    };
-    return result;
   }
 }

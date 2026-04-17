@@ -20,19 +20,28 @@ class OcrConfig {
     required this.modelName,
   });
 
+  /// Whether the task is enabled
   bool enabled;
 
+  /// Maximum resolution for OCR processing
+  ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int maxResolution;
 
+  /// Minimum confidence score for text detection
+  ///
   /// Minimum value: 0.1
   /// Maximum value: 1
   double minDetectionScore;
 
+  /// Minimum confidence score for text recognition
+  ///
   /// Minimum value: 0.1
   /// Maximum value: 1
   double minRecognitionScore;
 
+  /// Name of the model to use
   String modelName;
 
   @override

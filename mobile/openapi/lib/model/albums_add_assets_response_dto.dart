@@ -25,6 +25,7 @@ class AlbumsAddAssetsResponseDto {
   ///
   BulkIdErrorReason? error;
 
+  /// Operation success
   bool success;
 
   @override

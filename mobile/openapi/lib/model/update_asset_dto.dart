@@ -23,6 +23,7 @@ class UpdateAssetDto {
     this.visibility,
   });
 
+  /// Original date and time
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -31,6 +32,7 @@ class UpdateAssetDto {
   ///
   String? dateTimeOriginal;
 
+  /// Asset description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -39,6 +41,7 @@ class UpdateAssetDto {
   ///
   String? description;
 
+  /// Mark as favorite
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -47,6 +50,10 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
+  /// Latitude coordinate
+  ///
+  /// Minimum value: -90
+  /// Maximum value: 90
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -55,8 +62,13 @@ class UpdateAssetDto {
   ///
   num? latitude;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
+  /// Longitude coordinate
+  ///
+  /// Minimum value: -180
+  /// Maximum value: 180
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -65,15 +77,11 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
+  /// Rating in range [1-5], or null for unrated
+  ///
   /// Minimum value: -1
   /// Maximum value: 5
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  num? rating;
+  int? rating;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -169,7 +177,7 @@ class UpdateAssetDto {
         latitude: num.parse('${json[r'latitude']}'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         longitude: num.parse('${json[r'longitude']}'),
-        rating: num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
     }

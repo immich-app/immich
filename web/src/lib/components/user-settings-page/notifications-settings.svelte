@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyPreferences } from '@immich/sdk';
   import { Button, Field, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
-  let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
-  let albumUpdateNotificationEnabled = $state($preferences?.emailNotifications?.albumUpdate ?? true);
+  let emailNotificationsEnabled = $state(authManager.preferences.emailNotifications?.enabled ?? true);
+  let albumInviteNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumInvite ?? true);
+  let albumUpdateNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumUpdate ?? true);
 
   const handleSave = async () => {
     try {
-      const data = await updateMyPreferences({
+      const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           emailNotifications: {
             enabled: emailNotificationsEnabled,
@@ -22,11 +22,8 @@
         },
       });
 
-      $preferences.emailNotifications.enabled = data.emailNotifications.enabled;
-      $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
-      $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
-
-      toastManager.success($t('saved_settings'));
+      authManager.setPreferences(response);
+      toastManager.primary($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }
@@ -42,7 +39,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ms-4 mt-4 flex flex-col gap-6">
+      <div class="sm:ms-8 flex flex-col gap-6">
         <Field label={$t('enable')} description={$t('notification_toggle_setting_description')}>
           <Switch bind:checked={emailNotificationsEnabled} />
         </Field>

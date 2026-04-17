@@ -65,7 +65,7 @@
   </TableRow>
 {/snippet}
 
-<section class="my-6 w-full">
+<section class="my-4 w-full">
   <Heading size="tiny">{$t('photos_and_videos')}</Heading>
   <Table striped spacing="small" class="mt-4" size="small">
     <TableHeader>

@@ -1,34 +1,42 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
 import { Exif } from 'src/database';
+import { MaybeDehydrated } from 'src/types';
+import { asDateString } from 'src/utils/date';
+import z from 'zod';
 
-export class ExifResponseDto {
-  make?: string | null = null;
-  model?: string | null = null;
-  exifImageWidth?: number | null = null;
-  exifImageHeight?: number | null = null;
+export const ExifResponseSchema = z
+  .object({
+    make: z.string().nullish().default(null).describe('Camera make'),
+    model: z.string().nullish().default(null).describe('Camera model'),
+    exifImageWidth: z.number().min(0).nullish().default(null).describe('Image width in pixels'),
+    exifImageHeight: z.number().min(0).nullish().default(null).describe('Image height in pixels'),
+    fileSizeInByte: z.int().min(0).nullish().default(null).describe('File size in bytes'),
+    orientation: z.string().nullish().default(null).describe('Image orientation'),
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    dateTimeOriginal: z.string().meta({ format: 'date-time' }).nullish().default(null).describe('Original date/time'),
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    modifyDate: z.string().meta({ format: 'date-time' }).nullish().default(null).describe('Modification date/time'),
+    timeZone: z.string().nullish().default(null).describe('Time zone'),
+    lensModel: z.string().nullish().default(null).describe('Lens model'),
+    fNumber: z.number().nullish().default(null).describe('F-number (aperture)'),
+    focalLength: z.number().nullish().default(null).describe('Focal length in mm'),
+    iso: z.number().nullish().default(null).describe('ISO sensitivity'),
+    exposureTime: z.string().nullish().default(null).describe('Exposure time'),
+    latitude: z.number().nullish().default(null).describe('GPS latitude'),
+    longitude: z.number().nullish().default(null).describe('GPS longitude'),
+    city: z.string().nullish().default(null).describe('City name'),
+    state: z.string().nullish().default(null).describe('State/province name'),
+    country: z.string().nullish().default(null).describe('Country name'),
+    description: z.string().nullish().default(null).describe('Image description'),
+    projectionType: z.string().nullish().default(null).describe('Projection type'),
+    rating: z.number().nullish().default(null).describe('Rating'),
+  })
+  .describe('EXIF response')
+  .meta({ id: 'ExifResponseDto' });
 
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  fileSizeInByte?: number | null = null;
-  orientation?: string | null = null;
-  dateTimeOriginal?: Date | null = null;
-  modifyDate?: Date | null = null;
-  timeZone?: string | null = null;
-  lensModel?: string | null = null;
-  fNumber?: number | null = null;
-  focalLength?: number | null = null;
-  iso?: number | null = null;
-  exposureTime?: string | null = null;
-  latitude?: number | null = null;
-  longitude?: number | null = null;
-  city?: string | null = null;
-  state?: string | null = null;
-  country?: string | null = null;
-  description?: string | null = null;
-  projectionType?: string | null = null;
-  rating?: number | null = null;
-}
+class ExifResponseDto extends createZodDto(ExifResponseSchema) {}
 
-export function mapExif(entity: Exif): ExifResponseDto {
+export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
   return {
     make: entity.make,
     model: entity.model,
@@ -36,8 +44,8 @@ export function mapExif(entity: Exif): ExifResponseDto {
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: entity.dateTimeOriginal,
-    modifyDate: entity.modifyDate,
+    dateTimeOriginal: asDateString(entity.dateTimeOriginal),
+    modifyDate: asDateString(entity.modifyDate),
     timeZone: entity.timeZone,
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,
@@ -51,19 +59,6 @@ export function mapExif(entity: Exif): ExifResponseDto {
     country: entity.country,
     description: entity.description,
     projectionType: entity.projectionType,
-    rating: entity.rating,
-  };
-}
-
-export function mapSanitizedExif(entity: Exif): ExifResponseDto {
-  return {
-    fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
-    orientation: entity.orientation,
-    dateTimeOriginal: entity.dateTimeOriginal,
-    timeZone: entity.timeZone,
-    projectionType: entity.projectionType,
-    exifImageWidth: entity.exifImageWidth,
-    exifImageHeight: entity.exifImageHeight,
     rating: entity.rating,
   };
 }

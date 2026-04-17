@@ -13,12 +13,14 @@ class DriftMemoryCard extends StatelessWidget {
   final RemoteAsset asset;
   final String title;
   final bool showTitle;
+  final bool isCurrent;
   final Function()? onVideoEnded;
 
   const DriftMemoryCard({
     required this.asset,
     required this.title,
     required this.showTitle,
+    this.isCurrent = false,
     this.onVideoEnded,
     super.key,
   });
@@ -37,33 +39,35 @@ class DriftMemoryCard extends StatelessWidget {
           SizedBox.expand(child: _BlurredBackdrop(asset: asset)),
           LayoutBuilder(
             builder: (context, constraints) {
+              final r = asset.width != null && asset.height != null
+                  ? asset.width! / asset.height!
+                  : constraints.maxWidth / constraints.maxHeight;
+
               // Determine the fit using the aspect ratio
               BoxFit fit = BoxFit.contain;
               if (asset.width != null && asset.height != null) {
-                final aspectRatio = asset.width! / asset.height!;
                 final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
                 // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
+                if (phoneAspectRatio * .75 < r && phoneAspectRatio * 1.25 > r) {
                   // Cover to look nice if we have nearly the same aspect ratio
                   fit = BoxFit.cover;
                 }
               }
 
-              if (asset.isImage) {
-                return FullImage(asset, fit: fit, size: const Size(double.infinity, double.infinity));
-              } else {
-                return SizedBox(
-                  width: context.width,
-                  height: context.height,
+              if (asset.isImage) return FullImage(asset, fit: fit, size: const Size(double.infinity, double.infinity));
+
+              return Center(
+                child: AspectRatio(
+                  aspectRatio: r,
                   child: NativeVideoViewer(
                     key: ValueKey(asset.id),
                     asset: asset,
+                    isCurrent: isCurrent,
                     showControls: false,
-                    playbackDelayFactor: 2,
-                    image: FullImage(asset, size: Size(context.width, context.height), fit: BoxFit.contain),
+                    image: FullImage(asset, size: context.sizeData, fit: BoxFit.contain),
                   ),
-                );
-              }
+                ),
+              );
             },
           ),
           if (showTitle)

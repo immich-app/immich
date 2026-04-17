@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { Route } from '$lib/route';
 import {
   AlbumFilter,
@@ -29,6 +30,7 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
         assetIds,
       },
     });
+    eventManager.emit('AlbumCreate', newAlbum);
     return newAlbum;
   } catch (error) {
     const $t = get(t);

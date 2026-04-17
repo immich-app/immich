@@ -1,25 +1,23 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { handleDownloadAlbum } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { IconButton, Logo } from '@immich/ui';
+  import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
+  import { ActionButton, IconButton, Logo } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -28,20 +26,16 @@
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
-    user?: UserResponseDto | undefined;
   }
 
-  let { sharedLink, user = undefined }: Props = $props();
+  let { sharedLink }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
 
-  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   const options = $derived({ albumId: album.id, order: album.order });
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-
-  const assetInteraction = new AssetInteraction();
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -54,9 +48,11 @@
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle
         ? await timelineManager.getRandomAsset()
-        : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
+        : timelineManager.months[0]?.timelineDays[0]?.viewerAssets[0]?.asset;
     if (asset) {
-      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
+      handlePromiseError(
+        assetViewerManager.setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)),
+      );
     }
   };
 
@@ -67,15 +63,15 @@
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
-      if (!$showAssetViewer && assetInteraction.selectionActive) {
-        cancelMultiselect(assetInteraction);
+      if (!assetViewerManager.isViewing && assetMultiSelectManager.selectionActive) {
+        assetMultiSelectManager.clear();
       }
     },
   }}
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <Timeline enableRouting={true} {album} bind:timelineManager {options} {assetInteraction}>
+  <Timeline enableRouting={true} {album} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1 class="text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all">
@@ -99,13 +95,9 @@
 </main>
 
 <header>
-  {#if assetInteraction.selectionActive}
-    <AssetSelectControlBar
-      ownerId={user?.id}
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => assetInteraction.clearMultiselect()}
-    >
-      <SelectAllAssets {timelineManager} {assetInteraction} />
+  {#if assetMultiSelectManager.selectionActive}
+    <AssetSelectControlBar>
+      <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" />
       {/if}
@@ -114,7 +106,7 @@
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
         <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-          <Logo variant={mobileDevice.maxMd ? 'icon' : 'inline'} class="min-w-10" />
+          <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />
         </a>
       {/snippet}
 

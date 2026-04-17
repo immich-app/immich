@@ -17,8 +17,13 @@ class DownloadArchiveInfo {
     required this.size,
   });
 
+  /// Asset IDs in this archive
   List<String> assetIds;
 
+  /// Archive size in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int size;
 
   @override

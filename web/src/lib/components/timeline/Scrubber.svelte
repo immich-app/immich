@@ -1,7 +1,7 @@
 <script lang="ts">
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { ScrubberMonth, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
@@ -50,6 +50,7 @@
     onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
+    // eslint-disable-next-line no-useless-assignment
     scrubberWidth = $bindable(),
   }: Props = $props();
 
@@ -65,7 +66,7 @@
   const toScrollY = (percent: number) => percent * (height - (PADDING_TOP + PADDING_BOTTOM));
   const toTimelineY = (scrollY: number) => scrollY / (height - (PADDING_TOP + PADDING_BOTTOM));
 
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
   const MOBILE_WIDTH = 20;
   const DESKTOP_WIDTH = 60;
@@ -91,7 +92,7 @@
     scrubberWidth = usingMobileDevice ? MOBILE_WIDTH : DESKTOP_WIDTH;
   });
 
-  const toScrollFromMonthGroupPercentage = (
+  const toScrollFromTimelineMonthPercentage = (
     scrubberMonth: ViewportTopMonth,
     scrubberMonthPercent: number,
     scrubOverallPercent: number,
@@ -124,7 +125,7 @@
     }
   };
   const scrollY = $derived(
-    toScrollFromMonthGroupPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
+    toScrollFromTimelineMonthPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
   );
   const timelineFullHeight = $derived(timelineManager.scrubberTimelineHeight);
   const relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
@@ -280,12 +281,12 @@
       const boundingClientRect = bestElement.boundingClientRect;
       const sy = boundingClientRect.y;
       const relativeY = y - sy;
-      const monthGroupPercentY = relativeY / boundingClientRect.height;
+      const timelineMonthPercentY = relativeY / boundingClientRect.height;
       return {
         isOnPaddingTop: false,
         isOnPaddingBottom: false,
         segment,
-        monthGroupPercentY,
+        timelineMonthPercentY,
       };
     }
 
@@ -308,7 +309,7 @@
       isOnPaddingTop,
       isOnPaddingBottom,
       segment: undefined,
-      monthGroupPercentY: 0,
+      timelineMonthPercentY: 0,
     };
   };
 
@@ -327,7 +328,7 @@
     const upper = rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     hoverY = clamp(clientY - rect?.top - PADDING_TOP, lower, upper);
     const x = rect!.left + rect!.width / 2;
-    const { segment, monthGroupPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
+    const { segment, timelineMonthPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
     activeSegment = segment;
     isHoverOnPaddingTop = isOnPaddingTop;
     isHoverOnPaddingBottom = isOnPaddingBottom;
@@ -335,7 +336,7 @@
     const scrubData = {
       scrubberMonth: segmentDate,
       overallScrollPercent: toTimelineY(hoverY),
-      scrubberMonthScrollPercent: monthGroupPercentY,
+      scrubberMonthScrollPercent: timelineMonthPercentY,
     };
     if (wasDragging === false && isDragging) {
       void startScrub?.(scrubData);

@@ -16,6 +16,7 @@ class PartnerCreateDto {
     required this.sharedWithId,
   });
 
+  /// User ID to share with
   String sharedWithId;
 
   @override

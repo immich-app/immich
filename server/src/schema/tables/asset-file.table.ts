@@ -1,6 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetFileType } from 'src/enum';
-import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   Column,
   CreateDateColumn,
@@ -11,7 +8,10 @@ import {
   Timestamp,
   Unique,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AssetFileType } from 'src/enum';
+import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_file')
 @Unique({ columns: ['assetId', 'type', 'isEdited'] })
@@ -40,4 +40,10 @@ export class AssetFileTable {
 
   @Column({ type: 'boolean', default: false })
   isEdited!: Generated<boolean>;
+
+  @Column({ type: 'boolean', default: false })
+  isProgressive!: Generated<boolean>;
+
+  @Column({ type: 'boolean', default: false })
+  isTransparent!: Generated<boolean>;
 }

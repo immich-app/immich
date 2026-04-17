@@ -251,10 +251,13 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
   ///
@@ -313,10 +316,13 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
   ///
@@ -412,10 +418,13 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
   ///
@@ -474,10 +483,13 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
   ///

@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Asset media size
 class AssetMediaSize {
   /// Instantiate a new enum with the provided [value].
   const AssetMediaSize._(this.value);
@@ -23,12 +23,14 @@ class AssetMediaSize {
 
   String toJson() => value;
 
+  static const original = AssetMediaSize._(r'original');
   static const fullsize = AssetMediaSize._(r'fullsize');
   static const preview = AssetMediaSize._(r'preview');
   static const thumbnail = AssetMediaSize._(r'thumbnail');
 
   /// List of all possible values in this [enum][AssetMediaSize].
   static const values = <AssetMediaSize>[
+    original,
     fullsize,
     preview,
     thumbnail,
@@ -70,6 +72,7 @@ class AssetMediaSizeTypeTransformer {
   AssetMediaSize? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
+        case r'original': return AssetMediaSize.original;
         case r'fullsize': return AssetMediaSize.fullsize;
         case r'preview': return AssetMediaSize.preview;
         case r'thumbnail': return AssetMediaSize.thumbnail;

@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// OAuth token endpoint auth method
 class OAuthTokenEndpointAuthMethod {
   /// Instantiate a new enum with the provided [value].
   const OAuthTokenEndpointAuthMethod._(this.value);

@@ -1,8 +1,3 @@
-import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AlbumUserRole } from 'src/enum';
-import { album_user_after_insert, album_user_delete_audit } from 'src/schema/functions';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   AfterInsertTrigger,
@@ -13,7 +8,12 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AlbumUserRole } from 'src/enum';
+import { album_user_after_insert, album_user_delete_audit } from 'src/schema/functions';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table({ name: 'album_user' })
 // Pre-existing indices from original album <--> user ManyToMany mapping

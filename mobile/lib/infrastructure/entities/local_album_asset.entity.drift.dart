@@ -459,6 +459,10 @@ typedef $$LocalAlbumAssetEntityTableProcessedTableManager =
       i1.LocalAlbumAssetEntityData,
       i0.PrefetchHooks Function({bool assetId, bool albumId})
     >;
+i0.Index get idxLocalAlbumAssetAlbumAsset => i0.Index(
+  'idx_local_album_asset_album_asset',
+  'CREATE INDEX IF NOT EXISTS idx_local_album_asset_album_asset ON local_album_asset_entity (album_id, asset_id)',
+);
 
 class $LocalAlbumAssetEntityTable extends i2.LocalAlbumAssetEntity
     with

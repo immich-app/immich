@@ -19,6 +19,7 @@ class AlbumUserCreateDto {
 
   AlbumUserRole role;
 
+  /// User ID
   String userId;
 
   @override

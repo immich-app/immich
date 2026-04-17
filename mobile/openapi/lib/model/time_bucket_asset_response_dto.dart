@@ -39,10 +39,10 @@ class TimeBucketAssetResponseDto {
   /// Array of country names extracted from EXIF GPS data
   List<String?> country;
 
-  /// Array of video durations in HH:MM:SS format (null for images)
+  /// Array of video/gif durations in hh:mm:ss.SSS format (null for static images)
   List<String?> duration;
 
-  /// Array of file creation timestamps in UTC (ISO 8601 format, without timezone)
+  /// Array of file creation timestamps in UTC
   List<String> fileCreatedAt;
 
   /// Array of asset IDs in the time bucket

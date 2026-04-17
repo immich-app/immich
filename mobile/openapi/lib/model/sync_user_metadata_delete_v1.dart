@@ -19,6 +19,7 @@ class SyncUserMetadataDeleteV1 {
 
   UserMetadataKey key;
 
+  /// User ID
   String userId;
 
   @override

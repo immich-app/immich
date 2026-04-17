@@ -76,12 +76,14 @@ describe('mimeTypes', () => {
     { mimetype: 'image/x-sony-sr2', extension: '.sr2' },
     { mimetype: 'image/x-sony-srf', extension: '.srf' },
     { mimetype: 'image/x3f', extension: '.x3f' },
+    { mimetype: 'application/mxf', extension: '.mxf' },
     { mimetype: 'video/3gpp', extension: '.3gp' },
     { mimetype: 'video/3gpp', extension: '.3gpp' },
     { mimetype: 'video/avi', extension: '.avi' },
     { mimetype: 'video/mp2t', extension: '.m2t' },
     { mimetype: 'video/mp2t', extension: '.m2ts' },
     { mimetype: 'video/mp2t', extension: '.mts' },
+    { mimetype: 'video/mp2t', extension: '.ts' },
     { mimetype: 'video/mp4', extension: '.mp4' },
     { mimetype: 'video/mpeg', extension: '.mpe' },
     { mimetype: 'video/mpeg', extension: '.mpeg' },
@@ -152,6 +154,33 @@ describe('mimeTypes', () => {
     }
   });
 
+  describe('canBeTransparent', () => {
+    for (const img of [
+      'a.avif',
+      'a.bmp',
+      'a.gif',
+      'a.heic',
+      'a.heif',
+      'a.hif',
+      'a.jxl',
+      'a.png',
+      'a.svg',
+      'a.tif',
+      'a.tiff',
+      'a.webp',
+    ]) {
+      it(`should return true for ${img}`, () => {
+        expect(mimeTypes.canBeTransparent(img)).toBe(true);
+      });
+    }
+
+    for (const img of ['a.jpg', 'a.jpeg', 'a.jpe', 'a.insp', 'a.jp2', 'a.cr3', 'a.dng', 'a.nef', 'a.arw']) {
+      it(`should return false for ${img}`, () => {
+        expect(mimeTypes.canBeTransparent(img)).toBe(false);
+      });
+    }
+  });
+
   describe('animated image', () => {
     for (const img of ['a.avif', 'a.gif', 'a.webp']) {
       it('should identify animated image mime types as such', () => {
@@ -188,7 +217,9 @@ describe('mimeTypes', () => {
 
     it('should contain only video mime types', () => {
       const values = Object.values(mimeTypes.video).flat();
-      expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('video/')));
+      expect(values).toEqual(
+        values.filter((mimeType) => mimeType.startsWith('video/') || mimeType === 'application/mxf'),
+      );
     });
 
     for (const [extension, v] of Object.entries(mimeTypes.video)) {

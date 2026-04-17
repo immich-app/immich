@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
@@ -9,7 +9,7 @@ import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { removeUndefinedKeys } from 'src/utils/database';
+import { removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -282,14 +282,7 @@ export class PersonRepository {
         'asset.originalPath',
         'asset_exif.orientation as exifOrientation',
       ])
-      .select((eb) =>
-        eb
-          .selectFrom('asset_file')
-          .select('asset_file.path')
-          .whereRef('asset_file.assetId', '=', 'asset.id')
-          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
-          .as('previewPath'),
-      )
+      .select((eb) => withFilePath(eb, AssetFileType.Preview).as('previewPath'))
       .where('person.id', '=', id)
       .where('asset_face.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -317,18 +310,15 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions) {
     return this.db
-      .selectFrom('person')
-      .selectAll('person')
-      .where((eb) =>
-        eb.and([
-          eb('person.ownerId', '=', userId),
-          eb.or([
-            eb(eb.fn('lower', ['person.name']), 'like', `${personName.toLowerCase()}%`),
-            eb(eb.fn('lower', ['person.name']), 'like', `% ${personName.toLowerCase()}%`),
-          ]),
-        ]),
+      .with('similarity_threshold', (db) =>
+        db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
       )
-      .limit(1000)
+      .selectFrom(['similarity_threshold', 'person'])
+      .selectAll('person')
+      .where('person.ownerId', '=', userId)
+      .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)
+      .orderBy(sql`f_unaccent("person"."name") <->>> f_unaccent(${personName})`)
+      .limit(100)
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))
       .execute();
   }
@@ -351,13 +341,13 @@ export class PersonRepository {
       .leftJoin('asset', (join) =>
         join
           .onRef('asset.id', '=', 'asset_face.assetId')
-          .on('asset_face.personId', '=', personId)
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
+      .where('asset_face.personId', '=', personId)
       .executeTakeFirst();
 
     return {
@@ -484,12 +474,6 @@ export class PersonRepository {
     return this.db
       .selectFrom('asset_face')
       .selectAll('asset_face')
-      .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('asset').selectAll('asset').whereRef('asset.id', '=', 'asset_face.assetId')).as(
-          'asset',
-        ),
-      )
-      .$narrowType<{ asset: NotNull }>()
       .select(withPerson)
       .where('asset_face.assetId', 'in', assetIds)
       .where('asset_face.personId', 'in', personIds)
@@ -581,5 +565,16 @@ export class PersonRepository {
           .execute();
       }
     });
+  }
+
+  @GenerateSql({ params: [{ personId: DummyValue.UUID, assetId: DummyValue.UUID }] })
+  getForFeatureFaceUpdate({ personId, assetId }: { personId: string; assetId: string }) {
+    return this.db
+      .selectFrom('asset_face')
+      .select('asset_face.id')
+      .where('asset_face.assetId', '=', assetId)
+      .where('asset_face.personId', '=', personId)
+      .innerJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.isOffline', '=', false))
+      .executeTakeFirst();
   }
 }

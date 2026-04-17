@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -125,7 +126,7 @@
           }
         }
 
-        toastManager.success($t('people_edits_count', { values: { count: numberOfChanges } }));
+        toastManager.primary($t('people_edits_count', { values: { count: numberOfChanges } }));
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
       }
@@ -174,9 +175,11 @@
 
       await deleteFace({ id: face.id, assetFaceDeleteDto: { force: false } });
 
+      eventManager.emit('PersonAssetDelete', { id: face.person.id, assetId });
+
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 
-      await assetViewingStore.setAssetId(assetId);
+      await assetViewerManager.setAssetId(assetId);
     } catch (error) {
       handleError(error, $t('error_delete_face'));
     }
@@ -184,6 +187,19 @@
 </script>
 
 <OnEvents {onPersonThumbnailReady} />
+
+<svelte:document
+  use:shortcut={{
+    shortcut: { key: 'Escape' },
+    onShortcut: () => {
+      if (showSelectedFaces) {
+        showSelectedFaces = false;
+      } else {
+        onClose();
+      }
+    },
+  }}
+/>
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
@@ -223,6 +239,7 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
+          {@const isHighlighted = $boundingBoxesArray.some((b) => b.id === face.id)}
           <div class="relative h-29 w-24">
             <div
               role="button"
@@ -237,6 +254,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={selectedPersonToCreate[face.id]}
                     altText={$t('new_person')}
                     title={$t('new_person')}
@@ -247,6 +265,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
                     altText={selectedPersonToReassign[face.id].name}
                     title={$getPersonNameWithHiddenValue(
@@ -261,6 +280,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(face.person)}
                     altText={face.person.name}
                     title={$getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
@@ -269,10 +289,11 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewerImgElement)}
+                  {#await zoomImageToBase64(face, assetId, assetType, assetViewerManager.imgRef)}
                     <ImageThumbnail
                       curve
                       shadow
+                      highlighted={isHighlighted}
                       url="/src/lib/assets/no-thumbnail.png"
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}
@@ -283,6 +304,7 @@
                     <ImageThumbnail
                       curve
                       shadow
+                      highlighted={isHighlighted}
                       url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}
