@@ -26,7 +26,7 @@ import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 /// Callbacks for upload progress and status updates
 class UploadCallbacks {
   final void Function(String id, String filename, int bytes, int totalBytes)? onProgress;
-  final void Function(String localId, String remoteId)? onSuccess;
+  final void Function(String localId)? onSuccess;
   final void Function(String id, String errorMessage)? onError;
   final void Function(String id, double progress)? onICloudProgress;
 
@@ -386,8 +386,8 @@ class ForegroundUploadService {
         logContext: 'asset[${asset.localId}]',
       );
 
-      if (result.isSuccess && result.remoteAssetId != null) {
-        callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
+      if (result.isSuccess) {
+        callbacks.onSuccess?.call(asset.localId!);
       } else if (result.isCancelled) {
         _logger.warning(() => "Backup was cancelled by the user");
         shouldAbortUpload = true;

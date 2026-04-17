@@ -267,7 +267,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       _cancelToken!,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
-        onSuccess: _handleForegroundBackupSuccess,
+        onSuccess: (localAssetId) => _handleForegroundBackupSuccess(localAssetId, userId),
         onError: _handleForegroundBackupError,
         onICloudProgress: _handleICloudProgress,
       ),
@@ -329,9 +329,9 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  void _handleForegroundBackupSuccess(String localAssetId, String remoteAssetId) {
-    state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
+  void _handleForegroundBackupSuccess(String localAssetId, String userId) {
     _uploadSpeedManager.removeTask(localAssetId);
+    getBackupStatus(userId);
 
     Future.delayed(const Duration(milliseconds: 1000), () {
       _removeUploadItem(localAssetId);
