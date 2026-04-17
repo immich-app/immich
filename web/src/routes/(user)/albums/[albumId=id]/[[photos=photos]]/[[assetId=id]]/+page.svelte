@@ -309,6 +309,12 @@
     album = { ...album, albumUsers };
   };
 
+  const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
+    album = newAlbum;
+
+    await invalidate('album:data');
+  }
+
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
@@ -330,11 +336,7 @@
   {onAlbumShare}
   {onAlbumUserUpdate}
   onAlbumUserDelete={refreshAlbum}
-  onAlbumUpdate={(newAlbum) => {
-    album = newAlbum;
-
-    void invalidate('album:data');
-  }}
+  {onAlbumUpdate}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
