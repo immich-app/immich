@@ -96,7 +96,7 @@ export class DownloadService extends BaseService {
 
       const { originalPath, editedPath, originalFileName } = asset;
 
-      let filename = sanitize(originalFileName.split(/[/\\]/).pop() ?? '') || 'unnamed';
+      let filename = sanitize(originalFileName) || 'unnamed';
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
