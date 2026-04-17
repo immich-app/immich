@@ -50,5 +50,13 @@ describe('i18n', () => {
       expect(getClosestAvailableLocale(['zh'], allLocales)).toBeUndefined();
       expect(getClosestAvailableLocale(['de', 'zh', 'en-US'], allLocales)).toBe('en-US');
     });
+
+    it('matches underscore-based stored locale codes against normalized locale lists', () => {
+      const allLocales = ['de-CH', 'pt-BR', 'sr-Cyrl', 'zh-Hant'];
+      expect(getClosestAvailableLocale(['de_CH'], allLocales)).toBe('de_CH');
+      expect(getClosestAvailableLocale(['pt_BR'], allLocales)).toBe('pt_BR');
+      expect(getClosestAvailableLocale(['sr_Cyrl'], allLocales)).toBe('sr_Cyrl');
+      expect(getClosestAvailableLocale(['zh_Hant'], allLocales)).toBe('zh_Hant');
+    });
   });
 });
