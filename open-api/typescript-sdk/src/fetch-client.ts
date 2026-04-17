@@ -2502,6 +2502,8 @@ export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
 export type SystemConfigOAuthDto = {
+    /** Allow insecure requests */
+    allowInsecureRequests: boolean;
     /** Auto launch */
     autoLaunch: boolean;
     /** Auto register */

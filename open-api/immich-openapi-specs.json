@@ -24302,6 +24302,10 @@
       },
       "SystemConfigOAuthDto": {
         "properties": {
+          "allowInsecureRequests": {
+            "description": "Allow insecure requests",
+            "type": "boolean"
+          },
           "autoLaunch": {
             "description": "Auto launch",
             "type": "boolean"
@@ -24379,6 +24383,7 @@
           }
         },
         "required": [
+          "allowInsecureRequests",
           "autoLaunch",
           "autoRegister",
           "buttonText",

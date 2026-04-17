@@ -277,13 +277,14 @@ export class AuthService extends BaseService {
 
     const url = this.resolveRedirectUri(oauth, dto.url);
     const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
+    const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
     // link by email
-    if (!user && profile.email) {
-      const emailUser = await this.userRepository.getByEmail(profile.email);
+    if (!user && normalizedEmail) {
+      const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
         if (emailUser.oauthId) {
           throw new BadRequestException('User already exists, but is linked to another account.');
@@ -296,17 +297,16 @@ export class AuthService extends BaseService {
     if (!user) {
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.sub}/${profile.email || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
+          `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
         );
         throw new BadRequestException(`User does not exist and auto registering is disabled.`);
       }
 
-      const email = profile.email;
-      if (!email) {
+      if (!normalizedEmail) {
         throw new BadRequestException('OAuth profile does not have an email address');
       }
 
-      this.logger.log(`Registering new user: ${profile.sub}/${profile.email}`);
+      this.logger.log(`Registering new user: ${profile.sub}/${normalizedEmail}`);
 
       const storageLabel = this.getClaim(profile, {
         key: storageLabelClaim,
@@ -329,8 +329,8 @@ export class AuthService extends BaseService {
           profile.name ||
           `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
           profile.preferred_username ||
-          email,
-        email,
+          normalizedEmail,
+        email: normalizedEmail,
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,

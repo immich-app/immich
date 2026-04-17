@@ -295,8 +295,8 @@ importers:
         specifier: ^9.0.0
         version: 9.5.0
       jose:
-        specifier: ^5.6.3
-        version: 5.10.0
+        specifier: ^6.0.0
+        version: 6.2.2
       oidc-provider:
         specifier: ^9.0.0
         version: 9.7.1
@@ -473,8 +473,8 @@ importers:
         specifier: ^5.8.2
         version: 5.10.1
       jose:
-        specifier: ^5.10.0
-        version: 5.10.0
+        specifier: ^6.0.0
+        version: 6.2.2
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.1
@@ -8406,9 +8406,6 @@ packages:
 
   joi@17.13.3:
     resolution: {integrity: sha512-otDA4ldcIx+ZXsKHWmp0YizCweVRZG96J10b0FevjfuncLO1oX59THoAmHkNubYJ+9gWsYsp5k8v4ib6oDv1fA==}
-
-  jose@5.10.0:
-    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
   jose@6.2.2:
     resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
@@ -21239,8 +21236,6 @@ snapshots:
       '@sideway/address': 4.1.5
       '@sideway/formula': 3.0.1
       '@sideway/pinpoint': 2.0.0
-
-  jose@5.10.0: {}
 
   jose@6.2.2: {}
 

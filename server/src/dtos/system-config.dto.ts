@@ -179,6 +179,7 @@ const SystemConfigOAuthSchema = z
     clientSecret: z.string().describe('Client secret'),
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethodSchema,
     timeout: z.int().min(1).describe('Timeout'),
+    allowInsecureRequests: configBool.describe('Allow insecure requests'),
     defaultStorageQuota: z.number().min(0).nullable().describe('Default storage quota'),
     enabled: configBool.describe('Enabled'),
     issuerUrl: z
