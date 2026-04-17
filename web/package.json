@@ -30,6 +30,7 @@
     "@immich/ui": "^0.76.0",
     "@mapbox/mapbox-gl-rtl-text": "0.3.0",
     "@mdi/js": "^7.4.47",
+    "@noble/hashes": "^2.2.0",
     "@photo-sphere-viewer/core": "^5.14.0",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.14.0",
     "@photo-sphere-viewer/markers-plugin": "^5.14.0",
