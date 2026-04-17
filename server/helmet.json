@@ -15,7 +15,8 @@
       "worker-src": ["'self'", "blob:"],
       "frame-src": ["'none'"],
       "object-src": ["'none'"],
-      "base-uri": ["'self'"]
+      "base-uri": ["'self'"],
+      "upgrade-insecure-requests": null
     }
   }
 }
