@@ -58,7 +58,6 @@ class MainActivity : FlutterFragmentActivity() {
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
 
-      flutterEngine.plugins.add(BackgroundServicePlugin())
       flutterEngine.plugins.add(ViewIntentPlugin())
       flutterEngine.plugins.add(backgroundEngineLockImpl)
       flutterEngine.plugins.add(nativeSyncApiImpl)

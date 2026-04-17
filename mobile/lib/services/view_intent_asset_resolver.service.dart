@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -12,7 +11,6 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/background.service.dart';
 import 'package:logging/logging.dart';
 
 class ViewIntentResolvedAsset {
@@ -34,7 +32,6 @@ final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
     ref,
     ref.read(localAssetRepository),
     ref.read(nativeSyncApiProvider),
-    ref.read(backgroundServiceProvider),
     ref.read(timelineFactoryProvider),
   ),
 );
@@ -43,7 +40,6 @@ class ViewIntentAssetResolver {
   final Ref _ref;
   final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
-  final BackgroundService _backgroundService;
   final TimelineFactory _timelineFactory;
   static final Logger _logger = Logger('ViewIntentAssetResolver');
 
@@ -51,7 +47,6 @@ class ViewIntentAssetResolver {
     this._ref,
     this._localAssetRepository,
     this._nativeSyncApi,
-    this._backgroundService,
     this._timelineFactory,
   );
 
@@ -200,12 +195,11 @@ class ViewIntentAssetResolver {
 
   Future<String?> _computeChecksumForPath(String path) async {
     try {
-      final hashes = await _backgroundService.digestFiles([path]);
-      final hash = hashes == null || hashes.isEmpty ? null : hashes.first;
-      if (hash == null || hash.length != 20) {
+      final hashResults = await _nativeSyncApi.hashFiles([path]);
+      if (hashResults.isEmpty) {
         return null;
       }
-      return base64.encode(hash);
+      return hashResults.first.hash;
     } catch (_) {
       return null;
     }

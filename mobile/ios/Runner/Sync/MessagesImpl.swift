@@ -318,6 +318,13 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       }
     }
   }
+
+  func hashFiles(paths: [String], completion: @escaping (Result<[HashResult], Error>) -> Void) {
+    let results = paths.map { path in
+      HashResult(assetId: path, error: "Not implemented on iOS", hash: nil)
+    }
+    completeWhenActive(for: completion, with: .success(results))
+  }
   
   func cancelHashing() {
     hashTask?.cancel()

@@ -435,6 +435,7 @@ protocol NativeSyncApi {
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
+  func hashFiles(paths: [String], completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
@@ -592,6 +593,25 @@ class NativeSyncApiSetup {
       }
     } else {
       hashAssetsChannel.setMessageHandler(nil)
+    }
+    let hashFilesChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashFiles\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashFiles\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      hashFilesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pathsArg = args[0] as! [String]
+        api.hashFiles(paths: pathsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      hashFilesChannel.setMessageHandler(nil)
     }
     let cancelHashingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

@@ -28,6 +28,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -417,6 +419,44 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     }
   }
 
+  fun hashFiles(
+    paths: List<String>,
+    callback: (Result<List<HashResult>>) -> Unit
+  ) {
+    if (paths.isEmpty()) {
+      completeWhenActive(callback, Result.success(emptyList()))
+      return
+    }
+
+    hashTask?.cancel()
+    hashTask = CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val results = paths.map { path ->
+          async {
+            hashSemaphore.withPermit {
+              ensureActive()
+              hashFile(path)
+            }
+          }
+        }.awaitAll()
+
+        completeWhenActive(callback, Result.success(results))
+      } catch (e: CancellationException) {
+        completeWhenActive(
+          callback, Result.failure(
+            FlutterError(
+              HASHING_CANCELLED_CODE,
+              "Hashing operation was cancelled",
+              null
+            )
+          )
+        )
+      } catch (e: Exception) {
+        completeWhenActive(callback, Result.failure(e))
+      }
+    }
+  }
+
   private suspend fun hashAsset(assetId: String): HashResult {
     return try {
       val assetUri = ContentUris.withAppendedId(
@@ -424,23 +464,45 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         assetId.toLong()
       )
 
-      val digest = MessageDigest.getInstance("SHA-1")
-      ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
-        var bytesRead: Int
-        val buffer = ByteArray(HASH_BUFFER_SIZE)
-        while (inputStream.read(buffer).also { bytesRead = it } > 0) {
-          currentCoroutineContext().ensureActive()
-          digest.update(buffer, 0, bytesRead)
-        }
+      val hashString = ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
+        hashInputStream(inputStream)
       } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
 
-      val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
       HashResult(assetId, null, hashString)
     } catch (e: SecurityException) {
       HashResult(assetId, "Permission denied accessing asset: ${e.message}", null)
     } catch (e: Exception) {
       HashResult(assetId, "Failed to hash asset: ${e.message}", null)
     }
+  }
+
+  private suspend fun hashFile(path: String): HashResult {
+    return try {
+      val file = File(path)
+      if (!file.exists()) {
+        return HashResult(path, "File does not exist", null)
+      }
+
+      val hashString = FileInputStream(file).use { inputStream ->
+        hashInputStream(inputStream)
+      }
+      HashResult(path, null, hashString)
+    } catch (e: SecurityException) {
+      HashResult(path, "Permission denied accessing file: ${e.message}", null)
+    } catch (e: Exception) {
+      HashResult(path, "Failed to hash file: ${e.message}", null)
+    }
+  }
+
+  private suspend fun hashInputStream(inputStream: InputStream): String {
+    val digest = MessageDigest.getInstance("SHA-1")
+    var bytesRead: Int
+    val buffer = ByteArray(HASH_BUFFER_SIZE)
+    while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+      currentCoroutineContext().ensureActive()
+      digest.update(buffer, 0, bytesRead)
+    }
+    return Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
   }
 
   fun cancelHashing() {
