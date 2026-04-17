@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
+import 'package:immich_mobile/extensions/object_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:openapi/api.dart' hide AssetEditAction;
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)')
 class AssetEditEntity extends Table with DriftDefaultsMixin {
@@ -27,7 +29,12 @@ final JsonTypeConverter2<Map<String, Object?>, Uint8List, Object?> editParameter
 );
 
 extension AssetEditEntityDataDomainEx on AssetEditEntityData {
-  AssetEdit toDto() {
-    return AssetEdit(action: action, parameters: parameters);
+  AssetEdit? toDto() {
+    return switch (action) {
+      AssetEditAction.crop => CropParameters.fromJson(parameters)?.let(CropEdit.new),
+      AssetEditAction.rotate => RotateParameters.fromJson(parameters)?.let(RotateEdit.new),
+      AssetEditAction.mirror => MirrorParameters.fromJson(parameters)?.let(MirrorEdit.new),
+      AssetEditAction.other => null,
+    };
   }
 }

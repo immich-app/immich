@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey } from 'jose';
 import {
-  allowInsecureRequests,
+  allowInsecureRequests as allowInsecureRequestsExecute,
   authorizationCodeGrant,
   buildAuthorizationUrl,
   calculatePKCECodeChallenge,
@@ -29,6 +29,7 @@ export type OAuthConfig = {
   signingAlgorithm: string;
   tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
   timeout: number;
+  allowInsecureRequests: boolean;
 };
 export type OAuthProfile = UserInfoResponse;
 
@@ -195,6 +196,7 @@ export class OAuthRepository {
     signingAlgorithm,
     tokenEndpointAuthMethod,
     timeout,
+    allowInsecureRequests,
   }: OAuthConfig) {
     try {
       return await discovery(
@@ -208,7 +210,7 @@ export class OAuthRepository {
         },
         this.getTokenAuthMethod(tokenEndpointAuthMethod, clientSecret),
         {
-          execute: [allowInsecureRequests],
+          execute: allowInsecureRequests ? [allowInsecureRequestsExecute] : [],
           timeout,
         },
       );

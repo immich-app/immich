@@ -77,6 +77,7 @@ const setupOAuth = async (token: string, dto: Partial<SystemConfigOAuthDto>) => 
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    allowInsecureRequests: true,
     ...dto,
   };
   await updateConfig({ systemConfigDto: { ...defaults, oauth: merged } }, options);
@@ -102,7 +103,7 @@ describe(`/oauth`, () => {
     it(`should throw an error if a redirect uri is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/authorize').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['redirectUri must be a string', 'redirectUri should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[redirectUri] Invalid input: expected string, received undefined']));
     });
 
     it('should return a redirect uri', async () => {
@@ -124,13 +125,13 @@ describe(`/oauth`, () => {
     it(`should throw an error if a url is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['url must be a string', 'url should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[url] Invalid input: expected string, received undefined']));
     });
 
     it(`should throw an error if the url is empty`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({ url: '' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['url should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[url] Too small: expected string to have >=1 characters']));
     });
 
     it(`should throw an error if the state is not provided`, async () => {
@@ -259,7 +260,7 @@ describe(`/oauth`, () => {
         accessToken: expect.any(String),
         isAdmin: false,
         name: 'OAuth User',
-        userEmail: 'oauth-RS256-token@immich.app',
+        userEmail: 'oauth-rs256-token@immich.app',
         userId: expect.any(String),
       });
     });
@@ -442,6 +443,25 @@ describe(`/oauth`, () => {
         userEmail: 'oauth-id-token-claims@immich.app',
         userId: expect.any(String),
       });
+    });
+  });
+
+  describe('allowInsecureRequests: false', () => {
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        allowInsecureRequests: false,
+      });
+    });
+
+    it('should reject OAuth discovery over HTTP', async () => {
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(500);
+      expect(body).toMatchObject({ statusCode: 500 });
     });
   });
 });

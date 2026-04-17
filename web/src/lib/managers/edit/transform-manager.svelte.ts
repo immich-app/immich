@@ -203,7 +203,7 @@ class TransformManager implements EditToolManager {
       passive: true,
     });
 
-    globalThis.addEventListener('mousemove', (e) => transformManager.handleMouseMove(e), { passive: true });
+    globalThis.addEventListener('mousemove', (e: MouseEvent) => transformManager.handleMouseMove(e), { passive: true });
 
     const transformEdits = edits.filter((e) => e.action === 'rotate' || e.action === 'mirror');
 

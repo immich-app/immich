@@ -65,13 +65,15 @@ class AssetViewer extends ConsumerStatefulWidget {
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
     ref.read(assetViewerProvider.notifier).reset();
+
+    // Hide controls by default for videos
+    if (asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
+
     _setAsset(ref, asset);
   }
 
   static void _setAsset(WidgetRef ref, BaseAsset asset) {
     ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // Hide controls by default for videos
-    if (asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
   }
 }
 

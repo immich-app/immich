@@ -1,7 +1,6 @@
 <script lang="ts">
   import StarRating, { type Rating } from '$lib/elements/StarRating.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
@@ -25,7 +24,7 @@
   };
 </script>
 
-{#if !authManager.isSharedLink && $preferences?.ratings.enabled}
+{#if !authManager.isSharedLink && authManager.authenticated && authManager.preferences.ratings.enabled}
   <section class="px-4 pt-4">
     <StarRating {rating} readOnly={!isOwner} onRating={(rating) => handlePromiseError(handleChangeRating(rating))} />
   </section>

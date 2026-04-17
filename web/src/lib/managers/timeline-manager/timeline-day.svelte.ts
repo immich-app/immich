@@ -5,12 +5,12 @@ import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
 import { SvelteSet } from 'svelte/reactivity';
-import type { MonthGroup } from './month-group.svelte';
+import type { TimelineMonth } from './timeline-month.svelte';
 import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class TimelineDay {
-  readonly monthGroup: MonthGroup;
+  readonly timelineMonth: TimelineMonth;
   readonly index: number;
   readonly groupTitle: string;
   readonly day: number;
@@ -26,9 +26,9 @@ export class TimelineDay {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string) {
+  constructor(timelineMonth: TimelineMonth, index: number, day: number, groupTitle: string) {
     this.index = index;
-    this.monthGroup = monthGroup;
+    this.timelineMonth = timelineMonth;
     this.day = day;
     this.groupTitle = groupTitle;
   }
@@ -128,7 +128,7 @@ export class TimelineDay {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
-      if (remove || this.monthGroup.timelineManager.isExcluded(asset)) {
+      if (remove || this.timelineMonth.timelineManager.isExcluded(asset)) {
         this.viewerAssets.splice(index, 1);
         changedGeometry = true;
       }
@@ -137,7 +137,7 @@ export class TimelineDay {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.monthGroup.isInOrNearViewport && !this.monthGroup.timelineManager.isScrollingOnLoad) {
+    if (!noDefer && !this.timelineMonth.isInOrNearViewport && !this.timelineMonth.timelineManager.isScrollingOnLoad) {
       this.#deferredLayout = true;
       return;
     }
@@ -152,6 +152,6 @@ export class TimelineDay {
   }
 
   get absoluteTimelineDayTop() {
-    return this.monthGroup.top + this.#top;
+    return this.timelineMonth.top + this.#top;
   }
 }

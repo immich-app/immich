@@ -73,6 +73,7 @@ export default typescriptEslint.config(
       'eslint.config.js',
       'tailwind.config.js',
       'coverage',
+      'vite.config.ts',
     ],
   },
   typescriptEslint.configs.recommended,

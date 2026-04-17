@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import DetailPanelDate from '$lib/components/asset-viewer/detail-panel-date.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
@@ -8,16 +9,13 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { Route } from '$lib/route';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
-  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import {
     AssetMediaSize,
@@ -26,9 +24,8 @@
     type AlbumResponseDto,
     type AssetResponseDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager, Text } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, Text } from '@immich/ui';
   import {
-    mdiCalendar,
     mdiCamera,
     mdiCameraIris,
     mdiClose,
@@ -55,18 +52,11 @@
 
   let { asset, currentAlbum = null }: Props = $props();
 
-  let showAssetPath = $state(false);
-  let showEditFaces = $state(false);
-  let isOwner = $derived($user?.id === asset.ownerId);
+  let showEditFaces = $derived(assetViewerManager.isEditFacesPanelOpen);
+  let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
-  let timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
-  let dateTime = $derived(
-    timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset.localDateTime),
-  );
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -105,7 +95,7 @@
       return;
     }
 
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
     previousId = asset.id;
   });
 
@@ -121,26 +111,12 @@
 
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
-    showEditFaces = false;
+    assetViewerManager.closeEditFacesPanel();
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     // Remove the last part of the path to get the parent path
     return Route.folders({ path: getParentPath(asset.originalPath) });
-  };
-
-  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
-
-  const handleChangeDate = async () => {
-    if (!isOwner) {
-      return;
-    }
-
-    await modalManager.show(AssetChangeDateModal, {
-      asset: toTimelineAsset(asset),
-      initialDate: dateTime,
-      initialTimeZone: timeZone,
-    });
   };
 </script>
 
@@ -167,7 +143,7 @@
         </div>
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {#if $user?.isAdmin}
+            {#if authManager.authenticated && authManager.user.isAdmin}
               {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
@@ -218,7 +194,7 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={() => (showEditFaces = true)}
+              onclick={() => assetViewerManager.openEditFacesPanel()}
             />
           {/if}
         </div>
@@ -295,65 +271,7 @@
       <Text size="small" color="muted">{$t('no_exif_info_available')}</Text>
     {/if}
 
-    {#if dateTime}
-      <button
-        type="button"
-        class="flex w-full text-start justify-between place-items-start gap-4 py-4"
-        onclick={handleChangeDate}
-        title={isOwner ? $t('edit_date') : ''}
-        class:hover:text-primary={isOwner}
-      >
-        <div class="flex gap-4">
-          <div>
-            <Icon icon={mdiCalendar} size="24" />
-          </div>
-
-          <div>
-            <p>
-              {dateTime.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
-            <div class="flex gap-2 text-sm">
-              <p>
-                {dateTime.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    timeZoneName: timeZone ? 'longOffset' : undefined,
-                  },
-                  { locale: $locale },
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {#if isOwner}
-          <div class="p-1">
-            <Icon icon={mdiPencil} size="20" />
-          </div>
-        {/if}
-      </button>
-    {:else if !dateTime && isOwner}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div>
-            <Icon icon={mdiCalendar} size="24" />
-          </div>
-        </div>
-        <div class="p-1">
-          <Icon icon={mdiPencil} size="20" />
-        </div>
-      </div>
-    {/if}
+    <DetailPanelDate {asset} />
 
     <div class="flex gap-4 py-4">
       <div><Icon icon={mdiImageOutline} size="24" /></div>
@@ -369,11 +287,11 @@
               shape="round"
               color="secondary"
               variant="ghost"
-              onclick={toggleAssetPath}
+              onclick={() => assetViewerManager.toggleAssetPath()}
             />
           {/if}
         </p>
-        {#if showAssetPath}
+        {#if assetViewerManager.isShowAssetPath}
           <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
@@ -566,7 +484,7 @@
   {/if}
 {/await}
 
-{#if $preferences?.tags?.enabled}
+{#if authManager.authenticated && authManager.preferences.tags.enabled}
   <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
     <DetailPanelTags {asset} {isOwner} />
   </section>
@@ -576,7 +494,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    onClose={() => (showEditFaces = false)}
+    onClose={() => assetViewerManager.closeEditFacesPanel()}
     onRefresh={handleRefreshPeople}
   />
 {/if}

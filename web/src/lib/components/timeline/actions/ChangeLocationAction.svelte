@@ -1,8 +1,8 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
-  import { user } from '$lib/stores/user.store';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
@@ -22,7 +22,7 @@
       return;
     }
 
-    const ids = getOwnedAssetsWithWarning(assetMultiSelectManager.assets, $user);
+    const ids = getOwnedAssetsWithWarning(assetMultiSelectManager.assets, authManager.user);
 
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } });

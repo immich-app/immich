@@ -654,8 +654,6 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
         checksumAlgorithm: ChecksumAlgorithm.sha1File,
-        deviceAssetId: 'NONE',
-        deviceId: 'NONE',
         fileCreatedAt: asset.fileCreatedAt,
         fileModifiedAt: asset.fileModifiedAt,
         id: motionAsset.id,
@@ -708,8 +706,6 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
         checksumAlgorithm: ChecksumAlgorithm.sha1File,
-        deviceAssetId: 'NONE',
-        deviceId: 'NONE',
         fileCreatedAt: asset.fileCreatedAt,
         fileModifiedAt: asset.fileModifiedAt,
         id: motionAsset.id,
@@ -762,8 +758,6 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
         checksumAlgorithm: ChecksumAlgorithm.sha1File,
-        deviceAssetId: 'NONE',
-        deviceId: 'NONE',
         fileCreatedAt: asset.fileCreatedAt,
         fileModifiedAt: asset.fileModifiedAt,
         id: motionAsset.id,

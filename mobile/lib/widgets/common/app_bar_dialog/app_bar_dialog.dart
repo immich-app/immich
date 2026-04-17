@@ -5,18 +5,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
+import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
@@ -32,7 +29,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
-    BackUpState backupState = ref.watch(backupProvider);
+    ServerDiskInfo backupState = ref.watch(backupProvider);
     final theme = context.themeData;
     bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
@@ -128,9 +125,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     isLoggingOut.value = true;
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
-                    ref.read(manualUploadProvider.notifier).cancelBackup();
-                    ref.read(backupProvider.notifier).cancelBackup();
-                    unawaited(ref.read(assetProvider.notifier).clearAllAssets());
                     ref.read(websocketProvider.notifier).disconnect();
                     unawaited(context.replaceRoute(const LoginRoute()));
                   },
@@ -146,9 +140,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     Widget buildStorageInformation() {
-      var percentage = backupState.serverInfo.diskUsagePercentage / 100;
-      var usedDiskSpace = backupState.serverInfo.diskUse;
-      var totalDiskSpace = backupState.serverInfo.diskSize;
+      var percentage = backupState.diskUsagePercentage / 100;
+      var usedDiskSpace = backupState.diskUse;
+      var totalDiskSpace = backupState.diskSize;
 
       if (user != null && user.hasQuota) {
         usedDiskSpace = formatBytes(user.quotaUsageInBytes);
@@ -275,7 +269,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     ],
                   ),
                 ),
-                if (Store.isBetaTimelineEnabled && isReadonlyModeEnabled) buildReadonlyMessage(),
+                if (isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
                 buildFreeUpSpaceButton(),
                 buildSettingButton(),

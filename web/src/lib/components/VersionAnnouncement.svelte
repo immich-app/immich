@@ -1,7 +1,7 @@
 <script lang="ts">
   import OnEvents from '$lib/components/OnEvents.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { user } from '$lib/stores/user.store';
   import type { ReleaseEvent } from '$lib/types';
   import { getReleaseType, semverToName } from '$lib/utils';
   import { modalManager } from '@immich/ui';
@@ -12,7 +12,7 @@
   }>();
 
   const onReleaseEvent = async (release: ReleaseEvent) => {
-    if (!release.isAvailable || !$user.isAdmin) {
+    if (!release.isAvailable || !authManager.user.isAdmin) {
       return;
     }
 

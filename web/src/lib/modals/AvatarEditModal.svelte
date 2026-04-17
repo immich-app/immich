@@ -1,6 +1,6 @@
 <script lang="ts">
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { user } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateMyUser, UserAvatarColor } from '@immich/sdk';
   import { Modal, ModalBody, toastManager } from '@immich/ui';
@@ -16,13 +16,14 @@
 
   const onSave = async (color: UserAvatarColor) => {
     try {
-      if ($user.profileImagePath !== '') {
+      if (authManager.user.profileImagePath !== '') {
         await deleteProfileImage();
       }
 
       toastManager.primary($t('saved_profile'));
 
-      $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
+      const response = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
+      authManager.setUser(response);
       onClose();
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_profile'));
@@ -35,7 +36,11 @@
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 place-items-center">
       {#each colors as color (color)}
         <button type="button" onclick={() => onSave(color)}>
-          <UserAvatar label={color} user={{ ...$user, profileImagePath: '', avatarColor: color }} size="xl" />
+          <UserAvatar
+            label={color}
+            user={{ ...authManager.user, profileImagePath: '', avatarColor: color }}
+            size="xl"
+          />
         </button>
       {/each}
     </div>
