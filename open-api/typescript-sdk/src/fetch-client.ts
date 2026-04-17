@@ -2123,10 +2123,6 @@ export type ServerStorageResponseDto = {
     /** Used disk space in bytes */
     diskUseRaw: number;
 };
-export type ServerThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type ServerVersionResponseDto = {
     /** Major version number */
     major: number;
@@ -5640,17 +5636,6 @@ export function getStorage(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerStorageResponseDto;
     }>("/server/storage", {
-        ...opts
-    }));
-}
-/**
- * Get theme
- */
-export function getTheme(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerThemeDto;
-    }>("/server/theme", {
         ...opts
     }));
 }

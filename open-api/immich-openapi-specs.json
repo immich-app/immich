@@ -10550,44 +10550,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/server/theme": {
-      "get": {
-        "description": "Retrieve the custom CSS, if existent.",
-        "operationId": "getTheme",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerThemeDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "summary": "Get theme",
-        "tags": [
-          "Server"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-state": "Stable"
-      }
-    },
     "/server/version": {
       "get": {
         "description": "Retrieve the current server version in semantic versioning (semver) format.",
@@ -21369,18 +21331,6 @@
           "diskUsagePercentage",
           "diskUse",
           "diskUseRaw"
-        ],
-        "type": "object"
-      },
-      "ServerThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
         ],
         "type": "object"
       },

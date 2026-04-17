@@ -231,7 +231,6 @@ Class | Method | HTTP request | Description
 *ServerApi* | [**getServerVersion**](doc//ServerApi.md#getserverversion) | **GET** /server/version | Get server version
 *ServerApi* | [**getStorage**](doc//ServerApi.md#getstorage) | **GET** /server/storage | Get storage
 *ServerApi* | [**getSupportedMediaTypes**](doc//ServerApi.md#getsupportedmediatypes) | **GET** /server/media-types | Get supported media types
-*ServerApi* | [**getTheme**](doc//ServerApi.md#gettheme) | **GET** /server/theme | Get theme
 *ServerApi* | [**getVersionCheck**](doc//ServerApi.md#getversioncheck) | **GET** /server/version-check | Get version check status
 *ServerApi* | [**getVersionHistory**](doc//ServerApi.md#getversionhistory) | **GET** /server/version-history | Get version history
 *ServerApi* | [**pingServer**](doc//ServerApi.md#pingserver) | **GET** /server/ping | Ping
@@ -536,7 +535,6 @@ Class | Method | HTTP request | Description
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerStorageResponseDto](doc//ServerStorageResponseDto.md)
- - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionHistoryResponseDto](doc//ServerVersionHistoryResponseDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
  - [SessionCreateDto](doc//SessionCreateDto.md)
