@@ -279,6 +279,7 @@
     "oauth_mobile_redirect_uri": "Mobile redirect URI",
     "oauth_mobile_redirect_uri_override": "Mobile redirect URI override",
     "oauth_mobile_redirect_uri_override_description": "Enable when OAuth provider does not allow a mobile URI, like ''{callback}''",
+    "oauth_prompt_description": "Prompt parameter (e.g. select_account, login, consent)",
     "oauth_role_claim": "Role Claim",
     "oauth_role_claim_description": "Automatically grant admin access based on the presence of this claim. The claim may have either 'user' or 'admin'.",
     "oauth_settings": "OAuth",

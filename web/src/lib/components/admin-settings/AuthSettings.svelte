@@ -165,6 +165,16 @@
               />
 
               <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label="prompt"
+                description={$t('admin.oauth_prompt_description')}
+                bind:value={configToEdit.oauth.prompt}
+                required={true}
+                disabled={disabled || !configToEdit.oauth.enabled}
+                isEdited={!(configToEdit.oauth.prompt === config.oauth.prompt)}
+              />
+
+              <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
                 label={$t('admin.oauth_timeout')}
                 description={$t('admin.oauth_timeout_description')}
