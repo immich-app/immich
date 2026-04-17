@@ -7964,8 +7964,9 @@
             "description": "Page number for pagination",
             "schema": {
               "minimum": 1,
+              "maximum": 9007199254740991,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -7977,7 +7978,7 @@
               "minimum": 1,
               "maximum": 1000,
               "default": 500,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -9372,7 +9373,7 @@
             ],
             "x-immich-state": "Stable",
             "schema": {
-              "type": "number",
+              "type": "integer",
               "minimum": -1,
               "maximum": 5,
               "nullable": true
@@ -9386,7 +9387,7 @@
             "schema": {
               "minimum": 1,
               "maximum": 1000,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -15642,7 +15643,9 @@
           },
           "dateTimeRelative": {
             "description": "Relative time offset in seconds",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "description": {
             "description": "Asset description",
@@ -16657,9 +16660,10 @@
           },
           "height": {
             "description": "Asset height",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "id": {
             "description": "Asset ID",
@@ -16802,9 +16806,10 @@
           },
           "width": {
             "description": "Asset width",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -17221,23 +17226,27 @@
         "properties": {
           "height": {
             "description": "Height of the crop",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "width": {
             "description": "Width of the crop",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "x": {
             "description": "Top-Left X coordinate of crop",
+            "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           },
           "y": {
             "description": "Top-Left Y coordinate of crop",
+            "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -17261,8 +17270,9 @@
           },
           "keepLastAmount": {
             "description": "Keep last amount",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -17295,7 +17305,9 @@
           },
           "filesize": {
             "description": "Backup file size",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "timezone": {
             "description": "Backup timezone",
@@ -17634,16 +17646,18 @@
           "exifImageHeight": {
             "default": null,
             "description": "Image height in pixels",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exifImageWidth": {
             "default": null,
             "description": "Image width in pixels",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exposureTime": {
             "default": null,
@@ -17674,8 +17688,10 @@
           "iso": {
             "default": null,
             "description": "ISO sensitivity",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "latitude": {
             "default": null,
@@ -17729,8 +17745,10 @@
           "rating": {
             "default": null,
             "description": "Rating",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "default": null,
@@ -18157,10 +18175,14 @@
             "type": "boolean"
           },
           "interval": {
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "timeout": {
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           }
         },
         "required": [
@@ -18210,7 +18232,9 @@
         "properties": {
           "files": {
             "description": "Number of files in the folder",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "folder": {
             "$ref": "#/components/schemas/StorageFolder"
@@ -18253,7 +18277,9 @@
             "type": "string"
           },
           "progress": {
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "task": {
             "type": "string"
@@ -18730,8 +18756,9 @@
           },
           "page": {
             "description": "Page number",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
             "description": "Filter by person IDs",
@@ -18751,7 +18778,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -18773,7 +18800,7 @@
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -20604,7 +20631,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -20626,7 +20653,7 @@
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -21444,8 +21471,9 @@
           },
           "duration": {
             "description": "Session duration in seconds",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "type": "object"
@@ -21959,8 +21987,9 @@
           },
           "page": {
             "description": "Page number",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
             "description": "Filter by person IDs",
@@ -21986,7 +22015,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -22008,7 +22037,7 @@
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -22246,7 +22275,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -24323,9 +24352,10 @@
           },
           "defaultStorageQuota": {
             "description": "Default storage quota",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "enabled": {
             "description": "Enabled",
@@ -24500,7 +24530,7 @@
             "description": "SMTP server port",
             "maximum": 65535,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           },
           "secure": {
             "description": "Whether to use secure connection (TLS/SSL)",
@@ -25918,7 +25948,9 @@
           },
           "order": {
             "description": "Action order",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "pluginActionId": {
             "description": "Plugin action ID",
@@ -26017,7 +26049,9 @@
           },
           "order": {
             "description": "Filter order",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "pluginFilterId": {
             "description": "Plugin filter ID",
