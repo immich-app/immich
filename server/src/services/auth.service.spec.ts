@@ -701,7 +701,7 @@ describe(AuthService.name, () => {
       const profile = OAuthProfileFactory.create({ email: '  TEST@IMMICH.CLOUD  ' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
