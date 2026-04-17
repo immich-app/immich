@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { releaseManager } from '$lib/managers/release-manager.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
-  import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import type { ReleaseEvent } from '$lib/types';
@@ -40,7 +40,7 @@
   );
 
   const getReleaseInfo = (release?: ReleaseEvent) => {
-    if (!release || !release?.isAvailable || !$user.isAdmin) {
+    if (!release || !release?.isAvailable || !authManager.user.isAdmin) {
       return;
     }
 

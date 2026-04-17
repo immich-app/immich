@@ -33,7 +33,6 @@
   let { assets, asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
-  let assetData = $derived(JSON.stringify(asset, null, 2));
 
   let locationParts = $derived([asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean));
 
@@ -114,7 +113,6 @@
       <img
         src={getAssetMediaUrl({ id: asset.id })}
         alt={$getAltText(toTimelineAsset(asset))}
-        title={assetData}
         class="h-60 object-cover w-full rounded-t-md"
         draggable="false"
       />

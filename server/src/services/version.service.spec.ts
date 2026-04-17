@@ -47,7 +47,8 @@ describe(VersionService.name, () => {
       expect(mocks.versionHistory.create).not.toHaveBeenCalled();
     });
 
-    it('should create a version check cron job', async () => {
+    it('should create a version check cron job when the database lock is acquired', async () => {
+      mocks.database.tryLock.mockResolvedValue(true);
       mocks.versionHistory.getLatest.mockResolvedValue({
         id: 'version-1',
         createdAt: new Date(),
@@ -91,6 +92,25 @@ describe(VersionService.name, () => {
     it('should not run if version check is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
+    });
+
+    it('should skip if the last check was less than 50 seconds ago', async () => {
+      mocks.systemMetadata.get.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        checkedAt: DateTime.utc().minus({ seconds: 30 }).toISO(),
+        releaseVersion: '1.0.0',
+      });
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
+      expect(mocks.serverInfo.getLatestRelease).not.toHaveBeenCalled();
+    });
+
+    it('should run if the last check was more than 50 seconds ago', async () => {
+      mocks.systemMetadata.get.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        checkedAt: DateTime.utc().minus({ seconds: 60 }).toISO(),
+        releaseVersion: '1.0.0',
+      });
+      mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse(serverVersion.toString()));
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
+      expect(mocks.serverInfo.getLatestRelease).toHaveBeenCalled();
     });
 
     it('should run and notify if a new version is available', async () => {

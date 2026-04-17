@@ -23,6 +23,36 @@ describe(TimelineController.name, () => {
       await request(ctx.getHttpServer()).get('/timeline/buckets');
       expect(ctx.authenticate).toHaveBeenCalled();
     });
+
+    it('should parse bbox query string into an object', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .get('/timeline/buckets')
+        .query({ bbox: '11.075683,49.416711,11.117589,49.454875' });
+
+      expect(status).toBe(200);
+      expect(service.getTimeBuckets).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({
+          bbox: { west: 11.075_683, south: 49.416_711, east: 11.117_589, north: 49.454_875 },
+        }),
+      );
+    });
+
+    it('should reject incomplete bbox query string', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/timeline/buckets').query({ bbox: '1,2,3' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.badRequest(['[bbox] bbox must have 4 comma-separated numbers: west,south,east,north'] as any),
+      );
+    });
+
+    it('should reject invalid bbox query string', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .get('/timeline/buckets')
+        .query({ bbox: '1,2,3,invalid' });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['[bbox] bbox parts must be valid numbers'] as any));
+    });
   });
 
   describe('GET /timeline/bucket', () => {

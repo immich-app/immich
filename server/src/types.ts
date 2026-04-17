@@ -351,7 +351,6 @@ export type JobItem =
   | { name: JobName.FileDelete; data: IDeleteFilesJob }
 
   // Cleanup
-  | { name: JobName.AuditLogCleanup; data?: IBaseJob }
   | { name: JobName.SessionCleanup; data?: IBaseJob }
 
   // Tags

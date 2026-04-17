@@ -1,9 +1,10 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { uploadAssetsStore } from '$lib/stores/upload';
-import { resetSavedUser, user } from '$lib/stores/user.store';
 import { UploadState } from '$lib/types';
 import * as utils from '$lib/utils';
 import { AssetMediaStatus, type AssetMediaResponseDto, type UserAdminResponseDto } from '@immich/sdk';
+import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fileUploadHandler } from './file-uploader';
@@ -18,7 +19,7 @@ describe('fileUploader error handling', () => {
     vi.clearAllMocks();
     vi.spyOn(uploadManager, 'getExtensions').mockReturnValue(['.jpg']);
     uploadAssetsStore.reset();
-    resetSavedUser();
+    authManager.reset();
 
     // Stub out crypto to avoid that branch
     vi.stubGlobal('crypto', undefined);
@@ -31,7 +32,7 @@ describe('fileUploader error handling', () => {
     describe(`for ${name}`, () => {
       beforeEach(() => {
         if (mockUser) {
-          user.set(mockUserObject);
+          authManager.setUser(mockUserObject);
         }
       });
 
@@ -58,9 +59,10 @@ describe('fileUploader error handling', () => {
   }
 
   it('should suppress errors on logout', async () => {
-    user.set(mockUserObject);
+    authManager.setUser(mockUserObject);
+    authManager.setPreferences(preferencesFactory.build());
     vi.spyOn(utils, 'uploadRequest').mockImplementationOnce(() => {
-      resetSavedUser();
+      authManager.reset();
       return Promise.reject(mockError);
     });
 

@@ -7,6 +7,20 @@ import request from 'supertest';
 import { errorDto } from 'test/medium/responses';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
+/** Returns a full config that passes Zod validation (required URLs and min lengths). */
+function validConfig() {
+  const config = _.cloneDeep(defaults) as typeof defaults & {
+    oauth: { mobileRedirectUri: string };
+    notifications: { smtp: { from: string; transport: { host: string } } };
+    server: { externalDomain: string };
+  };
+  config.oauth.mobileRedirectUri = config.oauth.mobileRedirectUri || 'https://example.com';
+  config.server.externalDomain = config.server.externalDomain || 'https://example.com';
+  config.notifications.smtp.from = config.notifications.smtp.from || 'noreply@example.com';
+  config.notifications.smtp.transport.host = config.notifications.smtp.transport.host || 'localhost';
+  return config;
+}
+
 describe(SystemConfigController.name, () => {
   let ctx: ControllerContext;
   const systemConfigService = mockBaseService(SystemConfigService);
@@ -48,32 +62,38 @@ describe(SystemConfigController.name, () => {
 
     describe('nightlyTasks', () => {
       it('should validate nightly jobs start time', async () => {
-        const config = _.cloneDeep(defaults);
+        const config = validConfig();
         config.nightlyTasks.startTime = 'invalid';
         const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['nightlyTasks.startTime must be in HH:mm format']));
+        expect(body).toEqual(
+          errorDto.badRequest([
+            '[nightlyTasks.startTime] Invalid input: expected string in HH:mm format, received string',
+          ]),
+        );
       });
 
       it('should accept a valid time', async () => {
-        const config = _.cloneDeep(defaults);
+        const config = validConfig();
         config.nightlyTasks.startTime = '05:05';
         const { status } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(200);
       });
 
       it('should validate a boolean field', async () => {
-        const config = _.cloneDeep(defaults);
+        const config = validConfig();
         (config.nightlyTasks.databaseCleanup as any) = 'invalid';
         const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['nightlyTasks.databaseCleanup must be a boolean value']));
+        expect(body).toEqual(
+          errorDto.badRequest(['[nightlyTasks.databaseCleanup] Invalid input: expected boolean, received string']),
+        );
       });
     });
 
     describe('image', () => {
       it('should accept config without optional progressive property', async () => {
-        const config = _.cloneDeep(defaults);
+        const config = validConfig();
         delete config.image.thumbnail.progressive;
         delete config.image.preview.progressive;
         delete config.image.fullsize.progressive;
@@ -82,7 +102,7 @@ describe(SystemConfigController.name, () => {
       });
 
       it('should accept config with progressive set to true', async () => {
-        const config = _.cloneDeep(defaults);
+        const config = validConfig();
         config.image.thumbnail.progressive = true;
         config.image.preview.progressive = true;
         config.image.fullsize.progressive = true;
@@ -91,11 +111,13 @@ describe(SystemConfigController.name, () => {
       });
 
       it('should reject invalid progressive value', async () => {
-        const config = _.cloneDeep(defaults);
+        const config = validConfig();
         (config.image.thumbnail.progressive as any) = 'invalid';
         const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['image.thumbnail.progressive must be a boolean value']));
+        expect(body).toEqual(
+          errorDto.badRequest(['[image.thumbnail.progressive] Invalid input: expected boolean, received string']),
+        );
       });
     });
   });

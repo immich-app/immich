@@ -1,8 +1,9 @@
-import { defaultLang, langs, locales } from '$lib/constants';
+import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
+import { langs } from '$lib/utils/i18n';
 import {
   AssetMediaSize,
   AssetTypeEnum,
@@ -218,7 +219,7 @@ export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkRes
 }
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
+  return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {

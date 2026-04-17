@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { requestServerInfo } from '$lib/utils/auth';
   import { getByteUnitString } from '$lib/utils/byte-units';
@@ -8,9 +8,17 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  let hasQuota = $derived($user?.quotaSizeInBytes !== null);
-  let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : userInteraction.serverInfo?.diskSizeRaw) || 0);
-  let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : userInteraction.serverInfo?.diskUseRaw) || 0);
+  let hasQuota = $derived(authManager.user.quotaSizeInBytes !== null);
+  let availableBytes = $derived(
+    (hasQuota && authManager.authenticated
+      ? authManager.user.quotaSizeInBytes
+      : userInteraction.serverInfo?.diskSizeRaw) || 0,
+  );
+  let usedBytes = $derived(
+    (hasQuota && authManager.authenticated
+      ? authManager.user.quotaUsageInBytes
+      : userInteraction.serverInfo?.diskUseRaw) || 0,
+  );
 
   const thresholds = [
     { from: 0.8, className: 'bg-warning' },
@@ -18,7 +26,7 @@
   ];
 
   onMount(async () => {
-    if (userInteraction.serverInfo && $user) {
+    if (userInteraction.serverInfo && authManager.authenticated) {
       return;
     }
     await requestServerInfo();

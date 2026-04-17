@@ -9,7 +9,7 @@ import shared_preferences_foundation
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -21,48 +21,26 @@ import UIKit
 
     SwiftNativeVideoPlayerPlugin.cookieStorage = URLSessionManager.cookieStorage
     URLSessionManager.patchBackgroundDownloader()
-    GeneratedPluginRegistrant.register(with: self)
-    let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-    AppDelegate.registerPlugins(with: controller.engine, controller: controller)
-    BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
-
-    BackgroundServicePlugin.registerBackgroundProcessing()
     BackgroundWorkerApiImpl.registerBackgroundWorkers()
-
-    BackgroundServicePlugin.setPluginRegistrantCallback { registry in
-      if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
-        PathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-foundation")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.photo-manager") {
-        PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
-        SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.permission-handler-apple") {
-        PermissionHandlerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.permission-handler-apple")!)
-      }
-
-      if !registry.hasPlugin("org.cocoapods.network-info-plus") {
-        FPPNetworkInfoPlusPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.network-info-plus")!)
-      }
-    }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-  
-  public static func registerPlugins(with engine: FlutterEngine, controller: FlutterViewController?) {
-    NativeSyncApiImpl.register(with: engine.registrar(forPlugin: NativeSyncApiImpl.name)!)
-    LocalImageApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: LocalImageApiImpl())
-    RemoteImageApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: RemoteImageApiImpl())
-    BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
-    ConnectivityApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ConnectivityApiImpl())
-    NetworkApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: NetworkApiImpl(viewController: controller))
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let messenger = engineBridge.applicationRegistrar.messenger()
+    AppDelegate.registerPlugins(with: engineBridge.pluginRegistry, messenger: messenger)
   }
-  
+
+  public static func registerPlugins(with registry: FlutterPluginRegistry, messenger: FlutterBinaryMessenger) {
+    NativeSyncApiImpl.register(with: registry.registrar(forPlugin: NativeSyncApiImpl.name)!)
+    LocalImageApiSetup.setUp(binaryMessenger: messenger, api: LocalImageApiImpl())
+    RemoteImageApiSetup.setUp(binaryMessenger: messenger, api: RemoteImageApiImpl())
+    BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: messenger, api: BackgroundWorkerApiImpl())
+    ConnectivityApiSetup.setUp(binaryMessenger: messenger, api: ConnectivityApiImpl())
+    NetworkApiSetup.setUp(binaryMessenger: messenger, api: NetworkApiImpl())
+  }
+
   public static func cancelPlugins(with engine: FlutterEngine) {
     (engine.valuePublished(byPlugin: NativeSyncApiImpl.name) as? NativeSyncApiImpl)?.detachFromEngine()
   }

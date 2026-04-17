@@ -2,14 +2,13 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { addAssetsToAlbums } from '$lib/services/album.service';
 import { uploadAssetsStore } from '$lib/stores/upload';
-import { user } from '$lib/stores/user.store';
 import { UploadState } from '$lib/types';
 import { uploadRequest } from '$lib/utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
-  Action,
   AssetMediaStatus,
+  AssetUploadAction,
   AssetVisibility,
   checkBulkUpload,
   getBaseUrl,
@@ -111,7 +110,7 @@ export const fileUploadHandler = async ({
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
       promises.push(
-        uploadExecutionQueue.addTask(() => fileUploader({ assetFile: file, deviceAssetId, albumId, isLockedAssets })),
+        uploadExecutionQueue.addTask(() => fileUploader({ deviceAssetId, assetFile: file, albumId, isLockedAssets })),
       );
     } else {
       toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
@@ -133,6 +132,7 @@ type FileUploaderParams = {
   albumId?: string;
   replaceAssetId?: string;
   isLockedAssets?: boolean;
+  // TODO rework the asset uploader and remove this
   deviceAssetId: string;
 };
 
@@ -145,19 +145,16 @@ async function fileUploader({
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
-  const wasInitiallyLoggedIn = !!get(user);
+  const wasInitiallyLoggedIn = !!authManager.authenticated;
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
   try {
     const formData = new FormData();
     for (const [key, value] of Object.entries({
-      deviceAssetId,
-      deviceId: 'WEB',
       fileCreatedAt,
       fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',
-      duration: '0:00:00.000000',
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
@@ -181,7 +178,7 @@ async function fileUploader({
         const {
           results: [checkUploadResult],
         } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: assetFile.name, checksum }] } });
-        if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
+        if (checkUploadResult.action === AssetUploadAction.Reject && checkUploadResult.assetId) {
           responseData = {
             status: AssetMediaStatus.Duplicate,
             id: checkUploadResult.assetId,
@@ -238,7 +235,7 @@ async function fileUploader({
   } catch (error) {
     // If the user store no longer holds a user, it means they have logged out
     // In this case don't bother reporting any errors.
-    if (wasInitiallyLoggedIn && !get(user)) {
+    if (wasInitiallyLoggedIn && !authManager.authenticated) {
       return;
     }
 

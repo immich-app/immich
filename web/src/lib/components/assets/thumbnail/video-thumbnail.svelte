@@ -36,14 +36,18 @@
 
   $effect(() => {
     if (!enablePlayback) {
-      // Reset remaining time when playback is disabled.
       remainingSeconds = durationInSeconds;
-
-      if (player) {
-        // Cancel video buffering.
-        player.src = '';
-      }
+      return;
     }
+    if (!player) {
+      return;
+    }
+    const video = player;
+    return () => {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    };
   });
   const onMouseEnter = () => {
     if (playbackOnIconHover) {

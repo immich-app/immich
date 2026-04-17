@@ -1,14 +1,16 @@
 import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$env/static/public';
 import type { ImmichProduct } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
-import { loadUser } from './auth';
 
 export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
-  // Send server key to user activation if user is not admin
-  const user = await loadUser();
-  const isServerActivation = user?.isAdmin && licenseKey.search('IMSV') !== -1;
+  // TODO is this needed?
+  await authManager.load();
+
+  const isServerActivation = authManager.user.isAdmin && licenseKey.search('IMSV') !== -1;
   const licenseKeyDto = { licenseKey, activationKey };
+  // Send server key to user activation if user is not admin
   return isServerActivation ? setServerLicense({ licenseKeyDto }) : setUserLicense({ licenseKeyDto });
 };
 

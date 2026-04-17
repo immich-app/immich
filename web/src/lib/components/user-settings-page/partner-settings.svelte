@@ -24,12 +24,6 @@
     inTimeline: boolean;
   }
 
-  interface Props {
-    user: UserResponseDto;
-  }
-
-  let { user }: Props = $props();
-
   let partners: Array<PartnerSharing> = $state([]);
 
   onMount(async () => {
@@ -95,7 +89,7 @@
   };
 
   const handleCreatePartners = async () => {
-    const users = await modalManager.show(PartnerSelectionModal, { user });
+    const users = await modalManager.show(PartnerSelectionModal, {});
 
     if (!users) {
       return;

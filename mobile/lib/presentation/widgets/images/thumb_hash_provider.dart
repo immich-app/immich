@@ -22,7 +22,7 @@ class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
 
   Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) {
     final request = this.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
