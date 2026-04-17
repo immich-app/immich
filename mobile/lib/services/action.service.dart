@@ -24,7 +24,6 @@ import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(

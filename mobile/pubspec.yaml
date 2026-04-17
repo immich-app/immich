@@ -62,7 +62,6 @@ dependencies:
   photo_manager: ^3.7.1
   pinput: ^5.0.2
   punycode: ^1.0.0
-  riverpod_annotation: ^2.6.1
   scroll_date_picker: ^3.8.0
   scrollable_positioned_list: ^0.3.8
   share_handler: ^0.0.25
@@ -94,7 +93,6 @@ dependencies:
 dev_dependencies:
   auto_route_generator: ^9.0.0
   build_runner: ^2.4.8
-  custom_lint: ^0.7.5
   # Drift generator
   drift_dev: ^2.26.0
   fake_async: ^1.3.3
@@ -109,8 +107,6 @@ dev_dependencies:
   mocktail: ^1.0.4
   # Type safe platform code
   pigeon: ^26.0.2
-  riverpod_generator: ^2.6.1
-  riverpod_lint: ^2.6.1
 
 dependency_overrides:
   drift:

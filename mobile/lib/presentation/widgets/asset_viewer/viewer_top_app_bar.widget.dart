@@ -4,17 +4,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -36,7 +36,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
 
     if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
-      ref.watch(albumActivityProvider(album.id, asset.id));
+      ref.watch(albumActivityProvider((album.id, asset.id)));
     }
 
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
