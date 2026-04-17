@@ -15,8 +15,6 @@ import {
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
-import { sha1 } from '@noble/hashes/legacy.js';
-import { bytesToHex } from '@noble/hashes/utils.js';
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -129,19 +127,28 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
-const HASH_CHUNK_SIZE = 5 * 1024 * 1024;
+function hashFile(file: File): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const worker = new Worker(new URL('$lib/workers/hash-file.ts', import.meta.url), { type: 'module' });
 
-async function hashFile(file: File): Promise<string> {
-  const hasher = sha1.create();
+    worker.addEventListener('message', ({ data }: MessageEvent<{ result?: string; error?: string }>) => {
+      worker.terminate();
 
-  for (let offset = 0; offset < file.size; offset += HASH_CHUNK_SIZE) {
-    const slice = file.slice(offset, Math.min(offset + HASH_CHUNK_SIZE, file.size));
-    const buffer = await slice.arrayBuffer();
+      if (data.error) {
+        reject(new Error(data.error));
+      } else {
+        resolve(data.result!);
+      }
+    });
 
-    hasher.update(new Uint8Array(buffer));
-  }
+    worker.addEventListener('error', (event) => {
+      worker.terminate();
 
-  return bytesToHex(hasher.digest());
+      reject(new Error(event.message));
+    });
+
+    worker.postMessage(file);
+  });
 }
 
 type FileUploaderParams = {
