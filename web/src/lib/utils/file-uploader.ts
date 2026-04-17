@@ -15,6 +15,8 @@ import {
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
+import { sha1 } from '@noble/hashes/legacy.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -127,6 +129,21 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
+const HASH_CHUNK_SIZE = 5 * 1024 * 1024;
+
+async function hashFile(file: File): Promise<string> {
+  const hasher = sha1.create();
+
+  for (let offset = 0; offset < file.size; offset += HASH_CHUNK_SIZE) {
+    const slice = file.slice(offset, Math.min(offset + HASH_CHUNK_SIZE, file.size));
+    const buffer = await slice.arrayBuffer();
+
+    hasher.update(new Uint8Array(buffer));
+  }
+
+  return bytesToHex(hasher.digest());
+}
+
 type FileUploaderParams = {
   assetFile: File;
   albumId?: string;
@@ -166,15 +183,11 @@ async function fileUploader({
     }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
-    if (crypto?.subtle?.digest && !authManager.isSharedLink) {
+    if (!authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
-        const bytes = await assetFile.arrayBuffer();
-        const hash = await crypto.subtle.digest('SHA-1', bytes);
-        const checksum = Array.from(new Uint8Array(hash))
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
+        const checksum = await hashFile(assetFile);
 
         const {
           results: [checkUploadResult],
