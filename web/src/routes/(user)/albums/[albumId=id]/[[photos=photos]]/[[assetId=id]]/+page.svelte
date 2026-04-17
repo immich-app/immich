@@ -313,7 +313,7 @@
     album = newAlbum;
 
     await invalidate('album:data');
-  }
+  };
 
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
