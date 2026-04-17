@@ -1,50 +1,38 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/view_intent_service.dart';
+import 'package:immich_mobile/services/view_intent.service.dart';
+import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
 import 'package:logging/logging.dart';
 
 final viewIntentHandlerProvider = Provider<ViewIntentHandler>(
   (ref) => ViewIntentHandler(
     ref,
     ref.read(viewIntentServiceProvider),
+    ref.read(viewIntentAssetResolverProvider),
     ref.watch(appRouterProvider),
-    ref.read(localAssetRepository),
-    ref.read(nativeSyncApiProvider),
-    ref.read(timelineFactoryProvider),
   ),
 );
 
 class ViewIntentHandler {
   final Ref _ref;
   final ViewIntentService _viewIntentService;
+  final ViewIntentAssetResolver _viewIntentAssetResolver;
   final AppRouter _router;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final NativeSyncApi _nativeSyncApi;
-  final TimelineFactory _timelineFactory;
   static final Logger _logger = Logger('ViewIntentHandler');
 
   const ViewIntentHandler(
     this._ref,
     this._viewIntentService,
+    this._viewIntentAssetResolver,
     this._router,
-    this._localAssetRepository,
-    this._nativeSyncApi,
-    this._timelineFactory,
   );
 
   void init() {
@@ -67,73 +55,14 @@ class ViewIntentHandler {
       return;
     }
 
-    final localAssetId = attachment.localAssetId;
-    _logger.fine('localAssetId: $localAssetId');
-    if (localAssetId != null) {
-      final localAsset = await _localAssetRepository.getById(localAssetId);
-      if (localAsset != null) {
-        var checksum = localAsset.checksum;
-        if (checksum == null) {
-          checksum = await _computeChecksum(localAssetId);
-          if (checksum != null) {
-            await _localAssetRepository.updateHashes({localAssetId: checksum});
-          }
-        }
-        final timelineMatch = await _openFromMainTimeline(localAssetId, checksum: checksum);
-        _logger.fine('localAsset: $localAsset, checksum: $checksum, timelineMatch: $timelineMatch');
-        if (timelineMatch) {
-          return;
-        }
-        _openAssetViewer(localAsset, _timelineFactory.fromAssets([localAsset], TimelineOrigin.deepLink), 0);
-        return;
-      }
-    }
-    final checksum = localAssetId != null ? await _computeChecksum(localAssetId) : null;
-    final fallbackAsset = _toViewIntentAsset(attachment, checksum);
-    _logger.fine('openAssetViewer for fallbackAsset');
+    final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
+    _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     _openAssetViewer(
-      fallbackAsset,
-      _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink),
-      0,
-      viewIntentFilePath: attachment.path,
+      resolvedAsset.asset,
+      resolvedAsset.timelineService,
+      resolvedAsset.initialIndex,
+      viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
-  }
-
-  Future<bool> _openFromMainTimeline(String localAssetId, {String? checksum}) async {
-    final timelineService = _ref.read(timelineServiceProvider);
-    if (timelineService.totalAssets == 0) {
-      try {
-        await timelineService.watchBuckets().first.timeout(const Duration(seconds: 2));
-      } catch (_) {
-        // Ignore and fallback.
-      }
-    }
-
-    final totalAssets = timelineService.totalAssets;
-    if (totalAssets == 0) {
-      return false;
-    }
-
-    final batchSize = kTimelineAssetLoadBatchSize;
-    for (var offset = 0; offset < totalAssets; offset += batchSize) {
-      final count = (offset + batchSize > totalAssets) ? totalAssets - offset : batchSize;
-      final assets = await timelineService.loadAssets(offset, count);
-      final indexInBatch = assets.indexWhere((asset) {
-        if (asset.localId == localAssetId) {
-          return true;
-        }
-        if (checksum != null && asset.checksum == checksum) {
-          return true;
-        }
-        return false;
-      });
-      if (indexInBatch >= 0) {
-        final asset = assets[indexInBatch];
-        _openAssetViewer(asset, timelineService, offset + indexInBatch);
-        return true;
-      }
-    }
-    return false;
   }
 
   void _openAssetViewer(
@@ -157,32 +86,5 @@ class ViewIntentHandler {
     }
 
     _router.push(AssetViewerRoute(initialIndex: initialIndex, timelineService: timelineService));
-  }
-
-  Future<String?> _computeChecksum(String localAssetId) async {
-    try {
-      final hashResults = await _nativeSyncApi.hashAssets([localAssetId]);
-      if (hashResults.isEmpty) {
-        return null;
-      }
-      return hashResults.first.hash;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  LocalAsset _toViewIntentAsset(ViewIntentPayload attachment, String? checksum) {
-    final now = DateTime.now();
-    return LocalAsset(
-      // todo Temp solution, need to provide FileBackedAsset extends BaseAsset for cover this case in right way
-      id: attachment.localAssetId ?? '-${attachment.path.hashCode.abs()}',
-      name: attachment.fileName,
-      checksum: checksum,
-      type: attachment.isVideo ? AssetType.video : AssetType.image,
-      createdAt: now,
-      updatedAt: now,
-      isEdited: false,
-      playbackStyle: attachment.playbackStyle,
-    );
   }
 }

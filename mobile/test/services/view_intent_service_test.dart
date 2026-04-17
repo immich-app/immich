@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/services/view_intent_service.dart';
+import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}

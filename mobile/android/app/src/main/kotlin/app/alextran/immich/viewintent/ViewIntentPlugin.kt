@@ -5,10 +5,8 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.provider.OpenableColumns
+import app.alextran.immich.media.MediaStoreUtils
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -125,7 +123,7 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
           if (parsed.all(Char::isDigit)) {
             return parsed
           }
-          val fromRelativePath = resolveLocalIdByRelativePath(context, parsed, mimeType)
+          val fromRelativePath = MediaStoreUtils.resolveLocalIdByRelativePath(context, parsed, mimeType)
           if (fromRelativePath != null) {
             return fromRelativePath
           }
@@ -149,80 +147,7 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
       return segment
     }
 
-    return resolveLocalIdByNameAndSize(context, uri, mimeType)
-  }
-
-  private fun resolveLocalIdByRelativePath(context: Context, path: String, mimeType: String): String? {
-    val fileName = path.substringAfterLast('/', missingDelimiterValue = path)
-    val parent = path.substringBeforeLast('/', "").let { if (it.isEmpty()) "" else "$it/" }
-    if (fileName.isBlank()) return null
-
-    val tableUri = when {
-      mimeType.startsWith("image/") -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-      mimeType.startsWith("video/") -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-      else -> MediaStore.Files.getContentUri("external")
-    }
-
-    val projection = arrayOf(MediaStore.MediaColumns._ID)
-    val (selection, args) =
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        "${MediaStore.MediaColumns.DISPLAY_NAME}=? AND ${MediaStore.MediaColumns.RELATIVE_PATH}=?" to arrayOf(fileName, parent)
-      } else {
-        "${MediaStore.MediaColumns.DISPLAY_NAME}=?" to arrayOf(fileName)
-      }
-
-    return try {
-      context.contentResolver
-        .query(tableUri, projection, selection, args, "${MediaStore.MediaColumns.DATE_MODIFIED} DESC")
-        ?.use { cursor ->
-          if (!cursor.moveToFirst()) return null
-          val idIndex = cursor.getColumnIndex(MediaStore.MediaColumns._ID)
-          if (idIndex < 0) return null
-          cursor.getLong(idIndex).toString()
-        }
-    } catch (_: Exception) {
-      null
-    }
-  }
-
-  private fun resolveLocalIdByNameAndSize(context: Context, uri: Uri, mimeType: String): String? {
-    val metaProjection = arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
-    val (displayName, size) =
-      try {
-        context.contentResolver.query(uri, metaProjection, null, null, null)?.use { cursor ->
-          if (!cursor.moveToFirst()) return null
-          val nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-          val sizeIdx = cursor.getColumnIndex(OpenableColumns.SIZE)
-          val name = if (nameIdx >= 0) cursor.getString(nameIdx) else null
-          val bytes = if (sizeIdx >= 0) cursor.getLong(sizeIdx) else -1L
-          if (name.isNullOrBlank() || bytes < 0) return null
-          name to bytes
-        } ?: return null
-      } catch (_: Exception) {
-        return null
-      }
-
-    val tableUri = when {
-      mimeType.startsWith("image/") -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-      mimeType.startsWith("video/") -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-      else -> MediaStore.Files.getContentUri("external")
-    }
-    val projection = arrayOf(MediaStore.MediaColumns._ID)
-    val selection = "${MediaStore.MediaColumns.DISPLAY_NAME}=? AND ${MediaStore.MediaColumns.SIZE}=?"
-    val args = arrayOf(displayName, size.toString())
-
-    return try {
-      context.contentResolver
-        .query(tableUri, projection, selection, args, "${MediaStore.MediaColumns.DATE_MODIFIED} DESC")
-        ?.use { cursor ->
-          if (!cursor.moveToFirst()) return null
-          val idIndex = cursor.getColumnIndex(MediaStore.MediaColumns._ID)
-          if (idIndex < 0) return null
-          cursor.getLong(idIndex).toString()
-        }
-    } catch (_: Exception) {
-      null
-    }
+    return MediaStoreUtils.resolveLocalIdByNameAndSize(context, uri, mimeType)
   }
 
   private fun copyUriToTempFile(context: Context, uri: Uri, mimeType: String): File? {

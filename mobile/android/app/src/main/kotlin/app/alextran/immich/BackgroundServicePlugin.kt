@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
+import app.alextran.immich.media.MediaStoreUtils
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -254,7 +255,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
       return
     }
 
-    val uri = ContentUris.withAppendedId(contentUriForType(type), id)
+    val uri = ContentUris.withAppendedId(MediaStoreUtils.contentUriForAssetType(type), id)
 
     try {
       Log.i(TAG, "restoreFromTrashById: uri=$uri (type=$type,id=$id)")
@@ -305,7 +306,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     contentResolver.query(queryUri, projection, queryArgs, null)?.use { cursor ->
       if (cursor.moveToFirst()) {
         val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
-        return ContentUris.withAppendedId(contentUriForType(type), id)
+        return ContentUris.withAppendedId(MediaStoreUtils.contentUriForAssetType(type), id)
       }
     }
     return null
@@ -373,16 +374,6 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     Log.i(TAG, "restoreUris: count=${uris.size}, first=${uris.first()}")
     toggleTrash(uris, false, result)
   }
-
-  @RequiresApi(Build.VERSION_CODES.Q)
-  private fun contentUriForType(type: Int): Uri =
-    when (type) {
-      // same order as AssetType from dart
-      1 -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-      2 -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-      3 -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-      else -> MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
-    }
 }
 
 private const val TAG = "BackgroundServicePlugin"

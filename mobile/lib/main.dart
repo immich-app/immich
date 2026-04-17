@@ -37,7 +37,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
-import 'package:immich_mobile/services/view_intent_service.dart';
+import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
