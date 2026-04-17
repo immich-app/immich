@@ -123,9 +123,7 @@ describe(UserService.name, () => {
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
 
       expect(mocks.user.update).not.toHaveBeenCalled();
-      expect(mocks.job.queue.mock.calls).toEqual([
-        [{ name: JobName.FileDelete, data: { files: [file.path] } }],
-      ]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
     });
 
     it('should delete the raw upload and the previous profile image', async () => {
@@ -150,9 +148,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue.mock.calls).toEqual([
-        [{ name: JobName.FileDelete, data: { files: [file.path] } }],
-      ]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
