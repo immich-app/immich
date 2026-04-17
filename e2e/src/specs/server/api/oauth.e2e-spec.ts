@@ -339,7 +339,7 @@ describe(`/oauth`, () => {
     it(`should throw an error if the logout_token is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/backchannel-logout').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['logout_token must be a string', 'logout_token should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[logout_token] Invalid input: expected string, received undefined']));
     });
 
     it(`should throw an error if an invalid logout token is provided`, async () => {

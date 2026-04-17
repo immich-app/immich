@@ -51,8 +51,12 @@ const claims = [
   },
 ];
 
-const privateKey = await importPKCS8(PRIVATE_KEY_PEM, 'RS256');
-const publicKey = await importSPKI(PUBLIC_KEY_PEM, 'RS256');
+const privateKey = await importPKCS8(PRIVATE_KEY_PEM, 'RS256', {
+  extractable: true,
+});
+const publicKey = await importSPKI(PUBLIC_KEY_PEM, 'RS256', {
+  extractable: true,
+});
 const kid = await calculateJwkThumbprint(await exportJWK(publicKey));
 
 export async function generateLogoutToken(iss: string, sub: string) {
