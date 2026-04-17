@@ -109,7 +109,15 @@
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
           {#each selectedPeople as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
-              <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
+              <FaceThumbnail
+                border
+                circle
+                {person}
+                selectable
+                selected
+                thumbnailSize={120}
+                onClick={() => onSelect(person)}
+              />
             </div>
           {/each}
 
