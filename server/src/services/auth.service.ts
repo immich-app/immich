@@ -75,8 +75,8 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    if (dto.linkToken) {
-      const hashedToken = this.cryptoRepository.hashSha256(dto.linkToken);
+    if (dto.oauthLinkToken) {
+      const hashedToken = this.cryptoRepository.hashSha256(dto.oauthLinkToken);
       const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
       if (!record) {
         throw new BadRequestException('Invalid or expired link token');
@@ -350,7 +350,7 @@ export class AuthService extends BaseService {
         throw new ForbiddenException({
           message: 'oauth_account_link_required',
           userEmail: emailUser.email,
-          linkToken: plainToken,
+          oauthLinkToken: plainToken,
         });
       }
     }

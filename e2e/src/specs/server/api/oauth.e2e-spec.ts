@@ -367,7 +367,7 @@ describe(`/oauth`, () => {
         expect(status).toBe(403);
         expect(body.message).toBe('oauth_account_link_required');
         expect(body.userEmail).toBe('oauth-user3@immich.app');
-        expect(body.linkToken).toBeDefined();
+        expect(body.oauthLinkToken).toBeDefined();
       });
     });
   });

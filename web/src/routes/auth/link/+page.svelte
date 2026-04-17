@@ -18,7 +18,7 @@
 
   let { data }: Props = $props();
 
-  let linkToken = $state(data.linkToken);
+  let oauthLinkToken = $state(data.oauthLinkToken);
   let email = $state(data.email || authManager.user?.email || '');
   let password = $state('');
   let errorMessage = $state('');
@@ -33,7 +33,7 @@
     try {
       errorMessage = '';
       loading = true;
-      const user = await login({ loginCredentialDto: { email, password, linkToken } });
+      const user = await login({ loginCredentialDto: { email, password, oauthLinkToken } });
       eventManager.emit('AuthLogin', user);
       await authManager.refresh();
       toastManager.primary($t('linked_oauth_account'));

@@ -89,7 +89,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
 
-    it('should link an OAuth account when linkToken is provided', async () => {
+    it('should link an OAuth account when oauthLinkToken is provided', async () => {
       const user = UserFactory.create({ password: 'immich_password' });
       const session = SessionFactory.create();
       mocks.user.getByEmail.mockResolvedValue(user);
@@ -104,20 +104,20 @@ describe(AuthService.name, () => {
       });
       mocks.user.update.mockResolvedValue(user);
 
-      await sut.login({ email, password: 'password', linkToken: 'plain-token' }, loginDetails);
+      await sut.login({ email, password: 'password', oauthLinkToken: 'plain-token' }, loginDetails);
 
       expect(mocks.oauthLinkToken.consumeToken).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: 'oauth-sub-123' });
     });
 
-    it('should reject login with invalid linkToken', async () => {
+    it('should reject login with invalid oauthLinkToken', async () => {
       const user = UserFactory.create({ password: 'immich_password' });
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.oauthLinkToken.consumeToken.mockResolvedValue(null as any);
 
-      await expect(sut.login({ email, password: 'password', linkToken: 'bad-token' }, loginDetails)).rejects.toThrow(
-        'Invalid or expired link token',
-      );
+      await expect(
+        sut.login({ email, password: 'password', oauthLinkToken: 'bad-token' }, loginDetails),
+      ).rejects.toThrow('Invalid or expired link token');
     });
   });
 

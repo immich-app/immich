@@ -1008,10 +1008,10 @@ export type AssetOcrResponseDto = {
 export type SignUpDto = {
     /** User email */
     email: string;
-    /** OAuth link token to consume on successful login */
-    linkToken?: string;
     /** User name */
     name: string;
+    /** OAuth link token to consume on successful login */
+    oauthLinkToken?: string;
     /** User password */
     password: string;
 };
@@ -1027,7 +1027,7 @@ export type LoginCredentialDto = {
     /** User email */
     email: string;
     /** OAuth link token to consume on successful login */
-    linkToken?: string;
+    oauthLinkToken?: string;
     /** User password */
     password: string;
 };
