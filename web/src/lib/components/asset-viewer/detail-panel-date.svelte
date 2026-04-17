@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
@@ -7,19 +8,19 @@
   import { mdiCalendar, mdiPencil } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     asset: AssetResponseDto;
-    isOwner: boolean;
-  }
+  };
 
-  let { asset, isOwner }: Props = $props();
+  const { asset }: Props = $props();
 
-  let timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
-  let dateTime = $derived(
+  const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
+  const dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromISODateTimeUTC(asset.localDateTime),
   );
+  const isOwner = $derived(asset.ownerId === authManager.user.id);
 
   const handleChangeDate = async () => {
     if (!isOwner) {
@@ -44,20 +45,11 @@
     data-testid="detail-panel-edit-date-button"
   >
     <div class="flex gap-4">
-      <div>
-        <Icon icon={mdiCalendar} size="24" />
-      </div>
+      <Icon icon={mdiCalendar} size="24" />
 
       <div>
         <p>
-          {dateTime.toLocaleString(
-            {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            },
-            { locale: $locale },
-          )}
+          {dateTime.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale })}
         </p>
         <div class="flex gap-2 text-sm">
           <p>
@@ -85,9 +77,7 @@
 {:else if !dateTime && isOwner}
   <div class="flex justify-between place-items-start gap-4 py-4">
     <div class="flex gap-4">
-      <div>
-        <Icon icon={mdiCalendar} size="24" />
-      </div>
+      <Icon icon={mdiCalendar} size="24" />
     </div>
     <div class="p-1">
       <Icon icon={mdiPencil} size="20" />

@@ -271,7 +271,7 @@
       <Text size="small" color="muted">{$t('no_exif_info_available')}</Text>
     {/if}
 
-    <DetailPanelDate {asset} {isOwner} />
+    <DetailPanelDate {asset} />
 
     <div class="flex gap-4 py-4">
       <div><Icon icon={mdiImageOutline} size="24" /></div>
