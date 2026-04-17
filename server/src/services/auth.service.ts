@@ -2,9 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { join } from 'node:path';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import {
   AuthDto,
@@ -22,12 +20,12 @@ import {
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, StorageFolder } from 'src/enum';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
-import { mimeTypes } from 'src/utils/mime-types';
+import { generateProfileImage } from 'src/utils/profile-image';
 import { getUserAgentDetails } from 'src/utils/request';
 export interface LoginDetails {
   isSecure: boolean;
@@ -348,16 +346,16 @@ export class AuthService extends BaseService {
   private async syncProfilePicture(user: UserAdmin, url: string) {
     try {
       const oldPath = user.profileImagePath;
+      const { data } = await this.oauthRepository.getProfilePicture(url);
 
-      const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
-      const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
-      const profileImagePath = join(
-        StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
-        `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
+      const config = await this.getConfig({ withCache: true });
+      const profileImagePath = await generateProfileImage(
+        { media: this.mediaRepository, crypto: this.cryptoRepository, storageCore: this.storageCore },
+        config,
+        user.id,
+        Buffer.from(data),
       );
 
-      this.storageCore.ensureFolders(profileImagePath);
-      await this.storageRepository.createFile(profileImagePath, Buffer.from(data));
       await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
 
       if (oldPath) {

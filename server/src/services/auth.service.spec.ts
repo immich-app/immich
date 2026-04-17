@@ -862,6 +862,7 @@ describe(AuthService.name, () => {
       const fileId = newUuid();
       const user = UserFactory.create({ oauthId: 'oauth-id' });
       const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+      const pictureBytes = new Uint8Array([1, 2, 3, 4, 5]);
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfile.mockResolvedValue(profile);
@@ -869,7 +870,7 @@ describe(AuthService.name, () => {
       mocks.crypto.randomUUID.mockReturnValue(fileId);
       mocks.oauth.getProfilePicture.mockResolvedValue({
         contentType: 'image/jpeg',
-        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+        data: pictureBytes.buffer,
       });
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -881,10 +882,41 @@ describe(AuthService.name, () => {
       );
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
-        profileImagePath: expect.stringContaining(`/data/profile/${user.id}/${fileId}.jpg`),
+        profileImagePath: expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(profile.picture);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        Buffer.from(pictureBytes.buffer),
+        expect.objectContaining({ format: 'webp', processInvalidImages: false }),
+        expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
+      );
+    });
+
+    it('should not update the user when thumbnail processing fails on the OAuth picture', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
+      const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.oauth.getProfilePicture.mockResolvedValue({
+        contentType: 'text/html',
+        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+      });
+      mocks.media.generateThumbnail.mockRejectedValue(new Error('not an image'));
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toBeDefined();
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should not sync the profile picture if the user already has one', async () => {
