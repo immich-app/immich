@@ -8,30 +8,17 @@ final viewIntentServiceProvider = Provider((ref) => ViewIntentService(ViewIntent
 
 class ViewIntentService {
   final ViewIntentHostApi _viewIntentHostApi;
-  Future<void> Function(List<ViewIntentPayload> attachments)? onViewMedia;
-  ViewIntentPayload? _pendingAttachment;
   String? _managedTempFilePath;
 
   ViewIntentService(this._viewIntentHostApi);
 
-  Future<void> checkViewIntent() async {
+  Future<ViewIntentPayload?> consumeViewIntent() async {
     try {
-      final attachment = await _viewIntentHostApi.consumeViewIntent();
-      if (attachment != null) {
-        final handler = onViewMedia;
-        if (handler == null) {
-          _pendingAttachment = attachment;
-          return;
-        }
-        await handler([attachment]);
-      }
+      return await _viewIntentHostApi.consumeViewIntent();
     } catch (_) {
       // Ignore errors - view intent might not be present
+      return null;
     }
-  }
-
-  void defer(ViewIntentPayload attachment) {
-    _pendingAttachment = attachment;
   }
 
   Future<void> setManagedTempFilePath(String path) async {
@@ -70,15 +57,5 @@ class ViewIntentService {
 
   bool _isManagedTempFile(String path) {
     return p.basename(path).startsWith('view_intent_') && p.basename(p.dirname(path)) == 'cache';
-  }
-
-  Future<void> flushPending() async {
-    final pendingAttachment = _pendingAttachment;
-    final handler = onViewMedia;
-    if (pendingAttachment == null || handler == null) {
-      return;
-    }
-    _pendingAttachment = null;
-    await handler([pendingAttachment]);
   }
 }

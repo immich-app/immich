@@ -24,7 +24,7 @@ import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/view_intent_handler.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -37,7 +37,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
-import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
@@ -146,8 +145,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         dPrint(() => "[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
         // Check for ACTION_VIEW intent when app resumes
-        unawaited(ref.read(viewIntentServiceProvider).checkViewIntent());
-        unawaited(ref.read(viewIntentServiceProvider).flushPending());
+        unawaited(ref.read(viewIntentHandlerProvider).checkForViewIntent());
+        unawaited(ref.read(viewIntentHandlerProvider).flushPending());
         break;
       case AppLifecycleState.inactive:
         dPrint(() => "[APP STATE] inactive");
@@ -244,7 +243,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     ref.read(shareIntentUploadProvider.notifier).init();
     _authSubscription = ref.listenManual(authProvider.select((state) => state.isAuthenticated), (_, isAuthenticated) {
       if (isAuthenticated) {
-        unawaited(ref.read(viewIntentServiceProvider).flushPending());
+        unawaited(ref.read(viewIntentHandlerProvider).flushPending());
       }
     }, fireImmediately: true);
   }

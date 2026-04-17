@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.util.Log
+import android.webkit.MimeTypeMap
 import app.alextran.immich.media.MediaStoreUtils
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -13,12 +15,19 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.PluginRegistry
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+
+private const val TAG = "ViewIntentPlugin"
 
 class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentListener, ViewIntentHostApi {
   private var context: Context? = null
   private var activity: Activity? = null
   private var pendingIntent: Intent? = null
+  private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     context = binding.applicationContext
@@ -27,6 +36,7 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     ViewIntentHostApi.setUp(binding.binaryMessenger, null)
+    ioScope.cancel()
     context = null
   }
 
@@ -71,29 +81,31 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
       return
     }
 
-    val mimeType = context.contentResolver.getType(uri)
-    if (mimeType == null || (!mimeType.startsWith("image/") && !mimeType.startsWith("video/"))) {
-      callback(Result.success(null))
-      return
-    }
+    ioScope.launch {
+      try {
+        val mimeType = context.contentResolver.getType(uri)
+        if (mimeType == null || (!mimeType.startsWith("image/") && !mimeType.startsWith("video/"))) {
+          callback(Result.success(null))
+          return@launch
+        }
 
-    try {
-      val tempFile = copyUriToTempFile(context, uri, mimeType)
-      if (tempFile == null) {
-        callback(Result.success(null))
-        return
+        val tempFile = copyUriToTempFile(context, uri, mimeType)
+        if (tempFile == null) {
+          callback(Result.success(null))
+          return@launch
+        }
+
+        val payload = ViewIntentPayload(
+          path = tempFile.absolutePath,
+          type = if (mimeType.startsWith("image/")) ViewIntentType.IMAGE else ViewIntentType.VIDEO,
+          mimeType = mimeType,
+          localAssetId = extractLocalAssetId(context, uri, mimeType),
+        )
+        consumeViewIntent(intent)
+        callback(Result.success(payload))
+      } catch (e: Exception) {
+        callback(Result.failure(e))
       }
-
-      val payload = ViewIntentPayload(
-        path = tempFile.absolutePath,
-        type = if (mimeType.startsWith("image/")) ViewIntentType.IMAGE else ViewIntentType.VIDEO,
-        mimeType = mimeType,
-        localAssetId = extractLocalAssetId(context, uri, mimeType),
-      )
-      consumeViewIntent(intent)
-      callback(Result.success(payload))
-    } catch (e: Exception) {
-      callback(Result.failure(e))
     }
   }
 
@@ -111,76 +123,101 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
       return null
     }
 
-    try {
-      if (DocumentsContract.isDocumentUri(context, uri)) {
-        val docId = DocumentsContract.getDocumentId(uri)
-        if (docId.startsWith("raw:")) {
-          return null
-        }
-
-        if (docId.isNotBlank()) {
-          val parsed = docId.substringAfter(':', docId)
-          if (parsed.all(Char::isDigit)) {
-            return parsed
-          }
-          val fromRelativePath = MediaStoreUtils.resolveLocalIdByRelativePath(context, parsed, mimeType)
-          if (fromRelativePath != null) {
-            return fromRelativePath
-          }
-        }
-      }
-    } catch (_: Exception) {
-      // Ignore and continue with fallback strategy.
+    val fromDocumentUri = tryExtractDocumentLocalAssetId(context, uri, mimeType)
+    if (fromDocumentUri != null) {
+      return fromDocumentUri
     }
 
-    try {
-      val parsed = ContentUris.parseId(uri)
-      if (parsed >= 0) {
-        return parsed.toString()
-      }
-    } catch (_: Exception) {
-      // Ignore and continue with fallback strategy.
+    val fromContentUri = tryParseContentUriId(uri)
+    if (fromContentUri != null) {
+      return fromContentUri
     }
 
-    val segment = uri.lastPathSegment
-    if (segment != null && segment.all(Char::isDigit)) {
-      return segment
+    val fromPathSegment = tryParseLastPathSegmentId(uri)
+    if (fromPathSegment != null) {
+      return fromPathSegment
     }
 
     return MediaStoreUtils.resolveLocalIdByNameAndSize(context, uri, mimeType)
   }
 
+  private fun tryExtractDocumentLocalAssetId(context: Context, uri: Uri, mimeType: String): String? {
+    try {
+      if (!DocumentsContract.isDocumentUri(context, uri)) {
+        return null
+      }
+
+      val docId = DocumentsContract.getDocumentId(uri)
+      if (docId.startsWith("raw:")) {
+        return null
+      }
+
+      if (docId.isBlank()) {
+        return null
+      }
+
+      val parsed = docId.substringAfter(':', docId)
+      if (parsed.all(Char::isDigit)) {
+        return parsed
+      }
+
+      return MediaStoreUtils.resolveLocalIdByRelativePath(context, parsed, mimeType)
+    } catch (e: Exception) {
+      Log.w(TAG, "Failed to resolve local asset id from document URI: $uri", e)
+      return null
+    }
+  }
+
+  private fun tryParseContentUriId(uri: Uri): String? {
+    return try {
+      val parsed = ContentUris.parseId(uri)
+      if (parsed >= 0) parsed.toString() else null
+    } catch (e: Exception) {
+      Log.w(TAG, "Failed to parse local asset id from content URI: $uri", e)
+      null
+    }
+  }
+
+  private fun tryParseLastPathSegmentId(uri: Uri): String? {
+    val segment = uri.lastPathSegment ?: return null
+    return if (segment.all(Char::isDigit)) segment else null
+  }
+
   private fun copyUriToTempFile(context: Context, uri: Uri, mimeType: String): File? {
     return try {
-      val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-      if (inputStream == null) return null
+      val normalizedMimeType = mimeType.substringBefore(';').lowercase()
+      val mimeTypeExtension = MimeTypeMap
+        .getSingleton()
+        .getExtensionFromMimeType(normalizedMimeType)
+        ?.let { ".$it" }
 
       val extension = when {
-        mimeType.startsWith("image/") -> {
+        normalizedMimeType.startsWith("image/") -> {
           when {
-            mimeType.contains("jpeg") || mimeType.contains("jpg") -> ".jpg"
-            mimeType.contains("png") -> ".png"
-            mimeType.contains("gif") -> ".gif"
-            mimeType.contains("webp") -> ".webp"
-            else -> ".jpg"
+            normalizedMimeType.contains("jpeg") || normalizedMimeType.contains("jpg") -> ".jpg"
+            normalizedMimeType.contains("png") -> ".png"
+            normalizedMimeType.contains("gif") -> ".gif"
+            normalizedMimeType.contains("webp") -> ".webp"
+            else -> mimeTypeExtension ?: ".jpg"
           }
         }
-        mimeType.startsWith("video/") -> {
+        normalizedMimeType.startsWith("video/") -> {
           when {
-            mimeType.contains("mp4") -> ".mp4"
-            mimeType.contains("webm") -> ".webm"
-            mimeType.contains("3gp") -> ".3gp"
-            else -> ".mp4"
+            normalizedMimeType.contains("mp4") -> ".mp4"
+            normalizedMimeType.contains("webm") -> ".webm"
+            normalizedMimeType.contains("3gp") -> ".3gp"
+            else -> mimeTypeExtension ?: ".mp4"
           }
         }
-        else -> ".tmp"
+        else -> mimeTypeExtension ?: ".tmp"
       }
 
       val tempFile = File.createTempFile("view_intent_", extension, context.cacheDir)
-      val outputStream = FileOutputStream(tempFile)
-      inputStream.copyTo(outputStream)
-      inputStream.close()
-      outputStream.close()
+      context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        FileOutputStream(tempFile).use { outputStream ->
+          inputStream.copyTo(outputStream)
+        }
+      } ?: return null
       tempFile
     } catch (_: Exception) {
       null

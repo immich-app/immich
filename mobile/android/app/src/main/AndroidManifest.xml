@@ -97,16 +97,16 @@
       <intent-filter android:label="View in Immich">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:mimeType="image/*" />
+        <data android:scheme="content" android:mimeType="image/*" />
+        <data android:scheme="file" android:mimeType="image/*" />
       </intent-filter>
 
       <!-- Allow Immich to act as a video viewer -->
       <intent-filter android:label="View in Immich">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:mimeType="video/*" />
+        <data android:scheme="content" android:mimeType="video/*" />
+        <data android:scheme="file" android:mimeType="video/*" />
       </intent-filter>
 
       <!-- immich:// URL scheme handling -->

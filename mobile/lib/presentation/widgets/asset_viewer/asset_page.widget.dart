@@ -20,7 +20,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/view_intent_file_path.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -291,8 +291,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required String? localFilePath,
   }) {
     final size = context.sizeData;
-    final imageProvider = localFilePath != null ? FileImage(File(localFilePath)) : getFullImageProvider(
-        asset, size: size);
+    final imageProvider = localFilePath != null
+        ? FileImage(File(localFilePath))
+        : getFullImageProvider(asset, size: size);
 
     if (asset.isImage && !isPlayingMotionVideo) {
       return PhotoView(
@@ -347,11 +348,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         asset: asset,
         localFilePath: localFilePath,
         isCurrent: isCurrent,
-        image: Image(
-          image: imageProvider,
-          fit: BoxFit.contain,
-          alignment: Alignment.center,
-        ),
+        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
       ),
     );
   }

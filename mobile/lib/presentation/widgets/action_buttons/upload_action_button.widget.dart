@@ -8,7 +8,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/view_intent_file_path.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';

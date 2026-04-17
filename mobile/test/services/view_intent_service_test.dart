@@ -27,84 +27,30 @@ void main() {
     clearInteractions(hostApi);
   });
 
-  test('checkViewIntent does nothing when no attachment', () async {
+  test('consumeViewIntent returns null when no attachment', () async {
     when(() => hostApi.consumeViewIntent()).thenAnswer((_) async => null);
 
-    var called = 0;
-    service.onViewMedia = (_) async {
-      called++;
-    };
+    final result = await service.consumeViewIntent();
 
-    await service.checkViewIntent();
-
-    expect(called, 0);
+    expect(result, isNull);
     verify(() => hostApi.consumeViewIntent()).called(1);
   });
 
-  test('checkViewIntent calls handler immediately when handler is set', () async {
+  test('consumeViewIntent returns attachment when present', () async {
     when(() => hostApi.consumeViewIntent()).thenAnswer((_) async => attachment);
 
-    List<ViewIntentPayload>? received;
-    service.onViewMedia = (attachments) async {
-      received = attachments;
-    };
+    final result = await service.consumeViewIntent();
 
-    await service.checkViewIntent();
-
-    expect(received, isNotNull);
-    expect(received, hasLength(1));
-    expect(received!.first, attachment);
+    expect(result, attachment);
     verify(() => hostApi.consumeViewIntent()).called(1);
   });
 
-  test('checkViewIntent stores pending attachment when handler is not set', () async {
-    when(() => hostApi.consumeViewIntent()).thenAnswer((_) async => attachment);
-
-    await service.checkViewIntent();
-
-    List<ViewIntentPayload>? received;
-    service.onViewMedia = (attachments) async {
-      received = attachments;
-    };
-    await service.flushPending();
-
-    expect(received, isNotNull);
-    expect(received, hasLength(1));
-    expect(received!.first, attachment);
-  });
-
-  test('defer + flushPending does nothing without handler, then flushes once when handler appears', () async {
-    service.defer(attachment);
-
-    // No handler yet: should keep pending.
-    await service.flushPending();
-
-    var called = 0;
-    List<ViewIntentPayload>? received;
-    service.onViewMedia = (attachments) async {
-      called++;
-      received = attachments;
-    };
-
-    await service.flushPending();
-    await service.flushPending();
-
-    expect(called, 1);
-    expect(received, hasLength(1));
-    expect(received!.first, attachment);
-  });
-
-  test('checkViewIntent swallows host api errors', () async {
+  test('consumeViewIntent swallows host api errors', () async {
     when(() => hostApi.consumeViewIntent()).thenThrow(Exception('boom'));
 
-    var called = 0;
-    service.onViewMedia = (_) async {
-      called++;
-    };
+    final result = await service.consumeViewIntent();
 
-    await service.checkViewIntent();
-
-    expect(called, 0);
+    expect(result, isNull);
     verify(() => hostApi.consumeViewIntent()).called(1);
   });
 

@@ -5,7 +5,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/view_intent_file_path.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -28,30 +29,31 @@ class ViewIntentHandler {
   final AppRouter _router;
   static final Logger _logger = Logger('ViewIntentHandler');
 
-  const ViewIntentHandler(
-    this._ref,
-    this._viewIntentService,
-    this._viewIntentAssetResolver,
-    this._router,
-  );
+  const ViewIntentHandler(this._ref, this._viewIntentService, this._viewIntentAssetResolver, this._router);
 
   void init() {
-    _viewIntentService.onViewMedia = onViewMedia;
-    unawaited(_viewIntentService.checkViewIntent());
-    unawaited(_viewIntentService.flushPending());
+    unawaited(checkForViewIntent());
+    unawaited(flushPending());
   }
 
-  Future<void> onViewMedia(List<ViewIntentPayload> attachments) async {
-    if (attachments.isEmpty) {
-      return;
+  Future<void> checkForViewIntent() async {
+    final attachment = await _viewIntentService.consumeViewIntent();
+    if (attachment != null) {
+      await handle(attachment);
     }
-    await handle(attachments.first);
+  }
+
+  Future<void> flushPending() async {
+    final pendingAttachment = _ref.read(viewIntentPendingProvider.notifier).takeIfFresh();
+    if (pendingAttachment != null) {
+      await handle(pendingAttachment);
+    }
   }
 
   Future<void> handle(ViewIntentPayload attachment) async {
     _logger.info('handle attachment: $attachment');
     if (!_ref.read(authProvider).isAuthenticated) {
-      _viewIntentService.defer(attachment);
+      _ref.read(viewIntentPendingProvider.notifier).defer(attachment);
       return;
     }
 
