@@ -14,29 +14,22 @@ PlatformException _createConnectionError(String channelName) {
     message: 'Unable to establish connection on channel: "$channelName".',
   );
 }
+
 bool _deepEquals(Object? a, Object? b) {
   if (a is List && b is List) {
-    return a.length == b.length &&
-        a.indexed
-        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+    return a.length == b.length && a.indexed.every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
-    return a.length == b.length && a.entries.every((MapEntry<Object?, Object?> entry) =>
-        (b as Map<Object?, Object?>).containsKey(entry.key) &&
-        _deepEquals(entry.value, b[entry.key]));
+    return a.length == b.length &&
+        a.entries.every(
+          (MapEntry<Object?, Object?> entry) =>
+              (b as Map<Object?, Object?>).containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]),
+        );
   }
   return a == b;
 }
 
-
-enum PlatformAssetPlaybackStyle {
-  unknown,
-  image,
-  video,
-  imageAnimated,
-  livePhoto,
-  videoLooping,
-}
+enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
 
 class PlatformAsset {
   PlatformAsset({
@@ -104,7 +97,8 @@ class PlatformAsset {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static PlatformAsset decode(Object result) {
     result as List<Object?>;
@@ -140,8 +134,7 @@ class PlatformAsset {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
 
 class PlatformAlbum {
@@ -164,17 +157,12 @@ class PlatformAlbum {
   int assetCount;
 
   List<Object?> _toList() {
-    return <Object?>[
-      id,
-      name,
-      updatedAt,
-      isCloud,
-      assetCount,
-    ];
+    return <Object?>[id, name, updatedAt, isCloud, assetCount];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static PlatformAlbum decode(Object result) {
     result as List<Object?>;
@@ -201,17 +189,11 @@ class PlatformAlbum {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
 
 class SyncDelta {
-  SyncDelta({
-    required this.hasChanges,
-    required this.updates,
-    required this.deletes,
-    required this.assetAlbums,
-  });
+  SyncDelta({required this.hasChanges, required this.updates, required this.deletes, required this.assetAlbums});
 
   bool hasChanges;
 
@@ -222,16 +204,12 @@ class SyncDelta {
   Map<String, List<String>> assetAlbums;
 
   List<Object?> _toList() {
-    return <Object?>[
-      hasChanges,
-      updates,
-      deletes,
-      assetAlbums,
-    ];
+    return <Object?>[hasChanges, updates, deletes, assetAlbums];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static SyncDelta decode(Object result) {
     result as List<Object?>;
@@ -257,16 +235,11 @@ class SyncDelta {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
 
 class HashResult {
-  HashResult({
-    required this.assetId,
-    this.error,
-    this.hash,
-  });
+  HashResult({required this.assetId, this.error, this.hash});
 
   String assetId;
 
@@ -275,23 +248,16 @@ class HashResult {
   String? hash;
 
   List<Object?> _toList() {
-    return <Object?>[
-      assetId,
-      error,
-      hash,
-    ];
+    return <Object?>[assetId, error, hash];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static HashResult decode(Object result) {
     result as List<Object?>;
-    return HashResult(
-      assetId: result[0]! as String,
-      error: result[1] as String?,
-      hash: result[2] as String?,
-    );
+    return HashResult(assetId: result[0]! as String, error: result[1] as String?, hash: result[2] as String?);
   }
 
   @override
@@ -308,16 +274,11 @@ class HashResult {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
 
 class CloudIdResult {
-  CloudIdResult({
-    required this.assetId,
-    this.error,
-    this.cloudId,
-  });
+  CloudIdResult({required this.assetId, this.error, this.cloudId});
 
   String assetId;
 
@@ -326,23 +287,16 @@ class CloudIdResult {
   String? cloudId;
 
   List<Object?> _toList() {
-    return <Object?>[
-      assetId,
-      error,
-      cloudId,
-    ];
+    return <Object?>[assetId, error, cloudId];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static CloudIdResult decode(Object result) {
     result as List<Object?>;
-    return CloudIdResult(
-      assetId: result[0]! as String,
-      error: result[1] as String?,
-      cloudId: result[2] as String?,
-    );
+    return CloudIdResult(assetId: result[0]! as String, error: result[1] as String?, cloudId: result[2] as String?);
   }
 
   @override
@@ -359,10 +313,8 @@ class CloudIdResult {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
 }
-
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -371,22 +323,22 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is PlatformAssetPlaybackStyle) {
+    } else if (value is PlatformAssetPlaybackStyle) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    }    else if (value is PlatformAsset) {
+    } else if (value is PlatformAsset) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    }    else if (value is PlatformAlbum) {
+    } else if (value is PlatformAlbum) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    }    else if (value is SyncDelta) {
+    } else if (value is SyncDelta) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    }    else if (value is HashResult) {
+    } else if (value is HashResult) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is CloudIdResult) {
+    } else if (value is CloudIdResult) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else {
@@ -397,18 +349,18 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129: 
+      case 129:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : PlatformAssetPlaybackStyle.values[value];
-      case 130: 
+      case 130:
         return PlatformAsset.decode(readValue(buffer)!);
-      case 131: 
+      case 131:
         return PlatformAlbum.decode(readValue(buffer)!);
-      case 132: 
+      case 132:
         return SyncDelta.decode(readValue(buffer)!);
-      case 133: 
+      case 133:
         return HashResult.decode(readValue(buffer)!);
-      case 134: 
+      case 134:
         return CloudIdResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -421,8 +373,8 @@ class NativeSyncApi {
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   NativeSyncApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    : pigeonVar_binaryMessenger = binaryMessenger,
+      pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -430,15 +382,15 @@ class NativeSyncApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<bool> shouldFullSync() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.shouldFullSync$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.shouldFullSync$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -458,15 +410,15 @@ class NativeSyncApi {
   }
 
   Future<SyncDelta> getMediaChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -486,15 +438,15 @@ class NativeSyncApi {
   }
 
   Future<void> checkpointSync() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.checkpointSync$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.checkpointSync$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -509,15 +461,15 @@ class NativeSyncApi {
   }
 
   Future<void> clearSyncCheckpoint() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.clearSyncCheckpoint$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.clearSyncCheckpoint$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -532,15 +484,15 @@ class NativeSyncApi {
   }
 
   Future<List<String>> getAssetIdsForAlbum(String albumId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetIdsForAlbum$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetIdsForAlbum$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -560,15 +512,15 @@ class NativeSyncApi {
   }
 
   Future<List<PlatformAlbum>> getAlbums() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -588,15 +540,15 @@ class NativeSyncApi {
   }
 
   Future<int> getAssetsCountSince(String albumId, int timestamp) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsCountSince$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsCountSince$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId, timestamp]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -616,15 +568,15 @@ class NativeSyncApi {
   }
 
   Future<List<PlatformAsset>> getAssetsForAlbum(String albumId, {int? updatedTimeCond}) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId, updatedTimeCond]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -644,15 +596,15 @@ class NativeSyncApi {
   }
 
   Future<List<HashResult>> hashAssets(List<String> assetIds, {bool allowNetworkAccess = false}) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashAssets$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashAssets$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds, allowNetworkAccess]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -672,15 +624,15 @@ class NativeSyncApi {
   }
 
   Future<List<HashResult>> hashFiles(List<String> paths) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashFiles$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashFiles$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[paths]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -700,15 +652,15 @@ class NativeSyncApi {
   }
 
   Future<void> cancelHashing() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -723,15 +675,15 @@ class NativeSyncApi {
   }
 
   Future<Map<String, List<PlatformAsset>>> getTrashedAssets() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -751,15 +703,15 @@ class NativeSyncApi {
   }
 
   Future<List<CloudIdResult>> getCloudIdForAssetIds(List<String> assetIds) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
