@@ -55,6 +55,18 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
+      <div class="ms-4 mt-4 flex flex-col gap-4">
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          {disabled}
+          label={$t('admin.global_job_concurrency')}
+          description={$t('admin.global_job_concurrency_description')}
+          bind:value={configToEdit.job.globalConcurrency}
+          required={true}
+          isEdited={!(configToEdit.job.globalConcurrency === config.job.globalConcurrency)}
+        />
+      </div>
+
       {#each queueNames as queueName (queueName)}
         <div class="ms-4 mt-4 flex flex-col gap-4">
           {#if isSystemConfigJobDto(queueName)}

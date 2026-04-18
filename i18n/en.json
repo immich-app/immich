@@ -115,6 +115,8 @@
     "image_thumbnail_quality_description": "Thumbnail quality from 1-100. Higher is better, but produces larger files and can reduce app responsiveness.",
     "image_thumbnail_title": "Thumbnail Settings",
     "import_config_from_json_description": "Import system config by uploading a JSON config file",
+    "global_job_concurrency": "Global job concurrency limit",
+    "global_job_concurrency_description": "Maximum number of jobs that can run simultaneously across all queues. Set to 0 to disable the global limit (only per-queue limits apply). Useful for low-powered systems.",
     "job_concurrency": "{job} concurrency",
     "job_created": "Job created",
     "job_not_concurrency_safe": "This job is not concurrency-safe.",
