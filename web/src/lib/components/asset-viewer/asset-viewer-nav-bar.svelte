@@ -84,6 +84,12 @@
 
   let showDownloadVariants = $state(false);
 
+  // Reset download variants menu when asset changes
+  $effect(() => {
+    asset;
+    showDownloadVariants = false;
+  });
+
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
   const isAlbumOwner = $derived(authManager.authenticated && album?.ownerId === authManager.user.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
