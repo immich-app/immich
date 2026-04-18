@@ -306,11 +306,11 @@ export const handleDownloadAssetAsJpeg = async (asset: AssetResponseDto) => {
     const filename = `${filenameWithoutExt}.jpg`;
 
     toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
-    
+
     const { data } = await downloadRequest(
       getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Fullsize, cacheKey: asset.thumbhash }),
     );
-    // use downloadBlob over downloadUrl such that we can pass custom filename
+    // use downloadBlob over downloadUrl such that we can pass the custom filename
     downloadBlob(data, filename);
   } catch (error) {
     handleError(error, $t('errors.error_downloading', { values: { filename: asset.originalFileName } }));

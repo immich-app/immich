@@ -79,7 +79,6 @@ describe('AssetService', () => {
     });
 
     it('should not show DownloadAsJpeg for unauthenticated users', () => {
-      authManager.setUser(null);
       const asset = assetFactory.build({ type: AssetTypeEnum.Image, duration: '0:00:00.00000' });
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.DownloadAsJpeg.$if?.()).toStrictEqual(false);
@@ -159,6 +158,5 @@ describe('AssetService', () => {
       expect($t).toHaveBeenCalledWith('downloading_asset_filename', { values: { filename: 'IMG_1234.jpg' } });
       expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
-
   });
 });

@@ -101,9 +101,7 @@
 
   const Actions = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
-  const hasDownloadVariants = $derived(
-    isEnabled(Actions.DownloadOriginal) || isEnabled(Actions.DownloadAsJpeg),
-  );
+  const hasDownloadVariants = $derived(isEnabled(Actions.DownloadOriginal) || isEnabled(Actions.DownloadAsJpeg));
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
