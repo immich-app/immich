@@ -356,7 +356,7 @@ export class AuthService extends BaseService {
           token: hashedToken,
           oauthSub: profile.sub,
           oauthSid: oauthSid ?? null,
-          userEmail: emailUser.email,
+          email: emailUser.email,
           expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
         });
         throw new OAuthLinkRequiredException(emailUser.email, plainToken);

@@ -15,7 +15,7 @@ export class OAuthLinkTokenTable {
   oauthSid!: string | null;
 
   @Column()
-  userEmail!: string;
+  email!: string;
 
   @Column({ type: 'timestamp with time zone' })
   expiresAt!: Timestamp;
