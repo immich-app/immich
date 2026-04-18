@@ -5,6 +5,8 @@
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
+  import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -13,30 +15,26 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
 
   type Props = {
     timelineManager: TimelineManager;
-    assetInteraction: AssetInteraction;
+    assetInteraction: AssetMultiSelectManager;
     onEscape?: () => void;
     scrollToAsset: (asset: TimelineAsset) => boolean;
   };
 
   let { timelineManager = $bindable(), assetInteraction, onEscape, scrollToAsset }: Props = $props();
 
-  const { isViewing: showAssetViewer } = assetViewingStore;
-
   const trashOrDelete = async (forceRequested?: boolean) => {
     const force = forceRequested || !featureFlagsManager.value.trash;
-    const selectedAssets = assetInteraction.selectedAssets;
+    const selectedAssets = assetInteraction.assets;
 
     if ($showDeleteModal && force) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
@@ -54,16 +52,16 @@
       selectedAssets,
       force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
-    assetInteraction.clearMultiselect();
+    assetInteraction.clear();
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.assets.some((asset) => asset.isTrashed);
     handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
   const onStackAssets = async () => {
-    const result = await stackAssets(assetInteraction.selectedAssets);
+    const result = await stackAssets(assetInteraction.assets);
 
     updateStackedAssetInTimeline(timelineManager, result);
 
@@ -72,17 +70,13 @@
 
   const toggleArchive = async () => {
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
-    const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
+    const ids = await archiveAssets(assetInteraction.assets, visibility);
     timelineManager.update(ids, (asset) => (asset.visibility = visibility));
     eventManager.emit('AssetsArchive', ids);
-    deselectAllAssets();
+    assetInteraction.clear();
   };
 
   let shiftKeyIsDown = $state(false);
-
-  const deselectAllAssets = () => {
-    cancelMultiselect(assetInteraction);
-  };
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (searchStore.isSearchEnabled) {
@@ -127,7 +121,7 @@
 
   $effect(() => {
     if (isEmpty) {
-      assetInteraction.clearMultiselect();
+      assetInteraction.clear();
     }
   });
 
@@ -142,7 +136,7 @@
   };
 
   const shortcutList = $derived.by(() => {
-    if (searchStore.isSearchEnabled || $showAssetViewer || isModalOpen()) {
+    if (searchStore.isSearchEnabled || assetViewerManager.isViewing || isModalOpen()) {
       return [];
     }
 
@@ -168,7 +162,7 @@
       shortcuts.push(
         { shortcut: { key: 'Delete' }, onShortcut: onDelete },
         { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => assetInteraction.clear() },
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
         { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
       );

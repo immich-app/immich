@@ -1,24 +1,24 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { shortcut } from '$lib/actions/shortcut';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { clamp } from 'lodash-es';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     htmlElement: HTMLImageElement | HTMLVideoElement;
     containerWidth: number;
     containerHeight: number;
     assetId: string;
-  }
+  };
 
   let { htmlElement, containerWidth, containerHeight, assetId }: Props = $props();
 
@@ -27,6 +27,7 @@
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
   let scrollableListEl: HTMLDivElement | undefined = $state();
+  let searchInputEl: HTMLInputElement | null = $state(null);
   let page = $state(1);
   let candidates = $state<PersonResponseDto[]>([]);
 
@@ -81,6 +82,8 @@
   onMount(async () => {
     setupCanvas();
     await getPeople();
+    await tick();
+    searchInputEl?.focus();
   });
 
   const imageContentMetrics = $derived.by(() => {
@@ -136,8 +139,8 @@
     );
   };
 
-  const cancel = () => {
-    isFaceEditMode.value = false;
+  const onClose = () => {
+    assetViewerManager.closeFaceEditMode();
   };
 
   const getPeople = async () => {
@@ -221,12 +224,15 @@
 
   $effect(() => {
     const rect = faceRect;
-    if (rect) {
+    const cvs = canvas;
+    if (rect && cvs) {
       rect.on('moving', positionFaceSelector);
       rect.on('scaling', positionFaceSelector);
+      cvs.on('object:modified', () => searchInputEl?.focus());
       return () => {
         rect.off('moving', positionFaceSelector);
         rect.off('scaling', positionFaceSelector);
+        cvs.off('object:modified', () => searchInputEl?.focus());
       };
     }
   });
@@ -255,6 +261,44 @@
     };
   };
 
+  type FaceCoordinates = NonNullable<ReturnType<typeof getFaceCroppedCoordinates>>;
+
+  const getFacePreviewUrl = (data: FaceCoordinates) => {
+    if (!htmlElement) {
+      return;
+    }
+
+    const natural = getNaturalSize(htmlElement);
+    if (natural.width <= 0 || natural.height <= 0) {
+      return;
+    }
+
+    const x = clamp(data.x, 0, natural.width - 1);
+    const y = clamp(data.y, 0, natural.height - 1);
+    const width = clamp(data.width, 1, natural.width - x);
+    const height = clamp(data.height, 1, natural.height - y);
+
+    if (width <= 0 || height <= 0) {
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return;
+    }
+
+    try {
+      context.drawImage(htmlElement, x, y, width, height, 0, 0, width, height);
+      return canvas.toDataURL('image/png');
+    } catch {
+      return;
+    }
+  };
+
   const tagFace = async (person: PersonResponseDto) => {
     try {
       const data = getFaceCroppedCoordinates();
@@ -281,36 +325,63 @@
         },
       });
 
-      await assetViewingStore.setAssetId(assetId);
+      await assetViewerManager.setAssetId(assetId);
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
-      isFaceEditMode.value = false;
+      onClose();
     }
   };
+
+  const showCreateFaceModal = async () => {
+    try {
+      const data = getFaceCroppedCoordinates();
+      if (!data) {
+        return;
+      }
+
+      const created = await modalManager.show(FaceCreateTagModal, {
+        assetId,
+        ...data,
+        previewUrl: getFacePreviewUrl(data),
+      });
+      if (!created) {
+        return;
+      }
+
+      onClose();
+    } catch (error) {
+      handleError(error, 'Error creating and tagging face');
+    }
+  };
+
+  onDestroy(() => {
+    onClose();
+  });
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: cancel }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose, ignoreInputFields: false }} />
 
 <div
   id="face-editor-data"
-  class="absolute start-0 top-0 z-5 h-full w-full overflow-hidden"
+  class="absolute inset-s-0 top-0 z-5 h-full w-full overflow-hidden"
+  data-overlay-interactive
   data-face-left={faceBoxPosition.left}
   data-face-top={faceBoxPosition.top}
   data-face-width={faceBoxPosition.width}
   data-face-height={faceBoxPosition.height}
 >
-  <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 start-0"></canvas>
+  <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 inset-s-0"></canvas>
 
   <div
     id="face-selector"
     bind:this={faceSelectorEl}
-    class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800 transition-[top,left] duration-200 ease-out"
+    class="absolute top-[calc(50%-250px)] inset-s-[calc(50%-125px)] max-w-62.5 w-62.5 bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800 transition-[top,left] duration-200 ease-out"
   >
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
     <div class="my-3 relative">
-      <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
+      <Input placeholder={$t('search_people')} bind:value={searchTerm} bind:ref={searchInputEl} size="tiny" />
     </div>
 
     <div bind:this={scrollableListEl} class="h-62.5 overflow-y-auto mt-2">
@@ -344,6 +415,12 @@
       {/if}
     </div>
 
-    <Button size="small" fullWidth onclick={cancel} color="danger" class="mt-2">{$t('cancel')}</Button>
+    <Button size="small" fullWidth onclick={showCreateFaceModal} variant="outline" class="mt-2">
+      {$t('create_person')}
+    </Button>
+
+    <Button size="small" fullWidth onclick={onClose} color="danger" class="mt-2">
+      {$t('cancel')}
+    </Button>
   </div>
 </div>

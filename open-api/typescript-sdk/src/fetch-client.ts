@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.6.2
+ * 2.7.5
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -63,6 +63,7 @@ export type DatabaseBackupDeleteDto = {
 export type DatabaseBackupDto = {
     filename: string;
     filesize: number;
+    timezone: string;
 };
 export type DatabaseBackupListResponseDto = {
     backups: DatabaseBackupDto[];
@@ -725,6 +726,7 @@ export type BulkIdsDto = {
 export type BulkIdResponseDto = {
     /** Error reason if failed */
     error?: Error;
+    errorMessage?: string;
     /** ID */
     id: string;
     /** Whether operation succeeded */
@@ -1163,6 +1165,19 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     /** Duplicate group ID */
     duplicateId: string;
+    /** Suggested asset IDs to keep based on file size and EXIF data */
+    suggestedKeepAssetIds: string[];
+};
+export type DuplicateResolveGroupDto = {
+    duplicateId: string;
+    /** Asset IDs to keep */
+    keepAssetIds: string[];
+    /** Asset IDs to trash or delete */
+    trashAssetIds: string[];
+};
+export type DuplicateResolveDto = {
+    /** List of duplicate groups to resolve */
+    groups: DuplicateResolveGroupDto[];
 };
 export type PersonResponseDto = {
     /** Person date of birth */
@@ -1741,7 +1756,7 @@ export type MetadataSearchDto = {
     withDeleted?: boolean;
     /** Include EXIF data in response */
     withExif?: boolean;
-    /** Include assets with people */
+    /** Include people data in response */
     withPeople?: boolean;
     /** Include stacked assets */
     withStacked?: boolean;
@@ -1855,7 +1870,7 @@ export type RandomSearchDto = {
     withDeleted?: boolean;
     /** Include EXIF data in response */
     withExif?: boolean;
-    /** Include assets with people */
+    /** Include people data in response */
     withPeople?: boolean;
     /** Include stacked assets */
     withStacked?: boolean;
@@ -4532,6 +4547,21 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Resolve duplicate groups
+ */
+export function resolveDuplicates({ duplicateResolveDto }: {
+    duplicateResolveDto: DuplicateResolveDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>("/duplicates/resolve", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: duplicateResolveDto
+    })));
+}
+/**
  * Delete a duplicate
  */
 export function deleteDuplicate({ id }: {
@@ -6893,13 +6923,15 @@ export enum BulkIdErrorReason {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validation = "validation"
 }
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validation = "validation"
 }
 export enum Permission {
     All = "all",

@@ -19,6 +19,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   static final _log = Logger('CancellableImageProviderMixin');
 
   bool isCancelled = false;
+  bool isFinished = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
 
@@ -50,24 +51,26 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     return null;
   }
 
-  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {bool evictOnError = true}) async* {
+  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {required bool isFinal}) async* {
     if (isCancelled) {
       this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     try {
       final image = await request.load(decode);
-      if ((image == null && evictOnError) || isCancelled) {
-        PaintingBinding.instance.imageCache.evict(this);
-        return;
-      } else if (image == null) {
+      if (isCancelled || image == null) {
+        image?.dispose();
         return;
       }
+      isFinished = isFinal;
       yield image;
     } catch (e, stack) {
-      if (evictOnError) {
+      if (isCancelled) {
+        return;
+      }
+      if (isFinal) {
+        isFinished = true;
         PaintingBinding.instance.imageCache.evict(this);
         rethrow;
       }
@@ -77,24 +80,27 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     }
   }
 
-  Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request, {required bool isFinal}) async {
     if (isCancelled) {
       this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
       return null;
     }
 
     try {
       final codec = await request.loadCodec();
-      if (codec == null || isCancelled) {
+      if (isCancelled || codec == null) {
         codec?.dispose();
-        PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
+      isFinished = isFinal;
       return codec;
     } catch (e) {
-      PaintingBinding.instance.imageCache.evict(this);
-      rethrow;
+      if (isFinal) {
+        isFinished = true;
+        PaintingBinding.instance.imageCache.evict(this);
+        rethrow;
+      }
+      return null;
     } finally {
       this.request = null;
     }
@@ -121,6 +127,8 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   @override
   void cancel() {
     isCancelled = true;
+    final hasActiveWork = !isFinished;
+
     final request = this.request;
     if (request != null) {
       this.request = null;
@@ -131,6 +139,10 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     if (operation != null) {
       cachedOperation = null;
       operation.cancel();
+    }
+
+    if (hasActiveWork) {
+      PaintingBinding.instance.imageCache.evict(this);
     }
   }
 }

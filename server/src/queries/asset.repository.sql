@@ -637,13 +637,14 @@ select
       "asset_file"
     where
       "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
+      and "asset_file"."type" = 'encoded_video'
+      and "asset_file"."isEdited" = false
   ) as "encodedVideoPath"
 from
   "asset"
 where
-  "asset"."id" = $2
-  and "asset"."type" = $3
+  "asset"."id" = $1
+  and "asset"."type" = $2
 
 -- AssetRepository.getForOcr
 select

@@ -52,7 +52,7 @@
       prompt_default: $t('are_you_sure_to_do_this'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
-      dark_theme: $t('dark_theme'),
+      dark_theme: themeManager.isDark ? $t('light_theme') : $t('dark_theme'),
       open_menu: $t('open'),
       command_palette_prompt_default: $t('command_palette_prompt'),
       command_palette_to_select: $t('command_palette_to_select'),
@@ -99,6 +99,9 @@
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
+
+    eventManager.emit('AppNavigate');
+
     showNavigationLoadingBar = true;
   });
 

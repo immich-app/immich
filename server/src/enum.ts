@@ -37,6 +37,11 @@ export enum AssetType {
   Other = 'OTHER',
 }
 
+export enum ChecksumAlgorithm {
+  sha1File = 'sha1', // sha1 checksum of the whole file contents
+  sha1Path = 'sha1-path', // sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated
+}
+
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
@@ -702,6 +707,7 @@ export enum DatabaseLock {
   BackupDatabase = 42,
   MaintenanceOperation = 621,
   MemoryCreation = 777,
+  VersionCheck = 800,
 }
 
 export enum MaintenanceAction {
@@ -843,6 +849,7 @@ export enum AssetVisibility {
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
+  VersionCheck = 'VersionCheck',
 }
 
 export enum ApiTag {

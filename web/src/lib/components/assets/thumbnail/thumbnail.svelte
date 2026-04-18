@@ -19,6 +19,7 @@
     mdiCheckCircle,
     mdiFileGifBox,
     mdiHeart,
+    mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
@@ -46,6 +47,7 @@
     dimmed?: boolean;
     albumUsers?: UserResponseDto[];
     onClick?: (asset: TimelineAsset) => void;
+    onPreview?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
   }
@@ -65,6 +67,7 @@
     showStackedIcon = true,
     albumUsers = [],
     onClick = undefined,
+    onPreview = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
     imageClass = '',
@@ -208,7 +211,11 @@
 </script>
 
 <div
-  class={['group focus-visible:outline-none flex overflow-hidden', backgroundColorClass, { 'rounded-xl': selected }]}
+  class={[
+    'group focus-visible:outline-none flex overflow-hidden transition-[background-color,border-radius]',
+    backgroundColorClass,
+    { 'rounded-xl': selected },
+  ]}
   style:width="{width}px"
   style:height="{height}px"
   onmouseenter={onMouseEnter}
@@ -248,8 +255,16 @@
       ]}
     >
       <ImageThumbnail
-        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
-        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
+        class={[
+          'absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          { 'rounded-xl': selected },
+          imageClass,
+        ]}
+        brokenAssetClass={[
+          'z-1 absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          { 'rounded-xl': selected },
+          brokenAssetClass,
+        ]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
@@ -427,6 +442,24 @@
         {:else}
           <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
+      </button>
+    {/if}
+
+    <!-- Preview asset button (visible on hover when any asset is selected) -->
+    {#if mouseOver && onPreview}
+      <button
+        type="button"
+        onclick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onPreview?.($state.snapshot(asset));
+        }}
+        class="absolute z-2 bottom-1 end-1 rounded-full bg-black/25 p-1.5 hover:bg-black/50 focus:outline-none transition-colors"
+        in:fade={{ duration: 100 }}
+        tabindex={-1}
+        aria-label="Preview asset"
+      >
+        <Icon icon={mdiMagnifyPlusOutline} size="20" class="text-white" />
       </button>
     {/if}
 

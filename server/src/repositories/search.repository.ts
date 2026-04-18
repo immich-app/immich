@@ -10,7 +10,7 @@ import { probes } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
+import { anyUuid, searchAssetBuilder, withExifInner } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -292,7 +292,7 @@ export class SearchRepository {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     return searchAssetBuilder(this.db, options)
       .selectAll('asset')
-      .$call(withExif)
+      .$call(withExifInner)
       .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
       .orderBy('asset_exif.fileSizeInByte', orderDirection)
       .limit(size)
@@ -570,10 +570,7 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
-  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
-    field: K,
-    userIds: string[],
-  ) {
+  private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
     return this.db
       .selectFrom('asset_exif')
       .select(field)
@@ -582,6 +579,7 @@ export class SearchRepository {
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
-      .where(field, 'is not', null);
+      .where(field, 'is not', null)
+      .where(field, '!=', '');
   }
 }

@@ -4,7 +4,7 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -32,7 +32,6 @@
 
   const { data }: Props = $props();
 
-  let { gridScrollTarget } = assetViewingStore;
   let { sharedLink, passwordRequired, key, slug, meta } = $state(data);
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
@@ -49,7 +48,7 @@
         $t('shared_photos_and_videos_count', { values: { assetCount: sharedLink.assets.length } });
       await tick();
       await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
         { forceNavigate: true, replaceState: true },
       );
     } catch (error) {

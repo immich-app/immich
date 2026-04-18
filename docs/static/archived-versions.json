@@ -1,7 +1,11 @@
 [
   {
-    "label": "v2.6.2",
-    "url": "https://docs.v2.6.2.archive.immich.app"
+    "label": "v2.7.5",
+    "url": "https://docs.v2.7.5.archive.immich.app"
+  },
+  {
+    "label": "v2.6.3",
+    "url": "https://docs.v2.6.3.archive.immich.app"
   },
   {
     "label": "v2.5.6",

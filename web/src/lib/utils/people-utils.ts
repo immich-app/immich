@@ -1,37 +1,21 @@
 import type { Faces } from '$lib/stores/people.store';
 import { getAssetMediaUrl } from '$lib/utils';
-import type { ContentMetrics } from '$lib/utils/container-utils';
+import { mapNormalizedRectToContent, type Rect, type Size } from '$lib/utils/container-utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 
-export interface BoundingBox {
-  id: string;
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
+export type BoundingBox = Rect & { id: string };
 
-export const getBoundingBox = (faces: Faces[], metrics: ContentMetrics): BoundingBox[] => {
+export const getBoundingBox = (faces: Faces[], imageSize: Size): BoundingBox[] => {
   const boxes: BoundingBox[] = [];
 
   for (const face of faces) {
-    const scaleX = metrics.contentWidth / face.imageWidth;
-    const scaleY = metrics.contentHeight / face.imageHeight;
+    const rect = mapNormalizedRectToContent(
+      { x: face.boundingBoxX1 / face.imageWidth, y: face.boundingBoxY1 / face.imageHeight },
+      { x: face.boundingBoxX2 / face.imageWidth, y: face.boundingBoxY2 / face.imageHeight },
+      imageSize,
+    );
 
-    const coordinates = {
-      x1: scaleX * face.boundingBoxX1 + metrics.offsetX,
-      x2: scaleX * face.boundingBoxX2 + metrics.offsetX,
-      y1: scaleY * face.boundingBoxY1 + metrics.offsetY,
-      y2: scaleY * face.boundingBoxY2 + metrics.offsetY,
-    };
-
-    boxes.push({
-      id: face.id,
-      top: Math.round(coordinates.y1),
-      left: Math.round(coordinates.x1),
-      width: Math.round(coordinates.x2 - coordinates.x1),
-      height: Math.round(coordinates.y2 - coordinates.y1),
-    });
+    boxes.push({ id: face.id, ...rect });
   }
 
   return boxes;
