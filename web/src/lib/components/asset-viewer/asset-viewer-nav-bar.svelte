@@ -26,7 +26,7 @@
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
-  import { getSharedLink, withoutIcons } from '$lib/utils';
+  import { getSharedLink, isEnabled, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
@@ -37,11 +37,12 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, IconButton, Tooltip, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiArrowRight,
     mdiCompare,
+    mdiDotsHorizontal,
     mdiDotsVertical,
     mdiImageSearch,
     mdiPresentationPlay,
@@ -81,6 +82,8 @@
     setPlayOriginalVideo,
   }: Props = $props();
 
+  let showDownloadVariants = $state(false);
+
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
   const isAlbumOwner = $derived(authManager.authenticated && album?.ownerId === authManager.user.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
@@ -98,6 +101,9 @@
 
   const Actions = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
+  const hasDownloadVariants = $derived(
+    isEnabled(Actions.DownloadOriginal) || isEnabled(Actions.DownloadAsJpeg),
+  );
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
@@ -151,8 +157,42 @@
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
 
-        <ActionMenuItem action={Actions.Download} />
-        <ActionMenuItem action={Actions.DownloadOriginal} />
+        <div class="relative w-full">
+          <ActionMenuItem action={Actions.Download} />
+          {#if hasDownloadVariants}
+            <IconButton
+              class="icon-white-drop-shadow absolute right-2 top-1/2 z-10 -translate-y-1/2"
+              color="secondary"
+              size="medium"
+              variant="filled"
+              shape="round"
+              aria-label={$t('more_download_options')}
+              icon={mdiDotsHorizontal}
+              onclick={(event: MouseEvent) => {
+                event.stopPropagation();
+                showDownloadVariants = !showDownloadVariants;
+              }}
+            />
+          {/if}
+        </div>
+        {#if showDownloadVariants}
+          <MenuOption
+            icon={Actions.DownloadOriginal.icon}
+            text={Actions.DownloadOriginal.title}
+            onClick={() => {
+              Actions.DownloadOriginal.onAction(Actions.DownloadOriginal);
+              showDownloadVariants = false;
+            }}
+          />
+          <MenuOption
+            icon={Actions.DownloadAsJpeg.icon}
+            text={Actions.DownloadAsJpeg.title}
+            onClick={() => {
+              Actions.DownloadAsJpeg.onAction(Actions.DownloadAsJpeg);
+              showDownloadVariants = false;
+            }}
+          />
+        {/if}
 
         {#if !isLocked && asset.isTrashed}
           <RestoreAction {asset} {onAction} />

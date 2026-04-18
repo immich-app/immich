@@ -6,8 +6,8 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils/asset-utils';
+import { downloadRequest, getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
+import { downloadBlob, downloadUrl } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -117,6 +117,18 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => handleDownloadAsset(asset, { edited: false }),
   };
 
+  const DownloadAsJpeg: ActionItem = {
+    title: `${$t('download')} as JPEG`,
+    icon: mdiDownloadBox,
+    $if: () => {
+      if (!authUser || asset.type !== AssetTypeEnum.Image) {
+        return false;
+      }
+      const extension = asset.originalFileName.split('.').pop()?.toLowerCase();
+      return extension !== 'jpg' && extension !== 'jpeg';
+    },
+    onAction: () => handleDownloadAssetAsJpeg(asset),
+  };
   const SharedLinkDownload: ActionItem = {
     ...Download,
     $if: () => isOwner || !!sharedLink?.allowDownload,
@@ -262,6 +274,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Share,
     Download,
     DownloadOriginal,
+    DownloadAsJpeg,
     SharedLinkDownload,
     Offline,
     Info,
@@ -281,6 +294,27 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     RegenerateThumbnailJob,
     TranscodeVideoJob,
   };
+};
+
+export const handleDownloadAssetAsJpeg = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const originalFilename = asset.originalFileName;
+    const lastDotIndex = originalFilename.lastIndexOf('.');
+    const filenameWithoutExt = lastDotIndex > 0 ? originalFilename.slice(0, lastDotIndex) : originalFilename;
+    const filename = `${filenameWithoutExt}.jpg`;
+
+    toastManager.primary($t('downloading_asset_filename', { values: { filename } }));
+    
+    const { data } = await downloadRequest(
+      getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Fullsize, cacheKey: asset.thumbhash }),
+    );
+    // use downloadBlob over downloadUrl such that we can pass custom filename
+    downloadBlob(data, filename);
+  } catch (error) {
+    handleError(error, $t('errors.error_downloading', { values: { filename: asset.originalFileName } }));
+  }
 };
 
 export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: { edited: boolean }) => {
