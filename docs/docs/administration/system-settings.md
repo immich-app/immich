@@ -78,6 +78,14 @@ The Facial Recognition Concurrency value cannot be changed because
 [DBSCAN](https://www.youtube.com/watch?v=RDZUdRSDOok) is traditionally sequential, but there are parallel implementations of it out there. Our implementation isn't parallel.
 :::
 
+### Global Job Concurrency Limit
+
+The **Global job concurrency limit** caps the total number of jobs that can run simultaneously across _all_ queues. Per-queue concurrency only limits each queue in isolation, so with multiple active queues (for example, Smart Search + Face Detection + OCR) the host can still be overloaded even when each queue is set to `1`.
+
+Setting this value to a positive number restricts the total active jobs across every queue combined. Setting it to `0` (the default) disables the global cap and only the per-queue limits apply, preserving the behaviour from earlier versions.
+
+This is particularly useful on low-powered hardware such as a Raspberry Pi or a low-core NAS, where a value like `2` or `3` prevents overlapping machine-learning and thumbnail work from saturating the CPU or exhausting memory.
+
 ## External Library
 
 ### Library watching (EXPERIMENTAL)
