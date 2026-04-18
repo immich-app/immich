@@ -23,7 +23,6 @@ const LoginCredentialSchema = z
   .object({
     email: toEmail.describe('User email').meta({ example: 'testuser@email.com' }),
     password: z.string().describe('User password').meta({ example: 'password' }),
-    oauthLinkToken: z.string().optional().describe('OAuth link token to consume on successful login'),
   })
   .meta({ id: 'LoginCredentialDto' });
 

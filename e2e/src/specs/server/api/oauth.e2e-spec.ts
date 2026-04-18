@@ -363,11 +363,13 @@ describe(`/oauth`, () => {
           password: 'password',
         });
         const callbackParams = await loginWithOAuth('oauth-user3');
-        const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
-        expect(status).toBe(403);
-        expect(body.message).toBe('oauth_account_link_required');
-        expect(body.userEmail).toBe('oauth-user3@immich.app');
-        expect(body.oauthLinkToken).toBeDefined();
+        const response = await request(app).post('/oauth/callback').send(callbackParams);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('oauth_account_link_required');
+        expect(response.body.userEmail).toBe('oauth-user3@immich.app');
+        expect(response.body.oauthLinkToken).toBeUndefined();
+        const setCookie = response.headers['set-cookie'] as unknown as string[];
+        expect(setCookie.some((cookie) => cookie.startsWith('immich_oauth_link_token='))).toBe(true);
       });
     });
   });

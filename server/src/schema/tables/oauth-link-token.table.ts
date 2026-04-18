@@ -11,6 +11,9 @@ export class OAuthLinkTokenTable {
   @Column()
   oauthSub!: string;
 
+  @Column({ nullable: true })
+  oauthSid!: string | null;
+
   @Column()
   userEmail!: string;
 

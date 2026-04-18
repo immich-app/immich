@@ -13,7 +13,7 @@ import {
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
-import { AuthService, LoginDetails } from 'src/services/auth.service';
+import { AuthService, LoginDetails, OAuthLinkRequiredException } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';
 
 @ApiTags(ApiTag.Authentication)
@@ -73,17 +73,29 @@ export class OAuthController {
     @Body() dto: OAuthCallbackDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const body = await this.service.callback(dto, request.headers, loginDetails);
-    res.clearCookie(ImmichCookie.OAuthState);
-    res.clearCookie(ImmichCookie.OAuthCodeVerifier);
-    return respondWithCookie(res, body, {
-      isSecure: loginDetails.isSecure,
-      values: [
-        { key: ImmichCookie.AccessToken, value: body.accessToken },
-        { key: ImmichCookie.AuthType, value: AuthType.OAuth },
-        { key: ImmichCookie.IsAuthenticated, value: 'true' },
-      ],
-    });
+    try {
+      const body = await this.service.callback(dto, request.headers, loginDetails);
+      res.clearCookie(ImmichCookie.OAuthState);
+      res.clearCookie(ImmichCookie.OAuthCodeVerifier);
+      return respondWithCookie(res, body, {
+        isSecure: loginDetails.isSecure,
+        values: [
+          { key: ImmichCookie.AccessToken, value: body.accessToken },
+          { key: ImmichCookie.AuthType, value: AuthType.OAuth },
+          { key: ImmichCookie.IsAuthenticated, value: 'true' },
+        ],
+      });
+    } catch (error) {
+      if (error instanceof OAuthLinkRequiredException) {
+        res.clearCookie(ImmichCookie.OAuthState);
+        res.clearCookie(ImmichCookie.OAuthCodeVerifier);
+        respondWithCookie(res, null, {
+          isSecure: loginDetails.isSecure,
+          values: [{ key: ImmichCookie.OAuthLinkToken, value: error.oauthLinkToken }],
+        });
+      }
+      throw error;
+    }
   }
 
   @Post('unlink')

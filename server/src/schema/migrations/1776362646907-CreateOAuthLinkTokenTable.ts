@@ -6,6 +6,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
       "token" bytea NOT NULL,
       "oauthSub" varchar NOT NULL,
+      "oauthSid" varchar,
       "userEmail" varchar NOT NULL,
       "expiresAt" timestamp with time zone NOT NULL,
       "createdAt" timestamp with time zone NOT NULL DEFAULT now()

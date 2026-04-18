@@ -15,6 +15,7 @@ export enum ImmichCookie {
   SharedLinkToken = 'immich_shared_link_token',
   OAuthState = 'immich_oauth_state',
   OAuthCodeVerifier = 'immich_oauth_code_verifier',
+  OAuthLinkToken = 'immich_oauth_link_token',
 }
 
 export const ImmichCookieSchema = z.enum(ImmichCookie).describe('Immich cookie').meta({ id: 'ImmichCookie' });

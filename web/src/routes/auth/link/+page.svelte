@@ -8,7 +8,6 @@
   import { getServerErrorMessage } from '$lib/utils/handle-error';
   import { login } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -18,22 +17,17 @@
 
   let { data }: Props = $props();
 
-  let oauthLinkToken = $state(data.oauthLinkToken);
   let email = $state(data.email || authManager.user?.email || '');
   let password = $state('');
   let errorMessage = $state('');
   let loading = $state(false);
-
-  onMount(async () => {
-    await goto(Route.authLink(), { replaceState: true });
-  });
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
       errorMessage = '';
       loading = true;
-      const user = await login({ loginCredentialDto: { email, password, oauthLinkToken } });
+      const user = await login({ loginCredentialDto: { email, password } });
       eventManager.emit('AuthLogin', user);
       await authManager.refresh();
       toastManager.primary($t('linked_oauth_account'));

@@ -18,6 +18,7 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
     [ImmichCookie.MaintenanceToken]: { ...defaults, maxAge: Duration.fromObject({ days: 1 }).toMillis() },
     [ImmichCookie.OAuthState]: defaults,
     [ImmichCookie.OAuthCodeVerifier]: defaults,
+    [ImmichCookie.OAuthLinkToken]: { ...defaults, maxAge: Duration.fromObject({ minutes: 10 }).toMillis() },
     // no httpOnly so that the client can know the auth state
     [ImmichCookie.IsAuthenticated]: { ...defaults, httpOnly: false },
     [ImmichCookie.SharedLinkToken]: { ...defaults, maxAge: Duration.fromObject({ days: 1 }).toMillis() },

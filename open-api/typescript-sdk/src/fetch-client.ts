@@ -1010,8 +1010,6 @@ export type SignUpDto = {
     email: string;
     /** User name */
     name: string;
-    /** OAuth link token to consume on successful login */
-    oauthLinkToken?: string;
     /** User password */
     password: string;
 };
@@ -1026,8 +1024,6 @@ export type ChangePasswordDto = {
 export type LoginCredentialDto = {
     /** User email */
     email: string;
-    /** OAuth link token to consume on successful login */
-    oauthLinkToken?: string;
     /** User password */
     password: string;
 };

@@ -72,7 +72,7 @@
       } catch (error) {
         if (isHttpError(error) && error.data?.message === 'oauth_account_link_required') {
           const errorData = error.data as unknown as Record<string, string>;
-          await goto(Route.authLink({ oauthLinkToken: errorData.oauthLinkToken, email: errorData.userEmail }));
+          await goto(Route.authLink({ email: errorData.userEmail }));
           return;
         }
         console.error('Error [login-form] [oauth.callback]', error);

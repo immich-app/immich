@@ -18013,10 +18013,6 @@
             "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
             "type": "string"
           },
-          "oauthLinkToken": {
-            "description": "OAuth link token to consume on successful login",
-            "type": "string"
-          },
           "password": {
             "description": "User password",
             "example": "password",
@@ -21802,10 +21798,6 @@
           "name": {
             "description": "User name",
             "example": "Admin",
-            "type": "string"
-          },
-          "oauthLinkToken": {
-            "description": "OAuth link token to consume on successful login",
             "type": "string"
           },
           "password": {

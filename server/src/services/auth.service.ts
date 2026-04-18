@@ -42,6 +42,15 @@ interface ClaimOptions<T> {
   isValid: (value: unknown) => boolean;
 }
 
+export class OAuthLinkRequiredException extends ForbiddenException {
+  constructor(
+    public readonly userEmail: string,
+    public readonly oauthLinkToken: string,
+  ) {
+    super({ message: 'oauth_account_link_required', userEmail });
+  }
+}
+
 export type ValidateRequest = {
   headers: IncomingHttpHeaders;
   queryParams: Record<string, string>;
@@ -56,7 +65,7 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
-  async login(dto: LoginCredentialDto, details: LoginDetails) {
+  async login(dto: LoginCredentialDto, details: LoginDetails, headers: IncomingHttpHeaders) {
     const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
@@ -75,8 +84,10 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    if (dto.oauthLinkToken) {
-      const hashedToken = this.cryptoRepository.hashSha256(dto.oauthLinkToken);
+    let linkedOAuthSid: string | undefined;
+    const linkTokenCookie = this.getCookieOAuthLinkToken(headers);
+    if (linkTokenCookie) {
+      const hashedToken = this.cryptoRepository.hashSha256(linkTokenCookie);
       const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
       if (!record) {
         throw new BadRequestException('Invalid or expired link token');
@@ -88,9 +99,10 @@ export class AuthService extends BaseService {
       }
 
       await this.userRepository.update(user.id, { oauthId: record.oauthSub });
+      linkedOAuthSid = record.oauthSid ?? undefined;
     }
 
-    return this.createLoginResponse(user, details);
+    return this.createLoginResponse(user, details, linkedOAuthSid);
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
@@ -344,14 +356,11 @@ export class AuthService extends BaseService {
         await this.oauthLinkTokenRepository.create({
           token: hashedToken,
           oauthSub: profile.sub,
+          oauthSid: oauthSid ?? null,
           userEmail: emailUser.email,
           expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
         });
-        throw new ForbiddenException({
-          message: 'oauth_account_link_required',
-          userEmail: emailUser.email,
-          oauthLinkToken: plainToken,
-        });
+        throw new OAuthLinkRequiredException(emailUser.email, plainToken);
       }
     }
 
@@ -430,36 +439,6 @@ export class AuthService extends BaseService {
     }
   }
 
-  async link(auth: AuthDto, dto: OAuthCallbackDto, headers: IncomingHttpHeaders): Promise<UserAdminResponseDto> {
-    const expectedState = dto.state ?? this.getCookieOauthState(headers);
-    if (!expectedState?.length) {
-      throw new BadRequestException('OAuth state is missing');
-    }
-
-    const codeVerifier = dto.codeVerifier ?? this.getCookieCodeVerifier(headers);
-    if (!codeVerifier?.length) {
-      throw new BadRequestException('OAuth code verifier is missing');
-    }
-
-    const { oauth } = await this.getConfig({ withCache: false });
-    const {
-      profile: { sub: oauthId },
-      sid,
-    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
-    const duplicate = await this.userRepository.getByOAuthId(oauthId);
-    if (duplicate && duplicate.id !== auth.user.id) {
-      this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
-      throw new BadRequestException('This OAuth account has already been linked to another user.');
-    }
-
-    if (auth.session) {
-      await this.sessionRepository.update(auth.session.id, { oauthSid: sid });
-    }
-
-    const user = await this.userRepository.update(auth.user.id, { oauthId });
-    return mapUserAdmin(user);
-  }
-
   async unlink(auth: AuthDto): Promise<UserAdminResponseDto> {
     if (auth.session) {
       await this.sessionRepository.update(auth.session.id, { oauthSid: null });
@@ -508,6 +487,11 @@ export class AuthService extends BaseService {
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
     return cookies[ImmichCookie.OAuthCodeVerifier] || null;
+  }
+
+  private getCookieOAuthLinkToken(headers: IncomingHttpHeaders): string | null {
+    const cookies = parse(headers.cookie || '');
+    return cookies[ImmichCookie.OAuthLinkToken] || null;
   }
 
   async validateSharedLinkKey(key: string | string[]): Promise<AuthDto> {

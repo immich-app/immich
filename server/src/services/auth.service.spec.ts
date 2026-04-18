@@ -4,7 +4,7 @@ import { SALT_ROUNDS } from 'src/constants';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, Permission } from 'src/enum';
-import { AuthService } from 'src/services/auth.service';
+import { AuthService, OAuthLinkRequiredException } from 'src/services/auth.service';
 import { UserMetadataItem } from 'src/types';
 import { ApiKeyFactory } from 'test/factories/api-key.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
@@ -50,13 +50,13 @@ describe(AuthService.name, () => {
     it('should throw an error if password login is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.disabled);
 
-      await expect(sut.login(dto, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.login(dto, loginDetails, {})).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should check the user exists', async () => {
       mocks.user.getByEmail.mockResolvedValue(void 0);
 
-      await expect(sut.login(dto, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.login(dto, loginDetails, {})).rejects.toBeInstanceOf(UnauthorizedException);
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
@@ -64,7 +64,7 @@ describe(AuthService.name, () => {
     it('should check the user has a password', async () => {
       mocks.user.getByEmail.mockResolvedValue({} as UserAdmin);
 
-      await expect(sut.login(dto, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.login(dto, loginDetails, {})).rejects.toBeInstanceOf(UnauthorizedException);
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
@@ -75,7 +75,7 @@ describe(AuthService.name, () => {
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(session);
 
-      await expect(sut.login(dto, loginDetails)).resolves.toEqual({
+      await expect(sut.login(dto, loginDetails, {})).resolves.toEqual({
         accessToken: 'cmFuZG9tLWJ5dGVz',
         userId: user.id,
         userEmail: user.email,
@@ -89,7 +89,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
 
-    it('should link an OAuth account when oauthLinkToken is provided', async () => {
+    it('should link an OAuth account when link token cookie is present', async () => {
       const user = UserFactory.create({ password: 'immich_password' });
       const session = SessionFactory.create();
       mocks.user.getByEmail.mockResolvedValue(user);
@@ -97,6 +97,7 @@ describe(AuthService.name, () => {
       mocks.oauthLinkToken.consumeToken.mockResolvedValue({
         id: 'token-id',
         oauthSub: 'oauth-sub-123',
+        oauthSid: null,
         userEmail: user.email,
         token: Buffer.from('hashed'),
         expiresAt: new Date(Date.now() + 600_000),
@@ -104,20 +105,41 @@ describe(AuthService.name, () => {
       });
       mocks.user.update.mockResolvedValue(user);
 
-      await sut.login({ email, password: 'password', oauthLinkToken: 'plain-token' }, loginDetails);
+      await sut.login(dto, loginDetails, { cookie: 'immich_oauth_link_token=plain-token' });
 
       expect(mocks.oauthLinkToken.consumeToken).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: 'oauth-sub-123' });
     });
 
-    it('should reject login with invalid oauthLinkToken', async () => {
+    it('should propagate oauthSid from link token to the session', async () => {
+      const user = UserFactory.create({ password: 'immich_password' });
+      const session = SessionFactory.create();
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(session);
+      mocks.oauthLinkToken.consumeToken.mockResolvedValue({
+        id: 'token-id',
+        oauthSub: 'oauth-sub-123',
+        oauthSid: 'idp-sid-456',
+        userEmail: user.email,
+        token: Buffer.from('hashed'),
+        expiresAt: new Date(Date.now() + 600_000),
+        createdAt: new Date(),
+      });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.login(dto, loginDetails, { cookie: 'immich_oauth_link_token=plain-token' });
+
+      expect(mocks.session.create).toHaveBeenCalledWith(expect.objectContaining({ oauthSid: 'idp-sid-456' }));
+    });
+
+    it('should reject login with invalid link token cookie', async () => {
       const user = UserFactory.create({ password: 'immich_password' });
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.oauthLinkToken.consumeToken.mockResolvedValue(null as any);
 
-      await expect(
-        sut.login({ email, password: 'password', oauthLinkToken: 'bad-token' }, loginDetails),
-      ).rejects.toThrow('Invalid or expired link token');
+      await expect(sut.login(dto, loginDetails, { cookie: 'immich_oauth_link_token=bad-token' })).rejects.toThrow(
+        'Invalid or expired link token',
+      );
     });
   });
 
@@ -738,7 +760,7 @@ describe(AuthService.name, () => {
       const profile = OAuthProfileFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile, sid: 'idp-sid-789' });
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
       mocks.oauthLinkToken.create.mockResolvedValue({} as any);
@@ -749,12 +771,14 @@ describe(AuthService.name, () => {
           {},
           loginDetails,
         ),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(OAuthLinkRequiredException);
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.oauthLinkToken.deleteByEmail).toHaveBeenCalledTimes(1);
-      expect(mocks.oauthLinkToken.create).toHaveBeenCalledTimes(1);
+      expect(mocks.oauthLinkToken.create).toHaveBeenCalledWith(
+        expect.objectContaining({ oauthSub: profile.sub, oauthSid: 'idp-sid-789' }),
+      );
     });
 
     it('should normalize the email from the OAuth profile before looking up user', async () => {
@@ -1133,65 +1157,6 @@ describe(AuthService.name, () => {
       );
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ isAdmin: true }));
-    });
-  });
-
-  describe('link', () => {
-    it('should link an account', async () => {
-      const user = UserFactory.create();
-      const auth = AuthFactory.from(user).apiKey({ permissions: [] }).build();
-      const profile = OAuthProfileFactory.create();
-
-      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
-      mocks.user.update.mockResolvedValue(user);
-
-      await sut.link(
-        auth,
-        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
-        {},
-      );
-
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: profile.sub });
-    });
-
-    it('should link an account and update the session with the oauthSid', async () => {
-      const user = UserFactory.create();
-      const session = SessionFactory.create();
-      const auth = AuthFactory.from(user).session(session).build();
-
-      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
-        profile: { sub: 'sub' },
-        sid: session.oauthSid ?? undefined,
-      });
-      mocks.user.update.mockResolvedValue(user);
-      mocks.session.update.mockResolvedValue(session);
-
-      await sut.link(
-        auth,
-        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
-        {},
-      );
-
-      expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: session.oauthSid });
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: 'sub' });
-    });
-
-    it('should not link an already linked oauth.sub', async () => {
-      const authUser = UserFactory.create();
-      const authApiKey = ApiKeyFactory.create({ permissions: [] });
-      const auth = { user: authUser, apiKey: authApiKey };
-
-      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
-      mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserAdmin);
-
-      await expect(
-        sut.link(auth, { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' }, {}),
-      ).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(mocks.user.update).not.toHaveBeenCalled();
     });
   });
 

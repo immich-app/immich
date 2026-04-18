@@ -34,11 +34,15 @@ export class AuthController {
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async login(
+    @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
     @Body() loginCredential: LoginCredentialDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const body = await this.service.login(loginCredential, loginDetails);
+    const body = await this.service.login(loginCredential, loginDetails, request.headers);
+    if (request.cookies?.[ImmichCookie.OAuthLinkToken]) {
+      res.clearCookie(ImmichCookie.OAuthLinkToken);
+    }
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
       values: [

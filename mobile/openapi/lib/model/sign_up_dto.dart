@@ -15,7 +15,6 @@ class SignUpDto {
   SignUpDto({
     required this.email,
     required this.name,
-    this.oauthLinkToken,
     required this.password,
   });
 
@@ -25,15 +24,6 @@ class SignUpDto {
   /// User name
   String name;
 
-  /// OAuth link token to consume on successful login
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? oauthLinkToken;
-
   /// User password
   String password;
 
@@ -41,7 +31,6 @@ class SignUpDto {
   bool operator ==(Object other) => identical(this, other) || other is SignUpDto &&
     other.email == email &&
     other.name == name &&
-    other.oauthLinkToken == oauthLinkToken &&
     other.password == password;
 
   @override
@@ -49,21 +38,15 @@ class SignUpDto {
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
     (name.hashCode) +
-    (oauthLinkToken == null ? 0 : oauthLinkToken!.hashCode) +
     (password.hashCode);
 
   @override
-  String toString() => 'SignUpDto[email=$email, name=$name, oauthLinkToken=$oauthLinkToken, password=$password]';
+  String toString() => 'SignUpDto[email=$email, name=$name, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
       json[r'name'] = this.name;
-    if (this.oauthLinkToken != null) {
-      json[r'oauthLinkToken'] = this.oauthLinkToken;
-    } else {
-    //  json[r'oauthLinkToken'] = null;
-    }
       json[r'password'] = this.password;
     return json;
   }
@@ -79,7 +62,6 @@ class SignUpDto {
       return SignUpDto(
         email: mapValueOfType<String>(json, r'email')!,
         name: mapValueOfType<String>(json, r'name')!,
-        oauthLinkToken: mapValueOfType<String>(json, r'oauthLinkToken'),
         password: mapValueOfType<String>(json, r'password')!,
       );
     }
