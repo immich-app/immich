@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AdminPageLayout from '../../AdminPageLayout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { Route } from '$lib/route';
   import { getUserAdminActions, getUserAdminsActions } from '$lib/services/user-admin.service';

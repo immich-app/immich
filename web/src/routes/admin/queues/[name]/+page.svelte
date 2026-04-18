@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AdminPageLayout from '../../AdminPageLayout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import QueueGraph from './QueueGraph.svelte';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { Route } from '$lib/route';
