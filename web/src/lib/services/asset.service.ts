@@ -120,7 +120,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const DownloadAsJpeg: ActionItem = {
     title: `${$t('download')} as JPEG`,
     icon: mdiDownloadBox,
-    $if: () => !!authUser && asset.type === AssetTypeEnum.Image,
+    $if: () => {
+      if (!authUser || asset.type !== AssetTypeEnum.Image) {
+        return false;
+      }
+      // Exclude animated images (GIFs) - they have a duration > 0
+      return !asset.duration || asset.duration === '0:00:00.00000';
+    },
     onAction: () => handleDownloadAssetAsJpeg(asset),
   };
   const SharedLinkDownload: ActionItem = {
