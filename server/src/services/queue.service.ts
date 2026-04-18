@@ -94,6 +94,9 @@ export class QueueService extends BaseService {
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
     }
+
+    this.logger.debug(`Setting global concurrency to ${config.job.globalConcurrency}`);
+    this.jobRepository.setGlobalConcurrency(config.job.globalConcurrency);
   }
 
   setServices(services: ClassConstructor<unknown>[]) {

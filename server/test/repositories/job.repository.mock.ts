@@ -8,6 +8,7 @@ export const newJobRepositoryMock = (): Mocked<RepositoryInterface<JobRepository
     startWorkers: vitest.fn(),
     run: vitest.fn(),
     setConcurrency: vitest.fn(),
+    setGlobalConcurrency: vitest.fn(),
     empty: vitest.fn(),
     pause: vitest.fn(),
     resume: vitest.fn(),

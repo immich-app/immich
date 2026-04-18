@@ -12,6 +12,7 @@ import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobCounts, JobItem, JobOf } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
+import { AsyncSemaphore } from 'src/utils/semaphore';
 
 type JobMapItem = {
   jobName: JobName;
@@ -24,6 +25,7 @@ type JobMapItem = {
 export class JobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
   private handlers: Partial<Record<JobName, JobMapItem>> = {};
+  private globalSemaphore: AsyncSemaphore | null = null;
 
   constructor(
     private moduleRef: ModuleRef,
@@ -90,7 +92,19 @@ export class JobRepository {
       this.logger.debug(`Starting worker for queue: ${queueName}`);
       this.workers[queueName] = new Worker(
         queueName,
-        (job) => this.eventRepository.emit('JobRun', queueName, job as JobItem),
+        async (job) => {
+          const semaphore = this.globalSemaphore;
+          if (semaphore) {
+            await semaphore.acquire();
+          }
+          try {
+            return await this.eventRepository.emit('JobRun', queueName, job as JobItem);
+          } finally {
+            if (semaphore) {
+              semaphore.release();
+            }
+          }
+        },
         { ...bull.config, concurrency: 1 },
       );
     }
@@ -114,6 +128,19 @@ export class JobRepository {
     }
 
     worker.concurrency = concurrency;
+  }
+
+  setGlobalConcurrency(limit: number) {
+    if (limit <= 0) {
+      this.globalSemaphore = null;
+      return;
+    }
+
+    if (this.globalSemaphore) {
+      this.globalSemaphore.setLimit(limit);
+    } else {
+      this.globalSemaphore = new AsyncSemaphore(limit);
+    }
   }
 
   async isActive(name: QueueName): Promise<boolean> {

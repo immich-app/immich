@@ -28,6 +28,14 @@ describe(QueueService.name, () => {
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(9, QueueName.StorageTemplateMigration, 1);
+      expect(mocks.job.setGlobalConcurrency).toHaveBeenCalledWith(0);
+    });
+
+    it('should set global concurrency from config', () => {
+      const config = { ...defaults, job: { ...defaults.job, globalConcurrency: 3 } };
+      sut.onConfigUpdate({ newConfig: config, oldConfig: {} as SystemConfig });
+
+      expect(mocks.job.setGlobalConcurrency).toHaveBeenCalledWith(3);
     });
   });
 
