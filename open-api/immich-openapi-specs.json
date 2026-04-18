@@ -16348,7 +16348,6 @@
         "description": "Upload status",
         "enum": [
           "created",
-          "replaced",
           "duplicate"
         ],
         "type": "string"

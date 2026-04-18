@@ -5,8 +5,6 @@ export enum AuthType {
   OAuth = 'oauth',
 }
 
-export const AuthTypeSchema = z.enum(AuthType).describe('Auth type').meta({ id: 'AuthType' });
-
 export enum ImmichCookie {
   AccessToken = 'immich_access_token',
   MaintenanceToken = 'immich_maintenance_token',
@@ -16,8 +14,6 @@ export enum ImmichCookie {
   OAuthState = 'immich_oauth_state',
   OAuthCodeVerifier = 'immich_oauth_code_verifier',
 }
-
-export const ImmichCookieSchema = z.enum(ImmichCookie).describe('Immich cookie').meta({ id: 'ImmichCookie' });
 
 export enum ImmichHeader {
   ApiKey = 'x-api-key',
@@ -29,16 +25,12 @@ export enum ImmichHeader {
   Cid = 'x-immich-cid',
 }
 
-export const ImmichHeaderSchema = z.enum(ImmichHeader).describe('Immich header').meta({ id: 'ImmichHeader' });
-
 export enum ImmichQuery {
   SharedLinkKey = 'key',
   SharedLinkSlug = 'slug',
   ApiKey = 'apiKey',
   SessionKey = 'sessionKey',
 }
-
-export const ImmichQuerySchema = z.enum(ImmichQuery).describe('Immich query').meta({ id: 'ImmichQuery' });
 
 export enum AssetType {
   Image = 'IMAGE',
@@ -56,11 +48,6 @@ export enum ChecksumAlgorithm {
   sha1Path = 'sha1-path',
 }
 
-export const ChecksumAlgorithmSchema = z
-  .enum(ChecksumAlgorithm)
-  .describe('Checksum algorithm')
-  .meta({ id: 'ChecksumAlgorithmEnum' });
-
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
@@ -71,8 +58,6 @@ export enum AssetFileType {
   Sidecar = 'sidecar',
   EncodedVideo = 'encoded_video',
 }
-
-export const AssetFileTypeSchema = z.enum(AssetFileType).describe('Asset file type').meta({ id: 'AssetFileType' });
 
 export enum AlbumUserRole {
   Editor = 'editor',
@@ -313,8 +298,6 @@ export enum Permission {
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 
-export const PermissionSchema = z.enum(Permission).describe('Permission').meta({ id: 'Permission' });
-
 export enum SharedLinkType {
   Album = 'ALBUM',
 
@@ -351,11 +334,6 @@ export enum SystemMetadataKey {
   License = 'license',
 }
 
-export const SystemMetadataKeySchema = z
-  .enum(SystemMetadataKey)
-  .describe('System metadata key')
-  .meta({ id: 'SystemMetadataKey' });
-
 export enum UserMetadataKey {
   Preferences = 'preferences',
   License = 'license',
@@ -370,11 +348,6 @@ export const UserMetadataKeySchema = z
 export enum AssetMetadataKey {
   MobileApp = 'mobile-app',
 }
-
-export const AssetMetadataKeySchema = z
-  .enum(AssetMetadataKey)
-  .describe('Asset metadata key')
-  .meta({ id: 'AssetMetadataKey' });
 
 export enum UserAvatarColor {
   Primary = 'primary',
@@ -408,8 +381,6 @@ export enum AssetStatus {
   Deleted = 'deleted',
 }
 
-export const AssetStatusSchema = z.enum(AssetStatus).describe('Asset status').meta({ id: 'AssetStatus' });
-
 export enum SourceType {
   MachineLearning = 'machine-learning',
   Exif = 'exif',
@@ -434,19 +405,13 @@ export enum AssetPathType {
   EncodedVideo = 'encoded_video',
 }
 
-export const AssetPathTypeSchema = z.enum(AssetPathType).describe('Asset path type').meta({ id: 'AssetPathType' });
-
 export enum PersonPathType {
   Face = 'face',
 }
 
-export const PersonPathTypeSchema = z.enum(PersonPathType).describe('Person path type').meta({ id: 'PersonPathType' });
-
 export enum UserPathType {
   Profile = 'profile',
 }
-
-export const UserPathTypeSchema = z.enum(UserPathType).describe('User path type').meta({ id: 'UserPathType' });
 
 export type PathType = AssetFileType | AssetPathType | PersonPathType | UserPathType;
 
@@ -469,11 +434,6 @@ export enum TranscodeTarget {
   Video = 'VIDEO',
   All = 'ALL',
 }
-
-export const TranscodeTargetSchema = z
-  .enum(TranscodeTarget)
-  .describe('Transcode target')
-  .meta({ id: 'TranscodeTarget' });
 
 export enum VideoCodec {
   H264 = 'h264',
@@ -556,11 +516,6 @@ export enum RawExtractedFormat {
   Jxl = 'jxl',
 }
 
-export const RawExtractedFormatSchema = z
-  .enum(RawExtractedFormat)
-  .describe('Raw extracted format')
-  .meta({ id: 'RawExtractedFormat' });
-
 export enum LogLevel {
   Verbose = 'verbose',
   Debug = 'debug',
@@ -586,37 +541,24 @@ export enum ApiCustomExtension {
   State = 'x-immich-state',
 }
 
-export const ApiCustomExtensionSchema = z
-  .enum(ApiCustomExtension)
-  .describe('API custom extension')
-  .meta({ id: 'ApiCustomExtension' });
-
 export enum MetadataKey {
   AuthRoute = 'auth_route',
-  AdminRoute = 'admin_route',
-  SharedRoute = 'shared_route',
   ApiKeySecurity = 'api_key',
   EventConfig = 'event_config',
   JobConfig = 'job_config',
   TelemetryEnabled = 'telemetry_enabled',
 }
 
-export const MetadataKeySchema = z.enum(MetadataKey).describe('Metadata key').meta({ id: 'MetadataKey' });
-
 export enum RouteKey {
   Asset = 'assets',
   User = 'users',
 }
-
-export const RouteKeySchema = z.enum(RouteKey).describe('Route key').meta({ id: 'RouteKey' });
 
 export enum CacheControl {
   PrivateWithCache = 'private_with_cache',
   PrivateWithoutCache = 'private_without_cache',
   None = 'none',
 }
-
-export const CacheControlSchema = z.enum(CacheControl).describe('Cache control').meta({ id: 'CacheControl' });
 
 export enum ImmichEnvironment {
   Development = 'development',
@@ -635,8 +577,6 @@ export enum ImmichWorker {
   Microservices = 'microservices',
 }
 
-export const ImmichWorkerSchema = z.enum(ImmichWorker).describe('Immich worker').meta({ id: 'ImmichWorker' });
-
 export enum ImmichTelemetry {
   Host = 'host',
   Api = 'api',
@@ -644,11 +584,6 @@ export enum ImmichTelemetry {
   Repo = 'repo',
   Job = 'job',
 }
-
-export const ImmichTelemetrySchema = z
-  .enum(ImmichTelemetry)
-  .describe('Immich telemetry')
-  .meta({ id: 'ImmichTelemetry' });
 
 export enum ExifOrientation {
   Horizontal = 1,
@@ -661,11 +596,6 @@ export enum ExifOrientation {
   Rotate270CW = 8,
 }
 
-export const ExifOrientationSchema = z
-  .enum(ExifOrientation)
-  .describe('EXIF orientation')
-  .meta({ id: 'ExifOrientation' });
-
 export enum DatabaseExtension {
   Cube = 'cube',
   EarthDistance = 'earthdistance',
@@ -673,11 +603,6 @@ export enum DatabaseExtension {
   Vectors = 'vectors',
   VectorChord = 'vchord',
 }
-
-export const DatabaseExtensionSchema = z
-  .enum(DatabaseExtension)
-  .describe('Database extension')
-  .meta({ id: 'DatabaseExtension' });
 
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
@@ -689,11 +614,6 @@ export enum BootstrapEventPriority {
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
 }
-
-export const BootstrapEventPrioritySchema = z
-  .enum(BootstrapEventPriority)
-  .describe('Bootstrap event priority')
-  .meta({ id: 'BootstrapEventPriority' });
 
 export enum QueueName {
   ThumbnailGeneration = 'thumbnailGeneration',
@@ -833,20 +753,14 @@ export enum JobStatus {
   Skipped = 'skipped',
 }
 
-export const JobStatusSchema = z.enum(JobStatus).describe('Job status').meta({ id: 'JobStatus' });
-
 export enum QueueCleanType {
   Failed = 'failed',
 }
-
-export const QueueCleanTypeSchema = z.enum(QueueCleanType).describe('Queue clean type').meta({ id: 'QueueCleanType' });
 
 export enum VectorIndex {
   Clip = 'clip_index',
   Face = 'face_index',
 }
-
-export const VectorIndexSchema = z.enum(VectorIndex).describe('Vector index').meta({ id: 'VectorIndex' });
 
 export enum DatabaseLock {
   GeodataImport = 100,
@@ -865,8 +779,6 @@ export enum DatabaseLock {
   VersionCheck = 800,
 }
 
-export const DatabaseLockSchema = z.enum(DatabaseLock).describe('Database lock').meta({ id: 'DatabaseLock' });
-
 export enum MaintenanceAction {
   Start = 'start',
   End = 'end',
@@ -882,8 +794,6 @@ export const MaintenanceActionSchema = z
 export enum ExitCode {
   AppRestart = 7,
 }
-
-export const ExitCodeSchema = z.enum(ExitCode).describe('Exit code').meta({ id: 'ExitCode' });
 
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
@@ -1043,8 +953,6 @@ export enum CronJob {
   VersionCheck = 'VersionCheck',
 }
 
-export const CronJobSchema = z.enum(CronJob).describe('Cron job').meta({ id: 'CronJob' });
-
 export enum ApiTag {
   Activities = 'Activities',
   Albums = 'Albums',
@@ -1084,8 +992,6 @@ export enum ApiTag {
   Views = 'Views',
   Workflows = 'Workflows',
 }
-
-export const ApiTagSchema = z.enum(ApiTag).describe('API tag').meta({ id: 'ApiTag' });
 
 export enum PluginContext {
   Asset = 'asset',

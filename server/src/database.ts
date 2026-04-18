@@ -18,7 +18,7 @@ import {
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
 import type { ActionConfig, FilterConfig, JSONSchema } from 'src/types/plugin-schema.types';
@@ -276,8 +276,6 @@ export type AssetFace = {
   updateId: string;
   isVisible: boolean;
 };
-
-export type Plugin = Selectable<PluginTable>;
 
 export type PluginFilter = Selectable<PluginFilterTable> & {
   methodName: string;

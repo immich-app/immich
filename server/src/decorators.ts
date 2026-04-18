@@ -1,6 +1,6 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiOperationOptions, ApiProperty, ApiPropertyOptions, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
@@ -170,17 +170,6 @@ export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   decorators.push(ApiOperation({ ...options, ...extensions }));
 
   return applyDecorators(...decorators);
-};
-
-export type PropertyOptions = ApiPropertyOptions & { history?: HistoryBuilder };
-export const Property = ({ history, ...options }: PropertyOptions) => {
-  const extensions = history?.getExtensions() ?? {};
-
-  if (history?.isDeprecated()) {
-    options.deprecated = true;
-  }
-
-  return ApiProperty({ ...options, ...extensions });
 };
 
 type HistoryEntry = {
