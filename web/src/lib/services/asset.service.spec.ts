@@ -1,8 +1,8 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
+import { getAssetActions, handleDownloadAsset, handleDownloadAssetAsJpeg } from '$lib/services/asset.service';
 import { setSharedLink } from '$lib/utils';
 import { getFormatter } from '$lib/utils/i18n';
-import { getAssetInfo } from '@immich/sdk';
+import { AssetTypeEnum, getAssetInfo } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
@@ -28,8 +28,14 @@ vitest.mock('$lib/utils', async () => {
   return {
     ...originalModule,
     sleep: vitest.fn(),
+    downloadRequest: vitest.fn().mockResolvedValue({ data: new Blob(), status: 200 }),
   };
 });
+
+vitest.mock('$lib/utils/asset-utils', () => ({
+  downloadBlob: vitest.fn(),
+  downloadUrl: vitest.fn(),
+}));
 
 describe('AssetService', () => {
   describe('getAssetActions', () => {
@@ -63,6 +69,53 @@ describe('AssetService', () => {
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
     });
+
+    it('should show DownloadAsJpeg for authenticated users with image assets', () => {
+      const user = userAdminFactory.build();
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, duration: '0:00:00.00000' });
+      authManager.setUser(user);
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadAsJpeg.$if?.()).toStrictEqual(true);
+    });
+
+    it('should not show DownloadAsJpeg for unauthenticated users', () => {
+      authManager.setUser(null);
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, duration: '0:00:00.00000' });
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadAsJpeg.$if?.()).toStrictEqual(false);
+    });
+
+    it('should not show DownloadAsJpeg for video assets', () => {
+      const user = userAdminFactory.build();
+      const asset = assetFactory.build({ type: AssetTypeEnum.Video });
+      authManager.setUser(user);
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadAsJpeg.$if?.()).toStrictEqual(false);
+    });
+
+    it('should show DownloadAsJpeg for static GIFs', () => {
+      const user = userAdminFactory.build();
+      const asset = assetFactory.build({
+        type: AssetTypeEnum.Image,
+        originalFileName: 'image.gif',
+        duration: '0:00:00.00000',
+      });
+      authManager.setUser(user);
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadAsJpeg.$if?.()).toStrictEqual(true);
+    });
+
+    it('should not show DownloadAsJpeg for animated GIFs', () => {
+      const user = userAdminFactory.build();
+      const asset = assetFactory.build({
+        type: AssetTypeEnum.Image,
+        originalFileName: 'animated.gif',
+        duration: '00:00:02.500',
+      });
+      authManager.setUser(user);
+      const assetActions = getAssetActions(() => '', asset);
+      expect(assetActions.DownloadAsJpeg.$if?.()).toStrictEqual(false);
+    });
   });
 
   describe('handleDownloadAsset', () => {
@@ -86,5 +139,26 @@ describe('AssetService', () => {
       expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset-motion.mov' } });
       expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
+  });
+
+  describe('handleDownloadAssetAsJpeg', () => {
+    it('should replace file extension with .jpg for HEIC files', async () => {
+      const $t = vitest.fn().mockReturnValue('formatter');
+      vitest.mocked(getFormatter).mockResolvedValue($t);
+      const asset = assetFactory.build({ originalFileName: 'photo.heic' });
+      await handleDownloadAssetAsJpeg(asset);
+      expect($t).toHaveBeenCalledWith('downloading_asset_filename', { values: { filename: 'photo.jpg' } });
+      expect(toastManager.primary).toHaveBeenCalledWith('formatter');
+    });
+
+    it('should replace file extension with .jpg for RAW files', async () => {
+      const $t = vitest.fn().mockReturnValue('formatter');
+      vitest.mocked(getFormatter).mockResolvedValue($t);
+      const asset = assetFactory.build({ originalFileName: 'IMG_1234.CR2' });
+      await handleDownloadAssetAsJpeg(asset);
+      expect($t).toHaveBeenCalledWith('downloading_asset_filename', { values: { filename: 'IMG_1234.jpg' } });
+      expect(toastManager.primary).toHaveBeenCalledWith('formatter');
+    });
+
   });
 });
