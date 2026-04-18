@@ -22,10 +22,6 @@ export class OAuthLinkTokenRepository {
       .executeTakeFirst();
   }
 
-  async deleteByEmail(userEmail: string) {
-    await this.db.deleteFrom('oauth_link_token').where('userEmail', '=', userEmail).execute();
-  }
-
   async cleanup() {
     const result = await this.db
       .deleteFrom('oauth_link_token')

@@ -762,7 +762,6 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile, sid: 'idp-sid-789' });
       mocks.user.getByEmail.mockResolvedValue(user);
-      mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
       mocks.oauthLinkToken.create.mockResolvedValue({} as any);
 
       await expect(
@@ -775,7 +774,6 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).not.toHaveBeenCalled();
-      expect(mocks.oauthLinkToken.deleteByEmail).toHaveBeenCalledTimes(1);
       expect(mocks.oauthLinkToken.create).toHaveBeenCalledWith(
         expect.objectContaining({ oauthSub: profile.sub, oauthSid: 'idp-sid-789' }),
       );
@@ -788,7 +786,6 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByEmail.mockResolvedValue(user);
-      mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
       mocks.oauthLinkToken.create.mockResolvedValue({} as any);
 
       await expect(
@@ -810,7 +807,6 @@ describe(AuthService.name, () => {
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
       mocks.user.getByEmail.mockResolvedValueOnce(user);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
-      mocks.oauthLinkToken.deleteByEmail.mockResolvedValue();
       mocks.oauthLinkToken.create.mockResolvedValue({} as any);
 
       await expect(

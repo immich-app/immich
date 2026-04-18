@@ -350,7 +350,6 @@ export class AuthService extends BaseService {
     if (!user && normalizedEmail) {
       const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
-        await this.oauthLinkTokenRepository.deleteByEmail(emailUser.email);
         const plainToken = this.cryptoRepository.randomBytesAsText(32);
         const hashedToken = this.cryptoRepository.hashSha256(plainToken);
         await this.oauthLinkTokenRepository.create({
