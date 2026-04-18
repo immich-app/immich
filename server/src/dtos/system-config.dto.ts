@@ -173,6 +173,11 @@ class JobSettingsDto {
 }
 
 class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> {
+  @IsInt()
+  @Min(0)
+  @ApiProperty({ type: 'integer', description: 'Global concurrency limit (0 = disabled)' })
+  globalConcurrency!: number;
+
   @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()

@@ -46,7 +46,7 @@ export type SystemConfig = {
     accelDecode: boolean;
     tonemap: ToneMapping;
   };
-  job: Record<ConcurrentQueueName, { concurrency: number }>;
+  job: Record<ConcurrentQueueName, { concurrency: number }> & { globalConcurrency: number };
   logging: {
     enabled: boolean;
     level: LogLevel;
@@ -223,6 +223,7 @@ export const defaults = Object.freeze<SystemConfig>({
     accelDecode: false,
   },
   job: {
+    globalConcurrency: 0,
     [QueueName.BackgroundTask]: { concurrency: 5 },
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
