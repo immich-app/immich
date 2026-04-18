@@ -75,8 +75,6 @@ export class OAuthController {
   ): Promise<LoginResponseDto> {
     try {
       const body = await this.service.callback(dto, request.headers, loginDetails);
-      res.clearCookie(ImmichCookie.OAuthState);
-      res.clearCookie(ImmichCookie.OAuthCodeVerifier);
       return respondWithCookie(res, body, {
         isSecure: loginDetails.isSecure,
         values: [
@@ -87,14 +85,15 @@ export class OAuthController {
       });
     } catch (error) {
       if (error instanceof OAuthLinkRequiredException) {
-        res.clearCookie(ImmichCookie.OAuthState);
-        res.clearCookie(ImmichCookie.OAuthCodeVerifier);
         respondWithCookie(res, null, {
           isSecure: loginDetails.isSecure,
           values: [{ key: ImmichCookie.OAuthLinkToken, value: error.oauthLinkToken }],
         });
       }
       throw error;
+    } finally {
+      res.clearCookie(ImmichCookie.OAuthState);
+      res.clearCookie(ImmichCookie.OAuthCodeVerifier);
     }
   }
 
