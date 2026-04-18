@@ -176,22 +176,26 @@
           {/if}
         </div>
         {#if showDownloadVariants}
-          <MenuOption
-            icon={Actions.DownloadOriginal.icon}
-            text={Actions.DownloadOriginal.title}
-            onClick={() => {
-              Actions.DownloadOriginal.onAction(Actions.DownloadOriginal);
-              showDownloadVariants = false;
-            }}
-          />
-          <MenuOption
-            icon={Actions.DownloadAsJpeg.icon}
-            text={Actions.DownloadAsJpeg.title}
-            onClick={() => {
-              Actions.DownloadAsJpeg.onAction(Actions.DownloadAsJpeg);
-              showDownloadVariants = false;
-            }}
-          />
+          {#if isEnabled(Actions.DownloadOriginal)}
+            <MenuOption
+              icon={Actions.DownloadOriginal.icon}
+              text={Actions.DownloadOriginal.title}
+              onClick={() => {
+                Actions.DownloadOriginal.onAction(Actions.DownloadOriginal);
+                showDownloadVariants = false;
+              }}
+            />
+          {/if}
+          {#if isEnabled(Actions.DownloadAsJpeg)}
+            <MenuOption
+              icon={Actions.DownloadAsJpeg.icon}
+              text={Actions.DownloadAsJpeg.title}
+              onClick={() => {
+                Actions.DownloadAsJpeg.onAction(Actions.DownloadAsJpeg);
+                showDownloadVariants = false;
+              }}
+            />
+          {/if}
         {/if}
 
         {#if !isLocked && asset.isTrashed}
