@@ -955,6 +955,7 @@
   "download_error": "Download Error",
   "download_failed": "Download failed",
   "download_finished": "Download finished",
+  "download_as_jpeg": "Download as JPEG",
   "download_include_embedded_motion_videos": "Embedded videos",
   "download_include_embedded_motion_videos_description": "Include videos embedded in motion photos as a separate file",
   "download_notfound": "Download not found",

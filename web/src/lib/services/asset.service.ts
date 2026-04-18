@@ -118,7 +118,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   };
 
   const DownloadAsJpeg: ActionItem = {
-    title: `${$t('download')} as JPEG`,
+    title: $t('download_as_jpeg'),
     icon: mdiDownloadBox,
     $if: () => {
       if (!authUser || asset.type !== AssetTypeEnum.Image) {
