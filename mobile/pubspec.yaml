@@ -27,12 +27,12 @@ dependencies:
     sdk: flutter
   flutter_displaymode: ^0.7.0
   flutter_hooks: ^0.21.3+1
-  flutter_local_notifications: ^17.2.4
-  flutter_secure_storage: ^9.2.4
+  flutter_local_notifications: ^21.0.0
+  flutter_secure_storage: ^10.0.0
   flutter_svg: ^2.2.4
   flutter_udid: ^4.1.2
   flutter_web_auth_2: ^5.0.2
-  fluttertoast: ^8.2.14
+  fluttertoast: ^9.0.0
   geolocator: ^14.0.2
   home_widget: ^0.8.1
   hooks_riverpod: ^2.6.1
@@ -96,7 +96,7 @@ dev_dependencies:
   fake_async: ^1.3.3
   file: ^7.0.1 # for MemoryFileSystem
   flutter_launcher_icons: ^0.14.4
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.7
   flutter_test:
     sdk: flutter
