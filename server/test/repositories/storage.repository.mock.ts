@@ -64,7 +64,11 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
     removeEmptyDirs: vitest.fn(),
     checkFileExists: vitest.fn(),
     mkdirSync: vitest.fn(),
-    checkDiskUsage: vitest.fn(),
+    checkDiskUsage: vitest.fn().mockResolvedValue({
+      available: Number.MAX_SAFE_INTEGER,
+      free: Number.MAX_SAFE_INTEGER,
+      total: Number.MAX_SAFE_INTEGER,
+    }),
     readdir: vitest.fn(),
     realpath: vitest.fn().mockImplementation((filepath: string) => Promise.resolve(filepath)),
     stat: vitest.fn(),

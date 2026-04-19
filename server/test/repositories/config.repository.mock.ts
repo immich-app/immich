@@ -90,6 +90,7 @@ const envData: EnvData = {
 
   storage: {
     ignoreMountCheckErrors: false,
+    minimumDiskSpaceBytes: 50 * 1024 * 1024,
   },
 
   telemetry: {
@@ -108,6 +109,8 @@ const envData: EnvData = {
   },
 
   noColor: false,
+
+  geodataApiUrl: null,
 };
 
 export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });

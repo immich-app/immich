@@ -258,7 +258,7 @@ describe(NotificationService.name, () => {
       await expect(sut.handleUserSignup({ id: '' })).resolves.toBe(JobStatus.Success);
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SendMail,
-        data: expect.objectContaining({ subject: 'Welcome to Immich' }),
+        data: expect.objectContaining({ subject: 'Welcome to PixelUnion' }),
       });
     });
   });
