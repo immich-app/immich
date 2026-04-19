@@ -3822,6 +3822,84 @@ describe(MediaService.name, () => {
         }),
       );
     });
+
+    it('should write ffmpeg output to a .tmp sibling and atomic-rename on success', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.All } });
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      const transcodePath = mocks.media.transcode.mock.calls[0][1] as string;
+      expect(transcodePath).toMatch(/\.tmp$/);
+
+      const finalPath = transcodePath.replace(/\.tmp$/, '');
+      expect(mocks.storage.rename).toHaveBeenCalledWith(transcodePath, finalPath);
+      expect(mocks.storage.rename.mock.invocationCallOrder[0]).toBeGreaterThan(
+        mocks.media.transcode.mock.invocationCallOrder[0],
+      );
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(
+        expect.objectContaining({ type: AssetFileType.EncodedVideo, path: finalPath, isEdited: false }),
+      );
+      expect(mocks.asset.upsertFile.mock.invocationCallOrder[0]).toBeGreaterThan(
+        mocks.storage.rename.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('should unlink a stale .tmp file from a prior crash before transcoding', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.All } });
+      mocks.storage.existsSync.mockReturnValue(true);
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      const transcodePath = mocks.media.transcode.mock.calls[0][1] as string;
+      expect(mocks.storage.existsSync).toHaveBeenCalledWith(transcodePath);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(transcodePath);
+      expect(mocks.storage.unlink.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.media.transcode.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('should not unlink if no stale .tmp file exists', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.All } });
+      mocks.storage.existsSync.mockReturnValue(false);
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.storage.unlink).not.toHaveBeenCalled();
+    });
+
+    it('should not rename or upsertFile when all transcode attempts fail', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { transcode: TranscodePolicy.All, accel: TranscodeHardwareAcceleration.Nvenc },
+      });
+      mocks.media.transcode.mockRejectedValue(new Error('Error transcoding video'));
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).rejects.toThrowError();
+
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      const transcodePath = mocks.media.transcode.mock.calls.at(-1)![1] as string;
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(transcodePath);
+    });
+
+    it('should unlink the .tmp file when transcoding fails with hw acceleration disabled', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { transcode: TranscodePolicy.All, accel: TranscodeHardwareAcceleration.Disabled },
+      });
+      mocks.media.transcode.mockRejectedValue(new Error('Error transcoding video'));
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).resolves.toBe(JobStatus.Failed);
+
+      const transcodePath = mocks.media.transcode.mock.calls[0][1] as string;
+      expect(transcodePath).toMatch(/\.tmp$/);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(transcodePath);
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+    });
   });
 
   describe('isSRGB', () => {

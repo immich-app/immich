@@ -586,7 +586,11 @@ export class MediaService extends BaseService {
 
     const input = asset.originalPath;
     const output = StorageCore.getEncodedVideoPath(asset);
+    const tmpOutput = `${output}.tmp`;
     this.storageCore.ensureFolders(output);
+    if (this.storageRepository.existsSync(tmpOutput)) {
+      await this.storageRepository.unlink(tmpOutput);
+    }
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
       countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
@@ -627,32 +631,40 @@ export class MediaService extends BaseService {
     }
 
     try {
-      await this.mediaRepository.transcode(input, output, command);
-    } catch (error: any) {
-      this.logger.error(`Error occurred during transcoding: ${error.message}`);
-      if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
-        return JobStatus.Failed;
-      }
+      try {
+        await this.mediaRepository.transcode(input, tmpOutput, command);
+      } catch (error: any) {
+        this.logger.error(`Error occurred during transcoding: ${error.message}`);
+        if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+          await this.unlinkSafe(tmpOutput);
+          return JobStatus.Failed;
+        }
 
-      let partialFallbackSuccess = false;
-      if (ffmpeg.accelDecode) {
-        try {
-          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
-          ffmpeg = { ...ffmpeg, accelDecode: false };
+        let partialFallbackSuccess = false;
+        if (ffmpeg.accelDecode) {
+          try {
+            this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
+            ffmpeg = { ...ffmpeg, accelDecode: false };
+            const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
+            await this.mediaRepository.transcode(input, tmpOutput, command);
+            partialFallbackSuccess = true;
+          } catch (error: any) {
+            this.logger.error(`Error occurred during transcoding: ${error.message}`);
+          }
+        }
+
+        if (!partialFallbackSuccess) {
+          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
+          ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
           const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-          await this.mediaRepository.transcode(input, output, command);
-          partialFallbackSuccess = true;
-        } catch (error: any) {
-          this.logger.error(`Error occurred during transcoding: ${error.message}`);
+          await this.mediaRepository.transcode(input, tmpOutput, command);
         }
       }
 
-      if (!partialFallbackSuccess) {
-        this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-        ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
-        const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-        await this.mediaRepository.transcode(input, output, command);
-      }
+      await this.storageRepository.rename(tmpOutput, output);
+    } catch (error) {
+      await this.unlinkSafe(tmpOutput);
+      throw error;
     }
 
     this.logger.log(`Successfully encoded ${asset.id}`);
@@ -671,6 +683,14 @@ export class MediaService extends BaseService {
     return streams
       .filter((stream) => stream.codecName !== 'unknown')
       .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
+  }
+
+  private async unlinkSafe(path: string): Promise<void> {
+    try {
+      await this.storageRepository.unlink(path);
+    } catch {
+      // swallow — cleanup must not mask the original error
+    }
   }
 
   private getTranscodeTarget(
