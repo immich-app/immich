@@ -507,6 +507,12 @@ class SystemConfigServerDto {
 
   @ValidateBoolean({ description: 'Public users' })
   publicUsers!: boolean;
+
+  @IsNumber()
+  @Min(1)
+  @Optional({ nullable: true })
+  @ApiProperty({ type: 'integer', nullable: true, description: 'Server-wide upload quota in GB' })
+  uploadQuotaGb!: number | null;
 }
 
 class SystemConfigSmtpTransportDto {

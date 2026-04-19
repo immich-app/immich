@@ -65,18 +65,33 @@ export class ServerService extends BaseService {
   }
 
   async getStorage(): Promise<ServerStorageResponseDto> {
-    const libraryBase = StorageCore.getBaseFolder(StorageFolder.Library);
-    const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
+    let diskAvailableRaw = 0;
+    let diskSizeRaw = 0;
+    let diskUseRaw = 0;
 
-    const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
+    const { configFile } = this.configRepository.getEnv();
+    const { server } = await this.getConfig({ withCache: true });
+    if (configFile && server.uploadQuotaGb !== null) {
+      diskSizeRaw = server.uploadQuotaGb * 1024 ** 3;
+      diskUseRaw = await this.userRepository.getQuotaUsage();
+      diskAvailableRaw = Math.max(diskSizeRaw - diskUseRaw, 0);
+    } else {
+      const libraryBase = StorageCore.getBaseFolder(StorageFolder.Library);
+      const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
+      diskAvailableRaw = diskInfo.available;
+      diskSizeRaw = diskInfo.total;
+      diskUseRaw = diskInfo.total - diskInfo.free;
+    }
+
+    const usagePercentage = ((diskUseRaw / diskSizeRaw) * 100).toFixed(2);
 
     const serverInfo = new ServerStorageResponseDto();
-    serverInfo.diskAvailable = asHumanReadable(diskInfo.available);
-    serverInfo.diskSize = asHumanReadable(diskInfo.total);
-    serverInfo.diskUse = asHumanReadable(diskInfo.total - diskInfo.free);
-    serverInfo.diskAvailableRaw = diskInfo.available;
-    serverInfo.diskSizeRaw = diskInfo.total;
-    serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
+    serverInfo.diskAvailable = asHumanReadable(diskAvailableRaw);
+    serverInfo.diskSize = asHumanReadable(diskSizeRaw);
+    serverInfo.diskUse = asHumanReadable(diskUseRaw);
+    serverInfo.diskAvailableRaw = diskAvailableRaw;
+    serverInfo.diskSizeRaw = diskSizeRaw;
+    serverInfo.diskUseRaw = diskUseRaw;
     serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
     return serverInfo;
   }

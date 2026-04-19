@@ -74,6 +74,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - pnpm_store_server:/buildcache/pnpm-store
       - ../plugins:/build/corePlugin
+      - ./immich-config.yml:/config/immich-config.yml
     env_file:
       - .env
     environment:
@@ -91,6 +92,7 @@ services:
       IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
       IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
       IMMICH_HELMET_FILE: 'true'
+      IMMICH_CONFIG_FILE: /config/immich-config.yml
     ports:
       - 9230:9230
       - 9231:9231

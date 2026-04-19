@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { defaults } from 'src/config';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
@@ -22,7 +23,9 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { getForAsset } from 'test/mappers';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService, ServiceMocks } from 'test/utils';
+import { vi } from 'vitest';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 
@@ -296,6 +299,53 @@ describe(AssetMediaService.name, () => {
   });
 
   describe('uploadAsset', () => {
+    it('should throw an error if the server quota is exceeded', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      vi.spyOn(sut, 'getConfig').mockResolvedValue({
+        ...defaults,
+        server: {
+          ...defaults.server,
+          uploadQuotaGb: 1,
+        },
+      });
+      mocks.user.getQuotaUsage.mockResolvedValue(1_073_741_800);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.user.getQuotaUsage).toHaveBeenCalled();
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to current behavior when no server quota is configured', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      vi.spyOn(sut, 'getConfig').mockResolvedValue(defaults);
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.user.getQuotaUsage).not.toHaveBeenCalled();
+      expect(mocks.asset.create).toHaveBeenCalled();
+    });
+
     it('should throw an error if the quota is exceeded', async () => {
       const file = {
         uuid: 'random-uuid',
@@ -458,6 +508,47 @@ describe(AssetMediaService.name, () => {
         new Date(createDto.fileModifiedAt),
       );
       expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('replaceAsset', () => {
+    it('should throw an error if the server quota is exceeded', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      const replaceDto = {
+        assetData: 'asset.jpeg',
+        deviceAssetId: 'deviceAssetId',
+        deviceId: 'deviceId',
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+        fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
+      };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['id_1']));
+      const existingAsset = AssetFactory.create({ id: 'id_1', ownerId: authStub.user1.user.id });
+      mocks.asset.getById.mockResolvedValue(getForAsset(existingAsset));
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      vi.spyOn(sut, 'getConfig').mockResolvedValue({
+        ...defaults,
+        server: {
+          ...defaults.server,
+          uploadQuotaGb: 1,
+        },
+      });
+      mocks.user.getQuotaUsage.mockResolvedValue(1_073_741_800);
+
+      await expect(sut.replaceAsset(authStub.user1, 'id_1', replaceDto, file)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.user.getQuotaUsage).toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
     });
   });
 

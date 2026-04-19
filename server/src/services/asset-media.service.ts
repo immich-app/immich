@@ -38,6 +38,7 @@ import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
+import { HumanReadableSize } from 'src/utils/bytes';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -142,7 +143,7 @@ export class AssetMediaService extends BaseService {
         ids: [auth.user.id],
       });
 
-      this.requireQuota(auth, file.size);
+      await this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {
         await onBeforeLink(
@@ -179,7 +180,7 @@ export class AssetMediaService extends BaseService {
         throw new Error('Asset not found');
       }
 
-      this.requireQuota(auth, file.size);
+      await this.requireQuota(auth, file.size);
 
       await this.replaceFileData(asset.id, dto, file, sidecarFile?.originalPath);
 
@@ -493,8 +494,26 @@ export class AssetMediaService extends BaseService {
     return asset;
   }
 
-  private requireQuota(auth: AuthDto, size: number) {
+  private async requireQuota(auth: AuthDto, size: number) {
     if (auth.user.quotaSizeInBytes !== null && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
+      throw new BadRequestException('Quota has been exceeded!');
+    }
+
+    const { configFile } = this.configRepository.getEnv();
+    if (!configFile) {
+      return;
+    }
+
+    const {
+      server: { uploadQuotaGb },
+    } = await this.getConfig({ withCache: true });
+    if (uploadQuotaGb === null) {
+      return;
+    }
+
+    const quotaSizeInBytes = uploadQuotaGb * HumanReadableSize.GiB;
+    const quotaUsageInBytes = await this.userRepository.getQuotaUsage();
+    if (quotaSizeInBytes < quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
     }
   }

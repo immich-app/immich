@@ -20,8 +20,11 @@ services:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - ${UPLOAD_LOCATION}:/data
       - /etc/localtime:/etc/localtime:ro
+      - ./immich-config.yml:/config/immich-config.yml:ro
     env_file:
       - .env
+    environment:
+      IMMICH_CONFIG_FILE: /config/immich-config.yml
     ports:
       - '2283:2283'
     depends_on:

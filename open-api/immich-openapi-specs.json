@@ -24700,12 +24700,19 @@
           "publicUsers": {
             "description": "Public users",
             "type": "boolean"
+          },
+          "uploadQuotaGb": {
+            "description": "Server-wide upload quota in GB",
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
           }
         },
         "required": [
           "externalDomain",
           "loginPageMessage",
-          "publicUsers"
+          "publicUsers",
+          "uploadQuotaGb"
         ],
         "type": "object"
       },

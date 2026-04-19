@@ -296,6 +296,17 @@ export class UserRepository {
     return Number(result.count);
   }
 
+  @GenerateSql()
+  async getQuotaUsage(): Promise<number> {
+    const result = await this.db
+      .selectFrom('user')
+      .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('quotaUsageInBytes'), eb.lit(0)).as('usage'))
+      .where('user.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+
+    return Number(result.usage);
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   async updateUsage(id: string, delta: number): Promise<void> {
     await this.db
