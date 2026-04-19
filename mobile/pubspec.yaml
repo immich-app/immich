@@ -14,7 +14,7 @@ dependencies:
   background_downloader: ^9.5.4
   cast: ^2.1.0
   collection: ^1.19.1
-  connectivity_plus: ^6.1.5
+  connectivity_plus: ^7.0.0
   crop_image: ^1.0.17
   crypto: ^3.0.7
   device_info_plus: ^12.4.0
