@@ -27,7 +27,7 @@ Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/la
 
 ## Step 2 - Populate the .env file with custom values
 
-Follow [Step 2 in Docker Compose](/install/docker-compose#step-2---populate-the-env-file-with-custom-values) for instructions on customizing the `.env` file, and then return back to this guide to continue.
+Follow [Step 2 in Docker Compose](../install/docker-compose.mdx#step-2---populate-the-env-file-with-custom-values) for instructions on customizing the `.env` file, and then return back to this guide to continue.
 
 ## Step 3 - Create a new project in Container Manager
 
@@ -70,7 +70,7 @@ Click "**Edit Rules**" and add the following firewall rules:
 
 ## Next Steps
 
-Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instructions](/install/upgrading.md).
+Read the [Post Installation](../install/post-install.mdx) steps and [upgrade instructions](../install/upgrading.md).
 
 <details>
   <summary>Updating Immich using Container Manager</summary>

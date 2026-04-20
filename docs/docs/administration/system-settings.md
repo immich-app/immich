@@ -12,14 +12,14 @@ Manage password, OAuth, and other authentication settings
 
 ### OAuth Authentication
 
-Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/administration/oauth).
+Immich supports OAuth Authentication. Read more about this feature and its configuration [here](../administration/oauth).
 
 ### Password Authentication
 
-The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
+The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](../administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
 
 :::tip
-You can always use the [Server CLI](/administration/server-commands) to re-enable password login.
+You can always use the [Server CLI](../administration/server-commands) to re-enable password login.
 :::
 
 ## Image Settings (thumbnails and previews)
@@ -132,7 +132,7 @@ Editable settings:
 - **Max Recognition Distance**
 - **Min Recognized Faces**
 
-You can learn more about these options on the [Facial Recognition page](/features/facial-recognition#how-face-detection-works)
+You can learn more about these options on the [Facial Recognition page](../features/facial-recognition#how-face-detection-works)
 
 :::info
 When changing the values in Min Detection Score, Max Recognition Distance, and Min Recognized Faces.
@@ -154,15 +154,15 @@ The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for
 
 ### Reverse Geocoding Settings
 
-Immich supports [Reverse Geocoding](/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
+Immich supports [Reverse Geocoding](../features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
 ## Notification Settings
 
-SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/administration/email-notification)
+SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](email-notification.mdx)
 
 ## Notification Templates
 
-Override the default notifications text with notification templates. More information can be found [here](/administration/email-notification)
+Override the default notifications text with notification templates. More information can be found [here](email-notification.mdx)
 
 ## Server Settings
 
@@ -176,7 +176,7 @@ The administrator can set a custom message on the login screen (the message will
 
 ## Storage Template
 
-Immich supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).
+Immich supports a custom [Storage Template](storage-template.mdx). Learn more about this feature and its configuration [here](storage-template.mdx).
 
 ## Theme Settings
 

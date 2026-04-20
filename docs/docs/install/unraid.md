@@ -125,7 +125,7 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
 </details>
 
 :::tip
-For more information on how to use the application once installed, please refer to the [Post Install](/install/post-install.mdx) guide.
+For more information on how to use the application once installed, please refer to the [Post Install](../install/post-install.mdx) guide.
 :::
 
 ## Updating Steps

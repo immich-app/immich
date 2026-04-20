@@ -68,7 +68,7 @@ After bringing down the containers with `docker compose down` and back up with `
 :::note
 To see exactly what metrics are made available, you can additionally add `8081:8081` (API metrics) and `8082:8082` (microservices metrics) to the immich_server container's ports.
 Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
-To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](/install/environment-variables/#general).
+To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](../install/environment-variables#general).
 :::
 
 ### Usage
@@ -146,6 +146,6 @@ This format includes:
 - `message`: Log message
 - `context`: Service or component that generated the log
 
-For more information on log formats, see [`IMMICH_LOG_FORMAT`](/install/environment-variables.md#general).
+For more information on log formats, see [`IMMICH_LOG_FORMAT`](../install/environment-variables.md#general).
 
 [prom-file]: https://github.com/immich-app/immich/releases/latest/download/prometheus.yml

@@ -1,6 +1,6 @@
 # Partner Sharing
 
-Immich allows you to share your library with other users. They can then view your library and download the assets. You can manage Partner Sharing from the [User Settings](docs/features/user-settings.md) page on the web.
+Immich allows you to share your library with other users. They can then view your library and download the assets. You can manage Partner Sharing from the [User Settings](user-settings.md) page on the web.
 
 Partner sharing includes:
 

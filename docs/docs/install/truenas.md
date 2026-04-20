@@ -66,7 +66,7 @@ Thumbnails can also be stored on the SSDs for faster access. This is an advanced
 :::warning
 If you just created the datasets using the **Apps** preset, you can skip this warning section.
 
-If the **data** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/) set to `Passthrough` if you plan on using a [storage template](/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library** (internal folder created by Immich within the **data** dataset), Immich performs `chmod` internally and must be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
+If the **data** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/) set to `Passthrough` if you plan on using a [storage template](../administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library** (internal folder created by Immich within the **data** dataset), Immich performs `chmod` internally and must be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
 
 To change or verify the ACL mode, go to the **Datasets** screen, select the **library** dataset, click on the **Edit** button next to **Dataset Details**, then click on the **Advanced Options** tab, scroll down to the **ACL Mode** section, and select `Passthrough` from the dropdown menu. Click **Save** to apply the changes. If the option is greyed out, set the **ACL Type** to `SMB/NFSv4` first, then you can change the **ACL Mode** to `Passthrough`.
 :::
@@ -129,7 +129,7 @@ The **Timezone** is set to the system default, which usually matches your local 
 
 **Enable Machine Learning** is enabled by default. It allows Immich to use machine learning features such as face recognition, image search, and smart duplicate detection. Untick this option if you do not want to use these features.
 
-Select the **Machine Learning Image Type** based on the hardware you have. More details here: [Hardware-Accelerated Machine Learning](/features/ml-hardware-acceleration.md)
+Select the **Machine Learning Image Type** based on the hardware you have. More details here: [Hardware-Accelerated Machine Learning](../features/ml-hardware-acceleration.md)
 
 **Database Password** should be set to a custom value using only the characters `A-Za-z0-9`. This password is used to secure the Postgres database.
 
@@ -156,7 +156,7 @@ className="border rounded-xl"
 />
 
 These are used to add custom configuration options or to enable specific features.
-More information on available environment variables can be found in the **[environment variables documentation](/install/environment-variables/)**.
+More information on available environment variables can be found in the **[environment variables documentation](../install/environment-variables.md)**.
 
 :::info
 Some environment variables are not available for the TrueNAS Community Edition app as they can be configured through GUI options in the [Edit Immich screen](#edit-app-settings).
@@ -309,7 +309,7 @@ className="border rounded-xl"
 
 Both **CPU** and **Memory** are limits, not reservations. This means that Immich can use up to the specified amount of CPU threads and RAM, but it will not reserve that amount of resources at all times. The system will allocate resources as needed, and Immich will use less than the specified amount most of the time.
 
-- Enable **GPU Configuration** options if you have a GPU or CPU with integrated graphics that you will use for [Hardware Transcoding](/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/features/ml-hardware-acceleration.md).
+- Enable **GPU Configuration** options if you have a GPU or CPU with integrated graphics that you will use for [Hardware Transcoding](../features/hardware-transcoding.md) and/or [Hardware-Accelerated Machine Learning](../features/ml-hardware-acceleration.md).
 
 The process for NVIDIA GPU passthrough requires additional steps.
 More details here: [GPU Passthrough Docs for TrueNAS Apps](https://apps.truenas.com/managing-apps/installing-apps/#gpu-passthrough)
@@ -332,7 +332,7 @@ Click **Web Portal** on the **Application Info** widget, or go to the URL `http:
 After that, you can start using Immich to upload and manage your photos and videos.
 
 :::tip
-For more information on how to use the application once installed, please refer to the [Post Install](/install/post-install.mdx) guide.
+For more information on how to use the application once installed, please refer to the [Post Install](../install/post-install.mdx) guide.
 :::
 
 ## Edit App Settings
@@ -347,7 +347,7 @@ For more information on how to use the application once installed, please refer 
 ## Updating the App
 
 :::danger
-Make sure to read the general [upgrade instructions](/install/upgrading.md).
+Make sure to read the general [upgrade instructions](../install/upgrading.md).
 :::
 
 When updates become available, TrueNAS alerts and provides easy updates.

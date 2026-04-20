@@ -452,7 +452,7 @@ While the Dev Container focuses on server and web development, you can connect m
    - Server URL: `http://YOUR_IP:2283/api`
    - Ensure firewall allows port 2283
 
-3. **For full mobile development**, see the [mobile development guide](/developer/setup) which covers:
+3. **For full mobile development**, see the [mobile development guide](./setup.md) which covers:
    - Flutter setup
    - Running on simulators/devices
    - Mobile-specific debugging

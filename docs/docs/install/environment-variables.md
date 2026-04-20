@@ -44,7 +44,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                                                                              |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                                                                                    |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                                                                                     |                              | server                   | api                |
-| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                                                                               |                              | server                   | api, microservices |
+| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](../administration/system-integrity)                                                                                               |                              | server                   | api, microservices |
 | `IMMICH_ALLOW_SETUP`                | When `false` disables the `/auth/admin-sign-up` endpoint                                                                                               |            `true`            | server                   | api                |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
@@ -60,7 +60,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_WORKERS_EXCLUDE` | Do not run these workers. Matches against default workers, or `IMMICH_WORKERS_INCLUDE` if specified. |         | server     |
 
 :::info
-Information on the current workers can be found [here](/administration/jobs-workers).
+Information on the current workers can be found [here](../administration/jobs-workers).
 :::
 
 ## Ports

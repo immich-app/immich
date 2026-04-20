@@ -251,7 +251,7 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 ### Step 2 - Specify the file location
 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
-For more information, refer to the [Environment Variables](/install/environment-variables.md) section.
+For more information, refer to the [Environment Variables](environment-variables.md) section.
 
 :::info Docker Compose
 In your `.env` file, the variables `UPLOAD_LOCATION` and `DB_DATA_LOCATION` concern the location on the host.
