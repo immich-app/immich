@@ -86,8 +86,8 @@ const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =
 export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { withAssets: true }] })
-  async getById(id: string, options: AlbumInfoOptions, authUserId?: string) {
+  @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }, DummyValue.UUID] })
+  getById(id: string, options: AlbumInfoOptions, authUserId?: string) {
     return this.db
       .with('album_user', (qb) => qb.selectFrom('album_user').selectAll().where('album_user.albumId', '=', id))
       .selectFrom('album')
@@ -102,7 +102,7 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  async getByAssetId(ownerId: string, assetId: string) {
+  getByAssetId(ownerId: string, assetId: string) {
     return this.db
       .selectFrom('album')
       .selectAll('album')
@@ -184,7 +184,7 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getOwned(ownerId: string) {
+  getOwned(ownerId: string) {
     return this.db
       .selectFrom('album')
       .selectAll('album')
@@ -205,7 +205,7 @@ export class AlbumRepository {
    * Get albums shared with and shared by owner.
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getShared(ownerId: string) {
+  getShared(ownerId: string) {
     return this.db
       .selectFrom('album')
       .selectAll('album')
@@ -248,7 +248,7 @@ export class AlbumRepository {
    * Get albums of owner that are _not_ shared
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNotShared(ownerId: string) {
+  getNotShared(ownerId: string) {
     return this.db
       .selectFrom('album')
       .selectAll('album')

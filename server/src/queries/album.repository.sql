@@ -44,7 +44,7 @@ select
         where
           "album_user"."albumId" = "album"."id"
         order by
-          "album_user"."role" = 'owner' desc,
+          "album_user"."role",
           "album_user"."userId" = $2 desc,
           "user"."name" asc
       ) as agg
@@ -61,7 +61,27 @@ select
         where
           "shared_link"."albumId" = "album"."id"
       ) as agg
-  ) as "sharedLinks"
+  ) as "sharedLinks",
+  (
+    select
+      json_agg("asset") as "assets"
+    from
+      (
+        select
+          "asset".*,
+          "asset_exif" as "exifInfo"
+        from
+          "asset"
+          left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+          inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
+        where
+          "album_asset"."albumId" = "album"."id"
+          and "asset"."deletedAt" is null
+          and "asset"."visibility" in ('archive', 'timeline')
+        order by
+          "asset"."fileCreatedAt" desc
+      ) as "asset"
+  ) as "assets"
 from
   "album"
 where
@@ -103,7 +123,7 @@ select
         where
           "album_user"."albumId" = "album"."id"
         order by
-          "album_user"."role" = 'owner' desc,
+          "album_user"."role",
           "album_user"."userId" = $1 desc,
           "user"."name" asc
       ) as agg
@@ -200,7 +220,7 @@ select
         where
           "album_user"."albumId" = "album"."id"
         order by
-          "album_user"."role" = 'owner' desc,
+          "album_user"."role",
           "album_user"."userId" = $1 desc,
           "user"."name" asc
       ) as agg
@@ -263,7 +283,7 @@ select
         where
           "album_user"."albumId" = "album"."id"
         order by
-          "album_user"."role" = 'owner' desc,
+          "album_user"."role",
           "album_user"."userId" = $1 desc,
           "user"."name" asc
       ) as agg
@@ -362,7 +382,7 @@ select
         where
           "album_user"."albumId" = "album"."id"
         order by
-          "album_user"."role" = 'owner' desc,
+          "album_user"."role",
           "album_user"."userId" = $1 desc,
           "user"."name" asc
       ) as agg
@@ -490,7 +510,7 @@ select
         where
           "album_user"."albumId" = "album"."id"
         order by
-          "album_user"."role" = 'owner' desc,
+          "album_user"."role",
           "user"."name" asc
       ) as agg
   ) as "albumUsers",
