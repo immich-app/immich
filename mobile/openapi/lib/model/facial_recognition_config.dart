@@ -32,6 +32,7 @@ class FacialRecognitionConfig {
   /// Minimum number of faces required for recognition
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int minFaces;
 
   /// Minimum confidence score for face detection

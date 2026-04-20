@@ -1,10 +1,8 @@
-import ToastAction from '$lib/components/ToastAction.svelte';
+import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
@@ -27,7 +25,6 @@ import {
   type DownloadInfoDto,
   type ExifResponseDto,
   type StackResponseDto,
-  type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
@@ -103,9 +100,8 @@ export const downloadUrl = (url: string, filename: string) => {
 };
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
-  const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
-  const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
-
+  const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
+  const dto = { ...options, archiveSize };
   const [error, downloadInfo] = await withError(() => getDownloadInfo({ ...authManager.params, downloadInfoDto: dto }));
   if (error) {
     const $t = get(t);
@@ -326,16 +322,11 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
   try {
     const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
     if (showNotification) {
-      toastManager.custom({
-        component: ToastAction,
-        props: {
-          title: $t('success'),
-          description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-          color: 'success',
-          button: {
-            text: $t('view_stack'),
-            onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
-          },
+      toastManager.primary({
+        description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
+        button: {
+          label: $t('view_stack'),
+          onclick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
         },
       });
     }
@@ -394,7 +385,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetInteraction) => {
+export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetMultiSelectManager) => {
   if (assetInteraction.selectAll) {
     // Selection is already ongoing
     return;
@@ -402,18 +393,18 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   assetInteraction.selectAll = true;
 
   try {
-    for (const monthGroup of timelineManager.months) {
-      if (!monthGroup.isLoaded) {
-        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+    for (const timelineMonth of timelineManager.months) {
+      if (!timelineMonth.isLoaded) {
+        await timelineManager.loadTimelineMonth(timelineMonth.yearMonth);
       }
 
       if (!assetInteraction.selectAll) {
-        assetInteraction.clearMultiselect();
+        assetInteraction.clear();
         break; // Cancelled
       }
-      assetInteraction.selectAssets([...monthGroup.assetsIterator()]);
+      assetInteraction.selectAssets([...timelineMonth.assetsIterator()]);
 
-      for (const dateGroup of monthGroup.dayGroups) {
+      for (const dateGroup of timelineMonth.timelineDays) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
       }
     }
@@ -422,11 +413,6 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
     handleError(error, $t('errors.error_selecting_all_assets'));
     assetInteraction.selectAll = false;
   }
-};
-
-export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
-  assetInteraction.selectAll = false;
-  assetInteraction.clearMultiselect();
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {

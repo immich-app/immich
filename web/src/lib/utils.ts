@@ -1,8 +1,9 @@
-import { defaultLang, langs, locales } from '$lib/constants';
+import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
+import { langs } from '$lib/utils/i18n';
 import {
   AssetMediaSize,
   AssetTypeEnum,
@@ -78,17 +79,40 @@ export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+let unsubscribeId = 0;
+const uploads: Record<number, () => void> = {};
+
+const trackUpload = (unsubscribe: () => void) => {
+  const id = unsubscribeId++;
+  uploads[id] = unsubscribe;
+  return () => {
+    delete uploads[id];
+  };
+};
+
+export const cancelUploadRequests = () => {
+  for (const unsubscribe of Object.values(uploads)) {
+    unsubscribe();
+  }
+};
+
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const unsubscribe = trackUpload(() => xhr.abort());
 
-    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('error', (error) => {
+      unsubscribe();
+      reject(error);
+    });
+
     xhr.addEventListener('load', () => {
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
+        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });
@@ -195,7 +219,7 @@ export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkRes
 }
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
+  return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {

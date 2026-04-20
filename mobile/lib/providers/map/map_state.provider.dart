@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'map_state.provider.g.dart';
+final mapStateNotifierProvider = NotifierProvider<MapStateNotifier, MapState>(MapStateNotifier.new);
 
-@Riverpod(keepAlive: true)
-class MapStateNotifier extends _$MapStateNotifier {
+class MapStateNotifier extends Notifier<MapState> {
   @override
   MapState build() {
     final appSettingsProvider = ref.read(appSettingsServiceProvider);

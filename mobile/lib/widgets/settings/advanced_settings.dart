@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -14,9 +13,7 @@ import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
-import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
@@ -35,7 +32,6 @@ class AdvancedSettings extends HookConsumerWidget {
     final manageMediaAndroidPermission = useState(false);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
-    final useAlternatePMFilter = useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;
@@ -114,35 +110,26 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_prefer_remote_title".tr(),
         subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
       ),
-      if (!Store.isBetaTimelineEnabled) const LocalStorageSettings(),
       const CustomProxyHeaderSettings(),
       const SslClientCertSettings(),
-      if (!Store.isBetaTimelineEnabled)
-        SettingsSwitchListTile(
-          valueNotifier: useAlternatePMFilter,
-          title: "advanced_settings_enable_alternate_media_filter_title".tr(),
-          subtitle: "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
-        ),
-      if (!Store.isBetaTimelineEnabled) const BetaTimelineListTile(),
-      if (Store.isBetaTimelineEnabled)
-        SettingsSwitchListTile(
-          valueNotifier: readonlyModeEnabled,
-          title: "advanced_settings_readonly_mode_title".tr(),
-          subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
-          onChanged: (value) {
-            readonlyModeEnabled.value = value;
-            ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
-            context.scaffoldMessenger.showSnackBar(
-              SnackBar(
-                duration: const Duration(seconds: 2),
-                content: Text(
-                  (value ? "readonly_mode_enabled" : "readonly_mode_disabled").tr(),
-                  style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-                ),
+      SettingsSwitchListTile(
+        valueNotifier: readonlyModeEnabled,
+        title: "advanced_settings_readonly_mode_title".tr(),
+        subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
+        onChanged: (value) {
+          readonlyModeEnabled.value = value;
+          ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(
+                (value ? "readonly_mode_enabled" : "readonly_mode_disabled").tr(),
+                style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
+      ),
       ListTile(
         title: Text("advanced_settings_clear_image_cache".tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
         leading: const Icon(Icons.playlist_remove_rounded),

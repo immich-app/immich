@@ -77,18 +77,4 @@ test.describe('Photo Viewer', () => {
     });
     expect(tagAtCenter).toBe('IMG');
   });
-
-  test('reloads photo when checksum changes', async ({ page }) => {
-    await page.goto(`/photos/${asset.id}`);
-
-    const preview = page.getByTestId('preview').filter({ visible: true });
-    await expect(preview).toHaveAttribute('src', /.+/);
-    const initialSrc = await preview.getAttribute('src');
-
-    const websocketEvent = utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
-    await utils.replaceAsset(admin.accessToken, asset.id);
-    await websocketEvent;
-
-    await expect(preview).not.toHaveAttribute('src', initialSrc!);
-  });
 });

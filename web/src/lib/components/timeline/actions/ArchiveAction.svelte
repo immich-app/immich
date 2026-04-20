@@ -1,18 +1,18 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { AssetVisibility } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     onArchive?: OnArchive;
     menuItem?: boolean;
     unarchive?: boolean;
-  }
+  };
 
   let { onArchive, menuItem = false, unarchive = false }: Props = $props();
 
@@ -21,16 +21,14 @@
 
   let loading = $state(false);
 
-  const { clearSelect, getOwnedAssets } = getAssetControlContext();
-
   const handleArchive = async () => {
     const visibility = unarchive ? AssetVisibility.Timeline : AssetVisibility.Archive;
-    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== visibility);
+    const assets = assetMultiSelectManager.getOwnedAssets().filter((asset) => asset.visibility !== visibility);
     loading = true;
     const ids = await archiveAssets(assets, visibility as AssetVisibility);
     if (ids) {
       onArchive?.(ids, visibility);
-      clearSelect();
+      assetMultiSelectManager.clear();
     }
     loading = false;
   };

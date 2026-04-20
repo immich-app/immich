@@ -239,7 +239,7 @@
     "user_settings": "Налады карыстальніка",
     "user_settings_description": "Кіраванне наладамі карыстальніка",
     "version_check_enabled_description": "Уключыць праверку версіі",
-    "version_check_implications": "Функцыя праверкі версіі перыядычна звяртаецца да github.com",
+    "version_check_implications": "Функцыя праверкі версіі перыядычна звяртаецца да {server}",
     "version_check_settings": "Праверка версіі",
     "version_check_settings_description": "Уключыць/адключыць апавяшчэнні аб новай версіі"
   },

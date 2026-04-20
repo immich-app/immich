@@ -2,14 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
-import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
 import 'package:immich_mobile/widgets/settings/free_up_space_settings.dart';
@@ -38,8 +35,7 @@ enum SettingSection {
   Widget get widget => switch (this) {
     SettingSection.advanced => const AdvancedSettings(),
     SettingSection.assetViewer => const AssetViewerSettings(),
-    SettingSection.backup =>
-      Store.tryGet(StoreKey.betaTimeline) ?? false ? const DriftBackupSettings() : const BackupSettings(),
+    SettingSection.backup => const DriftBackupSettings(),
     SettingSection.freeUpSpace => const FreeUpSpaceSettings(),
     SettingSection.languages => const LanguageSettings(),
     SettingSection.networking => const NetworkingSettings(),
@@ -74,13 +70,12 @@ class _MobileLayout extends StatelessWidget {
         .expand(
           (setting) => setting == SettingSection.beta
               ? [
-                  if (Store.isBetaTimelineEnabled)
-                    SettingsCard(
-                      icon: Icons.sync_outlined,
-                      title: 'sync_status'.tr(),
-                      subtitle: 'sync_status_subtitle'.tr(),
-                      settingRoute: const SyncStatusRoute(),
-                    ),
+                  SettingsCard(
+                    icon: Icons.sync_outlined,
+                    title: 'sync_status'.tr(),
+                    subtitle: 'sync_status_subtitle'.tr(),
+                    settingRoute: const SyncStatusRoute(),
+                  ),
                 ]
               : [
                   SettingsCard(

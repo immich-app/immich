@@ -1,12 +1,13 @@
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
-import { SearchService } from 'src/services/search.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { getForDuplicate } from 'test/mappers';
 import { newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
-import { beforeEach, vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 
 vitest.useFakeTimers();
 
@@ -26,7 +27,7 @@ const hasDupe = {
   duplicateId: 'duplicate-id',
 };
 
-describe(SearchService.name, () => {
+describe(DuplicateService.name, () => {
   let sut: DuplicateService;
   let mocks: ServiceMocks;
 
@@ -41,6 +42,8 @@ describe(SearchService.name, () => {
   describe('getDuplicates', () => {
     it('should get duplicates', async () => {
       const asset = AssetFactory.from().exif().build();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['duplicate-id']));
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
       mocks.duplicateRepository.getAll.mockResolvedValue([
         {
           duplicateId: 'duplicate-id',
@@ -51,8 +54,23 @@ describe(SearchService.name, () => {
         {
           duplicateId: 'duplicate-id',
           assets: [expect.objectContaining({ id: asset.id }), expect.objectContaining({ id: asset.id })],
+          suggestedKeepAssetIds: [asset.id],
         },
       ]);
+    });
+
+    it('should return suggestedKeepAssetIds based on file size', async () => {
+      const smallAsset = AssetFactory.from().exif({ fileSizeInByte: 1000 }).build();
+      const largeAsset = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
+      mocks.duplicateRepository.getAll.mockResolvedValue([
+        {
+          duplicateId: 'duplicate-id',
+          assets: [getForDuplicate(smallAsset), getForDuplicate(largeAsset)],
+        },
+      ]);
+      const result = await sut.getDuplicates(authStub.admin);
+      expect(result[0].suggestedKeepAssetIds).toEqual([largeAsset.id]);
     });
   });
 
@@ -129,6 +147,200 @@ describe(SearchService.name, () => {
         },
       ]);
     });
+  });
+
+  describe('resolve', () => {
+    it('should handle mixed success and failure', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1', 'group-2']));
+      mocks.duplicateRepository.get.mockResolvedValueOnce(void 0);
+      mocks.duplicateRepository.get.mockResolvedValueOnce({
+        duplicateId: 'group-2',
+        assets: [asset as unknown as MapAsset],
+      });
+
+      await expect(
+        sut.resolve(authStub.admin, {
+          groups: [
+            { duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: [] },
+            { duplicateId: 'group-2', keepAssetIds: [asset.id], trashAssetIds: [] },
+          ],
+        }),
+      ).resolves.toEqual([
+        { id: 'group-1', success: false, error: BulkIdErrorReason.NOT_FOUND },
+        { id: 'group-2', success: true },
+      ]);
+    });
+
+    it('should catch and report errors', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockRejectedValue(new Error('Database error'));
+
+      await expect(
+        sut.resolve(authStub.admin, {
+          groups: [{ duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: [] }],
+        }),
+      ).resolves.toEqual([{ id: 'group-1', success: false, error: BulkIdErrorReason.UNKNOWN }]);
+    });
+  });
+
+  describe('resolveGroup (via resolve)', () => {
+    it('should fail if duplicate group not found', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['missing-id']));
+      mocks.duplicateRepository.get.mockResolvedValue(void 0);
+
+      await expect(
+        sut.resolve(authStub.admin, {
+          groups: [{ duplicateId: 'missing-id', keepAssetIds: [], trashAssetIds: [] }],
+        }),
+      ).resolves.toEqual([
+        {
+          id: 'missing-id',
+          success: false,
+          error: BulkIdErrorReason.NOT_FOUND,
+        },
+      ]);
+    });
+
+    it('should skip when keepAssetIds contains non-member', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset as unknown as MapAsset],
+      });
+
+      await expect(
+        sut.resolve(authStub.admin, {
+          groups: [{ duplicateId: 'group-1', keepAssetIds: ['asset-999', asset.id], trashAssetIds: [] }],
+        }),
+      ).resolves.toEqual([{ id: 'group-1', success: true }]);
+    });
+
+    it('should skip when trashAssetIds contains non-member', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset as unknown as MapAsset],
+      });
+
+      await expect(
+        sut.resolve(authStub.admin, {
+          groups: [{ duplicateId: 'group-1', keepAssetIds: [asset.id], trashAssetIds: ['asset-999'] }],
+        }),
+      ).resolves.toEqual([{ id: 'group-1', success: true }]);
+    });
+
+    it('should fail if keepAssetIds and trashAssetIds overlap', async () => {
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id], trashAssetIds: [asset1.id] }],
+      });
+
+      expect(result[0].success).toBe(false);
+      expect(result[0].errorMessage).toContain('An asset cannot be in both keepAssetIds and trashAssetIds');
+    });
+
+    it('should fail if keepAssetIds and trashAssetIds do not cover all assets', async () => {
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+      const asset3 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset, asset3 as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
+      });
+
+      expect(result[0].success).toBe(false);
+      expect(result[0].errorMessage).toContain('Every asset must be in either keepAssetIds or trashAssetIds');
+    });
+
+    it('should fail if partial trash without keepers', async () => {
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: [asset1.id] }],
+      });
+
+      expect(result[0].success).toBe(false);
+      expect(result[0].errorMessage).toContain('Every asset must be in either keepAssetIds or trashAssetIds');
+    });
+
+    it('should sync merged tags to asset_exif.tags', async () => {
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [
+          {
+            ...asset1,
+            tags: [
+              {
+                id: 'tag-1',
+                value: 'Work',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                parentId: null,
+                color: null,
+              },
+            ],
+          },
+          {
+            ...asset2,
+            tags: [
+              {
+                id: 'tag-2',
+                value: 'Travel',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                parentId: null,
+                color: null,
+              },
+            ],
+          },
+        ] as any,
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
+      });
+
+      expect(result[0].success).toBe(true);
+
+      // Verify tags were applied to tag_asset table
+      expect(mocks.tag.replaceAssetTags).toHaveBeenCalledWith(asset1.id, ['tag-1', 'tag-2']);
+
+      // Verify merged tag values were written to asset_exif.tags so SidecarWrite preserves them
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith([asset1.id], { tags: ['Work', 'Travel'] });
+
+      // Verify SidecarWrite was queued (to write tags to sidecar)
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: asset1.id } }]);
+    });
+
+    // NOTE: The following integration-style tests are covered by E2E tests instead
+    // to avoid complex mock setup. The validation and error-handling logic above
+    // is thoroughly unit tested.
   });
 
   describe('handleSearchDuplicates', () => {

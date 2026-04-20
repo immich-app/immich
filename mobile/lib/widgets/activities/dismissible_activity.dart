@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/widgets/activities/activity_tile.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
-/// Wraps an [ActivityTile] and makes it dismissible
 class DismissibleActivity extends StatelessWidget {
   final String activityId;
   final Widget body;

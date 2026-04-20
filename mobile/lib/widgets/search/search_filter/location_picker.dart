@@ -25,25 +25,31 @@ class LocationPicker extends HookConsumerWidget {
 
     final countries = ref.watch(
       getSearchSuggestionsProvider(
-        SearchSuggestionType.country,
-        locationCountry: selectedCountry.value,
-        locationState: selectedState.value,
+        SearchSuggestionArgs(
+          type: SearchSuggestionType.country,
+          locationCountry: selectedCountry.value,
+          locationState: selectedState.value,
+        ),
       ),
     );
 
     final states = ref.watch(
       getSearchSuggestionsProvider(
-        SearchSuggestionType.state,
-        locationCountry: selectedCountry.value,
-        locationState: selectedState.value,
+        SearchSuggestionArgs(
+          type: SearchSuggestionType.state,
+          locationCountry: selectedCountry.value,
+          locationState: selectedState.value,
+        ),
       ),
     );
 
     final cities = ref.watch(
       getSearchSuggestionsProvider(
-        SearchSuggestionType.city,
-        locationCountry: selectedCountry.value,
-        locationState: selectedState.value,
+        SearchSuggestionArgs(
+          type: SearchSuggestionType.city,
+          locationCountry: selectedCountry.value,
+          locationState: selectedState.value,
+        ),
       ),
     );
 

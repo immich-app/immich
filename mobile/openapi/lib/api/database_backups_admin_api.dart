@@ -218,6 +218,7 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [MultipartFile] file:
+  ///   Database backup file
   Future<Response> uploadDatabaseBackupWithHttpInfo({ MultipartFile? file, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/database-backups/upload';
@@ -260,6 +261,7 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [MultipartFile] file:
+  ///   Database backup file
   Future<void> uploadDatabaseBackup({ MultipartFile? file, }) async {
     final response = await uploadDatabaseBackupWithHttpInfo( file: file, );
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -1,6 +1,7 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
-import { preferences as preferencesStore, resetSavedUser, user as userStore } from '$lib/stores/user.store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { renderWithTooltips } from '$tests/helpers';
 import { updateAsset } from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
@@ -41,7 +42,8 @@ describe('AssetViewer', () => {
   });
 
   afterEach(() => {
-    resetSavedUser();
+    slideshowStore.slideshowState.set(SlideshowState.None);
+    authManager.reset();
     vi.clearAllMocks();
   });
 
@@ -54,8 +56,9 @@ describe('AssetViewer', () => {
     const user = userAdminFactory.build({ id: ownerId });
     const asset = assetFactory.build({ ownerId, isFavorite: false, isTrashed: false });
 
-    userStore.set(user);
-    preferencesStore.set(preferencesFactory.build({ cast: { gCastEnabled: false } }));
+    authManager.setUser(user);
+    authManager.setPreferences(preferencesFactory.build({ cast: { gCastEnabled: false } }));
+
     vi.mocked(updateAsset).mockResolvedValue({ ...asset, isFavorite: true });
 
     const { getByLabelText, queryByLabelText } = renderWithTooltips(AssetViewer, {

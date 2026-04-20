@@ -1,4 +1,5 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -125,8 +126,7 @@ export const getForMemory = (memory: ReturnType<MemoryFactory['build']>) => ({
 export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']>) => ({
   id: asset.id,
   checksum: asset.checksum,
-  deviceAssetId: asset.deviceAssetId,
-  deviceId: asset.deviceId,
+  checksumAlgorithm: asset.checksumAlgorithm,
   fileCreatedAt: asset.fileCreatedAt,
   fileModifiedAt: asset.fileModifiedAt,
   isExternal: asset.isExternal,
@@ -138,6 +138,7 @@ export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']
   originalPath: asset.originalPath,
   ownerId: asset.ownerId,
   type: asset.type,
+  isEdited: asset.isEdited,
   width: asset.width,
   height: asset.height,
   faces: asset.faces.map((face) => getDehydrated(face)),
@@ -203,10 +204,11 @@ export const getForStack = (stack: ReturnType<StackFactory['build']>) => ({
   })),
 });
 
-export const getForDuplicate = (asset: ReturnType<AssetFactory['build']>) => ({
-  ...getDehydrated(asset),
-  exifInfo: getDehydrated(asset.exifInfo),
-});
+export const getForDuplicate = (asset: ReturnType<AssetFactory['build']>) =>
+  ({
+    ...getDehydrated(asset),
+    exifInfo: getDehydrated(asset.exifInfo),
+  }) as unknown as MapAsset;
 
 export const getForSharedLink = (sharedLink: ReturnType<SharedLinkFactory['build']>) => ({
   ...sharedLink,

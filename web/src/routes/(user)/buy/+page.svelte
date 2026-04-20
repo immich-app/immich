@@ -3,7 +3,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
   import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
-  import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
+  import SupporterBadge from './supporter-badge.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { Alert, Container, Stack } from '@immich/ui';

@@ -13,16 +13,17 @@
     filename: string;
     filesize: number;
     expectedVersion: string;
+    timezone?: string;
   };
 
-  const { filename, filesize, expectedVersion }: Props = $props();
+  const { filename, filesize, expectedVersion, timezone }: Props = $props();
 
   const filesizeText = $derived(getBytesWithUnit(filesize, 1));
 
   const backupDateTime = $derived.by(() => {
     const dateMatch = filename.match(/\d+T\d+/);
     if (dateMatch) {
-      return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: 'utc' }).toLocal();
+      return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: timezone }).toLocal();
     }
     return null;
   });
