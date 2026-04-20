@@ -18,7 +18,7 @@ import {
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
 import type { ActionConfig, FilterConfig, JSONSchema } from 'src/types/plugin-schema.types';
@@ -104,7 +104,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: object;
+  data: Record<string, unknown>;
   ownerId: string;
   isSaved: boolean;
   assets: ShallowDehydrateObject<MapAsset>[];
@@ -114,8 +114,6 @@ export type Asset = {
   id: string;
   checksum: Buffer<ArrayBufferLike>;
   checksumAlgorithm: ChecksumAlgorithm;
-  deviceAssetId: string;
-  deviceId: string;
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
@@ -279,8 +277,6 @@ export type AssetFace = {
   isVisible: boolean;
 };
 
-export type Plugin = Selectable<PluginTable>;
-
 export type PluginFilter = Selectable<PluginFilterTable> & {
   methodName: string;
   title: string;
@@ -333,8 +329,6 @@ export const columns = {
     'asset.id',
     'asset.checksum',
     'asset.checksumAlgorithm',
-    'asset.deviceAssetId',
-    'asset.deviceId',
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
     'asset.isExternal',

@@ -77,7 +77,11 @@ describe(UserAdminController.name, () => {
         .set('Authorization', `Bearer token`)
         .send(dto);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['quotaSizeInBytes must be an integer number'])));
+      expect(body).toEqual(
+        errorDto.badRequest(
+          expect.arrayContaining(['[quotaSizeInBytes] Invalid input: expected int, received number']),
+        ),
+      );
     });
 
     it(`should not allow decimal quota`, async () => {
@@ -93,7 +97,11 @@ describe(UserAdminController.name, () => {
         .set('Authorization', `Bearer token`)
         .send(dto);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['quotaSizeInBytes must be an integer number'])));
+      expect(body).toEqual(
+        errorDto.badRequest(
+          expect.arrayContaining(['[quotaSizeInBytes] Invalid input: expected int, received number']),
+        ),
+      );
     });
   });
 
@@ -116,7 +124,11 @@ describe(UserAdminController.name, () => {
         .set('Authorization', `Bearer token`)
         .send({ quotaSizeInBytes: 1.2 });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['quotaSizeInBytes must be an integer number'])));
+      expect(body).toEqual(
+        errorDto.badRequest(
+          expect.arrayContaining(['[quotaSizeInBytes] Invalid input: expected int, received number']),
+        ),
+      );
     });
 
     it('should allow a null pinCode', async () => {

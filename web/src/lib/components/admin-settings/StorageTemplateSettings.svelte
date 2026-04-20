@@ -6,11 +6,11 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Route } from '$lib/route';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { user } from '$lib/stores/user.store';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { Heading, Link, LoadingSpinner, Text } from '@immich/ui';
   import handlebar from 'handlebars';
@@ -177,7 +177,10 @@
           <p class="text-sm">
             <FormatMessage
               key="admin.storage_template_path_length"
-              values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
+              values={{
+                length: parsedTemplate().length + authManager.user.id.length + 'UPLOAD_LOCATION'.length,
+                limit: 260,
+              }}
             >
               {#snippet children({ message })}
                 <span class="font-semibold text-primary">{message}</span>
@@ -186,7 +189,10 @@
           </p>
 
           <p class="text-sm">
-            <FormatMessage key="admin.storage_template_user_label" values={{ label: $user.storageLabel || $user.id }}>
+            <FormatMessage
+              key="admin.storage_template_user_label"
+              values={{ label: authManager.user.storageLabel || authManager.user.id }}
+            >
               {#snippet children({ message })}
                 <code class="text-primary">{message}</code>
               {/snippet}
@@ -195,7 +201,7 @@
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
             <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-              >UPLOAD_LOCATION/library/{$user.storageLabel || $user.id}</span
+              >UPLOAD_LOCATION/library/{authManager.user.storageLabel || authManager.user.id}</span
             >/{parsedTemplate()}.jpg
           </p>
 

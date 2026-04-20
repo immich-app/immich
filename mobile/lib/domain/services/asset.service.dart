@@ -1,11 +1,8 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-
-typedef _AssetVideoDimension = ({double? width, double? height, bool isFlipped});
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
@@ -56,49 +53,6 @@ class AssetService {
 
     final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
     return _remoteAssetRepository.getExif(id);
-  }
-
-  Future<double> getAspectRatio(BaseAsset asset) async {
-    final dimension = asset is LocalAsset
-        ? await _getLocalAssetDimensions(asset)
-        : await _getRemoteAssetDimensions(asset as RemoteAsset);
-
-    if (dimension.width == null || dimension.height == null || dimension.height == 0) {
-      return 1.0;
-    }
-
-    return dimension.isFlipped ? dimension.height! / dimension.width! : dimension.width! / dimension.height!;
-  }
-
-  Future<_AssetVideoDimension> _getLocalAssetDimensions(LocalAsset asset) async {
-    double? width = asset.width?.toDouble();
-    double? height = asset.height?.toDouble();
-    int orientation = asset.orientation;
-
-    if (width == null || height == null) {
-      final fetched = await _localAssetRepository.get(asset.id);
-      width = fetched?.width?.toDouble();
-      height = fetched?.height?.toDouble();
-      orientation = fetched?.orientation ?? 0;
-    }
-
-    // On Android, local assets need orientation correction for 90°/270° rotations
-    // On iOS, the Photos framework pre-corrects dimensions
-    final isFlipped = CurrentPlatform.isAndroid && (orientation == 90 || orientation == 270);
-    return (width: width, height: height, isFlipped: isFlipped);
-  }
-
-  Future<_AssetVideoDimension> _getRemoteAssetDimensions(RemoteAsset asset) async {
-    double? width = asset.width?.toDouble();
-    double? height = asset.height?.toDouble();
-
-    if (width == null || height == null) {
-      final fetched = await _remoteAssetRepository.get(asset.id);
-      width = fetched?.width?.toDouble();
-      height = fetched?.height?.toDouble();
-    }
-
-    return (width: width, height: height, isFlipped: false);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {

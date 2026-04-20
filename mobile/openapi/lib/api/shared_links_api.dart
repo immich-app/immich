@@ -27,11 +27,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
+  Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
@@ -42,13 +38,6 @@ class SharedLinksApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-    if (slug != null) {
-      queryParams.addAll(_queryParams('', 'slug', slug));
-    }
 
     const contentTypes = <String>['application/json'];
 
@@ -73,12 +62,8 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
-    final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
+  Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto,) async {
+    final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -235,14 +220,8 @@ class SharedLinksApi {
   ///
   /// * [String] key:
   ///
-  /// * [String] password:
-  ///   Link password
-  ///
   /// * [String] slug:
-  ///
-  /// * [String] token:
-  ///   Access token
-  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? slug, String? token, }) async {
+  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
 
@@ -256,14 +235,8 @@ class SharedLinksApi {
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
-    if (password != null) {
-      queryParams.addAll(_queryParams('', 'password', password));
-    }
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
-    }
-    if (token != null) {
-      queryParams.addAll(_queryParams('', 'token', token));
     }
 
     const contentTypes = <String>[];
@@ -288,15 +261,9 @@ class SharedLinksApi {
   ///
   /// * [String] key:
   ///
-  /// * [String] password:
-  ///   Link password
-  ///
   /// * [String] slug:
-  ///
-  /// * [String] token:
-  ///   Access token
-  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? slug, String? token, }) async {
-    final response = await getMySharedLinkWithHttpInfo( key: key, password: password, slug: slug, token: token, );
+  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? slug, }) async {
+    final response = await getMySharedLinkWithHttpInfo( key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

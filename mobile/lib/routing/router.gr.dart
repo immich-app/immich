@@ -11,330 +11,6 @@
 part of 'router.dart';
 
 /// generated route for
-/// [ActivitiesPage]
-class ActivitiesRoute extends PageRouteInfo<void> {
-  const ActivitiesRoute({List<PageRouteInfo>? children})
-    : super(ActivitiesRoute.name, initialChildren: children);
-
-  static const String name = 'ActivitiesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const ActivitiesPage();
-    },
-  );
-}
-
-/// generated route for
-/// [AlbumAdditionalSharedUserSelectionPage]
-class AlbumAdditionalSharedUserSelectionRoute
-    extends PageRouteInfo<AlbumAdditionalSharedUserSelectionRouteArgs> {
-  AlbumAdditionalSharedUserSelectionRoute({
-    Key? key,
-    required Album album,
-    List<PageRouteInfo>? children,
-  }) : super(
-         AlbumAdditionalSharedUserSelectionRoute.name,
-         args: AlbumAdditionalSharedUserSelectionRouteArgs(
-           key: key,
-           album: album,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'AlbumAdditionalSharedUserSelectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<AlbumAdditionalSharedUserSelectionRouteArgs>();
-      return AlbumAdditionalSharedUserSelectionPage(
-        key: args.key,
-        album: args.album,
-      );
-    },
-  );
-}
-
-class AlbumAdditionalSharedUserSelectionRouteArgs {
-  const AlbumAdditionalSharedUserSelectionRouteArgs({
-    this.key,
-    required this.album,
-  });
-
-  final Key? key;
-
-  final Album album;
-
-  @override
-  String toString() {
-    return 'AlbumAdditionalSharedUserSelectionRouteArgs{key: $key, album: $album}';
-  }
-}
-
-/// generated route for
-/// [AlbumAssetSelectionPage]
-class AlbumAssetSelectionRoute
-    extends PageRouteInfo<AlbumAssetSelectionRouteArgs> {
-  AlbumAssetSelectionRoute({
-    Key? key,
-    required Set<Asset> existingAssets,
-    bool canDeselect = false,
-    List<PageRouteInfo>? children,
-  }) : super(
-         AlbumAssetSelectionRoute.name,
-         args: AlbumAssetSelectionRouteArgs(
-           key: key,
-           existingAssets: existingAssets,
-           canDeselect: canDeselect,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'AlbumAssetSelectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<AlbumAssetSelectionRouteArgs>();
-      return AlbumAssetSelectionPage(
-        key: args.key,
-        existingAssets: args.existingAssets,
-        canDeselect: args.canDeselect,
-      );
-    },
-  );
-}
-
-class AlbumAssetSelectionRouteArgs {
-  const AlbumAssetSelectionRouteArgs({
-    this.key,
-    required this.existingAssets,
-    this.canDeselect = false,
-  });
-
-  final Key? key;
-
-  final Set<Asset> existingAssets;
-
-  final bool canDeselect;
-
-  @override
-  String toString() {
-    return 'AlbumAssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect}';
-  }
-}
-
-/// generated route for
-/// [AlbumOptionsPage]
-class AlbumOptionsRoute extends PageRouteInfo<void> {
-  const AlbumOptionsRoute({List<PageRouteInfo>? children})
-    : super(AlbumOptionsRoute.name, initialChildren: children);
-
-  static const String name = 'AlbumOptionsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AlbumOptionsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [AlbumPreviewPage]
-class AlbumPreviewRoute extends PageRouteInfo<AlbumPreviewRouteArgs> {
-  AlbumPreviewRoute({
-    Key? key,
-    required Album album,
-    List<PageRouteInfo>? children,
-  }) : super(
-         AlbumPreviewRoute.name,
-         args: AlbumPreviewRouteArgs(key: key, album: album),
-         initialChildren: children,
-       );
-
-  static const String name = 'AlbumPreviewRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<AlbumPreviewRouteArgs>();
-      return AlbumPreviewPage(key: args.key, album: args.album);
-    },
-  );
-}
-
-class AlbumPreviewRouteArgs {
-  const AlbumPreviewRouteArgs({this.key, required this.album});
-
-  final Key? key;
-
-  final Album album;
-
-  @override
-  String toString() {
-    return 'AlbumPreviewRouteArgs{key: $key, album: $album}';
-  }
-}
-
-/// generated route for
-/// [AlbumSharedUserSelectionPage]
-class AlbumSharedUserSelectionRoute
-    extends PageRouteInfo<AlbumSharedUserSelectionRouteArgs> {
-  AlbumSharedUserSelectionRoute({
-    Key? key,
-    required Set<Asset> assets,
-    List<PageRouteInfo>? children,
-  }) : super(
-         AlbumSharedUserSelectionRoute.name,
-         args: AlbumSharedUserSelectionRouteArgs(key: key, assets: assets),
-         initialChildren: children,
-       );
-
-  static const String name = 'AlbumSharedUserSelectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<AlbumSharedUserSelectionRouteArgs>();
-      return AlbumSharedUserSelectionPage(key: args.key, assets: args.assets);
-    },
-  );
-}
-
-class AlbumSharedUserSelectionRouteArgs {
-  const AlbumSharedUserSelectionRouteArgs({this.key, required this.assets});
-
-  final Key? key;
-
-  final Set<Asset> assets;
-
-  @override
-  String toString() {
-    return 'AlbumSharedUserSelectionRouteArgs{key: $key, assets: $assets}';
-  }
-}
-
-/// generated route for
-/// [AlbumViewerPage]
-class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
-  AlbumViewerRoute({
-    Key? key,
-    required int albumId,
-    List<PageRouteInfo>? children,
-  }) : super(
-         AlbumViewerRoute.name,
-         args: AlbumViewerRouteArgs(key: key, albumId: albumId),
-         initialChildren: children,
-       );
-
-  static const String name = 'AlbumViewerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<AlbumViewerRouteArgs>();
-      return AlbumViewerPage(key: args.key, albumId: args.albumId);
-    },
-  );
-}
-
-class AlbumViewerRouteArgs {
-  const AlbumViewerRouteArgs({this.key, required this.albumId});
-
-  final Key? key;
-
-  final int albumId;
-
-  @override
-  String toString() {
-    return 'AlbumViewerRouteArgs{key: $key, albumId: $albumId}';
-  }
-}
-
-/// generated route for
-/// [AlbumsPage]
-class AlbumsRoute extends PageRouteInfo<void> {
-  const AlbumsRoute({List<PageRouteInfo>? children})
-    : super(AlbumsRoute.name, initialChildren: children);
-
-  static const String name = 'AlbumsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AlbumsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllMotionPhotosPage]
-class AllMotionPhotosRoute extends PageRouteInfo<void> {
-  const AllMotionPhotosRoute({List<PageRouteInfo>? children})
-    : super(AllMotionPhotosRoute.name, initialChildren: children);
-
-  static const String name = 'AllMotionPhotosRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllMotionPhotosPage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllPeoplePage]
-class AllPeopleRoute extends PageRouteInfo<void> {
-  const AllPeopleRoute({List<PageRouteInfo>? children})
-    : super(AllPeopleRoute.name, initialChildren: children);
-
-  static const String name = 'AllPeopleRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllPeoplePage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllPlacesPage]
-class AllPlacesRoute extends PageRouteInfo<void> {
-  const AllPlacesRoute({List<PageRouteInfo>? children})
-    : super(AllPlacesRoute.name, initialChildren: children);
-
-  static const String name = 'AllPlacesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllPlacesPage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllVideosPage]
-class AllVideosRoute extends PageRouteInfo<void> {
-  const AllVideosRoute({List<PageRouteInfo>? children})
-    : super(AllVideosRoute.name, initialChildren: children);
-
-  static const String name = 'AllVideosRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllVideosPage();
-    },
-  );
-}
-
-/// generated route for
 /// [AppLogDetailPage]
 class AppLogDetailRoute extends PageRouteInfo<AppLogDetailRouteArgs> {
   AppLogDetailRoute({
@@ -369,6 +45,16 @@ class AppLogDetailRouteArgs {
   String toString() {
     return 'AppLogDetailRouteArgs{key: $key, logMessage: $logMessage}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AppLogDetailRouteArgs) return false;
+    return key == other.key && logMessage == other.logMessage;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ logMessage.hashCode;
 }
 
 /// generated route for
@@ -383,22 +69,6 @@ class AppLogRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const AppLogPage();
-    },
-  );
-}
-
-/// generated route for
-/// [ArchivePage]
-class ArchiveRoute extends PageRouteInfo<void> {
-  const ArchiveRoute({List<PageRouteInfo>? children})
-    : super(ArchiveRoute.name, initialChildren: children);
-
-  static const String name = 'ArchiveRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const ArchivePage();
     },
   );
 }
@@ -438,6 +108,16 @@ class AssetTroubleshootRouteArgs {
   String toString() {
     return 'AssetTroubleshootRouteArgs{key: $key, asset: $asset}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AssetTroubleshootRouteArgs) return false;
+    return key == other.key && asset == other.asset;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ asset.hashCode;
 }
 
 /// generated route for
@@ -502,97 +182,25 @@ class AssetViewerRouteArgs {
   String toString() {
     return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService, heroOffset: $heroOffset, currentAlbum: $currentAlbum}';
   }
-}
-
-/// generated route for
-/// [BackupAlbumSelectionPage]
-class BackupAlbumSelectionRoute extends PageRouteInfo<void> {
-  const BackupAlbumSelectionRoute({List<PageRouteInfo>? children})
-    : super(BackupAlbumSelectionRoute.name, initialChildren: children);
-
-  static const String name = 'BackupAlbumSelectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const BackupAlbumSelectionPage();
-    },
-  );
-}
-
-/// generated route for
-/// [BackupControllerPage]
-class BackupControllerRoute extends PageRouteInfo<void> {
-  const BackupControllerRoute({List<PageRouteInfo>? children})
-    : super(BackupControllerRoute.name, initialChildren: children);
-
-  static const String name = 'BackupControllerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const BackupControllerPage();
-    },
-  );
-}
-
-/// generated route for
-/// [BackupOptionsPage]
-class BackupOptionsRoute extends PageRouteInfo<void> {
-  const BackupOptionsRoute({List<PageRouteInfo>? children})
-    : super(BackupOptionsRoute.name, initialChildren: children);
-
-  static const String name = 'BackupOptionsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const BackupOptionsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [ChangeExperiencePage]
-class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
-  ChangeExperienceRoute({
-    Key? key,
-    required bool switchingToBeta,
-    List<PageRouteInfo>? children,
-  }) : super(
-         ChangeExperienceRoute.name,
-         args: ChangeExperienceRouteArgs(
-           key: key,
-           switchingToBeta: switchingToBeta,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'ChangeExperienceRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<ChangeExperienceRouteArgs>();
-      return ChangeExperiencePage(
-        key: args.key,
-        switchingToBeta: args.switchingToBeta,
-      );
-    },
-  );
-}
-
-class ChangeExperienceRouteArgs {
-  const ChangeExperienceRouteArgs({this.key, required this.switchingToBeta});
-
-  final Key? key;
-
-  final bool switchingToBeta;
 
   @override
-  String toString() {
-    return 'ChangeExperienceRouteArgs{key: $key, switchingToBeta: $switchingToBeta}';
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AssetViewerRouteArgs) return false;
+    return key == other.key &&
+        initialIndex == other.initialIndex &&
+        timelineService == other.timelineService &&
+        heroOffset == other.heroOffset &&
+        currentAlbum == other.currentAlbum;
   }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      initialIndex.hashCode ^
+      timelineService.hashCode ^
+      heroOffset.hashCode ^
+      currentAlbum.hashCode;
 }
 
 /// generated route for
@@ -646,89 +254,18 @@ class CleanupPreviewRouteArgs {
   String toString() {
     return 'CleanupPreviewRouteArgs{key: $key, assets: $assets}';
   }
-}
-
-/// generated route for
-/// [CreateAlbumPage]
-class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
-  CreateAlbumRoute({
-    Key? key,
-    List<Asset>? assets,
-    List<PageRouteInfo>? children,
-  }) : super(
-         CreateAlbumRoute.name,
-         args: CreateAlbumRouteArgs(key: key, assets: assets),
-         initialChildren: children,
-       );
-
-  static const String name = 'CreateAlbumRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<CreateAlbumRouteArgs>(
-        orElse: () => const CreateAlbumRouteArgs(),
-      );
-      return CreateAlbumPage(key: args.key, assets: args.assets);
-    },
-  );
-}
-
-class CreateAlbumRouteArgs {
-  const CreateAlbumRouteArgs({this.key, this.assets});
-
-  final Key? key;
-
-  final List<Asset>? assets;
 
   @override
-  String toString() {
-    return 'CreateAlbumRouteArgs{key: $key, assets: $assets}';
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! CleanupPreviewRouteArgs) return false;
+    return key == other.key &&
+        const ListEquality<LocalAsset>().equals(assets, other.assets);
   }
-}
-
-/// generated route for
-/// [CropImagePage]
-class CropImageRoute extends PageRouteInfo<CropImageRouteArgs> {
-  CropImageRoute({
-    Key? key,
-    required Image image,
-    required Asset asset,
-    List<PageRouteInfo>? children,
-  }) : super(
-         CropImageRoute.name,
-         args: CropImageRouteArgs(key: key, image: image, asset: asset),
-         initialChildren: children,
-       );
-
-  static const String name = 'CropImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<CropImageRouteArgs>();
-      return CropImagePage(key: args.key, image: args.image, asset: args.asset);
-    },
-  );
-}
-
-class CropImageRouteArgs {
-  const CropImageRouteArgs({
-    this.key,
-    required this.image,
-    required this.asset,
-  });
-
-  final Key? key;
-
-  final Image image;
-
-  final Asset asset;
 
   @override
-  String toString() {
-    return 'CropImageRouteArgs{key: $key, image: $image, asset: $asset}';
-  }
+  int get hashCode =>
+      key.hashCode ^ const ListEquality<LocalAsset>().hash(assets);
 }
 
 /// generated route for
@@ -803,6 +340,20 @@ class DriftActivitiesRouteArgs {
   String toString() {
     return 'DriftActivitiesRouteArgs{key: $key, album: $album, assetId: $assetId, assetName: $assetName}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftActivitiesRouteArgs) return false;
+    return key == other.key &&
+        album == other.album &&
+        assetId == other.assetId &&
+        assetName == other.assetName;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^ album.hashCode ^ assetId.hashCode ^ assetName.hashCode;
 }
 
 /// generated route for
@@ -840,6 +391,16 @@ class DriftAlbumOptionsRouteArgs {
   String toString() {
     return 'DriftAlbumOptionsRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftAlbumOptionsRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -921,6 +482,21 @@ class DriftAssetSelectionTimelineRouteArgs {
   String toString() {
     return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftAssetSelectionTimelineRouteArgs) return false;
+    return key == other.key &&
+        const SetEquality<BaseAsset>().equals(
+          lockedSelectionAssets,
+          other.lockedSelectionAssets,
+        );
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^ const SetEquality<BaseAsset>().hash(lockedSelectionAssets);
 }
 
 /// generated route for
@@ -1004,69 +580,19 @@ class DriftCreateAlbumRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftCropImagePage]
-class DriftCropImageRoute extends PageRouteInfo<DriftCropImageRouteArgs> {
-  DriftCropImageRoute({
-    Key? key,
-    required Image image,
-    required BaseAsset asset,
-    List<PageRouteInfo>? children,
-  }) : super(
-         DriftCropImageRoute.name,
-         args: DriftCropImageRouteArgs(key: key, image: image, asset: asset),
-         initialChildren: children,
-       );
-
-  static const String name = 'DriftCropImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<DriftCropImageRouteArgs>();
-      return DriftCropImagePage(
-        key: args.key,
-        image: args.image,
-        asset: args.asset,
-      );
-    },
-  );
-}
-
-class DriftCropImageRouteArgs {
-  const DriftCropImageRouteArgs({
-    this.key,
-    required this.image,
-    required this.asset,
-  });
-
-  final Key? key;
-
-  final Image image;
-
-  final BaseAsset asset;
-
-  @override
-  String toString() {
-    return 'DriftCropImageRouteArgs{key: $key, image: $image, asset: $asset}';
-  }
-}
-
-/// generated route for
 /// [DriftEditImagePage]
 class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
   DriftEditImageRoute({
     Key? key,
-    required BaseAsset asset,
     required Image image,
-    required bool isEdited,
+    required Future<void> Function(List<AssetEdit>) applyEdits,
     List<PageRouteInfo>? children,
   }) : super(
          DriftEditImageRoute.name,
          args: DriftEditImageRouteArgs(
            key: key,
-           asset: asset,
            image: image,
-           isEdited: isEdited,
+           applyEdits: applyEdits,
          ),
          initialChildren: children,
        );
@@ -1079,9 +605,8 @@ class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
       final args = data.argsAs<DriftEditImageRouteArgs>();
       return DriftEditImagePage(
         key: args.key,
-        asset: args.asset,
         image: args.image,
-        isEdited: args.isEdited,
+        applyEdits: args.applyEdits,
       );
     },
   );
@@ -1090,23 +615,30 @@ class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
 class DriftEditImageRouteArgs {
   const DriftEditImageRouteArgs({
     this.key,
-    required this.asset,
     required this.image,
-    required this.isEdited,
+    required this.applyEdits,
   });
 
   final Key? key;
 
-  final BaseAsset asset;
-
   final Image image;
 
-  final bool isEdited;
+  final Future<void> Function(List<AssetEdit>) applyEdits;
 
   @override
   String toString() {
-    return 'DriftEditImageRouteArgs{key: $key, asset: $asset, image: $image, isEdited: $isEdited}';
+    return 'DriftEditImageRouteArgs{key: $key, image: $image, applyEdits: $applyEdits}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftEditImageRouteArgs) return false;
+    return key == other.key && image == other.image;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ image.hashCode;
 }
 
 /// generated route for
@@ -1123,54 +655,6 @@ class DriftFavoriteRoute extends PageRouteInfo<void> {
       return const DriftFavoritePage();
     },
   );
-}
-
-/// generated route for
-/// [DriftFilterImagePage]
-class DriftFilterImageRoute extends PageRouteInfo<DriftFilterImageRouteArgs> {
-  DriftFilterImageRoute({
-    Key? key,
-    required Image image,
-    required BaseAsset asset,
-    List<PageRouteInfo>? children,
-  }) : super(
-         DriftFilterImageRoute.name,
-         args: DriftFilterImageRouteArgs(key: key, image: image, asset: asset),
-         initialChildren: children,
-       );
-
-  static const String name = 'DriftFilterImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<DriftFilterImageRouteArgs>();
-      return DriftFilterImagePage(
-        key: args.key,
-        image: args.image,
-        asset: args.asset,
-      );
-    },
-  );
-}
-
-class DriftFilterImageRouteArgs {
-  const DriftFilterImageRouteArgs({
-    this.key,
-    required this.image,
-    required this.asset,
-  });
-
-  final Key? key;
-
-  final Image image;
-
-  final BaseAsset asset;
-
-  @override
-  String toString() {
-    return 'DriftFilterImageRouteArgs{key: $key, image: $image, asset: $asset}';
-  }
 }
 
 /// generated route for
@@ -1258,6 +742,16 @@ class DriftMapRouteArgs {
   String toString() {
     return 'DriftMapRouteArgs{key: $key, initialLocation: $initialLocation}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftMapRouteArgs) return false;
+    return key == other.key && initialLocation == other.initialLocation;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ initialLocation.hashCode;
 }
 
 /// generated route for
@@ -1310,6 +804,21 @@ class DriftMemoryRouteArgs {
   String toString() {
     return 'DriftMemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftMemoryRouteArgs) return false;
+    return const ListEquality<DriftMemory>().equals(memories, other.memories) &&
+        memoryIndex == other.memoryIndex &&
+        key == other.key;
+  }
+
+  @override
+  int get hashCode =>
+      const ListEquality<DriftMemory>().hash(memories) ^
+      memoryIndex.hashCode ^
+      key.hashCode;
 }
 
 /// generated route for
@@ -1348,6 +857,16 @@ class DriftPartnerDetailRouteArgs {
   String toString() {
     return 'DriftPartnerDetailRouteArgs{key: $key, partner: $partner}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPartnerDetailRouteArgs) return false;
+    return key == other.key && partner == other.partner;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ partner.hashCode;
 }
 
 /// generated route for
@@ -1417,6 +936,16 @@ class DriftPersonRouteArgs {
   String toString() {
     return 'DriftPersonRouteArgs{key: $key, person: $person}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPersonRouteArgs) return false;
+    return key == other.key && person == other.person;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ person.hashCode;
 }
 
 /// generated route for
@@ -1454,6 +983,16 @@ class DriftPlaceDetailRouteArgs {
   String toString() {
     return 'DriftPlaceDetailRouteArgs{key: $key, place: $place}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPlaceDetailRouteArgs) return false;
+    return key == other.key && place == other.place;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ place.hashCode;
 }
 
 /// generated route for
@@ -1496,6 +1035,16 @@ class DriftPlaceRouteArgs {
   String toString() {
     return 'DriftPlaceRouteArgs{key: $key, currentLocation: $currentLocation}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPlaceRouteArgs) return false;
+    return key == other.key && currentLocation == other.currentLocation;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ currentLocation.hashCode;
 }
 
 /// generated route for
@@ -1598,6 +1147,16 @@ class DriftUserSelectionRouteArgs {
   String toString() {
     return 'DriftUserSelectionRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftUserSelectionRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -1614,144 +1173,6 @@ class DriftVideoRoute extends PageRouteInfo<void> {
       return const DriftVideoPage();
     },
   );
-}
-
-/// generated route for
-/// [EditImagePage]
-class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
-  EditImageRoute({
-    Key? key,
-    required Asset asset,
-    required Image image,
-    required bool isEdited,
-    List<PageRouteInfo>? children,
-  }) : super(
-         EditImageRoute.name,
-         args: EditImageRouteArgs(
-           key: key,
-           asset: asset,
-           image: image,
-           isEdited: isEdited,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'EditImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<EditImageRouteArgs>();
-      return EditImagePage(
-        key: args.key,
-        asset: args.asset,
-        image: args.image,
-        isEdited: args.isEdited,
-      );
-    },
-  );
-}
-
-class EditImageRouteArgs {
-  const EditImageRouteArgs({
-    this.key,
-    required this.asset,
-    required this.image,
-    required this.isEdited,
-  });
-
-  final Key? key;
-
-  final Asset asset;
-
-  final Image image;
-
-  final bool isEdited;
-
-  @override
-  String toString() {
-    return 'EditImageRouteArgs{key: $key, asset: $asset, image: $image, isEdited: $isEdited}';
-  }
-}
-
-/// generated route for
-/// [FailedBackupStatusPage]
-class FailedBackupStatusRoute extends PageRouteInfo<void> {
-  const FailedBackupStatusRoute({List<PageRouteInfo>? children})
-    : super(FailedBackupStatusRoute.name, initialChildren: children);
-
-  static const String name = 'FailedBackupStatusRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const FailedBackupStatusPage();
-    },
-  );
-}
-
-/// generated route for
-/// [FavoritesPage]
-class FavoritesRoute extends PageRouteInfo<void> {
-  const FavoritesRoute({List<PageRouteInfo>? children})
-    : super(FavoritesRoute.name, initialChildren: children);
-
-  static const String name = 'FavoritesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const FavoritesPage();
-    },
-  );
-}
-
-/// generated route for
-/// [FilterImagePage]
-class FilterImageRoute extends PageRouteInfo<FilterImageRouteArgs> {
-  FilterImageRoute({
-    Key? key,
-    required Image image,
-    required Asset asset,
-    List<PageRouteInfo>? children,
-  }) : super(
-         FilterImageRoute.name,
-         args: FilterImageRouteArgs(key: key, image: image, asset: asset),
-         initialChildren: children,
-       );
-
-  static const String name = 'FilterImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<FilterImageRouteArgs>();
-      return FilterImagePage(
-        key: args.key,
-        image: args.image,
-        asset: args.asset,
-      );
-    },
-  );
-}
-
-class FilterImageRouteArgs {
-  const FilterImageRouteArgs({
-    this.key,
-    required this.image,
-    required this.asset,
-  });
-
-  final Key? key;
-
-  final Image image;
-
-  final Asset asset;
-
-  @override
-  String toString() {
-    return 'FilterImageRouteArgs{key: $key, image: $image, asset: $asset}';
-  }
 }
 
 /// generated route for
@@ -1791,70 +1212,16 @@ class FolderRouteArgs {
   String toString() {
     return 'FolderRouteArgs{key: $key, folder: $folder}';
   }
-}
-
-/// generated route for
-/// [GalleryViewerPage]
-class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
-  GalleryViewerRoute({
-    Key? key,
-    required RenderList renderList,
-    int initialIndex = 0,
-    int heroOffset = 0,
-    bool showStack = false,
-    List<PageRouteInfo>? children,
-  }) : super(
-         GalleryViewerRoute.name,
-         args: GalleryViewerRouteArgs(
-           key: key,
-           renderList: renderList,
-           initialIndex: initialIndex,
-           heroOffset: heroOffset,
-           showStack: showStack,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'GalleryViewerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<GalleryViewerRouteArgs>();
-      return GalleryViewerPage(
-        key: args.key,
-        renderList: args.renderList,
-        initialIndex: args.initialIndex,
-        heroOffset: args.heroOffset,
-        showStack: args.showStack,
-      );
-    },
-  );
-}
-
-class GalleryViewerRouteArgs {
-  const GalleryViewerRouteArgs({
-    this.key,
-    required this.renderList,
-    this.initialIndex = 0,
-    this.heroOffset = 0,
-    this.showStack = false,
-  });
-
-  final Key? key;
-
-  final RenderList renderList;
-
-  final int initialIndex;
-
-  final int heroOffset;
-
-  final bool showStack;
 
   @override
-  String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, renderList: $renderList, initialIndex: $initialIndex, heroOffset: $heroOffset, showStack: $showStack}';
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FolderRouteArgs) return false;
+    return key == other.key && folder == other.folder;
   }
+
+  @override
+  int get hashCode => key.hashCode ^ folder.hashCode;
 }
 
 /// generated route for
@@ -1869,38 +1236,6 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const HeaderSettingsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [LibraryPage]
-class LibraryRoute extends PageRouteInfo<void> {
-  const LibraryRoute({List<PageRouteInfo>? children})
-    : super(LibraryRoute.name, initialChildren: children);
-
-  static const String name = 'LibraryRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const LibraryPage();
-    },
-  );
-}
-
-/// generated route for
-/// [LocalAlbumsPage]
-class LocalAlbumsRoute extends PageRouteInfo<void> {
-  const LocalAlbumsRoute({List<PageRouteInfo>? children})
-    : super(LocalAlbumsRoute.name, initialChildren: children);
-
-  static const String name = 'LocalAlbumsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const LocalAlbumsPage();
     },
   );
 }
@@ -1956,22 +1291,16 @@ class LocalTimelineRouteArgs {
   String toString() {
     return 'LocalTimelineRouteArgs{key: $key, album: $album}';
   }
-}
 
-/// generated route for
-/// [LockedPage]
-class LockedRoute extends PageRouteInfo<void> {
-  const LockedRoute({List<PageRouteInfo>? children})
-    : super(LockedRoute.name, initialChildren: children);
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! LocalTimelineRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
 
-  static const String name = 'LockedRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const LockedPage();
-    },
-  );
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -2052,311 +1381,16 @@ class MapLocationPickerRouteArgs {
   String toString() {
     return 'MapLocationPickerRouteArgs{key: $key, initialLatLng: $initialLatLng}';
   }
-}
-
-/// generated route for
-/// [MapPage]
-class MapRoute extends PageRouteInfo<MapRouteArgs> {
-  MapRoute({Key? key, LatLng? initialLocation, List<PageRouteInfo>? children})
-    : super(
-        MapRoute.name,
-        args: MapRouteArgs(key: key, initialLocation: initialLocation),
-        initialChildren: children,
-      );
-
-  static const String name = 'MapRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<MapRouteArgs>(
-        orElse: () => const MapRouteArgs(),
-      );
-      return MapPage(key: args.key, initialLocation: args.initialLocation);
-    },
-  );
-}
-
-class MapRouteArgs {
-  const MapRouteArgs({this.key, this.initialLocation});
-
-  final Key? key;
-
-  final LatLng? initialLocation;
 
   @override
-  String toString() {
-    return 'MapRouteArgs{key: $key, initialLocation: $initialLocation}';
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! MapLocationPickerRouteArgs) return false;
+    return key == other.key && initialLatLng == other.initialLatLng;
   }
-}
-
-/// generated route for
-/// [MemoryPage]
-class MemoryRoute extends PageRouteInfo<MemoryRouteArgs> {
-  MemoryRoute({
-    required List<Memory> memories,
-    required int memoryIndex,
-    Key? key,
-    List<PageRouteInfo>? children,
-  }) : super(
-         MemoryRoute.name,
-         args: MemoryRouteArgs(
-           memories: memories,
-           memoryIndex: memoryIndex,
-           key: key,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'MemoryRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<MemoryRouteArgs>();
-      return MemoryPage(
-        memories: args.memories,
-        memoryIndex: args.memoryIndex,
-        key: args.key,
-      );
-    },
-  );
-}
-
-class MemoryRouteArgs {
-  const MemoryRouteArgs({
-    required this.memories,
-    required this.memoryIndex,
-    this.key,
-  });
-
-  final List<Memory> memories;
-
-  final int memoryIndex;
-
-  final Key? key;
 
   @override
-  String toString() {
-    return 'MemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
-  }
-}
-
-/// generated route for
-/// [NativeVideoViewerPage]
-class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
-  NativeVideoViewerRoute({
-    Key? key,
-    required Asset asset,
-    required Widget image,
-    bool showControls = true,
-    int playbackDelayFactor = 1,
-    List<PageRouteInfo>? children,
-  }) : super(
-         NativeVideoViewerRoute.name,
-         args: NativeVideoViewerRouteArgs(
-           key: key,
-           asset: asset,
-           image: image,
-           showControls: showControls,
-           playbackDelayFactor: playbackDelayFactor,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'NativeVideoViewerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<NativeVideoViewerRouteArgs>();
-      return NativeVideoViewerPage(
-        key: args.key,
-        asset: args.asset,
-        image: args.image,
-        showControls: args.showControls,
-        playbackDelayFactor: args.playbackDelayFactor,
-      );
-    },
-  );
-}
-
-class NativeVideoViewerRouteArgs {
-  const NativeVideoViewerRouteArgs({
-    this.key,
-    required this.asset,
-    required this.image,
-    this.showControls = true,
-    this.playbackDelayFactor = 1,
-  });
-
-  final Key? key;
-
-  final Asset asset;
-
-  final Widget image;
-
-  final bool showControls;
-
-  final int playbackDelayFactor;
-
-  @override
-  String toString() {
-    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls, playbackDelayFactor: $playbackDelayFactor}';
-  }
-}
-
-/// generated route for
-/// [PartnerDetailPage]
-class PartnerDetailRoute extends PageRouteInfo<PartnerDetailRouteArgs> {
-  PartnerDetailRoute({
-    Key? key,
-    required UserDto partner,
-    List<PageRouteInfo>? children,
-  }) : super(
-         PartnerDetailRoute.name,
-         args: PartnerDetailRouteArgs(key: key, partner: partner),
-         initialChildren: children,
-       );
-
-  static const String name = 'PartnerDetailRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<PartnerDetailRouteArgs>();
-      return PartnerDetailPage(key: args.key, partner: args.partner);
-    },
-  );
-}
-
-class PartnerDetailRouteArgs {
-  const PartnerDetailRouteArgs({this.key, required this.partner});
-
-  final Key? key;
-
-  final UserDto partner;
-
-  @override
-  String toString() {
-    return 'PartnerDetailRouteArgs{key: $key, partner: $partner}';
-  }
-}
-
-/// generated route for
-/// [PartnerPage]
-class PartnerRoute extends PageRouteInfo<void> {
-  const PartnerRoute({List<PageRouteInfo>? children})
-    : super(PartnerRoute.name, initialChildren: children);
-
-  static const String name = 'PartnerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const PartnerPage();
-    },
-  );
-}
-
-/// generated route for
-/// [PeopleCollectionPage]
-class PeopleCollectionRoute extends PageRouteInfo<void> {
-  const PeopleCollectionRoute({List<PageRouteInfo>? children})
-    : super(PeopleCollectionRoute.name, initialChildren: children);
-
-  static const String name = 'PeopleCollectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const PeopleCollectionPage();
-    },
-  );
-}
-
-/// generated route for
-/// [PermissionOnboardingPage]
-class PermissionOnboardingRoute extends PageRouteInfo<void> {
-  const PermissionOnboardingRoute({List<PageRouteInfo>? children})
-    : super(PermissionOnboardingRoute.name, initialChildren: children);
-
-  static const String name = 'PermissionOnboardingRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const PermissionOnboardingPage();
-    },
-  );
-}
-
-/// generated route for
-/// [PersonResultPage]
-class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
-  PersonResultRoute({
-    Key? key,
-    required String personId,
-    required String personName,
-    List<PageRouteInfo>? children,
-  }) : super(
-         PersonResultRoute.name,
-         args: PersonResultRouteArgs(
-           key: key,
-           personId: personId,
-           personName: personName,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'PersonResultRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<PersonResultRouteArgs>();
-      return PersonResultPage(
-        key: args.key,
-        personId: args.personId,
-        personName: args.personName,
-      );
-    },
-  );
-}
-
-class PersonResultRouteArgs {
-  const PersonResultRouteArgs({
-    this.key,
-    required this.personId,
-    required this.personName,
-  });
-
-  final Key? key;
-
-  final String personId;
-
-  final String personName;
-
-  @override
-  String toString() {
-    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
-  }
-}
-
-/// generated route for
-/// [PhotosPage]
-class PhotosRoute extends PageRouteInfo<void> {
-  const PhotosRoute({List<PageRouteInfo>? children})
-    : super(PhotosRoute.name, initialChildren: children);
-
-  static const String name = 'PhotosRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const PhotosPage();
-    },
-  );
+  int get hashCode => key.hashCode ^ initialLatLng.hashCode;
 }
 
 /// generated route for
@@ -2396,51 +1430,16 @@ class PinAuthRouteArgs {
   String toString() {
     return 'PinAuthRouteArgs{key: $key, createPinCode: $createPinCode}';
   }
-}
-
-/// generated route for
-/// [PlacesCollectionPage]
-class PlacesCollectionRoute extends PageRouteInfo<PlacesCollectionRouteArgs> {
-  PlacesCollectionRoute({
-    Key? key,
-    LatLng? currentLocation,
-    List<PageRouteInfo>? children,
-  }) : super(
-         PlacesCollectionRoute.name,
-         args: PlacesCollectionRouteArgs(
-           key: key,
-           currentLocation: currentLocation,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'PlacesCollectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<PlacesCollectionRouteArgs>(
-        orElse: () => const PlacesCollectionRouteArgs(),
-      );
-      return PlacesCollectionPage(
-        key: args.key,
-        currentLocation: args.currentLocation,
-      );
-    },
-  );
-}
-
-class PlacesCollectionRouteArgs {
-  const PlacesCollectionRouteArgs({this.key, this.currentLocation});
-
-  final Key? key;
-
-  final LatLng? currentLocation;
 
   @override
-  String toString() {
-    return 'PlacesCollectionRouteArgs{key: $key, currentLocation: $currentLocation}';
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PinAuthRouteArgs) return false;
+    return key == other.key && createPinCode == other.createPinCode;
   }
+
+  @override
+  int get hashCode => key.hashCode ^ createPinCode.hashCode;
 }
 
 /// generated route for
@@ -2479,22 +1478,16 @@ class ProfilePictureCropRouteArgs {
   String toString() {
     return 'ProfilePictureCropRouteArgs{key: $key, asset: $asset}';
   }
-}
 
-/// generated route for
-/// [RecentlyTakenPage]
-class RecentlyTakenRoute extends PageRouteInfo<void> {
-  const RecentlyTakenRoute({List<PageRouteInfo>? children})
-    : super(RecentlyTakenRoute.name, initialChildren: children);
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ProfilePictureCropRouteArgs) return false;
+    return key == other.key && asset == other.asset;
+  }
 
-  static const String name = 'RecentlyTakenRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const RecentlyTakenPage();
-    },
-  );
+  @override
+  int get hashCode => key.hashCode ^ asset.hashCode;
 }
 
 /// generated route for
@@ -2532,6 +1525,16 @@ class RemoteAlbumRouteArgs {
   String toString() {
     return 'RemoteAlbumRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! RemoteAlbumRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -2548,45 +1551,6 @@ class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
       return const RemoteMediaSummaryPage();
     },
   );
-}
-
-/// generated route for
-/// [SearchPage]
-class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
-  SearchRoute({
-    Key? key,
-    SearchFilter? prefilter,
-    List<PageRouteInfo>? children,
-  }) : super(
-         SearchRoute.name,
-         args: SearchRouteArgs(key: key, prefilter: prefilter),
-         initialChildren: children,
-       );
-
-  static const String name = 'SearchRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<SearchRouteArgs>(
-        orElse: () => const SearchRouteArgs(),
-      );
-      return SearchPage(key: args.key, prefilter: args.prefilter);
-    },
-  );
-}
-
-class SearchRouteArgs {
-  const SearchRouteArgs({this.key, this.prefilter});
-
-  final Key? key;
-
-  final SearchFilter? prefilter;
-
-  @override
-  String toString() {
-    return 'SearchRouteArgs{key: $key, prefilter: $prefilter}';
-  }
 }
 
 /// generated route for
@@ -2640,6 +1604,16 @@ class SettingsSubRouteArgs {
   String toString() {
     return 'SettingsSubRouteArgs{section: $section, key: $key}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SettingsSubRouteArgs) return false;
+    return section == other.section && key == other.key;
+  }
+
+  @override
+  int get hashCode => section.hashCode ^ key.hashCode;
 }
 
 /// generated route for
@@ -2677,6 +1651,22 @@ class ShareIntentRouteArgs {
   String toString() {
     return 'ShareIntentRouteArgs{key: $key, attachments: $attachments}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ShareIntentRouteArgs) return false;
+    return key == other.key &&
+        const ListEquality<ShareIntentAttachment>().equals(
+          attachments,
+          other.attachments,
+        );
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      const ListEquality<ShareIntentAttachment>().hash(attachments);
 }
 
 /// generated route for
@@ -2737,6 +1727,23 @@ class SharedLinkEditRouteArgs {
   String toString() {
     return 'SharedLinkEditRouteArgs{key: $key, existingLink: $existingLink, assetsList: $assetsList, albumId: $albumId}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SharedLinkEditRouteArgs) return false;
+    return key == other.key &&
+        existingLink == other.existingLink &&
+        const ListEquality<String>().equals(assetsList, other.assetsList) &&
+        albumId == other.albumId;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      existingLink.hashCode ^
+      const ListEquality<String>().hash(assetsList) ^
+      albumId.hashCode;
 }
 
 /// generated route for
@@ -2788,22 +1795,6 @@ class SyncStatusRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [TabControllerPage]
-class TabControllerRoute extends PageRouteInfo<void> {
-  const TabControllerRoute({List<PageRouteInfo>? children})
-    : super(TabControllerRoute.name, initialChildren: children);
-
-  static const String name = 'TabControllerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TabControllerPage();
-    },
-  );
-}
-
-/// generated route for
 /// [TabShellPage]
 class TabShellRoute extends PageRouteInfo<void> {
   const TabShellRoute({List<PageRouteInfo>? children})
@@ -2815,22 +1806,6 @@ class TabShellRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TabShellPage();
-    },
-  );
-}
-
-/// generated route for
-/// [TrashPage]
-class TrashRoute extends PageRouteInfo<void> {
-  const TrashRoute({List<PageRouteInfo>? children})
-    : super(TrashRoute.name, initialChildren: children);
-
-  static const String name = 'TrashRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TrashPage();
     },
   );
 }

@@ -41,7 +41,7 @@ describe(DuplicateController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/duplicates/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.badRequest(['[id] Invalid UUID']));
     });
   });
 });

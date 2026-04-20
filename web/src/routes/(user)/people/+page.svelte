@@ -3,9 +3,9 @@
   import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
-  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
+  import ManagePeopleVisibility from './manage-people-visibility.svelte';
+  import PeopleCard from './people-card.svelte';
+  import PeopleInfiniteScroll from './people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';

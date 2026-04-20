@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/utils/context';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
 
   interface Props {
     album: AlbumResponseDto;
@@ -16,10 +16,8 @@
 
   let { album = $bindable(), onRemove, assetIds, menuItem = false }: Props = $props();
 
-  const context = getAssetControlContext();
-
   const removeFromAlbum = async () => {
-    const ids = assetIds ?? context?.getAssets().map(({ id }) => id) ?? [];
+    const ids = assetIds ?? assetMultiSelectManager.assets.map(({ id }) => id) ?? [];
 
     const isConfirmed = await modalManager.showDialog({
       prompt: $t('remove_assets_album_confirmation', { values: { count: ids.length } }),
@@ -42,7 +40,7 @@
       const count = results.filter(({ success }) => success).length;
       toastManager.primary($t('assets_removed_count', { values: { count } }));
 
-      context?.clearSelect();
+      assetMultiSelectManager.clear();
     } catch (error) {
       handleError(error, $t('errors.error_removing_assets_from_album'));
     }

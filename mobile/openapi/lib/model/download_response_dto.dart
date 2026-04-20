@@ -21,6 +21,9 @@ class DownloadResponseDto {
   List<DownloadArchiveInfo> archives;
 
   /// Total size in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int totalSize;
 
   @override

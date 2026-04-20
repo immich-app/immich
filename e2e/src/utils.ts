@@ -3,7 +3,6 @@ import {
   AssetMediaResponseDto,
   AssetResponseDto,
   AssetVisibility,
-  CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
   JobCreateDto,
@@ -20,7 +19,6 @@ import {
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
   ValidateLibraryDto,
-  checkExistingAssets,
   createAlbum,
   createApiKey,
   createJob,
@@ -343,8 +341,6 @@ export const utils = {
     },
   ) => {
     const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
       fileCreatedAt: new Date().toISOString(),
       fileModifiedAt: new Date().toISOString(),
       ...dto,
@@ -365,40 +361,6 @@ export const utils = {
     if (dto?.sidecarData?.bytes) {
       void builder.attach('sidecarData', dto.sidecarData.bytes, dto.sidecarData.filename);
     }
-
-    for (const [key, value] of Object.entries(_dto)) {
-      void builder.field(key, String(value));
-    }
-
-    const { body } = await builder;
-
-    return body as AssetMediaResponseDto;
-  },
-
-  replaceAsset: async (
-    accessToken: string,
-    assetId: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: FileData },
-  ) => {
-    const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
-      fileCreatedAt: new Date().toISOString(),
-      fileModifiedAt: new Date().toISOString(),
-      ...dto,
-    };
-
-    const assetData = dto?.assetData?.bytes || makeRandomImage();
-    const filename = dto?.assetData?.filename || 'example.png';
-
-    if (dto?.assetData?.bytes) {
-      console.log(`Uploading ${filename}`);
-    }
-
-    const builder = request(app)
-      .put(`/assets/${assetId}/original`)
-      .attach('assetData', assetData, filename)
-      .set('Authorization', `Bearer ${accessToken}`);
 
     for (const [key, value] of Object.entries(_dto)) {
       void builder.field(key, String(value));
@@ -449,9 +411,6 @@ export const utils = {
   getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
-
-  checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
-    checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
   searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });

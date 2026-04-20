@@ -14,7 +14,7 @@ class ValidateLibraryImportPathResponseDto {
   /// Returns a new [ValidateLibraryImportPathResponseDto] instance.
   ValidateLibraryImportPathResponseDto({
     required this.importPath,
-    this.isValid = false,
+    required this.isValid,
     this.message,
   });
 

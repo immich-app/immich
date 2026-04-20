@@ -49,7 +49,7 @@ describe(ApiKeyController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/api-keys/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.badRequest(['[id] Invalid UUID']));
     });
   });
 
@@ -64,7 +64,7 @@ describe(ApiKeyController.name, () => {
         .put(`/api-keys/123`)
         .send({ name: 'new name', permissions: [Permission.All] });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.badRequest(['[id] Invalid UUID']));
     });
 
     it('should allow updating just the name', async () => {
@@ -84,7 +84,7 @@ describe(ApiKeyController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/api-keys/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.badRequest(['[id] Invalid UUID']));
     });
   });
 });

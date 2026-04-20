@@ -15,8 +15,6 @@ import {
   AssetMetadataUpsertDto,
   AssetStatsDto,
   AssetStatsResponseDto,
-  DeviceIdDto,
-  RandomAssetsDto,
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -31,28 +29,6 @@ import { UUIDParamDto } from 'src/validation';
 @Controller(RouteKey.Asset)
 export class AssetController {
   constructor(private service: AssetService) {}
-
-  @Get('random')
-  @Authenticated({ permission: Permission.AssetRead })
-  @Endpoint({
-    summary: 'Get random assets',
-    description: 'Retrieve a specified number of random assets for the authenticated user.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'searchAssets' }),
-  })
-  getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
-    return this.service.getRandom(auth, dto.count ?? 1);
-  }
-
-  @Get('/device/:deviceId')
-  @Endpoint({
-    summary: 'Retrieve assets by device ID',
-    description: 'Get all asset of a device that are in the database, ID only.',
-    history: new HistoryBuilder().added('v1').deprecated('v2'),
-  })
-  @Authenticated()
-  getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
-    return this.service.getUserAssetsByDeviceId(auth, deviceId);
-  }
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })

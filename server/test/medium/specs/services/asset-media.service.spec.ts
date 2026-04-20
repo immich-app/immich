@@ -52,8 +52,6 @@ describe(AssetService.name, () => {
         sut.uploadAsset(
           auth,
           {
-            deviceId: 'some-id',
-            deviceAssetId: 'some-id',
             fileModifiedAt: new Date(),
             fileCreatedAt: new Date(),
             assetData: Buffer.from('some data'),
@@ -66,7 +64,7 @@ describe(AssetService.name, () => {
       });
 
       expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AssetCreate', {
-        asset: expect.objectContaining({ deviceAssetId: 'some-id' }),
+        asset: expect.objectContaining({}),
       });
     });
 
@@ -87,8 +85,6 @@ describe(AssetService.name, () => {
         sut.uploadAsset(
           auth,
           {
-            deviceId: 'some-id',
-            deviceAssetId: 'some-id',
             fileModifiedAt: new Date(),
             fileCreatedAt: new Date(),
             assetData: Buffer.from('some data'),
@@ -125,8 +121,6 @@ describe(AssetService.name, () => {
       const auth = factory.auth({ user: { id: user.id }, sharedLink });
       const file = mediumFactory.uploadFile();
       const uploadDto = {
-        deviceId: 'some-id',
-        deviceAssetId: 'some-id',
         fileModifiedAt: new Date(),
         fileCreatedAt: new Date(),
         assetData: Buffer.from('some data'),
@@ -166,8 +160,6 @@ describe(AssetService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id }, sharedLink });
       const uploadDto = {
-        deviceId: 'some-id',
-        deviceAssetId: 'some-id',
         fileModifiedAt: new Date(),
         fileCreatedAt: new Date(),
         assetData: Buffer.from('some data'),
@@ -206,8 +198,6 @@ describe(AssetService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id }, sharedLink });
       const uploadDto = {
-        deviceId: 'some-id',
-        deviceAssetId: 'some-id',
         fileModifiedAt: new Date(),
         fileCreatedAt: new Date(),
         assetData: Buffer.from('some data'),
@@ -248,8 +238,6 @@ describe(AssetService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id }, sharedLink });
       const uploadDto = {
-        deviceId: 'some-id',
-        deviceAssetId: 'some-id',
         fileModifiedAt: new Date(),
         fileCreatedAt: new Date(),
         assetData: Buffer.from('some data'),
