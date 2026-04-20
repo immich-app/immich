@@ -1,7 +1,7 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import type { PageData } from './$types';
-  import UtilitiesMenu from '$lib/components/utilities-page/utilities-menu.svelte';
+  import UtilitiesMenu from './utilities-menu.svelte';
 
   interface Props {
     data: PageData;

@@ -20,6 +20,7 @@ services:
       - /tmp
     volumes:
       - ..:/usr/src/app
+      # - ../../ui:/usr/src/ui
       - pnpm_cache:/buildcache/pnpm_cache
       - server_node_modules:/usr/src/app/server/node_modules
       - web_node_modules:/usr/src/app/web/node_modules
@@ -156,7 +157,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:3eeb09785cd61ec8e3be35f8804c8892080f3ca21934d628abc24ee4ed1698f6
+    image: docker.io/valkey/valkey:9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9
     healthcheck:
       test: redis-cli ping || exit 1
 

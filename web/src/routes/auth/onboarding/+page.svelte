@@ -1,19 +1,19 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
-  import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
-  import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
-  import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
-  import OnboardingMobileApp from '$lib/components/onboarding-page/onboarding-mobile-app.svelte';
-  import OnboardingServerPrivacy from '$lib/components/onboarding-page/onboarding-server-privacy.svelte';
-  import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
-  import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
-  import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
+  import OnboardingBackup from './onboarding-backup.svelte';
+  import OnboardingCard from './onboarding-card.svelte';
+  import OnboardingHello from './onboarding-hello.svelte';
+  import OnboardingLocale from './onboarding-language.svelte';
+  import OnboardingMobileApp from './onboarding-mobile-app.svelte';
+  import OnboardingServerPrivacy from './onboarding-server-privacy.svelte';
+  import OnboardingStorageTemplate from './onboarding-storage-template.svelte';
+  import OnboardingTheme from './onboarding-theme.svelte';
+  import OnboardingUserPrivacy from './onboarding-user-privacy.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Route } from '$lib/route';
-  import { user } from '$lib/stores/user.store';
   import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
@@ -101,7 +101,7 @@
     return temporaryIndex === -1 ? 0 : temporaryIndex;
   });
   let userRole = $derived(
-    $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+    authManager.user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
   );
 
   let onboardingStepCount = $derived(onboardingSteps.filter((step) => shouldRunStep(step.role, userRole)).length);
@@ -128,7 +128,7 @@
 
   const handleNextClicked = async () => {
     if (nextStepIndex == -1) {
-      if ($user.isAdmin) {
+      if (authManager.user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
         await serverConfigManager.loadServerConfig();
       }

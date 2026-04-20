@@ -1,6 +1,6 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import { Checkbox, Label, Text } from '@immich/ui';
   import { onMount } from 'svelte';
@@ -40,7 +40,7 @@
   };
 </script>
 
-{#if $preferences?.tags?.enabled}
+{#if authManager.authenticated && authManager.preferences.tags.enabled}
   <div id="location-selection">
     <form autocomplete="off" id="create-tag-form">
       <div class="mb-4 flex flex-col">

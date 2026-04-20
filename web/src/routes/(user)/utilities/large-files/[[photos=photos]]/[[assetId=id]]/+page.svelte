@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LargeAssetData from '$lib/components/utilities-page/large-assets/large-asset-data.svelte';
+  import LargeAssetData from './large-asset-data.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { handlePromiseError } from '$lib/utils';

@@ -65,12 +65,7 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
 }
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
-
-export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
-
 export type GenerateThumbhashOptions = DecodeImageOptions;
-
-export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { raw: RawImageInfo };
 
 export interface GenerateThumbnailsOptions {
   colorspace: string;
@@ -351,7 +346,6 @@ export type JobItem =
   | { name: JobName.FileDelete; data: IDeleteFilesJob }
 
   // Cleanup
-  | { name: JobName.AuditLogCleanup; data?: IBaseJob }
   | { name: JobName.SessionCleanup; data?: IBaseJob }
 
   // Tags

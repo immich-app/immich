@@ -2,17 +2,8 @@ import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Post, Res 
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  AssetDeltaSyncDto,
-  AssetDeltaSyncResponseDto,
-  AssetFullSyncDto,
-  SyncAckDeleteDto,
-  SyncAckDto,
-  SyncAckSetDto,
-  SyncStreamDto,
-} from 'src/dtos/sync.dto';
+import { SyncAckDeleteDto, SyncAckDto, SyncAckSetDto, SyncStreamDto } from 'src/dtos/sync.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
@@ -25,30 +16,6 @@ export class SyncController {
     private service: SyncService,
     private errorService: GlobalExceptionFilter,
   ) {}
-
-  @Post('full-sync')
-  @Authenticated()
-  @HttpCode(HttpStatus.OK)
-  @Endpoint({
-    summary: 'Get full sync for user',
-    description: 'Retrieve all assets for a full synchronization for the authenticated user.',
-    history: new HistoryBuilder().added('v1').deprecated('v2'),
-  })
-  getFullSyncForUser(@Auth() auth: AuthDto, @Body() dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
-    return this.service.getFullSync(auth, dto);
-  }
-
-  @Post('delta-sync')
-  @Authenticated()
-  @HttpCode(HttpStatus.OK)
-  @Endpoint({
-    summary: 'Get delta sync for user',
-    description: 'Retrieve changed assets since the last sync for the authenticated user.',
-    history: new HistoryBuilder().added('v1').deprecated('v2'),
-  })
-  getDeltaSync(@Auth() auth: AuthDto, @Body() dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    return this.service.getDeltaSync(auth, dto);
-  }
 
   @Post('stream')
   @Authenticated({ permission: Permission.SyncStream })

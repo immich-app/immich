@@ -39,7 +39,6 @@ import { requireElevatedPermission } from 'src/utils/access';
 import {
   getAssetFiles,
   getDimensions,
-  getMyPartnerIds,
   isPanorama,
   onAfterUnlink,
   onBeforeLink,
@@ -58,20 +57,6 @@ export class AssetService extends BaseService {
 
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
-  }
-
-  async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { auth }));
-  }
-
-  async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {

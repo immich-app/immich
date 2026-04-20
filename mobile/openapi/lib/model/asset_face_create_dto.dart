@@ -27,24 +27,42 @@ class AssetFaceCreateDto {
   String assetId;
 
   /// Face bounding box height
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int height;
 
   /// Image height in pixels
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int imageHeight;
 
   /// Image width in pixels
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int imageWidth;
 
   /// Person ID
   String personId;
 
   /// Face bounding box width
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int width;
 
   /// Face bounding box X coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int x;
 
   /// Face bounding box Y coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int y;
 
   @override

@@ -16,6 +16,7 @@
     circle?: boolean;
     hidden?: boolean;
     border?: boolean;
+    highlighted?: boolean;
     hiddenIconClass?: string;
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
@@ -34,6 +35,7 @@
     circle = false,
     hidden = false,
     border = false,
+    highlighted = false,
     hiddenIconClass = 'text-white',
     onComplete = undefined,
     class: imageClass = '',
@@ -60,6 +62,8 @@
     shadow && 'shadow-lg',
     (circle || !heightStyle) && 'aspect-square',
     border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
+    'transition-shadow duration-150',
+    highlighted && 'ring-4 ring-immich-primary dark:ring-immich-dark-primary',
   ]);
 
   let style = $derived(

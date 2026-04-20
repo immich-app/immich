@@ -22,7 +22,6 @@ class PartnerResponseDto {
     required this.profileImagePath,
   });
 
-  /// Avatar color
   UserAvatarColor avatarColor;
 
   /// User email

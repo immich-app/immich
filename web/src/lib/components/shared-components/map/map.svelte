@@ -11,14 +11,12 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { Theme } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { Icon, modalManager } from '@immich/ui';
+  import { Icon, modalManager, Theme, themeManager } from '@immich/ui';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
@@ -106,9 +104,9 @@
   let marker: Marker | null = null;
   let abortController: AbortController;
 
-  const theme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.LIGHT);
+  const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
   const styleUrl = $derived(
-    theme === Theme.DARK ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
+    mapTheme === Theme.Dark ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
   );
 
   export function addClipMapMarker(lng: number, lat: number) {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import MapTimelinePanel from '$lib/components/shared-components/map/MapTimelinePanel.svelte';
+  import MapTimelinePanel from './MapTimelinePanel.svelte';
   import type { SelectionBBox } from '$lib/components/shared-components/map/types';
   import { timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';

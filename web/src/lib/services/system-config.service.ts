@@ -18,7 +18,6 @@ export const getSystemConfigActions = (
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
     description: $t('admin.copy_config_to_clipboard_description'),
-    type: $t('command'),
     icon: mdiContentCopy,
     onAction: () => handleCopyToClipboard(config),
     shortcuts: { shift: true, key: 'c' },
@@ -27,7 +26,6 @@ export const getSystemConfigActions = (
   const Download: ActionItem = {
     title: $t('export_as_json'),
     description: $t('admin.export_config_as_json_description'),
-    type: $t('command'),
     icon: mdiDownload,
     onAction: () => handleDownloadConfig(config),
     shortcuts: [
@@ -39,7 +37,6 @@ export const getSystemConfigActions = (
   const Upload: ActionItem = {
     title: $t('import_from_json'),
     description: $t('admin.import_config_from_json_description'),
-    type: $t('command'),
     icon: mdiUpload,
     $if: () => !featureFlags.configFile,
     onAction: () => handleUploadConfig(),

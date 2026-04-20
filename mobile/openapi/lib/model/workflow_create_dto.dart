@@ -48,7 +48,6 @@ class WorkflowCreateDto {
   /// Workflow name
   String name;
 
-  /// Workflow trigger type
   PluginTriggerType triggerType;
 
   @override

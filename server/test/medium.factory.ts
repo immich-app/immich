@@ -26,6 +26,7 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
@@ -500,6 +501,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       });
     }
 
+    case CronRepository: {
+      return automock(CronRepository, { args: [undefined, { setContext: () => {} }], strict: false });
+    }
+
     case EmailRepository: {
       return automock(EmailRepository, { args: [{ setContext: () => {} }] });
     }
@@ -544,8 +549,6 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   const id = asset.id || newUuid();
   const now = newDate();
   const defaults: Insertable<AssetTable> = {
-    deviceAssetId: '',
-    deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
     checksumAlgorithm: ChecksumAlgorithm.sha1File,

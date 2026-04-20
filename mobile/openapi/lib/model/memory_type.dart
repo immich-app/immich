@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Memory type
 class MemoryType {
   /// Instantiate a new enum with the provided [value].
   const MemoryType._(this.value);

@@ -49,7 +49,7 @@ Immich requires [**Docker**](https://docs.docker.com/get-started/get-docker/) wi
 The Compose plugin will be installed by both Docker Engine and Desktop by following the linked installation guides; it can also be [separately installed](https://docs.docker.com/compose/install/).
 
 :::note
-Immich requires the command `docker compose`; the similarly named `docker-compose` is [deprecated](https://docs.docker.com/compose/migrate/) and is no longer supported by Immich.
+Immich requires the command `docker compose`; the similarly named `docker-compose` is [deprecated](https://docs.docker.com/retired/#docker-compose-v1-replaced-by-compose-v2) and is no longer supported by Immich.
 :::
 
 ### Special requirements for Windows users

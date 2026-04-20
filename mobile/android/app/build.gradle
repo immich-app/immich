@@ -1,27 +1,10 @@
 plugins {
-  id "com.android.application"
-  id "kotlin-android"
+  alias(libs.plugins.android.application)
+  alias(libs.plugins.kotlin.android)
   id "dev.flutter.flutter-gradle-plugin"
-  id 'com.google.devtools.ksp'
-  id 'org.jetbrains.kotlin.plugin.serialization'
-  id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
-
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-  localPropertiesFile.withInputStream { localProperties.load(it) }
-}
-
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-  flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-  flutterVersionName = '1.0'
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.kotlin.compose)
 }
 
 def keystoreProperties = new Properties()
@@ -31,8 +14,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-  compileSdkVersion 35
-  ndkVersion = "28.2.13676358"
+  compileSdk = flutter.compileSdkVersion
+  ndkVersion = flutter.ndkVersion
 
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
@@ -55,10 +38,10 @@ android {
 
   defaultConfig {
     applicationId "app.alextran.immich"
-    minSdkVersion 26
-    targetSdkVersion 35
-    versionCode flutterVersionCode.toInteger()
-    versionName flutterVersionName
+    minSdk = 26
+    targetSdk = flutter.targetSdkVersion
+    versionCode flutter.versionCode
+    versionName flutter.versionName
   }
 
   signingConfigs {
@@ -67,10 +50,10 @@ android {
       def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
       def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
 
-      keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
-      keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
-      storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
-      storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+      keyAlias keyAliasVal ?: keystoreProperties['keyAlias']
+      keyPassword keyPasswordVal ?: keystoreProperties['keyPassword']
+      storeFile file("../key.jks").exists() ? file("../key.jks") : file(keystoreProperties['storeFile'] ?: '../key.jks')
+      storePassword storePasswordVal ?: keystoreProperties['storePassword']
     }
   }
 
@@ -99,43 +82,31 @@ flutter {
 }
 
 dependencies {
-  def kotlin_version = '2.0.20'
-  def kotlin_coroutines_version = '1.9.0'
-  def work_version = '2.9.1'
-  def concurrent_version = '1.2.0'
-  def guava_version = '33.3.1-android'
-  def glide_version = '4.16.0'
-  def serialization_version = '1.8.1'
-  def compose_version = '1.1.1'
-  def gson_version = '2.10.1'
-  def okhttp_version = '4.12.0'
+  implementation libs.okhttp
+  implementation libs.cronet.embedded
+  implementation libs.media3.datasource.okhttp
+  implementation libs.media3.datasource.cronet
+  implementation libs.kotlinx.coroutines.android
+  implementation libs.work.runtime.ktx
+  implementation libs.concurrent.futures
+  implementation libs.guava
+  implementation libs.glide
+  implementation libs.kotlinx.serialization.json
 
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-  implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-  implementation 'org.chromium.net:cronet-embedded:143.7445.0'
-  implementation("androidx.media3:media3-datasource-okhttp:1.9.2")
-  implementation("androidx.media3:media3-datasource-cronet:1.9.2")
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
-  implementation "androidx.work:work-runtime-ktx:$work_version"
-  implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
-  implementation "com.google.guava:guava:$guava_version"
-  implementation "com.github.bumptech.glide:glide:$glide_version"
-  implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version"
-
-  ksp "com.github.bumptech.glide:ksp:$glide_version"
-  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+  ksp libs.glide.ksp
+  coreLibraryDesugaring libs.desugar.jdk.libs
 
   //Glance Widget
-  implementation "androidx.glance:glance-appwidget:$compose_version"
-  implementation "com.google.code.gson:gson:$gson_version"
+  implementation libs.glance.appwidget
+  implementation libs.gson
 
   // Glance Configure
-  implementation "androidx.activity:activity-compose:1.8.2"
-  implementation "androidx.compose.ui:ui:$compose_version"
-  implementation "androidx.compose.ui:ui-tooling:$compose_version"
-  implementation "androidx.compose.material3:material3:1.2.1"
-  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
-  implementation "com.google.android.material:material:1.12.0"
+  implementation libs.activity.compose
+  implementation libs.compose.ui
+  implementation libs.compose.ui.tooling
+  implementation libs.compose.material3
+  implementation libs.lifecycle.runtime.ktx
+  implementation libs.material
 }
 
 // This is uncommented in F-Droid build script

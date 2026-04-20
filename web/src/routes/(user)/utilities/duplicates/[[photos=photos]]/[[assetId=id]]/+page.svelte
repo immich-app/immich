@@ -3,8 +3,8 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LinkToDocs from '$lib/components/LinkToDocs.svelte';
-  import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import LinkToDocs from './LinkToDocs.svelte';
+  import DuplicatesCompareControl from './duplicates-compare-control.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
