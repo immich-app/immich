@@ -253,7 +253,7 @@ class LoginForm extends HookConsumerWidget {
           ref.read(websocketProvider.notifier).connect();
           unawaited(context.replaceRoute(const TabShellRoute()));
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            unawaited(ref.read(viewIntentHandlerProvider).flushPending());
+            unawaited(ref.read(viewIntentHandlerProvider).onUserAuthenticated());
           });
           return;
         }
@@ -343,7 +343,7 @@ class LoginForm extends HookConsumerWidget {
             unawaited(handleSyncFlow());
             unawaited(context.replaceRoute(const TabShellRoute()));
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              unawaited(ref.read(viewIntentHandlerProvider).flushPending());
+              unawaited(ref.read(viewIntentHandlerProvider).onUserAuthenticated());
             });
             return;
           }

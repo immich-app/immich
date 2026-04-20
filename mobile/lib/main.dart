@@ -121,7 +121,6 @@ class ImmichApp extends ConsumerStatefulWidget {
 }
 
 class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
-  ProviderSubscription<bool>? _authSubscription;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -129,9 +128,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       case AppLifecycleState.resumed:
         dPrint(() => "[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
-        // Check for ACTION_VIEW intent when app resumes
-        unawaited(ref.read(viewIntentHandlerProvider).checkForViewIntent());
-        unawaited(ref.read(viewIntentHandlerProvider).flushPending());
+        unawaited(ref.read(viewIntentHandlerProvider).onAppResumed());
         break;
       case AppLifecycleState.inactive:
         dPrint(() => "[APP STATE] inactive");
@@ -223,7 +220,6 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
   @override
   void dispose() {
-    _authSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
