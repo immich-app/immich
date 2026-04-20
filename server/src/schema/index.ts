@@ -1,5 +1,10 @@
 import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
-import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import {
+  album_user_role_enum,
+  asset_face_source_type,
+  asset_visibility_enum,
+  assets_status_enum,
+} from 'src/schema/enums';
 import {
   album_user_after_insert,
   album_user_delete_audit,
@@ -156,7 +161,7 @@ export class ImmichDatabase {
     asset_face_audit,
   ];
 
-  enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
+  enum = [album_user_role_enum, assets_status_enum, asset_face_source_type, asset_visibility_enum];
 }
 
 export interface Migrations {

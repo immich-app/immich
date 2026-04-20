@@ -435,7 +435,7 @@ with
     select
       "album"."id" as "albumId",
       unnest($2::uuid[]) as "userId",
-      unnest($3::varchar[]) as "role"
+      unnest($3::album_user_role_enum[]) as "role"
     from
       "album"
     returning
