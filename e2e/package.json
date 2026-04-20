@@ -44,7 +44,7 @@
     "exiftool-vendored": "^35.0.0",
     "globals": "^17.0.0",
     "luxon": "^3.4.4",
-    "orchestration-ui": "0.1.57",
+    "orchestration-ui": "0.1.61",
     "pg": "^8.11.3",
     "pngjs": "^7.0.0",
     "prettier": "^3.7.4",

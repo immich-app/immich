@@ -90,7 +90,7 @@ describe('/yucca', () => {
     beforeAll(async () => {
       await sdk.importRecoveryKey(
         {
-          recoveryKey: '0'.repeat(32),
+          recoveryKey: '0'.repeat(64),
         },
         requestOpts,
       );
@@ -285,7 +285,7 @@ describe('/yucca', () => {
 
         await sdk.importRecoveryKey(
           {
-            recoveryKey: '0'.repeat(32),
+            recoveryKey: '0'.repeat(64),
           },
           maintenanceRequestOpts,
         );
