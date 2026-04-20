@@ -131,9 +131,20 @@
     {/if}
   </header>
 {:else if assets.length === 1}
-  {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
+  <header class="fixed top-0 inset-s-0 w-full">
+    <ControlAppBar onClose={() => goto(Route.photos())} backIcon={mdiArrowLeft} showBackButton={true}>
+      {#snippet leading()}
+        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+          <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />
+        </a>
+      {/snippet}
+    </ControlAppBar>
+  </header>
+  <div class="mt-16">
+    {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
+      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
+      {/await}
     {/await}
-  {/await}
+  </div>
 {/if}
