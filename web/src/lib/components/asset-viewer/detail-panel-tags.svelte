@@ -6,8 +6,7 @@
   import { getAssetActions } from '$lib/services/asset.service';
   import { removeTag } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Badge, IconButton, Link, Text } from '@immich/ui';
-  import { mdiClose } from '@mdi/js';
+  import { Badge, Link, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -44,21 +43,15 @@
     </div>
     <section class="flex flex-wrap pt-2 gap-1" data-testid="detail-panel-tags">
       {#each tags as tag (tag.id)}
-        <Badge size="small" class="items-center px-0" shape="round">
-          <Link
-            href={Route.tags({ path: tag.value })}
-            class="text-light no-underline rounded-full hover:bg-primary-400 px-2"
-          >
+        <Badge
+          onClose={() => handleRemove(tag.id)}
+          size="small"
+          shape="round"
+          translations={{ close: $t('remove_tag') }}
+        >
+          <Link href={Route.tags({ path: tag.value })} underline={false} class="px-2 font-light">
             {tag.value}
           </Link>
-          <IconButton
-            aria-label={$t('remove_tag')}
-            icon={mdiClose}
-            onclick={() => handleRemove(tag.id)}
-            size="tiny"
-            class="hover:bg-primary-400"
-            shape="round"
-          />
         </Badge>
       {/each}
       <HeaderActionButton action={Tag} />
