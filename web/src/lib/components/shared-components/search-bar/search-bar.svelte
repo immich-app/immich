@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
   import { Route } from '$lib/route';
   import { searchStore } from '$lib/stores/search.svelte';
@@ -13,6 +14,8 @@
   import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchHistoryBox from './search-history-box.svelte';
+
+  type SearchBarQueryType = 'smart' | 'filename' | 'description' | 'ocr';
 
   type Props = {
     value?: string;
@@ -31,10 +34,11 @@
   let selectedId: string | undefined = $state();
   let close: (() => Promise<void>) | undefined;
   let showSearchTypeDropdown = $state(false);
-  let currentSearchType = $state('smart');
+  let currentSearchType = $state<SearchBarQueryType>('smart');
 
   const listboxId = generateId();
   const searchTypeId = generateId();
+  const searchTypeStorageKey = 'searchBarQueryType';
 
   onDestroy(() => {
     searchStore.isSearchEnabled = false;
@@ -77,12 +81,8 @@
   };
 
   const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
-    const searchType = getSearchType();
-    switch (searchType) {
-      case 'smart': {
-        return { query: term };
-      }
-      case 'metadata': {
+    switch (getSearchType()) {
+      case 'filename': {
         return { originalFileName: term };
       }
       case 'description': {
@@ -119,9 +119,6 @@
     const searchResult = await result.onClose;
     close = undefined;
     searchStore.isSearchEnabled = false;
-
-    // Refresh search type after modal closes
-    getSearchType();
 
     if (!searchResult) {
       return;
@@ -180,8 +177,8 @@
     showSearchTypeDropdown = false;
   };
 
-  const selectSearchType = (type: string) => {
-    localStorage.setItem('searchQueryType', type);
+  const selectSearchType = (type: SearchBarQueryType) => {
+    localStorage.setItem(searchTypeStorageKey, type);
     currentSearchType = type;
     showSearchTypeDropdown = false;
     input?.focus();
@@ -192,29 +189,36 @@
     onSubmit();
   };
 
-  function getSearchType() {
-    const searchType = localStorage.getItem('searchQueryType');
-    switch (searchType) {
-      case 'smart':
-      case 'metadata':
-      case 'description':
-      case 'ocr': {
-        currentSearchType = searchType;
-        return searchType;
-      }
-      default: {
-        currentSearchType = 'smart';
-        return 'smart';
-      }
+  const isSearchTypeAvailable = (type: SearchBarQueryType) => {
+    if (type === 'smart') {
+      return featureFlagsManager.value.smartSearch;
     }
+
+    if (type === 'ocr') {
+      return featureFlagsManager.value.ocr;
+    }
+
+    return true;
+  };
+
+  const getDefaultSearchType = (): SearchBarQueryType => (featureFlagsManager.value.smartSearch ? 'smart' : 'description');
+
+  function getSearchType(): SearchBarQueryType {
+    const searchType = localStorage.getItem(searchTypeStorageKey) as SearchBarQueryType | null;
+
+    if (searchType && isSearchTypeAvailable(searchType)) {
+      currentSearchType = searchType;
+      return searchType;
+    }
+
+    const defaultSearchType = getDefaultSearchType();
+    currentSearchType = defaultSearchType;
+    return defaultSearchType;
   }
 
   function getSearchTypeText(): string {
     switch (currentSearchType) {
-      case 'smart': {
-        return $t('context');
-      }
-      case 'metadata': {
+      case 'filename': {
         return $t('filename');
       }
       case 'description': {
@@ -229,16 +233,26 @@
     }
   }
 
+  const getSearchTypes = (): Array<{ value: SearchBarQueryType; label: string }> => {
+    const types: Array<{ value: SearchBarQueryType; label: string }> = [];
+
+    if (featureFlagsManager.value.smartSearch) {
+      types.push({ value: 'smart', label: $t('context') });
+    }
+
+    types.push({ value: 'filename', label: $t('filename') });
+    types.push({ value: 'description', label: $t('description') });
+
+    if (featureFlagsManager.value.ocr) {
+      types.push({ value: 'ocr', label: $t('ocr') });
+    }
+
+    return types;
+  };
+
   onMount(() => {
     getSearchType();
   });
-
-  const searchTypes = [
-    { value: 'smart', label: () => $t('context') },
-    { value: 'metadata', label: () => $t('filename') },
-    { value: 'description', label: () => $t('description') },
-    { value: 'ocr', label: () => $t('ocr') },
-  ] as const;
 </script>
 
 <svelte:document
@@ -332,7 +346,7 @@
           <div
             class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
           >
-            {#each searchTypes as searchType (searchType.value)}
+            {#each getSearchTypes() as searchType (searchType.value)}
               <button
                 type="button"
                 tabindex="0"
@@ -340,7 +354,7 @@
                          {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
                 onclick={() => selectSearchType(searchType.value)}
               >
-                {searchType.label()}
+                {searchType.label}
               </button>
             {/each}
           </div>

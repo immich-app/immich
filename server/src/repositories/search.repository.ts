@@ -124,6 +124,7 @@ export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection
 export type SmartSearchOptions = SearchDateOptions &
   SearchEmbeddingOptions &
   SearchExifOptions &
+  SearchPathOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &

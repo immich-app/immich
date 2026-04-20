@@ -1835,6 +1835,8 @@ export type SmartSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Filter by description text */
+    description?: string;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1857,6 +1859,8 @@ export type SmartSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by original file name */
+    originalFileName?: string;
     /** Page number */
     page?: number;
     /** Filter by person IDs */

@@ -85,6 +85,8 @@ const StatisticsSearchSchema = BaseSearchSchema.extend({
 const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
   query: z.string().trim().optional().describe('Natural language search query'),
   queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
+  description: z.string().trim().optional().describe('Filter by description text'),
+  originalFileName: z.string().trim().optional().describe('Filter by original file name'),
   language: z.string().optional().describe('Search language code'),
   page: z.number().min(1).optional().describe('Page number'),
 }).meta({ id: 'SmartSearchDto' });

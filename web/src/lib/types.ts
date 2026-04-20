@@ -77,10 +77,15 @@ export type SearchLocationFilter = {
   city?: string;
 };
 
+export type SearchTextFilters = {
+  filename: string;
+  description: string;
+  ocr: string;
+};
+
 export type SearchFilter = {
   query: string;
-  ocr?: string;
-  queryType: 'smart' | 'metadata' | 'description' | 'ocr';
+  textFilters: SearchTextFilters;
   personIds: SvelteSet<string>;
   tagIds: SvelteSet<string> | null;
   location: SearchLocationFilter;

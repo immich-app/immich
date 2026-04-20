@@ -43,8 +43,8 @@
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
   <div id="location-selection">
     <form autocomplete="off" id="create-tag-form">
-      <div class="mb-4 flex flex-col">
-        <Text class="py-3" fontWeight="medium">{$t('tags')}</Text>
+      <div class="flex flex-col gap-1">
+        <Text fontWeight="medium">{$t('tags')}</Text>
         <Combobox
           disabled={selectedTags === null}
           hideLabel
@@ -56,7 +56,7 @@
           placeholder={$t('search_tags')}
         />
       </div>
-      <div class="flex items-center gap-2">
+      <div class="mt-3 flex items-center gap-2">
         <Checkbox
           id="untagged-checkbox"
           size="tiny"
@@ -69,7 +69,7 @@
       </div>
     </form>
 
-    <section class="flex flex-wrap pt-2 gap-1">
+    <section class="flex flex-wrap gap-1 pt-2">
       {#each selectedTags ?? [] as tagId (tagId)}
         {@const tag = tagMap[tagId]}
         {#if tag}

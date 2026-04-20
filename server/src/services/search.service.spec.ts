@@ -259,6 +259,27 @@ describe(SearchService.name, () => {
       );
     });
 
+    it('should forward text filters', async () => {
+      await sut.searchSmart(authStub.user1, {
+        query: 'test',
+        originalFileName: 'vacation',
+        description: 'sunset at the beach',
+        ocr: 'boarding pass',
+      });
+
+      expect(mocks.search.searchSmart).toHaveBeenCalledWith(
+        { page: 1, size: 100 },
+        expect.objectContaining({
+          query: 'test',
+          originalFileName: 'vacation',
+          description: 'sunset at the beach',
+          ocr: 'boarding pass',
+          embedding: '[1, 2, 3]',
+          userIds: [authStub.user1.user.id],
+        }),
+      );
+    });
+
     it('should use clip model specified in config', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: { clip: { modelName: 'ViT-B-16-SigLIP__webli' } },

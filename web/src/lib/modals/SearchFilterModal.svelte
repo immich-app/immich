@@ -7,8 +7,9 @@
   import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
+  import SearchTextFiltersSection from '$lib/components/shared-components/search-bar/search-text-filters-section.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
-  import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
+  import { MediaType } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -36,28 +37,14 @@
     return value === null ? undefined : value;
   }
 
-  function storeQueryType(type: SearchFilter['queryType']) {
-    localStorage.setItem('searchQueryType', type);
-  }
-
-  function defaultQueryType(): QueryType {
-    const storedQueryType = localStorage.getItem('searchQueryType') as QueryType;
-    return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
-  }
-
   const asFilter = (searchQuery: SmartSearchDto | MetadataSearchDto): SearchFilter => {
-    let query = '';
-    if ('query' in searchQuery && searchQuery.query) {
-      query = searchQuery.query;
-    }
-    if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
-      query = searchQuery.originalFileName;
-    }
-
     return {
-      query,
-      ocr: searchQuery.ocr,
-      queryType: defaultQueryType(),
+      query: ('query' in searchQuery && searchQuery.query) || '',
+      textFilters: {
+        filename: 'originalFileName' in searchQuery ? searchQuery.originalFileName || '' : '',
+        description: ('description' in searchQuery && searchQuery.description) || '',
+        ocr: searchQuery.ocr || '',
+      },
       queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
       tagIds:
@@ -100,8 +87,11 @@
   const resetForm = () => {
     filter = {
       query: '',
-      ocr: undefined,
-      queryType: defaultQueryType(), // retain from localStorage or default
+      textFilters: {
+        filename: '',
+        description: '',
+        ocr: '',
+      },
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
       location: {},
@@ -126,13 +116,16 @@
     }
 
     const query = filter.query || undefined;
+    const originalFileName = filter.textFilters.filename || undefined;
+    const description = filter.textFilters.description || undefined;
+    const ocr = filter.textFilters.ocr || undefined;
 
     let payload: SmartSearchDto | MetadataSearchDto = {
-      query: filter.queryType === 'smart' ? query : undefined,
+      query,
       queryAssetId: filter.queryAssetId || undefined,
-      ocr: filter.queryType === 'ocr' ? query : undefined,
-      originalFileName: filter.queryType === 'metadata' ? query : undefined,
-      description: filter.queryType === 'description' ? query : undefined,
+      ocr,
+      originalFileName,
+      description,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -160,25 +153,22 @@
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
-    storeQueryType(filter.queryType);
     search();
   };
-
-  // Will be called whenever queryType changes, not just onsubmit.
-  $effect(() => {
-    storeQueryType(filter.queryType);
-  });
 </script>
 
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
       <div class="flex flex-col gap-5 pb-10" tabindex="-1">
+        <!-- SMART SEARCH -->
+        <SearchTextSection bind:query={filter.query} />
+
         <!-- PEOPLE -->
         <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 
-        <!-- TEXT -->
-        <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+        <!-- TEXT FILTERS -->
+        <SearchTextFiltersSection bind:filters={filter.textFilters} />
 
         <!-- TAGS -->
         <SearchTagsSection bind:selectedTags={filter.tagIds} />
@@ -197,7 +187,7 @@
           <SearchRatingsSection bind:rating={filter.rating} />
         {/if}
 
-        <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
+        <div class="grid gap-x-5 gap-y-5 md:grid-cols-2 md:gap-y-10">
           <!-- MEDIA TYPE -->
           <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
