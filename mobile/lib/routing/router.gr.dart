@@ -45,6 +45,16 @@ class AppLogDetailRouteArgs {
   String toString() {
     return 'AppLogDetailRouteArgs{key: $key, logMessage: $logMessage}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AppLogDetailRouteArgs) return false;
+    return key == other.key && logMessage == other.logMessage;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ logMessage.hashCode;
 }
 
 /// generated route for
@@ -98,6 +108,16 @@ class AssetTroubleshootRouteArgs {
   String toString() {
     return 'AssetTroubleshootRouteArgs{key: $key, asset: $asset}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AssetTroubleshootRouteArgs) return false;
+    return key == other.key && asset == other.asset;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ asset.hashCode;
 }
 
 /// generated route for
@@ -162,6 +182,25 @@ class AssetViewerRouteArgs {
   String toString() {
     return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService, heroOffset: $heroOffset, currentAlbum: $currentAlbum}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AssetViewerRouteArgs) return false;
+    return key == other.key &&
+        initialIndex == other.initialIndex &&
+        timelineService == other.timelineService &&
+        heroOffset == other.heroOffset &&
+        currentAlbum == other.currentAlbum;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      initialIndex.hashCode ^
+      timelineService.hashCode ^
+      heroOffset.hashCode ^
+      currentAlbum.hashCode;
 }
 
 /// generated route for
@@ -215,6 +254,18 @@ class CleanupPreviewRouteArgs {
   String toString() {
     return 'CleanupPreviewRouteArgs{key: $key, assets: $assets}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! CleanupPreviewRouteArgs) return false;
+    return key == other.key &&
+        const ListEquality<LocalAsset>().equals(assets, other.assets);
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^ const ListEquality<LocalAsset>().hash(assets);
 }
 
 /// generated route for
@@ -289,6 +340,20 @@ class DriftActivitiesRouteArgs {
   String toString() {
     return 'DriftActivitiesRouteArgs{key: $key, album: $album, assetId: $assetId, assetName: $assetName}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftActivitiesRouteArgs) return false;
+    return key == other.key &&
+        album == other.album &&
+        assetId == other.assetId &&
+        assetName == other.assetName;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^ album.hashCode ^ assetId.hashCode ^ assetName.hashCode;
 }
 
 /// generated route for
@@ -326,6 +391,16 @@ class DriftAlbumOptionsRouteArgs {
   String toString() {
     return 'DriftAlbumOptionsRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftAlbumOptionsRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -407,6 +482,21 @@ class DriftAssetSelectionTimelineRouteArgs {
   String toString() {
     return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftAssetSelectionTimelineRouteArgs) return false;
+    return key == other.key &&
+        const SetEquality<BaseAsset>().equals(
+          lockedSelectionAssets,
+          other.lockedSelectionAssets,
+        );
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^ const SetEquality<BaseAsset>().hash(lockedSelectionAssets);
 }
 
 /// generated route for
@@ -539,6 +629,16 @@ class DriftEditImageRouteArgs {
   String toString() {
     return 'DriftEditImageRouteArgs{key: $key, image: $image, applyEdits: $applyEdits}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftEditImageRouteArgs) return false;
+    return key == other.key && image == other.image;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ image.hashCode;
 }
 
 /// generated route for
@@ -642,6 +742,16 @@ class DriftMapRouteArgs {
   String toString() {
     return 'DriftMapRouteArgs{key: $key, initialLocation: $initialLocation}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftMapRouteArgs) return false;
+    return key == other.key && initialLocation == other.initialLocation;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ initialLocation.hashCode;
 }
 
 /// generated route for
@@ -694,6 +804,21 @@ class DriftMemoryRouteArgs {
   String toString() {
     return 'DriftMemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftMemoryRouteArgs) return false;
+    return const ListEquality<DriftMemory>().equals(memories, other.memories) &&
+        memoryIndex == other.memoryIndex &&
+        key == other.key;
+  }
+
+  @override
+  int get hashCode =>
+      const ListEquality<DriftMemory>().hash(memories) ^
+      memoryIndex.hashCode ^
+      key.hashCode;
 }
 
 /// generated route for
@@ -732,6 +857,16 @@ class DriftPartnerDetailRouteArgs {
   String toString() {
     return 'DriftPartnerDetailRouteArgs{key: $key, partner: $partner}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPartnerDetailRouteArgs) return false;
+    return key == other.key && partner == other.partner;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ partner.hashCode;
 }
 
 /// generated route for
@@ -801,6 +936,16 @@ class DriftPersonRouteArgs {
   String toString() {
     return 'DriftPersonRouteArgs{key: $key, person: $person}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPersonRouteArgs) return false;
+    return key == other.key && person == other.person;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ person.hashCode;
 }
 
 /// generated route for
@@ -838,6 +983,16 @@ class DriftPlaceDetailRouteArgs {
   String toString() {
     return 'DriftPlaceDetailRouteArgs{key: $key, place: $place}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPlaceDetailRouteArgs) return false;
+    return key == other.key && place == other.place;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ place.hashCode;
 }
 
 /// generated route for
@@ -880,6 +1035,16 @@ class DriftPlaceRouteArgs {
   String toString() {
     return 'DriftPlaceRouteArgs{key: $key, currentLocation: $currentLocation}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftPlaceRouteArgs) return false;
+    return key == other.key && currentLocation == other.currentLocation;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ currentLocation.hashCode;
 }
 
 /// generated route for
@@ -982,6 +1147,16 @@ class DriftUserSelectionRouteArgs {
   String toString() {
     return 'DriftUserSelectionRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftUserSelectionRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -1037,6 +1212,16 @@ class FolderRouteArgs {
   String toString() {
     return 'FolderRouteArgs{key: $key, folder: $folder}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FolderRouteArgs) return false;
+    return key == other.key && folder == other.folder;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ folder.hashCode;
 }
 
 /// generated route for
@@ -1106,6 +1291,16 @@ class LocalTimelineRouteArgs {
   String toString() {
     return 'LocalTimelineRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! LocalTimelineRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -1186,6 +1381,16 @@ class MapLocationPickerRouteArgs {
   String toString() {
     return 'MapLocationPickerRouteArgs{key: $key, initialLatLng: $initialLatLng}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! MapLocationPickerRouteArgs) return false;
+    return key == other.key && initialLatLng == other.initialLatLng;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ initialLatLng.hashCode;
 }
 
 /// generated route for
@@ -1225,6 +1430,16 @@ class PinAuthRouteArgs {
   String toString() {
     return 'PinAuthRouteArgs{key: $key, createPinCode: $createPinCode}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PinAuthRouteArgs) return false;
+    return key == other.key && createPinCode == other.createPinCode;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ createPinCode.hashCode;
 }
 
 /// generated route for
@@ -1263,6 +1478,16 @@ class ProfilePictureCropRouteArgs {
   String toString() {
     return 'ProfilePictureCropRouteArgs{key: $key, asset: $asset}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ProfilePictureCropRouteArgs) return false;
+    return key == other.key && asset == other.asset;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ asset.hashCode;
 }
 
 /// generated route for
@@ -1300,6 +1525,16 @@ class RemoteAlbumRouteArgs {
   String toString() {
     return 'RemoteAlbumRouteArgs{key: $key, album: $album}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! RemoteAlbumRouteArgs) return false;
+    return key == other.key && album == other.album;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ album.hashCode;
 }
 
 /// generated route for
@@ -1369,6 +1604,16 @@ class SettingsSubRouteArgs {
   String toString() {
     return 'SettingsSubRouteArgs{section: $section, key: $key}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SettingsSubRouteArgs) return false;
+    return section == other.section && key == other.key;
+  }
+
+  @override
+  int get hashCode => section.hashCode ^ key.hashCode;
 }
 
 /// generated route for
@@ -1406,6 +1651,22 @@ class ShareIntentRouteArgs {
   String toString() {
     return 'ShareIntentRouteArgs{key: $key, attachments: $attachments}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ShareIntentRouteArgs) return false;
+    return key == other.key &&
+        const ListEquality<ShareIntentAttachment>().equals(
+          attachments,
+          other.attachments,
+        );
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      const ListEquality<ShareIntentAttachment>().hash(attachments);
 }
 
 /// generated route for
@@ -1466,6 +1727,23 @@ class SharedLinkEditRouteArgs {
   String toString() {
     return 'SharedLinkEditRouteArgs{key: $key, existingLink: $existingLink, assetsList: $assetsList, albumId: $albumId}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SharedLinkEditRouteArgs) return false;
+    return key == other.key &&
+        existingLink == other.existingLink &&
+        const ListEquality<String>().equals(assetsList, other.assetsList) &&
+        albumId == other.albumId;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      existingLink.hashCode ^
+      const ListEquality<String>().hash(assetsList) ^
+      albumId.hashCode;
 }
 
 /// generated route for

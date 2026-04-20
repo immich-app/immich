@@ -88,7 +88,9 @@ const TimeBucketAssetResponseSchema = z
       .describe(
         "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
       ),
-    duration: z.array(z.string().nullable()).describe('Array of video durations in HH:MM:SS format (null for images)'),
+    duration: z
+      .array(z.string().nullable())
+      .describe('Array of video/gif durations in hh:mm:ss.SSS format (null for static images)'),
     stack: z
       .array(stackTupleSchema)
       .optional()

@@ -20,9 +20,6 @@ describe('fileUploader error handling', () => {
     vi.spyOn(uploadManager, 'getExtensions').mockReturnValue(['.jpg']);
     uploadAssetsStore.reset();
     authManager.reset();
-
-    // Stub out crypto to avoid that branch
-    vi.stubGlobal('crypto', undefined);
   });
 
   for (const [name, mockUser] of [

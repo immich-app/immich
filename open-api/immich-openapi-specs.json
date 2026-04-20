@@ -7359,6 +7359,38 @@
         "x-immich-state": "Stable"
       }
     },
+    "/oauth/backchannel-logout": {
+      "post": {
+        "description": "Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.",
+        "operationId": "logoutOAuth",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthBackchannelLogoutDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Backchannel OAuth logout",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "description": "Complete the OAuth authorization process by exchanging the authorization code for a session token.",
@@ -10547,44 +10579,6 @@
           }
         ],
         "x-immich-permission": "server.storage",
-        "x-immich-state": "Stable"
-      }
-    },
-    "/server/theme": {
-      "get": {
-        "description": "Retrieve the custom CSS, if existent.",
-        "operationId": "getTheme",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerThemeDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "summary": "Get theme",
-        "tags": [
-          "Server"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
         "x-immich-state": "Stable"
       }
     },
@@ -17618,7 +17612,8 @@
             "type": "string"
           },
           "duration": {
-            "description": "Video duration (for videos)",
+            "description": "Video/gif duration in hh:mm:ss.SSS format (null for static images)",
+            "nullable": true,
             "type": "string"
           },
           "exifInfo": {
@@ -20431,6 +20426,18 @@
         ],
         "type": "object"
       },
+      "OAuthBackchannelLogoutDto": {
+        "properties": {
+          "logout_token": {
+            "description": "OAuth logout token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "logout_token"
+        ],
+        "type": "object"
+      },
       "OAuthCallbackDto": {
         "properties": {
           "codeVerifier": {
@@ -23167,18 +23174,6 @@
           "diskUsagePercentage",
           "diskUse",
           "diskUseRaw"
-        ],
-        "type": "object"
-      },
-      "ServerThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
         ],
         "type": "object"
       },
@@ -26122,6 +26117,10 @@
       },
       "SystemConfigOAuthDto": {
         "properties": {
+          "allowInsecureRequests": {
+            "description": "Allow insecure requests",
+            "type": "boolean"
+          },
           "autoLaunch": {
             "description": "Auto launch",
             "type": "boolean"
@@ -26152,6 +26151,10 @@
             "description": "Enabled",
             "type": "boolean"
           },
+          "endSessionEndpoint": {
+            "description": "End session endpoint",
+            "type": "string"
+          },
           "issuerUrl": {
             "description": "Issuer URL",
             "type": "string"
@@ -26166,6 +26169,10 @@
           },
           "profileSigningAlgorithm": {
             "description": "Profile signing algorithm",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "OAuth prompt parameter (e.g. select_account, login, consent)",
             "type": "string"
           },
           "roleClaim": {
@@ -26199,6 +26206,7 @@
           }
         },
         "required": [
+          "allowInsecureRequests",
           "autoLaunch",
           "autoRegister",
           "buttonText",
@@ -26206,10 +26214,12 @@
           "clientSecret",
           "defaultStorageQuota",
           "enabled",
+          "endSessionEndpoint",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",
+          "prompt",
           "roleClaim",
           "scope",
           "signingAlgorithm",
@@ -26743,7 +26753,7 @@
             "type": "array"
           },
           "duration": {
-            "description": "Array of video durations in HH:MM:SS format (null for images)",
+            "description": "Array of video/gif durations in hh:mm:ss.SSS format (null for static images)",
             "items": {
               "nullable": true,
               "type": "string"

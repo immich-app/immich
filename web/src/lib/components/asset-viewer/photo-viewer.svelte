@@ -106,13 +106,13 @@
     assetViewerManager.animatedZoom(targetZoom);
   };
 
-  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
-
-  $effect(() => {
-    if (assetViewerManager.isFaceEditMode && assetViewerManager.zoom > 1) {
+  const onFaceEditModeChange = (isFaceEditMode: boolean) => {
+    if (isFaceEditMode && assetViewerManager.zoom > 1) {
       onZoom();
     }
-  });
+  };
+
+  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
   // TODO move to action + command palette
   const onCopyShortcut = (event: KeyboardEvent) => {
@@ -200,7 +200,7 @@
   };
 </script>
 
-<AssetViewerEvents {onCopy} {onZoom} />
+<AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
 
 <svelte:document
   use:shortcuts={[

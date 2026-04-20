@@ -40,7 +40,7 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
     isArchived: false,
     isTrashed: false,
     visibility: AssetVisibility.Timeline,
-    duration: '0:00:00.00000',
+    duration: null,
     exifInfo: {
       make: null,
       model: null,

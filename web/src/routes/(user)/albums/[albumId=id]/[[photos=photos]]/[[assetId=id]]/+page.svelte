@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { goto, onNavigate } from '$app/navigation';
+  import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import AlbumDescription from '$lib/components/album-page/album-description.svelte';
+  import AlbumDescription from './album-description.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
-  import AlbumTitle from '$lib/components/album-page/album-title.svelte';
+  import AlbumTitle from './album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
@@ -309,6 +309,12 @@
     album = { ...album, albumUsers };
   };
 
+  const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
+    album = newAlbum;
+
+    await invalidate('album:data');
+  };
+
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
@@ -330,7 +336,7 @@
   {onAlbumShare}
   {onAlbumUserUpdate}
   onAlbumUserDelete={refreshAlbum}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
+  {onAlbumUpdate}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 

@@ -179,6 +179,7 @@ const SystemConfigOAuthSchema = z
     clientSecret: z.string().describe('Client secret'),
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethodSchema,
     timeout: z.int().min(1).describe('Timeout'),
+    allowInsecureRequests: configBool.describe('Allow insecure requests'),
     defaultStorageQuota: z.number().min(0).nullable().describe('Default storage quota'),
     enabled: configBool.describe('Enabled'),
     issuerUrl: z
@@ -188,6 +189,13 @@ const SystemConfigOAuthSchema = z
       })
       .describe('Issuer URL'),
     scope: z.string().describe('Scope'),
+    prompt: z.string().describe('OAuth prompt parameter (e.g. select_account, login, consent)'),
+    endSessionEndpoint: z
+      .string()
+      .refine((url) => url.length === 0 || z.url().safeParse(url).success, {
+        error: 'endSessionEndpoint must be an empty string or a valid URL',
+      })
+      .describe('End session endpoint'),
     signingAlgorithm: z.string().describe('Signing algorithm'),
     profileSigningAlgorithm: z.string().describe('Profile signing algorithm'),
     storageLabelClaim: z.string().describe('Storage label claim'),

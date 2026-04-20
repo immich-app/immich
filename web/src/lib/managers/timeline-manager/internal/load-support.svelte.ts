@@ -25,7 +25,7 @@ export async function loadFromTimeBuckets(
     { signal },
   );
 
-  if (!bucketResponse) {
+  if (!bucketResponse || signal.aborted) {
     return;
   }
 
@@ -38,7 +38,7 @@ export async function loadFromTimeBuckets(
       },
       { signal },
     );
-    if (!albumAssets) {
+    if (!albumAssets || signal.aborted) {
       return;
     }
     for (const id of albumAssets.id) {

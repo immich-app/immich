@@ -856,8 +856,8 @@ export type AssetResponseDto = {
     createdAt: string;
     /** Duplicate group ID */
     duplicateId?: string | null;
-    /** Video duration (for videos) */
-    duration: string;
+    /** Video/gif duration in hh:mm:ss.SSS format (null for static images) */
+    duration: string | null;
     exifInfo?: ExifResponseDto;
     /** The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken. */
     fileCreatedAt: string;
@@ -1408,6 +1408,10 @@ export type OAuthConfigDto = {
 export type OAuthAuthorizeResponseDto = {
     /** OAuth authorization URL */
     url: string;
+};
+export type OAuthBackchannelLogoutDto = {
+    /** OAuth logout token */
+    logout_token: string;
 };
 export type OAuthCallbackDto = {
     /** OAuth code verifier (PKCE) */
@@ -2123,10 +2127,6 @@ export type ServerStorageResponseDto = {
     /** Used disk space in bytes */
     diskUseRaw: number;
 };
-export type ServerThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type ServerVersionResponseDto = {
     /** Major version number */
     major: number;
@@ -2502,6 +2502,8 @@ export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
 export type SystemConfigOAuthDto = {
+    /** Allow insecure requests */
+    allowInsecureRequests: boolean;
     /** Auto launch */
     autoLaunch: boolean;
     /** Auto register */
@@ -2516,6 +2518,8 @@ export type SystemConfigOAuthDto = {
     defaultStorageQuota: number | null;
     /** Enabled */
     enabled: boolean;
+    /** End session endpoint */
+    endSessionEndpoint: string;
     /** Issuer URL */
     issuerUrl: string;
     /** Mobile override enabled */
@@ -2524,6 +2528,8 @@ export type SystemConfigOAuthDto = {
     mobileRedirectUri: string;
     /** Profile signing algorithm */
     profileSigningAlgorithm: string;
+    /** OAuth prompt parameter (e.g. select_account, login, consent) */
+    prompt: string;
     /** Role claim */
     roleClaim: string;
     /** Scope */
@@ -2669,7 +2675,7 @@ export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country: (string | null)[];
-    /** Array of video durations in HH:MM:SS format (null for images) */
+    /** Array of video/gif durations in hh:mm:ss.SSS format (null for static images) */
     duration: (string | null)[];
     /** Array of file creation timestamps in UTC */
     fileCreatedAt: string[];
@@ -5112,6 +5118,18 @@ export function startOAuth({ oAuthConfigDto }: {
     })));
 }
 /**
+ * Backchannel OAuth logout
+ */
+export function logoutOAuth({ oAuthBackchannelLogoutDto }: {
+    oAuthBackchannelLogoutDto: OAuthBackchannelLogoutDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/oauth/backchannel-logout", oazapfts.form({
+        ...opts,
+        method: "POST",
+        body: oAuthBackchannelLogoutDto
+    })));
+}
+/**
  * Finish OAuth
  */
 export function finishOAuth({ oAuthCallbackDto }: {
@@ -5838,17 +5856,6 @@ export function getStorage(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerStorageResponseDto;
     }>("/server/storage", {
-        ...opts
-    }));
-}
-/**
- * Get theme
- */
-export function getTheme(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerThemeDto;
-    }>("/server/theme", {
         ...opts
     }));
 }
