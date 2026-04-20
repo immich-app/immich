@@ -9,20 +9,12 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
-enum ViewIntentType { image, video }
-
 class ViewIntentPayload {
-  final String path;
-  final ViewIntentType type;
+  final String? path;
   final String mimeType;
   final String? localAssetId;
 
-  const ViewIntentPayload({
-    required this.path,
-    required this.type,
-    required this.mimeType,
-    this.localAssetId,
-  });
+  const ViewIntentPayload({this.path, required this.mimeType, this.localAssetId});
 }
 
 @HostApi()

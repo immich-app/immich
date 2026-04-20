@@ -9,7 +9,6 @@ void main() {
 
   final attachment = ViewIntentPayload(
     path: '/tmp/file.jpg',
-    type: ViewIntentType.image,
     mimeType: 'image/jpeg',
     localAssetId: '42',
   );
@@ -51,7 +50,6 @@ void main() {
   test('newer deferred attachment replaces older one', () {
     final newerAttachment = ViewIntentPayload(
       path: '/tmp/file-2.jpg',
-      type: ViewIntentType.image,
       mimeType: 'image/jpeg',
       localAssetId: '43',
     );

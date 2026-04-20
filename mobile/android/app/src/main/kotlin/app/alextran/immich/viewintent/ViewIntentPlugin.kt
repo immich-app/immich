@@ -89,17 +89,19 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
           return@launch
         }
 
-        val tempFile = copyUriToTempFile(context, uri, mimeType)
-        if (tempFile == null) {
-          callback(Result.success(null))
-          return@launch
+        val localAssetId = extractLocalAssetId(context, uri, mimeType)
+        val tempFilePath = if (localAssetId == null) {
+          copyUriToTempFile(context, uri, mimeType)?.absolutePath ?: run {
+            callback(Result.success(null))
+            return@launch
+          }
+        } else {
+          null
         }
-
         val payload = ViewIntentPayload(
-          path = tempFile.absolutePath,
-          type = if (mimeType.startsWith("image/")) ViewIntentType.IMAGE else ViewIntentType.VIDEO,
+          path = tempFilePath,
           mimeType = mimeType,
-          localAssetId = extractLocalAssetId(context, uri, mimeType),
+          localAssetId = localAssetId,
         )
         consumeViewIntent(intent)
         callback(Result.success(payload))

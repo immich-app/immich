@@ -33,13 +33,22 @@ class ViewIntentHandler {
 
   void init() {
     unawaited(checkForViewIntent());
-    unawaited(flushPending());
+    unawaited(
+      Future(() async {
+        await flushPending();
+      }),
+    );
   }
 
   Future<void> checkForViewIntent() async {
     final attachment = await _viewIntentService.consumeViewIntent();
     if (attachment != null) {
       await handle(attachment);
+      return;
+    }
+
+    if (_ref.read(viewIntentPendingProvider) == null) {
+      await _viewIntentService.cleanupStaleTempFiles();
     }
   }
 

@@ -10,21 +10,27 @@ class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 void main() {
   late MockViewIntentHostApi hostApi;
   late ViewIntentService service;
+  late Directory tempRoot;
+  late Directory cacheDir;
 
   final attachment = ViewIntentPayload(
     path: '/tmp/file.jpg',
-    type: ViewIntentType.image,
     mimeType: 'image/jpeg',
     localAssetId: '42',
   );
 
   setUp(() {
     hostApi = MockViewIntentHostApi();
-    service = ViewIntentService(hostApi);
+    tempRoot = Directory.systemTemp.createTempSync('view-intent-root');
+    cacheDir = Directory('${tempRoot.path}/cache')..createSync();
+    service = ViewIntentService(hostApi, temporaryDirectory: () async => cacheDir);
   });
 
   tearDown(() async {
     clearInteractions(hostApi);
+    if (await tempRoot.exists()) {
+      await tempRoot.delete(recursive: true);
+    }
   });
 
   test('consumeViewIntent returns null when no attachment', () async {
@@ -55,14 +61,6 @@ void main() {
   });
 
   test('setManagedTempFilePath cleans previous managed temp file', () async {
-    final tempRoot = await Directory.systemTemp.createTemp('view-intent-root');
-    final cacheDir = Directory('${tempRoot.path}/cache')..createSync();
-    addTearDown(() async {
-      if (await tempRoot.exists()) {
-        await tempRoot.delete(recursive: true);
-      }
-    });
-
     final firstFile = File('${cacheDir.path}/view_intent_first.jpg')..writeAsStringSync('first');
     final secondFile = File('${cacheDir.path}/view_intent_second.jpg')..writeAsStringSync('second');
 
@@ -77,17 +75,22 @@ void main() {
   });
 
   test('cleanupTempFile ignores non-managed paths', () async {
-    final tempDir = await Directory.systemTemp.createTemp('view-intent-test');
-    addTearDown(() async {
-      if (await tempDir.exists()) {
-        await tempDir.delete(recursive: true);
-      }
-    });
-
-    final nonManagedFile = File('${tempDir.path}/plain_file.jpg')..writeAsStringSync('content');
+    final nonManagedFile = File('${tempRoot.path}/plain_file.jpg')..writeAsStringSync('content');
 
     await service.cleanupTempFile(nonManagedFile.path);
 
     expect(await nonManagedFile.exists(), isTrue);
+  });
+
+  test('cleanupStaleTempFiles removes view-intent temp files and keeps unrelated files', () async {
+    final firstFile = File('${cacheDir.path}/view_intent_first.jpg')..writeAsStringSync('first');
+    final secondFile = File('${cacheDir.path}/view_intent_second.jpg')..writeAsStringSync('second');
+    final unrelatedFile = File('${cacheDir.path}/plain_file.jpg')..writeAsStringSync('plain');
+
+    await service.cleanupStaleTempFiles();
+
+    expect(await firstFile.exists(), isFalse);
+    expect(await secondFile.exists(), isFalse);
+    expect(await unrelatedFile.exists(), isTrue);
   });
 }

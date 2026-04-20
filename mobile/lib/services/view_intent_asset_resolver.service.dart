@@ -46,6 +46,11 @@ class ViewIntentAssetResolver {
   const ViewIntentAssetResolver(this._ref, this._localAssetRepository, this._nativeSyncApi, this._timelineFactory);
 
   Future<ViewIntentResolvedAsset> resolve(ViewIntentPayload attachment) async {
+    assert(
+      attachment.localAssetId != null || attachment.path != null,
+      'ViewIntent resolution requires either a localAssetId or a materialized file path.',
+    );
+
     final localAssetId = attachment.localAssetId;
     if (localAssetId != null) {
       var localAsset = await _localAssetRepository.getById(localAssetId);
@@ -96,6 +101,10 @@ class ViewIntentAssetResolver {
         _logger.fine('presenting main timeline asset via checksum-only match: ${mainTimelineAsset.asset}');
         return mainTimelineAsset;
       }
+    }
+
+    if (attachment.localAssetId == null && attachment.path == null) {
+      throw StateError('ViewIntent fallback resolution requires either a localAssetId or a materialized file path.');
     }
 
     final fallbackAsset = _toViewIntentAsset(attachment, checksum);
@@ -173,7 +182,11 @@ class ViewIntentAssetResolver {
     if (localAssetId != null) {
       return _computeChecksumForLocalAsset(localAssetId);
     }
-    return _computeChecksumForPath(attachment.path);
+    final path = attachment.path;
+    if (path == null) {
+      return null;
+    }
+    return _computeChecksumForPath(path);
   }
 
   Future<String?> _computeChecksumForLocalAsset(String localAssetId) async {
@@ -204,7 +217,7 @@ class ViewIntentAssetResolver {
     final now = DateTime.now();
     return LocalAsset(
       // todo Temp solution, need to provide FileBackedAsset extends BaseAsset for cover this case in right way
-      id: attachment.localAssetId ?? '-${attachment.path.hashCode.abs()}',
+      id: attachment.localAssetId ?? '-${attachment.path!.hashCode.abs()}',
       name: attachment.fileName,
       checksum: checksum,
       type: attachment.isVideo ? AssetType.video : AssetType.image,

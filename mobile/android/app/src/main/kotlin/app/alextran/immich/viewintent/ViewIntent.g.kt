@@ -78,38 +78,24 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
-enum class ViewIntentType(val raw: Int) {
-  IMAGE(0),
-  VIDEO(1);
-
-  companion object {
-    fun ofRaw(raw: Int): ViewIntentType? {
-      return values().firstOrNull { it.raw == raw }
-    }
-  }
-}
-
 /** Generated class from Pigeon that represents data sent in messages. */
 data class ViewIntentPayload (
-  val path: String,
-  val type: ViewIntentType,
+  val path: String? = null,
   val mimeType: String,
   val localAssetId: String? = null
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ViewIntentPayload {
-      val path = pigeonVar_list[0] as String
-      val type = pigeonVar_list[1] as ViewIntentType
-      val mimeType = pigeonVar_list[2] as String
-      val localAssetId = pigeonVar_list[3] as String?
-      return ViewIntentPayload(path, type, mimeType, localAssetId)
+      val path = pigeonVar_list[0] as String?
+      val mimeType = pigeonVar_list[1] as String
+      val localAssetId = pigeonVar_list[2] as String?
+      return ViewIntentPayload(path, mimeType, localAssetId)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       path,
-      type,
       mimeType,
       localAssetId,
     )
@@ -129,11 +115,6 @@ private open class ViewIntentPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
-        return (readValue(buffer) as Long?)?.let {
-          ViewIntentType.ofRaw(it.toInt())
-        }
-      }
-      130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           ViewIntentPayload.fromList(it)
         }
@@ -143,12 +124,8 @@ private open class ViewIntentPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is ViewIntentType -> {
-        stream.write(129)
-        writeValue(stream, value.raw)
-      }
       is ViewIntentPayload -> {
-        stream.write(130)
+        stream.write(129)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
