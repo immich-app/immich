@@ -104,13 +104,16 @@ export type SystemConfig = {
     defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
+    endSessionEndpoint: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    prompt: string;
     scope: string;
     signingAlgorithm: string;
     profileSigningAlgorithm: string;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
     timeout: number;
+    allowInsecureRequests: boolean;
     storageLabelClaim: string;
     storageQuotaClaim: string;
     roleClaim: string;
@@ -247,7 +250,7 @@ export const defaults = Object.freeze<SystemConfig>({
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
     availabilityChecks: {
       enabled: true,
-      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      timeout: 2000,
       interval: 30_000,
     },
     clip: {
@@ -295,8 +298,10 @@ export const defaults = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    endSessionEndpoint: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
@@ -305,6 +310,7 @@ export const defaults = Object.freeze<SystemConfig>({
     roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
   },
   passwordLogin: {
     enabled: true,

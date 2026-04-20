@@ -110,7 +110,7 @@ describe('/libraries', () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(["All importPaths's elements must be unique"]));
+      expect(body).toEqual(errorDto.badRequest(['[importPaths] Array must have unique items']));
     });
 
     it('should not create an external library with duplicate exclusion patterns', async () => {
@@ -125,7 +125,7 @@ describe('/libraries', () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(["All exclusionPatterns's elements must be unique"]));
+      expect(body).toEqual(errorDto.badRequest(['[exclusionPatterns] Array must have unique items']));
     });
   });
 
@@ -157,7 +157,7 @@ describe('/libraries', () => {
         .send({ name: '' });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['name should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[name] Too small: expected string to have >=1 characters']));
     });
 
     it('should change the import paths', async () => {
@@ -181,7 +181,7 @@ describe('/libraries', () => {
         .send({ importPaths: [''] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['each value in importPaths should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[importPaths] Array items must not be empty']));
     });
 
     it('should reject duplicate import paths', async () => {
@@ -191,7 +191,7 @@ describe('/libraries', () => {
         .send({ importPaths: ['/path', '/path'] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(["All importPaths's elements must be unique"]));
+      expect(body).toEqual(errorDto.badRequest(['[importPaths] Array must have unique items']));
     });
 
     it('should change the exclusion pattern', async () => {
@@ -215,7 +215,7 @@ describe('/libraries', () => {
         .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(["All exclusionPatterns's elements must be unique"]));
+      expect(body).toEqual(errorDto.badRequest(['[exclusionPatterns] Array must have unique items']));
     });
 
     it('should reject an empty exclusion pattern', async () => {
@@ -225,7 +225,7 @@ describe('/libraries', () => {
         .send({ exclusionPatterns: [''] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['each value in exclusionPatterns should not be empty']));
+      expect(body).toEqual(errorDto.badRequest(['[exclusionPatterns] Array items must not be empty']));
     });
   });
 

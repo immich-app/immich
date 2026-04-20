@@ -1,5 +1,5 @@
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
-import { preferences as preferencesStore, resetSavedUser, user as userStore } from '$lib/stores/user.store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { renderWithTooltips } from '$tests/helpers';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
@@ -36,7 +36,7 @@ describe('AssetViewerNavBar component', () => {
   });
 
   afterEach(() => {
-    resetSavedUser();
+    authManager.reset();
   });
 
   afterAll(() => {
@@ -44,8 +44,8 @@ describe('AssetViewerNavBar component', () => {
   });
 
   it('shows back button', () => {
-    const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
-    preferencesStore.set(prefs);
+    const preferences = preferencesFactory.build({ cast: { gCastEnabled: false } });
+    authManager.setPreferences(preferences);
 
     const asset = assetFactory.build({ isTrashed: false });
     const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
@@ -57,10 +57,10 @@ describe('AssetViewerNavBar component', () => {
       const ownerId = 'id-of-the-user';
       const user = userAdminFactory.build({ id: ownerId });
       const asset = assetFactory.build({ ownerId, isTrashed: false });
-      userStore.set(user);
+      authManager.setUser(user);
 
-      const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
-      preferencesStore.set(prefs);
+      const preferences = preferencesFactory.build({ cast: { gCastEnabled: false } });
+      authManager.setPreferences(preferences);
 
       const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
       expect(getByLabelText('delete')).toBeInTheDocument();

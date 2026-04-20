@@ -26,7 +26,6 @@ import type { MessageFormatter } from 'svelte-i18n';
 export const getLibrariesActions = ($t: MessageFormatter) => {
   const ScanAll: ActionItem = {
     title: $t('scan_all_libraries'),
-    type: $t('command'),
     icon: mdiSync,
     onAction: () => handleScanAllLibraries(),
     shortcuts: { shift: true, key: 'r' },
@@ -34,7 +33,6 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
 
   const Create: ActionItem = {
     title: $t('create_library'),
-    type: $t('command'),
     icon: mdiPlusBoxOutline,
     onAction: () => goto(Route.newLibrary()),
     shortcuts: { shift: true, key: 'n' },
@@ -46,14 +44,12 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
   const Detail: ActionItem = {
     icon: mdiInformationOutline,
-    type: $t('command'),
     title: $t('details'),
     onAction: () => goto(Route.viewLibrary(library)),
   };
 
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
-    type: $t('command'),
     title: $t('edit'),
     onAction: () => goto(Route.editLibrary(library)),
     shortcuts: { key: 'r' },
@@ -61,7 +57,6 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
-    type: $t('command'),
     title: $t('delete'),
     color: 'danger',
     onAction: () => handleDeleteLibrary(library),
@@ -71,21 +66,18 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 
   const AddFolder: ActionItem = {
     icon: mdiPlusBoxOutline,
-    type: $t('command'),
     title: $t('add'),
     onAction: () => modalManager.show(LibraryFolderAddModal, { library }),
   };
 
   const AddExclusionPattern: ActionItem = {
     icon: mdiPlusBoxOutline,
-    type: $t('command'),
     title: $t('add'),
     onAction: () => modalManager.show(LibraryExclusionPatternAddModal, { library }),
   };
 
   const Scan: ActionItem = {
     icon: mdiSync,
-    type: $t('command'),
     title: $t('scan_library'),
     onAction: () => handleScanLibrary(library),
     shortcuts: { shift: true, key: 'r' },
@@ -97,14 +89,12 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
-    type: $t('command'),
     title: $t('edit'),
     onAction: () => modalManager.show(LibraryFolderEditModal, { folder, library }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
-    type: $t('command'),
     title: $t('delete'),
     onAction: () => handleDeleteLibraryFolder(library, folder),
   };
@@ -119,14 +109,12 @@ export const getLibraryExclusionPatternActions = (
 ) => {
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
-    type: $t('command'),
     title: $t('edit'),
     onAction: () => modalManager.show(LibraryExclusionPatternEditModal, { exclusionPattern, library }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
-    type: $t('command'),
     title: $t('delete'),
     onAction: () => handleDeleteExclusionPattern(library, exclusionPattern),
   };

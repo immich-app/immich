@@ -5,13 +5,13 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'UserPreferencesResponseDto':
       if (value is Map) {
         addDefault(value, 'download.includeEmbeddedVideos', false);
-        addDefault(value, 'folders', FoldersResponse().toJson());
-        addDefault(value, 'memories', MemoriesResponse().toJson());
-        addDefault(value, 'ratings', RatingsResponse().toJson());
-        addDefault(value, 'people', PeopleResponse().toJson());
-        addDefault(value, 'tags', TagsResponse().toJson());
-        addDefault(value, 'sharedLinks', SharedLinksResponse().toJson());
-        addDefault(value, 'cast', CastResponse().toJson());
+        addDefault(value, 'folders', FoldersResponse(enabled: false, sidebarWeb: false).toJson());
+        addDefault(value, 'memories', MemoriesResponse(enabled: true, duration: 5).toJson());
+        addDefault(value, 'ratings', RatingsResponse(enabled: false).toJson());
+        addDefault(value, 'people', PeopleResponse(enabled: true, sidebarWeb: false).toJson());
+        addDefault(value, 'tags', TagsResponse(enabled: false, sidebarWeb: false).toJson());
+        addDefault(value, 'sharedLinks', SharedLinksResponse(enabled: true, sidebarWeb: false).toJson());
+        addDefault(value, 'cast', CastResponse(gCastEnabled: false).toJson());
         addDefault(value, 'albums', {'defaultAssetOrder': 'desc'});
       }
       break;

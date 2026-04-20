@@ -13,31 +13,24 @@ part of openapi.api;
 class WorkflowFilterItemDto {
   /// Returns a new [WorkflowFilterItemDto] instance.
   WorkflowFilterItemDto({
-    this.filterConfig,
+    this.filterConfig = const {},
     required this.pluginFilterId,
   });
 
-  /// Filter configuration
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Object? filterConfig;
+  Map<String, Object> filterConfig;
 
   /// Plugin filter ID
   String pluginFilterId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowFilterItemDto &&
-    other.filterConfig == filterConfig &&
+    _deepEquality.equals(other.filterConfig, filterConfig) &&
     other.pluginFilterId == pluginFilterId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (filterConfig == null ? 0 : filterConfig!.hashCode) +
+    (filterConfig.hashCode) +
     (pluginFilterId.hashCode);
 
   @override
@@ -45,11 +38,7 @@ class WorkflowFilterItemDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.filterConfig != null) {
       json[r'filterConfig'] = this.filterConfig;
-    } else {
-    //  json[r'filterConfig'] = null;
-    }
       json[r'pluginFilterId'] = this.pluginFilterId;
     return json;
   }
@@ -63,7 +52,7 @@ class WorkflowFilterItemDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowFilterItemDto(
-        filterConfig: mapValueOfType<Object>(json, r'filterConfig'),
+        filterConfig: mapCastOfType<String, Object>(json, r'filterConfig') ?? const {},
         pluginFilterId: mapValueOfType<String>(json, r'pluginFilterId')!,
       );
     }

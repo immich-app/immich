@@ -1,7 +1,8 @@
 import { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { resetSavedUser, user } from '$lib/stores/user.store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { AssetVisibility } from '@immich/sdk';
 import { timelineAssetFactory } from '@test-data/factories/asset-factory';
+import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 
 describe('AssetMultiSelectManager', () => {
@@ -32,14 +33,15 @@ describe('AssetMultiSelectManager', () => {
     const cleanup = $effect.root(() => {
       expect(sut.isAllUserOwned).toBe(false);
 
-      user.set(user1);
+      authManager.setUser(user1);
+      authManager.setPreferences(preferencesFactory.build());
       expect(sut.isAllUserOwned).toBe(true);
 
-      user.set(user2);
+      authManager.setUser(user2);
       expect(sut.isAllUserOwned).toBe(false);
     });
 
     cleanup();
-    resetSavedUser();
+    authManager.reset();
   });
 });

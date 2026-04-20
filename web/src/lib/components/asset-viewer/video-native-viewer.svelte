@@ -75,7 +75,7 @@
       ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
       : getAssetPlaybackUrl({ id: assetId, cacheKey }),
   );
-  const duration = $derived(timeToSeconds(asset.duration));
+  const duration = $derived(timeToSeconds(asset.duration!));
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
   let hasFocused = $state(false);

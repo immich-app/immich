@@ -6,7 +6,7 @@
   import { AssetAction } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+  import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
@@ -109,7 +109,7 @@
   const handleThumbnailClick = (
     asset: TimelineAsset,
     timelineManager: TimelineManager,
-    dayGroup: DayGroup,
+    timelineDay: TimelineDay,
     onClick: (
       timelineManager: TimelineManager,
       assets: TimelineAsset[],
@@ -125,7 +125,7 @@
       point = { lat: asset.latitude, lng: asset.longitude };
       void setQueryValue('at', asset.id);
     } else {
-      onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+      onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
     }
   };
 </script>

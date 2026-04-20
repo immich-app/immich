@@ -126,12 +126,13 @@ export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileTy
   ).as('files');
 }
 
-export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType) {
+export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType, isEdited = false) {
   return eb
     .selectFrom('asset_file')
     .select('asset_file.path')
     .whereRef('asset_file.assetId', '=', 'asset.id')
-    .where('asset_file.type', '=', type);
+    .where('asset_file.type', '=', sql.lit(type))
+    .where('asset_file.isEdited', '=', sql.lit(isEdited));
 }
 
 export function withFacesAndPeople(
@@ -350,8 +351,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .where('asset_exif.rating', options.rating === null ? 'is' : '=', options.rating!),
     )
     .$if(!!options.checksum, (qb) => qb.where('asset.checksum', '=', options.checksum!))
-    .$if(!!options.deviceAssetId, (qb) => qb.where('asset.deviceAssetId', '=', options.deviceAssetId!))
-    .$if(!!options.deviceId, (qb) => qb.where('asset.deviceId', '=', options.deviceId!))
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))

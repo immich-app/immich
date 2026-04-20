@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -187,6 +188,19 @@
 
 <OnEvents {onPersonThumbnailReady} />
 
+<svelte:document
+  use:shortcut={{
+    shortcut: { key: 'Escape' },
+    onShortcut: () => {
+      if (showSelectedFaces) {
+        showSelectedFaces = false;
+      } else {
+        onClose();
+      }
+    },
+  }}
+/>
+
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
   class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
@@ -225,6 +239,7 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
+          {@const isHighlighted = $boundingBoxesArray.some((b) => b.id === face.id)}
           <div class="relative h-29 w-24">
             <div
               role="button"
@@ -239,6 +254,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={selectedPersonToCreate[face.id]}
                     altText={$t('new_person')}
                     title={$t('new_person')}
@@ -249,6 +265,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
                     altText={selectedPersonToReassign[face.id].name}
                     title={$getPersonNameWithHiddenValue(
@@ -263,6 +280,7 @@
                   <ImageThumbnail
                     curve
                     shadow
+                    highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(face.person)}
                     altText={face.person.name}
                     title={$getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
@@ -275,6 +293,7 @@
                     <ImageThumbnail
                       curve
                       shadow
+                      highlighted={isHighlighted}
                       url="/src/lib/assets/no-thumbnail.png"
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}
@@ -285,6 +304,7 @@
                     <ImageThumbnail
                       curve
                       shadow
+                      highlighted={isHighlighted}
                       url={data === null ? '/src/lib/assets/no-thumbnail.png' : data}
                       altText={$t('face_unassigned')}
                       title={$t('face_unassigned')}

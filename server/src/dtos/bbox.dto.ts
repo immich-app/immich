@@ -1,25 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsLatitude, IsLongitude } from 'class-validator';
-import { IsGreaterThanOrEqualTo } from 'src/validation';
+import { latitudeSchema, longitudeSchema } from 'src/validation';
+import z from 'zod';
 
-export class BBoxDto {
-  @ApiProperty({ format: 'double', description: 'West longitude (-180 to 180)' })
-  @IsLongitude()
-  west!: number;
-
-  @ApiProperty({ format: 'double', description: 'South latitude (-90 to 90)' })
-  @IsLatitude()
-  south!: number;
-
-  @ApiProperty({
-    format: 'double',
-    description: 'East longitude (-180 to 180). May be less than west when crossing the antimeridian.',
+export const BBoxSchema = z
+  .object({
+    west: longitudeSchema.describe('West longitude (-180 to 180)'),
+    south: latitudeSchema.describe('South latitude (-90 to 90)'),
+    east: longitudeSchema.describe(
+      'East longitude (-180 to 180). May be less than west when crossing the antimeridian.',
+    ),
+    north: latitudeSchema.describe('North latitude (-90 to 90). Must be >= south.'),
   })
-  @IsLongitude()
-  east!: number;
-
-  @ApiProperty({ format: 'double', description: 'North latitude (-90 to 90). Must be >= south.' })
-  @IsLatitude()
-  @IsGreaterThanOrEqualTo('south')
-  north!: number;
-}
+  .refine(({ north, south }) => north >= south, {
+    path: ['north'],
+    error: 'North latitude must be greater than or equal to south latitude',
+  })
+  .meta({ id: 'BBoxDto' });

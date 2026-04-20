@@ -21,6 +21,9 @@ class SearchAssetResponseDto {
   });
 
   /// Number of assets in this page
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int count;
 
   List<SearchFacetResponseDto> facets;
@@ -31,6 +34,9 @@ class SearchAssetResponseDto {
   String? nextPage;
 
   /// Total number of matching assets
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int total;
 
   @override

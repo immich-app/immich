@@ -1,9 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import { thumbhash } from '$lib/actions/thumbhash';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -106,13 +106,13 @@
     assetViewerManager.animatedZoom(targetZoom);
   };
 
-  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
-
-  $effect(() => {
-    if (assetViewerManager.isFaceEditMode && assetViewerManager.zoom > 1) {
+  const onFaceEditModeChange = (isFaceEditMode: boolean) => {
+    if (isFaceEditMode && assetViewerManager.zoom > 1) {
       onZoom();
     }
-  });
+  };
+
+  const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
   // TODO move to action + command palette
   const onCopyShortcut = (event: KeyboardEvent) => {
@@ -200,7 +200,7 @@
   };
 </script>
 
-<AssetViewerEvents {onCopy} {onZoom} />
+<AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
 
 <svelte:document
   use:shortcuts={[
@@ -242,10 +242,7 @@
   >
     {#snippet backdrop()}
       {#if blurredSlideshow}
-        <canvas
-          use:thumbhash={{ base64ThumbHash: asset.thumbhash! }}
-          class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw"
-        ></canvas>
+        <Thumbhash base64ThumbHash={asset.thumbhash!} class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw" />
       {/if}
     {/snippet}
     {#snippet overlays()}
