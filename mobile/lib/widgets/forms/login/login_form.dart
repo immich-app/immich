@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -251,6 +252,9 @@ class LoginForm extends HookConsumerWidget {
           unawaited(handleSyncFlow());
           ref.read(websocketProvider.notifier).connect();
           unawaited(context.replaceRoute(const TabShellRoute()));
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            unawaited(ref.read(viewIntentHandlerProvider).flushPending());
+          });
           return;
         }
       } catch (error) {
@@ -338,6 +342,9 @@ class LoginForm extends HookConsumerWidget {
             }
             unawaited(handleSyncFlow());
             unawaited(context.replaceRoute(const TabShellRoute()));
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              unawaited(ref.read(viewIntentHandlerProvider).flushPending());
+            });
             return;
           }
         } catch (error, stack) {

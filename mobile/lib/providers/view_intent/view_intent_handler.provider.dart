@@ -5,9 +5,9 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
-import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
@@ -54,13 +54,17 @@ class ViewIntentHandler {
 
   Future<void> flushPending() async {
     final pendingAttachment = _ref.read(viewIntentPendingProvider.notifier).takeIfFresh();
+    _logger.info('flushPending, pendingAttachment:$pendingAttachment}');
     if (pendingAttachment != null) {
       await handle(pendingAttachment);
     }
   }
 
   Future<void> handle(ViewIntentPayload attachment) async {
-    _logger.info('handle attachment: $attachment');
+    _logger.info(
+      'handle attachment, mimeType:${attachment.mimeType}, localAssetId=${attachment.localAssetId}, path=${attachment.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
+    );
+
     if (!_ref.read(authProvider).isAuthenticated) {
       _ref.read(viewIntentPendingProvider.notifier).defer(attachment);
       return;
