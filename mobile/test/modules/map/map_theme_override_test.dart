@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/misc.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -54,7 +55,7 @@ void main() {
 
     mapStateNotifier.state = mapState.copyWith(darkStyleFetched: const AsyncData("dark"));
     await tester.pumpAndSettle();
-    expect(mapStyle?.valueOrNull, "dark");
+    expect(mapStyle?.value, "dark");
   });
 
   testWidgets("Return error when style is not fetched", (tester) async {
@@ -88,7 +89,7 @@ void main() {
 
     mapStateNotifier.state = mapState.copyWith(themeMode: ThemeMode.light, lightStyleFetched: const AsyncData("light"));
     await tester.pumpAndSettle();
-    expect(mapStyle?.valueOrNull, "light");
+    expect(mapStyle?.value, "light");
   });
 
   group("System mode", () {
@@ -111,7 +112,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(mapStyle?.valueOrNull, "dark");
+      expect(mapStyle?.value, "dark");
     });
 
     testWidgets("Return light theme style when system is light", (tester) async {
@@ -133,7 +134,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(mapStyle?.valueOrNull, "light");
+      expect(mapStyle?.value, "light");
     });
 
     testWidgets("Switches style when system brightness changes", (tester) async {
@@ -155,11 +156,11 @@ void main() {
         darkStyleFetched: const AsyncData("dark"),
       );
       await tester.pumpAndSettle();
-      expect(mapStyle?.valueOrNull, "light");
+      expect(mapStyle?.value, "light");
 
       tester.binding.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
       await tester.pumpAndSettle();
-      expect(mapStyle?.valueOrNull, "dark");
+      expect(mapStyle?.value, "dark");
     });
   });
 }

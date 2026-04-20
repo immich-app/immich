@@ -16,7 +16,7 @@ final mapServiceProvider = Provider<MapService>(
     }
 
     final users = ref.watch(mapStateProvider).withPartners
-        ? ref.watch(timelineUsersProvider).valueOrNull ?? [user.id]
+        ? ref.watch(timelineUsersProvider).value ?? [user.id]
         : [user.id];
 
     final mapService = ref.watch(mapFactoryProvider).remote(users, ref.watch(mapStateProvider).toOptions());

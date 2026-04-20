@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/misc.dart';
 
 extension PumpConsumerWidget on WidgetTester {
   /// Wraps the provided [widget] with Material app such that it becomes:

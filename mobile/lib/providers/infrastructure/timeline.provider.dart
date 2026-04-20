@@ -16,7 +16,7 @@ final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
 
 final timelineServiceProvider = Provider<TimelineService>(
   (ref) {
-    final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
+    final timelineUsers = ref.watch(timelineUsersProvider).value ?? [];
     final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
     ref.onDispose(timelineService.dispose);
     return timelineService;

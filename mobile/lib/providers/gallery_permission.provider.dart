@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {

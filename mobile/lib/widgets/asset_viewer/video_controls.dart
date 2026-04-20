@@ -3,12 +3,13 @@ import 'dart:math';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/widgets/asset_viewer/animated_play_pause.dart';
 
 class VideoControls extends ConsumerStatefulWidget {
@@ -25,7 +26,7 @@ class VideoControls extends ConsumerStatefulWidget {
 class _VideoControlsState extends ConsumerState<VideoControls> {
   late final RestartableTimer _hideTimer;
 
-  AutoDisposeStateNotifierProvider<VideoPlayerNotifier, VideoPlayerState> get _provider =>
+  StateNotifierProvider<VideoPlayerNotifier, VideoPlayerState> get _provider =>
       videoPlayerProvider(widget.videoPlayerName);
 
   @override

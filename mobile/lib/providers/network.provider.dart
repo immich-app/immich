@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:immich_mobile/services/network.service.dart';
 
 final networkProvider = StateNotifierProvider<NetworkNotifier, String>((ref) {

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:immich_mobile/constants/colors.dart';
-import 'package:immich_mobile/theme/color_scheme.dart';
-import 'package:immich_mobile/theme/theme_data.dart';
-import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/theme/color_scheme.dart';
+import 'package:immich_mobile/theme/dynamic_theme.dart';
+import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
 final immichThemeModeProvider = StateProvider<ThemeMode>((ref) {

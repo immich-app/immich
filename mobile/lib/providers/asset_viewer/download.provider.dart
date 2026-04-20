@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:immich_mobile/models/download/download_state.model.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/services/download.service.dart';

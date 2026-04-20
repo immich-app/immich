@@ -5,10 +5,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/primary_color_setting.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class ThemeSetting extends HookConsumerWidget {
   const ThemeSetting({super.key});
@@ -21,7 +21,8 @@ class ThemeSetting extends HookConsumerWidget {
     final isSystemTheme = useValueNotifier(currentTheme.value == ThemeMode.system);
 
     final applyThemeToBackgroundSetting = useAppSettingsState(AppSettingsEnum.colorfulInterface);
-    final applyThemeToBackgroundProvider = useValueNotifier(ref.read(colorfulInterfaceSettingProvider));
+    final isColorfulInterface = ref.read(colorfulInterfaceSettingProvider);
+    final applyThemeToBackgroundProvider = useValueNotifier(isColorfulInterface);
 
     useValueChanged(
       currentThemeString.value,

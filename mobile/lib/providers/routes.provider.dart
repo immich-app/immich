@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 
 final inLockedViewProvider = StateProvider<bool>((ref) => false);
 final currentRouteNameProvider = StateProvider<String?>((ref) => null);

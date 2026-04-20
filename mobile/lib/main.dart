@@ -55,9 +55,22 @@ void main() async {
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
     await migrateDatabaseIfNeeded();
 
-    runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
+    runApp(
+      ProviderScope(
+        overrides: [driftProvider.overrideWith(driftOverride(drift))],
+        // Never retry any provider
+        retry: (retryCount, error) => null,
+        child: const MainWidget(),
+      ),
+    );
   } catch (error, stack) {
-    runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
+    runApp(
+      ProviderScope(
+        // Never retry any provider
+        retry: (retryCount, error) => null,
+        child: BootstrapErrorWidget(error: error.toString(), stack: stack.toString()),
+      ),
+    );
   }
 }
 

@@ -19,7 +19,7 @@ class AssetDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
+    final exifInfo = ref.watch(assetExifProvider(asset)).value;
 
     return Container(
       constraints: BoxConstraints(minHeight: minHeight),
