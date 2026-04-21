@@ -59,7 +59,6 @@ void main() async {
       ProviderScope(
         overrides: [driftProvider.overrideWith(driftOverride(drift))],
         // Never retry any provider
-        retry: (retryCount, error) => null,
         child: const MainWidget(),
       ),
     );
