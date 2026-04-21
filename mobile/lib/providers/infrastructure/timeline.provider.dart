@@ -2,13 +2,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/providers/backup/backup_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
-final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
-  (ref) => DriftTimelineRepository(ref.watch(driftProvider)),
-);
+final timelineRepositoryProvider = Provider<DriftTimelineRepository>((ref) {
+  return DriftTimelineRepository(ref.watch(driftProvider), ref.watch(backupEffectiveCutoffDateProvider));
+});
 
 final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
   (ref) => throw UnimplementedError('Will be overridden through a ProviderScope.'),

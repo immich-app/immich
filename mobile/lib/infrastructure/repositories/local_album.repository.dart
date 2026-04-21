@@ -15,8 +15,9 @@ enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
+  final DateTime? _effectiveCutoffDate;
 
-  const DriftLocalAlbumRepository(this._db) : super(_db);
+  const DriftLocalAlbumRepository(this._db, [this._effectiveCutoffDate]) : super(_db);
 
   Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
@@ -236,12 +237,17 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<List<LocalAsset>> getAssetsToHash(String albumId) {
-    final query =
-        _db.localAlbumAssetEntity.select().join([
-            innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-          ])
-          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
-          ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
+    final cutoffDate = _effectiveCutoffDate;
+
+    final query = _db.localAlbumAssetEntity.select().join([
+      innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+    ])..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull());
+
+    if (cutoffDate != null) {
+      query.where(_db.localAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
+    }
+
+    query.orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
 
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }

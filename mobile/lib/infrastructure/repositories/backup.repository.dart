@@ -7,14 +7,17 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/backup/backup_settings.provider.dart';
 
-final backupRepositoryProvider = Provider<DriftBackupRepository>(
-  (ref) => DriftBackupRepository(ref.watch(driftProvider)),
-);
+final backupRepositoryProvider = Provider<DriftBackupRepository>((ref) {
+  return DriftBackupRepository(ref.watch(driftProvider), ref.watch(backupEffectiveCutoffDateProvider));
+});
 
 class DriftBackupRepository extends DriftDatabaseRepository {
   final Drift _db;
-  const DriftBackupRepository(this._db) : super(_db);
+  final DateTime? _effectiveCutoffDate;
+
+  DriftBackupRepository(this._db, [this._effectiveCutoffDate]) : super(_db);
 
   _getExcludedSubquery() {
     return _db.localAlbumAssetEntity.selectOnly()
@@ -37,6 +40,10 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   ///              (includes processing)
   /// - processing: number of those assets that are still preparing/have a null checksum
   Future<({int total, int remainder, int processing})> getAllCounts(String userId) async {
+    final cutoffDate = _effectiveCutoffDate;
+    final applyCutoff = cutoffDate != null;
+    final cutoffDateForSql = cutoffDate ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+
     const sql = '''
         SELECT
         COUNT(*) AS total_count,
@@ -58,7 +65,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             INNER JOIN main.local_album_entity la on laa.album_id = la.id
             WHERE laa.asset_id = lae.id
                 AND la.backup_selection = ?3
-        );
+        )
+        AND (?4 = 0 OR lae.created_at >= ?5);
       ''';
 
     final row = await _db
@@ -68,6 +76,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             Variable.withString(userId),
             Variable.withInt(BackupSelection.selected.index),
             Variable.withInt(BackupSelection.excluded.index),
+            Variable.withInt(applyCutoff ? 1 : 0),
+            Variable.withDateTime(cutoffDateForSql),
           ],
           readsFrom: {_db.localAlbumAssetEntity, _db.localAlbumEntity, _db.localAssetEntity, _db.remoteAssetEntity},
         )
@@ -82,6 +92,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   }
 
   Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true}) async {
+    final cutoffDate = _effectiveCutoffDate;
+
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
@@ -110,6 +122,10 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
     if (onlyHashed) {
       query.where((lae) => lae.checksum.isNotNull());
+    }
+
+    if (cutoffDate != null) {
+      query.where((lae) => lae.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
 
     return query.map((localAsset) => localAsset.toDto()).get();
