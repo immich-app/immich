@@ -319,11 +319,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     return PhotoView.customChild(
       key: Key(asset.heroTag),
-      childSize:
-          _viewController?.scaleBoundaries?.childSize ??
-          (asset.width != null && asset.height != null
-              ? Size(asset.width!.toDouble(), asset.height!.toDouble())
-              : null),
+      childSize: asset.width != null && asset.height != null
+          ? Size(asset.width!.toDouble(), asset.height!.toDouble())
+          : null,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,

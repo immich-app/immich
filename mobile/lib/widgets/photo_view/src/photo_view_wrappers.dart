@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_core.dart';
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_default_widgets.dart';
@@ -145,15 +146,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _lastStack = null;
 
         _didLoadSynchronously = synchronousCall;
-        final oldBoundaries = widget.controller.scaleBoundaries;
-        widget.controller.scaleBoundaries = scaleBoundaries;
-        if (oldBoundaries != null) {
-          final ratio = scaleBoundaries.initialScale / oldBoundaries.initialScale;
-          final currentScale = widget.controller.scale;
-          if (currentScale != null) {
-            widget.controller.setScaleInvisibly(currentScale * ratio);
-          }
-        }
       }
 
       synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
