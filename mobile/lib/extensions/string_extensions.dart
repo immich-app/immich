@@ -15,9 +15,7 @@ extension DurationExtension on String {
       final minutes = double.parse(parts[1]).toInt();
       final secondsParts = parts[2].split('.');
       final seconds = int.parse(secondsParts[0]);
-      final milliseconds = secondsParts.length > 1
-          ? (double.parse('0.${secondsParts[1]}') * 1000).round()
-          : 0;
+      final milliseconds = secondsParts.length > 1 ? (double.parse('0.${secondsParts[1]}') * 1000).round() : 0;
       return Duration(hours: hours, minutes: minutes, seconds: seconds, milliseconds: milliseconds);
     } catch (e) {
       return null;

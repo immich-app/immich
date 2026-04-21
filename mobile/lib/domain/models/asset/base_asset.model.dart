@@ -53,7 +53,8 @@ sealed class BaseAsset {
   AssetPlaybackStyle get playbackStyle {
     if (isVideo) return AssetPlaybackStyle.video;
     if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
-    if (isImage && durationInMilliseconds != null && durationInMilliseconds! > 0) return AssetPlaybackStyle.imageAnimated;
+    if (isImage && durationInMilliseconds != null && durationInMilliseconds! > 0)
+      return AssetPlaybackStyle.imageAnimated;
     if (isImage) return AssetPlaybackStyle.image;
     return AssetPlaybackStyle.unknown;
   }
