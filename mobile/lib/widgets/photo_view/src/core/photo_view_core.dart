@@ -301,12 +301,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     controller.scaleAnimationBuilder(_animateControllerScale);
     controller.rotationAnimationBuilder(_animateControllerRotation);
 
-    final prevBoundaries = controller.scaleBoundaries;
-    if (prevBoundaries != null && prevBoundaries != widget.scaleBoundaries) {
-      _updateScaleBoundaries(prevBoundaries);
-    } else {
-      controller.scaleBoundaries = widget.scaleBoundaries;
-    }
+    _updateScaleBoundaries();
 
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
@@ -337,8 +332,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     widget.onTapDown?.call(context, details, controller.value);
   }
 
-  void _updateScaleBoundaries(ScaleBoundaries prev) {
-    if (controller.scale != null && prev.initialScale > 0) {
+  void _updateScaleBoundaries() {
+    final prev = controller.scaleBoundaries;
+    if (prev == widget.scaleBoundaries) return;
+
+    if (prev != null && controller.scale != null && prev.initialScale > 0) {
       final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
       controller.setScaleInvisibly(controller.scale! * ratio);
     } else {
@@ -350,9 +348,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   @override
   void didUpdateWidget(PhotoViewCore oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.scaleBoundaries != oldWidget.scaleBoundaries) {
-      _updateScaleBoundaries(oldWidget.scaleBoundaries);
-    }
+    _updateScaleBoundaries();
   }
 
   @override
