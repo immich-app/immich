@@ -209,7 +209,6 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.closeFaceEditMode();
     this.closeEditFacesPanel();
   }
-
   setAsset(asset: AssetResponseDto) {
     this.#viewingAssetStoreState = asset;
     this.#viewState = true;

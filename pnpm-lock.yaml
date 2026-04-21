@@ -412,9 +412,6 @@ importers:
       '@socket.io/redis-adapter':
         specifier: ^8.3.0
         version: 8.3.0(socket.io-adapter@2.5.6)
-      ajv:
-        specifier: ^8.17.1
-        version: 8.18.0
       archiver:
         specifier: ^7.0.0
         version: 7.0.1
@@ -523,9 +520,6 @@ importers:
       pg:
         specifier: ^8.11.3
         version: 8.20.0
-      pg-connection-string:
-        specifier: ^2.9.1
-        version: 2.12.0
       picomatch:
         specifier: ^4.0.2
         version: 4.0.4
@@ -689,9 +683,6 @@ importers:
       mock-fs:
         specifier: ^5.2.0
         version: 5.5.0
-      node-gyp:
-        specifier: ^12.0.0
-        version: 12.2.0
       pngjs:
         specifier: ^7.0.0
         version: 7.0.0
