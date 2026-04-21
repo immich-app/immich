@@ -7439,65 +7439,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/oauth/link": {
-      "post": {
-        "description": "Link an OAuth account to the authenticated user.",
-        "operationId": "linkOAuthAccount",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthCallbackDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserAdminResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Link OAuth account",
-        "tags": [
-          "Authentication"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-state": "Stable"
-      }
-    },
     "/oauth/mobile-redirect": {
       "get": {
         "description": "Requests to this URL are automatically forwarded to the mobile app, and is used in some cases for OAuth redirecting.",

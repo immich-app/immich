@@ -50,6 +50,7 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { MoveTable } from 'src/schema/tables/move.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
 import { NotificationTable } from 'src/schema/tables/notification.table';
+import { OAuthLinkTokenTable } from 'src/schema/tables/oauth-link-token.table';
 import { OcrSearchTable } from 'src/schema/tables/ocr-search.table';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
@@ -108,6 +109,7 @@ export class ImmichDatabase {
     MoveTable,
     NaturalEarthCountriesTable,
     NotificationTable,
+    OAuthLinkTokenTable,
     OcrSearchTable,
     PartnerAuditTable,
     PartnerTable,
@@ -209,6 +211,8 @@ export interface DB {
   migrations: Migrations;
 
   notification: NotificationTable;
+
+  oauth_link_token: OAuthLinkTokenTable;
 
   move_history: MoveTable;
 

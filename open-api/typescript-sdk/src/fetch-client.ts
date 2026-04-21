@@ -4945,21 +4945,6 @@ export function finishOAuth({ oAuthCallbackDto }: {
     })));
 }
 /**
- * Link OAuth account
- */
-export function linkOAuthAccount({ oAuthCallbackDto }: {
-    oAuthCallbackDto: OAuthCallbackDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: UserAdminResponseDto;
-    }>("/oauth/link", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: oAuthCallbackDto
-    })));
-}
-/**
  * Redirect OAuth to mobile
  */
 export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {

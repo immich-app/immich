@@ -25,6 +25,7 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OAuthLinkTokenRepository } from 'src/repositories/oauth-link-token.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
@@ -78,6 +79,7 @@ export const repositories = [
   MetadataRepository,
   MoveRepository,
   NotificationRepository,
+  OAuthLinkTokenRepository,
   OAuthRepository,
   OcrRepository,
   PartnerRepository,

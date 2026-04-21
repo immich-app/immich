@@ -122,7 +122,6 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**changePinCode**](doc//AuthenticationApi.md#changepincode) | **PUT** /auth/pin-code | Change pin code
 *AuthenticationApi* | [**finishOAuth**](doc//AuthenticationApi.md#finishoauth) | **POST** /oauth/callback | Finish OAuth
 *AuthenticationApi* | [**getAuthStatus**](doc//AuthenticationApi.md#getauthstatus) | **GET** /auth/status | Retrieve auth status
-*AuthenticationApi* | [**linkOAuthAccount**](doc//AuthenticationApi.md#linkoauthaccount) | **POST** /oauth/link | Link OAuth account
 *AuthenticationApi* | [**lockAuthSession**](doc//AuthenticationApi.md#lockauthsession) | **POST** /auth/session/lock | Lock auth session
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | Login
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | Logout

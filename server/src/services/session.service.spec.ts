@@ -20,6 +20,7 @@ describe('SessionService', () => {
   describe('handleCleanup', () => {
     it('should clean sessions', async () => {
       mocks.session.cleanup.mockResolvedValue([]);
+      mocks.oauthLinkToken.cleanup.mockResolvedValue(0);
       await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.Success);
     });
   });

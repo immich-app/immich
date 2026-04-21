@@ -118,6 +118,7 @@ describe(AuthController.name, () => {
       expect(service.login).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'admin@immich.app' }),
         expect.anything(),
+        expect.anything(),
       );
     });
 
@@ -129,7 +130,11 @@ describe(AuthController.name, () => {
         .send({ name: 'admin', email: 'admin@local', password: 'password' });
 
       expect(status).toEqual(201);
-      expect(service.login).toHaveBeenCalledWith(expect.objectContaining({ email: 'admin@local' }), expect.anything());
+      expect(service.login).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'admin@local' }),
+        expect.anything(),
+        expect.anything(),
+      );
     });
 
     it('should auth cookies on a secure connection', async () => {
