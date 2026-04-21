@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Notification level
 class NotificationLevel {
   /// Instantiate a new enum with the provided [value].
   const NotificationLevel._(this.value);

@@ -207,16 +207,6 @@ describe('/server', () => {
     });
   });
 
-  describe('GET /server/theme', () => {
-    it('should respond with the server theme', async () => {
-      const { status, body } = await request(app).get('/server/theme');
-      expect(status).toBe(200);
-      expect(body).toEqual({
-        customCss: '',
-      });
-    });
-  });
-
   describe('GET /server/license', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/server/license');

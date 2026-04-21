@@ -351,8 +351,6 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .where('asset_exif.rating', options.rating === null ? 'is' : '=', options.rating!),
     )
     .$if(!!options.checksum, (qb) => qb.where('asset.checksum', '=', options.checksum!))
-    .$if(!!options.deviceAssetId, (qb) => qb.where('asset.deviceAssetId', '=', options.deviceAssetId!))
-    .$if(!!options.deviceId, (qb) => qb.where('asset.deviceId', '=', options.deviceId!))
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))

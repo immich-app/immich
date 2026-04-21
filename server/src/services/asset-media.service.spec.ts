@@ -80,6 +80,7 @@ const validImages = [
   '.jxl',
   '.k25',
   '.kdc',
+  '.mpo',
   '.mrw',
   '.nef',
   '.orf',
@@ -145,26 +146,21 @@ const uploadTests = [
 ];
 
 const createDto = Object.freeze({
-  deviceAssetId: 'deviceAssetId',
-  deviceId: 'deviceId',
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  duration: '0:00:00.000000',
 }) as AssetMediaCreateDto;
 
 const assetEntity = Object.freeze({
   id: 'id_1',
   ownerId: 'user_id_1',
-  deviceAssetId: 'device_asset_id_1',
-  deviceId: 'device_id_1',
   type: AssetType.Video,
   originalPath: 'fake_path/asset_1.jpeg',
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  duration: '0:00:00.000000',
+  duration: null,
   files: [] as AssetFile[],
   exifInfo: {
     latitude: 49.533_547,
@@ -762,17 +758,6 @@ describe(AssetMediaService.name, () => {
           contentType: 'application/octet-stream',
         }),
       );
-    });
-  });
-
-  describe('checkExistingAssets', () => {
-    it('should get existing asset ids', async () => {
-      mocks.asset.getByDeviceIds.mockResolvedValue(['42']);
-      await expect(
-        sut.checkExistingAssets(authStub.admin, { deviceId: '420', deviceAssetIds: ['69'] }),
-      ).resolves.toEqual({ existingIds: ['42'] });
-
-      expect(mocks.asset.getByDeviceIds).toHaveBeenCalledWith(userStub.admin.id, '420', ['69']);
     });
   });
 

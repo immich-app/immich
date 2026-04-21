@@ -281,7 +281,7 @@ class ServerApi {
   /// Get product key
   ///
   /// Retrieve information about whether the server currently has a product key registered.
-  Future<LicenseResponseDto?> getServerLicense() async {
+  Future<UserLicense?> getServerLicense() async {
     final response = await getServerLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -290,7 +290,7 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserLicense',) as UserLicense;
     
     }
     return null;
@@ -488,54 +488,6 @@ class ServerApi {
     return null;
   }
 
-  /// Get theme
-  ///
-  /// Retrieve the custom CSS, if existent.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> getThemeWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/server/theme';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Get theme
-  ///
-  /// Retrieve the custom CSS, if existent.
-  Future<ServerThemeDto?> getTheme() async {
-    final response = await getThemeWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerThemeDto',) as ServerThemeDto;
-    
-    }
-    return null;
-  }
-
   /// Get version check status
   ///
   /// Retrieve information about the last time the version check ran.
@@ -724,7 +676,7 @@ class ServerApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<LicenseResponseDto?> setServerLicense(LicenseKeyDto licenseKeyDto,) async {
+  Future<UserLicense?> setServerLicense(LicenseKeyDto licenseKeyDto,) async {
     final response = await setServerLicenseWithHttpInfo(licenseKeyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -733,7 +685,7 @@ class ServerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserLicense',) as UserLicense;
     
     }
     return null;

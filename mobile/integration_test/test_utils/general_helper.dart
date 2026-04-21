@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/main.dart' as app;
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:integration_test/integration_test.dart';
@@ -39,20 +38,11 @@ class ImmichTestHelper {
   static Future<void> loadApp(WidgetTester tester) async {
     await EasyLocalization.ensureInitialized();
     // Clear all data from Isar (reuse existing instance if available)
-    final (isar, drift, logDb) = await Bootstrap.initDB();
-    await Bootstrap.initDomain(isar, drift, logDb);
+    final (drift, _) = await Bootstrap.initDomain();
     await Store.clear();
-    await isar.writeTxn(() => isar.clear());
     // Load main Widget
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          dbProvider.overrideWithValue(isar),
-          isarProvider.overrideWithValue(isar),
-          driftProvider.overrideWith(driftOverride(drift)),
-        ],
-        child: const app.MainWidget(),
-      ),
+      ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const app.MainWidget()),
     );
     // Post run tasks
     await EasyLocalization.ensureInitialized();

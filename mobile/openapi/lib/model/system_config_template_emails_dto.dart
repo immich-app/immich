@@ -18,10 +18,13 @@ class SystemConfigTemplateEmailsDto {
     required this.welcomeTemplate,
   });
 
+  /// Album invite template
   String albumInviteTemplate;
 
+  /// Album update template
   String albumUpdateTemplate;
 
+  /// Welcome template
   String welcomeTemplate;
 
   @override

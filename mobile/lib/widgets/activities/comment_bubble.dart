@@ -29,7 +29,7 @@ class CommentBubble extends ConsumerWidget {
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
 
     final activityNotifier = ref.read(
-      albumActivityProvider(album.id, isAssetActivity ? activity.assetId : null).notifier,
+      albumActivityProvider((album.id, isAssetActivity ? activity.assetId : null)).notifier,
     );
 
     Future<void> openAssetViewer() async {

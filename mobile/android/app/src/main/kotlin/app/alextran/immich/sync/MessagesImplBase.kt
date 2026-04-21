@@ -94,11 +94,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
 
-    // _special_format requires S Extensions 21+
+    // _special_format: added in API level 37, also in S Extensions 21+
     // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
     private fun hasSpecialFormatColumn(): Boolean =
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-        SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21
+      Build.VERSION.SDK_INT >= 37 ||
+        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+          SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21)
   }
 
   protected fun getCursor(
@@ -177,7 +178,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
           val duration = if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0L
-          else c.getLong(durationColumn) / 1000
+          else c.getLong(durationColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 

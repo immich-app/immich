@@ -1,12 +1,16 @@
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { ExifResponseSchema } from 'src/dtos/exif.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
 import { getExifCount, suggestDuplicate, suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
 import { describe, expect, it } from 'vitest';
+import type { z } from 'zod';
+
+type ExifInfoInput = Partial<z.infer<typeof ExifResponseSchema>>;
 
 const createAsset = (
   id: string,
   fileSizeInByte: number | null = null,
-  exifFields: Record<string, unknown> = {},
+  exifFields: ExifInfoInput = {},
 ): AssetResponseDto => ({
   id,
   type: AssetType.Image,
@@ -17,8 +21,6 @@ const createAsset = (
   width: 1920,
   height: 1080,
   createdAt: new Date().toISOString(),
-  deviceAssetId: 'device-asset-1',
-  deviceId: 'device-1',
   ownerId: 'owner-1',
   originalPath: '/path/to/asset',
   originalFileName: 'asset.jpg',
@@ -33,7 +35,9 @@ const createAsset = (
   visibility: AssetVisibility.Timeline,
   checksum: 'checksum',
   exifInfo:
-    fileSizeInByte !== null || Object.keys(exifFields).length > 0 ? { fileSizeInByte, ...exifFields } : undefined,
+    fileSizeInByte !== null || Object.keys(exifFields).length > 0
+      ? ExifResponseSchema.parse({ fileSizeInByte, ...exifFields })
+      : undefined,
 });
 
 describe('duplicate utils', () => {
@@ -46,7 +50,7 @@ describe('duplicate utils', () => {
 
     it('should return 0 for empty exifInfo', () => {
       const asset = createAsset('asset-1');
-      asset.exifInfo = {};
+      asset.exifInfo = ExifResponseSchema.parse({});
       expect(getExifCount(asset)).toBe(0);
     });
 
@@ -54,7 +58,7 @@ describe('duplicate utils', () => {
       const asset = createAsset('asset-1', 1000, {
         make: 'Canon',
         model: 'EOS 5D',
-        dateTimeOriginal: new Date(),
+        dateTimeOriginal: new Date().toISOString(),
         timeZone: 'UTC',
         latitude: 40.7128,
         longitude: -74.006,
@@ -107,7 +111,7 @@ describe('duplicate utils', () => {
       const moreExif = createAsset('more-exif', 1000, {
         make: 'Canon',
         model: 'EOS 5D',
-        dateTimeOriginal: new Date(),
+        dateTimeOriginal: new Date().toISOString(),
         city: 'New York',
       });
 
@@ -125,7 +129,7 @@ describe('duplicate utils', () => {
 
     it('should handle assets with exifInfo but no fileSizeInByte', () => {
       const noFileSize = createAsset('no-file-size');
-      noFileSize.exifInfo = { make: 'Canon', model: 'EOS 5D' };
+      noFileSize.exifInfo = ExifResponseSchema.parse({ make: 'Canon', model: 'EOS 5D' });
       const withFileSize = createAsset('with-file-size', 1000);
 
       expect(suggestDuplicate([noFileSize, withFileSize])?.id).toBe('with-file-size');
@@ -148,7 +152,7 @@ describe('duplicate utils', () => {
       const smallWithMoreExif = createAsset('small-more-exif', 1000, {
         make: 'Canon',
         model: 'EOS 5D',
-        dateTimeOriginal: new Date(),
+        dateTimeOriginal: new Date().toISOString(),
         city: 'New York',
         state: 'NY',
         country: 'USA',

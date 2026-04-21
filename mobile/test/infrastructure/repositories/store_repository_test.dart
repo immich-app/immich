@@ -1,14 +1,15 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:isar/isar.dart';
 
 import '../../fixtures/user.stub.dart';
-import '../../test_utils.dart';
 
 const _kTestAccessToken = "#TestToken";
 final _kTestBackupFailed = DateTime(2025, 2, 20, 11, 45);
@@ -16,30 +17,54 @@ const _kTestVersion = 10;
 const _kTestColorfulInterface = false;
 final _kTestUser = UserStub.admin;
 
-Future<void> _addIntStoreValue(Isar db, StoreKey key, int? value) async {
-  await db.storeValues.put(StoreValue(key.id, intValue: value, strValue: null));
-}
-
-Future<void> _addStrStoreValue(Isar db, StoreKey key, String? value) async {
-  await db.storeValues.put(StoreValue(key.id, intValue: null, strValue: value));
-}
-
-Future<void> _populateStore(Isar db) async {
-  await db.writeTxn(() async {
-    await _addIntStoreValue(db, StoreKey.colorfulInterface, _kTestColorfulInterface ? 1 : 0);
-    await _addIntStoreValue(db, StoreKey.backupFailedSince, _kTestBackupFailed.millisecondsSinceEpoch);
-    await _addStrStoreValue(db, StoreKey.accessToken, _kTestAccessToken);
-    await _addIntStoreValue(db, StoreKey.version, _kTestVersion);
+Future<void> _populateStore(Drift db) async {
+  await db.batch((batch) async {
+    batch.insert(
+      db.storeEntity,
+      StoreEntityCompanion(
+        id: Value(StoreKey.colorfulInterface.id),
+        intValue: const Value(_kTestColorfulInterface ? 1 : 0),
+        stringValue: const Value(null),
+      ),
+    );
+    batch.insert(
+      db.storeEntity,
+      StoreEntityCompanion(
+        id: Value(StoreKey.backupFailedSince.id),
+        intValue: Value(_kTestBackupFailed.millisecondsSinceEpoch),
+        stringValue: const Value(null),
+      ),
+    );
+    batch.insert(
+      db.storeEntity,
+      StoreEntityCompanion(
+        id: Value(StoreKey.accessToken.id),
+        intValue: const Value(null),
+        stringValue: const Value(_kTestAccessToken),
+      ),
+    );
+    batch.insert(
+      db.storeEntity,
+      StoreEntityCompanion(
+        id: Value(StoreKey.version.id),
+        intValue: const Value(_kTestVersion),
+        stringValue: const Value(null),
+      ),
+    );
   });
 }
 
 void main() {
-  late Isar db;
-  late IsarStoreRepository sut;
+  late Drift db;
+  late DriftStoreRepository sut;
 
   setUp(() async {
-    db = await TestUtils.initIsar();
-    sut = IsarStoreRepository(db);
+    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    sut = DriftStoreRepository(db);
+  });
+
+  tearDown(() async {
+    await db.close();
   });
 
   group('Store Repository converters:', () {
@@ -98,10 +123,10 @@ void main() {
     });
 
     test('deleteAll()', () async {
-      final count = await db.storeValues.count();
+      final count = await db.storeEntity.count().getSingle();
       expect(count, isNot(isZero));
       await sut.deleteAll();
-      unawaited(expectLater(await db.storeValues.count(), isZero));
+      unawaited(expectLater(await db.storeEntity.count().getSingle(), isZero));
     });
   });
 

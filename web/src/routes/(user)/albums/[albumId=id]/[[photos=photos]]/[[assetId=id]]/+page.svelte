@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { goto, onNavigate } from '$app/navigation';
+  import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import AlbumDescription from '$lib/components/album-page/album-description.svelte';
-  import AlbumMap from '$lib/components/album-page/album-map.svelte';
-  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
-  import AlbumTitle from '$lib/components/album-page/album-title.svelte';
-  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
-  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
+  import AlbumDescription from './AlbumDescription.svelte';
+  import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
+  import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
+  import AlbumTitle from './AlbumTitle.svelte';
+  import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
+  import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -31,6 +31,7 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -47,7 +48,6 @@
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
@@ -133,7 +133,7 @@
   };
 
   const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    album = await getAlbumInfo({ id: album.id });
   };
 
   const setModeToView = async () => {
@@ -243,7 +243,7 @@
 
   onDestroy(() => activityManager.reset());
 
-  let isOwned = $derived($user.id == album.ownerId);
+  let isOwned = $derived(authManager.user.id == album.ownerId);
 
   let showActivityStatus = $derived(
     album.albumUsers.length > 0 &&
@@ -251,8 +251,8 @@
       (album.isActivityEnabled || activityManager.commentCount > 0),
   );
   let isEditor = $derived(
-    album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
-      album.ownerId === $user.id,
+    album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor ||
+      album.ownerId === authManager.user.id,
   );
 
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
@@ -309,13 +309,18 @@
     album = { ...album, albumUsers };
   };
 
+  const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
+    album = newAlbum;
+
+    await invalidate('album:data');
+  };
+
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
 
   const Close = $derived({
     title: $t('go_back'),
-    type: $t('command'),
     icon: mdiArrowLeft,
     onAction: handleEscape,
     $if: () => !assetViewerManager.isViewing,
@@ -331,7 +336,7 @@
   {onAlbumShare}
   {onAlbumUserUpdate}
   onAlbumUserDelete={refreshAlbum}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
+  {onAlbumUpdate}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
@@ -485,7 +490,7 @@
             />
           {/if}
 
-          {#if $preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+          {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
             <TagAction menuItem />
           {/if}
 
@@ -615,7 +620,7 @@
       {/if}
     {/if}
   </div>
-  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && $user && !assetViewerManager.isViewing}
+  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && authManager.authenticated && !assetViewerManager.isViewing}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -623,12 +628,7 @@
         class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
-        <ActivityViewer
-          user={$user}
-          disabled={!album.isActivityEnabled}
-          albumOwnerId={album.ownerId}
-          albumId={album.id}
-        />
+        <ActivityViewer disabled={!album.isActivityEnabled} albumOwnerId={album.ownerId} albumId={album.id} />
       </div>
     </div>
   {/if}

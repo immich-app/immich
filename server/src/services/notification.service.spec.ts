@@ -1,4 +1,3 @@
-import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
@@ -102,7 +101,7 @@ describe(NotificationService.name, () => {
 
     it('skips smtp validation with DTO when there are no changes', async () => {
       const oldConfig = { ...configs.smtpEnabled };
-      const newConfig = plainToInstance(SystemConfigDto, configs.smtpEnabled);
+      const newConfig = configs.smtpEnabled as SystemConfigDto;
 
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(mocks.email.verifySmtp).not.toHaveBeenCalled();

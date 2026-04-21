@@ -178,7 +178,9 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['download.archiveSize must be an integer number']));
+      expect(body).toEqual(
+        errorDto.badRequest(['[download.archiveSize] Invalid input: expected int, received number']),
+      );
     });
 
     it('should update download archive size', async () => {
@@ -204,7 +206,9 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['download.includeEmbeddedVideos must be a boolean value']));
+      expect(body).toEqual(
+        errorDto.badRequest(['[download.includeEmbeddedVideos] Invalid input: expected boolean, received number']),
+      );
     });
 
     it('should update download include embedded videos', async () => {

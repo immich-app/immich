@@ -1,9 +1,9 @@
-import { MediaType } from '$lib/constants';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
+import { MediaType } from '$lib/constants';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
 export type LatLng = { lng: number; lat: number };
 

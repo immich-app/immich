@@ -106,19 +106,6 @@ interface AssetExploreFieldOptions {
   minAssetsPerField: number;
 }
 
-interface AssetFullSyncOptions {
-  ownerId: string;
-  lastId?: string;
-  updatedUntil: Date;
-  limit: number;
-}
-
-interface AssetDeltaSyncOptions {
-  userIds: string[];
-  updatedAfter: Date;
-  limit: number;
-}
-
 interface AssetGetByChecksumOptions {
   ownerId: string;
   checksum: Buffer;
@@ -318,7 +305,7 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: Array<{ key: string; value: object }>) {
+  upsertMetadata(id: string, items: Array<{ key: string; value: Record<string, unknown> }>) {
     if (items.length === 0) {
       return [];
     }
@@ -461,18 +448,6 @@ export class AssetRepository {
     await this.db.deleteFrom('asset').where('ownerId', '=', ownerId).execute();
   }
 
-  async getByDeviceIds(ownerId: string, deviceId: string, deviceAssetIds: string[]): Promise<string[]> {
-    const assets = await this.db
-      .selectFrom('asset')
-      .select(['deviceAssetId'])
-      .where('deviceAssetId', 'in', deviceAssetIds)
-      .where('deviceId', '=', deviceId)
-      .where('ownerId', '=', asUuid(ownerId))
-      .execute();
-
-    return assets.map((asset) => asset.deviceAssetId);
-  }
-
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string) {
     return this.db
@@ -482,27 +457,6 @@ export class AssetRepository {
       .where('originalPath', '=', originalPath)
       .limit(1)
       .executeTakeFirst();
-  }
-
-  /**
-   * Get assets by device's Id on the database
-   * @param ownerId
-   * @param deviceId
-   *
-   * @returns Promise<string[]> - Array of assetIds belong to the device
-   */
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
-    const items = await this.db
-      .selectFrom('asset')
-      .select(['deviceAssetId'])
-      .where('ownerId', '=', asUuid(ownerId))
-      .where('deviceId', '=', deviceId)
-      .where('visibility', '!=', AssetVisibility.Hidden)
-      .where('deletedAt', 'is', null)
-      .execute();
-
-    return items.map((asset) => asset.deviceAssetId);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -581,7 +535,7 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
+  @GenerateSql({ params: [[DummyValue.UUID], {}] })
   @Chunked()
   async updateAll(ids: string[], options: Updateable<AssetTable>): Promise<void> {
     if (ids.length === 0) {
@@ -679,19 +633,6 @@ export class AssetRepository {
       .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
       .executeTakeFirstOrThrow();
-  }
-
-  getRandom(userIds: string[], take: number) {
-    return this.db
-      .selectFrom('asset')
-      .selectAll('asset')
-      .$call(withExif)
-      .$call(withDefaultVisibility)
-      .where('ownerId', '=', anyUuid(userIds))
-      .where('deletedAt', 'is', null)
-      .orderBy((eb) => eb.fn('random'))
-      .limit(take)
-      .execute();
   }
 
   @GenerateSql({ params: [{}] })
@@ -916,70 +857,6 @@ export class AssetRepository {
       .execute();
 
     return { fieldName: 'exifInfo.city', items };
-  }
-
-  @GenerateSql({
-    params: [
-      {
-        ownerId: DummyValue.UUID,
-        lastId: DummyValue.UUID,
-        updatedUntil: DummyValue.DATE,
-        limit: 10,
-      },
-    ],
-  })
-  getAllForUserFullSync(options: AssetFullSyncOptions) {
-    const { ownerId, lastId, updatedUntil, limit } = options;
-    return this.db
-      .selectFrom('asset')
-      .selectAll('asset')
-      .$call(withExif)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('asset as stacked')
-            .selectAll('stack')
-            .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
-      )
-      .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack'))
-      .where('asset.ownerId', '=', asUuid(ownerId))
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where('asset.updatedAt', '<=', updatedUntil)
-      .$if(!!lastId, (qb) => qb.where('asset.id', '>', lastId!))
-      .orderBy('asset.id')
-      .limit(limit)
-      .execute();
-  }
-
-  @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE, limit: 100 }] })
-  async getChangedDeltaSync(options: AssetDeltaSyncOptions) {
-    return this.db
-      .selectFrom('asset')
-      .selectAll('asset')
-      .$call(withExif)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('asset as stacked')
-            .selectAll('stack')
-            .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
-      )
-      .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
-      .where('asset.ownerId', '=', anyUuid(options.userIds))
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where('asset.updatedAt', '>', options.updatedAfter)
-      .limit(options.limit)
-      .execute();
   }
 
   async upsertFile(

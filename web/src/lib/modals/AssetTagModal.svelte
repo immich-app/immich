@@ -7,8 +7,8 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import Combobox, { type ComboBoxOption } from '../components/shared-components/combobox.svelte';
-  import TagPill from '../components/shared-components/tag-pill.svelte';
+  import Combobox, { type ComboBoxOption } from '../components/shared-components/Combobox.svelte';
+  import TagPill from '../components/shared-components/TagPill.svelte';
 
   interface Props {
     onClose: (updated?: boolean) => void;
