@@ -42,7 +42,7 @@ extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityD
     type: type,
     createdAt: createdAt,
     updatedAt: updatedAt,
-    durationInSeconds: durationInSeconds,
+    durationInMilliseconds: durationInMilliseconds,
     isFavorite: isFavorite,
     height: height,
     width: width,

@@ -39,7 +39,7 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     type: type,
     createdAt: createdAt,
     updatedAt: updatedAt,
-    durationInSeconds: durationInSeconds,
+    durationInMilliseconds: durationInMilliseconds,
     isFavorite: isFavorite,
     height: height,
     width: width,
