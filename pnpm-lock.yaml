@@ -8,6 +8,7 @@ settings:
 overrides:
   canvas: 2.11.2
   sharp: ^0.34.5
+  webpackbar: ^7.0.0
 
 packageExtensionsChecksum: sha256-3l4AQg4iuprBDup+q+2JaPvbPg/7XodWCE0ZteH+s54=
 
@@ -181,7 +182,7 @@ importers:
         specifier: ^3.10.0
         version: 3.10.0
       '@docusaurus/types':
-        specifier: ^3.7.0
+        specifier: ^3.10.0
         version: 3.10.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       prettier:
         specifier: ^3.7.4
@@ -5879,6 +5880,10 @@ packages:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
 
+  ansis@3.17.0:
+    resolution: {integrity: sha512-0qWUglt9JEqLFr3w1I1pbrChn1grhaiAR2ocX1PP/flRmxgtwTzPFFFnfIlD6aMOLQZgSuCRlidD70lvx8yhzg==}
+    engines: {node: '>=14'}
+
   ansis@4.2.0:
     resolution: {integrity: sha512-HqZ5rWlFjGiV0tDm3UxxgNRqsOTniqoKZu0pIAfh7TZQMGuZK+hH0drySty0si0QXj1ieop4+SkSfPZBPPkHig==}
     engines: {node: '>=14'}
@@ -9099,9 +9104,6 @@ packages:
   markdown-extensions@2.0.0:
     resolution: {integrity: sha512-o5vL7aDWatOTX8LzaS1WMoaoxIiLRQJuIKKe2wAw6IeULDHaqbiqiggmx+pKvZDb1Sj+pE46Sn1T7lCqfFtg1Q==}
     engines: {node: '>=16'}
-
-  markdown-table@2.0.0:
-    resolution: {integrity: sha512-Ezda85ToJUBhM6WGaG6veasyym+Tbs3cMAw/ZhOPqXiYsr0jgocBV3j3nx+4lk47plLlIqjwuTm/ywVI+zjJ/A==}
 
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
@@ -12552,11 +12554,17 @@ packages:
       webpack-cli:
         optional: true
 
-  webpackbar@6.0.1:
-    resolution: {integrity: sha512-TnErZpmuKdwWBdMoexjio3KKX6ZtoKHRVvLIU0A47R0VVBDtx3ZyOJDktgYixhoJokZTYTt1Z37OkO9pnGJa9Q==}
+  webpackbar@7.0.0:
+    resolution: {integrity: sha512-aS9soqSO2iCHgqHoCrj4LbfGQUboDCYJPSFOAchEK+9psIjNrfSWW4Y0YEz67MKURNvMmfo0ycOg9d/+OOf9/Q==}
     engines: {node: '>=14.21.3'}
     peerDependencies:
+      '@rspack/core': '*'
       webpack: 3 || 4 || 5
+    peerDependenciesMeta:
+      '@rspack/core':
+        optional: true
+      webpack:
+        optional: true
 
   websocket-driver@0.7.4:
     resolution: {integrity: sha512-b17KeDIQVjvb0ssuSDF2cYXSg2iztliJ4B9WdsuB6J952qCPKmnVq4DyW5motImXHDC1cBT/1UezrJVsKw5zjg==}
@@ -14213,7 +14221,7 @@ snapshots:
       tslib: 2.8.1
       url-loader: 4.1.1(file-loader@6.2.0(webpack@5.106.2))(webpack@5.106.2)
       webpack: 5.106.2
-      webpackbar: 6.0.1(webpack@5.106.2)
+      webpackbar: 7.0.0(webpack@5.106.2)
     transitivePeerDependencies:
       - '@parcel/css'
       - '@rspack/core'
@@ -18410,6 +18418,8 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
+  ansis@3.17.0: {}
+
   ansis@4.2.0: {}
 
   any-promise@1.3.0: {}
@@ -22092,10 +22102,6 @@ snapshots:
   mark.js@8.11.1: {}
 
   markdown-extensions@2.0.0: {}
-
-  markdown-table@2.0.0:
-    dependencies:
-      repeat-string: 1.6.1
 
   markdown-table@3.0.4: {}
 
@@ -26414,17 +26420,14 @@ snapshots:
       - esbuild
       - uglify-js
 
-  webpackbar@6.0.1(webpack@5.106.2):
+  webpackbar@7.0.0(webpack@5.106.2):
     dependencies:
-      ansi-escapes: 4.3.2
-      chalk: 4.1.2
+      ansis: 3.17.0
       consola: 3.4.2
-      figures: 3.2.0
-      markdown-table: 2.0.0
       pretty-time: 1.1.0
       std-env: 3.10.0
+    optionalDependencies:
       webpack: 5.106.2
-      wrap-ansi: 7.0.0
 
   websocket-driver@0.7.4:
     dependencies:
