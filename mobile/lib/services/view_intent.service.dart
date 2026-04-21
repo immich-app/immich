@@ -43,6 +43,13 @@ class ViewIntentService {
     }
   }
 
+  Future<void> cleanupManagedTempFileIfCurrent(String path) async {
+    if (_managedTempFilePath == path) {
+      _managedTempFilePath = null;
+    }
+    await cleanupTempFile(path);
+  }
+
   Future<void> cleanupTempFile(String path) async {
     if (!_isManagedTempFile(path)) {
       return;

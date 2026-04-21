@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -72,7 +73,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
 
     final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
-    _openAssetViewer(
+    await _openAssetViewer(
       resolvedAsset.asset,
       resolvedAsset.timelineService,
       resolvedAsset.initialIndex,
@@ -80,26 +81,47 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     );
   }
 
-  void _openAssetViewer(
+  Future<void> _openAssetViewer(
     BaseAsset asset,
     TimelineService timelineService,
     int initialIndex, {
     String? viewIntentFilePath,
-  }) {
-    _ref.read(assetViewerProvider.notifier).reset();
-    _ref.read(assetViewerProvider.notifier).setAsset(asset);
-    if (viewIntentFilePath != null) {
-      _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
-      unawaited(_viewIntentService.setManagedTempFilePath(viewIntentFilePath));
-    } else {
-      _ref.read(viewIntentFilePathProvider.notifier).clear();
-      unawaited(_viewIntentService.cleanupManagedTempFile());
-    }
+  }) async {
+    final notifier = _ref.read(assetViewerProvider.notifier);
+    notifier.setViewerTransitionInProgress(true);
+    try {
+      _router.removeWhere((route) => route.name == AssetViewerRoute.name);
 
-    if (asset.isVideo) {
-      _ref.read(assetViewerProvider.notifier).setControls(true);
-    }
+      await _waitForNextFrame();
 
-    _router.push(AssetViewerRoute(initialIndex: initialIndex, timelineService: timelineService));
+      notifier.reset();
+      notifier.setAsset(asset);
+      if (viewIntentFilePath != null) {
+        _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
+        unawaited(_viewIntentService.setManagedTempFilePath(viewIntentFilePath));
+      } else {
+        _ref.read(viewIntentFilePathProvider.notifier).clear();
+        unawaited(_viewIntentService.cleanupManagedTempFile());
+      }
+
+      if (asset.isVideo) {
+        notifier.setControls(true);
+      }
+
+      unawaited(_router.push(AssetViewerRoute(initialIndex: initialIndex, timelineService: timelineService)));
+      await _waitForNextFrame();
+    } finally {
+      notifier.setViewerTransitionInProgress(false);
+    }
+  }
+
+  Future<void> _waitForNextFrame() {
+    final completer = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    });
+    return completer.future;
   }
 }

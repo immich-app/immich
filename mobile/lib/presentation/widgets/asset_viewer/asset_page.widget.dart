@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
@@ -359,6 +360,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
 
     final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
     if (asset == null) {
@@ -386,7 +388,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       _scrollController.snapPosition.snapOffset = _snapOffset;
     }
 
-    final viewIntentFilePath = ref.watch(viewIntentFilePathProvider);
+    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink ? ref.watch(viewIntentFilePathProvider) : null;
 
     return Stack(
       children: [

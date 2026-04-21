@@ -451,10 +451,15 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> upload(ActionSource source, {List<LocalAsset>? assets}) async {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
+    if (assetsToUpload.isEmpty) {
+      return const ActionResult(count: 0, success: false, error: 'No assets to upload');
+    }
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
     final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+    var successCount = 0;
+    var errorCount = 0;
 
     // Initialize progress for all assets
     for (final asset in assetsToUpload) {
@@ -471,14 +476,21 @@ class ActionNotifier extends Notifier<void> {
             progressNotifier.setProgress(localAssetId, progress);
           },
           onSuccess: (localAssetId, remoteAssetId) {
+            successCount++;
             progressNotifier.remove(localAssetId);
           },
           onError: (localAssetId, errorMessage) {
+            errorCount++;
             progressNotifier.setError(localAssetId);
           },
         ),
       );
-      return ActionResult(count: assetsToUpload.length, success: true);
+      final success = errorCount == 0 && successCount == assetsToUpload.length;
+      return ActionResult(
+        count: assetsToUpload.length,
+        success: success,
+        error: success ? null : 'Uploaded $successCount/${assetsToUpload.length} assets successfully',
+      );
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
       return ActionResult(count: assetsToUpload.length, success: false, error: error.toString());

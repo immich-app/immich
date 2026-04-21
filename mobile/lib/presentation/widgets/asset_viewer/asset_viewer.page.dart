@@ -152,10 +152,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetChanged(int index) async {
+    if (!mounted) return;
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
-    if (asset == null) return;
+    if (!mounted || asset == null) return;
 
     AssetViewer._setAsset(ref, asset);
     _preloader.preload(index, context.sizeData);
@@ -189,6 +190,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onEvent(Event event) {
+    if (!mounted) return;
     switch (event) {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
@@ -209,15 +211,24 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onTimelineReloadEvent() {
+    if (!mounted) return;
+
     final timelineService = ref.read(timelineServiceProvider);
     final totalAssets = timelineService.totalAssets;
+    final currentAsset = ref.read(assetViewerProvider).currentAsset;
+    final isViewerTransitionInProgress = ref.read(
+      assetViewerProvider.select((value) => value.isViewerTransitionInProgress),
+    );
+
+    if (isViewerTransitionInProgress) {
+      return;
+    }
 
     if (totalAssets == 0) {
       context.maybePop();
       return;
     }
 
-    final currentAsset = ref.read(assetViewerProvider).currentAsset;
     final assetIndex = currentAsset != null ? timelineService.getIndex(currentAsset.heroTag) : null;
     final index = (assetIndex ?? _currentPage).clamp(0, totalAssets - 1);
 

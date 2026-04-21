@@ -81,7 +81,9 @@ class ViewIntentAssetResolver {
             return checksumTimelineAsset;
           }
         }
-
+        //todo STOP 21/04: need to decide - can we proceed without checksum?
+        // if yes, should we show upload button?
+        // if yes, how we can update asset viewer on asset was uploaded?
         _logger.fine('presenting deep-link local asset: $localAsset');
         return ViewIntentResolvedAsset(
           asset: localAsset,
