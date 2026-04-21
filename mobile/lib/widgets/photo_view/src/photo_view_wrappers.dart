@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_core.dart';
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_default_widgets.dart';

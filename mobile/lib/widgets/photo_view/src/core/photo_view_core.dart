@@ -139,8 +139,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   PhotoViewHeroAttributes? get heroAttributes => widget.heroAttributes;
 
-  late ScaleBoundaries cachedScaleBoundaries = widget.scaleBoundaries;
-
   void handleScaleAnimation() {
     scale = _scaleAnimation!.value;
   }
@@ -303,7 +301,12 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     controller.scaleAnimationBuilder(_animateControllerScale);
     controller.rotationAnimationBuilder(_animateControllerRotation);
 
-    cachedScaleBoundaries = widget.scaleBoundaries;
+    final prevBoundaries = controller.scaleBoundaries;
+    if (prevBoundaries != null && prevBoundaries != widget.scaleBoundaries) {
+      _updateScaleBoundaries(prevBoundaries);
+    } else {
+      controller.scaleBoundaries = widget.scaleBoundaries;
+    }
 
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
@@ -334,14 +337,26 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     widget.onTapDown?.call(context, details, controller.value);
   }
 
+  void _updateScaleBoundaries(ScaleBoundaries prev) {
+    if (controller.scale != null && prev.initialScale > 0) {
+      final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
+      controller.setScaleInvisibly(controller.scale! * ratio);
+    } else {
+      markNeedsScaleRecalc = true;
+    }
+    controller.scaleBoundaries = widget.scaleBoundaries;
+  }
+
+  @override
+  void didUpdateWidget(PhotoViewCore oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.scaleBoundaries != oldWidget.scaleBoundaries) {
+      _updateScaleBoundaries(oldWidget.scaleBoundaries);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Check if we need a recalc on the scale
-    if (widget.scaleBoundaries != cachedScaleBoundaries) {
-      markNeedsScaleRecalc = true;
-      cachedScaleBoundaries = widget.scaleBoundaries;
-    }
-
     return StreamBuilder(
       stream: controller.outputStateStream,
       initialData: controller.prevValue,
