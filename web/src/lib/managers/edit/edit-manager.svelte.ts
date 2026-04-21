@@ -1,4 +1,4 @@
-import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
+import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/TransformTool.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';

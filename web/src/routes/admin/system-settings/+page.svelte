@@ -18,8 +18,8 @@
   import TrashSettings from './TrashSettings.svelte';
   import UserSettings from './UserSettings.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingAccordionState from '$lib/components/shared-components/settings/SettingAccordionState.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { QueryParameter } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';

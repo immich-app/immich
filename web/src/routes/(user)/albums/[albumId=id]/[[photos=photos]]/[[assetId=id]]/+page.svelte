@@ -1,18 +1,18 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import AlbumDescription from './album-description.svelte';
-  import AlbumMap from '$lib/components/album-page/album-map.svelte';
-  import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
-  import AlbumTitle from './album-title.svelte';
-  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
-  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
+  import AlbumDescription from './AlbumDescription.svelte';
+  import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
+  import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
+  import AlbumTitle from './AlbumTitle.svelte';
+  import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
+  import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';

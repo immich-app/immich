@@ -4,8 +4,8 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
   import FeatureSetting from './FeatureSetting.svelte';
   import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';

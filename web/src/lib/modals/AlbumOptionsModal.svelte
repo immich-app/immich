@@ -1,8 +1,8 @@
 <script lang="ts">
-  import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
+  import AlbumSharedLink from '$lib/components/album-page/AlbumSharedLink.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import {
     getAlbumActions,
     handleRemoveUserFromAlbum,

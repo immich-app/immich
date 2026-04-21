@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ShareCover from './share-cover.svelte';
+  import ShareCover from './ShareCover.svelte';
   import { Route } from '$lib/route';
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';

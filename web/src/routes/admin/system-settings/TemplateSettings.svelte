@@ -1,6 +1,6 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingTextarea from './setting-textarea.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingTextarea from './SettingTextarea.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';

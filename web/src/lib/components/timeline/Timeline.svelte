@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
   import Month from '$lib/components/timeline/Month.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';

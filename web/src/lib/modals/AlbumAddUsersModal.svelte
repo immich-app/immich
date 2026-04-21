@@ -1,6 +1,6 @@
 <script lang="ts">
   import { initInput } from '$lib/actions/focus';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import { handleAddUsersToAlbum } from '$lib/services/album.service';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { searchUsers, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';

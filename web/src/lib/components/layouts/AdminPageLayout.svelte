@@ -1,7 +1,7 @@
 <script lang="ts">
   import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
+  import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import BottomInfo from '$lib/components/shared-components/side-bar/BottomInfo.svelte';
   import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';

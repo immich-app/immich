@@ -1,9 +1,9 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingCheckboxes from './setting-checkboxes.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSelect from './setting-select.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingCheckboxes from './SettingCheckboxes.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSelect from './SettingSelect.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';

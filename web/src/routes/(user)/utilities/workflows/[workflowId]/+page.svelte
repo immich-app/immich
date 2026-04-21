@@ -1,7 +1,7 @@
 <script lang="ts">
   import { beforeNavigate, goto } from '$app/navigation';
   import { dragAndDrop } from '$lib/attachments/drag-and-drop.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import SchemaFormFields from './SchemaFormFields.svelte';
   import WorkflowCardConnector from './WorkflowCardConnector.svelte';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
