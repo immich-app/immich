@@ -728,14 +728,13 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     'durationMs',
   );
   @override
-  late final i0.GeneratedColumn<int> durationMs =
-      i0.GeneratedColumn<int>(
-        'duration_in_milliseconds',
-        aliasedName,
-        true,
-        type: i0.DriftSqlType.int,
-        requiredDuringInsert: false,
-      );
+  late final i0.GeneratedColumn<int> durationMs = i0.GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
@@ -945,13 +944,10 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
     }
-    if (data.containsKey('duration_in_milliseconds')) {
+    if (data.containsKey('duration_ms')) {
       context.handle(
         _durationMsMeta,
-        durationMs.isAcceptableOrUnknown(
-          data['duration_in_milliseconds']!,
-          _durationMsMeta,
-        ),
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -1069,7 +1065,7 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
       ),
       durationMs: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
-        data['${effectivePrefix}duration_in_milliseconds'],
+        data['${effectivePrefix}duration_ms'],
       ),
       id: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
@@ -1201,9 +1197,7 @@ class RemoteAssetEntityData extends i0.DataClass
       map['height'] = i0.Variable<int>(height);
     }
     if (!nullToAbsent || durationMs != null) {
-      map['duration_in_milliseconds'] = i0.Variable<int>(
-        durationMs,
-      );
+      map['duration_ms'] = i0.Variable<int>(durationMs);
     }
     map['id'] = i0.Variable<String>(id);
     map['checksum'] = i0.Variable<String>(checksum);
@@ -1250,8 +1244,7 @@ class RemoteAssetEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
-      durationMs: serializer.fromJson<int?>(json['durationMs'],
-      ),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
@@ -1546,7 +1539,7 @@ class RemoteAssetEntityCompanion
       if (updatedAt != null) 'updated_at': updatedAt,
       if (width != null) 'width': width,
       if (height != null) 'height': height,
-      if (durationMs != null) 'duration_in_milliseconds': durationMs,
+      if (durationMs != null) 'duration_ms': durationMs,
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
@@ -1630,9 +1623,7 @@ class RemoteAssetEntityCompanion
       map['height'] = i0.Variable<int>(height.value);
     }
     if (durationMs.present) {
-      map['duration_in_milliseconds'] = i0.Variable<int>(
-        durationMs.value,
-      );
+      map['duration_ms'] = i0.Variable<int>(durationMs.value);
     }
     if (id.present) {
       map['id'] = i0.Variable<String>(id.value);
