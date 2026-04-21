@@ -445,7 +445,6 @@ export type SyncItem = {
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
-  [SyncEntityType.AssetV1]: SyncAssetV1;
   [SyncEntityType.AssetV2]: SyncAssetV2;
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
@@ -453,9 +452,7 @@ export type SyncItem = {
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
-  [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;
-  [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetBackfillV2]: SyncAssetV2;
   [SyncEntityType.PartnerAssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
@@ -466,11 +463,8 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
-  [SyncEntityType.AlbumAssetCreateV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetCreateV2]: SyncAssetV2;
-  [SyncEntityType.AlbumAssetUpdateV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetUpdateV2]: SyncAssetV2;
-  [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetBackfillV2]: SyncAssetV2;
   [SyncEntityType.AlbumAssetExifCreateV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumAssetExifUpdateV1]: SyncAssetExifV1;
