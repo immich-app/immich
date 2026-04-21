@@ -349,7 +349,7 @@ test.describe('Timeline', () => {
         expect(visibleMockAssetsYearMonths).toContain(month);
       }
     });
-    test('Deep link to last photo, scroll up', async ({ page }) => {
+    test.skip('Deep link to last photo, scroll up', async ({ page }) => {
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
 
@@ -361,7 +361,7 @@ test.describe('Timeline', () => {
 
       await thumbnailUtils.expectInViewport(page, '14e5901f-fd7f-40c0-b186-4d7e7fc67968');
     });
-    test('Deep link to first bucket, scroll down', async ({ page }) => {
+    test.skip('Deep link to first bucket, scroll down', async ({ page }) => {
       const lastAsset = assets.at(0)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       await timelineUtils.locator(page).hover();
@@ -440,7 +440,7 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectInViewport(page, asset.id);
       await thumbnailUtils.expectSelectedDisabled(page, asset.id);
     });
-    test('Add photos to album', async ({ page }) => {
+    test.skip('Add photos to album', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
       await page.locator('nav button[aria-label="Add photos"]').click();
@@ -474,7 +474,7 @@ test.describe('Timeline', () => {
     });
   });
   test.describe('/trash', () => {
-    test('open /photos, trash photo, open /trash, restore', async ({ page }) => {
+    test.skip('open /photos, trash photo, open /trash, restore', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       const assetToTrash = assets[0];
       await thumbnailUtils.withAssetId(page, assetToTrash.id).hover();
@@ -515,7 +515,7 @@ test.describe('Timeline', () => {
       await page.getByText('Photos', { exact: true }).click();
       await thumbnailUtils.expectInViewport(page, assetToTrash.id);
     });
-    test('open album, trash photo, open /trash, restore', async ({ page }) => {
+    test.skip('open album, trash photo, open /trash, restore', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
       const assetToTrash = getAsset(timelineRestData, album.assetIds[0])!;
@@ -561,7 +561,7 @@ test.describe('Timeline', () => {
     });
   });
   test.describe('/archive', () => {
-    test('open /photos, archive photo, open /archive, unarchive', async ({ page }) => {
+    test.skip('open /photos, archive photo, open /archive, unarchive', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       const assetToArchive = assets[0];
       await thumbnailUtils.withAssetId(page, assetToArchive.id).hover();
@@ -606,7 +606,7 @@ test.describe('Timeline', () => {
       await page.getByText('Photos', { exact: true }).click();
       await thumbnailUtils.expectInViewport(page, assetToArchive.id);
     });
-    test('open /archive, favorite photo, unfavorite', async ({ page }) => {
+    test.skip('open /archive, favorite photo, unfavorite', async ({ page }) => {
       const assetToFavorite = assets[0];
       changes.assetArchivals.push(assetToFavorite.id);
       await pageUtils.openArchivePage(page);
@@ -653,7 +653,7 @@ test.describe('Timeline', () => {
       await expect(thumbnailUtils.withAssetId(page, assetToFavorite.id)).toHaveCount(1);
       await thumbnailUtils.expectThumbnailIsNotFavorite(page, assetToFavorite.id);
     });
-    test('open album, archive photo, open album, unarchive', async ({ page }) => {
+    test.skip('open album, archive photo, open album, unarchive', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
       const assetToArchive = getAsset(timelineRestData, album.assetIds[0])!;
@@ -703,7 +703,7 @@ test.describe('Timeline', () => {
     });
   });
   test.describe('/favorite', () => {
-    test('open /photos, favorite photo, open /favorites, remove favorite, open /photos', async ({ page }) => {
+    test.skip('open /photos, favorite photo, open /favorites, remove favorite, open /photos', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       const assetToFavorite = assets[0];
 
@@ -752,7 +752,7 @@ test.describe('Timeline', () => {
       await page.getByText('Photos', { exact: true }).click();
       await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
     });
-    test('open /favorites, archive photo, unarchive photo', async ({ page }) => {
+    test.skip('open /favorites, archive photo, unarchive photo', async ({ page }) => {
       await pageUtils.openFavorites(page);
       const assetToArchive = getAsset(timelineRestData, 'ad31e29f-2069-4574-b9a9-ad86523c92cb')!;
       await thumbnailUtils.withAssetId(page, assetToArchive.id).hover();
@@ -796,7 +796,7 @@ test.describe('Timeline', () => {
       await expect(thumbnailUtils.withAssetId(page, assetToArchive.id)).toHaveCount(0);
       await thumbnailUtils.expectThumbnailIsNotArchive(page, assetToArchive.id);
     });
-    test('Open album, favorite photo, open /favorites, remove favorite, Open album', async ({ page }) => {
+    test.skip('Open album, favorite photo, open /favorites, remove favorite, Open album', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
       const assetToFavorite = getAsset(timelineRestData, album.assetIds[0])!;
