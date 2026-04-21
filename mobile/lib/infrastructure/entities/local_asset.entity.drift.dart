@@ -16,7 +16,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInMilliseconds,
+      i0.Value<int?> durationMs,
       required String id,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
@@ -35,7 +35,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInMilliseconds,
+      i0.Value<int?> durationMs,
       i0.Value<String> id,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
@@ -87,8 +87,8 @@ class $$LocalAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<int> get durationInMilliseconds => $composableBuilder(
-    column: $table.durationInMilliseconds,
+  i0.ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -182,8 +182,8 @@ class $$LocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<int> get durationInMilliseconds => $composableBuilder(
-    column: $table.durationInMilliseconds,
+  i0.ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -260,8 +260,8 @@ class $$LocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<int> get height =>
       $composableBuilder(column: $table.height, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get durationInMilliseconds => $composableBuilder(
-    column: $table.durationInMilliseconds,
+  i0.GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => column,
   );
 
@@ -348,7 +348,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInMilliseconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
@@ -366,7 +366,7 @@ class $$LocalAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInMilliseconds: durationInMilliseconds,
+                durationMs: durationMs,
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
@@ -385,7 +385,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInMilliseconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 required String id,
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
@@ -403,7 +403,7 @@ class $$LocalAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInMilliseconds: durationInMilliseconds,
+                durationMs: durationMs,
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
@@ -522,10 +522,11 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const i0.VerificationMeta _durationInMillisecondsMeta =
-      const i0.VerificationMeta('durationInMilliseconds');
+  static const i0.VerificationMeta _durationMsMeta = const i0.VerificationMeta(
+    'durationMs',
+  );
   @override
-  late final i0.GeneratedColumn<int> durationInMilliseconds =
+  late final i0.GeneratedColumn<int> durationMs =
       i0.GeneratedColumn<int>(
         'duration_in_milliseconds',
         aliasedName,
@@ -645,7 +646,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     updatedAt,
     width,
     height,
-    durationInMilliseconds,
+    durationMs,
     id,
     checksum,
     isFavorite,
@@ -702,10 +703,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     }
     if (data.containsKey('duration_in_milliseconds')) {
       context.handle(
-        _durationInMillisecondsMeta,
-        durationInMilliseconds.isAcceptableOrUnknown(
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(
           data['duration_in_milliseconds']!,
-          _durationInMillisecondsMeta,
+          _durationMsMeta,
         ),
       );
     }
@@ -800,7 +801,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}height'],
       ),
-      durationInMilliseconds: attachedDatabase.typeMapping.read(
+      durationMs: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
         data['${effectivePrefix}duration_in_milliseconds'],
       ),
@@ -870,7 +871,7 @@ class LocalAssetEntityData extends i0.DataClass
   final DateTime updatedAt;
   final int? width;
   final int? height;
-  final int? durationInMilliseconds;
+  final int? durationMs;
   final String id;
   final String? checksum;
   final bool isFavorite;
@@ -887,7 +888,7 @@ class LocalAssetEntityData extends i0.DataClass
     required this.updatedAt,
     this.width,
     this.height,
-    this.durationInMilliseconds,
+    this.durationMs,
     required this.id,
     this.checksum,
     required this.isFavorite,
@@ -915,9 +916,9 @@ class LocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || height != null) {
       map['height'] = i0.Variable<int>(height);
     }
-    if (!nullToAbsent || durationInMilliseconds != null) {
+    if (!nullToAbsent || durationMs != null) {
       map['duration_in_milliseconds'] = i0.Variable<int>(
-        durationInMilliseconds,
+        durationMs,
       );
     }
     map['id'] = i0.Variable<String>(id);
@@ -960,8 +961,7 @@ class LocalAssetEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
-      durationInMilliseconds: serializer.fromJson<int?>(
-        json['durationInMilliseconds'],
+      durationMs: serializer.fromJson<int?>(json['durationMs'],
       ),
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String?>(json['checksum']),
@@ -988,7 +988,7 @@ class LocalAssetEntityData extends i0.DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'width': serializer.toJson<int?>(width),
       'height': serializer.toJson<int?>(height),
-      'durationInMilliseconds': serializer.toJson<int?>(durationInMilliseconds),
+      'durationMs': serializer.toJson<int?>(durationMs),
       'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
@@ -1010,7 +1010,7 @@ class LocalAssetEntityData extends i0.DataClass
     DateTime? updatedAt,
     i0.Value<int?> width = const i0.Value.absent(),
     i0.Value<int?> height = const i0.Value.absent(),
-    i0.Value<int?> durationInMilliseconds = const i0.Value.absent(),
+    i0.Value<int?> durationMs = const i0.Value.absent(),
     String? id,
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
@@ -1027,9 +1027,7 @@ class LocalAssetEntityData extends i0.DataClass
     updatedAt: updatedAt ?? this.updatedAt,
     width: width.present ? width.value : this.width,
     height: height.present ? height.value : this.height,
-    durationInMilliseconds: durationInMilliseconds.present
-        ? durationInMilliseconds.value
-        : this.durationInMilliseconds,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
     id: id ?? this.id,
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
@@ -1050,9 +1048,9 @@ class LocalAssetEntityData extends i0.DataClass
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
-      durationInMilliseconds: data.durationInMilliseconds.present
-          ? data.durationInMilliseconds.value
-          : this.durationInMilliseconds,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
       id: data.id.present ? data.id.value : this.id,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite: data.isFavorite.present
@@ -1082,7 +1080,7 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInMilliseconds: $durationInMilliseconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
@@ -1104,7 +1102,7 @@ class LocalAssetEntityData extends i0.DataClass
     updatedAt,
     width,
     height,
-    durationInMilliseconds,
+    durationMs,
     id,
     checksum,
     isFavorite,
@@ -1125,7 +1123,7 @@ class LocalAssetEntityData extends i0.DataClass
           other.updatedAt == this.updatedAt &&
           other.width == this.width &&
           other.height == this.height &&
-          other.durationInMilliseconds == this.durationInMilliseconds &&
+          other.durationMs == this.durationMs &&
           other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
@@ -1145,7 +1143,7 @@ class LocalAssetEntityCompanion
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> width;
   final i0.Value<int?> height;
-  final i0.Value<int?> durationInMilliseconds;
+  final i0.Value<int?> durationMs;
   final i0.Value<String> id;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
@@ -1162,7 +1160,7 @@ class LocalAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInMilliseconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
@@ -1180,7 +1178,7 @@ class LocalAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInMilliseconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     required String id,
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
@@ -1200,7 +1198,7 @@ class LocalAssetEntityCompanion
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? width,
     i0.Expression<int>? height,
-    i0.Expression<int>? durationInMilliseconds,
+    i0.Expression<int>? durationMs,
     i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
@@ -1218,8 +1216,7 @@ class LocalAssetEntityCompanion
       if (updatedAt != null) 'updated_at': updatedAt,
       if (width != null) 'width': width,
       if (height != null) 'height': height,
-      if (durationInMilliseconds != null)
-        'duration_in_milliseconds': durationInMilliseconds,
+      if (durationMs != null) 'duration_in_milliseconds': durationMs,
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
@@ -1239,7 +1236,7 @@ class LocalAssetEntityCompanion
     i0.Value<DateTime>? updatedAt,
     i0.Value<int?>? width,
     i0.Value<int?>? height,
-    i0.Value<int?>? durationInMilliseconds,
+    i0.Value<int?>? durationMs,
     i0.Value<String>? id,
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
@@ -1257,8 +1254,7 @@ class LocalAssetEntityCompanion
       updatedAt: updatedAt ?? this.updatedAt,
       width: width ?? this.width,
       height: height ?? this.height,
-      durationInMilliseconds:
-          durationInMilliseconds ?? this.durationInMilliseconds,
+      durationMs: durationMs ?? this.durationMs,
       id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
@@ -1294,9 +1290,9 @@ class LocalAssetEntityCompanion
     if (height.present) {
       map['height'] = i0.Variable<int>(height.value);
     }
-    if (durationInMilliseconds.present) {
+    if (durationMs.present) {
       map['duration_in_milliseconds'] = i0.Variable<int>(
-        durationInMilliseconds.value,
+        durationMs.value,
       );
     }
     if (id.present) {
@@ -1342,7 +1338,7 @@ class LocalAssetEntityCompanion
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInMilliseconds: $durationInMilliseconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')

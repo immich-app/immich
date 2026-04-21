@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -18,10 +19,12 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
@@ -81,7 +84,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -221,6 +224,27 @@ class Drift extends $Drift {
           from21To22: (m, v22) async {
             await m.createTable(v22.assetEditEntity);
             await m.createIndex(v22.idxAssetEditAssetId);
+          },
+          from22To23: (m, v23) async {
+            await m.renameColumn(v23.localAssetEntity, 'duration_in_seconds', v23.localAssetEntity.durationMs);
+            await m.renameColumn(v23.remoteAssetEntity, 'duration_in_seconds', v23.remoteAssetEntity.durationMs);
+            await m.renameColumn(
+              v23.trashedLocalAssetEntity,
+              'duration_in_seconds',
+              v23.trashedLocalAssetEntity.durationMs,
+            );
+
+            await localAssetEntity.update().write(
+              LocalAssetEntityCompanion.custom(durationMs: v23.localAssetEntity.durationMs * const Constant(1000)),
+            );
+            await remoteAssetEntity.update().write(
+              RemoteAssetEntityCompanion.custom(durationMs: v23.remoteAssetEntity.durationMs * const Constant(1000)),
+            );
+            await trashedLocalAssetEntity.update().write(
+              TrashedLocalAssetEntityCompanion.custom(
+                durationMs: v23.trashedLocalAssetEntity.durationMs * const Constant(1000),
+              ),
+            );
           },
         ),
       );

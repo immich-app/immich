@@ -190,7 +190,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
-            durationInMilliseconds: Value(asset.duration?.toDuration()?.inMilliseconds ?? 0),
+            durationMs: Value(asset.duration?.toDuration()?.inMilliseconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),

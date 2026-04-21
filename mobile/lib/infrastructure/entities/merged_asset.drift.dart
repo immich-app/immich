@@ -54,7 +54,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
         updatedAt: row.read<DateTime>('updated_at'),
         width: row.readNullable<int>('width'),
         height: row.readNullable<int>('height'),
-        durationInMilliseconds: row.readNullable<int>(
+        durationMs: row.readNullable<int>(
           'duration_in_milliseconds',
         ),
         isFavorite: row.read<bool>('is_favorite'),
@@ -129,7 +129,7 @@ class MergedAssetResult {
   final DateTime updatedAt;
   final int? width;
   final int? height;
-  final int? durationInMilliseconds;
+  final int? durationMs;
   final bool isFavorite;
   final String? thumbHash;
   final String? checksum;
@@ -152,7 +152,7 @@ class MergedAssetResult {
     required this.updatedAt,
     this.width,
     this.height,
-    this.durationInMilliseconds,
+    this.durationMs,
     required this.isFavorite,
     this.thumbHash,
     this.checksum,

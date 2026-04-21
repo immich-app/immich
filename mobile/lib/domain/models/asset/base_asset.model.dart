@@ -25,7 +25,7 @@ sealed class BaseAsset {
   final DateTime updatedAt;
   final int? width;
   final int? height;
-  final int? durationInMilliseconds;
+  final int? durationMs;
   final bool isFavorite;
   final String? livePhotoVideoId;
   final bool isEdited;
@@ -38,7 +38,7 @@ sealed class BaseAsset {
     required this.updatedAt,
     this.width,
     this.height,
-    this.durationInMilliseconds,
+    this.durationMs,
     this.isFavorite = false,
     this.livePhotoVideoId,
     required this.isEdited,
@@ -53,7 +53,7 @@ sealed class BaseAsset {
   AssetPlaybackStyle get playbackStyle {
     if (isVideo) return AssetPlaybackStyle.video;
     if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
-    if (isImage && durationInMilliseconds != null && durationInMilliseconds! > 0) {
+    if (isImage && durationMs != null && durationMs! > 0) {
       return AssetPlaybackStyle.imageAnimated;
     }
     if (isImage) return AssetPlaybackStyle.image;
@@ -61,9 +61,9 @@ sealed class BaseAsset {
   }
 
   Duration get duration {
-    final durationInMilliseconds = this.durationInMilliseconds;
-    if (durationInMilliseconds != null) {
-      return Duration(milliseconds: durationInMilliseconds);
+    final durationMs = this.durationMs;
+    if (durationMs != null) {
+      return Duration(milliseconds: durationMs);
     }
     return const Duration();
   }
@@ -90,7 +90,7 @@ sealed class BaseAsset {
   updatedAt: $updatedAt,
   width: ${width ?? "<NA>"},
   height: ${height ?? "<NA>"},
-  durationInMilliseconds: ${durationInMilliseconds ?? "<NA>"},
+  durationMs: ${durationMs ?? "<NA>"},
   isFavorite: $isFavorite,
   isEdited: $isEdited,
 }''';
@@ -106,7 +106,7 @@ sealed class BaseAsset {
           updatedAt == other.updatedAt &&
           width == other.width &&
           height == other.height &&
-          durationInMilliseconds == other.durationInMilliseconds &&
+          durationMs == other.durationMs &&
           isFavorite == other.isFavorite &&
           isEdited == other.isEdited;
     }
@@ -121,7 +121,7 @@ sealed class BaseAsset {
         updatedAt.hashCode ^
         width.hashCode ^
         height.hashCode ^
-        durationInMilliseconds.hashCode ^
+        durationMs.hashCode ^
         isFavorite.hashCode ^
         isEdited.hashCode;
   }

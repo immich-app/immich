@@ -337,7 +337,7 @@ class LocalSyncService {
           a.createdAt.isAtSameMomentAs(b.createdAt) &&
           a.width == b.width &&
           a.height == b.height &&
-          a.durationInMilliseconds == b.durationInMilliseconds;
+          a.durationMs == b.durationMs;
     }
 
     final firstAdjustment = a.adjustmentTime?.millisecondsSinceEpoch ?? 0;
@@ -346,7 +346,7 @@ class LocalSyncService {
         a.createdAt.isAtSameMomentAs(b.createdAt) &&
         a.width == b.width &&
         a.height == b.height &&
-        a.durationInMilliseconds == b.durationInMilliseconds &&
+        a.durationMs == b.durationMs &&
         a.latitude == b.latitude &&
         a.longitude == b.longitude;
   }
@@ -432,7 +432,7 @@ extension PlatformToLocalAsset on PlatformAsset {
     updatedAt: tryFromSecondsSinceEpoch(updatedAt, isUtc: true) ?? DateTime.timestamp(),
     width: width,
     height: height,
-    durationInMilliseconds: durationInMilliseconds,
+    durationMs: durationMs,
     isFavorite: isFavorite,
     orientation: orientation,
     playbackStyle: _toPlaybackStyle(playbackStyle),

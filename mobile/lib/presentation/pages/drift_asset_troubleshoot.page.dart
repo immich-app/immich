@@ -114,7 +114,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Height', value: asset.height?.toString()),
       _PropertyItem(
         label: 'Duration',
-        value: asset.durationInMilliseconds != null ? '${asset.durationInMilliseconds} ms' : null,
+        value: asset.durationMs != null ? '${asset.durationMs} ms' : null,
       ),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
       _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
