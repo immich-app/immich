@@ -1,5 +1,5 @@
-import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
+import { getExifCount } from '$lib/utils/exif-utils';
 
 describe('getting the exif count', () => {
   it('returns 0 when exifInfo is undefined', () => {

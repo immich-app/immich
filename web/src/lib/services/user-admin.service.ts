@@ -1,14 +1,3 @@
-import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
-import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
-import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
-import { Route } from '$lib/route';
-import type { HeaderButtonActionItem } from '$lib/types';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   createUserAdmin,
   deleteUserAdmin,
@@ -32,6 +21,17 @@ import {
 } from '@mdi/js';
 import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
+import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
+import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
+import { Route } from '$lib/route';
+import type { HeaderButtonActionItem } from '$lib/types';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

@@ -1,8 +1,8 @@
-import FocusTrapTest from '$lib/actions/__test__/FocusTrapTest.svelte';
-import { setDefaultTabbleOptions } from '$lib/utils/focus-util';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
+import FocusTrapTest from '$lib/actions/__test__/FocusTrapTest.svelte';
+import { setDefaultTabbleOptions } from '$lib/utils/focus-util';
 
 setDefaultTabbleOptions({ displayCheck: 'none' });
 

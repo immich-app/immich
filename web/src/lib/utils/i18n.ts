@@ -1,6 +1,6 @@
-import type { Lang } from '$lib/constants';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
+import type { Lang } from '$lib/constants';
 
 export const getFormatter = async () => {
   let unsubscribe: Unsubscriber | undefined;

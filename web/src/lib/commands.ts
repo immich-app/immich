@@ -1,8 +1,3 @@
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { Route } from '$lib/route';
-import { copyToClipboard } from '$lib/utils';
 import { defaultProvider, screencastManager, themeManager, ThemePreference, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
@@ -14,6 +9,11 @@ import {
   mdiThemeLightDark,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { page } from '$app/state';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { Route } from '$lib/route';
+import { copyToClipboard } from '$lib/utils';
 
 export const getPagesProvider = ($t: MessageFormatter) => {
   const adminPages: ActionItem[] = [

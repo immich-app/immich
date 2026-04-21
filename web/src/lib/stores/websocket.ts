@@ -1,11 +1,3 @@
-import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { Route } from '$lib/route';
-import { maintenanceStore } from '$lib/stores/maintenance.store';
-import { notificationManager } from '$lib/stores/notification-manager.svelte';
-import type { ReleaseEvent } from '$lib/types';
-import { createEventEmitter } from '$lib/utils/eventemitter';
 import {
   MaintenanceAction,
   type AssetResponseDto,
@@ -17,6 +9,14 @@ import {
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
+import { page } from '$app/state';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
+import { maintenanceStore } from '$lib/stores/maintenance.store';
+import { notificationManager } from '$lib/stores/notification-manager.svelte';
+import type { ReleaseEvent } from '$lib/types';
+import { createEventEmitter } from '$lib/utils/eventemitter';
 
 interface AppRestartEvent {
   isMaintenanceMode: boolean;

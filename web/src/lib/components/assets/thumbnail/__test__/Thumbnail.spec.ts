@@ -1,8 +1,8 @@
+import { render } from '@testing-library/svelte';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
 import { getTabbable } from '$lib/utils/focus-util';
 import { assetFactory } from '@test-data/factories/asset-factory';
-import { render } from '@testing-library/svelte';
 
 vi.hoisted(() => {
   Object.defineProperty(globalThis, 'matchMedia', {

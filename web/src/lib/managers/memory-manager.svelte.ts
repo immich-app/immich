@@ -1,10 +1,10 @@
+import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
+import { DateTime } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
-import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
-import { DateTime } from 'luxon';
 
 type MemoryIndex = {
   memoryIndex: number;

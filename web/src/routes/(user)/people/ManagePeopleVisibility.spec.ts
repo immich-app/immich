@@ -1,8 +1,8 @@
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { personFactory } from '@test-data/factories/person-factory';
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
+import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
+import { personFactory } from '@test-data/factories/person-factory';
 import ManagePeopleVisibilityWrapper from './ManagePeopleVisibility.test-wrapper.svelte';
 
 describe('ManagePeopleVisibility component', () => {

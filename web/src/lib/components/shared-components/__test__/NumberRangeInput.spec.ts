@@ -1,7 +1,7 @@
-import NumberRangeInput from '$lib/components/shared-components/NumberRangeInput.svelte';
 import { render, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { Mock } from 'vitest';
+import NumberRangeInput from '$lib/components/shared-components/NumberRangeInput.svelte';
 
 describe('NumberRangeInput component', () => {
   const user = userEvent.setup();

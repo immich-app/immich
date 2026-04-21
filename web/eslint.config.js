@@ -5,11 +5,11 @@ import eslintPluginCompat from 'eslint-plugin-compat';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
+import parser from 'svelte-eslint-parser';
+import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import parser from 'svelte-eslint-parser';
-import typescriptEslint from 'typescript-eslint';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

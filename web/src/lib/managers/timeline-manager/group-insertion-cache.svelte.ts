@@ -1,5 +1,5 @@
-import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
+import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import type { TimelineDay } from './timeline-day.svelte';
 import type { TimelineMonth } from './timeline-month.svelte';
 import type { TimelineAsset } from './types';

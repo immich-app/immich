@@ -1,5 +1,5 @@
-import AssetCover from '$lib/components/sharedlinks-page/covers/AssetCover.svelte';
 import { render } from '@testing-library/svelte';
+import AssetCover from '$lib/components/sharedlinks-page/covers/AssetCover.svelte';
 
 describe('AssetCover component', () => {
   it('renders correctly', () => {

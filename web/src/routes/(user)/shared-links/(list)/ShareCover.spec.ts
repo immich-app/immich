@@ -1,8 +1,8 @@
+import { render, screen } from '@testing-library/svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { albumFactory } from '@test-data/factories/album-factory';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
-import { render, screen } from '@testing-library/svelte';
 import ShareCover from './ShareCover.svelte';
 
 vi.mock('$lib/utils');

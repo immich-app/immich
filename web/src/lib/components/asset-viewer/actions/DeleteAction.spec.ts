@@ -1,7 +1,7 @@
-import { renderWithTooltips } from '$tests/helpers';
 import type { AssetResponseDto } from '@immich/sdk';
-import { assetFactory } from '@test-data/factories/asset-factory';
 import '@testing-library/jest-dom';
+import { renderWithTooltips } from '$tests/helpers';
+import { assetFactory } from '@test-data/factories/asset-factory';
 import DeleteAction from './DeleteAction.svelte';
 
 let asset: AssetResponseDto;

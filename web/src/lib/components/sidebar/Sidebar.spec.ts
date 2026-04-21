@@ -1,7 +1,7 @@
-import SideBarSection from '$lib/components/sidebar/Sidebar.svelte';
-import { sidebarStore } from '$lib/stores/sidebar.svelte';
 import { render, screen } from '@testing-library/svelte';
 import { vi } from 'vitest';
+import SideBarSection from '$lib/components/sidebar/Sidebar.svelte';
+import { sidebarStore } from '$lib/stores/sidebar.svelte';
 
 const mocks = vi.hoisted(() => {
   return {

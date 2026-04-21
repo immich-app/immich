@@ -1,8 +1,8 @@
+import { render, screen } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import RecentAlbums from '$lib/components/shared-components/side-bar/RecentAlbums.svelte';
 import { albumFactory } from '@test-data/factories/album-factory';
-import { render, screen } from '@testing-library/svelte';
-import { tick } from 'svelte';
 
 describe('RecentAlbums component', () => {
   it('sorts albums by most recently updated', async () => {

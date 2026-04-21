@@ -1,3 +1,6 @@
+import 'svelte-i18n';
+import type en from '$i18n/en.json';
+
 /// <reference types="@sveltejs/kit" />
 
 // See https://kit.svelte.dev/docs/types#app
@@ -27,9 +30,6 @@ interface Element {
   // Make optional, because it's unavailable on iPhones.
   requestFullscreen?(options?: FullscreenOptions): Promise<void>;
 }
-
-import type en from '$i18n/en.json';
-import 'svelte-i18n';
 
 type NestedKeys<T, K = keyof T> = K extends keyof T & string
   ? `${K}` | (T[K] extends object ? `${K}.${NestedKeys<T[K]>}` : never)

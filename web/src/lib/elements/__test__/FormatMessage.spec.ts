@@ -1,9 +1,9 @@
-import FormatTagB from '$lib/elements/__test__/FormatTagB.svelte';
-import FormatMessage from '$lib/elements/FormatMessage.svelte';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import { init, locale, register, waitLocale, type Translations } from 'svelte-i18n';
 import { describe } from 'vitest';
+import FormatMessage from '$lib/elements/FormatMessage.svelte';
+import FormatTagB from '$lib/elements/__test__/FormatTagB.svelte';
 
 const getSanitizedHTML = (container: HTMLElement) => container.innerHTML.replaceAll('<!---->', '');
 
