@@ -5591,7 +5591,12 @@ export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
  * Get product key
  */
 export function getServerLicense(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/server/license", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserLicense;
+    } | {
+        status: 404;
+    }>("/server/license", {
         ...opts
     }));
 }
