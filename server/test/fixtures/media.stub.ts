@@ -1,4 +1,4 @@
-import { ColorMatrix, ColorPrimaries, ColorTransfer, DvProfile, DvSignalCompatibility, VideoContainer } from 'src/enum';
+import { ColorMatrix, ColorPrimaries, ColorTransfer, DvProfile, DvSignalCompatibility } from 'src/enum';
 import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types';
 
 const probeStubDefaultFormat: VideoFormat = {
@@ -41,20 +41,6 @@ export const videoInfoStub = {
     ...probeStubDefault,
     videoStreams: [
       {
-        index: 0,
-        height: 1080,
-        width: 400,
-        codecName: 'hevc',
-        frameCount: 1,
-        rotation: 0,
-        bitrate: 100,
-        colorPrimaries: ColorPrimaries.Bt709,
-        colorTransfer: ColorTransfer.Bt709,
-        colorMatrix: ColorMatrix.Bt709,
-        pixelFormat: 'yuv420p',
-        timeBase: 600,
-      },
-      {
         index: 1,
         height: 1080,
         width: 400,
@@ -62,6 +48,20 @@ export const videoInfoStub = {
         frameCount: 2,
         rotation: 0,
         bitrate: 101,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
+        pixelFormat: 'yuv420p',
+        timeBase: 600,
+      },
+      {
+        index: 0,
+        height: 1080,
+        width: 400,
+        codecName: 'hevc',
+        frameCount: 1,
+        rotation: 0,
+        bitrate: 100,
         colorPrimaries: ColorPrimaries.Bt709,
         colorTransfer: ColorTransfer.Bt709,
         colorMatrix: ColorMatrix.Bt709,
@@ -87,9 +87,9 @@ export const videoInfoStub = {
   multipleAudioStreams: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [
-      { index: 0, codecName: 'mp3', bitrate: 100 },
-      { index: 1, codecName: 'mp3', bitrate: 101 },
       { index: 2, codecName: 'mp3', bitrate: 102 },
+      { index: 1, codecName: 'mp3', bitrate: 101 },
+      { index: 0, codecName: 'mp3', bitrate: 100 },
     ],
   }),
   noHeight: Object.freeze<VideoInfo>({
@@ -391,161 +391,18 @@ export const videoInfoStub = {
   }),
 };
 
-/**
- * Fixtures in the shape `AssetJobRepository.getForVideoConversion` /
- * `getForGenerateThumbnailJob` return: a single `videoStream`/`audioStream` (the main one,
- * already picked) and a container name already mapped to a `VideoContainer` value.
- * Consumers spread these onto the mocked asset.
- */
-interface VideoConversionStreams {
+interface SelectedStreams {
   videoStream: VideoStreamInfo | null;
   audioStream: AudioStreamInfo | null;
   format: VideoFormat | null;
 }
 
-const defaultMovFormat: VideoFormat = { formatName: VideoContainer.Mov, duration: 0, bitrate: 0 };
-const defaultAudioStream: AudioStreamInfo = { index: 3, codecName: 'mp3', bitrate: 100 };
-const defaultVideoStream: VideoStreamInfo = {
-  index: 0,
-  height: 1080,
-  width: 1920,
-  codecName: 'hevc',
-  frameCount: 100,
-  rotation: 0,
-  bitrate: 0,
-  colorPrimaries: ColorPrimaries.Bt709,
-  colorTransfer: ColorTransfer.Bt709,
-  colorMatrix: ColorMatrix.Bt709,
-  pixelFormat: 'yuv420p',
-  timeBase: 600,
-};
+const toSelectedStreams = (info: VideoInfo) => ({
+  videoStream: info.videoStreams[0] ?? null,
+  audioStream: info.audioStreams[0] ?? null,
+  format: info.format,
+});
 
-export const probeStub = {
-  multipleVideoStreams: {
-    videoStream: { ...defaultVideoStream, index: 1, width: 400, frameCount: 2, bitrate: 101 },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  multipleAudioStreams: {
-    videoStream: defaultVideoStream,
-    audioStream: { index: 2, codecName: 'mp3', bitrate: 102 },
-    format: defaultMovFormat,
-  },
-  noVideoStreams: { videoStream: null, audioStream: defaultAudioStream, format: defaultMovFormat },
-  noAudioStreams: { videoStream: defaultVideoStream, audioStream: null, format: defaultMovFormat },
-  noHeight: {
-    videoStream: { ...defaultVideoStream, width: 400, height: 0 },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStream2160p: {
-    videoStream: { ...defaultVideoStream, height: 2160, width: 3840, codecName: 'h264' },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStream40Mbps: {
-    videoStream: { ...defaultVideoStream, bitrate: 40_000_000, codecName: 'h264' },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStreamHDR: {
-    videoStream: {
-      ...defaultVideoStream,
-      height: 480,
-      width: 480,
-      codecName: 'h264',
-      colorPrimaries: ColorPrimaries.Bt2020,
-      colorMatrix: ColorMatrix.Bt2020Nc,
-      colorTransfer: ColorTransfer.Smpte2084,
-      pixelFormat: 'yuv420p10le',
-    },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStream10Bit: {
-    videoStream: { ...defaultVideoStream, height: 480, width: 480, codecName: 'h264', pixelFormat: 'yuv420p10le' },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStream4K10Bit: {
-    videoStream: {
-      ...defaultVideoStream,
-      height: 2160,
-      width: 3840,
-      codecName: 'h264',
-      pixelFormat: 'yuv420p10le',
-    },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStreamVertical2160p: {
-    videoStream: { ...defaultVideoStream, height: 2160, width: 3840, codecName: 'h264', rotation: 90 },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStreamOddHeight: {
-    videoStream: { ...defaultVideoStream, height: 355, width: 1586, codecName: 'h264' },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStreamOddWidth: {
-    videoStream: { ...defaultVideoStream, height: 1586, width: 355, codecName: 'h264' },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStreamMTS: {
-    videoStream: defaultVideoStream,
-    audioStream: defaultAudioStream,
-    format: { formatName: 'mpegts', duration: 0, bitrate: 0 },
-  },
-  videoStreamReserved: {
-    videoStream: {
-      ...defaultVideoStream,
-      colorPrimaries: ColorPrimaries.Reserved,
-      colorMatrix: ColorMatrix.Reserved,
-      colorTransfer: ColorTransfer.Reserved,
-    },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  videoStreamAvi: {
-    videoStream: { ...defaultVideoStream, codecName: 'h264' },
-    audioStream: defaultAudioStream,
-    format: { formatName: 'avi', duration: 0, bitrate: 0 },
-  },
-  videoStreamVp9: {
-    videoStream: { ...defaultVideoStream, codecName: 'vp9' },
-    audioStream: defaultAudioStream,
-    format: { formatName: VideoContainer.Webm, duration: 0, bitrate: 0 },
-  },
-  videoStreamH264: {
-    videoStream: { ...defaultVideoStream, codecName: 'h264' },
-    audioStream: defaultAudioStream,
-    format: defaultMovFormat,
-  },
-  matroskaContainer: {
-    videoStream: defaultVideoStream,
-    audioStream: defaultAudioStream,
-    format: { formatName: VideoContainer.Webm, duration: 0, bitrate: 0 },
-  },
-  audioStreamAac: {
-    videoStream: defaultVideoStream,
-    audioStream: { index: 1, codecName: 'aac', bitrate: 100 },
-    format: defaultMovFormat,
-  },
-  audioStreamMp3: {
-    videoStream: defaultVideoStream,
-    audioStream: { index: 1, codecName: 'mp3', bitrate: 100 },
-    format: defaultMovFormat,
-  },
-  audioStreamOpus: {
-    videoStream: defaultVideoStream,
-    audioStream: { index: 1, codecName: 'opus', bitrate: 100 },
-    format: defaultMovFormat,
-  },
-  audioStreamUnknown: {
-    videoStream: defaultVideoStream,
-    audioStream: { index: 0, codecName: 'aac', bitrate: 100 },
-    format: defaultMovFormat,
-  },
-} satisfies Record<string, VideoConversionStreams>;
+export const probeStub = Object.fromEntries(
+  Object.entries(videoInfoStub).map(([key, info]) => [key, toSelectedStreams(info)]),
+) as Record<keyof typeof videoInfoStub, SelectedStreams>;
