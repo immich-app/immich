@@ -17,11 +17,11 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetVisibility, DatabaseExtension } from 'src/enum';
+import { AssetFileType, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { VectorExtension } from 'src/types';
+import { AudioStreamInfo, VectorExtension, VideoFormat, VideoStreamInfo } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -97,6 +97,87 @@ export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
     .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
     .$narrowType<{ exifInfo: NotNull }>();
+}
+
+export const dummy = sql`(select 1)`.as('dummy');
+
+export function withAudioVideo<O>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>, withAudio = false) {
+  return qb
+    .$if(withAudio, (qb) =>
+      qb.select((eb) =>
+        jsonObjectFrom(
+          eb
+            .selectFrom('asset_audio')
+            .select(['asset_audio.index', 'asset_audio.codecName', 'asset_audio.profile', 'asset_audio.bitrate'])
+            .whereRef('asset_audio.assetId', '=', 'asset.id'),
+        )
+          .$castTo<AudioStreamInfo | null>()
+          .as('audioStream'),
+      ),
+    )
+    .leftJoin('asset_video', 'asset_video.assetId', 'asset.id')
+    .select((eb) =>
+      jsonObjectFrom(
+        eb
+          .selectFrom(dummy)
+          .where('asset_video.assetId', 'is not', sql.lit(null))
+          .select((eb) => [
+            'asset_video.index',
+            'asset_video.codecName',
+            'asset_video.profile',
+            'asset_video.level',
+            'asset_video.bitrate',
+            'asset_exif.exifImageWidth as width',
+            'asset_exif.exifImageHeight as height',
+            'asset_video.pixelFormat',
+            'asset_video.frameCount',
+            'asset_exif.fps as frameRate',
+            'asset_video.timeBase',
+            eb
+              .case()
+              .when('asset_exif.orientation', '=', sql.lit(ExifOrientation.Rotate90CW.toString()))
+              .then(sql.lit(-90))
+              .when('asset_exif.orientation', '=', sql.lit(ExifOrientation.Rotate270CW.toString()))
+              .then(sql.lit(90))
+              .when('asset_exif.orientation', '=', sql.lit(ExifOrientation.Rotate180.toString()))
+              .then(sql.lit(180))
+              .else(0)
+              .end()
+              .as('rotation'),
+            'asset_video.colorPrimaries',
+            'asset_video.colorMatrix',
+            'asset_video.colorTransfer',
+            'asset_video.dvProfile',
+            'asset_video.dvLevel',
+            'asset_video.dvBlSignalCompatibilityId',
+          ])
+          .$castTo<VideoStreamInfo | null>(),
+      ).as('videoStream'),
+    )
+    .select((eb) =>
+      jsonObjectFrom(
+        eb
+          .selectFrom(dummy)
+          .where('asset_video.assetId', 'is not', sql.lit(null))
+          .select((eb) => [
+            'asset_video.formatName',
+            'asset_video.formatLongName',
+            // TODO: simplify after https://github.com/immich-app/immich/pull/28003
+            eb
+              .case()
+              .when('asset.duration', '~', sql<string>`'^\\d{2}:\\d{2}:\\d{2}\\.\\d{3}$'`)
+              .then(
+                sql<number>`substr(asset.duration, 1, 2)::int * 3600000 + substr(asset.duration, 4, 2)::int * 60000 + substr(asset.duration, 7, 2)::int * 1000 + substr(asset.duration, 10, 3)::int`,
+              )
+              .else(sql.lit(0))
+              .end()
+              .as('duration'),
+            'asset_video.bitrate',
+          ]),
+      )
+        .$castTo<VideoFormat | null>()
+        .as('format'),
+    );
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {

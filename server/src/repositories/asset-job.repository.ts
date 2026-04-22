@@ -9,6 +9,7 @@ import { DB } from 'src/schema';
 import {
   anyUuid,
   asUuid,
+  withAudioVideo,
   withDefaultVisibility,
   withEdits,
   withExif,
@@ -134,6 +135,7 @@ export class AssetJobRepository {
       )
       .select(withEdits)
       .$call(withExifInner)
+      .$call(withAudioVideo)
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -333,8 +335,10 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
       .select(withFiles)
+      .$call((qb) => withAudioVideo(qb, true))
       .where('asset.id', '=', id)
       .where('asset.type', '=', sql.lit(AssetType.Video))
       .executeTakeFirst();

@@ -351,10 +351,10 @@ export class AssetMediaService extends BaseService {
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif(
-      { assetId: asset.id, fileSizeInByte: file.size },
-      { lockedPropertiesBehavior: 'override' },
-    );
+    await this.assetRepository.upsertExif({
+      exif: { assetId: asset.id, fileSizeInByte: file.size },
+      lockedPropertiesBehavior: 'override',
+    });
 
     await this.eventRepository.emit('AssetCreate', { asset });
 
