@@ -117,10 +117,36 @@ export function parseGoogleTakeoutSidecar(jsonString: string): TakeoutMetadata |
   };
 }
 
+const SUPPLEMENTAL_SUFFIX = 'supplemental-metadata';
+
+/**
+ * Strip Google Takeout's `.supplemental-metadata` segment (if present) from a sidecar
+ * path that has already had `.json` removed. Google introduced this suffix in mid-2024
+ * and truncates it to fit a total filename budget (~51 chars), so any prefix of
+ * `supplemental-metadata` is accepted — e.g. `.supplemental-me`, `.supple`, `.s`.
+ */
+function stripSupplementalSuffix(pathWithoutJson: string): string {
+  const lastDot = pathWithoutJson.lastIndexOf('.');
+  const lastSlash = pathWithoutJson.lastIndexOf('/');
+  if (lastDot <= lastSlash) {
+    return pathWithoutJson;
+  }
+  const tail = pathWithoutJson.slice(lastDot + 1);
+  if (tail.length === 0 || !SUPPLEMENTAL_SUFFIX.startsWith(tail)) {
+    return pathWithoutJson;
+  }
+  return pathWithoutJson.slice(0, lastDot);
+}
+
 /**
  * Match a JSON sidecar file to its corresponding media file.
- * Google Takeout places sidecars alongside media with `.json` appended (e.g. `IMG_1234.jpg.json`).
- * For filenames longer than 47 characters, Google truncates before appending `.json`.
+ *
+ * Google Takeout places sidecars alongside media files in one of two formats:
+ *   - legacy: `IMG_1234.jpg.json`
+ *   - 2024+:  `IMG_1234.jpg.supplemental-metadata.json` (suffix may be truncated to fit ~51 chars)
+ *
+ * For media filenames longer than 47 characters, Google also truncates the media
+ * basename before appending the sidecar tail.
  *
  * Returns the matching media path, or undefined if no match found or sidecar is not valid Takeout JSON.
  */
@@ -138,7 +164,7 @@ export function matchSidecarToMedia(
   if (!sidecarPath.endsWith('.json')) {
     return undefined;
   }
-  const expectedMediaPath = sidecarPath.slice(0, -5);
+  const expectedMediaPath = stripSupplementalSuffix(sidecarPath.slice(0, -5));
 
   // Try exact match first
   const exactMatch = mediaFilePaths.find((p) => p === expectedMediaPath);
