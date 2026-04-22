@@ -219,14 +219,84 @@ DELETE FROM "migration_overrides"
  );
 
 -- -----------------------------------------------------------------------------
--- 7. Delete Gallery migration rows from kysely_migrations.
+-- 7. Undo post-v2.7.5 upstream migrations that Gallery pulled in via rebase.
+--
+-- Gallery regularly rebases onto `upstream/main`, which sits ahead of the
+-- latest tagged Immich release (the one in `server/package.json`). The
+-- migrations in `server/src/schema/migrations/` therefore include a handful
+-- of upstream migrations that the tagged release does NOT have. On a
+-- Gallery-migrated DB those rows exist in `kysely_migrations` and their
+-- schema changes have been applied — but upstream v<package.json.version>
+-- doesn't ship the corresponding migration files, so on boot its migrator
+-- aborts with "corrupted migrations: previously executed migration X is
+-- missing", and schema-check reports drift for every column/table touched.
+--
+-- The fix has two halves: (a) reverse the schema change so upstream's
+-- schema-check sees a matching DB, and (b) delete the kysely_migrations row
+-- (step 8 below) so upstream's migrator doesn't look for the file.
+--
+-- This section MUST be re-evaluated after every upstream rebase. The
+-- mechanical diff is:
+--
+--   diff <(gh api "repos/immich-app/immich/git/trees/v<tag>:server/src/schema/migrations" \
+--           --jq '.tree[].path' | sort) \
+--        <(ls server/src/schema/migrations/ | sort)
+--
+-- For every `>` line, port the migration's `down()` logic here (adding
+-- DEFAULTs where `down()` adds NOT NULL columns — `down()` is designed for
+-- empty dev DBs, this script runs against populated ones) and add the
+-- migration name to the DELETE list in step 8. The rebase-upstream-report
+-- skill covers this under "Post-rebase: revert-to-immich.sql maintenance".
+-- -----------------------------------------------------------------------------
+
+-- 1776217577402-DropAuditTable — recreate the upstream audit table that the
+-- migration removed. v2.7.5's schema still references it.
+CREATE TABLE IF NOT EXISTS "audit" (
+  "id" serial NOT NULL,
+  "entityType" character varying NOT NULL,
+  "entityId" uuid NOT NULL,
+  "action" character varying NOT NULL,
+  "ownerId" uuid NOT NULL,
+  "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT "audit_pkey" PRIMARY KEY ("id")
+);
+CREATE INDEX IF NOT EXISTS "audit_ownerId_createdAt_idx" ON "audit" ("ownerId", "createdAt");
+
+-- 1776263790468-DropDeviceIdAndDeviceAssetId — re-add the two NOT NULL
+-- columns the migration dropped from `asset`. We use `DEFAULT ''` to
+-- populate existing asset rows (Postgres requires a default when adding
+-- a NOT NULL column to a non-empty table), then immediately DROP DEFAULT
+-- so the column matches v2.7.5's schema (which has no default — leaving
+-- one in place would show up as ColumnAlter drift in schema-check).
+ALTER TABLE "asset" ADD COLUMN IF NOT EXISTS "deviceAssetId" character varying NOT NULL DEFAULT '';
+ALTER TABLE "asset" ALTER COLUMN "deviceAssetId" DROP DEFAULT;
+ALTER TABLE "asset" ADD COLUMN IF NOT EXISTS "deviceId"      character varying NOT NULL DEFAULT '';
+ALTER TABLE "asset" ALTER COLUMN "deviceId"      DROP DEFAULT;
+
+-- 1776332807985-SetOAuthAllowInsecureRequests — strip the key the migration
+-- wrote into system_metadata. v2.7.5's config schema doesn't know about it.
+UPDATE "system_metadata"
+   SET "value" = "value" #- '{oauth,allowInsecureRequests}'
+ WHERE "key" = 'system-config'
+   AND "value" #> '{oauth,allowInsecureRequests}' IS NOT NULL;
+
+-- 1776442031775-AddOauthSidToSession — drop the column and its index the
+-- migration added to `session`.
+DROP INDEX IF EXISTS "session_oauthSid_idx";
+ALTER TABLE "session" DROP COLUMN IF EXISTS "oauthSid";
+
+-- -----------------------------------------------------------------------------
+-- 8. Delete Gallery + post-v<package.json.version> upstream migration rows
+--    from kysely_migrations.
 --
 -- This is the ONE step that is load-bearing for "Immich starts up cleanly."
 -- Without it, Immich's migrator sees rows for files it does not have and
--- aborts with the classic "corrupted migrations" error.
+-- aborts with the classic "corrupted migrations" error. The names in the
+-- "post-rebase upstream" block must stay in sync with step 7 above.
 -- -----------------------------------------------------------------------------
 DELETE FROM "kysely_migrations"
  WHERE "name" IN (
+   -- Gallery fork migrations (server/src/schema/migrations-gallery/).
    '1772230000000-CreateStorageMigrationLogTable',
    '1772240000000-CreateSharedSpaceTables',
    '1772250000000-AddShowInTimelineToSharedSpaceMember',
@@ -253,11 +323,18 @@ DELETE FROM "kysely_migrations"
    '1778120000000-AddSharedSpaceAssetSyncColumns',
    '1778200000000-LibraryAuditTables',
    '1778210000000-AddLibrarySyncColumns',
-   '1778300000000-AddLibraryUserTable'
+   '1778300000000-AddLibraryUserTable',
+
+   -- Post-v2.7.5 upstream migrations pulled in by rebase. Paired with the
+   -- schema rollbacks in step 7 above.
+   '1776217577402-DropAuditTable',
+   '1776263790468-DropDeviceIdAndDeviceAssetId',
+   '1776332807985-SetOAuthAllowInsecureRequests',
+   '1776442031775-AddOauthSidToSession'
  );
 
 -- -----------------------------------------------------------------------------
--- 8. Report what happened and commit.
+-- 9. Report what happened and commit.
 -- -----------------------------------------------------------------------------
 DO $$
 DECLARE

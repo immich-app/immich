@@ -280,9 +280,22 @@ jobs:
 
           ############################################################
           # Step 9: boot Gallery (applies the 27 fork migrations)
+          #
+          # We must wait for Gallery's geodata init to finish before stopping
+          # the container. When Gallery's bundled geodata date differs from
+          # the pre-phase (v<package.json.version>) date — which happens
+          # after any upstream rebase that bumps the geodata bundle — Gallery
+          # starts a drop+recreate re-import in the background. If we call
+          # `stop_server` before it finishes, the import gets SIGKILLed mid-
+          # flight and leaves `geodata_places` / `naturalearth_countries`
+          # empty. Upstream v<package.json.version> then either early-returns
+          # (metadata was already updated) or re-runs the import in post —
+          # either way, schema-check races that background import and reports
+          # spurious `_pkey` / `idx_*` drift. Waiting here closes the race.
           ############################################################
 
           boot_server "$GALLERY_IMAGE" gallery
+          if ! wait_for_geodata_init gallery; then exit 1; fi
           stop_server
 
           ############################################################
