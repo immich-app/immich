@@ -10,7 +10,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Logo, PasswordInput } from '@immich/ui';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -36,6 +36,10 @@
   let isOwned = $derived(authManager.authenticated && authManager.user.id === sharedLink?.userId);
   let password = $state('');
 
+  if (passwordRequired) {
+    assetViewerManager.showAssetViewer(false);
+  }
+
   const handlePasswordSubmit = async () => {
     try {
       sharedLink = await sharedLinkLogin({ key, slug, sharedLinkLoginDto: { password } });
@@ -59,12 +63,6 @@
     event.preventDefault();
     await handlePasswordSubmit();
   };
-
-  onMount(() => {
-    if (passwordRequired) {
-      assetViewerManager.showAssetViewer(false);
-    }
-  });
 
   onDestroy(() => {
     setSharedLink(undefined);
