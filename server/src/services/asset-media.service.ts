@@ -445,13 +445,31 @@ export class AssetMediaService extends BaseService {
   }
 
   private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {
+
+    // ── Récupérer la librairie externe de l'utilisateur ──────────────────────
+    const libraries = await this.libraryRepository.getAll(false);
+    const externalLibrary = libraries.find((lib) => lib.ownerId === ownerId);
+    if (!externalLibrary || externalLibrary.importPaths.length === 0) {
+      throw new BadRequestException('No external library configured for user. Please create an external library first.');
+    }
+
+    // Déplacer le fichier vers la librairie externe
+    const originalFilename = dto.filename || file.originalName;
+    const externalPath = `${externalLibrary.importPaths[0]}/upload/${originalFilename}`;
+    this.storageRepository.mkdirSync(externalLibrary.importPaths[0]);
+
+    await this.storageRepository.copyFile(file.originalPath, externalPath);
+    await this.storageRepository.unlink(file.originalPath);
+
     const asset = await this.assetRepository.create({
       ownerId,
-      libraryId: null,
+      libraryId: externalLibrary.id,
+
+      isExternal: true,
 
       checksum: file.checksum,
       checksumAlgorithm: ChecksumAlgorithm.sha1File,
-      originalPath: file.originalPath,
+      originalPath: externalPath,
 
       deviceAssetId: dto.deviceAssetId,
       deviceId: dto.deviceId,
@@ -480,7 +498,7 @@ export class AssetMediaService extends BaseService {
       });
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
-    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    await this.storageRepository.utimes(externalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif(
       { assetId: asset.id, fileSizeInByte: file.size },
       { lockedPropertiesBehavior: 'override' },

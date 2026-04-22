@@ -484,6 +484,18 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getOfflineByLibraryIdAndFilename(libraryId: string, filename: string) {
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .where('libraryId', '=', asUuid(libraryId))
+      .where('originalFileName', '=', filename)
+      .where('isOffline', '=', true)
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   /**
    * Get assets by device's Id on the database
    * @param ownerId

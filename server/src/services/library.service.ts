@@ -248,7 +248,6 @@ export class LibraryService extends BaseService {
   @OnJob({ name: JobName.LibrarySyncFiles, queue: QueueName.Library })
   async handleSyncFiles(job: JobOf<JobName.LibrarySyncFiles>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.libraryId);
-    // We need to check if the library still exists as it could have been deleted after the scan was queued
     if (!library) {
       this.logger.debug(`Library ${job.libraryId} not found, skipping file import`);
       return JobStatus.Failed;
@@ -258,24 +257,58 @@ export class LibraryService extends BaseService {
     }
 
     const assetImports: Insertable<AssetTable>[] = [];
+    const movedAssetIds: string[] = [];
+
     await Promise.all(
-      job.paths.map((path) =>
-        this.processEntity(path, library.ownerId, job.libraryId)
-          .then((asset) => assetImports.push(asset))
-          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
-      ),
+      job.paths.map(async (filePath) => {
+        try {
+          const filename = parse(filePath).base;
+
+          // Check if an offline asset with same filename exists in this library (move detection)
+          const offlineAsset = await this.assetRepository.getByLibraryIdAndOriginalPath(
+            job.libraryId,
+            // Search by filename by querying offline assets with matching originalFileName
+            undefined as any,
+          ).catch(() => null);
+
+          // Use direct DB query for move detection
+
+          const movedAsset = await this.assetRepository.getOfflineByLibraryIdAndFilename(
+            job.libraryId,
+            filename,
+          ).catch(() => null);
+
+          if (movedAsset) {
+            // File was moved — update originalPath and restore online
+            await this.assetRepository.update({
+              id: movedAsset.id,
+              originalPath: path.normalize(filePath),
+              isOffline: false,
+              deletedAt: null,
+            });
+            movedAssetIds.push(movedAsset.id);
+            this.logger.debug(`Move detected: ${movedAsset.originalPath} → ${filePath}`);
+          } else {
+            const asset = await this.processEntity(filePath, library.ownerId, job.libraryId);
+            assetImports.push(asset);
+          }
+        } catch (error: any) {
+          this.logger.error(`Error processing ${filePath} for library ${job.libraryId}: ${error}`);
+        }
+      }),
     );
 
-    const assetIds = await this.assetRepository.createAll(assetImports);
+    const newAssetIds = await this.assetRepository.createAll(assetImports);
 
     const progressMessage =
       job.progressCounter && job.totalAssets
         ? `(${job.progressCounter} of ${job.totalAssets})`
         : `(${job.progressCounter} done so far)`;
 
-    this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
+    this.logger.log(`Imported ${newAssetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
-    await this.queuePostSyncJobs(assetIds);
+    // Queue post-sync jobs for both new and moved assets
+    await this.queuePostSyncJobs([...newAssetIds, ...movedAssetIds]);
 
     return JobStatus.Success;
   }
@@ -687,11 +720,13 @@ export class LibraryService extends BaseService {
   @OnJob({ name: JobName.LibraryRemoveAsset, queue: QueueName.Library })
   async handleAssetRemoval(job: JobOf<JobName.LibraryRemoveAsset>): Promise<JobStatus> {
     // This is only for handling file unlink events via the file watcher
-    this.logger.verbose(`Deleting asset(s) ${job.paths} from library ${job.libraryId}`);
+    this.logger.verbose(`File unlinked: ${job.paths} from library ${job.libraryId}`);
     for (const assetPath of job.paths) {
       const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, assetPath);
       if (asset) {
-        await this.assetRepository.remove(asset);
+        // Mark offline instead of removing immediately — move detection may restore it
+        await this.assetRepository.update({ id: asset.id, isOffline: true, deletedAt: new Date() });
+        this.logger.debug(`Marked asset offline (pending move detection): ${assetPath}`);
       }
     }
 
