@@ -3818,7 +3818,6 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStream2160p });
       mocks.logger.isLevelEnabled.mockReturnValue(false);
       await sut.handleVideoConversion({ id: 'video-id' });
-
     });
 
     it('should process unknown audio stream', async () => {

@@ -1,8 +1,4 @@
-import {
-  Column,
-  ForeignKeyColumn,
-  Table
-} from '@immich/sql-tools';
+import { Column, ForeignKeyColumn, Table } from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 const smallint = 'smallint' as 'integer';

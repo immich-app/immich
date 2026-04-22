@@ -131,7 +131,7 @@ type UpsertExifOptions = {
   video?: Insertable<AssetVideoTable>;
   keyframes?: Insertable<AssetKeyframeTable>;
   lockedPropertiesBehavior: 'override' | 'append' | 'skip';
-}; 
+};
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
   sql<T>`nullif(array(select distinct unnest(${eb.ref('asset_exif.lockedProperties')} || ${columns})), '{}')`;

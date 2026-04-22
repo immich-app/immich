@@ -282,8 +282,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          dateTimeOriginal: new Date('2022-01-01T00:00:00.000Z'),
-        }),
+            dateTimeOriginal: new Date('2022-01-01T00:00:00.000Z'),
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -739,7 +739,9 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: asset.id });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.not.objectContaining({ keyframes: expect.anything() }));
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.not.objectContaining({ keyframes: expect.anything() }),
+      );
     });
 
     it('should prefer ffprobe frameRate over exiftool VideoFrameRate', async () => {
@@ -1065,37 +1067,37 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: {
-          assetId: asset.id,
-          bitsPerSample: expect.any(Number),
-          autoStackId: null,
-          colorspace: tags.ColorSpace,
-          dateTimeOriginal: dateForTest,
-          description: tags.ImageDescription,
-          exifImageHeight: null,
-          exifImageWidth: null,
-          exposureTime: tags.ExposureTime,
-          fNumber: null,
-          fileSizeInByte: 123_456,
-          focalLength: tags.FocalLength,
-          fps: null,
-          iso: tags.ISO,
-          latitude: null,
-          lensModel: tags.LensModel,
-          livePhotoCID: tags.MediaGroupUUID,
-          longitude: null,
-          make: tags.Make,
-          model: tags.Model,
-          modifyDate: expect.any(Date),
-          orientation: tags.Orientation?.toString(),
-          profileDescription: tags.ProfileDescription,
-          projectionType: 'EQUIRECTANGULAR',
-          timeZone: tags.zone,
-          rating: tags.Rating,
-          country: null,
-          state: null,
-          city: null,
-          tags: ['parent/child'],
-        },
+            assetId: asset.id,
+            bitsPerSample: expect.any(Number),
+            autoStackId: null,
+            colorspace: tags.ColorSpace,
+            dateTimeOriginal: dateForTest,
+            description: tags.ImageDescription,
+            exifImageHeight: null,
+            exifImageWidth: null,
+            exposureTime: tags.ExposureTime,
+            fNumber: null,
+            fileSizeInByte: 123_456,
+            focalLength: tags.FocalLength,
+            fps: null,
+            iso: tags.ISO,
+            latitude: null,
+            lensModel: tags.LensModel,
+            livePhotoCID: tags.MediaGroupUUID,
+            longitude: null,
+            make: tags.Make,
+            model: tags.Model,
+            modifyDate: expect.any(Date),
+            orientation: tags.Orientation?.toString(),
+            profileDescription: tags.ProfileDescription,
+            projectionType: 'EQUIRECTANGULAR',
+            timeZone: tags.zone,
+            rating: tags.Rating,
+            country: null,
+            state: null,
+            city: null,
+            tags: ['parent/child'],
+          },
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1132,8 +1134,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          timeZone: 'UTC+0',
-        }),
+            timeZone: 'UTC+0',
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1291,8 +1293,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          description: '',
-        }),
+            description: '',
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1302,8 +1304,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          description: 'my\n description',
-        }),
+            description: 'my\n description',
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1318,8 +1320,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          description: '1000',
-        }),
+            description: '1000',
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1553,8 +1555,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          modifyDate: expect.any(Date),
-        }),
+            modifyDate: expect.any(Date),
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1569,8 +1571,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          rating: null,
-        }),
+            rating: null,
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1585,8 +1587,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          rating: 5,
-        }),
+            rating: 5,
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1601,8 +1603,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          rating: null,
-        }),
+            rating: null,
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1617,8 +1619,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          rating: -1,
-        }),
+            rating: -1,
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
@@ -1783,8 +1785,8 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-          lensModel: expected,
-        }),
+            lensModel: expected,
+          }),
           lockedPropertiesBehavior: 'skip',
         }),
       );
