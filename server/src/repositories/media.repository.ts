@@ -333,7 +333,6 @@ export class MediaRepository {
     ]);
 
     let totalDuration = 0;
-    let packetCount = 0;
     const keyframePts: number[] = [];
     const keyframeAccDuration: number[] = [];
     const keyframeOwnDuration: number[] = [];
@@ -351,7 +350,6 @@ export class MediaRepository {
       // Discarded packets don't contribute to packet count, but still contribute to video duration
       totalDuration += duration;
       if (flags[1] !== 'D') {
-        packetCount++;
         postDiscard.push({ pts, duration });
       }
       if (flags[0] === 'K') {
@@ -364,14 +362,14 @@ export class MediaRepository {
       }
     }
 
-    if (packetCount === 0) {
+    if (postDiscard.length === 0) {
       return null;
     }
 
     return {
       totalDuration,
-      packetCount,
-      outputFrames: this.cfrOutputFrames(postDiscard, packetCount / formatDuration / timeBase),
+      packetCount: postDiscard.length,
+      outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / formatDuration / timeBase),
       keyframePts,
       keyframeAccDuration,
       keyframeOwnDuration,
