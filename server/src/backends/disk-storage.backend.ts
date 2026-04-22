@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from 'node:fs';
-import { access, mkdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { access, mkdir, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -48,6 +48,10 @@ export class DiskStorageBackend implements StorageBackend {
 
   async delete(key: string): Promise<void> {
     await unlink(this.resolvePath(key));
+  }
+
+  async deletePrefix(prefix: string): Promise<void> {
+    await rm(this.resolvePath(prefix), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 
   getServeStrategy(key: string, _contentType: string): Promise<ServeStrategy> {

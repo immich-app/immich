@@ -18,6 +18,9 @@ export interface StorageBackend {
   /** Delete the content at the given key */
   delete(key: string): Promise<void>;
 
+  /** Delete all objects/files under the given key prefix. Idempotent. No-op if nothing matches. */
+  deletePrefix(prefix: string): Promise<void>;
+
   /** Determine how to serve this file to a client */
   getServeStrategy(key: string, contentType: string): Promise<ServeStrategy>;
 

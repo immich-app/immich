@@ -12,6 +12,8 @@ vi.mock('@aws-sdk/client-s3', () => {
     GetObjectCommand: vi.fn((input: any) => ({ input, _type: 'GetObjectCommand' })),
     HeadObjectCommand: vi.fn((input: any) => ({ input, _type: 'HeadObjectCommand' })),
     DeleteObjectCommand: vi.fn((input: any) => ({ input, _type: 'DeleteObjectCommand' })),
+    ListObjectsV2Command: vi.fn((input: any) => ({ input, _type: 'ListObjectsV2Command' })),
+    DeleteObjectsCommand: vi.fn((input: any) => ({ input, _type: 'DeleteObjectsCommand' })),
   };
 });
 
@@ -161,6 +163,87 @@ describe('S3StorageBackend', () => {
 
       await cleanup();
       expect(existsSync(tempPath)).toBe(false);
+    });
+  });
+
+  describe('deletePrefix', () => {
+    it('should not send DeleteObjectsCommand when the prefix matches nothing', async () => {
+      mockSend.mockResolvedValueOnce({ Contents: [], IsTruncated: false });
+
+      await backend.deletePrefix('upload/ghost/');
+
+      const listInputs = mockSend.mock.calls
+        .filter(([cmd]) => cmd._type === 'ListObjectsV2Command')
+        .map(([cmd]) => cmd.input);
+      const deleteInputs = mockSend.mock.calls.filter(([cmd]) => cmd._type === 'DeleteObjectsCommand');
+      expect(listInputs).toEqual([expect.objectContaining({ Bucket: 'test-bucket', Prefix: 'upload/ghost/' })]);
+      expect(deleteInputs).toEqual([]);
+    });
+
+    it('should list then delete in a single batch for one page of results', async () => {
+      mockSend
+        .mockResolvedValueOnce({
+          Contents: [{ Key: 'upload/u/aa/1.jpg' }, { Key: 'upload/u/aa/2.jpg' }, { Key: 'upload/u/bb/3.jpg' }],
+          IsTruncated: false,
+        })
+        .mockResolvedValueOnce({ Deleted: [{}, {}, {}] });
+
+      await backend.deletePrefix('upload/u/');
+
+      const listCalls = mockSend.mock.calls.filter(([cmd]) => cmd._type === 'ListObjectsV2Command');
+      const deleteInputs = mockSend.mock.calls
+        .filter(([cmd]) => cmd._type === 'DeleteObjectsCommand')
+        .map(([cmd]) => cmd.input);
+      expect(listCalls).toHaveLength(1);
+      expect(deleteInputs).toEqual([
+        expect.objectContaining({
+          Bucket: 'test-bucket',
+          Delete: {
+            Objects: [{ Key: 'upload/u/aa/1.jpg' }, { Key: 'upload/u/aa/2.jpg' }, { Key: 'upload/u/bb/3.jpg' }],
+          },
+        }),
+      ]);
+    });
+
+    it('should paginate via ContinuationToken across multiple pages', async () => {
+      mockSend
+        .mockResolvedValueOnce({
+          Contents: [{ Key: 'upload/u/a.jpg' }],
+          IsTruncated: true,
+          NextContinuationToken: 'token-page-2',
+        })
+        .mockResolvedValueOnce({ Deleted: [{}] })
+        .mockResolvedValueOnce({ Contents: [{ Key: 'upload/u/b.jpg' }], IsTruncated: false })
+        .mockResolvedValueOnce({ Deleted: [{}] });
+
+      await backend.deletePrefix('upload/u/');
+
+      const listInputs = mockSend.mock.calls
+        .filter(([cmd]) => cmd._type === 'ListObjectsV2Command')
+        .map(([cmd]) => cmd.input);
+      const deleteCalls = mockSend.mock.calls.filter(([cmd]) => cmd._type === 'DeleteObjectsCommand');
+      expect(listInputs).toHaveLength(2);
+      expect(listInputs[0].ContinuationToken).toBeUndefined();
+      expect(listInputs[1].ContinuationToken).toBe('token-page-2');
+      expect(deleteCalls).toHaveLength(2);
+    });
+
+    it('should throw when DeleteObjects returns a non-empty Errors field', async () => {
+      mockSend
+        .mockResolvedValueOnce({ Contents: [{ Key: 'upload/u/x.jpg' }], IsTruncated: false })
+        .mockResolvedValueOnce({
+          Deleted: [],
+          Errors: [{ Key: 'upload/u/x.jpg', Code: 'AccessDenied', Message: 'no perms' }],
+        });
+
+      await expect(backend.deletePrefix('upload/u/')).rejects.toThrow(/AccessDenied/);
+    });
+
+    it('should propagate exceptions from ListObjectsV2Command', async () => {
+      mockSend.mockRejectedValueOnce(new Error('throttled'));
+
+      await expect(backend.deletePrefix('upload/u/')).rejects.toThrow('throttled');
+      expect(mockSend.mock.calls.filter(([cmd]) => cmd._type === 'DeleteObjectsCommand')).toEqual([]);
     });
   });
 });

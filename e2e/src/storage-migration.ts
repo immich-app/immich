@@ -438,6 +438,15 @@ export function minioSetupAlias(): void {
   dockerExec('minio', 'mc alias set local http://localhost:9000 minioadmin minioadmin');
 }
 
+export function minioCountPrefix(prefix: string): number {
+  try {
+    const out = dockerExec('minio', `mc ls --recursive local/immich-test/${prefix} 2>/dev/null | wc -l`);
+    return Number.parseInt(out, 10);
+  } catch {
+    return 0;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Phase 1: Setup
 // ---------------------------------------------------------------------------
@@ -1916,6 +1925,69 @@ async function phaseCopyAssetSidecarS3(): Promise<void> {
   console.log('=== Phase: copy-asset-sidecar-s3 complete ===');
 }
 
+async function phaseUserDeleteS3Orphans(): Promise<void> {
+  console.log('=== Phase: user-delete-s3-orphans ===');
+  const adminToken = await loginAdmin();
+
+  // Unique email per run so the phase is idempotent when re-run standalone against
+  // a DB that already has a soft-deleted orphan-test user from a previous attempt.
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const email = `orphan-test-${suffix}@example.com`;
+  const password = 'orphanTest1234';
+
+  const created = await api('POST', '/admin/users', {
+    body: { email, password, name: 'Orphan Test User' },
+    token: adminToken,
+  });
+  const userId: string = created.id;
+  assert.ok(userId, 'Expected created user to have an id');
+
+  const userToken = await loginUser(email, password);
+
+  // Burn the createPng counter past any reuse overlap with other phases.
+  for (let i = 0; i < 50; i++) {
+    createPng();
+  }
+  const firstUpload = await uploadAsset(userToken, `orphan-${suffix}-1.png`, createPng());
+  const secondUpload = await uploadAsset(userToken, `orphan-${suffix}-2.png`, createPng());
+  assert.ok(firstUpload.id && secondUpload.id, 'Expected both uploads to return an id');
+
+  await waitForProcessing(adminToken);
+
+  minioSetupAlias();
+
+  const uploadPrefix = `upload/${userId}/`;
+  const profilePrefix = `profile/${userId}/`;
+  const thumbsPrefix = `thumbs/${userId}/`;
+  const encodedVideoPrefix = `encoded-video/${userId}/`;
+
+  const preUpload = minioCountPrefix(uploadPrefix);
+  const preThumbs = minioCountPrefix(thumbsPrefix);
+  assert.ok(preUpload > 0, `Pre-delete: expected objects under ${uploadPrefix}, got ${preUpload}`);
+  assert.ok(preThumbs > 0, `Pre-delete: expected objects under ${thumbsPrefix}, got ${preThumbs}`);
+  console.log(
+    `  Pre-delete: upload=${preUpload} thumbs=${preThumbs} profile=${minioCountPrefix(
+      profilePrefix,
+    )} encoded-video=${minioCountPrefix(encodedVideoPrefix)}`,
+  );
+
+  await api('DELETE', `/admin/users/${userId}`, { body: { force: true }, token: adminToken });
+
+  await waitForProcessing(adminToken);
+
+  const postUpload = minioCountPrefix(uploadPrefix);
+  const postProfile = minioCountPrefix(profilePrefix);
+  const postThumbs = minioCountPrefix(thumbsPrefix);
+  const postEncodedVideo = minioCountPrefix(encodedVideoPrefix);
+  assert.equal(postUpload, 0, `Post-delete: ${uploadPrefix} should be empty, got ${postUpload}`);
+  assert.equal(postProfile, 0, `Post-delete: ${profilePrefix} should be empty, got ${postProfile}`);
+  assert.equal(postThumbs, 0, `Post-delete: ${thumbsPrefix} should be empty, got ${postThumbs}`);
+  assert.equal(postEncodedVideo, 0, `Post-delete: ${encodedVideoPrefix} should be empty, got ${postEncodedVideo}`);
+
+  console.log(`  User ${userId} deleted; all 4 S3 prefixes report 0 objects.`);
+  console.log('=== Phase: user-delete-s3-orphans complete ===');
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -2005,9 +2077,13 @@ async function main() {
         await phaseCopyAssetSidecarS3();
         break;
       }
+      case 'user-delete-s3-orphans': {
+        await phaseUserDeleteS3Orphans();
+        break;
+      }
       default: {
         throw new Error(
-          `Unknown phase: ${phase}. Valid phases: setup, estimate, migrate-to-s3, migrate-to-disk, rollback, no-files, concurrent-rejection, selective-to-s3, selective-cleanup, delete-source-false, content-verify, sidecar-verify, template-s3-bulk-skipped, template-s3-upload-skipped, template-s3-live-photo-skipped, template-s3-sidecar-skipped, template-s3-queue-migration-skipped, template-disk-baseline, copy-asset-sidecar-s3`,
+          `Unknown phase: ${phase}. Valid phases: setup, estimate, migrate-to-s3, migrate-to-disk, rollback, no-files, concurrent-rejection, selective-to-s3, selective-cleanup, delete-source-false, content-verify, sidecar-verify, template-s3-bulk-skipped, template-s3-upload-skipped, template-s3-live-photo-skipped, template-s3-sidecar-skipped, template-s3-queue-migration-skipped, template-disk-baseline, copy-asset-sidecar-s3, user-delete-s3-orphans`,
         );
       }
     }

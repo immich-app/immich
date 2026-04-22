@@ -826,6 +826,62 @@ describe(UserService.name, () => {
       expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(5);
       expect(mocks.user.delete).toHaveBeenCalledWith(user, true);
     });
+
+    describe('with S3 write backend', () => {
+      let mockS3Backend: { deletePrefix: ReturnType<typeof vitest.fn> };
+
+      beforeEach(() => {
+        mockS3Backend = { deletePrefix: vi.fn().mockResolvedValue(void 0) };
+        (StorageService as any).s3Backend = mockS3Backend;
+      });
+
+      afterEach(() => {
+        (StorageService as any).s3Backend = void 0;
+      });
+
+      it('should delete the four user-scoped S3 prefixes in addition to disk folders', async () => {
+        const user = { id: 'deleted-s3-user', deletedAt: makeDeletedAt(10) } as UserAdmin;
+        mocks.user.get.mockResolvedValue(user);
+
+        await sut.handleUserDelete({ id: user.id });
+
+        expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(5);
+        expect(mockS3Backend.deletePrefix).toHaveBeenCalledTimes(4);
+        expect(mockS3Backend.deletePrefix).toHaveBeenCalledWith(`upload/${user.id}/`);
+        expect(mockS3Backend.deletePrefix).toHaveBeenCalledWith(`profile/${user.id}/`);
+        expect(mockS3Backend.deletePrefix).toHaveBeenCalledWith(`thumbs/${user.id}/`);
+        expect(mockS3Backend.deletePrefix).toHaveBeenCalledWith(`encoded-video/${user.id}/`);
+      });
+
+      it('should still attempt remaining prefixes, disk deletion, and DB cleanup when one S3 prefix fails', async () => {
+        const user = { id: 'partial-fail-user', deletedAt: makeDeletedAt(10) } as UserAdmin;
+        mocks.user.get.mockResolvedValue(user);
+        mockS3Backend.deletePrefix
+          .mockResolvedValueOnce(void 0)
+          .mockRejectedValueOnce(new Error('throttled'))
+          .mockResolvedValueOnce(void 0)
+          .mockResolvedValueOnce(void 0);
+
+        await sut.handleUserDelete({ id: user.id });
+
+        expect(mockS3Backend.deletePrefix).toHaveBeenCalledTimes(4);
+        expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(5);
+        expect(mocks.album.deleteAll).toHaveBeenCalledWith(user.id);
+        expect(mocks.user.delete).toHaveBeenCalledWith(user, true);
+        expect(mocks.event.emit).toHaveBeenCalledWith('UserDelete', user);
+      });
+    });
+
+    it('should not reach any S3 backend when S3 is not configured (regression guard)', async () => {
+      const user = { id: 'disk-only-user', deletedAt: makeDeletedAt(10) } as UserAdmin;
+      mocks.user.get.mockResolvedValue(user);
+      expect((StorageService as any).s3Backend).toBeUndefined();
+
+      await sut.handleUserDelete({ id: user.id });
+
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(5);
+      expect((StorageService as any).s3Backend).toBeUndefined();
+    });
   });
 
   describe('handleUserSyncUsage', () => {

@@ -87,6 +87,9 @@ jobs:
       - name: 'Phase: copy-asset-sidecar-s3'
         run: pnpm tsx src/storage-migration.ts copy-asset-sidecar-s3
 
+      - name: 'Phase: user-delete-s3-orphans'
+        run: pnpm tsx src/storage-migration.ts user-delete-s3-orphans
+
       - name: 'Phase: no-files'
         run: pnpm tsx src/storage-migration.ts no-files
 

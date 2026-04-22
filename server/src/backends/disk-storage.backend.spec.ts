@@ -97,4 +97,37 @@ describe('DiskStorageBackend', () => {
       expect(existsSync(filePath)).toBe(true);
     });
   });
+
+  describe('deletePrefix', () => {
+    it('should recursively remove all files under the prefix', async () => {
+      await mkdir(join(testDir, 'upload/user-a/aa/bb'), { recursive: true });
+      await writeFile(join(testDir, 'upload/user-a/aa/bb/one.jpg'), 'one');
+      await writeFile(join(testDir, 'upload/user-a/aa/bb/two.jpg'), 'two');
+      await mkdir(join(testDir, 'upload/user-a/cc/dd'), { recursive: true });
+      await writeFile(join(testDir, 'upload/user-a/cc/dd/three.jpg'), 'three');
+
+      await backend.deletePrefix('upload/user-a/');
+
+      expect(existsSync(join(testDir, 'upload/user-a'))).toBe(false);
+    });
+
+    it('should be idempotent when the prefix does not exist', async () => {
+      await expect(backend.deletePrefix('upload/ghost/')).resolves.toBeUndefined();
+    });
+
+    it('should not touch siblings outside the prefix', async () => {
+      await mkdir(join(testDir, 'upload/user-a/aa'), { recursive: true });
+      await writeFile(join(testDir, 'upload/user-a/aa/victim.jpg'), 'victim');
+      await mkdir(join(testDir, 'upload/user-b/aa'), { recursive: true });
+      await writeFile(join(testDir, 'upload/user-b/aa/survivor.jpg'), 'survivor');
+      await mkdir(join(testDir, 'thumbs/user-a'), { recursive: true });
+      await writeFile(join(testDir, 'thumbs/user-a/thumb.webp'), 'thumb');
+
+      await backend.deletePrefix('upload/user-a/');
+
+      expect(existsSync(join(testDir, 'upload/user-a'))).toBe(false);
+      expect(existsSync(join(testDir, 'upload/user-b/aa/survivor.jpg'))).toBe(true);
+      expect(existsSync(join(testDir, 'thumbs/user-a/thumb.webp'))).toBe(true);
+    });
+  });
 });

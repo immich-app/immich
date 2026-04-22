@@ -1,4 +1,11 @@
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
@@ -83,6 +90,26 @@ export class S3StorageBackend implements StorageBackend {
 
   async delete(key: string): Promise<void> {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+  }
+
+  async deletePrefix(prefix: string): Promise<void> {
+    let continuationToken: string | undefined;
+    do {
+      const page = await this.client.send(
+        new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: continuationToken }),
+      );
+      const keys = (page.Contents ?? []).map((o) => ({ Key: o.Key! }));
+      if (keys.length > 0) {
+        const result = await this.client.send(
+          new DeleteObjectsCommand({ Bucket: this.bucket, Delete: { Objects: keys } }),
+        );
+        if (result.Errors && result.Errors.length > 0) {
+          const first = result.Errors[0];
+          throw new Error(`S3 deletePrefix partial failure: ${first.Code}: ${first.Message} (key=${first.Key})`);
+        }
+      }
+      continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (continuationToken);
   }
 
   async getServeStrategy(key: string, contentType: string): Promise<ServeStrategy> {

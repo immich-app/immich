@@ -286,6 +286,28 @@ export class UserService extends BaseService {
       await this.storageRepository.unlinkDir(folder, { recursive: true, force: true });
     }
 
+    // S3: clean the user-scoped relative prefixes. Library and Backups are intentionally
+    // excluded — storage-template migration is a no-op on S3 (StorageCore.moveFile guard),
+    // so S3 never writes to library/; Backups is admin/global scope.
+    const s3 = StorageService.getS3Backend();
+    if (s3) {
+      const userScopedS3Folders = [
+        StorageFolder.Upload,
+        StorageFolder.Profile,
+        StorageFolder.Thumbnails,
+        StorageFolder.EncodedVideo,
+      ] as const;
+      for (const folder of userScopedS3Folders) {
+        const prefix = `${folder}/${user.id}/`;
+        try {
+          await s3.deletePrefix(prefix);
+          this.logger.log(`Cleaned S3 prefix ${prefix}`);
+        } catch (error) {
+          this.logger.warn(`Failed to clean S3 prefix ${prefix} for user ${user.id}`, error);
+        }
+      }
+    }
+
     this.logger.warn(`Removing user from database: ${user.id}`);
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
