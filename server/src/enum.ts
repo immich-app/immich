@@ -801,9 +801,11 @@ export enum SyncRequestType {
   AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
+  /** @deprecated */
   AlbumAssetsV1 = 'AlbumAssetsV1',
   AlbumAssetsV2 = 'AlbumAssetsV2',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
+  /** @deprecated */
   AssetsV1 = 'AssetsV1',
   AssetsV2 = 'AssetsV2',
   AssetExifsV1 = 'AssetExifsV1',
@@ -813,6 +815,7 @@ export enum SyncRequestType {
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
+  /** @deprecated */
   PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetsV2 = 'PartnerAssetsV2',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
@@ -820,6 +823,7 @@ export enum SyncRequestType {
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
+  /** @deprecated */
   AssetFacesV1 = 'AssetFacesV1',
   AssetFacesV2 = 'AssetFacesV2',
   UserMetadataV1 = 'UserMetadataV1',
@@ -836,6 +840,7 @@ export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
+  /** @deprecated */
   AssetV1 = 'AssetV1',
   AssetV2 = 'AssetV2',
   AssetDeleteV1 = 'AssetDeleteV1',
@@ -848,8 +853,10 @@ export enum SyncEntityType {
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
 
+  /** @deprecated */
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetV2 = 'PartnerAssetV2',
+  /** @deprecated */
   PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
   PartnerAssetBackfillV2 = 'PartnerAssetBackfillV2',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
@@ -867,10 +874,13 @@ export enum SyncEntityType {
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
+  /** @deprecated */
   AlbumAssetCreateV1 = 'AlbumAssetCreateV1',
   AlbumAssetCreateV2 = 'AlbumAssetCreateV2',
+  /** @deprecated */
   AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1',
   AlbumAssetUpdateV2 = 'AlbumAssetUpdateV2',
+  /** @deprecated */
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
   AlbumAssetBackfillV2 = 'AlbumAssetBackfillV2',
   AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1',

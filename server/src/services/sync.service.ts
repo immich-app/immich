@@ -158,7 +158,13 @@ export class SyncService extends BaseService {
     const { nowId } = await this.syncCheckpointRepository.getNow();
     const options: SyncQueryOptions = { nowId, userId: auth.user.id };
 
-    const handlers = {
+    const handlers: Record<SyncRequestType, () => Promise<void>> = {
+      // deprecated handlers
+      [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(),
+      [SyncRequestType.AssetFacesV1]: () => this.syncAssetFacesV1(),
+      [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(),
+      [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(),
+
       [SyncRequestType.AuthUsersV1]: () => this.syncAuthUsersV1(options, response, checkpointMap),
       [SyncRequestType.UsersV1]: () => this.syncUsersV1(options, response, checkpointMap),
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(options, response, checkpointMap),
@@ -181,16 +187,9 @@ export class SyncService extends BaseService {
       [SyncRequestType.StacksV1]: () => this.syncStackV1(options, response, checkpointMap),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(options, response, checkpointMap),
-      [SyncRequestType.AssetFacesV1]: async () => this.syncAssetFacesV1(options, response, checkpointMap),
-      [SyncRequestType.AssetFacesV2]: async () => this.syncAssetFacesV2(options, response, checkpointMap),
+      [SyncRequestType.AssetFacesV2]: () => this.syncAssetFacesV2(options, response, checkpointMap),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
     } as const;
-
-    for (const type of dto.types) {
-      if (!(type in handlers)) {
-        throw new BadRequestException(`Invalid sync type requested: ${type}`);
-      }
-    }
 
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
       const handler = handlers[type as keyof typeof handlers];
@@ -269,6 +268,10 @@ export class SyncService extends BaseService {
     }
   }
 
+  private async syncAssetsV1() {
+    throw new BadRequestException('SyncRequestType.AssetsV1 is deprecated, use SyncRequestType.AssetsV2 instead');
+  }
+
   private async syncAssetsV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const deleteType = SyncEntityType.AssetDeleteV1;
     const deletes = this.syncRepository.asset.getDeletes({ ...options, ack: checkpointMap[deleteType] });
@@ -281,6 +284,12 @@ export class SyncService extends BaseService {
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV2(data) });
     }
+  }
+
+  private async syncPartnerAssetsV1() {
+    throw new BadRequestException(
+      'SyncRequestType.PartnerAssetsV1 is deprecated, use SyncRequestType.PartnerAssetsV2 instead',
+    );
   }
 
   private async syncPartnerAssetsV2(
@@ -497,6 +506,12 @@ export class SyncService extends BaseService {
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
+  }
+
+  private async syncAlbumAssetsV1() {
+    throw new BadRequestException(
+      'SyncRequestType.AlbumAssetsV1 is deprecated, use SyncRequestType.AlbumAssetsV2 instead',
+    );
   }
 
   private async syncAlbumAssetsV2(
@@ -811,19 +826,10 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAssetFacesV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
-    const deleteType = SyncEntityType.AssetFaceDeleteV1;
-    const deletes = this.syncRepository.assetFace.getDeletes({ ...options, ack: checkpointMap[deleteType] });
-    for await (const { id, ...data } of deletes) {
-      send(response, { type: deleteType, ids: [id], data });
-    }
-
-    const upsertType = SyncEntityType.AssetFaceV1;
-    const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
-    for await (const { updateId, ...data } of upserts) {
-      const v1 = syncAssetFaceV2ToV1(data);
-      send(response, { type: upsertType, ids: [updateId], data: v1 });
-    }
+  private async syncAssetFacesV1() {
+    throw new BadRequestException(
+      'SyncRequestType.AssetFacesV1 is deprecated, use SyncRequestType.AssetFacesV2 instead',
+    );
   }
 
   private async syncAssetFacesV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
