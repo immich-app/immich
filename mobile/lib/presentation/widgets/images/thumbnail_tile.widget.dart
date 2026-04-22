@@ -12,8 +12,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/partner.provider.dart';
-import 'package:immich_mobile/utils/hash.dart';
+import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 
 class ThumbnailTile extends ConsumerStatefulWidget {
   const ThumbnailTile(
@@ -75,7 +74,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
         ? ref.watch(assetUploadProgressProvider.select((map) => map[asset.id]))
         : null;
     final isPartnerShared = asset is RemoteAsset
-        ? ref.watch(partnerSharedWithProvider).map((e) => fastHash(e.id)).contains(fastHash(asset.ownerId))
+        ? ref.watch(driftSharedWithPartnerProvider).value?.any((e) => e.id == asset.ownerId) ?? false
         : false;
 
     return Stack(
