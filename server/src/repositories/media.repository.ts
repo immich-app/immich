@@ -315,7 +315,11 @@ export class MediaRepository {
     streamIndex: number,
     timeBase: number,
     formatDuration: number,
-  ): Promise<VideoPacketInfo> {
+  ): Promise<VideoPacketInfo | null> {
+    if (formatDuration <= 0) {
+      return null;
+    }
+
     const { stdout } = await execFile('ffprobe', [
       '-v',
       'error',
@@ -356,18 +360,20 @@ export class MediaRepository {
       }
     }
 
+    if (packetCount === 0) {
+      return null;
+    }
+
+    postDiscard.sort((a, b) => a.pts - b.pts);
+    const firstPts = postDiscard[0].pts;
+    const slotsPerTick = packetCount / formatDuration / timeBase;
     let outputFrames = 0;
-    if (packetCount > 0 && formatDuration > 0) {
-      postDiscard.sort((a, b) => a.pts - b.pts);
-      const firstPts = postDiscard[0].pts;
-      const slotsPerTick = packetCount / formatDuration / timeBase;
-      let nextPts = 0;
-      for (const pkt of postDiscard) {
-        const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
-        const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
-        outputFrames += nb;
-        nextPts += nb;
-      }
+    let nextPts = 0;
+    for (const pkt of postDiscard) {
+      const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
+      const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
+      outputFrames += nb;
+      nextPts += nb;
     }
 
     return {
