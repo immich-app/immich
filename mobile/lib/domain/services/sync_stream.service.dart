@@ -193,20 +193,20 @@ class SyncStreamService {
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
         if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _syncTrashedManagedMedia(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id));
+          await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
         }
         return;
       case SyncEntityType.assetV2:
         final remoteSyncAssets = data.cast<SyncAssetV2>();
         await _syncStreamRepository.updateAssetsV2(remoteSyncAssets);
         if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _syncTrashedManagedMedia(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id));
+          await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
         }
         return;
       case SyncEntityType.assetDeleteV1:
         final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
         if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _syncDeletedManagedMedia(remoteSyncAssets.map((e) => e.assetId));
+          await _syncAssetDeletion(remoteSyncAssets.map((e) => e.assetId).toList());
         }
         return _syncStreamRepository.deleteAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetExifV1:
@@ -510,7 +510,7 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _syncTrashedManagedMedia(Iterable<String> remoteIds) async {
+  Future<void> _syncAssetTrashStatus(List<String> remoteIds) async {
     if (!(await _localFilesManager.hasManageMediaPermission())) {
       _logger.warning("Syncing asset trash status cannot proceed because MANAGE_MEDIA permission is missing");
       return;
@@ -520,7 +520,7 @@ class SyncStreamService {
     await _applyRemoteRestoreToLocal();
   }
 
-  Future<void> _syncDeletedManagedMedia(Iterable<String> remoteIds) async {
+  Future<void> _syncAssetDeletion(List<String> remoteIds) async {
     if (!(await _localFilesManager.hasManageMediaPermission())) {
       _logger.warning("Syncing asset deletion cannot proceed because MANAGE_MEDIA permission is missing");
       return;

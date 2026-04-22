@@ -46,22 +46,25 @@ class SyncApiRepository {
         types: [
           SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
-          if (serverVersion < const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetsV1,
-          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetsV2,
+          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
+              ? SyncRequestType.assetsV2
+              : SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
           if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetEditsV1,
           SyncRequestType.assetMetadataV1,
           SyncRequestType.partnersV1,
-          if (serverVersion < const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.partnerAssetsV1,
-          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.partnerAssetsV2,
+          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
+              ? SyncRequestType.partnerAssetsV2
+              : SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
           if (serverVersion < const SemVer(major: 3, minor: 0, patch: 0))
             SyncRequestType.albumsV1
           else
             SyncRequestType.albumsV2,
           SyncRequestType.albumUsersV1,
-          if (serverVersion < const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.albumAssetsV1,
-          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.albumAssetsV2,
+          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
+              ? SyncRequestType.albumAssetsV2
+              : SyncRequestType.albumAssetsV1,
           SyncRequestType.albumAssetExifsV1,
           SyncRequestType.albumToAssetsV1,
           SyncRequestType.memoriesV1,
@@ -70,8 +73,9 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
-          if (serverVersion < const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetFacesV1,
-          if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetFacesV2,
+          serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)
+              ? SyncRequestType.assetFacesV2
+              : SyncRequestType.assetFacesV1,
         ],
         reset: shouldReset,
       ).toJson(),
