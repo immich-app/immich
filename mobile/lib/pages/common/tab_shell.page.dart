@@ -56,6 +56,12 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
       ),
+      NavigationDestination(
+        label: 'Clean Up',
+        icon: const Icon(Icons.swipe_outlined),
+        selectedIcon: Icon(Icons.swipe_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
+      ),
     ];
 
     Widget navigationRail(TabsRouter tabsRouter) {
@@ -78,7 +84,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     }
 
     return AutoTabsRouter(
-      routes: const [MainTimelineRoute(), DriftSearchRoute(), DriftAlbumsRoute(), DriftLibraryRoute()],
+      routes: const [MainTimelineRoute(), DriftSearchRoute(), DriftAlbumsRoute(), DriftLibraryRoute(), SwipeCurationRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
@@ -133,6 +139,11 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   if (index == kLibraryTabIndex) {
     ref.invalidate(localAlbumProvider);
     ref.invalidate(driftGetAllPeopleProvider);
+  }
+
+  // Clean Up page
+  if (index == kCleanUpTabIndex) {
+    // The SwipeCurationPage handles its own initialization
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();

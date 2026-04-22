@@ -9,6 +9,7 @@ environment:
   flutter: 3.41.7
 
 dependencies:
+  appinio_swiper: ^2.1.1
   async: ^2.13.1
   auto_route: ^11.1.0
   background_downloader: ^9.5.4

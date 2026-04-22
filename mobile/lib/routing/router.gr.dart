@@ -1779,6 +1779,22 @@ class SplashScreenRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [SwipeCurationPage]
+class SwipeCurationRoute extends PageRouteInfo<void> {
+  const SwipeCurationRoute({List<PageRouteInfo>? children})
+    : super(SwipeCurationRoute.name, initialChildren: children);
+
+  static const String name = 'SwipeCurationRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SwipeCurationPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SyncStatusPage]
 class SyncStatusRoute extends PageRouteInfo<void> {
   const SyncStatusRoute({List<PageRouteInfo>? children})

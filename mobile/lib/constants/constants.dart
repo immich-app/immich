@@ -53,6 +53,7 @@ const int kPhotoTabIndex = 0;
 const int kSearchTabIndex = 1;
 const int kAlbumTabIndex = 2;
 const int kLibraryTabIndex = 3;
+const int kCleanUpTabIndex = 4;
 
 // Workaround for SQLite's variable limit (SQLITE_MAX_VARIABLE_NUMBER = 32766)
 const int kDriftMaxChunk = 32000;
