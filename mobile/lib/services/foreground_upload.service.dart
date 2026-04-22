@@ -155,7 +155,7 @@ class ForegroundUploadService {
     List<File> files, {
     Completer<void>? cancelToken,
     void Function(String fileId, int bytes, int totalBytes)? onProgress,
-    void Function(String fileId)? onSuccess,
+    void Function(String fileId, String remoteAssetId)? onSuccess,
     void Function(String fileId, String errorMessage)? onError,
   }) async {
     if (files.isEmpty) {
@@ -175,7 +175,7 @@ class ForegroundUploadService {
         );
 
         if (result.isSuccess) {
-          onSuccess?.call(fileId);
+          onSuccess?.call(fileId, result.remoteAssetId!);
         } else if (!result.isCancelled && result.errorMessage != null) {
           onError?.call(fileId, result.errorMessage!);
         }

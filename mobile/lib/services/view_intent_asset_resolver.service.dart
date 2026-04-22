@@ -46,104 +46,75 @@ class ViewIntentAssetResolver {
   const ViewIntentAssetResolver(this._ref, this._localAssetRepository, this._nativeSyncApi, this._timelineFactory);
 
   Future<ViewIntentResolvedAsset> resolve(ViewIntentPayload attachment) async {
-    assert(
-      attachment.localAssetId != null || attachment.path != null,
-      'ViewIntent resolution requires either a localAssetId or a materialized file path.',
-    );
-
     final localAssetId = attachment.localAssetId;
-    if (localAssetId != null) {
-      var localAsset = await _localAssetRepository.getById(localAssetId);
-      if (localAsset != null) {
-        // Try the direct local-id match first when the intent resolves to a
-        // real MediaStore asset.
-        final mainTimelineAsset = await _resolveMainTimelineAssetByLocalId(localAssetId);
-        if (mainTimelineAsset != null) {
-          _logger.fine('presenting main timeline asset via localAssetId: ${mainTimelineAsset.asset}');
-          return mainTimelineAsset;
-        }
-
-        var checksum = localAsset.checksum;
-        if (checksum == null) {
-          checksum = await _computeChecksumForLocalAsset(localAssetId);
-          if (checksum != null) {
-            localAsset = localAsset.copyWith(checksum: checksum);
-          }
-        }
-
-        // If local id does not match the merged timeline, retry by checksum
-        // because the same asset may already be represented there as a merged
-        // local/remote asset.
-        if (checksum != null) {
-          final checksumTimelineAsset = await _resolveMainTimelineAssetByChecksum(checksum);
-          if (checksumTimelineAsset != null) {
-            _logger.fine('presenting main timeline asset via checksum fallback: ${checksumTimelineAsset.asset}');
-            return checksumTimelineAsset;
-          }
-        }
-        //todo STOP 21/04: need to decide - can we proceed without checksum?
-        // if yes, should we show upload button?
-        // if yes, how we can update asset viewer on asset was uploaded?
-        _logger.fine('presenting deep-link local asset: $localAsset');
-        return ViewIntentResolvedAsset(
-          asset: localAsset,
-          timelineService: _timelineFactory.fromAssets([localAsset], TimelineOrigin.deepLink),
-          initialIndex: 0,
-        );
-      }
+    final path = attachment.path;
+    if (localAssetId == null && path == null) {
+      throw StateError('ViewIntent resolution requires either a localAssetId or a materialized file path.');
     }
 
-    final checksum = await _computeChecksum(attachment);
-    if (checksum != null) {
-      // Some ACTION_VIEW sources do not provide a local MediaStore id, so
-      // checksum is the only way to match the incoming file to an existing
-      // merged asset.
-      final mainTimelineAsset = await _resolveMainTimelineAssetByChecksum(checksum);
+    final localAsset = localAssetId != null ? await _localAssetRepository.getById(localAssetId) : null;
+
+    if (localAssetId != null) {
+      // Try the direct local-id match first when the intent resolves to a real
+      // MediaStore asset.
+      final mainTimelineAsset = await _resolveMainTimelineAssetByLocalId(localAssetId);
       if (mainTimelineAsset != null) {
-        _logger.fine('presenting main timeline asset via checksum-only match: ${mainTimelineAsset.asset}');
+        _logger.fine('presenting main timeline asset via localAssetId: ${mainTimelineAsset.asset}');
         return mainTimelineAsset;
       }
     }
 
-    if (attachment.localAssetId == null && attachment.path == null) {
-      throw StateError('ViewIntent fallback resolution requires either a localAssetId or a materialized file path.');
+    final checksum = await _resolveChecksumForMatching(attachment, localAsset: localAsset);
+    if (checksum != null) {
+      final mainTimelineAsset = await _resolveMainTimelineAssetByChecksum(checksum);
+      if (mainTimelineAsset != null) {
+        final lookupType = localAssetId != null ? 'checksum fallback' : 'checksum-only match';
+        _logger.fine('presenting main timeline asset via $lookupType: ${mainTimelineAsset.asset}');
+        return mainTimelineAsset;
+      }
     }
 
-    final fallbackAsset = _toViewIntentAsset(attachment, checksum);
-    _logger.fine('presenting transient fallback asset: $fallbackAsset');
+    final fallbackAsset = _toFallbackAsset(attachment, localAsset: localAsset, checksum: checksum);
+    if (localAsset != null) {
+      _logger.fine('presenting deep-link local asset: $fallbackAsset');
+    } else {
+      _logger.fine('presenting transient fallback asset: $fallbackAsset');
+    }
+
     return ViewIntentResolvedAsset(
       asset: fallbackAsset,
       timelineService: _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink),
       initialIndex: 0,
-      viewIntentFilePath: attachment.path,
+      viewIntentFilePath: localAsset == null ? path : null,
     );
   }
 
   Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByLocalId(String localAssetId) async {
-    final effectiveTimelineUsers = _resolveMainTimelineUsers();
-    if (effectiveTimelineUsers.isEmpty) {
-      return null;
-    }
-
-    final index = await _ref
-        .read(timelineRepositoryProvider)
-        .getMainTimelineIndexByLocalId(effectiveTimelineUsers, localAssetId);
-    if (index == null) {
-      return null;
-    }
-
-    return _resolveMainTimelineAssetAt(index);
+    return _resolveMainTimelineAsset(
+      (effectiveTimelineUsers) =>
+          _ref.read(timelineRepositoryProvider).getMainTimelineIndexByLocalId(effectiveTimelineUsers, localAssetId),
+    );
   }
 
   Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByChecksum(String checksum) async {
+    // Some ACTION_VIEW sources do not provide a local MediaStore id, so
+    // checksum is the only way to match the incoming file to an existing
+    // merged asset.
+    return _resolveMainTimelineAsset(
+      (effectiveTimelineUsers) =>
+          _ref.read(timelineRepositoryProvider).getMainTimelineIndexByChecksum(effectiveTimelineUsers, checksum),
+    );
+  }
+
+  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAsset(
+    Future<int?> Function(List<String> effectiveTimelineUsers) findIndex,
+  ) async {
     final effectiveTimelineUsers = _resolveMainTimelineUsers();
     if (effectiveTimelineUsers.isEmpty) {
       return null;
     }
 
-    final index = await _ref
-        .read(timelineRepositoryProvider)
-        .getMainTimelineIndexByChecksum(effectiveTimelineUsers, checksum);
+    final index = await findIndex(effectiveTimelineUsers);
     if (index == null) {
       return null;
     }
@@ -179,7 +150,12 @@ class ViewIntentAssetResolver {
     return ViewIntentResolvedAsset(asset: asset, timelineService: timelineService, initialIndex: index);
   }
 
-  Future<String?> _computeChecksum(ViewIntentPayload attachment) async {
+  Future<String?> _resolveChecksumForMatching(ViewIntentPayload attachment, {LocalAsset? localAsset}) async {
+    final localChecksum = localAsset?.checksum;
+    if (localChecksum != null) {
+      return localChecksum;
+    }
+
     final localAssetId = attachment.localAssetId;
     if (localAssetId != null) {
       return _computeChecksumForLocalAsset(localAssetId);
@@ -213,6 +189,18 @@ class ViewIntentAssetResolver {
     } catch (_) {
       return null;
     }
+  }
+
+  LocalAsset _toFallbackAsset(ViewIntentPayload attachment, {LocalAsset? localAsset, String? checksum}) {
+    if (localAsset == null) {
+      return _toViewIntentAsset(attachment, checksum);
+    }
+
+    if (checksum == null || checksum == localAsset.checksum) {
+      return localAsset;
+    }
+
+    return localAsset.copyWith(checksum: checksum);
   }
 
   LocalAsset _toViewIntentAsset(ViewIntentPayload attachment, String? checksum) {

@@ -8,8 +8,7 @@ import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provi
 void main() {
   late BaseAsset? currentAsset;
   late String? viewIntentFilePath;
-  late int? localIdIndex;
-  late int? checksumIndex;
+  late int? remoteIdIndex;
   late List<(List<String>, int, String?)> handoffs;
   late Completer<void> uploadReadyCompleter;
   late bool Function(dynamic)? uploadReadyPredicate;
@@ -20,8 +19,7 @@ void main() {
   setUp(() {
     currentAsset = _asset(checksum: 'checksum-1');
     viewIntentFilePath = null;
-    localIdIndex = null;
-    checksumIndex = null;
+    remoteIdIndex = null;
     handoffs = [];
     uploadReadyCompleter = Completer<void>();
     uploadReadyPredicate = null;
@@ -30,8 +28,7 @@ void main() {
       getCurrentAsset: () => currentAsset,
       getViewIntentFilePath: () => viewIntentFilePath,
       resolveMainTimelineUsers: () => ['user-1'],
-      findMainTimelineIndexByLocalId: (_, __) async => localIdIndex,
-      findMainTimelineIndexByChecksum: (_, __) async => checksumIndex,
+      findMainTimelineIndexByRemoteId: (_, __) async => remoteIdIndex,
       waitForUploadReadyEvent: (predicate, _) {
         uploadReadyPredicate = predicate;
         return uploadReadyCompleter.future;
@@ -48,9 +45,9 @@ void main() {
   });
 
   test('does not start outside deepLink origin', () async {
-    checksumIndex = 5;
+    remoteIdIndex = 5;
 
-    await coordinator.startIfNeeded(TimelineOrigin.main);
+    await coordinator.startIfNeeded(TimelineOrigin.main, remoteAssetId: 'remote-1');
     await flush();
 
     expect(handoffs, isEmpty);
@@ -58,9 +55,9 @@ void main() {
   });
 
   test('hands off immediately when asset is already found in main timeline', () async {
-    checksumIndex = 5;
+    remoteIdIndex = 5;
 
-    await coordinator.startIfNeeded(TimelineOrigin.deepLink);
+    await coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-1');
     await flush();
 
     expect(handoffs, hasLength(1));
@@ -71,19 +68,19 @@ void main() {
   });
 
   test('waits for AssetUploadReadyV1 and then hands off when asset appears in main timeline', () async {
-    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink);
+    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-1');
     await flush();
 
     expect(handoffs, isEmpty);
     expect(uploadReadyPredicate, isNotNull);
     expect(
       uploadReadyPredicate!({
-        'asset': {'checksum': 'checksum-1'},
+        'asset': {'id': 'remote-1'},
       }),
       isTrue,
     );
 
-    checksumIndex = 7;
+    remoteIdIndex = 7;
     uploadReadyCompleter.complete();
     await start;
 
@@ -93,22 +90,8 @@ void main() {
     expect(handoffs.single.$3, isNull);
   });
 
-  test('uses local asset id without waiting for checksum when asset is already resolvable', () async {
+  test('does not start when remote asset id is missing', () async {
     currentAsset = _asset(localId: 'local-42', checksum: null);
-    localIdIndex = 3;
-
-    await coordinator.startIfNeeded(TimelineOrigin.deepLink);
-    await flush();
-
-    expect(handoffs, hasLength(1));
-    expect(handoffs.single.$1, ['user-1']);
-    expect(handoffs.single.$2, 3);
-    expect(handoffs.single.$3, isNull);
-    expect(uploadReadyPredicate, isNull);
-  });
-
-  test('does not wait for AssetUploadReadyV1 when both local asset id and checksum are missing', () async {
-    currentAsset = _remoteAsset(localId: null, checksum: null);
 
     await coordinator.startIfNeeded(TimelineOrigin.deepLink);
     await flush();
@@ -117,13 +100,27 @@ void main() {
     expect(uploadReadyPredicate, isNull);
   });
 
+  test('waits for AssetUploadReadyV1 when remote asset id is provided', () async {
+    currentAsset = _remoteAsset(localId: null, checksum: null);
+
+    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-9');
+    await flush();
+
+    expect(handoffs, isEmpty);
+    expect(uploadReadyPredicate, isNotNull);
+
+    await coordinator.dispose();
+    uploadReadyCompleter.complete();
+    await start;
+  });
+
   test('captures view intent file path at handoff start', () async {
     viewIntentFilePath = '/tmp/view_intent_old.jpg';
-    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink);
+    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-1');
     await flush();
 
     viewIntentFilePath = '/tmp/view_intent_new.jpg';
-    checksumIndex = 4;
+    remoteIdIndex = 4;
     uploadReadyCompleter.complete();
     await start;
 
@@ -132,11 +129,11 @@ void main() {
   });
 
   test('dispose prevents handoff after AssetUploadReadyV1 arrives later', () async {
-    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink);
+    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-1');
     await flush();
 
     await coordinator.dispose();
-    checksumIndex = 9;
+    remoteIdIndex = 9;
     uploadReadyCompleter.complete();
     await start;
 

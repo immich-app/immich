@@ -692,6 +692,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .getSingleOrNull();
     return result;
   }
+
+  Future<int?> getMainTimelineIndexByRemoteId(List<String> userIds, String remoteAssetId) async {
+    if (userIds.isEmpty) {
+      return null;
+    }
+    final result = await _db.mergedAssetDrift
+        .mergedAssetIndexByRemoteId(userIds: userIds, remoteId: remoteAssetId)
+        .getSingleOrNull();
+    return result;
+  }
 }
 
 List<Bucket> _generateBuckets(int count) {

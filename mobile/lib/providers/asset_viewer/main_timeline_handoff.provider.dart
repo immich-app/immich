@@ -26,11 +26,8 @@ final mainTimelineHandoffProvider = Provider.autoDispose<MainTimelineHandoffCoor
       final currentUserId = ref.read(currentUserProvider)?.id;
       return timelineUsers ?? (currentUserId != null ? [currentUserId] : const <String>[]);
     },
-    findMainTimelineIndexByLocalId: (userIds, localAssetId) {
-      return ref.read(timelineRepositoryProvider).getMainTimelineIndexByLocalId(userIds, localAssetId);
-    },
-    findMainTimelineIndexByChecksum: (userIds, checksum) {
-      return ref.read(timelineRepositoryProvider).getMainTimelineIndexByChecksum(userIds, checksum);
+    findMainTimelineIndexByRemoteId: (userIds, remoteAssetId) {
+      return ref.read(timelineRepositoryProvider).getMainTimelineIndexByRemoteId(userIds, remoteAssetId);
     },
     waitForUploadReadyEvent: (predicate, timeout) {
       return ref.read(websocketProvider.notifier).waitForEvent('AssetUploadReadyV1', predicate, timeout);
@@ -111,8 +108,7 @@ class MainTimelineHandoffCoordinator {
   final BaseAsset? Function() _getCurrentAsset;
   final String? Function() _getViewIntentFilePath;
   final List<String> Function() _resolveMainTimelineUsers;
-  final MainTimelineIndexLookup _findMainTimelineIndexByLocalId;
-  final MainTimelineIndexLookup _findMainTimelineIndexByChecksum;
+  final MainTimelineIndexLookup _findMainTimelineIndexByRemoteId;
   final UploadReadyWaiter _waitForUploadReadyEvent;
   final MainTimelineHandoff _handoffToMainTimeline;
   final Duration _uploadReadyTimeout;
@@ -126,8 +122,7 @@ class MainTimelineHandoffCoordinator {
     required BaseAsset? Function() getCurrentAsset,
     required String? Function() getViewIntentFilePath,
     required List<String> Function() resolveMainTimelineUsers,
-    required MainTimelineIndexLookup findMainTimelineIndexByLocalId,
-    required MainTimelineIndexLookup findMainTimelineIndexByChecksum,
+    required MainTimelineIndexLookup findMainTimelineIndexByRemoteId,
     required UploadReadyWaiter waitForUploadReadyEvent,
     required MainTimelineHandoff handoffToMainTimeline,
     Duration uploadReadyTimeout = const Duration(seconds: 15),
@@ -136,22 +131,21 @@ class MainTimelineHandoffCoordinator {
   }) : _getCurrentAsset = getCurrentAsset,
        _getViewIntentFilePath = getViewIntentFilePath,
        _resolveMainTimelineUsers = resolveMainTimelineUsers,
-       _findMainTimelineIndexByLocalId = findMainTimelineIndexByLocalId,
-       _findMainTimelineIndexByChecksum = findMainTimelineIndexByChecksum,
+       _findMainTimelineIndexByRemoteId = findMainTimelineIndexByRemoteId,
        _waitForUploadReadyEvent = waitForUploadReadyEvent,
        _handoffToMainTimeline = handoffToMainTimeline,
        _uploadReadyTimeout = uploadReadyTimeout,
        _mainTimelineAvailabilityTimeout = mainTimelineAvailabilityTimeout,
        _mainTimelineRetryInterval = mainTimelineRetryInterval;
 
-  Future<void> startIfNeeded(TimelineOrigin origin) async {
+  Future<void> startIfNeeded(TimelineOrigin origin, {String? remoteAssetId}) async {
     if (_disposed || origin != TimelineOrigin.deepLink) {
       return;
     }
 
     final currentAsset = _getCurrentAsset();
     final viewIntentFilePath = _getViewIntentFilePath();
-    if (currentAsset == null) {
+    if (currentAsset == null || remoteAssetId == null) {
       return;
     }
 
@@ -162,8 +156,8 @@ class MainTimelineHandoffCoordinator {
 
     final operationId = ++_operationId;
 
-    final match = _buildMatchCandidate(currentAsset);
-    if (match == null || !_isOperationActive(operationId)) {
+    final match = _MainTimelineMatchCandidate(remoteAssetId: remoteAssetId);
+    if (!_isOperationActive(operationId)) {
       return;
     }
 
@@ -178,13 +172,11 @@ class MainTimelineHandoffCoordinator {
       return;
     }
 
-    final checksum = handoffContext.match.checksum;
-    if (checksum == null) {
-      return;
-    }
-
     try {
-      await _waitForUploadReadyEvent((data) => _matchesUploadReadyEvent(data, checksum), _uploadReadyTimeout);
+      await _waitForUploadReadyEvent(
+        (data) => _matchesUploadReadyEvent(data, handoffContext.match.remoteAssetId),
+        _uploadReadyTimeout,
+      );
     } on TimeoutException {
       return;
     } catch (_) {
@@ -201,17 +193,6 @@ class MainTimelineHandoffCoordinator {
   Future<void> dispose() async {
     _disposed = true;
     _operationId++;
-  }
-
-  _MainTimelineMatchCandidate? _buildMatchCandidate(BaseAsset asset) {
-    final localAssetId = asset.localId;
-    final checksum = asset.checksum;
-
-    if (localAssetId == null && checksum == null) {
-      return null;
-    }
-
-    return _MainTimelineMatchCandidate(localAssetId: localAssetId, checksum: checksum);
   }
 
   Future<bool> _waitForMainTimelineAvailability(
@@ -246,39 +227,25 @@ class MainTimelineHandoffCoordinator {
   }
 
   Future<int?> _findIndex(List<String> userIds, _MainTimelineMatchCandidate match) async {
-    final localAssetId = match.localAssetId;
-    if (localAssetId != null) {
-      final localIdIndex = await _findMainTimelineIndexByLocalId(userIds, localAssetId);
-      if (localIdIndex != null) {
-        return localIdIndex;
-      }
-    }
-
-    final checksum = match.checksum;
-    if (checksum != null) {
-      return _findMainTimelineIndexByChecksum(userIds, checksum);
-    }
-
-    return null;
+    return _findMainTimelineIndexByRemoteId(userIds, match.remoteAssetId);
   }
 
-  bool _matchesUploadReadyEvent(dynamic data, String checksum) {
-    final eventChecksum = switch (data) {
-      {'asset': {'checksum': final String eventChecksum}} => eventChecksum,
+  bool _matchesUploadReadyEvent(dynamic data, String remoteAssetId) {
+    final eventRemoteAssetId = switch (data) {
+      {'asset': {'id': final String eventRemoteAssetId}} => eventRemoteAssetId,
       _ => null,
     };
 
-    return eventChecksum == checksum;
+    return eventRemoteAssetId == remoteAssetId;
   }
 
   bool _isOperationActive(int operationId) => !_disposed && _operationId == operationId;
 }
 
 class _MainTimelineMatchCandidate {
-  final String? localAssetId;
-  final String? checksum;
+  final String remoteAssetId;
 
-  const _MainTimelineMatchCandidate({required this.localAssetId, required this.checksum});
+  const _MainTimelineMatchCandidate({required this.remoteAssetId});
 }
 
 class _MainTimelineHandoffContext {

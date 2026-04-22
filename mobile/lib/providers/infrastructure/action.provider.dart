@@ -30,11 +30,12 @@ class ActionResult {
   final int count;
   final bool success;
   final String? error;
+  final List<String> remoteAssetIds;
 
-  const ActionResult({required this.count, required this.success, this.error});
+  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error)';
+  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -458,8 +459,7 @@ class ActionNotifier extends Notifier<void> {
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
     final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
-    var successCount = 0;
-    var errorCount = 0;
+    final remoteAssetIds = <String>[];
 
     // Initialize progress for all assets
     for (final asset in assetsToUpload) {
@@ -476,20 +476,21 @@ class ActionNotifier extends Notifier<void> {
             progressNotifier.setProgress(localAssetId, progress);
           },
           onSuccess: (localAssetId, remoteAssetId) {
-            successCount++;
+            remoteAssetIds.add(remoteAssetId);
             progressNotifier.remove(localAssetId);
           },
           onError: (localAssetId, errorMessage) {
-            errorCount++;
             progressNotifier.setError(localAssetId);
           },
         ),
       );
-      final success = errorCount == 0 && successCount == assetsToUpload.length;
+      final uploadedCount = remoteAssetIds.length;
+      final success = uploadedCount == assetsToUpload.length;
       return ActionResult(
         count: assetsToUpload.length,
         success: success,
-        error: success ? null : 'Uploaded $successCount/${assetsToUpload.length} assets successfully',
+        error: success ? null : 'Uploaded $uploadedCount/${assetsToUpload.length} assets successfully',
+        remoteAssetIds: remoteAssetIds,
       );
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);

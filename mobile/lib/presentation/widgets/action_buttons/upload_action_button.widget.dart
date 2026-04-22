@@ -51,12 +51,16 @@ class UploadActionButton extends ConsumerWidget {
     }
 
     var success = false;
+    String? uploadedRemoteAssetId;
     if (!isTimeline && viewerIntentFilePath != null) {
       var hasError = false;
       await ref
           .read(foregroundUploadServiceProvider)
           .uploadShareIntent(
             [File(viewerIntentFilePath)],
+            onSuccess: (_, remoteAssetId) {
+              uploadedRemoteAssetId = remoteAssetId;
+            },
             onError: (fileId, errorMessage) {
               hasError = true;
             },
@@ -65,6 +69,7 @@ class UploadActionButton extends ConsumerWidget {
     } else {
       final result = await ref.read(actionProvider.notifier).upload(source, assets: assets);
       success = result.success;
+      uploadedRemoteAssetId = result.remoteAssetIds.isNotEmpty ? result.remoteAssetIds.first : null;
     }
 
     if (!isTimeline && context.mounted) {
@@ -73,7 +78,7 @@ class UploadActionButton extends ConsumerWidget {
 
     if (!isTimeline && success) {
       final origin = ref.read(timelineServiceProvider).origin;
-      unawaited(ref.read(mainTimelineHandoffProvider).startIfNeeded(origin));
+      unawaited(ref.read(mainTimelineHandoffProvider).startIfNeeded(origin, remoteAssetId: uploadedRemoteAssetId));
     }
 
     if (context.mounted && !success) {

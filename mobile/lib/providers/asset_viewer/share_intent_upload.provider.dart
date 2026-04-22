@@ -70,7 +70,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
         final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
         _updateProgress(fileId, progress);
       },
-      onSuccess: (fileId) {
+      onSuccess: (fileId, _) {
         _updateStatus(fileId, UploadStatus.complete, progress: 1.0);
       },
       onError: (fileId, errorMessage) {

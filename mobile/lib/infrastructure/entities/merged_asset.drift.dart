@@ -146,6 +146,29 @@ class MergedAssetDrift extends i1.ModularAccessor {
     ).map((i0.QueryRow row) => row.read<int>('idx'));
   }
 
+  i0.Selectable<int> mergedAssetIndexByRemoteId({
+    required List<String> userIds,
+    String? remoteId,
+  }) {
+    var $arrayStartIndex = 2;
+    final expandeduserIds = $expandVar($arrayStartIndex, userIds.length);
+    $arrayStartIndex += userIds.length;
+    return customSelect(
+      'SELECT idx FROM (SELECT remote_id, ROW_NUMBER()OVER (ORDER BY created_at DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS) - 1 AS idx FROM (SELECT rae.id AS remote_id, rae.created_at AS created_at FROM remote_asset_entity AS rae LEFT JOIN stack_entity AS se ON rae.stack_id = se.id WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandeduserIds) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)UNION ALL SELECT NULL AS remote_id, lae.created_at AS created_at FROM local_asset_entity AS lae WHERE NOT EXISTS (SELECT 1 FROM remote_asset_entity AS rae WHERE rae.checksum = lae.checksum AND rae.owner_id IN ($expandeduserIds)) AND EXISTS (SELECT 1 FROM local_album_asset_entity AS laa INNER JOIN local_album_entity AS la ON laa.album_id = la.id WHERE laa.asset_id = lae.id AND la.backup_selection = 0) AND NOT EXISTS (SELECT 1 FROM local_album_asset_entity AS laa INNER JOIN local_album_entity AS la ON laa.album_id = la.id WHERE laa.asset_id = lae.id AND la.backup_selection = 2))) WHERE remote_id = ?1 LIMIT 1',
+      variables: [
+        i0.Variable<String>(remoteId),
+        for (var $ in userIds) i0.Variable<String>($),
+      ],
+      readsFrom: {
+        remoteAssetEntity,
+        stackEntity,
+        localAssetEntity,
+        localAlbumAssetEntity,
+        localAlbumEntity,
+      },
+    ).map((i0.QueryRow row) => row.read<int>('idx'));
+  }
+
   i4.$RemoteAssetEntityTable get remoteAssetEntity => i1.ReadDatabaseContainer(
     attachedDatabase,
   ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity');
