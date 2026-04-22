@@ -665,7 +665,7 @@ class $AssetOcrEntityTable extends i2.AssetOcrEntity
   @override
   late final i0.GeneratedColumn<String> recognizedText =
       i0.GeneratedColumn<String>(
-        'text',
+        'recognized_text',
         aliasedName,
         false,
         type: i0.DriftSqlType.string,
@@ -784,11 +784,11 @@ class $AssetOcrEntityTable extends i2.AssetOcrEntity
     } else if (isInserting) {
       context.missing(_textScoreMeta);
     }
-    if (data.containsKey('text')) {
+    if (data.containsKey('recognized_text')) {
       context.handle(
         _recognizedTextMeta,
         recognizedText.isAcceptableOrUnknown(
-          data['text']!,
+          data['recognized_text']!,
           _recognizedTextMeta,
         ),
       );
@@ -860,7 +860,7 @@ class $AssetOcrEntityTable extends i2.AssetOcrEntity
       )!,
       recognizedText: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
-        data['${effectivePrefix}text'],
+        data['${effectivePrefix}recognized_text'],
       )!,
       isVisible: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.bool,
@@ -927,7 +927,7 @@ class AssetOcrEntityData extends i0.DataClass
     map['y4'] = i0.Variable<double>(y4);
     map['box_score'] = i0.Variable<double>(boxScore);
     map['text_score'] = i0.Variable<double>(textScore);
-    map['text'] = i0.Variable<String>(recognizedText);
+    map['recognized_text'] = i0.Variable<String>(recognizedText);
     map['is_visible'] = i0.Variable<bool>(isVisible);
     return map;
   }
@@ -1174,7 +1174,7 @@ class AssetOcrEntityCompanion
       if (y4 != null) 'y4': y4,
       if (boxScore != null) 'box_score': boxScore,
       if (textScore != null) 'text_score': textScore,
-      if (recognizedText != null) 'text': recognizedText,
+      if (recognizedText != null) 'recognized_text': recognizedText,
       if (isVisible != null) 'is_visible': isVisible,
     });
   }
@@ -1253,7 +1253,7 @@ class AssetOcrEntityCompanion
       map['text_score'] = i0.Variable<double>(textScore.value);
     }
     if (recognizedText.present) {
-      map['text'] = i0.Variable<String>(recognizedText.value);
+      map['recognized_text'] = i0.Variable<String>(recognizedText.value);
     }
     if (isVisible.present) {
       map['is_visible'] = i0.Variable<bool>(isVisible.value);
