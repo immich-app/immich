@@ -348,6 +348,7 @@ export class MediaRepository {
       if (Number.isNaN(pts) || Number.isNaN(duration)) {
         continue;
       }
+      // Discarded packets don't contribute to packet count, but still contribute to video duration
       totalDuration += duration;
       if (flags[1] !== 'D') {
         packetCount++;
@@ -356,6 +357,9 @@ export class MediaRepository {
       if (flags[0] === 'K') {
         keyframePts.push(pts);
         keyframeAccDuration.push(totalDuration);
+        // VFR content can have variable duration keyframes,
+        // so we need to track their duration separately for accurate segment boundaries.
+        // Non-keyframes are accounted for in totalDuration.
         keyframeOwnDuration.push(duration);
       }
     }
@@ -364,22 +368,10 @@ export class MediaRepository {
       return null;
     }
 
-    postDiscard.sort((a, b) => a.pts - b.pts);
-    const firstPts = postDiscard[0].pts;
-    const slotsPerTick = packetCount / formatDuration / timeBase;
-    let outputFrames = 0;
-    let nextPts = 0;
-    for (const pkt of postDiscard) {
-      const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
-      const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
-      outputFrames += nb;
-      nextPts += nb;
-    }
-
     return {
       totalDuration,
       packetCount,
-      outputFrames,
+      outputFrames: this.cfrOutputFrames(postDiscard, packetCount / formatDuration / timeBase),
       keyframePts,
       keyframeAccDuration,
       keyframeOwnDuration,
@@ -525,5 +517,20 @@ export class MediaRepository {
       return d;
     }
     return this.parseInt(b.bit_rate) - this.parseInt(a.bit_rate);
+  }
+
+  private cfrOutputFrames(packets: { pts: number; duration: number }[], slotsPerTick: number) {
+    // Packets may be out of PTS order due to B-frames
+    packets.sort((a, b) => a.pts - b.pts);
+    const firstPts = packets[0].pts;
+    let outputFrames = 0;
+    let nextPts = 0;
+    for (const pkt of packets) {
+      const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
+      const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
+      outputFrames += nb;
+      nextPts += nb;
+    }
+    return outputFrames;
   }
 }

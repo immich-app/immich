@@ -662,17 +662,21 @@ export enum ColorMatrix {
 }
 
 /** H.264 `profile_idc` values. */
+// H.264 has a few profiles that have the same value but different names, included so lookup by name works
+// eslint-disable @typescript-eslint/no-duplicate-enum-values
 export enum H264Profile {
   ConstrainedBaseline = 66,
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Baseline = 66,
   Main = 77,
   Extended = 88,
+  ConstrainedHigh = 100,
+  ProgressiveHigh = 100,
   High = 100,
   High10 = 110,
   High422 = 122,
   High444Predictive = 244,
 }
+// eslint-enable @typescript-eslint/no-duplicate-enum-values
 
 /** HEVC `profile_idc` values. */
 export enum HevcProfile {
