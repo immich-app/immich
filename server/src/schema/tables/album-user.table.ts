@@ -22,7 +22,7 @@ import { UserTable } from 'src/schema/tables/user.table';
   name: 'album_user_unique_owner',
   columns: ['albumId'],
   unique: true,
-  where: `(role = 'owner')`,
+  where: `role = 'owner'`,
 })
 // Pre-existing indices from original album <--> user ManyToMany mapping
 @UpdatedAtTrigger('album_user_updatedAt')

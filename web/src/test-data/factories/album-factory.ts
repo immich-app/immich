@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { AssetOrder, type AlbumResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
+
 export const albumFactory = Sync.makeFactory<AlbumResponseDto>({
   albumName: Sync.each(() => faker.commerce.product()),
   description: '',
