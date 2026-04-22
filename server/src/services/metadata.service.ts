@@ -58,8 +58,6 @@ const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SourceImageCreateTime' as keyof ImmichTags,
 ];
 
-const nullIfEmpty = <T>(value: T[] | undefined): T[] | null => (value && value.length > 0 ? value : null);
-
 export function firstDateTime(tags: ImmichTags) {
   for (const tag of EXIF_DATE_TAGS) {
     const tagValue = tags?.[tag];

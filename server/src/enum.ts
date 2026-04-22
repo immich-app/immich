@@ -663,8 +663,9 @@ export enum ColorMatrix {
 
 /** H.264 `profile_idc` values. */
 export enum H264Profile {
-  Baseline = 66,
   ConstrainedBaseline = 66,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  Baseline = 66,
   Main = 77,
   Extended = 88,
   High = 100,
