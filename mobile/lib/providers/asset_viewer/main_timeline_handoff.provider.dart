@@ -253,9 +253,5 @@ class _MainTimelineHandoffContext {
   final String? viewIntentFilePath;
   final int operationId;
 
-  const _MainTimelineHandoffContext({
-    required this.match,
-    required this.viewIntentFilePath,
-    required this.operationId,
-  });
+  const _MainTimelineHandoffContext({required this.match, required this.viewIntentFilePath, required this.operationId});
 }
