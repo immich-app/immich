@@ -23052,6 +23052,7 @@
           },
           "boxScore": {
             "description": "Confidence score of the bounding box",
+            "format": "double",
             "type": "number"
           },
           "id": {
@@ -23068,38 +23069,47 @@
           },
           "textScore": {
             "description": "Confidence score of the recognized text",
+            "format": "double",
             "type": "number"
           },
           "x1": {
             "description": "Top-left X coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "x2": {
             "description": "Top-right X coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "x3": {
             "description": "Bottom-right X coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "x4": {
             "description": "Bottom-left X coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "y1": {
             "description": "Top-left Y coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "y2": {
             "description": "Top-right Y coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "y3": {
             "description": "Bottom-right Y coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           },
           "y4": {
             "description": "Bottom-left Y coordinate (normalized 0–1)",
+            "format": "double",
             "type": "number"
           }
         },
