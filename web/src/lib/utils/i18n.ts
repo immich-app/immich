@@ -32,7 +32,7 @@ const getSubLocales = (locale: string) => {
 };
 
 export const getClosestAvailableLocale = (locales: readonly string[], allLocales: readonly string[]) => {
-  const allLocalesSet = new Set(allLocales.map(convertBCP47));
+  const allLocalesSet = new Set(allLocales.map((locale) => convertBCP47(locale)));
   return locales.find((locale) => getSubLocales(locale).some((subLocale) => allLocalesSet.has(subLocale)));
 };
 
