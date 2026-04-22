@@ -17,13 +17,11 @@ class SwipeCurationPage extends ConsumerStatefulWidget {
 class _SwipeCurationPageState extends ConsumerState<SwipeCurationPage> {
   final AppinioSwiperController _swiperController = AppinioSwiperController();
 
+  Offset _swipeOffset = Offset.zero;
+
   @override
   void initState() {
     super.initState();
-    // Load assets on first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(swipeCurationProvider.notifier).loadInitialBatch();
-    });
   }
 
   @override
@@ -38,6 +36,10 @@ class _SwipeCurationPageState extends ConsumerState<SwipeCurationPage> {
       ref
           .read(swipeCurationProvider.notifier)
           .onSwipe(previousIndex, activity.direction);
+          
+      setState(() {
+        _swipeOffset = Offset.zero;
+      });
     }
   }
 
@@ -66,52 +68,52 @@ class _SwipeCurationPageState extends ConsumerState<SwipeCurationPage> {
                         ? _buildEmptyState(context)
                         : Stack(
                             children: [
-                              if (!state.batchFinished)
-                                AppinioSwiper(
-                                  controller: _swiperController,
-                                  cardCount: state.assets.length,
-                                  swipeOptions: const SwipeOptions.only(
-                                      left: true, right: true),
-                                  onSwipeEnd: _onSwipeEnd,
-                                  onCardPositionChanged: (position) {
-                                    ref
-                                        .read(
-                                            swipeCurationProvider.notifier)
-                                        .updateSwipeOffset(position.offset);
-                                  },
-                                  onSwipeCancelled: (_) {
-                                    ref
-                                        .read(
-                                            swipeCurationProvider.notifier)
-                                        .resetSwipeOffset();
-                                  },
-                                  cardBuilder: (context, index) {
-                                    final asset = state.assets[index];
-                                    return SwipeCard(
-                                      asset: asset,
-                                      isBackground:
-                                          index != state.currentIndex,
-                                      isFavorited: state.favoritedIds
-                                              .contains(asset.id) ||
-                                          asset.isFavorite,
-                                      swipeOffset: index ==
-                                              state.currentIndex
-                                          ? state.swipeOffset
-                                          : Offset.zero,
-                                      onDoubleTap: () {
-                                        ref
-                                            .read(swipeCurationProvider
-                                                .notifier)
-                                            .favoriteAsset(asset.id);
-                                      },
-                                      onFavoriteTap: () {
-                                        ref
-                                            .read(swipeCurationProvider
-                                                .notifier)
-                                            .favoriteAsset(asset.id);
-                                      },
-                                    );
-                                  },
+                                Offstage(
+                                  offstage: state.batchFinished,
+                                  child: AppinioSwiper(
+                                    controller: _swiperController,
+                                    cardCount: state.assets.length,
+                                    swipeOptions: const SwipeOptions.only(
+                                        left: true, right: true),
+                                    onSwipeEnd: _onSwipeEnd,
+                                    onCardPositionChanged: (position) {
+                                      setState(() {
+                                        _swipeOffset = position.offset;
+                                      });
+                                    },
+                                    onSwipeCancelled: (_) {
+                                      setState(() {
+                                        _swipeOffset = Offset.zero;
+                                      });
+                                    },
+                                    cardBuilder: (context, index) {
+                                      final asset = state.assets[index];
+                                      return SwipeCard(
+                                        asset: asset,
+                                        isBackground:
+                                            index != state.currentIndex,
+                                        isFavorited: state.favoritedIds
+                                                .contains(asset.id) ||
+                                            asset.isFavorite,
+                                        swipeOffset: index ==
+                                                state.currentIndex
+                                            ? _swipeOffset
+                                            : Offset.zero,
+                                        onDoubleTap: () {
+                                          ref
+                                              .read(swipeCurationProvider
+                                                  .notifier)
+                                              .favoriteAsset(asset.id);
+                                        },
+                                        onFavoriteTap: () {
+                                          ref
+                                              .read(swipeCurationProvider
+                                                  .notifier)
+                                              .favoriteAsset(asset.id);
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ),
                               if (state.batchFinished)
                                 _buildBatchEndScreen(context, state),

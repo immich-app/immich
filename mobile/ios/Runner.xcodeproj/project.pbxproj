@@ -428,7 +428,6 @@
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
-						ProvisioningStyle = Automatic;
 					};
 					F0B57D372DF764BD00DC5BCC = {
 						CreatedOnToolsVersion = 16.4;
@@ -751,7 +750,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -895,7 +894,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -904,7 +903,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich;
 				PRODUCT_NAME = "Immich-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -925,7 +924,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;

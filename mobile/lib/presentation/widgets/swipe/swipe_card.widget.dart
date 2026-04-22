@@ -1,9 +1,12 @@
 import 'dart:ui';
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 
 /// A card widget for the swipe curation stack.
 /// Renders a photo using Immich's Thumbnail system with
@@ -34,20 +37,37 @@ class SwipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double aspectRatio = 
+        (asset.width ?? 1) / math.max((asset.height ?? 1), 1);
+
     return GestureDetector(
       onDoubleTap: isBackground ? null : onDoubleTap,
       child: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Photo thumbnail
-              Thumbnail.fromAsset(
-                asset: asset,
-                fit: BoxFit.cover,
-                size: const Size(900, 900),
-              ),
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Photo thumbnail or Video Viewer
+                if (asset.isVideo && !isBackground)
+                  NativeVideoViewer(
+                    asset: asset,
+                    isCurrent: true,
+                    showControls: false,
+                    image: Thumbnail.fromAsset(
+                      asset: asset,
+                      fit: BoxFit.cover,
+                      size: const Size(900, 900),
+                    ),
+                  )
+                else
+                  Thumbnail.fromAsset(
+                    asset: asset,
+                    fit: BoxFit.cover,
+                    size: const Size(900, 900),
+                  ),
 
               // Background blur overlay for non-top cards
               if (isBackground)
@@ -216,6 +236,7 @@ class SwipeCard extends StatelessWidget {
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),

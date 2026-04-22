@@ -27,8 +27,6 @@ class SwipeCurationState {
   final int totalReviewed;
   final bool hasMorePhotos;
   final Set<String> favoritedIds;
-  final Offset swipeOffset;
-
   const SwipeCurationState({
     this.assets = const [],
     this.currentIndex = 0,
@@ -43,7 +41,6 @@ class SwipeCurationState {
     this.totalReviewed = 0,
     this.hasMorePhotos = true,
     this.favoritedIds = const {},
-    this.swipeOffset = Offset.zero,
   });
 
   bool get batchFinished => !isLoading && currentIndex >= assets.length;
@@ -62,7 +59,6 @@ class SwipeCurationState {
     int? totalReviewed,
     bool? hasMorePhotos,
     Set<String>? favoritedIds,
-    Offset? swipeOffset,
   }) {
     return SwipeCurationState(
       assets: assets ?? this.assets,
@@ -78,7 +74,6 @@ class SwipeCurationState {
       totalReviewed: totalReviewed ?? this.totalReviewed,
       hasMorePhotos: hasMorePhotos ?? this.hasMorePhotos,
       favoritedIds: favoritedIds ?? this.favoritedIds,
-      swipeOffset: swipeOffset ?? this.swipeOffset,
     );
   }
 }
@@ -89,7 +84,7 @@ final swipeCurationProvider =
     ref.watch(actionServiceProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(timelineFactoryProvider),
-    ref.watch(currentUserProvider)?.id,
+    ref.watch(currentUserProvider.select((u) => u?.id)),
   );
 });
 
@@ -109,7 +104,12 @@ class SwipeCurationNotifier extends StateNotifier<SwipeCurationState> {
     this._timelineFactory,
     this._userId,
   ) : super(const SwipeCurationState()) {
+    _init();
+  }
+
+  void _init() {
     _loadPersistedProgress();
+    loadInitialBatch();
   }
 
   void _loadPersistedProgress() {
@@ -227,7 +227,6 @@ class SwipeCurationNotifier extends StateNotifier<SwipeCurationState> {
         swipeHistory: {},
         isLoading: false,
         hasMorePhotos: (_loadOffset + count) < totalAssets,
-        swipeOffset: Offset.zero,
       );
     } catch (e, stack) {
       _logger.severe('Failed to load batch', e, stack);
@@ -262,7 +261,6 @@ class SwipeCurationNotifier extends StateNotifier<SwipeCurationState> {
         trashedCount: state.trashedCount + 1,
         trashedIds: [...state.trashedIds, asset.id],
         swipeHistory: newHistory,
-        swipeOffset: Offset.zero,
       );
     } else if (direction == AxisDirection.right) {
       // Kept
@@ -270,7 +268,6 @@ class SwipeCurationNotifier extends StateNotifier<SwipeCurationState> {
         currentIndex: state.currentIndex + 1,
         keptCount: state.keptCount + 1,
         swipeHistory: newHistory,
-        swipeOffset: Offset.zero,
       );
     }
 
@@ -345,16 +342,6 @@ class SwipeCurationNotifier extends StateNotifier<SwipeCurationState> {
     } catch (e) {
       _logger.warning('[SwipeCuration] Failed to toggle favorite: $e');
     }
-  }
-
-  /// Update the swipe offset for UI feedback
-  void updateSwipeOffset(Offset offset) {
-    state = state.copyWith(swipeOffset: offset);
-  }
-
-  /// Reset swipe offset
-  void resetSwipeOffset() {
-    state = state.copyWith(swipeOffset: Offset.zero);
   }
 
   /// Start over from the beginning
