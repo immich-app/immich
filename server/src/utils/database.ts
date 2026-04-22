@@ -526,5 +526,3 @@ export const updateLockedColumns = <T extends Record<string, unknown> & { locked
   exif.lockedProperties = lockableProperties.filter((property) => property in exif);
   return exif;
 };
-
-export const dummy = sql`(select 1)`.as('dummy');
