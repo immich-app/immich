@@ -15,8 +15,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/utils/openapi_patching.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
@@ -326,6 +324,8 @@ part 'model/sync_asset_face_v1.dart';
 part 'model/sync_asset_face_v2.dart';
 part 'model/sync_asset_metadata_delete_v1.dart';
 part 'model/sync_asset_metadata_v1.dart';
+part 'model/sync_asset_ocr_delete_v1.dart';
+part 'model/sync_asset_ocr_v1.dart';
 part 'model/sync_asset_v1.dart';
 part 'model/sync_auth_user_v1.dart';
 part 'model/sync_entity_type.dart';

@@ -19,7 +19,7 @@ class AssetEditActionItemDto {
 
   AssetEditAction action;
 
-  Map<String, dynamic> parameters;
+  AssetEditActionItemDtoParameters parameters;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemDto &&
@@ -52,7 +52,7 @@ class AssetEditActionItemDto {
 
       return AssetEditActionItemDto(
         action: AssetEditAction.fromJson(json[r'action'])!,
-        parameters: json[r'parameters'],
+        parameters: AssetEditActionItemDtoParameters.fromJson(json[r'parameters'])!,
       );
     }
     return null;

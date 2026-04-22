@@ -33,7 +33,7 @@ class SyncAssetOcrV1 {
   String assetId;
 
   /// Confidence score of the bounding box
-  double boxScore;
+  num boxScore;
 
   /// OCR entry ID
   String id;
@@ -45,31 +45,31 @@ class SyncAssetOcrV1 {
   String text;
 
   /// Confidence score of the recognized text
-  double textScore;
+  num textScore;
 
   /// Top-left X coordinate (normalized 0–1)
-  double x1;
+  num x1;
 
   /// Top-right X coordinate (normalized 0–1)
-  double x2;
+  num x2;
 
   /// Bottom-right X coordinate (normalized 0–1)
-  double x3;
+  num x3;
 
   /// Bottom-left X coordinate (normalized 0–1)
-  double x4;
+  num x4;
 
   /// Top-left Y coordinate (normalized 0–1)
-  double y1;
+  num y1;
 
   /// Top-right Y coordinate (normalized 0–1)
-  double y2;
+  num y2;
 
   /// Bottom-right Y coordinate (normalized 0–1)
-  double y3;
+  num y3;
 
   /// Bottom-left Y coordinate (normalized 0–1)
-  double y4;
+  num y4;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetOcrV1 &&
@@ -138,19 +138,19 @@ class SyncAssetOcrV1 {
 
       return SyncAssetOcrV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        boxScore: (mapValueOfType<num>(json, r'boxScore')!).toDouble(),
+        boxScore: num.parse('${json[r'boxScore']}'),
         id: mapValueOfType<String>(json, r'id')!,
         isVisible: mapValueOfType<bool>(json, r'isVisible')!,
         text: mapValueOfType<String>(json, r'text')!,
-        textScore: (mapValueOfType<num>(json, r'textScore')!).toDouble(),
-        x1: (mapValueOfType<num>(json, r'x1')!).toDouble(),
-        x2: (mapValueOfType<num>(json, r'x2')!).toDouble(),
-        x3: (mapValueOfType<num>(json, r'x3')!).toDouble(),
-        x4: (mapValueOfType<num>(json, r'x4')!).toDouble(),
-        y1: (mapValueOfType<num>(json, r'y1')!).toDouble(),
-        y2: (mapValueOfType<num>(json, r'y2')!).toDouble(),
-        y3: (mapValueOfType<num>(json, r'y3')!).toDouble(),
-        y4: (mapValueOfType<num>(json, r'y4')!).toDouble(),
+        textScore: num.parse('${json[r'textScore']}'),
+        x1: num.parse('${json[r'x1']}'),
+        x2: num.parse('${json[r'x2']}'),
+        x3: num.parse('${json[r'x3']}'),
+        x4: num.parse('${json[r'x4']}'),
+        y1: num.parse('${json[r'y1']}'),
+        y2: num.parse('${json[r'y2']}'),
+        y3: num.parse('${json[r'y3']}'),
+        y4: num.parse('${json[r'y4']}'),
       );
     }
     return null;
