@@ -57,11 +57,19 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
-  Future<void> createFace(AssetFaceCreateDto assetFaceCreateDto,) async {
+  Future<bool?> createFace(AssetFaceCreateDto assetFaceCreateDto,) async {
     final response = await createFaceWithHttpInfo(assetFaceCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Delete a face
@@ -110,11 +118,19 @@ class FacesApi {
   /// * [String] id (required):
   ///
   /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
-  Future<void> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
+  Future<bool?> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
     final response = await deleteFaceWithHttpInfo(id, assetFaceDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Retrieve faces for asset

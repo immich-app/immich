@@ -295,11 +295,19 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteAlbum(String id,) async {
+  Future<bool?> deleteAlbum(String id,) async {
     final response = await deleteAlbumWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Retrieve an album
@@ -682,11 +690,19 @@ class AlbumsApi {
   /// * [String] id (required):
   ///
   /// * [String] userId (required):
-  Future<void> removeUserFromAlbum(String id, String userId,) async {
+  Future<bool?> removeUserFromAlbum(String id, String userId,) async {
     final response = await removeUserFromAlbumWithHttpInfo(id, userId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Update an album
@@ -801,10 +817,18 @@ class AlbumsApi {
   /// * [String] userId (required):
   ///
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
-  Future<void> updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
+  Future<bool?> updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
     final response = await updateAlbumUserWithHttpInfo(id, userId, updateAlbumUserDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 }

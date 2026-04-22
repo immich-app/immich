@@ -57,11 +57,19 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [DatabaseBackupDeleteDto] databaseBackupDeleteDto (required):
-  Future<void> deleteDatabaseBackup(DatabaseBackupDeleteDto databaseBackupDeleteDto,) async {
+  Future<bool?> deleteDatabaseBackup(DatabaseBackupDeleteDto databaseBackupDeleteDto,) async {
     final response = await deleteDatabaseBackupWithHttpInfo(databaseBackupDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Download database backup
@@ -202,11 +210,19 @@ class DatabaseBackupsAdminApi {
   /// Start database backup restore flow
   ///
   /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
-  Future<void> startDatabaseRestoreFlow() async {
+  Future<bool?> startDatabaseRestoreFlow() async {
     final response = await startDatabaseRestoreFlowWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Upload database backup
@@ -262,10 +278,18 @@ class DatabaseBackupsAdminApi {
   ///
   /// * [MultipartFile] file:
   ///   Database backup file
-  Future<void> uploadDatabaseBackup({ MultipartFile? file, }) async {
+  Future<bool?> uploadDatabaseBackup({ MultipartFile? file, }) async {
     final response = await uploadDatabaseBackupWithHttpInfo( file: file, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 }

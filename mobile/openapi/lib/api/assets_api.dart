@@ -113,11 +113,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [AssetCopyDto] assetCopyDto (required):
-  Future<void> copyAsset(AssetCopyDto assetCopyDto,) async {
+  Future<bool?> copyAsset(AssetCopyDto assetCopyDto,) async {
     final response = await copyAssetWithHttpInfo(assetCopyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Delete asset metadata by key
@@ -171,11 +179,19 @@ class AssetsApi {
   ///
   /// * [String] key (required):
   ///   Metadata key
-  Future<void> deleteAssetMetadata(String id, String key,) async {
+  Future<bool?> deleteAssetMetadata(String id, String key,) async {
     final response = await deleteAssetMetadataWithHttpInfo(id, key,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Delete assets
@@ -219,11 +235,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
-  Future<void> deleteAssets(AssetBulkDeleteDto assetBulkDeleteDto,) async {
+  Future<bool?> deleteAssets(AssetBulkDeleteDto assetBulkDeleteDto,) async {
     final response = await deleteAssetsWithHttpInfo(assetBulkDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Delete asset metadata
@@ -267,11 +291,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [AssetMetadataBulkDeleteDto] assetMetadataBulkDeleteDto (required):
-  Future<void> deleteBulkAssetMetadata(AssetMetadataBulkDeleteDto assetMetadataBulkDeleteDto,) async {
+  Future<bool?> deleteBulkAssetMetadata(AssetMetadataBulkDeleteDto assetMetadataBulkDeleteDto,) async {
     final response = await deleteBulkAssetMetadataWithHttpInfo(assetMetadataBulkDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Download original asset
@@ -923,11 +955,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> removeAssetEdits(String id,) async {
+  Future<bool?> removeAssetEdits(String id,) async {
     final response = await removeAssetEditsWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Run an asset job
@@ -971,11 +1011,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [AssetJobsDto] assetJobsDto (required):
-  Future<void> runAssetJobs(AssetJobsDto assetJobsDto,) async {
+  Future<bool?> runAssetJobs(AssetJobsDto assetJobsDto,) async {
     final response = await runAssetJobsWithHttpInfo(assetJobsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Update an asset
@@ -1144,11 +1192,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
-  Future<void> updateAssets(AssetBulkUpdateDto assetBulkUpdateDto,) async {
+  Future<bool?> updateAssets(AssetBulkUpdateDto assetBulkUpdateDto,) async {
     final response = await updateAssetsWithHttpInfo(assetBulkUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Upsert asset metadata

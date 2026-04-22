@@ -58,11 +58,19 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteNotification(String id,) async {
+  Future<bool?> deleteNotification(String id,) async {
     final response = await deleteNotificationWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Delete notifications
@@ -106,11 +114,19 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [NotificationDeleteAllDto] notificationDeleteAllDto (required):
-  Future<void> deleteNotifications(NotificationDeleteAllDto notificationDeleteAllDto,) async {
+  Future<bool?> deleteNotifications(NotificationDeleteAllDto notificationDeleteAllDto,) async {
     final response = await deleteNotificationsWithHttpInfo(notificationDeleteAllDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 
   /// Get a notification
@@ -360,10 +376,18 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [NotificationUpdateAllDto] notificationUpdateAllDto (required):
-  Future<void> updateNotifications(NotificationUpdateAllDto notificationUpdateAllDto,) async {
+  Future<bool?> updateNotifications(NotificationUpdateAllDto notificationUpdateAllDto,) async {
     final response = await updateNotificationsWithHttpInfo(notificationUpdateAllDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'bool',) as bool;
+    
+    }
+    return null;
   }
 }
