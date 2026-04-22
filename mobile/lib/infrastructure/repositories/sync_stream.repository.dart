@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
@@ -190,7 +191,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
-            durationInSeconds: Value(asset.duration?.toDuration()?.inSeconds ?? 0),
+            durationMs: Value(asset.duration?.toDuration()?.inMilliseconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
@@ -841,18 +842,6 @@ extension on api.UserMetadataKey {
     api.UserMetadataKey.license => UserMetadataKey.license,
     _ => throw Exception('Unknown UserMetadataKey value: $this'),
   };
-}
-
-extension on String {
-  Duration? toDuration() {
-    try {
-      final parts = split(':').map((e) => double.parse(e).toInt()).toList(growable: false);
-
-      return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
-    } catch (_) {
-      return null;
-    }
-  }
 }
 
 extension on UserAvatarColor {

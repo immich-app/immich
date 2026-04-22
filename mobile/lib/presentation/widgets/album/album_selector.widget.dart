@@ -833,7 +833,7 @@ class CreateAlbumButton extends ConsumerWidget {
       // Invalidate using the asset's remote ID to refresh the "Appears in" list
       ref.invalidate(albumsContainingAssetProvider(asset.remoteId!));
 
-      context.pop();
+      ContextHelper(context).pop();
     }
 
     return SliverPadding(

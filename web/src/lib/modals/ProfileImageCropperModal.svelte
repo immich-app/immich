@@ -6,7 +6,7 @@
   import domtoimage from 'dom-to-image';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import PhotoViewer from '../components/asset-viewer/photo-viewer.svelte';
+  import PhotoViewer from '../components/asset-viewer/PhotoViewer.svelte';
 
   interface Props {
     asset: AssetResponseDto;

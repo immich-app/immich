@@ -189,6 +189,13 @@ const SystemConfigOAuthSchema = z
       })
       .describe('Issuer URL'),
     scope: z.string().describe('Scope'),
+    prompt: z.string().describe('OAuth prompt parameter (e.g. select_account, login, consent)'),
+    endSessionEndpoint: z
+      .string()
+      .refine((url) => url.length === 0 || z.url().safeParse(url).success, {
+        error: 'endSessionEndpoint must be an empty string or a valid URL',
+      })
+      .describe('End session endpoint'),
     signingAlgorithm: z.string().describe('Signing algorithm'),
     profileSigningAlgorithm: z.string().describe('Profile signing algorithm'),
     storageLabelClaim: z.string().describe('Storage label claim'),

@@ -1409,6 +1409,10 @@ export type OAuthAuthorizeResponseDto = {
     /** OAuth authorization URL */
     url: string;
 };
+export type OAuthBackchannelLogoutDto = {
+    /** OAuth logout token */
+    logout_token: string;
+};
 export type OAuthCallbackDto = {
     /** OAuth code verifier (PKCE) */
     codeVerifier?: string;
@@ -2514,6 +2518,8 @@ export type SystemConfigOAuthDto = {
     defaultStorageQuota: number | null;
     /** Enabled */
     enabled: boolean;
+    /** End session endpoint */
+    endSessionEndpoint: string;
     /** Issuer URL */
     issuerUrl: string;
     /** Mobile override enabled */
@@ -2522,6 +2528,8 @@ export type SystemConfigOAuthDto = {
     mobileRedirectUri: string;
     /** Profile signing algorithm */
     profileSigningAlgorithm: string;
+    /** OAuth prompt parameter (e.g. select_account, login, consent) */
+    prompt: string;
     /** Role claim */
     roleClaim: string;
     /** Scope */
@@ -4910,6 +4918,18 @@ export function startOAuth({ oAuthConfigDto }: {
     })));
 }
 /**
+ * Backchannel OAuth logout
+ */
+export function logoutOAuth({ oAuthBackchannelLogoutDto }: {
+    oAuthBackchannelLogoutDto: OAuthBackchannelLogoutDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/oauth/backchannel-logout", oazapfts.form({
+        ...opts,
+        method: "POST",
+        body: oAuthBackchannelLogoutDto
+    })));
+}
+/**
  * Finish OAuth
  */
 export function finishOAuth({ oAuthCallbackDto }: {
@@ -6879,7 +6899,6 @@ export enum Permission {
 }
 export enum AssetMediaStatus {
     Created = "created",
-    Replaced = "replaced",
     Duplicate = "duplicate"
 }
 export enum AssetUploadAction {

@@ -1,16 +1,3 @@
-import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
-import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { Route } from '$lib/route';
-import { createAlbumAndRedirect } from '$lib/utils/album-utils';
-import { downloadArchive } from '$lib/utils/asset-utils';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addToAlbum,
   addAssetsToAlbums as addToAlbums,
@@ -30,6 +17,19 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
+import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
+import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
+import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+import { downloadArchive } from '$lib/utils/asset-utils';
+import { openFileUploadDialog } from '$lib/utils/file-uploader';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getAlbumsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

@@ -1,12 +1,4 @@
-import BackgroundTasks
-import Flutter
 import native_video_player
-import network_info_plus
-import path_provider_foundation
-import permission_handler_apple
-import photo_manager
-import shared_preferences_foundation
-import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {

@@ -1,5 +1,12 @@
-import { exportJWK, generateKeyPair } from 'jose';
+import {
+  calculateJwkThumbprint,
+  exportJWK,
+  importPKCS8,
+  importSPKI,
+  SignJWT,
+} from 'jose';
 import Provider from 'oidc-provider';
+import { PRIVATE_KEY_PEM, PUBLIC_KEY_PEM } from './test-keys';
 
 export enum OAuthClient {
   DEFAULT = 'client-default',
@@ -44,6 +51,29 @@ const claims = [
   },
 ];
 
+const privateKey = await importPKCS8(PRIVATE_KEY_PEM, 'RS256', {
+  extractable: true,
+});
+const publicKey = await importSPKI(PUBLIC_KEY_PEM, 'RS256', {
+  extractable: true,
+});
+const kid = await calculateJwkThumbprint(await exportJWK(publicKey));
+
+export async function generateLogoutToken(iss: string, sub: string) {
+  return await new SignJWT({
+    iss: iss,
+    aud: OAuthClient.DEFAULT,
+    iat: Math.floor(Date.now() / 1000),
+    jti: crypto.randomUUID(),
+    sub: sub,
+    events: {
+      'http://schemas.openid.net/event/backchannel-logout': {},
+    },
+  })
+    .setProtectedHeader({ alg: 'RS256', typ: 'logout+jwt', kid: kid })
+    .sign(privateKey);
+}
+
 const withDefaultClaims = (sub: string) => ({
   sub,
   email: `${sub}@immich.app`,
@@ -66,10 +96,6 @@ const getClaims = (sub: string, use?: string) => {
 };
 
 const setup = async () => {
-  const { privateKey, publicKey } = await generateKeyPair('RS256', {
-    extractable: true,
-  });
-
   const redirectUris = [
     'http://127.0.0.1:2285/auth/login',
     'https://photos.immich.app/oauth/mobile-redirect',

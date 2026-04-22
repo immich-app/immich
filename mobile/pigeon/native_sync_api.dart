@@ -32,7 +32,7 @@ class PlatformAsset {
   final int? updatedAt;
   final int? width;
   final int? height;
-  final int durationInSeconds;
+  final int durationMs;
   final int orientation;
   final bool isFavorite;
 
@@ -50,7 +50,7 @@ class PlatformAsset {
     this.updatedAt,
     this.width,
     this.height,
-    this.durationInSeconds = 0,
+    this.durationMs = 0,
     this.orientation = 0,
     this.isFavorite = false,
     this.adjustmentTime,

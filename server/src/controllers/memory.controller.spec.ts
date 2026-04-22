@@ -96,6 +96,12 @@ describe(MemoryController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(['Invalid input: expected object, received undefined']));
     });
+
+    it('should require at least one field', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).put(`/memories/${factory.uuid()}`).send({});
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['At least one field must be provided']));
+    });
   });
 
   describe('DELETE /memories/:id', () => {

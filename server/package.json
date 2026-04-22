@@ -26,7 +26,6 @@
     "test": "vitest --config test/vitest.config.mjs",
     "test:cov": "vitest --config test/vitest.config.mjs --coverage",
     "test:medium": "vitest --config test/vitest.config.medium.mjs",
-    "typeorm": "typeorm",
     "migrations:debug": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations generate --debug",
     "migrations:generate": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations generate",
     "migrations:create": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations create",
@@ -40,7 +39,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
-    "@immich/sql-tools": "^0.3.2",
+    "@immich/sql-tools": "^0.5.1",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
@@ -63,7 +62,6 @@
     "@react-email/components": "^1.0.0",
     "@react-email/render": "^2.0.0",
     "@socket.io/redis-adapter": "^8.3.0",
-    "ajv": "^8.17.1",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^6.0.0",
@@ -86,7 +84,7 @@
     "jose": "^6.0.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
-    "kysely": "0.28.15",
+    "kysely": "0.28.16",
     "kysely-postgres-js": "^3.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
@@ -96,13 +94,12 @@
     "nestjs-cls": "^6.0.0",
     "nestjs-kysely": "3.1.2",
     "nestjs-otel": "^7.0.0",
-    "nodemailer": "^8.0.0",
     "nestjs-zod": "^5.3.0",
+    "nodemailer": "^8.0.0",
     "openid-client": "^6.3.3",
     "pg": "^8.11.3",
-    "pg-connection-string": "^2.9.1",
     "picomatch": "^4.0.2",
-    "postgres": "3.4.8",
+    "postgres": "3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-email": "^5.0.0",
@@ -157,7 +154,6 @@
     "eslint-plugin-unicorn": "^64.0.0",
     "globals": "^17.0.0",
     "mock-fs": "^5.2.0",
-    "node-gyp": "^12.0.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.0.0",
@@ -172,7 +168,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.14.1"
+    "node": "24.15.0"
   },
   "overrides": {
     "sharp": "^0.34.5"

@@ -30,16 +30,16 @@ export enum ProjectionType {
 }
 
 export const dateFormats = {
-  album: <Intl.DateTimeFormatOptions>{
+  album: {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  },
-  settings: <Intl.DateTimeFormatOptions>{
+  } satisfies Intl.DateTimeFormatOptions,
+  settings: {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  },
+  } satisfies Intl.DateTimeFormatOptions,
 };
 
 export enum QueryParameter {

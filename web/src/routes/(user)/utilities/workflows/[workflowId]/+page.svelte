@@ -1,12 +1,12 @@
 <script lang="ts">
   import { beforeNavigate, goto } from '$app/navigation';
   import { dragAndDrop } from '$lib/attachments/drag-and-drop.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import SchemaFormFields from '$lib/components/workflows/SchemaFormFields.svelte';
-  import WorkflowCardConnector from '$lib/components/workflows/WorkflowCardConnector.svelte';
-  import WorkflowJsonEditor from '$lib/components/workflows/WorkflowJsonEditor.svelte';
-  import WorkflowSummarySidebar from '$lib/components/workflows/WorkflowSummary.svelte';
-  import WorkflowTriggerCard from '$lib/components/workflows/WorkflowTriggerCard.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import SchemaFormFields from './SchemaFormFields.svelte';
+  import WorkflowCardConnector from './WorkflowCardConnector.svelte';
+  import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
+  import WorkflowSummarySidebar from './WorkflowSummary.svelte';
+  import WorkflowTriggerCard from './WorkflowTriggerCard.svelte';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
   import { Route } from '$lib/route';
   import {

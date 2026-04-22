@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
