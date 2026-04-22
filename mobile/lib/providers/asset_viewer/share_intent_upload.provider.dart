@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/share_intent_service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/services/share_intent_service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 

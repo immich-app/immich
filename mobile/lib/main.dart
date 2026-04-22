@@ -121,7 +121,6 @@ class ImmichApp extends ConsumerStatefulWidget {
 }
 
 class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
