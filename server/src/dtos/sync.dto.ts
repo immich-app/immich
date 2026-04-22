@@ -420,12 +420,6 @@ class SyncPersonDeleteV1 extends createZodDto(SyncPersonDeleteV1Schema) {}
 class SyncAssetFaceV1 extends createZodDto(SyncAssetFaceV1Schema) {}
 @ExtraModel()
 class SyncAssetFaceV2 extends createZodDto(SyncAssetFaceV2Schema) {}
-
-export function syncAssetFaceV2ToV1(faceV2: SyncAssetFaceV2): SyncAssetFaceV1 {
-  const { deletedAt: _, isVisible: __, ...faceV1 } = faceV2;
-
-  return faceV1;
-}
 @ExtraModel()
 class SyncAssetFaceDeleteV1 extends createZodDto(SyncAssetFaceDeleteV1Schema) {}
 @ExtraModel()

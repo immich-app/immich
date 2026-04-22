@@ -8,7 +8,6 @@ import {
   SyncAckDeleteDto,
   SyncAckSetDto,
   syncAlbumV2ToV1,
-  syncAssetFaceV2ToV1,
   SyncAssetV2,
   SyncItem,
   SyncStreamDto,
@@ -268,7 +267,7 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAssetsV1() {
+  private syncAssetsV1(): Promise<void> {
     throw new BadRequestException('SyncRequestType.AssetsV1 is deprecated, use SyncRequestType.AssetsV2 instead');
   }
 
@@ -286,7 +285,7 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncPartnerAssetsV1() {
+  private syncPartnerAssetsV1(): Promise<void> {
     throw new BadRequestException(
       'SyncRequestType.PartnerAssetsV1 is deprecated, use SyncRequestType.PartnerAssetsV2 instead',
     );
@@ -508,7 +507,7 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAlbumAssetsV1() {
+  private syncAlbumAssetsV1(): Promise<void> {
     throw new BadRequestException(
       'SyncRequestType.AlbumAssetsV1 is deprecated, use SyncRequestType.AlbumAssetsV2 instead',
     );
@@ -826,7 +825,7 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAssetFacesV1() {
+  private syncAssetFacesV1(): Promise<void> {
     throw new BadRequestException(
       'SyncRequestType.AssetFacesV1 is deprecated, use SyncRequestType.AssetFacesV2 instead',
     );
