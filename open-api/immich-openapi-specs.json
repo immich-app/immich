@@ -16227,6 +16227,29 @@
           "RunningTasks"
         ]
       }
+    },
+    "/yucca/tasks/{parentId}/cancel": {
+      "post": {
+        "operationId": "cancelTask",
+        "parameters": [
+          {
+            "name": "parentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunningTasks"
+        ]
+      }
     }
   },
   "info": {
