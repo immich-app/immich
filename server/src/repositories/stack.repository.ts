@@ -27,7 +27,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
             .as('exifInfo'),
         (join) => join.onTrue(),
       )
-      .select((eb) => withFacesAndPeople(eb))
+      .select(withFacesAndPeople)
       .$if(withTags, (eb) =>
         eb.select((eb) =>
           jsonArrayFrom(
