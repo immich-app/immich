@@ -4,7 +4,7 @@ import native_video_player
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
 let SERVER_URLS_KEY = "immich.server_urls"
-let APP_GROUP = "group.futo.immich.share"
+let APP_GROUP = "group.app.immich.share"
 let COOKIE_EXPIRY_DAYS: TimeInterval = 400
 
 enum AuthCookie: CaseIterable {

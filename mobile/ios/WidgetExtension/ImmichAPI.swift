@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-let IMMICH_SHARE_GROUP = "group.futo.immich.share"
+let IMMICH_SHARE_GROUP = "group.app.immich.share"
 
 enum WidgetError: Error, Codable {
   case noLogin
