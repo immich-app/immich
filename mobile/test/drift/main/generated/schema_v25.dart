@@ -8895,8 +8895,8 @@ class AssetOcrEntity extends Table
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
-  late final GeneratedColumn<String> text = GeneratedColumn<String>(
-    'text',
+  late final GeneratedColumn<String> recognizedText = GeneratedColumn<String>(
+    'recognized_text',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -8926,7 +8926,7 @@ class AssetOcrEntity extends Table
     y4,
     boxScore,
     textScore,
-    text,
+    recognizedText,
     isVisible,
   ];
   @override
@@ -8988,9 +8988,9 @@ class AssetOcrEntity extends Table
         DriftSqlType.double,
         data['${effectivePrefix}text_score'],
       )!,
-      text: attachedDatabase.typeMapping.read(
+      recognizedText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}text'],
+        data['${effectivePrefix}recognized_text'],
       )!,
       isVisible: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -9028,7 +9028,7 @@ class AssetOcrEntityData extends DataClass
   final double y4;
   final double boxScore;
   final double textScore;
-  final String text;
+  final String recognizedText;
   final int isVisible;
   const AssetOcrEntityData({
     required this.id,
@@ -9043,7 +9043,7 @@ class AssetOcrEntityData extends DataClass
     required this.y4,
     required this.boxScore,
     required this.textScore,
-    required this.text,
+    required this.recognizedText,
     required this.isVisible,
   });
   @override
@@ -9061,7 +9061,7 @@ class AssetOcrEntityData extends DataClass
     map['y4'] = Variable<double>(y4);
     map['box_score'] = Variable<double>(boxScore);
     map['text_score'] = Variable<double>(textScore);
-    map['text'] = Variable<String>(text);
+    map['recognized_text'] = Variable<String>(recognizedText);
     map['is_visible'] = Variable<int>(isVisible);
     return map;
   }
@@ -9084,7 +9084,7 @@ class AssetOcrEntityData extends DataClass
       y4: serializer.fromJson<double>(json['y4']),
       boxScore: serializer.fromJson<double>(json['boxScore']),
       textScore: serializer.fromJson<double>(json['textScore']),
-      text: serializer.fromJson<String>(json['text']),
+      recognizedText: serializer.fromJson<String>(json['recognizedText']),
       isVisible: serializer.fromJson<int>(json['isVisible']),
     );
   }
@@ -9104,7 +9104,7 @@ class AssetOcrEntityData extends DataClass
       'y4': serializer.toJson<double>(y4),
       'boxScore': serializer.toJson<double>(boxScore),
       'textScore': serializer.toJson<double>(textScore),
-      'text': serializer.toJson<String>(text),
+      'recognizedText': serializer.toJson<String>(recognizedText),
       'isVisible': serializer.toJson<int>(isVisible),
     };
   }
@@ -9122,7 +9122,7 @@ class AssetOcrEntityData extends DataClass
     double? y4,
     double? boxScore,
     double? textScore,
-    String? text,
+    String? recognizedText,
     int? isVisible,
   }) => AssetOcrEntityData(
     id: id ?? this.id,
@@ -9137,7 +9137,7 @@ class AssetOcrEntityData extends DataClass
     y4: y4 ?? this.y4,
     boxScore: boxScore ?? this.boxScore,
     textScore: textScore ?? this.textScore,
-    text: text ?? this.text,
+    recognizedText: recognizedText ?? this.recognizedText,
     isVisible: isVisible ?? this.isVisible,
   );
   AssetOcrEntityData copyWithCompanion(AssetOcrEntityCompanion data) {
@@ -9154,7 +9154,9 @@ class AssetOcrEntityData extends DataClass
       y4: data.y4.present ? data.y4.value : this.y4,
       boxScore: data.boxScore.present ? data.boxScore.value : this.boxScore,
       textScore: data.textScore.present ? data.textScore.value : this.textScore,
-      text: data.text.present ? data.text.value : this.text,
+      recognizedText: data.recognizedText.present
+          ? data.recognizedText.value
+          : this.recognizedText,
       isVisible: data.isVisible.present ? data.isVisible.value : this.isVisible,
     );
   }
@@ -9174,7 +9176,7 @@ class AssetOcrEntityData extends DataClass
           ..write('y4: $y4, ')
           ..write('boxScore: $boxScore, ')
           ..write('textScore: $textScore, ')
-          ..write('text: $text, ')
+          ..write('recognizedText: $recognizedText, ')
           ..write('isVisible: $isVisible')
           ..write(')'))
         .toString();
@@ -9194,7 +9196,7 @@ class AssetOcrEntityData extends DataClass
     y4,
     boxScore,
     textScore,
-    text,
+    recognizedText,
     isVisible,
   );
   @override
@@ -9213,7 +9215,7 @@ class AssetOcrEntityData extends DataClass
           other.y4 == this.y4 &&
           other.boxScore == this.boxScore &&
           other.textScore == this.textScore &&
-          other.text == this.text &&
+          other.recognizedText == this.recognizedText &&
           other.isVisible == this.isVisible);
 }
 
@@ -9230,7 +9232,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
   final Value<double> y4;
   final Value<double> boxScore;
   final Value<double> textScore;
-  final Value<String> text;
+  final Value<String> recognizedText;
   final Value<int> isVisible;
   const AssetOcrEntityCompanion({
     this.id = const Value.absent(),
@@ -9245,7 +9247,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
     this.y4 = const Value.absent(),
     this.boxScore = const Value.absent(),
     this.textScore = const Value.absent(),
-    this.text = const Value.absent(),
+    this.recognizedText = const Value.absent(),
     this.isVisible = const Value.absent(),
   });
   AssetOcrEntityCompanion.insert({
@@ -9261,7 +9263,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
     required double y4,
     required double boxScore,
     required double textScore,
-    required String text,
+    required String recognizedText,
     this.isVisible = const Value.absent(),
   }) : id = Value(id),
        assetId = Value(assetId),
@@ -9275,7 +9277,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
        y4 = Value(y4),
        boxScore = Value(boxScore),
        textScore = Value(textScore),
-       text = Value(text);
+       recognizedText = Value(recognizedText);
   static Insertable<AssetOcrEntityData> custom({
     Expression<String>? id,
     Expression<String>? assetId,
@@ -9289,7 +9291,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
     Expression<double>? y4,
     Expression<double>? boxScore,
     Expression<double>? textScore,
-    Expression<String>? text,
+    Expression<String>? recognizedText,
     Expression<int>? isVisible,
   }) {
     return RawValuesInsertable({
@@ -9305,7 +9307,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
       if (y4 != null) 'y4': y4,
       if (boxScore != null) 'box_score': boxScore,
       if (textScore != null) 'text_score': textScore,
-      if (text != null) 'text': text,
+      if (recognizedText != null) 'recognized_text': recognizedText,
       if (isVisible != null) 'is_visible': isVisible,
     });
   }
@@ -9323,7 +9325,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
     Value<double>? y4,
     Value<double>? boxScore,
     Value<double>? textScore,
-    Value<String>? text,
+    Value<String>? recognizedText,
     Value<int>? isVisible,
   }) {
     return AssetOcrEntityCompanion(
@@ -9339,7 +9341,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
       y4: y4 ?? this.y4,
       boxScore: boxScore ?? this.boxScore,
       textScore: textScore ?? this.textScore,
-      text: text ?? this.text,
+      recognizedText: recognizedText ?? this.recognizedText,
       isVisible: isVisible ?? this.isVisible,
     );
   }
@@ -9383,8 +9385,8 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
     if (textScore.present) {
       map['text_score'] = Variable<double>(textScore.value);
     }
-    if (text.present) {
-      map['text'] = Variable<String>(text.value);
+    if (recognizedText.present) {
+      map['recognized_text'] = Variable<String>(recognizedText.value);
     }
     if (isVisible.present) {
       map['is_visible'] = Variable<int>(isVisible.value);
@@ -9407,7 +9409,7 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
           ..write('y4: $y4, ')
           ..write('boxScore: $boxScore, ')
           ..write('textScore: $textScore, ')
-          ..write('text: $text, ')
+          ..write('recognizedText: $recognizedText, ')
           ..write('isVisible: $isVisible')
           ..write(')'))
         .toString();

@@ -24,7 +24,7 @@ class AssetOcrEntity extends Table with DriftDefaultsMixin {
   RealColumn get boxScore => real()();
   RealColumn get textScore => real()();
 
-  TextColumn get recognizedText => text().named('text')();
+  TextColumn get recognizedText => text()();
 
   BoolColumn get isVisible => boolean().withDefault(const Constant(true))();
 

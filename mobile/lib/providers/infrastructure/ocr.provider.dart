@@ -1,8 +1,8 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
 import 'package:immich_mobile/domain/services/ocr.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/ocr.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final ocrRepositoryProvider = Provider<OcrRepository>((ref) => OcrRepository(ref.watch(driftProvider)));
 

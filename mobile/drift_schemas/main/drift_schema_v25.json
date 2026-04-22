@@ -2924,7 +2924,7 @@
             "dsl_features": []
           },
           {
-            "name": "text",
+            "name": "recognized_text",
             "getter_name": "recognizedText",
             "moor_type": "string",
             "nullable": false,
@@ -3392,7 +3392,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"asset_ocr_entity\" (\"id\" TEXT NOT NULL, \"asset_id\" TEXT NOT NULL REFERENCES remote_asset_entity (id) ON DELETE CASCADE, \"x1\" REAL NOT NULL, \"y1\" REAL NOT NULL, \"x2\" REAL NOT NULL, \"y2\" REAL NOT NULL, \"x3\" REAL NOT NULL, \"y3\" REAL NOT NULL, \"x4\" REAL NOT NULL, \"y4\" REAL NOT NULL, \"box_score\" REAL NOT NULL, \"text_score\" REAL NOT NULL, \"text\" TEXT NOT NULL, \"is_visible\" INTEGER NOT NULL DEFAULT 1 CHECK (\"is_visible\" IN (0, 1)), PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"asset_ocr_entity\" (\"id\" TEXT NOT NULL, \"asset_id\" TEXT NOT NULL REFERENCES remote_asset_entity (id) ON DELETE CASCADE, \"x1\" REAL NOT NULL, \"y1\" REAL NOT NULL, \"x2\" REAL NOT NULL, \"y2\" REAL NOT NULL, \"x3\" REAL NOT NULL, \"y3\" REAL NOT NULL, \"x4\" REAL NOT NULL, \"y4\" REAL NOT NULL, \"box_score\" REAL NOT NULL, \"text_score\" REAL NOT NULL, \"recognized_text\" TEXT NOT NULL, \"is_visible\" INTEGER NOT NULL DEFAULT 1 CHECK (\"is_visible\" IN (0, 1)), PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },

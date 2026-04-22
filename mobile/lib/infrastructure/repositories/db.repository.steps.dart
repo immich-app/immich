@@ -12958,8 +12958,8 @@ class Shape49 extends i0.VersionedTable {
       columnsByName['box_score']! as i1.GeneratedColumn<double>;
   i1.GeneratedColumn<double> get textScore =>
       columnsByName['text_score']! as i1.GeneratedColumn<double>;
-  i1.GeneratedColumn<String> get text =>
-      columnsByName['text']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get recognizedText =>
+      columnsByName['recognized_text']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<int> get isVisible =>
       columnsByName['is_visible']! as i1.GeneratedColumn<int>;
 }
@@ -13046,7 +13046,7 @@ i1.GeneratedColumn<double> _column_219(String aliasedName) =>
     );
 i1.GeneratedColumn<String> _column_220(String aliasedName) =>
     i1.GeneratedColumn<String>(
-      'text',
+      'recognized_text',
       aliasedName,
       false,
       type: i1.DriftSqlType.string,
