@@ -260,13 +260,11 @@ export class AlbumService extends BaseService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.AlbumAssetDelete, ids: [id] });
-
     const album = await this.findOrFail(id, { withAssets: false });
     const results = await removeAssets(
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
-      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.AlbumDelete },
+      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.AlbumUpdate },
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);

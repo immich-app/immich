@@ -218,16 +218,6 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return setUnion(isOwner, isShared);
     }
 
-    case Permission.AlbumAssetDelete: {
-      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
-      const isShared = await access.album.checkSharedAlbumAccess(
-        auth.user.id,
-        setDifference(ids, isOwner),
-        AlbumUserRole.Editor,
-      );
-      return setUnion(isOwner, isShared);
-    }
-
     case Permission.AssetUpload: {
       return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set<string>();
     }
