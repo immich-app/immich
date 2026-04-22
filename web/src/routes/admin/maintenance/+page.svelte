@@ -1,8 +1,8 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
-  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingAccordionState from '$lib/components/shared-components/settings/SettingAccordionState.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { QueryParameter } from '$lib/constants';
   import { getMaintenanceAdminActions } from '$lib/services/maintenance.service';
   import { mdiRefresh } from '@mdi/js';

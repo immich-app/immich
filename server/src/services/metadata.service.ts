@@ -681,8 +681,6 @@ export class MetadataService extends BaseService {
             originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
             originalFileName: `${parse(asset.originalFileName).name}.mp4`,
             visibility: AssetVisibility.Hidden,
-            deviceAssetId: 'NONE',
-            deviceId: 'NONE',
           });
 
           isNewMotionAsset = true;

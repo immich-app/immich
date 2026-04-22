@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
@@ -30,7 +31,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey, AssetEditAction;
-import 'package:openapi/api.dart' hide AlbumUserRole, UserMetadataKey, AssetEditAction, AssetVisibility;
+import 'package:openapi/api.dart' hide UserMetadataKey, AssetEditAction, AssetVisibility, AlbumUserRole;
 
 class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
@@ -192,7 +193,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
-            durationInSeconds: Value(asset.duration?.toDuration()?.inSeconds ?? 0),
+            durationMs: Value(asset.duration?.toDuration()?.inMilliseconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
@@ -399,6 +400,47 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> updateAlbumsV1(Iterable<SyncAlbumV1> data) async {
     try {
+      await _db.transaction(() async {
+        await _db.batch((batch) {
+          for (final album in data) {
+            final companion = RemoteAlbumEntityCompanion(
+              name: Value(album.name),
+              description: Value(album.description),
+              isActivityEnabled: Value(album.isActivityEnabled),
+              order: Value(album.order.toAlbumAssetOrder()),
+              thumbnailAssetId: Value(album.thumbnailAssetId),
+              createdAt: Value(album.createdAt),
+              updatedAt: Value(album.updatedAt),
+            );
+
+            batch.insert(
+              _db.remoteAlbumEntity,
+              companion.copyWith(id: Value(album.id)),
+              onConflict: DoUpdate((_) => companion),
+            );
+          }
+        });
+
+        await _db.batch((batch) {
+          for (final album in data) {
+            final companion = RemoteAlbumUserEntityCompanion(
+              albumId: Value(album.id),
+              userId: Value(album.ownerId),
+              role: const Value(AlbumUserRole.owner),
+            );
+
+            batch.insert(_db.remoteAlbumUserEntity, companion, onConflict: DoUpdate((_) => companion));
+          }
+        });
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAlbumsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAlbumsV2(Iterable<SyncAlbumV2> data) async {
+    try {
       await _db.batch((batch) {
         for (final album in data) {
           final companion = RemoteAlbumEntityCompanion(
@@ -407,7 +449,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             isActivityEnabled: Value(album.isActivityEnabled),
             order: Value(album.order.toAlbumAssetOrder()),
             thumbnailAssetId: Value(album.thumbnailAssetId),
-            ownerId: Value(album.ownerId),
             createdAt: Value(album.createdAt),
             updatedAt: Value(album.updatedAt),
           );
@@ -420,7 +461,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAlbumsV1', error, stack);
+      _logger.severe('Error: updateAlbumsV2', error, stack);
       rethrow;
     }
   }
@@ -869,6 +910,7 @@ extension on api.AlbumUserRole {
   AlbumUserRole toAlbumUserRole() => switch (this) {
     api.AlbumUserRole.editor => AlbumUserRole.editor,
     api.AlbumUserRole.viewer => AlbumUserRole.viewer,
+    api.AlbumUserRole.owner => AlbumUserRole.owner,
     _ => throw Exception('Unknown AlbumUserRole value: $this'),
   };
 }
@@ -890,18 +932,6 @@ extension on api.UserMetadataKey {
     api.UserMetadataKey.license => UserMetadataKey.license,
     _ => throw Exception('Unknown UserMetadataKey value: $this'),
   };
-}
-
-extension on String {
-  Duration? toDuration() {
-    try {
-      final parts = split(':').map((e) => double.parse(e).toInt()).toList(growable: false);
-
-      return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
-    } catch (_) {
-      return null;
-    }
-  }
 }
 
 extension on UserAvatarColor {

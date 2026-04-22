@@ -19,12 +19,21 @@ class AlbumStatisticsResponseDto {
   });
 
   /// Number of non-shared albums
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int notShared;
 
   /// Number of owned albums
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int owned;
 
   /// Number of shared albums
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int shared;
 
   @override

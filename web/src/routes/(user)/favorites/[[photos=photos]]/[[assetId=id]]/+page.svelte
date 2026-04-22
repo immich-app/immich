@@ -1,7 +1,7 @@
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -16,9 +16,9 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { preferences } from '$lib/stores/user.store';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -80,7 +80,7 @@
         unarchive={assetMultiSelectManager.isAllArchived}
         onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
       />
-      {#if $preferences.tags.enabled}
+      {#if authManager.preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />

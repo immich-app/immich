@@ -4,14 +4,14 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.11.0
 
 dependencies:
   flutter:
     sdk: flutter
   immich_ui:
     path: ../
-  go_router: ^17.0.1
+  go_router: ^17.2.1
   syntax_highlight: ^0.5.0
 
 dev_dependencies:

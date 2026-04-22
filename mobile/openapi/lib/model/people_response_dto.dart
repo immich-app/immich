@@ -29,12 +29,17 @@ class PeopleResponseDto {
   bool? hasNextPage;
 
   /// Number of hidden people
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int hidden;
 
-  /// List of people
   List<PersonResponseDto> people;
 
   /// Total number of people
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int total;
 
   @override

@@ -13,10 +13,6 @@
     "editor.wordBasedSuggestions": "off"
   },
   "[javascript]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit",
-      "source.removeUnusedImports": "explicit"
-    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
@@ -29,18 +25,10 @@
     "editor.formatOnSave": true
   },
   "[svelte]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit",
-      "source.removeUnusedImports": "explicit"
-    },
     "editor.defaultFormatter": "svelte.svelte-vscode",
     "editor.formatOnSave": true
   },
   "[typescript]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit",
-      "source.removeUnusedImports": "explicit"
-    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },

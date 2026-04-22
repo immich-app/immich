@@ -35,47 +35,22 @@ where
   and "asset"."deletedAt" is null
 
 -- SearchRepository.searchRandom
-(
-  select
-    "asset".*
-  from
-    "asset"
-    inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  where
-    "asset"."visibility" = $1
-    and "asset"."fileCreatedAt" >= $2
-    and "asset_exif"."lensModel" = $3
-    and "asset"."ownerId" = any ($4::uuid[])
-    and "asset"."isFavorite" = $5
-    and "asset"."deletedAt" is null
-    and "asset"."id" < $6
-  order by
-    random()
-  limit
-    $7
-)
-union all
-(
-  select
-    "asset".*
-  from
-    "asset"
-    inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  where
-    "asset"."visibility" = $8
-    and "asset"."fileCreatedAt" >= $9
-    and "asset_exif"."lensModel" = $10
-    and "asset"."ownerId" = any ($11::uuid[])
-    and "asset"."isFavorite" = $12
-    and "asset"."deletedAt" is null
-    and "asset"."id" > $13
-  order by
-    random()
-  limit
-    $14
-)
+select
+  "asset".*
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."visibility" = $1
+  and "asset"."fileCreatedAt" >= $2
+  and "asset_exif"."lensModel" = $3
+  and "asset"."ownerId" = any ($4::uuid[])
+  and "asset"."isFavorite" = $5
+  and "asset"."deletedAt" is null
+order by
+  random()
 limit
-  $15
+  $6
 
 -- SearchRepository.searchLargeAssets
 select

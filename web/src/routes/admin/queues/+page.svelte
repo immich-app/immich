@@ -1,7 +1,7 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import JobsPanel from '$lib/components/QueuePanel.svelte';
+  import JobsPanel from './QueuePanel.svelte';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { getQueuesActions } from '$lib/services/queue.service';
   import { type QueueResponseDto } from '@immich/sdk';

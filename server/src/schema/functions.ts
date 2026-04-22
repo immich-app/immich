@@ -29,7 +29,8 @@ export const album_user_after_insert = registerFunction({
   body: `
     BEGIN
       UPDATE album SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
-      WHERE "id" IN (SELECT DISTINCT "albumId" FROM inserted_rows);
+      WHERE "id" IN (SELECT "albumId" FROM inserted_rows)
+        AND NOT EXISTS (SELECT FROM inserted_rows WHERE role = 'owner');
       RETURN NULL;
     END`,
 });
@@ -113,19 +114,6 @@ export const asset_delete_audit = registerFunction({
   body: `
     BEGIN
       INSERT INTO asset_audit ("assetId", "ownerId")
-      SELECT "id", "ownerId"
-      FROM OLD;
-      RETURN NULL;
-    END`,
-});
-
-export const album_delete_audit = registerFunction({
-  name: 'album_delete_audit',
-  returnType: 'TRIGGER',
-  language: 'PLPGSQL',
-  body: `
-    BEGIN
-      INSERT INTO album_audit ("albumId", "userId")
       SELECT "id", "ownerId"
       FROM OLD;
       RETURN NULL;

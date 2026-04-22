@@ -1,8 +1,8 @@
 <script lang="ts">
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -21,11 +21,11 @@
   import { AssetAction } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
     updateStackedAssetInTimeline,
@@ -102,7 +102,7 @@
     onEscape={handleEscape}
     withStacked
   >
-    {#if $preferences.memories.enabled}
+    {#if authManager.preferences.memories.enabled}
       <ImageCarousel {items} />
     {/if}
     {#snippet empty()}
@@ -150,7 +150,7 @@
           menuItem
           onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
         />
-        {#if $preferences.tags.enabled}
+        {#if authManager.preferences.tags.enabled}
           <TagAction menuItem />
         {/if}
         <DeleteAssets

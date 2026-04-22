@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import emptyWorkflows from '$lib/assets/empty-workflows.svg';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import { Route } from '$lib/route';
   import {
     getWorkflowActions,

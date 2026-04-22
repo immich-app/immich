@@ -1,7 +1,6 @@
-import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
-import { ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
-import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
+import { ImmichEnvironmentSchema, LogFormatSchema, LogLevelSchema } from 'src/enum';
+import { IsIPRange } from 'src/validation';
+import z from 'zod';
 
 // TODO import from sql-tools once the swagger plugin supports external enums
 enum DatabaseSslMode {
@@ -12,214 +11,80 @@ enum DatabaseSslMode {
   VerifyFull = 'verify-full',
 }
 
-export class EnvDto {
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  IMMICH_API_METRICS_PORT?: number;
+const DatabaseSslModeSchema = z.enum(DatabaseSslMode).describe('Database SSL mode').meta({ id: 'DatabaseSslMode' });
+const absolutePath = z.string().regex(/^\//, 'Must be an absolute path').optional();
+/**
+ * Treat certain strings as booleans and coerce them to boolean
+ * Ideal for environment variables that are strings but should be treated as booleans
+ * @docs https://zod.dev/api?id=stringbool
+ */
+const stringBool = z.stringbool();
 
-  @IsString()
-  @Optional()
-  IMMICH_BUILD_DATA?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_BUILD?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_BUILD_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_BUILD_IMAGE?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_BUILD_IMAGE_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_CONFIG_FILE?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_HELMET_FILE?: string;
-
-  @IsEnum(ImmichEnvironment)
-  @Optional()
-  IMMICH_ENV?: ImmichEnvironment;
-
-  @IsString()
-  @Optional()
-  IMMICH_HOST?: string;
-
-  @ValidateBoolean({ optional: true })
-  IMMICH_IGNORE_MOUNT_CHECK_ERRORS?: boolean;
-
-  @IsEnum(LogLevel)
-  @Optional()
-  IMMICH_LOG_LEVEL?: LogLevel;
-
-  @IsEnum(LogFormat)
-  @Optional()
-  IMMICH_LOG_FORMAT?: LogFormat;
-
-  @Optional()
-  @Matches(/^\//, { message: 'IMMICH_MEDIA_LOCATION must be an absolute path' })
-  IMMICH_MEDIA_LOCATION?: string;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  IMMICH_MICROSERVICES_METRICS_PORT?: number;
-
-  @ValidateBoolean({ optional: true })
-  IMMICH_ALLOW_EXTERNAL_PLUGINS?: boolean;
-
-  @Optional()
-  @Matches(/^\//, { message: 'IMMICH_PLUGINS_INSTALL_FOLDER must be an absolute path' })
-  IMMICH_PLUGINS_INSTALL_FOLDER?: string;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  IMMICH_PORT?: number;
-
-  @IsString()
-  @Optional()
-  IMMICH_REPOSITORY?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_REPOSITORY_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_SOURCE_REF?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_SOURCE_COMMIT?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_SOURCE_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_TELEMETRY_INCLUDE?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_TELEMETRY_EXCLUDE?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_THIRD_PARTY_SOURCE_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_THIRD_PARTY_BUG_FEATURE_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_THIRD_PARTY_DOCUMENTATION_URL?: string;
-
-  @IsString()
-  @Optional()
-  IMMICH_THIRD_PARTY_SUPPORT_URL?: string;
-
-  @ValidateBoolean({ optional: true })
-  IMMICH_ALLOW_SETUP?: boolean;
-
-  @IsIPRange({ requireCIDR: false }, { each: true })
-  @Transform(({ value }) =>
-    value && typeof value === 'string'
-      ? value
+const trustedProxiesSchema = z
+  .string()
+  .optional()
+  .transform((s) =>
+    s
+      ? s
           .split(',')
-          .map((value) => value.trim())
+          .map((x) => x.trim())
           .filter(Boolean)
-      : value,
+      : undefined,
   )
-  @Optional()
-  IMMICH_TRUSTED_PROXIES?: string[];
 
-  @IsString()
-  @Optional()
-  IMMICH_WORKERS_INCLUDE?: string;
+  .pipe(z.union([z.undefined(), IsIPRange({ requireCIDR: false })]));
 
-  @IsString()
-  @Optional()
-  IMMICH_WORKERS_EXCLUDE?: string;
-
-  @IsString()
-  @Optional()
-  DB_DATABASE_NAME?: string;
-
-  @IsString()
-  @Optional()
-  DB_HOSTNAME?: string;
-
-  @IsString()
-  @Optional()
-  DB_PASSWORD?: string;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  DB_PORT?: number;
-
-  @ValidateBoolean({ optional: true })
-  DB_SKIP_MIGRATIONS?: boolean;
-
-  @IsEnum(DatabaseSslMode)
-  @Optional()
-  DB_SSL_MODE?: DatabaseSslMode;
-
-  @IsString()
-  @Optional()
-  DB_URL?: string;
-
-  @IsString()
-  @Optional()
-  DB_USERNAME?: string;
-
-  @IsEnum(['pgvector', 'pgvecto.rs', 'vectorchord'])
-  @Optional()
-  DB_VECTOR_EXTENSION?: 'pgvector' | 'pgvecto.rs' | 'vectorchord';
-
-  @IsString()
-  @Optional()
-  NO_COLOR?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_HOSTNAME?: string;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  REDIS_PORT?: number;
-
-  @IsInt()
-  @Optional()
-  @Type(() => Number)
-  REDIS_DBINDEX?: number;
-
-  @IsString()
-  @Optional()
-  REDIS_USERNAME?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_PASSWORD?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_SOCKET?: string;
-
-  @IsString()
-  @Optional()
-  REDIS_URL?: string;
-}
+export const EnvSchema = z
+  .object({
+    IMMICH_API_METRICS_PORT: z.coerce.number().int().optional(),
+    IMMICH_BUILD_DATA: z.string().optional(),
+    IMMICH_BUILD: z.string().optional(),
+    IMMICH_BUILD_URL: z.string().optional(),
+    IMMICH_BUILD_IMAGE: z.string().optional(),
+    IMMICH_BUILD_IMAGE_URL: z.string().optional(),
+    IMMICH_CONFIG_FILE: z.string().optional(),
+    IMMICH_HELMET_FILE: z.string().optional(),
+    IMMICH_ENV: ImmichEnvironmentSchema.optional(),
+    IMMICH_HOST: z.string().optional(),
+    IMMICH_IGNORE_MOUNT_CHECK_ERRORS: stringBool.optional(),
+    IMMICH_LOG_LEVEL: LogLevelSchema.optional(),
+    IMMICH_LOG_FORMAT: LogFormatSchema.optional(),
+    IMMICH_MEDIA_LOCATION: absolutePath,
+    IMMICH_MICROSERVICES_METRICS_PORT: z.coerce.number().int().optional(),
+    IMMICH_ALLOW_EXTERNAL_PLUGINS: stringBool.optional(),
+    IMMICH_PLUGINS_INSTALL_FOLDER: absolutePath,
+    IMMICH_PORT: z.coerce.number().int().optional(),
+    IMMICH_REPOSITORY: z.string().optional(),
+    IMMICH_REPOSITORY_URL: z.string().optional(),
+    IMMICH_SOURCE_REF: z.string().optional(),
+    IMMICH_SOURCE_COMMIT: z.string().optional(),
+    IMMICH_SOURCE_URL: z.string().optional(),
+    IMMICH_TELEMETRY_INCLUDE: z.string().optional(),
+    IMMICH_TELEMETRY_EXCLUDE: z.string().optional(),
+    IMMICH_THIRD_PARTY_SOURCE_URL: z.string().optional(),
+    IMMICH_THIRD_PARTY_BUG_FEATURE_URL: z.string().optional(),
+    IMMICH_THIRD_PARTY_DOCUMENTATION_URL: z.string().optional(),
+    IMMICH_THIRD_PARTY_SUPPORT_URL: z.string().optional(),
+    IMMICH_ALLOW_SETUP: stringBool.optional(),
+    IMMICH_TRUSTED_PROXIES: trustedProxiesSchema,
+    IMMICH_WORKERS_INCLUDE: z.string().optional(),
+    IMMICH_WORKERS_EXCLUDE: z.string().optional(),
+    DB_DATABASE_NAME: z.string().optional(),
+    DB_HOSTNAME: z.string().optional(),
+    DB_PASSWORD: z.string().optional(),
+    DB_PORT: z.coerce.number().int().optional(),
+    DB_SKIP_MIGRATIONS: stringBool.optional(),
+    DB_SSL_MODE: DatabaseSslModeSchema.optional(),
+    DB_URL: z.string().optional(),
+    DB_USERNAME: z.string().optional(),
+    DB_VECTOR_EXTENSION: z.enum(['pgvector', 'pgvecto.rs', 'vectorchord']).optional(),
+    NO_COLOR: z.string().optional(),
+    REDIS_HOSTNAME: z.string().optional(),
+    REDIS_PORT: z.coerce.number().int().optional(),
+    REDIS_DBINDEX: z.coerce.number().int().optional(),
+    REDIS_USERNAME: z.string().optional(),
+    REDIS_PASSWORD: z.string().optional(),
+    REDIS_SOCKET: z.string().optional(),
+    REDIS_URL: z.string().optional(),
+  })
+  .meta({ id: 'EnvDto' });

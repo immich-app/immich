@@ -1,49 +1,57 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ValidateIf } from 'class-validator';
-import { MaintenanceAction, StorageFolder } from 'src/enum';
-import { ValidateBoolean, ValidateEnum, ValidateString } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import { MaintenanceAction, MaintenanceActionSchema, StorageFolderSchema } from 'src/enum';
+import z from 'zod';
 
-export class SetMaintenanceModeDto {
-  @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction', description: 'Maintenance action' })
-  action!: MaintenanceAction;
+const SetMaintenanceModeSchema = z
+  .object({
+    action: MaintenanceActionSchema,
+    restoreBackupFilename: z.string().optional().describe('Restore backup filename'),
+  })
+  .refine(
+    (data) => data.action !== MaintenanceAction.RestoreDatabase || (data.restoreBackupFilename?.length ?? 0) > 0,
+    { error: 'Backup filename is required when action is restore_database', path: ['restoreBackupFilename'] },
+  )
+  .meta({ id: 'SetMaintenanceModeDto' });
 
-  @ValidateIf((o) => o.action === MaintenanceAction.RestoreDatabase)
-  @ValidateString({ description: 'Restore backup filename' })
-  restoreBackupFilename?: string;
-}
+const MaintenanceLoginSchema = z
+  .object({
+    token: z.string().optional().describe('Maintenance token'),
+  })
+  .meta({ id: 'MaintenanceLoginDto' });
 
-export class MaintenanceLoginDto {
-  @ValidateString({ optional: true, description: 'Maintenance token' })
-  token?: string;
-}
+const MaintenanceAuthSchema = z
+  .object({
+    username: z.string().describe('Maintenance username'),
+  })
+  .meta({ id: 'MaintenanceAuthDto' });
 
-export class MaintenanceAuthDto {
-  @ApiProperty({ description: 'Maintenance username' })
-  username!: string;
-}
+const MaintenanceStatusResponseSchema = z
+  .object({
+    active: z.boolean(),
+    action: MaintenanceActionSchema,
+    progress: z.number().optional(),
+    task: z.string().optional(),
+    error: z.string().optional(),
+  })
+  .meta({ id: 'MaintenanceStatusResponseDto' });
 
-export class MaintenanceStatusResponseDto {
-  active!: boolean;
+const MaintenanceDetectInstallStorageFolderSchema = z
+  .object({
+    folder: StorageFolderSchema,
+    readable: z.boolean().describe('Whether the folder is readable'),
+    writable: z.boolean().describe('Whether the folder is writable'),
+    files: z.number().describe('Number of files in the folder'),
+  })
+  .meta({ id: 'MaintenanceDetectInstallStorageFolderDto' });
 
-  @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction', description: 'Maintenance action' })
-  action!: MaintenanceAction;
+const MaintenanceDetectInstallResponseSchema = z
+  .object({
+    storage: z.array(MaintenanceDetectInstallStorageFolderSchema),
+  })
+  .meta({ id: 'MaintenanceDetectInstallResponseDto' });
 
-  progress?: number;
-  task?: string;
-  error?: string;
-}
-
-export class MaintenanceDetectInstallStorageFolderDto {
-  @ValidateEnum({ enum: StorageFolder, name: 'StorageFolder', description: 'Storage folder' })
-  folder!: StorageFolder;
-  @ValidateBoolean({ description: 'Whether the folder is readable' })
-  readable!: boolean;
-  @ValidateBoolean({ description: 'Whether the folder is writable' })
-  writable!: boolean;
-  @ApiProperty({ description: 'Number of files in the folder' })
-  files!: number;
-}
-
-export class MaintenanceDetectInstallResponseDto {
-  storage!: MaintenanceDetectInstallStorageFolderDto[];
-}
+export class SetMaintenanceModeDto extends createZodDto(SetMaintenanceModeSchema) {}
+export class MaintenanceLoginDto extends createZodDto(MaintenanceLoginSchema) {}
+export class MaintenanceAuthDto extends createZodDto(MaintenanceAuthSchema) {}
+export class MaintenanceStatusResponseDto extends createZodDto(MaintenanceStatusResponseSchema) {}
+export class MaintenanceDetectInstallResponseDto extends createZodDto(MaintenanceDetectInstallResponseSchema) {}

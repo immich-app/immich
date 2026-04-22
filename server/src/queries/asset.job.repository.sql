@@ -163,6 +163,7 @@ where
           '%.jp2',
           '%.jpe',
           '%.jxl',
+          '%.mpo',
           '%.svg',
           '%.tif',
           '%.tiff'
@@ -250,8 +251,6 @@ select
   "asset"."id",
   "asset"."checksum",
   "asset"."checksumAlgorithm",
-  "asset"."deviceAssetId",
-  "asset"."deviceId",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."isExternal",

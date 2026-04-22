@@ -1,7 +1,11 @@
 import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
-import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
-  album_delete_audit,
+  album_user_role_enum,
+  asset_face_source_type,
+  asset_visibility_enum,
+  assets_status_enum,
+} from 'src/schema/enums';
+import {
   album_user_after_insert,
   album_user_delete_audit,
   asset_delete_audit,
@@ -42,7 +46,6 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AuditTable } from 'src/schema/tables/audit.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -101,7 +104,6 @@ export class ImmichDatabase {
     AssetOcrAuditTable,
     AssetTable,
     AssetFileTable,
-    AuditTable,
     AssetExifTable,
     FaceSearchTable,
     GeodataPlacesTable,
@@ -151,7 +153,6 @@ export class ImmichDatabase {
     user_delete_audit,
     partner_delete_audit,
     asset_delete_audit,
-    album_delete_audit,
     album_user_after_insert,
     album_user_delete_audit,
     memory_delete_audit,
@@ -164,7 +165,7 @@ export class ImmichDatabase {
     asset_ocr_delete_audit,
   ];
 
-  enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
+  enum = [album_user_role_enum, assets_status_enum, asset_face_source_type, asset_visibility_enum];
 }
 
 export interface Migrations {
@@ -201,8 +202,6 @@ export interface DB {
   asset_ocr: AssetOcrTable;
   asset_ocr_audit: AssetOcrAuditTable;
   ocr_search: OcrSearchTable;
-
-  audit: AuditTable;
 
   face_search: FaceSearchTable;
 

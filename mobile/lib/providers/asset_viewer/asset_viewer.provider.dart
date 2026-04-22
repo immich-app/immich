@@ -2,7 +2,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class AssetViewerState {
   final double backgroundOpacity;

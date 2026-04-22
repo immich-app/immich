@@ -8,8 +8,6 @@
 	<array>
 		<string>app.alextran.immich.background.refreshUpload</string>
 		<string>app.alextran.immich.background.processingUpload</string>
-		<string>app.alextran.immich.backgroundFetch</string>
-		<string>app.alextran.immich.backgroundProcessing</string>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
@@ -108,8 +106,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>240</string>
-	<key>FLTEnableImpeller</key>
-	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -154,6 +150,27 @@
 	<array>
 		<string>INSendMessageIntent</string>
 	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

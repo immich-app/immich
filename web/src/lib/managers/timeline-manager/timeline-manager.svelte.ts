@@ -1,3 +1,6 @@
+import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
+import { clamp, isEqual } from 'lodash-es';
+import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -23,9 +26,6 @@ import {
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
-import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import { clamp, isEqual } from 'lodash-es';
-import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { TimelineDay } from './timeline-day.svelte';
 import { TimelineMonth } from './timeline-month.svelte';

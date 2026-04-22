@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
@@ -14,12 +12,10 @@ import { isValidInteger } from 'src/validation';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
-  deviceAssetId?: string;
   id?: string;
 }
 
 export interface SearchUserIdOptions {
-  deviceId?: string;
   libraryId?: string | null;
   userIds?: string[];
 }
@@ -238,20 +234,11 @@ export class SearchRepository {
     ],
   })
   async searchRandom(size: number, options: AssetSearchOptions) {
-    const uuid = randomUUID();
-    const builder = searchAssetBuilder(this.db, options);
-    const lessThan = builder
+    return searchAssetBuilder(this.db, options)
       .selectAll('asset')
-      .where('asset.id', '<', uuid)
       .orderBy(sql`random()`)
-      .limit(size);
-    const greaterThan = builder
-      .selectAll('asset')
-      .where('asset.id', '>', uuid)
-      .orderBy(sql`random()`)
-      .limit(size);
-    const { rows } = await sql<MapAsset>`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
-    return rows;
+      .limit(size)
+      .execute();
   }
 
   @GenerateSql({

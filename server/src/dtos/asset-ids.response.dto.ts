@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ValidateUUID } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
 /** @deprecated Use `BulkIdResponseDto` instead */
 export enum AssetIdErrorReason {
@@ -8,15 +8,19 @@ export enum AssetIdErrorReason {
   NOT_FOUND = 'not_found',
 }
 
+const AssetIdErrorReasonSchema = z
+  .enum(AssetIdErrorReason)
+  .describe('Error reason if failed')
+  .meta({ id: 'AssetIdErrorReason' });
+
 /** @deprecated Use `BulkIdResponseDto` instead */
-export class AssetIdsResponseDto {
-  @ApiProperty({ description: 'Asset ID' })
-  assetId!: string;
-  @ApiProperty({ description: 'Whether operation succeeded' })
-  success!: boolean;
-  @ApiPropertyOptional({ description: 'Error reason if failed', enum: AssetIdErrorReason })
-  error?: AssetIdErrorReason;
-}
+const AssetIdsResponseSchema = z
+  .object({
+    assetId: z.string().describe('Asset ID'),
+    success: z.boolean().describe('Whether operation succeeded'),
+    error: AssetIdErrorReasonSchema.optional(),
+  })
+  .meta({ id: 'AssetIdsResponseDto' });
 
 export enum BulkIdErrorReason {
   DUPLICATE = 'duplicate',
@@ -26,17 +30,27 @@ export enum BulkIdErrorReason {
   VALIDATION = 'validation',
 }
 
-export class BulkIdsDto {
-  @ValidateUUID({ each: true, description: 'IDs to process' })
-  ids!: string[];
-}
+export const BulkIdErrorReasonSchema = z
+  .enum(BulkIdErrorReason)
+  .describe('Error reason')
+  .meta({ id: 'BulkIdErrorReason' });
 
-export class BulkIdResponseDto {
-  @ApiProperty({ description: 'ID' })
-  id!: string;
-  @ApiProperty({ description: 'Whether operation succeeded' })
-  success!: boolean;
-  @ApiPropertyOptional({ description: 'Error reason if failed', enum: BulkIdErrorReason })
-  error?: BulkIdErrorReason;
-  errorMessage?: string;
-}
+export const BulkIdsSchema = z
+  .object({
+    ids: z.array(z.uuidv4()).describe('IDs to process'),
+  })
+  .meta({ id: 'BulkIdsDto' });
+
+const BulkIdResponseSchema = z
+  .object({
+    id: z.string().describe('ID'),
+    success: z.boolean().describe('Whether operation succeeded'),
+    error: BulkIdErrorReasonSchema.optional(),
+    errorMessage: z.string().optional(),
+  })
+  .meta({ id: 'BulkIdResponseDto' });
+
+/** @deprecated Use `BulkIdResponseDto` instead */
+export class AssetIdsResponseDto extends createZodDto(AssetIdsResponseSchema) {}
+export class BulkIdsDto extends createZodDto(BulkIdsSchema) {}
+export class BulkIdResponseDto extends createZodDto(BulkIdResponseSchema) {}

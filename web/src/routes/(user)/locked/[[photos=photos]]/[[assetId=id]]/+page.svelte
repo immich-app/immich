@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';

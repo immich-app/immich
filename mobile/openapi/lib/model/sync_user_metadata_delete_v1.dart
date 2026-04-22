@@ -17,7 +17,6 @@ class SyncUserMetadataDeleteV1 {
     required this.userId,
   });
 
-  /// User metadata key
   UserMetadataKey key;
 
   /// User ID

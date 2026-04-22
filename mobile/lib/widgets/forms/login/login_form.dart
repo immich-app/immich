@@ -17,7 +17,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -34,7 +33,6 @@ import 'package:immich_ui/immich_ui.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
   LoginForm({super.key});
@@ -246,18 +244,14 @@ class LoginForm extends HookConsumerWidget {
         if (result.shouldChangePassword && !result.isAdmin) {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
         } else {
-          final isBeta = Store.isBetaTimelineEnabled;
-          if (isBeta) {
-            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
-              await getManageMediaPermission();
-            }
-            unawaited(handleSyncFlow());
-            ref.read(websocketProvider.notifier).connect();
-            unawaited(context.replaceRoute(const TabShellRoute()));
-            return;
+          await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+          if (isSyncRemoteDeletionsMode()) {
+            await getManageMediaPermission();
           }
-          unawaited(context.replaceRoute(const TabControllerRoute()));
+          unawaited(handleSyncFlow());
+          ref.read(websocketProvider.notifier).connect();
+          unawaited(context.replaceRoute(const TabShellRoute()));
+          return;
         }
       } catch (error) {
         ImmichToast.show(
@@ -338,21 +332,13 @@ class LoginForm extends HookConsumerWidget {
               .saveAuthInfo(accessToken: loginResponseDto.accessToken);
 
           if (isSuccess) {
-            final permission = ref.watch(galleryPermissionNotifier);
-            final isBeta = Store.isBetaTimelineEnabled;
-            if (!isBeta && (permission.isGranted || permission.isLimited)) {
-              unawaited(ref.watch(backupProvider.notifier).resumeBackup());
+            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+            if (isSyncRemoteDeletionsMode()) {
+              await getManageMediaPermission();
             }
-            if (isBeta) {
-              await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              if (isSyncRemoteDeletionsMode()) {
-                await getManageMediaPermission();
-              }
-              unawaited(handleSyncFlow());
-              unawaited(context.replaceRoute(const TabShellRoute()));
-              return;
-            }
-            unawaited(context.replaceRoute(const TabControllerRoute()));
+            unawaited(handleSyncFlow());
+            unawaited(context.replaceRoute(const TabShellRoute()));
+            return;
           }
         } catch (error, stack) {
           log.severe('Error logging in with OAuth: $error', stack);
