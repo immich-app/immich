@@ -595,7 +595,7 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
-      .select(columns.syncAsset.filter((c) => c !== 'asset.isFavorite') as ReadonlyArray<(typeof columns.syncAsset)[number]>)
+      .select(columns.syncPartnerAsset)
       .select(sql<boolean>`false`.as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
@@ -615,7 +615,7 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(columns.syncAsset.filter((c) => c !== 'asset.isFavorite') as ReadonlyArray<(typeof columns.syncAsset)[number]>)
+      .select(columns.syncPartnerAsset)
       .select(sql<boolean>`false`.as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
