@@ -89,6 +89,7 @@
     [AlbumFilter.All]: $t('all'),
     [AlbumFilter.Owned]: $t('owned'),
     [AlbumFilter.Shared]: $t('shared'),
+    [AlbumFilter.Favorites]: $t('favorites'),
   });
 
   let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);

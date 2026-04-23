@@ -474,6 +474,8 @@ export type AlbumResponseDto = {
     id: string;
     /** Activity feed enabled */
     isActivityEnabled: boolean;
+    /** Whether the authenticated user has favorited this album */
+    isFavorite: boolean;
     /** Last modified asset timestamp */
     lastModifiedAssetTimestamp?: string;
     order?: AssetOrder;
@@ -556,7 +558,9 @@ export type MapMarkerResponseDto = {
     state: string | null;
 };
 export type UpdateAlbumUserDto = {
-    role: AlbumUserRole;
+    /** Mark album as favorite for the user (only the user themselves can update) */
+    isFavorite?: boolean;
+    role?: AlbumUserRole;
 };
 export type AlbumUserAddDto = {
     /** Album user role */
@@ -2856,6 +2860,8 @@ export type SyncAlbumUserDeleteV1 = {
 export type SyncAlbumUserV1 = {
     /** Album ID */
     albumId: string;
+    /** Favorite flag */
+    isFavorite: boolean;
     role: AlbumUserRole;
     /** User ID */
     userId: string;
@@ -3619,8 +3625,9 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, shared }: {
+export function getAllAlbums({ assetId, favorite, shared }: {
     assetId?: string;
+    favorite?: boolean;
     shared?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3628,6 +3635,7 @@ export function getAllAlbums({ assetId, shared }: {
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
+        favorite,
         shared
     }))}`, {
         ...opts

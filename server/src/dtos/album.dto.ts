@@ -69,6 +69,7 @@ const GetAlbumsSchema = z
       .optional()
       .describe('Filter by shared status: true = only shared, false = not shared, undefined = all owned albums'),
     assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores shared parameter)'),
+    favorite: stringToBool.optional().describe('Filter to only albums favorited by the authenticated user'),
   })
   .meta({ id: 'GetAlbumsDto' });
 
@@ -82,7 +83,11 @@ const AlbumStatisticsResponseSchema = z
 
 const UpdateAlbumUserSchema = z
   .object({
-    role: AlbumUserRoleSchema,
+    role: AlbumUserRoleSchema.optional(),
+    isFavorite: z
+      .boolean()
+      .optional()
+      .describe('Mark album as favorite for the user (only the user themselves can update)'),
   })
   .meta({ id: 'UpdateAlbumUserDto' });
 
@@ -118,6 +123,7 @@ export const AlbumResponseSchema = z
         'First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically.',
       ),
     hasSharedLink: z.boolean().describe('Has shared link'),
+    isFavorite: z.boolean().describe('Whether the authenticated user has favorited this album'),
     assetCount: z.int().min(0).describe('Number of assets'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     lastModifiedAssetTimestamp: z
@@ -161,8 +167,9 @@ export type MapAlbumDto = {
   order: AssetOrder;
 };
 
-export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto => {
+export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, authUserId?: string): AlbumResponseDto => {
   const albumUsers: AlbumUserResponseDto[] = [];
+  let isFavorite = false;
 
   if (entity.albumUsers) {
     for (const albumUser of entity.albumUsers) {
@@ -171,6 +178,9 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
         user,
         role: albumUser.role,
       });
+      if (authUserId && user.id === authUserId) {
+        isFavorite = albumUser.isFavorite ?? false;
+      }
     }
   }
 
@@ -196,6 +206,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
+    isFavorite,
     startDate: asDateString(startDate),
     endDate: asDateString(endDate),
     assetCount: entity.assets?.length || 0,

@@ -35,6 +35,7 @@ export type AuthUser = {
 export type AlbumUser = {
   user: ShallowDehydrateObject<User>;
   role: AlbumUserRole;
+  isFavorite: boolean;
 };
 
 export type AssetFile = {
@@ -395,7 +396,12 @@ export const columns = {
     'asset.height',
     'asset.isEdited',
   ],
-  syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
+  syncAlbumUser: [
+    'album_user.albumId as albumId',
+    'album_user.userId as userId',
+    'album_user.role',
+    'album_user.isFavorite',
+  ],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
   syncUser: ['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId', 'profileImagePath', 'profileChangedAt'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

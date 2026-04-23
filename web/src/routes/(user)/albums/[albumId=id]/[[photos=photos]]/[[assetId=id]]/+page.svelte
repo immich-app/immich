@@ -44,6 +44,7 @@
     getAlbumAssetsActions,
     handleDeleteAlbum,
     handleDownloadAlbum,
+    toggleAlbumFavorite,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -68,6 +69,8 @@
     mdiDeleteOutline,
     mdiDotsVertical,
     mdiDownload,
+    mdiHeart,
+    mdiHeartOutline,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -499,6 +502,20 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
+
+            <IconButton
+              shape="round"
+              variant="ghost"
+              color="secondary"
+              aria-label={album.isFavorite ? $t('remove_from_favorites') : $t('to_favorite')}
+              icon={album.isFavorite ? mdiHeart : mdiHeartOutline}
+              onclick={async () => {
+                const updated = await toggleAlbumFavorite(album);
+                if (updated) {
+                  album = updated;
+                }
+              }}
+            />
 
             {#if isEditor}
               <IconButton

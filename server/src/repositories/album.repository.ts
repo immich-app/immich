@@ -39,6 +39,7 @@ const withAlbumUsers = (authUserId?: string) => (eb: ExpressionBuilder<DB, 'albu
       .innerJoin('user', 'user.id', 'album_user.userId')
       .whereRef('album_user.albumId', '=', 'album.id')
       .select('album_user.role')
+      .select('album_user.isFavorite')
       .select((eb) => jsonObjectFrom(eb.selectFrom(dummy).select(columns.user)).$notNull().as('user'))
       .orderBy('album_user.role')
       .$if(!!authUserId, (qb) => qb.orderBy((eb) => eb('album_user.userId', '=', authUserId!), 'desc'))
@@ -239,6 +240,27 @@ export class AlbumRepository {
       )
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(ownerId))
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
+  /**
+   * Get albums the user has favorited (owned or shared).
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFavorites(userId: string) {
+    return this.db
+      .selectFrom('album')
+      .selectAll('album')
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album_user.albumId', '=', 'album.id')
+          .on('album_user.userId', '=', userId)
+          .on('album_user.isFavorite', '=', sql.lit(true)),
+      )
+      .where('album.deletedAt', 'is', null)
+      .select(withAlbumUsers(userId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
       .execute();

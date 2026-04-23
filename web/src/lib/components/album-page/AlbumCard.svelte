@@ -4,8 +4,8 @@
   import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
   import { type AlbumResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { Icon, IconButton } from '@immich/ui';
+  import { mdiDotsVertical, mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -60,11 +60,14 @@
 
   <div class="mt-4">
     <p
-      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-primary"
+      class="flex items-center gap-1 w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-primary"
       data-testid="album-name"
       title={album.albumName}
     >
-      {album.albumName}
+      {#if album.isFavorite}
+        <Icon icon={mdiHeart} size="1em" aria-label={$t('favorite')} class="text-primary shrink-0" />
+      {/if}
+      <span class="line-clamp-2">{album.albumName}</span>
     </p>
 
     {#if showDateRange && album.startDate && album.endDate}

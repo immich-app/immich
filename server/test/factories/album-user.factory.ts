@@ -24,6 +24,7 @@ export class AlbumUserFactory {
       albumId: newUuid(),
       userId: newUuid(),
       role: AlbumUserRole.Editor,
+      isFavorite: false,
       createId: newUuidV7(),
       createdAt: newDate(),
       updateId: newUuidV7(),

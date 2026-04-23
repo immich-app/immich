@@ -173,6 +173,24 @@ export const handleUpdateUserAlbumRole = async ({
   }
 };
 
+export const toggleAlbumFavorite = async (album: AlbumResponseDto): Promise<AlbumResponseDto | undefined> => {
+  const $t = await getFormatter();
+  const next = !album.isFavorite;
+
+  try {
+    await updateAlbumUser({
+      id: album.id,
+      userId: authManager.user.id,
+      updateAlbumUserDto: { isFavorite: next },
+    });
+    const updated = { ...album, isFavorite: next };
+    eventManager.emit('AlbumUpdate', updated);
+    return updated;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_info'));
+  }
+};
+
 export const handleAddUsersToAlbum = async (album: AlbumResponseDto, users: UserResponseDto[]) => {
   const $t = await getFormatter();
 

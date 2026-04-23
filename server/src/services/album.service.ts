@@ -38,12 +38,17 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll(
+    { user: { id: ownerId } }: AuthDto,
+    { assetId, shared, favorite }: GetAlbumsDto,
+  ): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
     let albums: MapAlbumDto[];
     if (assetId) {
       albums = await this.albumRepository.getByAssetId(ownerId, assetId);
+    } else if (favorite === true) {
+      albums = await this.albumRepository.getFavorites(ownerId);
     } else if (shared === true) {
       albums = await this.albumRepository.getShared(ownerId);
     } else if (shared === false) {
@@ -61,7 +66,7 @@ export class AlbumService extends BaseService {
     }
 
     return albums.map((album) => ({
-      ...mapAlbum(album),
+      ...mapAlbum(album, ownerId),
       sharedLinks: undefined,
       startDate: asDateString(albumMetadata[album.id]?.startDate ?? undefined),
       endDate: asDateString(albumMetadata[album.id]?.endDate ?? undefined),
@@ -82,7 +87,7 @@ export class AlbumService extends BaseService {
     const isShared = hasSharedUsers || hasSharedLink;
 
     return {
-      ...mapAlbum(album),
+      ...mapAlbum(album, auth.user.id),
       startDate: asDateString(albumMetadataForIds?.startDate ?? undefined),
       endDate: asDateString(albumMetadataForIds?.endDate ?? undefined),
       assetCount: albumMetadataForIds?.assetCount ?? 0,
@@ -141,7 +146,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
     }
 
-    return mapAlbum(album);
+    return mapAlbum(album, auth.user.id);
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
@@ -168,7 +173,7 @@ export class AlbumService extends BaseService {
       auth.user.id,
     );
 
-    return mapAlbum({ ...updatedAlbum, assets: album.assets });
+    return mapAlbum({ ...updatedAlbum, assets: album.assets }, auth.user.id);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -310,7 +315,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
     }
 
-    return this.findOrFail(id, auth.user.id, { withAssets: true }).then(mapAlbum);
+    return this.findOrFail(id, auth.user.id, { withAssets: true }).then((album) => mapAlbum(album, auth.user.id));
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
@@ -341,8 +346,22 @@ export class AlbumService extends BaseService {
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
-    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+    if (dto.role === undefined && dto.isFavorite === undefined) {
+      throw new BadRequestException('No updates provided');
+    }
+
+    if (dto.role !== undefined) {
+      await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+    }
+
+    if (dto.isFavorite !== undefined) {
+      if (userId !== auth.user.id) {
+        throw new BadRequestException('Cannot favorite an album on behalf of another user');
+      }
+      await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+    }
+
+    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role, isFavorite: dto.isFavorite });
   }
 
   private async findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {

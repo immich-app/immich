@@ -195,6 +195,7 @@ const SyncAlbumUserV1Schema = z
     albumId: z.string().describe('Album ID'),
     userId: z.string().describe('User ID'),
     role: AlbumUserRoleSchema,
+    isFavorite: z.boolean().describe('Favorite flag'),
   })
   .meta({ id: 'SyncAlbumUserV1' });
 

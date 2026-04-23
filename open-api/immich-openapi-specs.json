@@ -1649,6 +1649,15 @@
             }
           },
           {
+            "name": "favorite",
+            "required": false,
+            "in": "query",
+            "description": "Filter to only albums favorited by the authenticated user",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "shared",
             "required": false,
             "in": "query",
@@ -15324,6 +15333,10 @@
             "description": "Activity feed enabled",
             "type": "boolean"
           },
+          "isFavorite": {
+            "description": "Whether the authenticated user has favorited this album",
+            "type": "boolean"
+          },
           "lastModifiedAssetTimestamp": {
             "description": "Last modified asset timestamp",
             "format": "date-time",
@@ -15357,6 +15370,7 @@
           "hasSharedLink",
           "id",
           "isActivityEnabled",
+          "isFavorite",
           "shared",
           "updatedAt"
         ],
@@ -22452,6 +22466,10 @@
             "description": "Album ID",
             "type": "string"
           },
+          "isFavorite": {
+            "description": "Favorite flag",
+            "type": "boolean"
+          },
           "role": {
             "$ref": "#/components/schemas/AlbumUserRole"
           },
@@ -22462,6 +22480,7 @@
         },
         "required": [
           "albumId",
+          "isFavorite",
           "role",
           "userId"
         ],
@@ -25202,13 +25221,14 @@
       },
       "UpdateAlbumUserDto": {
         "properties": {
+          "isFavorite": {
+            "description": "Mark album as favorite for the user (only the user themselves can update)",
+            "type": "boolean"
+          },
           "role": {
             "$ref": "#/components/schemas/AlbumUserRole"
           }
         },
-        "required": [
-          "role"
-        ],
         "type": "object"
       },
       "UpdateAssetDto": {

@@ -94,6 +94,7 @@ export enum AlbumFilter {
   All = 'All',
   Owned = 'Owned',
   Shared = 'Shared',
+  Favorites = 'Favorites',
 }
 
 export enum AlbumGroupBy {

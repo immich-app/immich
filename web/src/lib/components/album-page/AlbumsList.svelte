@@ -131,6 +131,15 @@
       case AlbumFilter.Shared: {
         return sharedAlbums;
       }
+      case AlbumFilter.Favorites: {
+        const nonOwnedFavorites = sharedAlbums.filter(
+          (album) =>
+            album.isFavorite &&
+            album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role !== AlbumUserRole.Owner,
+        );
+        const ownedFavorites = ownedAlbums.filter((album) => album.isFavorite);
+        return nonOwnedFavorites.length > 0 ? ownedFavorites.concat(nonOwnedFavorites) : ownedFavorites;
+      }
       default: {
         const nonOwnedAlbums = sharedAlbums.filter(
           (album) =>
