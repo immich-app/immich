@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -24,6 +25,7 @@ export class UserAdminController {
 
   @Get()
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ZodSerializerDto([UserAdminResponseDto])
   @Endpoint({
     summary: 'Search users',
     description: 'Search for users.',
@@ -35,6 +37,7 @@ export class UserAdminController {
 
   @Post()
   @Authenticated({ permission: Permission.AdminUserCreate, admin: true })
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Create a user',
     description: 'Create a new user.',
@@ -46,6 +49,7 @@ export class UserAdminController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve  a specific user by their ID.',
@@ -57,6 +61,7 @@ export class UserAdminController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
@@ -72,6 +77,7 @@ export class UserAdminController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Delete a user',
     description: 'Delete a user.',
@@ -140,6 +146,7 @@ export class UserAdminController {
   @Post(':id/restore')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Restore a deleted user',
     description: 'Restore a previously deleted user.',

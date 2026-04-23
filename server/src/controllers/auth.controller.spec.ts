@@ -1,7 +1,9 @@
 import { AuthController } from 'src/controllers/auth.controller';
 import { LoginResponseDto } from 'src/dtos/auth.dto';
+import { mapUserAdmin } from 'src/dtos/user.dto';
 import { AuthService } from 'src/services/auth.service';
 import request from 'supertest';
+import { UserFactory } from 'test/factories/user.factory';
 import { mediumFactory } from 'test/medium.factory';
 import { errorDto } from 'test/medium/responses';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
@@ -53,6 +55,7 @@ describe(AuthController.name, () => {
 
     it('should transform email to lower case', async () => {
       service.adminSignUp.mockReset();
+      service.adminSignUp.mockResolvedValue(mapUserAdmin(UserFactory.create()));
       const { status } = await request(ctx.getHttpServer())
         .post('/auth/admin-sign-up')
         .send({ name: 'admin', password: 'password', email: 'aDmIn@IMMICH.cloud' });
@@ -61,6 +64,7 @@ describe(AuthController.name, () => {
     });
 
     it('should accept an email with a local domain', async () => {
+      service.adminSignUp.mockResolvedValue(mapUserAdmin(UserFactory.create()));
       const { status } = await request(ctx.getHttpServer())
         .post('/auth/admin-sign-up')
         .send({ name: 'admin', password: 'password', email: 'admin@local' });

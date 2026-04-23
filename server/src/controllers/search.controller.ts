@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -54,6 +55,7 @@ export class SearchController {
   @Post('random')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto([AssetResponseDto])
   @Endpoint({
     summary: 'Search random assets',
     description: 'Retrieve a random selection of assets based on the provided criteria.',
@@ -66,6 +68,7 @@ export class SearchController {
   @Post('large-assets')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto([AssetResponseDto])
   @Endpoint({
     summary: 'Search large assets',
     description: 'Search for assets that are considered large based on specified criteria.',
@@ -100,6 +103,7 @@ export class SearchController {
 
   @Get('person')
   @Authenticated({ permission: Permission.PersonRead })
+  @ZodSerializerDto([PersonResponseDto])
   @Endpoint({
     summary: 'Search people',
     description: 'Search for people by name.',
@@ -122,6 +126,7 @@ export class SearchController {
 
   @Get('cities')
   @Authenticated({ permission: Permission.AssetRead })
+  @ZodSerializerDto([AssetResponseDto])
   @Endpoint({
     summary: 'Retrieve assets by city',
     description:

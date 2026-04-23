@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -23,6 +24,7 @@ export class TagController {
 
   @Post()
   @Authenticated({ permission: Permission.TagCreate })
+  @ZodSerializerDto(TagResponseDto)
   @Endpoint({
     summary: 'Create a tag',
     description: 'Create a new tag by providing a name and optional color.',
@@ -34,6 +36,7 @@ export class TagController {
 
   @Get()
   @Authenticated({ permission: Permission.TagRead })
+  @ZodSerializerDto([TagResponseDto])
   @Endpoint({
     summary: 'Retrieve tags',
     description: 'Retrieve a list of all tags.',
@@ -45,6 +48,7 @@ export class TagController {
 
   @Put()
   @Authenticated({ permission: Permission.TagCreate })
+  @ZodSerializerDto([TagResponseDto])
   @Endpoint({
     summary: 'Upsert tags',
     description: 'Create or update multiple tags in a single request.',
@@ -67,6 +71,7 @@ export class TagController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.TagRead })
+  @ZodSerializerDto(TagResponseDto)
   @Endpoint({
     summary: 'Retrieve a tag',
     description: 'Retrieve a specific tag by its ID.',
@@ -78,6 +83,7 @@ export class TagController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.TagUpdate })
+  @ZodSerializerDto(TagResponseDto)
   @Endpoint({
     summary: 'Update a tag',
     description: 'Update an existing tag identified by its ID.',

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
@@ -50,6 +51,7 @@ export class AuthController {
   }
 
   @Post('admin-sign-up')
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Register admin',
     description: 'Create the first admin user in the system.',
@@ -74,6 +76,7 @@ export class AuthController {
   @Post('change-password')
   @Authenticated({ permission: Permission.AuthChangePassword })
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Change password',
     description: 'Change the password of the current user.',

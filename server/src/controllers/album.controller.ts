@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
@@ -27,6 +28,7 @@ export class AlbumController {
 
   @Get()
   @Authenticated({ permission: Permission.AlbumRead })
+  @ZodSerializerDto([AlbumResponseDto])
   @Endpoint({
     summary: 'List all albums',
     description: 'Retrieve a list of albums available to the authenticated user.',
@@ -38,6 +40,7 @@ export class AlbumController {
 
   @Post()
   @Authenticated({ permission: Permission.AlbumCreate })
+  @ZodSerializerDto(AlbumResponseDto)
   @Endpoint({
     summary: 'Create an album',
     description: 'Create a new album. The album can also be created with initial users and assets.',
@@ -60,6 +63,7 @@ export class AlbumController {
 
   @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Get(':id')
+  @ZodSerializerDto(AlbumResponseDto)
   @Endpoint({
     summary: 'Retrieve an album',
     description: 'Retrieve information about a specific album by its ID.',
@@ -71,6 +75,7 @@ export class AlbumController {
 
   @Patch(':id')
   @Authenticated({ permission: Permission.AlbumUpdate })
+  @ZodSerializerDto(AlbumResponseDto)
   @Endpoint({
     summary: 'Update an album',
     description:
@@ -152,6 +157,7 @@ export class AlbumController {
 
   @Put(':id/users')
   @Authenticated({ permission: Permission.AlbumUserCreate })
+  @ZodSerializerDto(AlbumResponseDto)
   @Endpoint({
     summary: 'Share album with users',
     description: 'Share an album with multiple users. Each user can be given a specific role in the album.',

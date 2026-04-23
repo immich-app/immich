@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -44,6 +45,7 @@ export class FaceController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.FaceUpdate })
+  @ZodSerializerDto(PersonResponseDto)
   @Endpoint({
     summary: 'Re-assign a face to another person',
     description: 'Re-assign the face provided in the body to the person identified by the id in the path parameter.',

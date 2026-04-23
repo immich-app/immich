@@ -55,15 +55,15 @@ export const tagStub = {
 export const tagResponseStub = {
   tag1: Object.freeze<TagResponseDto>({
     id: 'tag-1',
-    createdAt: '2021-01-01T00:00:00.000Z',
-    updatedAt: '2021-01-01T00:00:00.000Z',
+    createdAt: new Date('2021-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2021-01-01T00:00:00.000Z'),
     name: 'Tag1',
     value: 'Tag1',
   }),
   color1: Object.freeze<TagResponseDto>({
     id: 'tag-1',
-    createdAt: '2021-01-01T00:00:00.000Z',
-    updatedAt: '2021-01-01T00:00:00.000Z',
+    createdAt: new Date('2021-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2021-01-01T00:00:00.000Z'),
     color: '#000000',
     name: 'Tag1',
     value: 'Tag1',

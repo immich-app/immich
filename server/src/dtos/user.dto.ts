@@ -3,13 +3,15 @@ import { User, UserAdmin } from 'src/database';
 import { pinCodeRegex } from 'src/dtos/auth.dto';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
 import { MaybeDehydrated, UserMetadataItem } from 'src/types';
-import { asDateString } from 'src/utils/date';
 import { emptyStringToNull, isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
 import z from 'zod';
 
 export const UserUpdateMeSchema = z
   .object({
-    email: toEmail.optional().describe('User email'),
+    email: toEmail
+      .transform((val) => val.toLowerCase())
+      .optional()
+      .describe('User email'),
     password: z
       .string()
       .optional()
@@ -29,12 +31,11 @@ export const UserResponseSchema = z
     email: toEmail.describe('User email'),
     profileImagePath: z.string().describe('Profile image path'),
     avatarColor: UserAvatarColorSchema,
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    profileChangedAt: z.string().meta({ format: 'date-time' }).describe('Profile change date'),
+    profileChangedAt: isoDatetimeToDate.describe('Profile change date'),
   })
   .meta({ id: 'UserResponseDto' });
 
-export class UserResponseDto extends createZodDto(UserResponseSchema) {}
+export class UserResponseDto extends createZodDto(UserResponseSchema, { codec: true }) {}
 
 const licenseKeyRegex = /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/;
 
@@ -61,7 +62,7 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
-    profileChangedAt: asDateString(entity.profileChangedAt),
+    profileChangedAt: new Date(entity.profileChangedAt),
   };
 };
 
@@ -76,7 +77,7 @@ export class UserAdminSearchDto extends createZodDto(UserAdminSearchSchema) {}
 
 export const UserAdminCreateSchema = z
   .object({
-    email: toEmail.describe('User email'),
+    email: toEmail.transform((val) => val.toLowerCase()).describe('User email'),
     password: z.string().describe('User password'),
     name: z.string().describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
@@ -96,7 +97,10 @@ export class UserAdminCreateDto extends createZodDto(UserAdminCreateSchema) {}
 
 const UserAdminUpdateSchema = z
   .object({
-    email: toEmail.optional().describe('User email'),
+    email: toEmail
+      .transform((val) => val.toLowerCase())
+      .optional()
+      .describe('User email'),
     password: z.string().optional().describe('User password'),
     pinCode: emptyStringToNull(z.string().regex(pinCodeRegex).nullable())
       .optional()
@@ -135,7 +139,7 @@ const UserAdminResponseSchema = UserResponseSchema.extend({
   license: UserLicenseSchema.nullable(),
 }).meta({ id: 'UserAdminResponseDto' });
 
-export class UserAdminResponseDto extends createZodDto(UserAdminResponseSchema) {}
+export class UserAdminResponseDto extends createZodDto(UserAdminResponseSchema, { codec: true }) {}
 
 export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
   const metadata = entity.metadata || [];

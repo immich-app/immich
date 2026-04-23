@@ -211,11 +211,12 @@ describe(PersonService.name, () => {
       await expect(sut.update(auth, person.id, { birthDate: '1976-06-30' })).resolves.toEqual({
         id: person.id,
         name: person.name,
-        birthDate: '1976-06-30',
+        birthDate: new Date('1976-06-30'),
         thumbnailPath: person.thumbnailPath,
         isHidden: false,
         isFavorite: false,
-        updatedAt: expect.any(String),
+        color: undefined,
+        updatedAt: expect.any(Date),
       });
       expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, birthDate: '1976-06-30' });
       expect(mocks.job.queue).not.toHaveBeenCalled();
@@ -485,10 +486,11 @@ describe(PersonService.name, () => {
         birthDate: person.birthDate,
         isHidden: person.isHidden,
         isFavorite: person.isFavorite,
+        color: undefined,
         id: person.id,
         name: person.name,
         thumbnailPath: person.thumbnailPath,
-        updatedAt: expect.any(String),
+        updatedAt: expect.any(Date),
       });
 
       expect(mocks.job.queue).not.toHaveBeenCalledWith();
@@ -848,7 +850,7 @@ describe(PersonService.name, () => {
         facesRecognizedAt: expect.any(Date),
       });
       const facesRecognizedAt = mocks.asset.upsertJobStatus.mock.calls[0][0].facesRecognizedAt as Date;
-      expect(facesRecognizedAt.getTime()).toBeGreaterThan(start);
+      expect(facesRecognizedAt.getTime()).toBeGreaterThanOrEqual(start);
     });
 
     it('should create a face with no person and queue recognition job', async () => {

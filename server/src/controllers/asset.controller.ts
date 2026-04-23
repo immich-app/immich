@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -79,6 +80,7 @@ export class AssetController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
+  @ZodSerializerDto(AssetResponseDto)
   @Endpoint({
     summary: 'Retrieve an asset',
     description: 'Retrieve detailed information about a specific asset.',
@@ -128,6 +130,7 @@ export class AssetController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.AssetUpdate })
+  @ZodSerializerDto(AssetResponseDto)
   @Endpoint({
     summary: 'Update an asset',
     description: 'Update information of a specific asset.',

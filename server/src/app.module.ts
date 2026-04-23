@@ -42,18 +42,18 @@ import { configureUserAgent } from 'src/utils/fetch';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
+const configRepository = new ConfigRepository();
+const { bull, cls, database, otel } = configRepository.getEnv();
+
 const commonMiddleware = [
   { provide: APP_FILTER, useClass: GlobalExceptionFilter },
   { provide: APP_PIPE, useClass: ZodValidationPipe },
-  { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+  ...(configRepository.isDev() ? [{ provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor }] : []),
   { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
 
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
-
-const configRepository = new ConfigRepository();
-const { bull, cls, database, otel } = configRepository.getEnv();
 
 const commonImports = [
   ClsModule.forRoot(cls.config),

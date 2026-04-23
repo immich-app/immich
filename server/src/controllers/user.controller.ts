@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
@@ -40,6 +41,7 @@ export class UserController {
 
   @Get()
   @Authenticated({ permission: Permission.UserRead })
+  @ZodSerializerDto([UserResponseDto])
   @Endpoint({
     summary: 'Get all users',
     description: 'Retrieve a list of all users on the server.',
@@ -51,6 +53,7 @@ export class UserController {
 
   @Get('me')
   @Authenticated({ permission: Permission.UserRead })
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Get current user',
     description: 'Retrieve information about the user making the API request.',
@@ -62,6 +65,7 @@ export class UserController {
 
   @Put('me')
   @Authenticated({ permission: Permission.UserUpdate })
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Update current user',
     description: 'Update the current user making the API request.',
@@ -166,6 +170,7 @@ export class UserController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.UserRead })
+  @ZodSerializerDto(UserResponseDto)
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve a specific user by their ID.',

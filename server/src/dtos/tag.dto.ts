@@ -1,8 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { Tag } from 'src/database';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
-import { emptyStringToNull, hexColor } from 'src/validation';
+import { emptyStringToNull, hexColor, isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
 const TagCreateSchema = z
@@ -44,10 +43,8 @@ export const TagResponseSchema = z
     parentId: z.string().optional().describe('Parent tag ID'),
     name: z.string().describe('Tag name'),
     value: z.string().describe('Tag value (full path)'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
+    updatedAt: isoDatetimeToDate.describe('Last update date'),
     color: z.string().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagResponseDto' });
@@ -57,7 +54,7 @@ export class TagUpdateDto extends createZodDto(TagUpdateSchema) {}
 export class TagUpsertDto extends createZodDto(TagUpsertSchema) {}
 export class TagBulkAssetsDto extends createZodDto(TagBulkAssetsSchema) {}
 export class TagBulkAssetsResponseDto extends createZodDto(TagBulkAssetsResponseSchema) {}
-export class TagResponseDto extends createZodDto(TagResponseSchema) {}
+export class TagResponseDto extends createZodDto(TagResponseSchema, { codec: true }) {}
 
 export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
   return {
@@ -65,8 +62,8 @@ export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
     parentId: entity.parentId ?? undefined,
     name: entity.value.split('/').at(-1) as string,
     value: entity.value,
-    createdAt: asDateString(entity.createdAt),
-    updatedAt: asDateString(entity.updatedAt),
+    createdAt: new Date(entity.createdAt),
+    updatedAt: new Date(entity.updatedAt),
     color: entity.color ?? undefined,
   };
 }

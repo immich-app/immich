@@ -5,7 +5,7 @@ import { getExifCount, suggestDuplicate, suggestDuplicateKeepAssetIds } from 'sr
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
-type ExifInfoInput = Partial<z.infer<typeof ExifResponseSchema>>;
+type ExifInfoInput = Partial<z.input<typeof ExifResponseSchema>>;
 
 const createAsset = (
   id: string,
@@ -15,18 +15,18 @@ const createAsset = (
   id,
   type: AssetType.Image,
   thumbhash: null,
-  localDateTime: new Date().toISOString(),
+  localDateTime: new Date(),
   duration: '0:00:00.00000',
   hasMetadata: true,
   width: 1920,
   height: 1080,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
   ownerId: 'owner-1',
   originalPath: '/path/to/asset',
   originalFileName: 'asset.jpg',
-  fileCreatedAt: new Date().toISOString(),
-  fileModifiedAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  fileCreatedAt: new Date(),
+  fileModifiedAt: new Date(),
+  updatedAt: new Date(),
   isFavorite: false,
   isArchived: false,
   isTrashed: false,

@@ -7,9 +7,8 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SourceTypeSchema } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { ImageDimensions, MaybeDehydrated } from 'src/types';
-import { asBirthDateString, asDateString } from 'src/utils/date';
 import { transformFaceBoundingBox } from 'src/utils/transform';
-import { emptyStringToNull, hexColor, stringToBool } from 'src/validation';
+import { emptyStringToNull, hexColor, isoDateToDate, isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const PersonCreateSchema = z
@@ -60,14 +59,10 @@ const PersonResponseSchema = z
   .object({
     id: z.string().describe('Person ID'),
     name: z.string().describe('Person name'),
-    // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
-    birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
+    birthDate: isoDateToDate.nullable().describe('Person date of birth'),
     thumbnailPath: z.string().describe('Thumbnail path'),
     isHidden: z.boolean().describe('Is hidden'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    updatedAt: z
-      .string()
-      .meta({ format: 'date-time' })
+    updatedAt: isoDatetimeToDate
       .optional()
       .describe('Last update date')
       .meta(new HistoryBuilder().added('v1.107.0').stable('v2').getExtensions()),
@@ -89,7 +84,7 @@ export class PersonUpdateDto extends createZodDto(PersonUpdateSchema) {}
 export class PeopleUpdateDto extends createZodDto(PeopleUpdateSchema) {}
 export class MergePersonDto extends createZodDto(MergePersonSchema) {}
 export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
-export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
+export class PersonResponseDto extends createZodDto(PersonResponseSchema, { codec: true }) {}
 
 export const AssetFaceWithoutPersonResponseSchema = z
   .object({
@@ -111,7 +106,7 @@ export const PersonWithFacesResponseSchema = PersonResponseSchema.extend({
   faces: z.array(AssetFaceWithoutPersonResponseSchema),
 }).meta({ id: 'PersonWithFacesResponseDto' });
 
-export class PersonWithFacesResponseDto extends createZodDto(PersonWithFacesResponseSchema) {}
+export class PersonWithFacesResponseDto extends createZodDto(PersonWithFacesResponseSchema, { codec: true }) {}
 
 const AssetFaceResponseSchema = AssetFaceWithoutPersonResponseSchema.extend({
   person: PersonResponseSchema.nullable(),
@@ -184,12 +179,12 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: asBirthDateString(person.birthDate),
+    birthDate: person.birthDate ? new Date(person.birthDate) : null,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: asDateString(person.updatedAt),
+    updatedAt: person.updatedAt ? new Date(person.updatedAt) : undefined,
   };
 }
 

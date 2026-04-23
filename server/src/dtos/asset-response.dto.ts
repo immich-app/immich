@@ -25,8 +25,8 @@ import {
 import { ImageDimensions, MaybeDehydrated } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
-import { asDateString } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
+import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
 const SanitizedAssetResponseSchema = z
@@ -40,13 +40,9 @@ const SanitizedAssetResponseSchema = z
       )
       .nullable(),
     originalMimeType: z.string().optional().describe('Original MIME type'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    localDateTime: z
-      .string()
-      .meta({ format: 'date-time' })
-      .describe(
-        'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
-      ),
+    localDateTime: isoDatetimeToDate.describe(
+      'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
+    ),
     duration: z.string().nullable().describe('Video/gif duration in hh:mm:ss.SSS format (null for static images)'),
     livePhotoVideoId: z.string().nullish().describe('Live photo video ID'),
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
@@ -55,7 +51,7 @@ const SanitizedAssetResponseSchema = z
   })
   .meta({ id: 'SanitizedAssetResponseDto' });
 
-export class SanitizedAssetResponseDto extends createZodDto(SanitizedAssetResponseSchema) {}
+export class SanitizedAssetResponseDto extends createZodDto(SanitizedAssetResponseSchema, { codec: true }) {}
 
 const AssetStackResponseSchema = z
   .object({
@@ -67,11 +63,7 @@ const AssetStackResponseSchema = z
 
 export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
   z.object({
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    createdAt: z
-      .string()
-      .meta({ format: 'date-time' })
-      .describe('The UTC timestamp when the asset was originally uploaded to Immich.'),
+    createdAt: isoDatetimeToDate.describe('The UTC timestamp when the asset was originally uploaded to Immich.'),
     ownerId: z.string().describe('Owner user ID'),
     owner: UserResponseSchema.optional(),
     libraryId: z
@@ -81,25 +73,15 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .meta(new HistoryBuilder().added('v1').deprecated('v1').getExtensions()),
     originalPath: z.string().describe('Original file path'),
     originalFileName: z.string().describe('Original file name'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    fileCreatedAt: z
-      .string()
-      .meta({ format: 'date-time' })
-      .describe(
-        'The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.',
-      ),
-    fileModifiedAt: z
-      .string()
-      .meta({ format: 'date-time' })
-      .describe(
-        'The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.',
-      ),
-    updatedAt: z
-      .string()
-      .meta({ format: 'date-time' })
-      .describe(
-        'The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.',
-      ),
+    fileCreatedAt: isoDatetimeToDate.describe(
+      'The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.',
+    ),
+    fileModifiedAt: isoDatetimeToDate.describe(
+      'The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.',
+    ),
+    updatedAt: isoDatetimeToDate.describe(
+      'The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.',
+    ),
     isFavorite: z.boolean().describe('Is favorite'),
     isArchived: z.boolean().describe('Is archived'),
     isTrashed: z.boolean().describe('Is trashed'),
@@ -124,7 +106,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
   }).shape,
 ).meta({ id: 'AssetResponseDto' });
 
-export class AssetResponseDto extends createZodDto(AssetResponseSchema) {}
+export class AssetResponseDto extends createZodDto(AssetResponseSchema, { codec: true }) {}
 
 export type MapAsset = {
   createdAt: Date;
@@ -220,7 +202,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
       type: entity.type,
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-      localDateTime: asDateString(entity.localDateTime),
+      localDateTime: new Date(entity.localDateTime),
       duration: entity.duration,
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -234,7 +216,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
 
   return {
     id: entity.id,
-    createdAt: asDateString(entity.createdAt),
+    createdAt: new Date(entity.createdAt),
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
     libraryId: entity.libraryId,
@@ -243,10 +225,10 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-    fileCreatedAt: asDateString(entity.fileCreatedAt),
-    fileModifiedAt: asDateString(entity.fileModifiedAt),
-    localDateTime: asDateString(entity.localDateTime),
-    updatedAt: asDateString(entity.updatedAt),
+    fileCreatedAt: new Date(entity.fileCreatedAt),
+    fileModifiedAt: new Date(entity.fileModifiedAt),
+    localDateTime: new Date(entity.localDateTime),
+    updatedAt: new Date(entity.updatedAt),
     isFavorite: options.auth?.user.id === entity.ownerId && entity.isFavorite,
     isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,

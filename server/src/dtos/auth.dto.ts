@@ -21,7 +21,10 @@ export type AuthDto = {
 
 const LoginCredentialSchema = z
   .object({
-    email: toEmail.describe('User email').meta({ example: 'testuser@email.com' }),
+    email: toEmail
+      .transform((val) => val.toLowerCase())
+      .describe('User email')
+      .meta({ example: 'testuser@email.com' }),
     password: z.string().describe('User password').meta({ example: 'password' }),
   })
   .meta({ id: 'LoginCredentialDto' });

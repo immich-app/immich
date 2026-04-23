@@ -11,8 +11,8 @@ describe('mapAlbum', () => {
       .asset({ localDateTime: startDate }, (builder) => builder.exif())
       .build();
     const dto = mapAlbum(getForAlbum(album));
-    expect(dto.startDate).toEqual(startDate.toISOString());
-    expect(dto.endDate).toEqual(endDate.toISOString());
+    expect(dto.startDate).toEqual(startDate);
+    expect(dto.endDate).toEqual(endDate);
   });
 
   it('should not set start and end dates for empty assets', () => {

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
@@ -89,6 +90,7 @@ export class OAuthController {
   @Post('link')
   @Authenticated()
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Link OAuth account',
     description: 'Link an OAuth account to the authenticated user.',
@@ -105,6 +107,7 @@ export class OAuthController {
   @Post('unlink')
   @Authenticated()
   @HttpCode(HttpStatus.OK)
+  @ZodSerializerDto(UserAdminResponseDto)
   @Endpoint({
     summary: 'Unlink OAuth account',
     description: 'Unlink the OAuth account from the authenticated user.',

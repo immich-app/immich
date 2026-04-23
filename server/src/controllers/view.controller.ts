@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -25,6 +26,7 @@ export class ViewController {
 
   @Get('folder')
   @Authenticated({ permission: Permission.FolderRead })
+  @ZodSerializerDto([AssetResponseDto])
   @Endpoint({
     summary: 'Retrieve assets by original path',
     description: 'Retrieve assets that are children of a specific folder.',

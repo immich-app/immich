@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { Exif } from 'src/database';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
+import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
 export const ExifResponseSchema = z
@@ -12,10 +12,8 @@ export const ExifResponseSchema = z
     exifImageHeight: z.number().min(0).nullish().default(null).describe('Image height in pixels'),
     fileSizeInByte: z.int().min(0).nullish().default(null).describe('File size in bytes'),
     orientation: z.string().nullish().default(null).describe('Image orientation'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    dateTimeOriginal: z.string().meta({ format: 'date-time' }).nullish().default(null).describe('Original date/time'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    modifyDate: z.string().meta({ format: 'date-time' }).nullish().default(null).describe('Modification date/time'),
+    dateTimeOriginal: isoDatetimeToDate.nullish().default(null).describe('Original date/time'),
+    modifyDate: isoDatetimeToDate.nullish().default(null).describe('Modification date/time'),
     timeZone: z.string().nullish().default(null).describe('Time zone'),
     lensModel: z.string().nullish().default(null).describe('Lens model'),
     fNumber: z.number().nullish().default(null).describe('F-number (aperture)'),
@@ -34,7 +32,7 @@ export const ExifResponseSchema = z
   .describe('EXIF response')
   .meta({ id: 'ExifResponseDto' });
 
-class ExifResponseDto extends createZodDto(ExifResponseSchema) {}
+class ExifResponseDto extends createZodDto(ExifResponseSchema, { codec: true }) {}
 
 export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
   return {
@@ -44,8 +42,8 @@ export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: asDateString(entity.dateTimeOriginal),
-    modifyDate: asDateString(entity.modifyDate),
+    dateTimeOriginal: entity.dateTimeOriginal ? new Date(entity.dateTimeOriginal) : null,
+    modifyDate: entity.modifyDate ? new Date(entity.modifyDate) : null,
     timeZone: entity.timeZone,
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,

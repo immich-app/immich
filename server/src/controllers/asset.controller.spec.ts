@@ -1,7 +1,10 @@
 import { AssetController } from 'src/controllers/asset.controller';
+import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetMetadataKey } from 'src/enum';
 import { AssetService } from 'src/services/asset.service';
 import request from 'supertest';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { getForAsset } from 'test/mappers';
 import { factory } from 'test/small.factory';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
@@ -183,6 +186,10 @@ describe(AssetController.name, () => {
   });
 
   describe('PUT /assets/:id', () => {
+    beforeEach(() => {
+      service.update.mockResolvedValue(mapAsset(getForAsset(AssetFactory.create())));
+    });
+
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/assets/123`);
       expect(ctx.authenticate).toHaveBeenCalled();

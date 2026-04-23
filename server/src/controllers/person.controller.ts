@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { ZodSerializerDto } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -58,6 +59,7 @@ export class PersonController {
 
   @Post()
   @Authenticated({ permission: Permission.PersonCreate })
+  @ZodSerializerDto(PersonResponseDto)
   @Endpoint({
     summary: 'Create a person',
     description: 'Create a new person that can have multiple faces assigned to them.',
@@ -92,6 +94,7 @@ export class PersonController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.PersonRead })
+  @ZodSerializerDto(PersonResponseDto)
   @Endpoint({
     summary: 'Get a person',
     description: 'Retrieve a person by id.',
@@ -103,6 +106,7 @@ export class PersonController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.PersonUpdate })
+  @ZodSerializerDto(PersonResponseDto)
   @Endpoint({
     summary: 'Update person',
     description: 'Update an individual person.',
@@ -158,6 +162,7 @@ export class PersonController {
 
   @Put(':id/reassign')
   @Authenticated({ permission: Permission.PersonReassign })
+  @ZodSerializerDto([PersonResponseDto])
   @Endpoint({
     summary: 'Reassign faces',
     description: 'Bulk reassign a list of faces to a different person.',

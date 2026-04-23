@@ -135,15 +135,13 @@ export const isValidInteger = (value: number, options: { min?: number; max?: num
  * Converts email strings to lowercase and validates against HTML5 email regex
  * @docs https://zod.dev/api?id=email
  */
-export const toEmail = z
-  .email({
-    pattern: z.regexes.html5Email,
-    error: (iss) => `Invalid input: expected email, received ${typeof iss.input}`,
-  })
-  .transform((val) => val.toLowerCase());
+export const toEmail = z.email({
+  pattern: z.regexes.html5Email,
+  error: (iss) => `Invalid input: expected email, received ${typeof iss.input}`,
+});
 
 /**
- * Parse ISO 8601 datetime strings to Date objects
+ * Parse ISO 8601 datetime strings to Date objects. Requires `{ codec: true }` when using `createZodDto`.
  * @docs https://zod.dev/api?id=codec
  */
 export const isoDatetimeToDate = z

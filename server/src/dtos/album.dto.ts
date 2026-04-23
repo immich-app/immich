@@ -6,8 +6,7 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
-import { stringToBool } from 'src/validation';
+import { isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const AlbumUserAddSchema = z
@@ -105,10 +104,8 @@ export const AlbumResponseSchema = z
     id: z.string().describe('Album ID'),
     albumName: z.string().describe('Album name'),
     description: z.string().describe('Album description'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
+    updatedAt: isoDatetimeToDate.describe('Last update date'),
     albumThumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
     shared: z.boolean().describe('Is shared album'),
     albumUsers: z
@@ -119,16 +116,9 @@ export const AlbumResponseSchema = z
       ),
     hasSharedLink: z.boolean().describe('Has shared link'),
     assetCount: z.int().min(0).describe('Number of assets'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    lastModifiedAssetTimestamp: z
-      .string()
-      .meta({ format: 'date-time' })
-      .optional()
-      .describe('Last modified asset timestamp'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    startDate: z.string().meta({ format: 'date-time' }).optional().describe('Start date (earliest asset)'),
-    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    endDate: z.string().meta({ format: 'date-time' }).optional().describe('End date (latest asset)'),
+    lastModifiedAssetTimestamp: isoDatetimeToDate.optional().describe('Last modified asset timestamp'),
+    startDate: isoDatetimeToDate.optional().describe('Start date (earliest asset)'),
+    endDate: isoDatetimeToDate.optional().describe('End date (latest asset)'),
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
@@ -144,7 +134,7 @@ export class UpdateAlbumDto extends createZodDto(UpdateAlbumSchema) {}
 export class GetAlbumsDto extends createZodDto(GetAlbumsSchema) {}
 export class AlbumStatisticsResponseDto extends createZodDto(AlbumStatisticsResponseSchema) {}
 export class UpdateAlbumUserDto extends createZodDto(UpdateAlbumUserSchema) {}
-export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}
+export class AlbumResponseDto extends createZodDto(AlbumResponseSchema, { codec: true }) {}
 class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) {}
 
 export type MapAlbumDto = {
@@ -190,14 +180,14 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     albumName: entity.albumName,
     description: entity.description,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
-    createdAt: asDateString(entity.createdAt),
-    updatedAt: asDateString(entity.updatedAt),
+    createdAt: new Date(entity.createdAt),
+    updatedAt: new Date(entity.updatedAt),
     id: entity.id,
     albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
-    startDate: asDateString(startDate),
-    endDate: asDateString(endDate),
+    startDate: startDate ? new Date(startDate) : undefined,
+    endDate: endDate ? new Date(endDate) : undefined,
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
