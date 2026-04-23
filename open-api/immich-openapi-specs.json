@@ -15341,6 +15341,12 @@
             "format": "date-time",
             "type": "string"
           },
+          "totalSize": {
+            "description": "Total size in bytes",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
@@ -15358,6 +15364,7 @@
           "id",
           "isActivityEnabled",
           "shared",
+          "totalSize",
           "updatedAt"
         ],
         "type": "object"

@@ -103,6 +103,7 @@
     [AlbumSortBy.DateCreated]: $t('sort_created'),
     [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
     [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+    [AlbumSortBy.FileSize]: $t('sort_file_size'),
   });
 
   let albumGroupByNames: Record<AlbumGroupBy, string> = $derived({

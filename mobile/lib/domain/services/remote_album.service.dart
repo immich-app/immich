@@ -39,6 +39,7 @@ class RemoteAlbumService {
       AlbumSortMode.title => albums.sortedBy((album) => album.name),
       AlbumSortMode.lastModified => albums.sortedBy((album) => album.updatedAt),
       AlbumSortMode.assetCount => albums.sortedBy((album) => album.assetCount),
+      AlbumSortMode.fileSize => albums.sortedBy((album) => album.totalSize),
       AlbumSortMode.mostRecent => await _sortByAssetDate(albums, aggregation: AssetDateAggregation.end),
       AlbumSortMode.mostOldest => await _sortByAssetDate(albums, aggregation: AssetDateAggregation.start),
     };
