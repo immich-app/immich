@@ -393,21 +393,14 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install ffmpeg
-        working-directory: ${{ github.workspace }}
         run: |
-          image=$(sed -nE 's|^FROM (ghcr\.io/immich-app/base-server-prod:[^ ]+).*|\1|p' server/Dockerfile | head -1)
-          revision=$(docker buildx imagetools inspect "${image}" --format '{{json .}}' \
-            | jq -r '.manifest.annotations["org.opencontainers.image.revision"]')
-          ffmpeg_json=$(curl -fsSL "https://raw.githubusercontent.com/immich-app/base-images/${revision}/server/packages/ffmpeg.json")
-          version=$(jq -r .version <<<"${ffmpeg_json}")
-          arch=$(dpkg --print-architecture)
-          sha256=$(jq -r ".sha256.${arch}" <<<"${ffmpeg_json}")
-          deb="jellyfin-ffmpeg7_${version}-trixie_${arch}.deb"
+          version=7.1.3-5
+          sha256=2df2f182a4b8361f26dcbaf711514d770cf51c6282ddbbf8e1eae584b7e55b4e
+          deb="jellyfin-ffmpeg7_${version}-noble_amd64.deb"
           curl -fsSL -o "/tmp/${deb}" "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v${version}/${deb}"
           echo "${sha256}  /tmp/${deb}" | sha256sum -c -
-          sudo dpkg-deb -x "/tmp/${deb}" /
-          echo /usr/lib/jellyfin-ffmpeg/lib | sudo tee /etc/ld.so.conf.d/jellyfin-ffmpeg.conf
-          sudo ldconfig
+          sudo apt-get update
+          sudo apt-get install -y "/tmp/${deb}"
           sudo ln -sf /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/local/bin/ffmpeg
           sudo ln -sf /usr/lib/jellyfin-ffmpeg/ffprobe /usr/local/bin/ffprobe
           ffprobe -version | head -1
