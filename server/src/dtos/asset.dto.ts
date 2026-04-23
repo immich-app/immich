@@ -15,8 +15,9 @@ const UpdateAssetBaseSchema = z
     longitude: longitudeSchema.optional().describe('Longitude coordinate'),
     rating: z
       .int()
-      .min(1)
+      .min(0)
       .max(5)
+      .transform((value) => (value === 0 ? null : value))
       .nullish()
       .describe('Rating in range [1-5], or null for unrated')
       .meta({

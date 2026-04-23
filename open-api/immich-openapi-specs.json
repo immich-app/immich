@@ -15692,7 +15692,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 1,
+            "minimum": 0,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -25227,7 +25227,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 1,
+            "minimum": 0,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
