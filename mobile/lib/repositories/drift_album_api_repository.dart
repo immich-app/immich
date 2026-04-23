@@ -111,6 +111,7 @@ extension on AlbumResponseDto {
       isActivityEnabled: isActivityEnabled,
       order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
+      totalSize: totalSize,
       ownerName: owner.name,
       isShared: albumUsers.length > 2,
     );

@@ -50,6 +50,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 0,
+          totalSize: 0,
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
@@ -57,6 +58,7 @@ describe(AlbumService.name, () => {
         {
           albumId: sharedWithUserAlbum.id,
           assetCount: 0,
+          totalSize: 0,
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
@@ -81,6 +83,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 1,
+          totalSize: 0,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
@@ -100,6 +103,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 0,
+          totalSize: 0,
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
@@ -119,6 +123,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 0,
+          totalSize: 0,
           startDate: null,
           endDate: null,
           lastModifiedAssetTimestamp: null,
@@ -139,6 +144,7 @@ describe(AlbumService.name, () => {
       {
         albumId: album.id,
         assetCount: 1,
+        totalSize: 0,
         startDate: new Date('1970-01-01'),
         endDate: new Date('1970-01-01'),
         lastModifiedAssetTimestamp: new Date('1970-01-01'),
@@ -557,6 +563,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 1,
+          totalSize: 0,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
@@ -577,6 +584,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 1,
+          totalSize: 0,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),
@@ -599,6 +607,7 @@ describe(AlbumService.name, () => {
         {
           albumId: album.id,
           assetCount: 1,
+          totalSize: 0,
           startDate: new Date('1970-01-01'),
           endDate: new Date('1970-01-01'),
           lastModifiedAssetTimestamp: new Date('1970-01-01'),

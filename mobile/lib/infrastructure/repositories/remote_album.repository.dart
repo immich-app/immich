@@ -448,7 +448,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
 }
 
 extension on RemoteAlbumEntityData {
-  RemoteAlbum toDto({int assetCount = 0, required String ownerName, required bool isShared}) {
+  RemoteAlbum toDto({int assetCount = 0, int totalSize = 0, required String ownerName, required bool isShared}) {
     return RemoteAlbum(
       id: id,
       name: name,
@@ -460,6 +460,7 @@ extension on RemoteAlbumEntityData {
       isActivityEnabled: isActivityEnabled,
       order: order,
       assetCount: assetCount,
+      totalSize: totalSize,
       ownerName: ownerName,
       isShared: isShared,
     );

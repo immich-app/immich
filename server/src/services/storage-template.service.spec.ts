@@ -281,6 +281,7 @@ describe(StorageTemplateService.name, () => {
           endDate: asset.fileCreatedAt,
           albumId: album.id,
           assetCount: 1,
+          totalSize: 0,
           lastModifiedAssetTimestamp: null,
         },
       ]);

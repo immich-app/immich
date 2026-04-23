@@ -68,6 +68,7 @@ RemoteAlbum createRemoteAlbum({
     isShared: isShared,
     order: AlbumAssetOrder.asc,
     assetCount: 0,
+    totalSize: 0,
     ownerName: 'Test Owner',
   );
 }

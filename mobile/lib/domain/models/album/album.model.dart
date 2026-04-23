@@ -22,6 +22,7 @@ class RemoteAlbum {
   final bool isActivityEnabled;
   final AlbumAssetOrder order;
   final int assetCount;
+  final int totalSize;
   final String ownerName;
   final bool isShared;
 
@@ -36,6 +37,7 @@ class RemoteAlbum {
     required this.isActivityEnabled,
     required this.order,
     required this.assetCount,
+    required this.totalSize,
     required this.ownerName,
     required this.isShared,
   });
@@ -53,6 +55,7 @@ class RemoteAlbum {
     order: $order,
     thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
     assetCount: $assetCount
+    totalSize: $totalSize
     ownerName: $ownerName
     isShared: $isShared
  }''';
@@ -72,6 +75,7 @@ class RemoteAlbum {
         isActivityEnabled == other.isActivityEnabled &&
         order == other.order &&
         assetCount == other.assetCount &&
+        totalSize == other.totalSize &&
         ownerName == other.ownerName &&
         isShared == other.isShared;
   }
@@ -88,6 +92,7 @@ class RemoteAlbum {
         isActivityEnabled.hashCode ^
         order.hashCode ^
         assetCount.hashCode ^
+        totalSize.hashCode ^
         ownerName.hashCode ^
         isShared.hashCode;
   }
@@ -103,6 +108,7 @@ class RemoteAlbum {
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
     int? assetCount,
+    int? totalSize,
     String? ownerName,
     bool? isShared,
   }) {
@@ -117,6 +123,7 @@ class RemoteAlbum {
       isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
       order: order ?? this.order,
       assetCount: assetCount ?? this.assetCount,
+      totalSize: totalSize ?? this.totalSize,
       ownerName: ownerName ?? this.ownerName,
       isShared: isShared ?? this.isShared,
     );

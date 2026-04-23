@@ -30,6 +30,7 @@ class AlbumResponseDto {
     required this.ownerId,
     required this.shared,
     this.startDate,
+    required this.totalSize,
     required this.updatedAt,
   });
 
@@ -107,6 +108,12 @@ class AlbumResponseDto {
   ///
   DateTime? startDate;
 
+  /// Total size in bytes
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int totalSize;
+
   /// Last update date
   DateTime updatedAt;
 
@@ -129,6 +136,7 @@ class AlbumResponseDto {
     other.ownerId == ownerId &&
     other.shared == shared &&
     other.startDate == startDate &&
+    other.totalSize == totalSize &&
     other.updatedAt == updatedAt;
 
   @override
@@ -151,10 +159,11 @@ class AlbumResponseDto {
     (ownerId.hashCode) +
     (shared.hashCode) +
     (startDate == null ? 0 : startDate!.hashCode) +
+    (totalSize.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, startDate=$startDate, totalSize=$totalSize, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -195,6 +204,7 @@ class AlbumResponseDto {
     } else {
     //  json[r'startDate'] = null;
     }
+      json[r'totalSize'] = this.totalSize;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -225,6 +235,7 @@ class AlbumResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
         startDate: mapDateTime(json, r'startDate', r''),
+        totalSize: mapValueOfType<int>(json, r'totalSize')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -285,6 +296,7 @@ class AlbumResponseDto {
     'owner',
     'ownerId',
     'shared',
+    'totalSize',
     'updatedAt',
   };
 }

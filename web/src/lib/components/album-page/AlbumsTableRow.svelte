@@ -4,6 +4,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -71,5 +72,8 @@
     {:else}
       -
     {/if}
+  </td>
+  <td class="text-md text-ellipsis text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]">
+    {getByteUnitString(album.totalSize, $locale)}
   </td>
 </tr>

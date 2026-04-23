@@ -117,6 +117,7 @@ export const AlbumResponseSchema = z
     hasSharedLink: z.boolean().describe('Has shared link'),
     owner: UserResponseSchema,
     assetCount: z.int().min(0).describe('Number of assets'),
+    totalSize: z.int().min(0).describe('Total size in bytes'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     lastModifiedAssetTimestamp: z
       .string()
@@ -203,6 +204,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     startDate: asDateString(startDate),
     endDate: asDateString(endDate),
     assetCount: entity.assets?.length || 0,
+    totalSize: 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
   };

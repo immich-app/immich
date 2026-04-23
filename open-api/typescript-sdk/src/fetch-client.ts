@@ -483,6 +483,8 @@ export type AlbumResponseDto = {
     shared: boolean;
     /** Start date (earliest asset) */
     startDate?: string;
+    /** Total size in bytes */
+    totalSize: number;
     /** Last update date */
     updatedAt: string;
 };

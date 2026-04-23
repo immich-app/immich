@@ -7,7 +7,8 @@ enum AlbumSortMode {
   lastModified(3, "library_page_sort_last_modified", SortOrder.desc),
   created(0, "library_page_sort_created", SortOrder.desc),
   mostRecent(2, "sort_recent", SortOrder.desc),
-  mostOldest(5, "sort_oldest", SortOrder.asc);
+  mostOldest(5, "sort_oldest", SortOrder.asc),
+  fileSize(6, "library_page_sort_file_size", SortOrder.desc);
 
   final int storeIndex;
   final String label;
