@@ -59,16 +59,21 @@ The compose file looks for `.env` at the **repo root** (`../.env` from
 
 ## 4. Build and start
 
-First build can take 10-20 minutes (server + ML images compile from source):
+First build can take 10-20 minutes (server + ML images compile from source).
+Run from the **repo root** so `.env` is picked up:
 
 ```bash
-docker compose -f docker/docker-compose.fork.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.fork.yml up -d --build
 ```
+
+(Without `--env-file .env`, Docker Compose looks next to the compose file
+and the `${UPLOAD_LOCATION}` / `${DB_DATA_LOCATION}` / `${EXTERNAL_LIBRARY_PATH}`
+variables silently expand to empty strings.)
 
 Watch logs while the server boots:
 
 ```bash
-docker compose -f docker/docker-compose.fork.yml logs -f immich-server
+docker compose --env-file .env -f docker/docker-compose.fork.yml logs -f immich-server
 ```
 
 Once you see `Immich Server is listening on port 2283`, open `http://<server>:2283`.
@@ -131,7 +136,7 @@ required.
 ```bash
 cd immich-fork
 git pull origin feature/shared-albums-full-integration
-docker compose -f docker/docker-compose.fork.yml up -d --build
+docker compose --env-file .env -f docker/docker-compose.fork.yml up -d --build
 ```
 
 ## Rolling back to stock Immich
