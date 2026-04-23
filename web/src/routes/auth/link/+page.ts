@@ -3,6 +3,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   const email = url.searchParams.get('email') || '';
+  const reLinkToken = url.searchParams.get('token') || '';
 
   const $t = await getFormatter();
   return {
@@ -10,5 +11,6 @@ export const load = (async ({ url }) => {
       title: $t('link_to_oauth'),
     },
     email,
+    reLinkToken,
   };
 }) satisfies PageLoad;

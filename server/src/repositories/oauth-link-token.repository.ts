@@ -13,13 +13,26 @@ export class OAuthLinkTokenRepository {
     return this.db.insertInto('oauth_link_token').values(dto).returningAll().executeTakeFirstOrThrow();
   }
 
-  consumeToken(token: Buffer) {
+  getByToken(token: Buffer) {
     return this.db
-      .deleteFrom('oauth_link_token')
+      .selectFrom('oauth_link_token')
+      .selectAll()
       .where('token', '=', token)
       .where('expiresAt', '>', DateTime.now().toJSDate())
-      .returningAll()
       .executeTakeFirst();
+  }
+
+  consumeToken(token: Buffer, kind: 'callback' | 'admin' | 'any' = 'any') {
+    let query = this.db
+      .deleteFrom('oauth_link_token')
+      .where('token', '=', token)
+      .where('expiresAt', '>', DateTime.now().toJSDate());
+    if (kind === 'callback') {
+      query = query.where('oauthSub', 'is not', null);
+    } else if (kind === 'admin') {
+      query = query.where('oauthSub', 'is', null);
+    }
+    return query.returningAll().executeTakeFirst();
   }
 
   async cleanup() {

@@ -1285,6 +1285,59 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/users/{id}/oauth-relink-token": {
+      "post": {
+        "description": "Create a single-use token that lets a user re-link their account to a new OAuth sub (e.g. when migrating IdPs). Deliver the token to the user out-of-band.",
+        "operationId": "createOAuthReLinkTokenAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthReLinkTokenResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Issue an OAuth re-link token",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "adminUser.update"
+      }
+    },
     "/admin/users/{id}/preferences": {
       "get": {
         "description": "Retrieve the preferences of a specific user.",
@@ -7497,6 +7550,38 @@
           }
         ],
         "x-immich-state": "Stable"
+      }
+    },
+    "/oauth/relink-start": {
+      "post": {
+        "description": "Redeem an admin-issued OAuth re-link token, setting a short-lived cookie that gets consumed by the subsequent OAuth callback.",
+        "operationId": "startOAuthReLink",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthReLinkStartDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Start OAuth re-link",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ]
       }
     },
     "/oauth/unlink": {
@@ -19083,6 +19168,38 @@
         },
         "required": [
           "redirectUri"
+        ],
+        "type": "object"
+      },
+      "OAuthReLinkStartDto": {
+        "properties": {
+          "token": {
+            "description": "Plaintext OAuth re-link token issued by an administrator",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "OAuthReLinkTokenResponseDto": {
+        "properties": {
+          "expiresAt": {
+            "description": "Token expiration",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "token": {
+            "description": "Single-use token; deliver to the user via /auth/link?token=<token>",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expiresAt",
+          "token"
         ],
         "type": "object"
       },

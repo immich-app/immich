@@ -5,10 +5,10 @@ export async function up(db: Kysely<any>): Promise<void> {
     CREATE TABLE "oauth_link_token" (
       "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
       "token" bytea NOT NULL,
-      "oauthSub" varchar NOT NULL,
+      "oauthSub" varchar,
       "oauthSid" varchar,
       "email" varchar NOT NULL,
-      "profile" jsonb NOT NULL,
+      "profile" jsonb,
       "expiresAt" timestamp with time zone NOT NULL,
       "createdAt" timestamp with time zone NOT NULL DEFAULT now()
     );

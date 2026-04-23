@@ -91,13 +91,13 @@ export class AuthService extends BaseService {
     const linkTokenCookie = this.getCookieOAuthLinkToken(headers);
     if (linkTokenCookie) {
       const hashedToken = this.cryptoRepository.hashSha256(linkTokenCookie);
-      const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
-      if (record) {
+      const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken, 'callback');
+      if (record && record.oauthSub !== null && record.profile !== null) {
         const duplicate = await this.userRepository.getByOAuthId(record.oauthSub);
         if (duplicate && duplicate.id !== user.id) {
           throw new BadRequestException('This OAuth account has already been linked to another user.');
         }
-        user = await this.applyOAuthProfileToUser(user, record);
+        user = await this.applyOAuthProfileToUser(user, { oauthSub: record.oauthSub, profile: record.profile });
         linkedOAuthSid = record.oauthSid ?? undefined;
       }
     }
@@ -116,19 +116,25 @@ export class AuthService extends BaseService {
       throw new BadRequestException('Missing OAuth link token');
     }
 
-    const record = await this.consumeOAuthLinkToken(linkTokenCookie);
-    const existing = await this.userRepository.getByOAuthId(record.oauthSub);
+    const hashedToken = this.cryptoRepository.hashSha256(linkTokenCookie);
+    const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken, 'callback');
+    if (!record || record.oauthSub === null || record.profile === null) {
+      throw new BadRequestException('Invalid OAuth link token for registration');
+    }
+    const { oauthSub, profile } = record;
+
+    const existing = await this.userRepository.getByOAuthId(oauthSub);
     if (existing) {
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
 
-    this.logger.log(`Registering new user from OAuth: ${record.oauthSub}/${record.email}`);
+    this.logger.log(`Registering new user from OAuth: ${oauthSub}/${record.email}`);
     const newUser = await this.createUser({
       email: record.email,
-      name: record.profile.name,
-      isAdmin: record.profile.isAdmin,
+      name: profile.name,
+      isAdmin: profile.isAdmin,
     });
-    const user = await this.applyOAuthProfileToUser(newUser, record);
+    const user = await this.applyOAuthProfileToUser(newUser, { oauthSub, profile });
     return this.createLoginResponse(user, details, record.oauthSid ?? undefined);
   }
 
@@ -331,6 +337,19 @@ export class AuthService extends BaseService {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
+  async validateOAuthReLinkToken(plainToken: string) {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
+    const hashed = this.cryptoRepository.hashSha256(plainToken);
+    const record = await this.oauthLinkTokenRepository.getByToken(hashed);
+    if (!record || record.oauthSub !== null) {
+      throw new BadRequestException('Invalid or expired re-link token');
+    }
+  }
+
   async authorize(dto: OAuthConfigDto) {
     const { oauth } = await this.getConfig({ withCache: false });
 
@@ -380,6 +399,15 @@ export class AuthService extends BaseService {
       return this.createLoginResponse(user, loginDetails, oauthSid);
     }
 
+    const reLinkTokenCookie = this.getCookieOAuthLinkToken(headers);
+    if (reLinkTokenCookie) {
+      const hashedCookie = this.cryptoRepository.hashSha256(reLinkTokenCookie);
+      const record = await this.oauthLinkTokenRepository.consumeToken(hashedCookie, 'admin');
+      if (record) {
+        return this.completeAdminIssuedReLink(record, profile.sub, oauthSid, loginDetails);
+      }
+    }
+
     if (!normalizedEmail) {
       throw new BadRequestException('OAuth profile does not have an email address');
     }
@@ -396,6 +424,27 @@ export class AuthService extends BaseService {
       expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
     });
     throw new OAuthLinkRequiredException(normalizedEmail, plainToken);
+  }
+
+  private async completeAdminIssuedReLink(
+    record: { email: string },
+    newOAuthSub: string,
+    oauthSid: string | undefined,
+    loginDetails: LoginDetails,
+  ) {
+    const targetUser = await this.userRepository.getByEmail(record.email);
+    if (!targetUser) {
+      throw new BadRequestException('The user for this re-link token no longer exists');
+    }
+
+    const duplicate = await this.userRepository.getByOAuthId(newOAuthSub);
+    if (duplicate && duplicate.id !== targetUser.id) {
+      throw new BadRequestException('This OAuth account has already been linked to another user.');
+    }
+
+    this.logger.log(`Completing admin-issued OAuth re-link for user ${targetUser.id}`);
+    const updated = await this.userRepository.update(targetUser.id, { oauthId: newOAuthSub });
+    return this.createLoginResponse(updated, loginDetails, oauthSid);
   }
 
   private resolveOAuthProfile(
@@ -431,15 +480,6 @@ export class AuthService extends BaseService {
       isAdmin: role === 'admin',
       picture: profile.picture ?? null,
     };
-  }
-
-  private async consumeOAuthLinkToken(plainToken: string) {
-    const hashedToken = this.cryptoRepository.hashSha256(plainToken);
-    const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
-    if (!record) {
-      throw new BadRequestException('Invalid or expired link token');
-    }
-    return record;
   }
 
   private async applyOAuthProfileToUser(user: UserAdmin, record: { oauthSub: string; profile: OAuthLinkTokenProfile }) {

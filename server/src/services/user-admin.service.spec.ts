@@ -5,6 +5,7 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
+import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { describe } from 'vitest';
@@ -162,6 +163,42 @@ describe(UserAdminService.name, () => {
         name: JobName.UserDelete,
         data: { id: userStub.user1.id, force: true },
       });
+    });
+  });
+
+  describe('createOAuthReLinkToken', () => {
+    it('should throw when OAuth is not enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.disabled);
+      await expect(sut.createOAuthReLinkToken(authStub.admin, userStub.user1.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.oauthLinkToken.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the target user is missing', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.user.get.mockResolvedValueOnce(void 0);
+      await expect(sut.createOAuthReLinkToken(authStub.admin, 'missing')).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.oauthLinkToken.create).not.toHaveBeenCalled();
+    });
+
+    it('should create a token with null oauthSub and the target email', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauthLinkToken.create.mockResolvedValue({} as any);
+
+      const result = await sut.createOAuthReLinkToken(authStub.admin, userStub.user1.id);
+
+      expect(mocks.oauthLinkToken.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          oauthSub: null,
+          oauthSid: null,
+          profile: null,
+          email: userStub.user1.email,
+        }),
+      );
+      expect(result.token).toEqual(expect.any(String));
+      expect(result.expiresAt).toBeInstanceOf(Date);
+      expect(result.expiresAt.getTime()).toBeGreaterThan(Date.now());
     });
   });
 

@@ -16,8 +16,8 @@ export class OAuthLinkTokenTable {
   @Column({ type: 'bytea', index: true })
   token!: Buffer;
 
-  @Column()
-  oauthSub!: string;
+  @Column({ nullable: true })
+  oauthSub!: string | null;
 
   @Column({ nullable: true })
   oauthSid!: string | null;
@@ -25,8 +25,8 @@ export class OAuthLinkTokenTable {
   @Column()
   email!: string;
 
-  @Column({ type: 'jsonb' })
-  profile!: OAuthLinkTokenProfile;
+  @Column({ type: 'jsonb', nullable: true })
+  profile!: OAuthLinkTokenProfile | null;
 
   @Column({ type: 'timestamp with time zone' })
   expiresAt!: Timestamp;

@@ -1,10 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
+  OAuthReLinkTokenResponseDto,
   UserAdminCreateDto,
   UserAdminDeleteDto,
   UserAdminResponseDto,
@@ -135,6 +137,29 @@ export class UserAdminService extends BaseService {
     await this.findOrFail(id, { withDeleted: true });
     const metadata = await this.userRepository.getMetadata(id);
     return mapPreferences(getPreferences(metadata));
+  }
+
+  async createOAuthReLinkToken(auth: AuthDto, id: string): Promise<OAuthReLinkTokenResponseDto> {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new BadRequestException('OAuth is not enabled');
+    }
+
+    const user = await this.findOrFail(id, {});
+    const plainToken = this.cryptoRepository.randomBytesAsText(32);
+    const hashedToken = this.cryptoRepository.hashSha256(plainToken);
+    const expiresAt = DateTime.now().plus({ hours: 24 }).toJSDate();
+    await this.oauthLinkTokenRepository.create({
+      token: hashedToken,
+      oauthSub: null,
+      oauthSid: null,
+      email: user.email,
+      profile: null,
+      expiresAt,
+    });
+
+    this.logger.log(`Admin ${auth.user.id} issued an OAuth re-link token for user ${user.id}`);
+    return { token: plainToken, expiresAt };
   }
 
   async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {

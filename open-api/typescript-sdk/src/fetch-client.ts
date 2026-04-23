@@ -262,6 +262,12 @@ export type UserAdminUpdateDto = {
     /** Storage label */
     storageLabel?: string | null;
 };
+export type OAuthReLinkTokenResponseDto = {
+    /** Token expiration */
+    expiresAt: string;
+    /** Single-use token; deliver to the user via /auth/link?token=<token> */
+    token: string;
+};
 export type AlbumsResponse = {
     defaultAssetOrder: AssetOrder;
 };
@@ -1420,6 +1426,10 @@ export type OAuthCallbackDto = {
     state?: string;
     /** OAuth callback URL */
     url: string;
+};
+export type OAuthReLinkStartDto = {
+    /** Plaintext OAuth re-link token issued by an administrator */
+    token: string;
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
@@ -3528,6 +3538,20 @@ export function updateUserAdmin({ id, userAdminUpdateDto }: {
     })));
 }
 /**
+ * Issue an OAuth re-link token
+ */
+export function createOAuthReLinkTokenAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: OAuthReLinkTokenResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/oauth-relink-token`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Retrieve user preferences
  */
 export function getUserPreferencesAdmin({ id }: {
@@ -4965,6 +4989,18 @@ export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/oauth/mobile-redirect", {
         ...opts
     }));
+}
+/**
+ * Start OAuth re-link
+ */
+export function startOAuthReLink({ oAuthReLinkStartDto }: {
+    oAuthReLinkStartDto: OAuthReLinkStartDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/oauth/relink-start", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: oAuthReLinkStartDto
+    })));
 }
 /**
  * Unlink OAuth account

@@ -5,7 +5,7 @@
   import { Route } from '$lib/route';
   import { oauth } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { Button, toastManager } from '@immich/ui';
+  import { Button, Stack, Text, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -20,18 +20,28 @@
   };
 </script>
 
-<section class="my-4">
-  <div in:fade={{ duration: 500 }}>
-    <div class="sm:ms-8 flex justify-end">
-      {#if featureFlagsManager.value.oauth}
+{#if featureFlagsManager.value.oauth}
+  <section class="my-4">
+    <div in:fade={{ duration: 500 }}>
+      <Stack gap={3}>
         {#if authManager.user.oauthId}
-          <Button shape="round" size="small" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
+          <Text>{$t('oauth_account_is_linked')}</Text>
+          {#if featureFlagsManager.value.passwordLogin}
+            <div class="sm:ms-8 flex justify-end">
+              <Button shape="round" size="small" color="danger" onclick={() => handleUnlink()}>
+                {$t('unlink_oauth')}
+              </Button>
+            </div>
+          {/if}
         {:else}
-          <Button shape="round" size="small" onclick={() => goto(Route.login({ autoLaunch: 1 }))}
-            >{$t('link_to_oauth')}</Button
-          >
+          <Text>{$t('oauth_account_not_linked')}</Text>
+          <div class="sm:ms-8 flex justify-end">
+            <Button shape="round" size="small" onclick={() => goto(Route.login({ autoLaunch: 1 }))}>
+              {$t('link_to_oauth')}
+            </Button>
+          </div>
         {/if}
-      {/if}
+      </Stack>
     </div>
-  </div>
-</section>
+  </section>
+{/if}

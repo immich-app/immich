@@ -128,6 +128,12 @@ const OAuthBackchannelLogoutSchema = z
   .object({ logout_token: z.string().describe('OAuth logout token') })
   .meta({ id: 'OAuthBackchannelLogoutDto' });
 
+const OAuthReLinkStartSchema = z
+  .object({
+    token: z.string().describe('Plaintext OAuth re-link token issued by an administrator'),
+  })
+  .meta({ id: 'OAuthReLinkStartDto' });
+
 const AuthStatusResponseSchema = z
   .object({
     pinCode: z.boolean().describe('Has PIN code set'),
@@ -152,4 +158,5 @@ export class OAuthCallbackDto extends createZodDto(OAuthCallbackSchema) {}
 export class OAuthConfigDto extends createZodDto(OAuthConfigSchema) {}
 export class OAuthAuthorizeResponseDto extends createZodDto(OAuthAuthorizeResponseSchema) {}
 export class OAuthBackchannelLogoutDto extends createZodDto(OAuthBackchannelLogoutSchema) {}
+export class OAuthReLinkStartDto extends createZodDto(OAuthReLinkStartSchema) {}
 export class AuthStatusResponseDto extends createZodDto(AuthStatusResponseSchema) {}

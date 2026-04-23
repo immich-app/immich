@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { parse as parseCookie } from 'cookie';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -9,6 +10,7 @@ import {
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  OAuthReLinkStartDto,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum';
@@ -73,6 +75,8 @@ export class OAuthController {
     @Body() dto: OAuthCallbackDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
+    const hadLinkCookie = !!parseCookie(request.headers.cookie || '')[ImmichCookie.OAuthLinkToken];
+    let freshLinkCookieIssued = false;
     try {
       const body = await this.service.callback(dto, request.headers, loginDetails);
       return respondWithCookie(res, body, {
@@ -89,12 +93,36 @@ export class OAuthController {
           isSecure: loginDetails.isSecure,
           values: [{ key: ImmichCookie.OAuthLinkToken, value: error.oauthLinkToken }],
         });
+        freshLinkCookieIssued = true;
       }
       throw error;
     } finally {
       res.clearCookie(ImmichCookie.OAuthState);
       res.clearCookie(ImmichCookie.OAuthCodeVerifier);
+      if (hadLinkCookie && !freshLinkCookieIssued) {
+        res.clearCookie(ImmichCookie.OAuthLinkToken);
+      }
     }
+  }
+
+  @Post('relink-start')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Start OAuth re-link',
+    description:
+      'Redeem an admin-issued OAuth re-link token, setting a short-lived cookie that gets consumed by the subsequent OAuth callback.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  async startOAuthReLink(
+    @Body() dto: OAuthReLinkStartDto,
+    @Res({ passthrough: true }) res: Response,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<void> {
+    await this.service.validateOAuthReLinkToken(dto.token);
+    respondWithCookie(res, null, {
+      isSecure: loginDetails.isSecure,
+      values: [{ key: ImmichCookie.OAuthLinkToken, value: dto.token }],
+    });
   }
 
   @Post('unlink')

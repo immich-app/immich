@@ -1355,6 +1355,145 @@ describe(AuthService.name, () => {
         expect.objectContaining({ profile: expect.objectContaining({ isAdmin: true }) }),
       );
     });
+
+    describe('admin-issued re-link token', () => {
+      const reLinkRecord = {
+        id: 'token-id',
+        oauthSub: null,
+        oauthSid: 'idp-sid-new',
+        email: 'linked@immich.cloud',
+        profile: null,
+        token: Buffer.from('hashed'),
+        expiresAt: new Date(Date.now() + 60_000),
+        createdAt: new Date(),
+      };
+
+      it('should relink to the user identified by the token when the new sub is unknown', async () => {
+        const targetUser = UserFactory.create({ email: 'linked@immich.cloud', oauthId: 'old-sub' });
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+          profile: OAuthProfileFactory.create({ sub: 'new-sub' }),
+          sid: 'idp-sid-new',
+        });
+        mocks.user.getByOAuthId.mockResolvedValueOnce(void 0).mockResolvedValueOnce(void 0);
+        mocks.oauthLinkToken.consumeToken.mockResolvedValue(reLinkRecord);
+        mocks.user.getByEmail.mockResolvedValue(targetUser);
+        mocks.user.update.mockResolvedValue({ ...targetUser, oauthId: 'new-sub' });
+        mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+        await sut.callback(
+          { url: 'http://immich/auth/link?code=abc', state: 'xyz', codeVerifier: 'foo' },
+          { cookie: 'immich_oauth_link_token=plain' },
+          loginDetails,
+        );
+
+        expect(mocks.user.update).toHaveBeenCalledWith(targetUser.id, { oauthId: 'new-sub' });
+        expect(mocks.session.create).toHaveBeenCalledWith(expect.objectContaining({ oauthSid: 'idp-sid-new' }));
+      });
+
+      it('should reject when the token email no longer matches a user', async () => {
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+          profile: OAuthProfileFactory.create({ sub: 'new-sub' }),
+        });
+        mocks.user.getByOAuthId.mockResolvedValue(void 0);
+        mocks.oauthLinkToken.consumeToken.mockResolvedValue(reLinkRecord);
+        mocks.user.getByEmail.mockResolvedValue(void 0);
+
+        await expect(
+          sut.callback(
+            { url: 'http://immich/auth/link?code=abc', state: 'xyz', codeVerifier: 'foo' },
+            { cookie: 'immich_oauth_link_token=plain' },
+            loginDetails,
+          ),
+        ).rejects.toThrow('no longer exists');
+      });
+
+      it('should reject when the new sub is already linked to a different user', async () => {
+        const targetUser = UserFactory.create({ email: 'linked@immich.cloud' });
+        const other = UserFactory.create({ oauthId: 'new-sub' });
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+          profile: OAuthProfileFactory.create({ sub: 'new-sub' }),
+        });
+        mocks.user.getByOAuthId.mockResolvedValueOnce(void 0).mockResolvedValueOnce(other);
+        mocks.oauthLinkToken.consumeToken.mockResolvedValue(reLinkRecord);
+        mocks.user.getByEmail.mockResolvedValue(targetUser);
+
+        await expect(
+          sut.callback(
+            { url: 'http://immich/auth/link?code=abc', state: 'xyz', codeVerifier: 'foo' },
+            { cookie: 'immich_oauth_link_token=plain' },
+            loginDetails,
+          ),
+        ).rejects.toThrow('already been linked to another user');
+      });
+
+      it('should fall through to callback-issued link flow when the cookie is not an admin-issued token', async () => {
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+        mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+          profile: OAuthProfileFactory.create({ sub: 'new-sub' }),
+        });
+        mocks.user.getByOAuthId.mockResolvedValue(void 0);
+        // Cookie carries a callback-issued token; admin-typed consume returns nothing.
+        mocks.oauthLinkToken.consumeToken.mockResolvedValue(void 0);
+        mocks.oauthLinkToken.create.mockResolvedValue({} as any);
+
+        await expect(
+          sut.callback(
+            { url: 'http://immich/auth/link?code=abc', state: 'xyz', codeVerifier: 'foo' },
+            { cookie: 'immich_oauth_link_token=plain' },
+            loginDetails,
+          ),
+        ).rejects.toThrow(OAuthLinkRequiredException);
+
+        expect(mocks.user.update).not.toHaveBeenCalled();
+        expect(mocks.oauthLinkToken.create).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('validateOAuthReLinkToken', () => {
+    it('should throw when OAuth is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.disabled);
+      await expect(sut.validateOAuthReLinkToken('plain')).rejects.toThrow('OAuth is not enabled');
+    });
+
+    it('should throw when the token does not exist', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauthLinkToken.getByToken.mockResolvedValue(void 0);
+      await expect(sut.validateOAuthReLinkToken('plain')).rejects.toThrow('Invalid or expired');
+    });
+
+    it('should throw when the token is a callback-issued one (non-null sub)', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauthLinkToken.getByToken.mockResolvedValue({
+        id: 'token-id',
+        oauthSub: 'sub',
+        oauthSid: null,
+        email: 'e',
+        profile: null,
+        token: Buffer.from('hashed'),
+        expiresAt: new Date(Date.now() + 60_000),
+        createdAt: new Date(),
+      });
+      await expect(sut.validateOAuthReLinkToken('plain')).rejects.toThrow('Invalid or expired');
+    });
+
+    it('should resolve when the token is valid and admin-issued', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauthLinkToken.getByToken.mockResolvedValue({
+        id: 'token-id',
+        oauthSub: null,
+        oauthSid: null,
+        email: 'e',
+        profile: null,
+        token: Buffer.from('hashed'),
+        expiresAt: new Date(Date.now() + 60_000),
+        createdAt: new Date(),
+      });
+      await expect(sut.validateOAuthReLinkToken('plain')).resolves.toBeUndefined();
+    });
   });
 
   describe('unlink', () => {
