@@ -39,6 +39,13 @@ export class TimeBucketDto {
   @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
+  @ValidateBoolean({
+    optional: true,
+    description:
+      'Include assets from albums shared with the authenticated user (Wintlink fork). When true, photos belonging to any album the user has access to appear in the timeline alongside their own.',
+  })
+  withSharedAlbums?: boolean;
+
   @ValidateEnum({
     enum: AssetOrder,
     name: 'AssetOrder',

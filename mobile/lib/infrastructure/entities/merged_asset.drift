@@ -4,7 +4,7 @@ import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
 
-mergedAsset: 
+mergedAsset:
 SELECT
 	rae.id as remote_id,
 	(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1) as local_id,
@@ -35,7 +35,24 @@ LEFT JOIN
 WHERE
 	rae.deleted_at IS NULL
 	AND rae.visibility = 0 -- timeline visibility
-	AND rae.owner_id IN :user_ids
+	-- Wintlink fork: include assets from albums shared with the user
+	-- (owned by any user in :user_ids, or shared with any of them).
+	AND (
+		rae.owner_id IN :user_ids
+		OR EXISTS (
+			SELECT 1
+			FROM remote_album_asset_entity raa
+			INNER JOIN remote_album_entity ra ON raa.album_id = ra.id
+			WHERE raa.asset_id = rae.id
+				AND (
+					ra.owner_id IN :user_ids
+					OR EXISTS (
+						SELECT 1 FROM remote_album_user_entity rau
+						WHERE rau.album_id = ra.id AND rau.user_id IN :user_ids
+					)
+				)
+		)
+	)
 	AND (
 		rae.stack_id IS NULL
 		OR rae.id = se.primary_asset_id
@@ -108,7 +125,23 @@ FROM
 	WHERE
 		rae.deleted_at IS NULL
 		AND rae.visibility = 0 -- timeline visibility
-		AND rae.owner_id in :user_ids
+		-- Wintlink fork: include assets from albums shared with the user.
+		AND (
+			rae.owner_id IN :user_ids
+			OR EXISTS (
+				SELECT 1
+				FROM remote_album_asset_entity raa
+				INNER JOIN remote_album_entity ra ON raa.album_id = ra.id
+				WHERE raa.asset_id = rae.id
+					AND (
+						ra.owner_id IN :user_ids
+						OR EXISTS (
+							SELECT 1 FROM remote_album_user_entity rau
+							WHERE rau.album_id = ra.id AND rau.user_id IN :user_ids
+						)
+					)
+			)
+		)
 		AND (
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id

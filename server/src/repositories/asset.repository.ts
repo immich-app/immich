@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  Expression,
   ExpressionBuilder,
   Insertable,
   Kysely,
@@ -7,6 +8,7 @@ import {
   Selectable,
   SelectQueryBuilder,
   ShallowDehydrateObject,
+  SqlBool,
   sql,
   Updateable,
   UpdateResult,
@@ -77,6 +79,9 @@ interface AssetBuilderOptions {
   tagId?: string;
   personId?: string;
   userIds?: string[];
+  // Wintlink fork: when set, assets belonging to any of these albums are
+  // included in addition to the `userIds` filter (OR, not AND).
+  includeAlbumIds?: string[];
   withStacked?: boolean;
   exifInfo?: boolean;
   status?: AssetStatus;
@@ -732,7 +737,28 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(
+            (!!options.userIds && options.userIds.length > 0) ||
+              (!!options.includeAlbumIds && options.includeAlbumIds.length > 0),
+            (qb) =>
+              qb.where((eb) => {
+                const expressions: Expression<SqlBool>[] = [];
+                if (options.userIds && options.userIds.length > 0) {
+                  expressions.push(eb('asset.ownerId', '=', anyUuid(options.userIds)));
+                }
+                if (options.includeAlbumIds && options.includeAlbumIds.length > 0) {
+                  expressions.push(
+                    eb.exists(
+                      eb
+                        .selectFrom('album_asset')
+                        .whereRef('album_asset.assetId', '=', 'asset.id')
+                        .where('album_asset.albumId', 'in', options.includeAlbumIds),
+                    ),
+                  );
+                }
+                return eb.or(expressions);
+              }),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -816,7 +842,28 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(
+            (!!options.userIds && options.userIds.length > 0) ||
+              (!!options.includeAlbumIds && options.includeAlbumIds.length > 0),
+            (qb) =>
+              qb.where((eb) => {
+                const expressions: Expression<SqlBool>[] = [];
+                if (options.userIds && options.userIds.length > 0) {
+                  expressions.push(eb('asset.ownerId', '=', anyUuid(options.userIds)));
+                }
+                if (options.includeAlbumIds && options.includeAlbumIds.length > 0) {
+                  expressions.push(
+                    eb.exists(
+                      eb
+                        .selectFrom('album_asset')
+                        .whereRef('album_asset.assetId', '=', 'asset.id')
+                        .where('album_asset.albumId', 'in', options.includeAlbumIds),
+                    ),
+                  );
+                }
+                return eb.or(expressions);
+              }),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb

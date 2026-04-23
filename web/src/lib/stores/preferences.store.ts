@@ -39,8 +39,9 @@ const defaultMapSettings = {
   allowDarkMode: true,
   includeArchived: false,
   onlyFavorites: false,
-  withPartners: false,
-  withSharedAlbums: false,
+  // Wintlink fork: default on, so map shows shared content out of the box.
+  withPartners: true,
+  withSharedAlbums: true,
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',

@@ -13657,6 +13657,15 @@
             }
           },
           {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from albums shared with the authenticated user (Wintlink fork). When true, photos belonging to any album the user has access to appear in the timeline alongside their own.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "withStacked",
             "required": false,
             "in": "query",
@@ -13828,6 +13837,15 @@
             "required": false,
             "in": "query",
             "description": "Include assets shared by partners",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from albums shared with the authenticated user (Wintlink fork). When true, photos belonging to any album the user has access to appear in the timeline alongside their own.",
             "schema": {
               "type": "boolean"
             }

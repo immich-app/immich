@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
+import { Expression, ExpressionBuilder, Insertable, Kysely, Selectable, SqlBool, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
@@ -150,6 +150,9 @@ export class PersonRepository {
 
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
+    // Wintlink fork: a person is visible to `userId` either because they own the
+    // person record themselves, or because one of the person's faces is on an
+    // asset that lives in an album shared with (or owned by) the user.
     const items = await this.db
       .selectFrom('person')
       .selectAll('person')
@@ -160,7 +163,30 @@ export class PersonRepository {
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
-      .where('person.ownerId', '=', userId)
+      .where((eb) => {
+        const expressions: Expression<SqlBool>[] = [eb('person.ownerId', '=', userId)];
+        expressions.push(
+          eb.exists(
+            eb
+              .selectFrom('album_asset')
+              .innerJoin('album', 'album.id', 'album_asset.albumId')
+              .whereRef('album_asset.assetId', '=', 'asset.id')
+              .where('album.deletedAt', 'is', null)
+              .where((eb2) =>
+                eb2.or([
+                  eb2('album.ownerId', '=', userId),
+                  eb2.exists(
+                    eb2
+                      .selectFrom('album_user')
+                      .whereRef('album_user.albumId', '=', 'album.id')
+                      .where('album_user.userId', '=', userId),
+                  ),
+                ]),
+              ),
+          ),
+        );
+        return eb.or(expressions);
+      })
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .orderBy('person.isHidden', 'asc')
@@ -358,6 +384,8 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getNumberOfPeople(userId: string) {
     const zero = sql.lit(0);
+    // Wintlink fork: count persons the user owns PLUS persons surfaced through
+    // albums shared with them. Aligned with getAllForUser's visibility rules.
     return this.db
       .selectFrom('person')
       .where((eb) =>
@@ -373,12 +401,34 @@ export class PersonRepository {
                   .selectFrom('asset')
                   .whereRef('asset.id', '=', 'asset_face.assetId')
                   .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-                  .where('asset.deletedAt', 'is', null),
+                  .where('asset.deletedAt', 'is', null)
+                  .where((ebAccess) =>
+                    ebAccess.or([
+                      ebAccess('person.ownerId', '=', userId),
+                      ebAccess.exists(
+                        ebAccess
+                          .selectFrom('album_asset')
+                          .innerJoin('album', 'album.id', 'album_asset.albumId')
+                          .whereRef('album_asset.assetId', '=', 'asset.id')
+                          .where('album.deletedAt', 'is', null)
+                          .where((eb2) =>
+                            eb2.or([
+                              eb2('album.ownerId', '=', userId),
+                              eb2.exists(
+                                eb2
+                                  .selectFrom('album_user')
+                                  .whereRef('album_user.albumId', '=', 'album.id')
+                                  .where('album_user.userId', '=', userId),
+                              ),
+                            ]),
+                          ),
+                      ),
+                    ]),
+                  ),
               ),
             ),
         ),
       )
-      .where('person.ownerId', '=', userId)
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
       .executeTakeFirstOrThrow();

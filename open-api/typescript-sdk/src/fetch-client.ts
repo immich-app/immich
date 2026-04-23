@@ -6446,7 +6446,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withSharedAlbums, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6461,6 +6461,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     visibility?: AssetVisibility;
     withCoordinates?: boolean;
     withPartners?: boolean;
+    withSharedAlbums?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -6481,6 +6482,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         visibility,
         withCoordinates,
         withPartners,
+        withSharedAlbums,
         withStacked
     }))}`, {
         ...opts
@@ -6489,7 +6491,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withSharedAlbums, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6503,6 +6505,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     visibility?: AssetVisibility;
     withCoordinates?: boolean;
     withPartners?: boolean;
+    withSharedAlbums?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -6522,6 +6525,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         visibility,
         withCoordinates,
         withPartners,
+        withSharedAlbums,
         withStacked
     }))}`, {
         ...opts

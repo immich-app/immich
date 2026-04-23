@@ -426,6 +426,54 @@ class PersonAccess {
       .then((persons) => new Set(persons.map((person) => person.id)));
   }
 
+  /**
+   * Wintlink fork: read-level access to a person. The user can read a person if
+   * they own it OR if at least one of the person's faces is on an asset that
+   * belongs to an album shared with them (or that they own).
+   */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkReadAccess(userId: string, personIds: Set<string>) {
+    if (personIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('person')
+      .select('person.id')
+      .where('person.id', 'in', [...personIds])
+      .where((eb) =>
+        eb.or([
+          eb('person.ownerId', '=', userId),
+          eb.exists(
+            eb
+              .selectFrom('asset_face')
+              .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+              .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
+              .innerJoin('album', 'album.id', 'album_asset.albumId')
+              .whereRef('asset_face.personId', '=', 'person.id')
+              .where('asset_face.deletedAt', 'is', null)
+              .where('asset_face.isVisible', '=', true)
+              .where('asset.deletedAt', 'is', null)
+              .where('album.deletedAt', 'is', null)
+              .where((eb2) =>
+                eb2.or([
+                  eb2('album.ownerId', '=', userId),
+                  eb2.exists(
+                    eb2
+                      .selectFrom('album_user')
+                      .whereRef('album_user.albumId', '=', 'album.id')
+                      .where('album_user.userId', '=', userId),
+                  ),
+                ]),
+              ),
+          ),
+        ]),
+      )
+      .execute()
+      .then((persons) => new Set(persons.map((person) => person.id)));
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>) {

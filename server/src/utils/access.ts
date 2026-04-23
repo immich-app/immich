@@ -293,7 +293,11 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
     }
 
-    case Permission.PersonRead:
+    case Permission.PersonRead: {
+      // Wintlink fork: read covers owned persons AND those visible via shared albums.
+      return await access.person.checkReadAccess(auth.user.id, ids);
+    }
+
     case Permission.PersonUpdate:
     case Permission.PersonDelete:
     case Permission.PersonMerge: {

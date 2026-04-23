@@ -28,6 +28,7 @@ export class TimelineService extends BaseService {
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const { userId, ...options } = dto;
     let userIds: string[] | undefined = undefined;
+    let includeAlbumIds: string[] | undefined = undefined;
 
     if (userId) {
       userIds = [userId];
@@ -41,7 +42,19 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    // Wintlink fork: fold in assets from albums the caller has access to.
+    // Only applied when the timeline is being requested for the caller themselves
+    // (userId matches auth.user.id) — otherwise a user asking for somebody else's
+    // timeline should not see their own shared-album assets smuggled in.
+    if (dto.withSharedAlbums && userId === auth.user.id) {
+      const sharedAlbums = await this.albumRepository.getShared(auth.user.id);
+      const albumIds = new Set(sharedAlbums.map((album) => album.id));
+      if (albumIds.size > 0) {
+        includeAlbumIds = [...albumIds];
+      }
+    }
+
+    return { ...options, userIds, includeAlbumIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

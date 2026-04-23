@@ -64,7 +64,11 @@
   let numberOfAssets = $derived(data.statistics.assets);
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
+  const options = $derived({
+    visibility: AssetVisibility.Timeline,
+    personId: data.person.id,
+    withSharedAlbums: true,
+  });
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
