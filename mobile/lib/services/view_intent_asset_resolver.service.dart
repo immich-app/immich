@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
+import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -48,11 +49,13 @@ class ViewIntentAssetResolver {
   Future<ViewIntentResolvedAsset> resolve(ViewIntentPayload attachment) async {
     final localAssetId = attachment.localAssetId;
     final path = attachment.path;
+    _logger.fine('resolve start, localAssetId=$localAssetId, path=$path, mimeType=${attachment.mimeType}');
     if (localAssetId == null && path == null) {
       throw StateError('ViewIntent resolution requires either a localAssetId or a materialized file path.');
     }
 
     final localAsset = localAssetId != null ? await _localAssetRepository.getById(localAssetId) : null;
+    _logger.fine('resolve local asset loaded: $localAsset');
 
     if (localAssetId != null) {
       // Try the direct local-id match first when the intent resolves to a real
@@ -65,6 +68,7 @@ class ViewIntentAssetResolver {
     }
 
     final checksum = await _resolveChecksumForMatching(attachment, localAsset: localAsset);
+    _logger.fine('resolve checksum for matching: $checksum');
     if (checksum != null) {
       final mainTimelineAsset = await _resolveMainTimelineAssetByChecksum(checksum);
       if (mainTimelineAsset != null) {
@@ -76,9 +80,9 @@ class ViewIntentAssetResolver {
 
     final fallbackAsset = _toFallbackAsset(attachment, localAsset: localAsset, checksum: checksum);
     if (localAsset != null) {
-      _logger.fine('presenting deep-link local asset: $fallbackAsset');
+      _logger.fine('resolve fallback to deep-link local asset: $fallbackAsset');
     } else {
-      _logger.fine('presenting transient fallback asset: $fallbackAsset');
+      _logger.fine('resolve fallback to transient deep-link asset: $fallbackAsset');
     }
 
     return ViewIntentResolvedAsset(
@@ -90,9 +94,11 @@ class ViewIntentAssetResolver {
   }
 
   Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByLocalId(String localAssetId) async {
+    _logger.fine('resolve main timeline by localId start: $localAssetId');
     return _resolveMainTimelineAsset(
       (effectiveTimelineUsers) =>
           _ref.read(timelineRepositoryProvider).getMainTimelineIndexByLocalId(effectiveTimelineUsers, localAssetId),
+      lookupLabel: 'localId=$localAssetId',
     );
   }
 
@@ -100,21 +106,27 @@ class ViewIntentAssetResolver {
     // Some ACTION_VIEW sources do not provide a local MediaStore id, so
     // checksum is the only way to match the incoming file to an existing
     // merged asset.
+    _logger.fine('resolve main timeline by checksum start: $checksum');
     return _resolveMainTimelineAsset(
       (effectiveTimelineUsers) =>
           _ref.read(timelineRepositoryProvider).getMainTimelineIndexByChecksum(effectiveTimelineUsers, checksum),
+      lookupLabel: 'checksum=$checksum',
     );
   }
 
   Future<ViewIntentResolvedAsset?> _resolveMainTimelineAsset(
-    Future<int?> Function(List<String> effectiveTimelineUsers) findIndex,
-  ) async {
+    Future<int?> Function(List<String> effectiveTimelineUsers) findIndex, {
+    required String lookupLabel,
+  }) async {
     final effectiveTimelineUsers = _resolveMainTimelineUsers();
+    _logger.fine('resolve main timeline users for $lookupLabel: $effectiveTimelineUsers');
     if (effectiveTimelineUsers.isEmpty) {
+      _logger.fine('resolve main timeline aborted for $lookupLabel: effectiveTimelineUsers is empty');
       return null;
     }
 
     final index = await findIndex(effectiveTimelineUsers);
+    _logger.fine('resolve main timeline index for $lookupLabel: $index');
     if (index == null) {
       return null;
     }
@@ -125,24 +137,24 @@ class ViewIntentAssetResolver {
   List<String> _resolveMainTimelineUsers() {
     final timelineUsers = _ref.read(timelineUsersProvider).valueOrNull;
     final currentUserId = _ref.read(currentUserProvider)?.id;
-    return timelineUsers ?? (currentUserId != null ? [currentUserId] : const <String>[]);
+    final effectiveTimelineUsers = timelineUsers != null && timelineUsers.isNotEmpty
+        ? timelineUsers
+        : (currentUserId != null ? [currentUserId] : const <String>[]);
+    _logger.fine(
+      'resolve main timeline users source, timelineUsers=$timelineUsers, currentUserId=$currentUserId, effective=$effectiveTimelineUsers',
+    );
+    return effectiveTimelineUsers;
   }
 
   Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetAt(int index) async {
     final timelineService = _ref.read(timelineServiceProvider);
-    if (timelineService.totalAssets == 0) {
-      try {
-        await timelineService.watchBuckets().first.timeout(const Duration(seconds: 2));
-      } catch (_) {
-        return null;
-      }
-    }
-
-    if (index >= timelineService.totalAssets) {
-      return null;
-    }
-
-    final asset = await timelineService.getAssetAsync(index);
+    _logger.fine(
+      'resolve main timeline asset at index start: index=$index, origin=${timelineService.origin}, totalAssets=${timelineService.totalAssets}',
+    );
+    final asset = await MainTimelineHandoffCoordinator.resolveAssetFromMainTimelineService(timelineService, index);
+    _logger.fine(
+      'resolve main timeline asset at index result: index=$index, totalAssetsAfterWait=${timelineService.totalAssets}, asset=$asset',
+    );
     if (asset == null) {
       return null;
     }
@@ -153,17 +165,21 @@ class ViewIntentAssetResolver {
   Future<String?> _resolveChecksumForMatching(ViewIntentPayload attachment, {LocalAsset? localAsset}) async {
     final localChecksum = localAsset?.checksum;
     if (localChecksum != null) {
+      _logger.fine('resolve checksum from local db: $localChecksum');
       return localChecksum;
     }
 
     final localAssetId = attachment.localAssetId;
     if (localAssetId != null) {
+      _logger.fine('resolve checksum by hashing local asset: $localAssetId');
       return _computeChecksumForLocalAsset(localAssetId);
     }
     final path = attachment.path;
     if (path == null) {
+      _logger.fine('resolve checksum aborted: path is null');
       return null;
     }
+    _logger.fine('resolve checksum by hashing path: $path');
     return _computeChecksumForPath(path);
   }
 
@@ -171,10 +187,13 @@ class ViewIntentAssetResolver {
     try {
       final hashResults = await _nativeSyncApi.hashAssets([localAssetId]);
       if (hashResults.isEmpty) {
+        _logger.fine('compute checksum for local asset returned empty: $localAssetId');
         return null;
       }
+      _logger.fine('compute checksum for local asset succeeded: $localAssetId -> ${hashResults.first.hash}');
       return hashResults.first.hash;
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logger.warning('compute checksum for local asset failed: $localAssetId', error, stackTrace);
       return null;
     }
   }
@@ -183,10 +202,13 @@ class ViewIntentAssetResolver {
     try {
       final hashResults = await _nativeSyncApi.hashFiles([path]);
       if (hashResults.isEmpty) {
+        _logger.fine('compute checksum for path returned empty: $path');
         return null;
       }
+      _logger.fine('compute checksum for path succeeded: $path -> ${hashResults.first.hash}');
       return hashResults.first.hash;
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logger.warning('compute checksum for path failed: $path', error, stackTrace);
       return null;
     }
   }

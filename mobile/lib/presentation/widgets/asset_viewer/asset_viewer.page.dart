@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.prov
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -87,6 +88,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
+  MainTimelineHandoffCoordinator? _mainTimelineHandoffCoordinator;
+  bool _disposeStarted = false;
 
   void _onTapNavigate(int direction) {
     final page = _pageController.page?.toInt();
@@ -103,6 +106,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void initState() {
     super.initState();
 
+    if (ref.read(timelineServiceProvider).origin == TimelineOrigin.deepLink) {
+      _mainTimelineHandoffCoordinator = ref.read(mainTimelineHandoffProvider);
+    }
     final asset = ref.read(assetViewerProvider).currentAsset;
     assert(asset != null, "Current asset should not be null when opening the AssetViewer");
     if (asset != null) _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
@@ -117,6 +123,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   @override
   void dispose() {
+    _disposeStarted = true;
+    _mainTimelineHandoffCoordinator?.cancel();
     _pageController.dispose();
     _preloader.dispose();
     _reloadSubscription?.cancel();
@@ -190,7 +198,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onEvent(Event event) {
-    if (!mounted) return;
+    if (!mounted || _disposeStarted) return;
     switch (event) {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
@@ -201,7 +209,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onViewerReloadEvent() {
-    if (!mounted) return;
     if (_totalAssets <= 1) return;
 
     final index = _pageController.page?.round() ?? 0;
@@ -211,8 +218,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onTimelineReloadEvent() {
-    if (!mounted) return;
-
     final timelineService = ref.read(timelineServiceProvider);
     final totalAssets = timelineService.totalAssets;
     final currentAsset = ref.read(assetViewerProvider).currentAsset;

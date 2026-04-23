@@ -190,6 +190,13 @@ class MainTimelineHandoffCoordinator {
     await _waitForMainTimelineAvailability(userIds, handoffContext);
   }
 
+  void cancel() {
+    if (_disposed) {
+      return;
+    }
+    _operationId++;
+  }
+
   Future<void> dispose() async {
     _disposed = true;
     _operationId++;

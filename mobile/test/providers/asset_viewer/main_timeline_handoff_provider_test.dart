@@ -128,6 +128,18 @@ void main() {
     expect(handoffs.single.$3, '/tmp/view_intent_old.jpg');
   });
 
+  test('cancel prevents handoff after AssetUploadReadyV1 arrives later', () async {
+    final start = coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-1');
+    await flush();
+
+    coordinator.cancel();
+    remoteIdIndex = 8;
+    uploadReadyCompleter.complete();
+    await start;
+
+    expect(handoffs, isEmpty);
+  });
+
   test('dispose prevents handoff after AssetUploadReadyV1 arrives later', () async {
     final start = coordinator.startIfNeeded(TimelineOrigin.deepLink, remoteAssetId: 'remote-1');
     await flush();
