@@ -739,7 +739,6 @@ select
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -748,6 +747,7 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  false as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -791,7 +791,6 @@ select
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -800,6 +799,7 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  false as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
