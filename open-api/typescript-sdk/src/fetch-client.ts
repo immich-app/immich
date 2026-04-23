@@ -2047,6 +2047,8 @@ export type ServerFeaturesDto = {
     oauth: boolean;
     /** Whether OAuth auto-launch is enabled */
     oauthAutoLaunch: boolean;
+    /** Whether OAuth auto-register is enabled */
+    oauthAutoRegister: boolean;
     /** Whether OCR is enabled */
     ocr: boolean;
     /** Whether password login is enabled */
@@ -4303,6 +4305,18 @@ export function changePinCode({ pinCodeChangeDto }: {
         method: "PUT",
         body: pinCodeChangeDto
     })));
+}
+/**
+ * Register via OAuth
+ */
+export function register(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: LoginResponseDto;
+    }>("/auth/register", {
+        ...opts,
+        method: "POST"
+    }));
 }
 /**
  * Lock auth session

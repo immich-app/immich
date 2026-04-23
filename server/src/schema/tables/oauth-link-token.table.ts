@@ -1,5 +1,13 @@
 import { Column, CreateDateColumn, Generated, PrimaryGeneratedColumn, Table, Timestamp } from '@immich/sql-tools';
 
+export type OAuthLinkTokenProfile = {
+  name: string;
+  storageLabel: string | null;
+  storageQuotaInGiB: number | null;
+  isAdmin: boolean;
+  picture: string | null;
+};
+
 @Table({ name: 'oauth_link_token' })
 export class OAuthLinkTokenTable {
   @PrimaryGeneratedColumn()
@@ -16,6 +24,9 @@ export class OAuthLinkTokenTable {
 
   @Column()
   email!: string;
+
+  @Column({ type: 'jsonb' })
+  profile!: OAuthLinkTokenProfile;
 
   @Column({ type: 'timestamp with time zone' })
   expiresAt!: Timestamp;

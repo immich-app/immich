@@ -5,8 +5,8 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { getServerErrorMessage } from '$lib/utils/handle-error';
-  import { login } from '@immich/sdk';
+  import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
+  import { login, register } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -21,6 +21,7 @@
   let password = $state('');
   let errorMessage = $state('');
   let loading = $state(false);
+  let registering = $state(false);
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
@@ -35,6 +36,19 @@
     } catch (error) {
       errorMessage = getServerErrorMessage(error) || $t('errors.incorrect_email_or_password');
       loading = false;
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      registering = true;
+      const user = await register();
+      eventManager.emit('AuthLogin', user);
+      await authManager.refresh();
+      await goto(Route.photos(), { invalidateAll: true });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_create_user'));
+      registering = false;
     }
   };
 </script>
@@ -67,6 +81,30 @@
       <Alert color="warning">
         {$t('oauth_link_password_login_required')}
       </Alert>
+    {/if}
+
+    {#if featureFlagsManager.value.oauthAutoRegister}
+      {#if featureFlagsManager.value.passwordLogin}
+        <div class="inline-flex w-full items-center justify-center my-4">
+          <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
+          <span
+            class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white uppercase"
+          >
+            {$t('or')}
+          </span>
+        </div>
+      {/if}
+
+      <Button
+        shape="round"
+        size="large"
+        fullWidth
+        color={featureFlagsManager.value.passwordLogin ? 'secondary' : 'primary'}
+        loading={registering}
+        onclick={handleRegister}
+      >
+        {$t('create_new_account')}
+      </Button>
     {/if}
   </Stack>
 </AuthPageLayout>

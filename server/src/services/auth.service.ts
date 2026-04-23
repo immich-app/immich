@@ -2,6 +2,8 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
+import sanitize from 'sanitize-filename';
+import { SystemConfig } from 'src/config';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import {
@@ -23,6 +25,7 @@ import {
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
+import { OAuthLinkTokenProfile } from 'src/schema/tables/oauth-link-token.table';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
@@ -89,20 +92,44 @@ export class AuthService extends BaseService {
     if (linkTokenCookie) {
       const hashedToken = this.cryptoRepository.hashSha256(linkTokenCookie);
       const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
-      if (!record) {
-        throw new BadRequestException('Invalid or expired link token');
+      if (record) {
+        const duplicate = await this.userRepository.getByOAuthId(record.oauthSub);
+        if (duplicate && duplicate.id !== user.id) {
+          throw new BadRequestException('This OAuth account has already been linked to another user.');
+        }
+        user = await this.applyOAuthProfileToUser(user, record);
+        linkedOAuthSid = record.oauthSid ?? undefined;
       }
-
-      const duplicate = await this.userRepository.getByOAuthId(record.oauthSub);
-      if (duplicate && duplicate.id !== user.id) {
-        throw new BadRequestException('This OAuth account has already been linked to another user.');
-      }
-
-      await this.userRepository.update(user.id, { oauthId: record.oauthSub });
-      linkedOAuthSid = record.oauthSid ?? undefined;
     }
 
     return this.createLoginResponse(user, details, linkedOAuthSid);
+  }
+
+  async register(details: LoginDetails, headers: IncomingHttpHeaders) {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled || !oauth.autoRegister) {
+      throw new BadRequestException('OAuth auto-register is disabled');
+    }
+
+    const linkTokenCookie = this.getCookieOAuthLinkToken(headers);
+    if (!linkTokenCookie) {
+      throw new BadRequestException('Missing OAuth link token');
+    }
+
+    const record = await this.consumeOAuthLinkToken(linkTokenCookie);
+    const existing = await this.userRepository.getByOAuthId(record.oauthSub);
+    if (existing) {
+      throw new BadRequestException('This OAuth account has already been linked to another user.');
+    }
+
+    this.logger.log(`Registering new user from OAuth: ${record.oauthSub}/${record.email}`);
+    const newUser = await this.createUser({
+      email: record.email,
+      name: record.profile.name,
+      isAdmin: record.profile.isAdmin,
+    });
+    const user = await this.applyOAuthProfileToUser(newUser, record);
+    return this.createLoginResponse(user, details, record.oauthSid ?? undefined);
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
@@ -343,76 +370,91 @@ export class AuthService extends BaseService {
       codeVerifier,
     );
     const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
+    const user = await this.userRepository.getByOAuthId(profile.sub);
 
-    if (!user && normalizedEmail) {
-      const emailUser = await this.userRepository.getByEmail(normalizedEmail);
-      if (emailUser) {
-        const plainToken = this.cryptoRepository.randomBytesAsText(32);
-        const hashedToken = this.cryptoRepository.hashSha256(plainToken);
-        await this.oauthLinkTokenRepository.create({
-          token: hashedToken,
-          oauthSub: profile.sub,
-          oauthSid: oauthSid ?? null,
-          email: emailUser.email,
-          expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
-        });
-        throw new OAuthLinkRequiredException(emailUser.email, plainToken);
+    if (user) {
+      if (!user.profileImagePath && profile.picture) {
+        await this.syncProfilePicture(user, profile.picture);
       }
+      return this.createLoginResponse(user, loginDetails, oauthSid);
     }
 
-    // register new user
-    if (!user) {
-      if (!autoRegister) {
-        this.logger.warn(
-          `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
-        );
-        throw new BadRequestException(`User does not exist and auto registering is disabled.`);
-      }
-
-      if (!normalizedEmail) {
-        throw new BadRequestException('OAuth profile does not have an email address');
-      }
-
-      this.logger.log(`Registering new user: ${profile.sub}/${normalizedEmail}`);
-
-      const storageLabel = this.getClaim(profile, {
-        key: storageLabelClaim,
-        default: '',
-        isValid: (value: unknown): value is string => typeof value === 'string',
-      });
-      const storageQuota = this.getClaim(profile, {
-        key: storageQuotaClaim,
-        default: defaultStorageQuota,
-        isValid: (value: unknown) => Number(value) >= 0,
-      });
-      const role = this.getClaim<'admin' | 'user'>(profile, {
-        key: roleClaim,
-        default: 'user',
-        isValid: (value: unknown) => typeof value === 'string' && ['admin', 'user'].includes(value),
-      });
-
-      user = await this.createUser({
-        name:
-          profile.name ||
-          `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
-          profile.preferred_username ||
-          normalizedEmail,
-        email: normalizedEmail,
-        oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
-        storageLabel: storageLabel || null,
-        isAdmin: role === 'admin',
-      });
+    if (!normalizedEmail) {
+      throw new BadRequestException('OAuth profile does not have an email address');
     }
 
-    if (!user.profileImagePath && profile.picture) {
-      await this.syncProfilePicture(user, profile.picture);
-    }
+    const resolvedProfile = this.resolveOAuthProfile(profile, normalizedEmail, oauth);
+    const plainToken = this.cryptoRepository.randomBytesAsText(32);
+    const hashedToken = this.cryptoRepository.hashSha256(plainToken);
+    await this.oauthLinkTokenRepository.create({
+      token: hashedToken,
+      oauthSub: profile.sub,
+      oauthSid: oauthSid ?? null,
+      email: normalizedEmail,
+      profile: resolvedProfile,
+      expiresAt: DateTime.now().plus({ minutes: 10 }).toJSDate(),
+    });
+    throw new OAuthLinkRequiredException(normalizedEmail, plainToken);
+  }
 
-    return this.createLoginResponse(user, loginDetails, oauthSid);
+  private resolveOAuthProfile(
+    profile: OAuthProfile,
+    normalizedEmail: string,
+    oauth: SystemConfig['oauth'],
+  ): OAuthLinkTokenProfile {
+    const { defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
+    const storageLabel = this.getClaim(profile, {
+      key: storageLabelClaim,
+      default: '',
+      isValid: (value: unknown): value is string => typeof value === 'string',
+    });
+    const storageQuota = this.getClaim(profile, {
+      key: storageQuotaClaim,
+      default: defaultStorageQuota,
+      isValid: (value: unknown) => Number(value) >= 0,
+    });
+    const role = this.getClaim<'admin' | 'user'>(profile, {
+      key: roleClaim,
+      default: 'user',
+      isValid: (value: unknown) => typeof value === 'string' && ['admin', 'user'].includes(value),
+    });
+
+    return {
+      name:
+        profile.name ||
+        `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
+        profile.preferred_username ||
+        normalizedEmail,
+      storageLabel: storageLabel || null,
+      storageQuotaInGiB: storageQuota,
+      isAdmin: role === 'admin',
+      picture: profile.picture ?? null,
+    };
+  }
+
+  private async consumeOAuthLinkToken(plainToken: string) {
+    const hashedToken = this.cryptoRepository.hashSha256(plainToken);
+    const record = await this.oauthLinkTokenRepository.consumeToken(hashedToken);
+    if (!record) {
+      throw new BadRequestException('Invalid or expired link token');
+    }
+    return record;
+  }
+
+  private async applyOAuthProfileToUser(user: UserAdmin, record: { oauthSub: string; profile: OAuthLinkTokenProfile }) {
+    const { profile } = record;
+    const storageLabel = profile.storageLabel ? sanitize(profile.storageLabel.replaceAll('.', '')) : null;
+    const updated = await this.userRepository.update(user.id, {
+      oauthId: record.oauthSub,
+      storageLabel,
+      quotaSizeInBytes: profile.storageQuotaInGiB === null ? null : profile.storageQuotaInGiB * HumanReadableSize.GiB,
+      isAdmin: profile.isAdmin,
+    });
+    if (!updated.profileImagePath && profile.picture) {
+      await this.syncProfilePicture(updated, profile.picture);
+    }
+    return updated;
   }
 
   private async syncProfilePicture(user: UserAdmin, url: string) {

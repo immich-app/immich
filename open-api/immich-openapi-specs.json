@@ -4660,6 +4660,35 @@
         "x-immich-state": "Stable"
       }
     },
+    "/auth/register": {
+      "post": {
+        "description": "Create a new user from a pending OAuth link token (requires OAuth auto-register to be enabled).",
+        "operationId": "register",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Register via OAuth",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/auth/session/lock": {
       "post": {
         "description": "Remove elevated access to locked assets from the current session.",
@@ -21130,6 +21159,10 @@
             "description": "Whether OAuth auto-launch is enabled",
             "type": "boolean"
           },
+          "oauthAutoRegister": {
+            "description": "Whether OAuth auto-register is enabled",
+            "type": "boolean"
+          },
           "ocr": {
             "description": "Whether OCR is enabled",
             "type": "boolean"
@@ -21168,6 +21201,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "oauthAutoRegister",
           "ocr",
           "passwordLogin",
           "reverseGeocoding",

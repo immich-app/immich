@@ -205,30 +205,39 @@ describe(`/oauth`, () => {
       expect(status).toBeGreaterThanOrEqual(400);
     });
 
-    it('should auto register the user by default', async () => {
+    it('should return a link token for a new OAuth user', async () => {
       const callbackParams = await loginWithOAuth('oauth-auto-register');
-      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
-      expect(status).toBe(201);
-      expect(body).toMatchObject({
-        accessToken: expect.any(String),
-        isAdmin: false,
-        name: 'OAuth User',
-        userEmail: 'oauth-auto-register@immich.app',
-        userId: expect.any(String),
-      });
+      const response = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('oauth_account_link_required');
+      const setCookie = response.headers['set-cookie'] as unknown as string[];
+      expect(setCookie.some((cookie) => cookie.startsWith('immich_oauth_link_token='))).toBe(true);
     });
 
     it('should allow passing state and codeVerifier via cookies', async () => {
       const { url, state, codeVerifier } = await loginWithOAuth('oauth-auto-register');
-      const { status, body } = await request(app)
+      const response = await request(app)
         .post('/oauth/callback')
         .set('Cookie', [`immich_oauth_state=${state}`, `immich_oauth_code_verifier=${codeVerifier}`])
         .send({ url });
-      expect(status).toBe(201);
-      expect(body).toMatchObject({
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('oauth_account_link_required');
+    });
+
+    it('should register a new user via POST /auth/register using the link token cookie', async () => {
+      const callbackParams = await loginWithOAuth('oauth-register-flow');
+      const callbackResponse = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(callbackResponse.status).toBe(403);
+      const setCookie = callbackResponse.headers['set-cookie'] as unknown as string[];
+      const linkCookie = setCookie.find((cookie) => cookie.startsWith('immich_oauth_link_token='));
+      expect(linkCookie).toBeDefined();
+
+      const registerResponse = await request(app).post('/auth/register').set('Cookie', linkCookie!);
+      expect(registerResponse.status).toBe(201);
+      expect(registerResponse.body).toMatchObject({
         accessToken: expect.any(String),
+        userEmail: 'oauth-register-flow@immich.app',
         userId: expect.any(String),
-        userEmail: 'oauth-auto-register@immich.app',
       });
     });
 
@@ -349,11 +358,11 @@ describe(`/oauth`, () => {
         });
       });
 
-      it('should not auto register the user', async () => {
+      it('should still create a link token when auto register is disabled', async () => {
         const callbackParams = await loginWithOAuth('oauth-no-auto-register');
-        const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest('User does not exist and auto registering is disabled.'));
+        const response = await request(app).post('/oauth/callback').send(callbackParams);
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('oauth_account_link_required');
       });
 
       it('should not auto-link to an existing user by email', async () => {
@@ -445,24 +454,18 @@ describe(`/oauth`, () => {
       expect(params.get('state')).toBeDefined();
     });
 
-    it('should auto register the user by default', async () => {
+    it('should return a link token for a new OAuth user via mobile redirect', async () => {
       const callbackParams = await loginWithOAuth('oauth-mobile-override', 'app.immich:///oauth-callback');
       expect(callbackParams.url).toEqual(expect.stringContaining(mobileOverrideRedirectUri));
 
       // simulate redirecting back to mobile app
       const url = callbackParams.url.replace(mobileOverrideRedirectUri, 'app.immich:///oauth-callback');
 
-      const { status, body } = await request(app)
+      const response = await request(app)
         .post('/oauth/callback')
         .send({ ...callbackParams, url });
-      expect(status).toBe(201);
-      expect(body).toMatchObject({
-        accessToken: expect.any(String),
-        isAdmin: false,
-        name: 'OAuth User',
-        userEmail: 'oauth-mobile-override@immich.app',
-        userId: expect.any(String),
-      });
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('oauth_account_link_required');
     });
   });
 
@@ -474,14 +477,9 @@ describe(`/oauth`, () => {
         clientSecret: OAuthClient.DEFAULT,
       });
       const callbackParams = await loginWithOAuth(OAuthUser.ID_TOKEN_CLAIMS);
-      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
-      expect(status).toBe(201);
-      expect(body).toMatchObject({
-        accessToken: expect.any(String),
-        name: 'ID Token User',
-        userEmail: 'oauth-id-token-claims@immich.app',
-        userId: expect.any(String),
-      });
+      const response = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('oauth_account_link_required');
     });
   });
 

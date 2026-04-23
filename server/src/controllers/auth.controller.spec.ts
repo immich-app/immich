@@ -137,6 +137,44 @@ describe(AuthController.name, () => {
       );
     });
 
+    it('should clear the link token cookie on successful login when it was present', async () => {
+      const loginResponse = mediumFactory.loginResponse();
+      service.login.mockResolvedValue(loginResponse);
+
+      const { status, headers } = await request(ctx.getHttpServer())
+        .post('/auth/login')
+        .set('Cookie', 'immich_oauth_link_token=plain')
+        .send({ name: 'admin', email: 'admin@local', password: 'password' });
+
+      expect(status).toEqual(201);
+      const cookies = (headers['set-cookie'] as unknown as string[]).join('\n');
+      expect(cookies).toMatch(/immich_oauth_link_token=;/);
+    });
+
+    it('should clear the link token cookie when login fails', async () => {
+      service.login.mockRejectedValue(new Error('Incorrect email or password'));
+
+      const { headers } = await request(ctx.getHttpServer())
+        .post('/auth/login')
+        .set('Cookie', 'immich_oauth_link_token=plain')
+        .send({ name: 'admin', email: 'admin@local', password: 'wrong' });
+
+      const cookies = (headers['set-cookie'] as unknown as string[] | undefined)?.join('\n') ?? '';
+      expect(cookies).toMatch(/immich_oauth_link_token=;/);
+    });
+
+    it('should not set a link token cookie header when no link token was present', async () => {
+      const loginResponse = mediumFactory.loginResponse();
+      service.login.mockResolvedValue(loginResponse);
+
+      const { headers } = await request(ctx.getHttpServer())
+        .post('/auth/login')
+        .send({ name: 'admin', email: 'admin@local', password: 'password' });
+
+      const cookies = (headers['set-cookie'] as unknown as string[]).join('\n');
+      expect(cookies).not.toMatch(/immich_oauth_link_token=/);
+    });
+
     it('should auth cookies on a secure connection', async () => {
       const loginResponse = mediumFactory.loginResponse();
       service.login.mockResolvedValue(loginResponse);
@@ -172,6 +210,33 @@ describe(AuthController.name, () => {
         expect.stringContaining('Expires='),
         'SameSite=Lax',
       ]);
+    });
+  });
+
+  describe('POST /auth/register', () => {
+    it('should clear the link token cookie on successful register', async () => {
+      const loginResponse = mediumFactory.loginResponse();
+      service.register.mockResolvedValue(loginResponse);
+
+      const { headers } = await request(ctx.getHttpServer())
+        .post('/auth/register')
+        .set('Cookie', 'immich_oauth_link_token=plain')
+        .send({});
+
+      const cookies = (headers['set-cookie'] as unknown as string[]).join('\n');
+      expect(cookies).toMatch(/immich_oauth_link_token=;/);
+    });
+
+    it('should clear the link token cookie when register fails', async () => {
+      service.register.mockRejectedValue(new Error('Missing OAuth link token'));
+
+      const { headers } = await request(ctx.getHttpServer())
+        .post('/auth/register')
+        .set('Cookie', 'immich_oauth_link_token=plain')
+        .send({});
+
+      const cookies = (headers['set-cookie'] as unknown as string[] | undefined)?.join('\n') ?? '';
+      expect(cookies).toMatch(/immich_oauth_link_token=;/);
     });
   });
 

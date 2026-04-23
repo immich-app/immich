@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { parse as parseCookie } from 'cookie';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -39,18 +40,51 @@ export class AuthController {
     @Body() loginCredential: LoginCredentialDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const body = await this.service.login(loginCredential, loginDetails, request.headers);
-    if (request.cookies?.[ImmichCookie.OAuthLinkToken]) {
-      res.clearCookie(ImmichCookie.OAuthLinkToken);
+    const hadLinkCookie = !!parseCookie(request.headers.cookie || '')[ImmichCookie.OAuthLinkToken];
+    try {
+      const body = await this.service.login(loginCredential, loginDetails, request.headers);
+      return respondWithCookie(res, body, {
+        isSecure: loginDetails.isSecure,
+        values: [
+          { key: ImmichCookie.AccessToken, value: body.accessToken },
+          { key: ImmichCookie.AuthType, value: AuthType.Password },
+          { key: ImmichCookie.IsAuthenticated, value: 'true' },
+        ],
+      });
+    } finally {
+      if (hadLinkCookie) {
+        res.clearCookie(ImmichCookie.OAuthLinkToken);
+      }
     }
-    return respondWithCookie(res, body, {
-      isSecure: loginDetails.isSecure,
-      values: [
-        { key: ImmichCookie.AccessToken, value: body.accessToken },
-        { key: ImmichCookie.AuthType, value: AuthType.Password },
-        { key: ImmichCookie.IsAuthenticated, value: 'true' },
-      ],
-    });
+  }
+
+  @Post('register')
+  @Endpoint({
+    summary: 'Register via OAuth',
+    description: 'Create a new user from a pending OAuth link token (requires OAuth auto-register to be enabled).',
+    history: new HistoryBuilder().added('v2'),
+  })
+  async register(
+    @Req() request: Request,
+    @Res({ passthrough: true }) res: Response,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<LoginResponseDto> {
+    const hadLinkCookie = !!parseCookie(request.headers.cookie || '')[ImmichCookie.OAuthLinkToken];
+    try {
+      const body = await this.service.register(loginDetails, request.headers);
+      return respondWithCookie(res, body, {
+        isSecure: loginDetails.isSecure,
+        values: [
+          { key: ImmichCookie.AccessToken, value: body.accessToken },
+          { key: ImmichCookie.AuthType, value: AuthType.OAuth },
+          { key: ImmichCookie.IsAuthenticated, value: 'true' },
+        ],
+      });
+    } finally {
+      if (hadLinkCookie) {
+        res.clearCookie(ImmichCookie.OAuthLinkToken);
+      }
+    }
   }
 
   @Post('admin-sign-up')

@@ -8,6 +8,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       "oauthSub" varchar NOT NULL,
       "oauthSid" varchar,
       "email" varchar NOT NULL,
+      "profile" jsonb NOT NULL,
       "expiresAt" timestamp with time zone NOT NULL,
       "createdAt" timestamp with time zone NOT NULL DEFAULT now()
     );

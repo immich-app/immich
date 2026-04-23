@@ -141,6 +141,7 @@ describe(ServerService.name, () => {
         reverseGeocoding: true,
         oauth: false,
         oauthAutoLaunch: false,
+        oauthAutoRegister: true,
         ocr: true,
         passwordLogin: true,
         search: true,
