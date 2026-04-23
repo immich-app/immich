@@ -13,26 +13,53 @@ part of openapi.api;
 class UpdateAlbumUserDto {
   /// Returns a new [UpdateAlbumUserDto] instance.
   UpdateAlbumUserDto({
-    required this.role,
+    this.isFavorite,
+    this.role,
   });
 
-  AlbumUserRole role;
+  /// Mark album as favorite for the user (only the user themselves can update)
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AlbumUserRole? role;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumUserDto &&
+    other.isFavorite == isFavorite &&
     other.role == role;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (role.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (role == null ? 0 : role!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumUserDto[role=$role]';
+  String toString() => 'UpdateAlbumUserDto[isFavorite=$isFavorite, role=$role]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
+    }
+    if (this.role != null) {
       json[r'role'] = this.role;
+    } else {
+    //  json[r'role'] = null;
+    }
     return json;
   }
 
@@ -45,7 +72,8 @@ class UpdateAlbumUserDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAlbumUserDto(
-        role: AlbumUserRole.fromJson(json[r'role'])!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        role: AlbumUserRole.fromJson(json[r'role']),
       );
     }
     return null;
@@ -93,7 +121,6 @@ class UpdateAlbumUserDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'role',
   };
 }
 

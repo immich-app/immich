@@ -508,9 +508,12 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
+  /// * [bool] favorite:
+  ///   Filter to only albums favorited by the authenticated user
+  ///
   /// * [bool] shared:
   ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
-  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
+  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? favorite, bool? shared, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
 
@@ -523,6 +526,9 @@ class AlbumsApi {
 
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
+    if (favorite != null) {
+      queryParams.addAll(_queryParams('', 'favorite', favorite));
     }
     if (shared != null) {
       queryParams.addAll(_queryParams('', 'shared', shared));
@@ -551,10 +557,13 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
+  /// * [bool] favorite:
+  ///   Filter to only albums favorited by the authenticated user
+  ///
   /// * [bool] shared:
   ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
-  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
-    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
+  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? favorite, bool? shared, }) async {
+    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, favorite: favorite, shared: shared, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -14,12 +14,16 @@ class SyncAlbumUserV1 {
   /// Returns a new [SyncAlbumUserV1] instance.
   SyncAlbumUserV1({
     required this.albumId,
+    required this.isFavorite,
     required this.role,
     required this.userId,
   });
 
   /// Album ID
   String albumId;
+
+  /// Favorite flag
+  bool isFavorite;
 
   AlbumUserRole role;
 
@@ -29,6 +33,7 @@ class SyncAlbumUserV1 {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAlbumUserV1 &&
     other.albumId == albumId &&
+    other.isFavorite == isFavorite &&
     other.role == role &&
     other.userId == userId;
 
@@ -36,15 +41,17 @@ class SyncAlbumUserV1 {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
+    (isFavorite.hashCode) +
     (role.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'SyncAlbumUserV1[albumId=$albumId, role=$role, userId=$userId]';
+  String toString() => 'SyncAlbumUserV1[albumId=$albumId, isFavorite=$isFavorite, role=$role, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
+      json[r'isFavorite'] = this.isFavorite;
       json[r'role'] = this.role;
       json[r'userId'] = this.userId;
     return json;
@@ -60,6 +67,7 @@ class SyncAlbumUserV1 {
 
       return SyncAlbumUserV1(
         albumId: mapValueOfType<String>(json, r'albumId')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         role: AlbumUserRole.fromJson(json[r'role'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
@@ -110,6 +118,7 @@ class SyncAlbumUserV1 {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'albumId',
+    'isFavorite',
     'role',
     'userId',
   };
