@@ -3,6 +3,8 @@ import { DummyDriver, Kysely, PostgresAdapter, PostgresIntrospector, PostgresQue
 import { AssetOrder } from 'src/enum';
 import { SearchRepository } from 'src/repositories/search.repository';
 import type { DB } from 'src/schema';
+import { searchAssetBuilder } from 'src/utils/database';
+import { describe, expect, it } from 'vitest';
 
 // Offline Kysely — compiles SQL without executing it. No DB connection needed.
 const offlineKysely = () =>
@@ -22,6 +24,11 @@ const buildQueries = (
   pagination: { page: number; size: number },
   options: Record<string, unknown>,
 ) => (sut as any).buildSearchSmartQueries(offlineKysely(), pagination, options);
+
+const buildAssetSearchSql = (options: Record<string, unknown>) =>
+  searchAssetBuilder(offlineKysely(), options as any)
+    .selectAll('asset')
+    .compile().sql;
 
 const FAILURE_MESSAGE =
   'Do not add any secondary ORDER BY key to the inner searchSmart query. ' +
@@ -64,6 +71,46 @@ describe(SearchRepository.name, () => {
   };
 
   describe('searchSmart query shape', () => {
+    it('applies rating as an inclusive threshold when combined with other filters', () => {
+      const { base } = buildQueries(
+        sut,
+        { page: 1, size: 100 },
+        {
+          ...baseOptions,
+          personIds: ['00000000-0000-0000-0000-000000000001'],
+          rating: 2,
+        },
+      );
+      const innerSql = base.compile().sql;
+
+      expect(innerSql).toMatch(/rating"?\s*>=\s*\$\d+/i);
+      expect(innerSql).not.toMatch(/rating"?\s*=\s*\$\d+/i);
+    });
+
+    it('keeps unrated smart-search filters as IS NULL', () => {
+      const { base } = buildQueries(sut, { page: 1, size: 100 }, { ...baseOptions, rating: null });
+      const innerSql = base.compile().sql;
+
+      expect(innerSql).toMatch(/rating"?\s+is\s+null/i);
+      expect(innerSql).not.toMatch(/rating"?\s*>=\s*\$\d+/i);
+      expect(innerSql).not.toMatch(/rating"?\s*=\s*\$\d+/i);
+    });
+
+    it('keeps the inner smart-search ORDER BY single-key when rating uses the CTE path', () => {
+      const { base, outer } = buildQueries(
+        sut,
+        { page: 1, size: 100 },
+        { ...baseOptions, orderDirection: AssetOrder.Desc, rating: 4 },
+      );
+
+      const innerSql = base.compile().sql;
+      expect(innerSql).toMatch(/rating"?\s*>=\s*\$\d+/i);
+      expect(countOrderByExpressions(innerSql + ' limit', 'limit'), FAILURE_MESSAGE).toBe(1);
+
+      const outerSql = outer.compile().sql;
+      expect(countOuterOrderByExpressions(outerSql), 'outer CTE ORDER BY must stay at 2 keys').toBe(2);
+    });
+
     it('non-CTE inner ORDER BY: exactly one expression AND primary key is smart_search.embedding', () => {
       const { base } = buildQueries(sut, { page: 1, size: 100 }, baseOptions);
       const innerSql = base.compile().sql;
@@ -130,6 +177,23 @@ describe(SearchRepository.name, () => {
 
       // No WHERE predicate on the distance operator (<=>).
       expect(innerSql).not.toMatch(/\(smart_search\.embedding <=> \$\d+\)\s*<=/i);
+    });
+  });
+
+  describe('searchAssetBuilder rating semantics', () => {
+    it('keeps non-smart rating filters as exact match', () => {
+      const sql = buildAssetSearchSql({ rating: 2 });
+
+      expect(sql).toMatch(/rating"?\s*=\s*\$\d+/i);
+      expect(sql).not.toMatch(/rating"?\s*>=\s*\$\d+/i);
+    });
+
+    it('keeps unrated non-smart filters as IS NULL', () => {
+      const sql = buildAssetSearchSql({ rating: null });
+
+      expect(sql).toMatch(/rating"?\s+is\s+null/i);
+      expect(sql).not.toMatch(/rating"?\s*>=\s*\$\d+/i);
+      expect(sql).not.toMatch(/rating"?\s*=\s*\$\d+/i);
     });
   });
 });

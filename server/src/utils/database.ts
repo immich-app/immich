@@ -447,7 +447,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.rating !== undefined, (qb) =>
       qb
         .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-        .where('asset_exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+        .where(
+          'asset_exif.rating',
+          options.rating === null ? 'is' : options.ratingIsMinimum ? '>=' : '=',
+          options.rating!,
+        ),
     )
     .$if(!!options.checksum, (qb) => qb.where('asset.checksum', '=', options.checksum!))
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
