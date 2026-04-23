@@ -3,14 +3,10 @@
   import { page } from '$app/stores';
   import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
   import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
-  import {
-    buildFilterContext,
-    clearFilters,
-    createFilterState,
-    getActiveFilterCount,
-  } from '$lib/components/filter-panel/filter-panel';
+  import { clearFilters, createFilterState, getActiveFilterCount } from '$lib/components/filter-panel/filter-panel';
   import type { FilterState } from '$lib/components/filter-panel/filter-panel';
   import { handlePhotosRemoveFilter } from '$lib/utils/photos-filter-options';
+  import { buildMapMarkerOptions, buildMapTimeBucketOptions } from '$lib/utils/map-filter-options';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import MapTimelinePanel from './MapTimelinePanel.svelte';
@@ -24,13 +20,7 @@
   import { delay } from '$lib/utils/asset-utils';
   import { buildMapFilterConfig } from '$lib/utils/map-filter-config';
   import { navigate } from '$lib/utils/navigation';
-  import {
-    AssetVisibility,
-    getFilteredMapMarkers,
-    getTimeBuckets,
-    MapMediaType,
-    type MapMarkerResponseDto,
-  } from '@immich/sdk';
+  import { getFilteredMapMarkers, getTimeBuckets, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, IconButton } from '@immich/ui';
   import { SvelteMap } from 'svelte/reactivity';
   import { mdiArrowLeft, mdiFilterVariant } from '@mdi/js';
@@ -92,13 +82,12 @@
   });
   const hasActiveFilters = $derived(getActiveFilterCount(filters) > 0);
   const noResults = $derived(mapMarkers.length === 0 && hasActiveFilters);
+  const timeBucketOptions = $derived.by(() => buildMapTimeBucketOptions(filters, spaceId));
+  const mapMarkerOptions = $derived.by(() => buildMapMarkerOptions(filters, spaceId));
 
   // Fetch time buckets for the temporal picker
   $effect(() => {
-    const currentSpaceId = spaceId;
-    void getTimeBuckets({
-      ...(currentSpaceId ? { spaceId: currentSpaceId } : { visibility: AssetVisibility.Timeline }),
-    }).then((buckets) => {
+    void getTimeBuckets(timeBucketOptions).then((buckets) => {
       timeBuckets = buckets.map((b) => ({ timeBucket: b.timeBucket, count: b.count }));
     });
   });
@@ -107,27 +96,13 @@
   let fetchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   $effect(() => {
-    const { personIds, make, model, tagIds, rating, mediaType, isFavorite, city, country } = filters;
-    const currentSpaceId = spaceId;
-    const context = buildFilterContext(filters);
+    // Read the derived options before the debounce callback so filter changes
+    // are tracked as dependencies of this effect.
+    const options = mapMarkerOptions;
 
     clearTimeout(fetchTimeout);
     fetchTimeout = setTimeout(() => {
-      void getFilteredMapMarkers({
-        ...(currentSpaceId && { spaceId: currentSpaceId }),
-        ...(!currentSpaceId && { withSharedSpaces: true }),
-        ...(personIds.length > 0 && { personIds }),
-        ...(make && { make }),
-        ...(model && { model }),
-        ...(tagIds.length > 0 && { tagIds }),
-        ...(rating !== undefined && { rating }),
-        ...(mediaType !== 'all' && { $type: mediaType === 'image' ? MapMediaType.Image : MapMediaType.Video }),
-        ...(isFavorite !== undefined && { isFavorite }),
-        ...(city && { city }),
-        ...(country && { country }),
-        ...(context?.takenAfter && { takenAfter: context.takenAfter }),
-        ...(context?.takenBefore && { takenBefore: context.takenBefore }),
-      })
+      void getFilteredMapMarkers(options)
         .then((result) => {
           mapMarkers = result;
         })
