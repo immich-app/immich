@@ -310,16 +310,7 @@ export class MediaRepository {
    * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
    * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
    */
-  async probePackets(
-    input: string,
-    streamIndex: number,
-    timeBase: number,
-    formatDuration: number,
-  ): Promise<VideoPacketInfo | null> {
-    if (formatDuration <= 0) {
-      return null;
-    }
-
+  async probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
     const { stdout } = await execFile('ffprobe', [
       '-v',
       'error',
@@ -369,7 +360,7 @@ export class MediaRepository {
     return {
       totalDuration,
       packetCount: postDiscard.length,
-      outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / formatDuration / timeBase),
+      outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
       keyframePts,
       keyframeAccDuration,
       keyframeOwnDuration,
