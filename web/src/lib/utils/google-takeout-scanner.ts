@@ -1,5 +1,12 @@
 import type { TakeoutAlbum, TakeoutMediaItem, TakeoutMetadata } from '$lib/utils/google-takeout-parser';
-import { detectAlbums, matchSidecarToMedia, parseGoogleTakeoutSidecar } from '$lib/utils/google-takeout-parser';
+import {
+  derivePhotoRoots,
+  detectAlbums,
+  finalizeItemAlbumNames,
+  matchSidecarToMedia,
+  MEDIA_EXTENSIONS,
+  parseGoogleTakeoutSidecar,
+} from '$lib/utils/google-takeout-parser';
 
 export interface ScanProgress {
   currentFile: string;
@@ -32,38 +39,6 @@ export interface ScanOptions {
   onProgress?: (progress: ScanProgress) => void;
   signal?: AbortSignal;
 }
-
-const MEDIA_EXTENSIONS = new Set([
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.gif',
-  '.webp',
-  '.heic',
-  '.heif',
-  '.tiff',
-  '.tif',
-  '.bmp',
-  '.avif',
-  '.raw',
-  '.arw',
-  '.cr2',
-  '.cr3',
-  '.dng',
-  '.nef',
-  '.orf',
-  '.raf',
-  '.rw2',
-  '.mp4',
-  '.mov',
-  '.avi',
-  '.mkv',
-  '.webm',
-  '.m4v',
-  '.3gp',
-  '.mts',
-  '.m2ts',
-]);
 
 function isMediaFile(path: string): boolean {
   const lastDot = path.lastIndexOf('.');
@@ -121,12 +96,12 @@ function trackItemStats(
   filePath: string,
   progress: ScanProgress,
 ): string | undefined {
-  // Detect album from path
+  // Tentative album name for progress display only. Authoritative value is
+  // written later by finalizeItemAlbumNames once photoRoots is known.
   const parts = filePath.split('/');
-  const googlePhotosIndex = parts.indexOf('Google Photos');
   let albumName: string | undefined;
-  if (googlePhotosIndex !== -1 && googlePhotosIndex < parts.length - 2) {
-    albumName = parts[googlePhotosIndex + 1];
+  if (parts[0] === 'Takeout' && parts.length >= 4) {
+    albumName = parts[2];
     progress.albumNames.add(albumName);
   }
 
@@ -195,9 +170,8 @@ async function scanZipFile(
           // Update progress counters during extraction so the UI shows activity
           progress.mediaCount++;
           const parts = entry.filename.split('/');
-          const gpIdx = parts.indexOf('Google Photos');
-          if (gpIdx !== -1 && gpIdx < parts.length - 2) {
-            progress.albumNames.add(parts[gpIdx + 1]);
+          if (parts[0] === 'Takeout' && parts.length >= 4) {
+            progress.albumNames.add(parts[2]);
           }
           onProgress?.(progress);
 
@@ -230,12 +204,16 @@ async function scanZipFile(
   // Match sidecars to media (no zip I/O needed)
   const metadataMap = new Map<string, TakeoutMetadata>();
   for (const [sidecarPath, text] of sidecarTexts) {
-    const matchedPath = matchSidecarToMedia(sidecarPath, text, mediaPaths);
-    if (matchedPath) {
-      const metadata = parseGoogleTakeoutSidecar(text);
-      if (metadata) {
-        metadataMap.set(matchedPath, metadata);
-      }
+    const matches = matchSidecarToMedia(sidecarPath, text, mediaPaths);
+    if (matches.length === 0) {
+      continue;
+    }
+    const metadata = parseGoogleTakeoutSidecar(text);
+    if (!metadata) {
+      continue;
+    }
+    for (const matchedPath of matches) {
+      metadataMap.set(matchedPath, metadata);
     }
   }
 
@@ -246,14 +224,6 @@ async function scanZipFile(
     const basename = path.slice(Math.max(0, path.lastIndexOf('/') + 1));
     const file = new File([blob], basename, { type: blob.type || 'application/octet-stream' });
     const metadata = metadataMap.get(path);
-
-    // Detect album from path (same logic as trackItemStats but without incrementing mediaCount)
-    const parts = path.split('/');
-    const googlePhotosIndex = parts.indexOf('Google Photos');
-    let albumName: string | undefined;
-    if (googlePhotosIndex !== -1 && googlePhotosIndex < parts.length - 2) {
-      albumName = parts[googlePhotosIndex + 1];
-    }
 
     // Track metadata-dependent stats
     if (metadata?.latitude !== undefined && metadata?.longitude !== undefined) {
@@ -269,7 +239,7 @@ async function scanZipFile(
       progress.archived++;
     }
 
-    allItems.push({ path, file, metadata, albumName });
+    allItems.push({ path, file, metadata, albumName: undefined });
     onProgress?.(progress);
   }
 }
@@ -307,12 +277,16 @@ async function scanFolderFiles(
     onProgress?.(progress);
 
     const text = await sidecar.text();
-    const matchedPath = matchSidecarToMedia(sidecarPath, text, mediaPaths);
-    if (matchedPath) {
-      const metadata = parseGoogleTakeoutSidecar(text);
-      if (metadata) {
-        metadataMap.set(matchedPath, metadata);
-      }
+    const matches = matchSidecarToMedia(sidecarPath, text, mediaPaths);
+    if (matches.length === 0) {
+      continue;
+    }
+    const metadata = parseGoogleTakeoutSidecar(text);
+    if (!metadata) {
+      continue;
+    }
+    for (const matchedPath of matches) {
+      metadataMap.set(matchedPath, metadata);
     }
   }
 
@@ -324,13 +298,13 @@ async function scanFolderFiles(
     progress.currentFile = filePath;
 
     const metadata = metadataMap.get(filePath);
-    const albumName = trackItemStats(metadata, filePath, progress);
+    trackItemStats(metadata, filePath, progress);
 
     const item: TakeoutMediaItem = {
       path: filePath,
       file,
       metadata,
-      albumName,
+      albumName: undefined,
     };
 
     allItems.push(item);
@@ -387,8 +361,18 @@ export async function scanTakeoutFiles(options: ScanOptions): Promise<ScanResult
     await scanFolderFiles(folderFiles, allItems, progress, onProgress, signal);
   }
 
-  // Detect albums from the collected items
-  const albums = detectAlbums(allItems);
+  const photoRoots = derivePhotoRoots(allItems);
+  finalizeItemAlbumNames(allItems, photoRoots);
+  const albums = detectAlbums(allItems, photoRoots);
+
+  // Reconcile progress.albumNames — the extraction-time heuristic may have
+  // over-counted (e.g. YouTube playlist folders under a full Takeout export).
+  // Rebuild from the authoritative album list and fire onProgress one last time
+  // so the UI snaps to the correct count. Reassigning the property (rather than
+  // clearing + re-adding) is safe because the progress-UI callback snapshots
+  // with `new Set(p.albumNames)` on receive — it doesn't hold a reference.
+  progress.albumNames = new Set(albums.map((a) => a.name));
+  onProgress?.(progress);
 
   // Compute date range
   const dates = allItems.filter((item) => item.metadata?.dateTaken).map((item) => item.metadata!.dateTaken!);
@@ -413,4 +397,9 @@ export async function scanTakeoutFiles(options: ScanOptions): Promise<ScanResult
   };
 }
 
-export { type TakeoutAlbum, type TakeoutMediaItem, type TakeoutMetadata } from '$lib/utils/google-takeout-parser';
+export {
+  MEDIA_EXTENSIONS,
+  type TakeoutAlbum,
+  type TakeoutMediaItem,
+  type TakeoutMetadata,
+} from '$lib/utils/google-takeout-parser';
