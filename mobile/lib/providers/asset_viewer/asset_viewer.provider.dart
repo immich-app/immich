@@ -148,6 +148,17 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
 
+void prepareAssetViewerState(AssetViewerStateNotifier notifier, BaseAsset asset) {
+  notifier.reset();
+
+  // Hide controls by default for videos before the viewer is shown.
+  if (asset.isVideo) {
+    notifier.setControls(false);
+  }
+
+  notifier.setAsset(asset);
+}
+
 final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
   ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
   final asset = ref.read(assetViewerProvider).currentAsset;

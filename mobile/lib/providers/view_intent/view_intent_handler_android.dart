@@ -107,18 +107,13 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
 
       await _waitForNextFrame();
 
-      notifier.reset();
-      notifier.setAsset(asset);
+      prepareAssetViewerState(notifier, asset);
       if (viewIntentFilePath != null) {
         _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
         unawaited(_viewIntentService.setManagedTempFilePath(viewIntentFilePath));
       } else {
         _ref.read(viewIntentFilePathProvider.notifier).clear();
         unawaited(_viewIntentService.cleanupManagedTempFile());
-      }
-
-      if (asset.isVideo) {
-        notifier.setControls(true);
       }
 
       unawaited(_router.push(AssetViewerRoute(initialIndex: initialIndex, timelineService: timelineService)));
