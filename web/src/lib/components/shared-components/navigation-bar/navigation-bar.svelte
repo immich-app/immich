@@ -5,12 +5,11 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
+  import GlobalSearchInputTrigger from '$lib/components/global-search/global-search-input-trigger.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
-  import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import GlobalSearchTrigger from '$lib/components/global-search/global-search-trigger.svelte';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { globalSearchManager } from '$lib/managers/global-search-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
@@ -84,32 +83,21 @@
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">
       <div class="hidden w-full max-w-5xl flex-1 tall:ps-0 sm:block">
-        {#if featureFlagsManager.value.search}
-          <SearchBar grayTheme={true} />
-        {/if}
+        <GlobalSearchInputTrigger />
       </div>
 
       <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
-        <!-- Quick-search launcher for the new cmdk palette. Hidden below sm where the
-             mobile search icon takes over; on sm+ it sits alongside the classic SearchBar
-             (which handles full filter search) and offers a visually distinct entry point
-             into the fuzzy command palette. -->
-        <div class="hidden sm:flex">
-          <GlobalSearchTrigger />
-        </div>
-        {#if featureFlagsManager.valueOrUndefined?.search}
-          <IconButton
-            color="secondary"
-            shape="round"
-            variant="ghost"
-            size="medium"
-            icon={mdiMagnify}
-            href={Route.search()}
-            id="search-button"
-            class="sm:hidden"
-            aria-label={$t('go_to_search')}
-          />
-        {/if}
+        <IconButton
+          color="secondary"
+          shape="round"
+          variant="ghost"
+          size="medium"
+          icon={mdiMagnify}
+          onclick={() => globalSearchManager.open()}
+          id="search-button"
+          class="sm:hidden"
+          aria-label={$t('go_to_search')}
+        />
 
         {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button

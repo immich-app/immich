@@ -62,14 +62,22 @@
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
+  function getSearchSortOrder(query: string): FilterState['sortOrder'] {
+    return query.trim().length > 0 ? 'relevance' : 'desc';
+  }
+
   // Filter state
-  let filters = $state(createFilterState());
+  const initialCommittedQuery = page.url.searchParams.get('q') ?? '';
+  let filters = $state<FilterState>({
+    ...createFilterState(),
+    sortOrder: getSearchSortOrder(initialCommittedQuery),
+  });
   // searchQuery is the live SearchBar input value — it updates on every keystroke so the
   // input reflects what the user is typing. committedQuery is the "applied" query and only
   // updates on explicit submit (Enter), on clearSearch, or from URL state changes. We key
   // showSearchResults off committedQuery so typing characters doesn't unmount the Timeline
   // until the user explicitly submits. This mirrors the spaces page UX.
-  let searchQuery = $state(page.url.searchParams.get('q') ?? '');
+  let searchQuery = $state(initialCommittedQuery);
   let committedQuery = $state(searchQuery);
   let isLoading = $state(false);
   const showSearchResults = $derived(committedQuery.trim().length > 0);
@@ -185,7 +193,7 @@
     if (!trimmed) {
       return;
     }
-    filters = { ...filters, sortOrder: 'relevance' };
+    filters = { ...filters, sortOrder: getSearchSortOrder(trimmed) };
     committedQuery = trimmed;
     const url = new URL('/photos', globalThis.location.origin);
     url.searchParams.set('q', trimmed);
@@ -206,6 +214,7 @@
       if (q !== committedQuery) {
         committedQuery = q;
         searchQuery = q;
+        filters = { ...filters, sortOrder: getSearchSortOrder(q) };
       }
     });
   });

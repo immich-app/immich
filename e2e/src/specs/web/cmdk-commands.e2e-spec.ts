@@ -6,7 +6,7 @@ import { utils } from 'src/utils';
 //
 // Covers the 7 command-items wired in web/src/lib/managers/command-items.ts.
 // Each test reuses the existing global-search spec harness (auth cookie setup,
-// /photos landing, cmdk-trigger hydration wait) to avoid duplicating plumbing.
+// /photos landing, cmdk-input-trigger hydration wait) to avoid duplicating plumbing.
 test.describe('cmdk commands (v1.3.0)', () => {
   let admin: LoginResponseDto;
 
@@ -21,7 +21,7 @@ test.describe('cmdk commands (v1.3.0)', () => {
   test.beforeEach(async ({ context, page }) => {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto('/photos');
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
   });
 
   test('>upload + Enter opens the native file picker', async ({ page }) => {
@@ -128,7 +128,7 @@ test.describe('cmdk commands (v1.3.0)', () => {
 
     // Go back to /photos and verify RECENT has the seeded entry.
     await page.goto('/photos');
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
     await page.keyboard.press('Control+k');
     dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();

@@ -19,11 +19,9 @@ test.describe('global search palette', () => {
     // Wait for SvelteKit CSR hydration to finish before any keyboard.press —
     // page.goto resolves on the `load` event, but hydration (which binds our
     // svelte:document use:shortcut handler for Ctrl+K / Shift+T / …) happens
-    // asynchronously after that. The cmdk-trigger button is rendered under
-    // `{#if featureFlagsManager.valueOrUndefined?.search}` in the navbar, so
-    // seeing it proves the feature-flag manager loaded AND the navbar
-    // hydrated — i.e. the whole layout's actions are wired up.
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    // asynchronously after that. The cmdk input trigger is rendered by the
+    // hydrated navbar, so seeing it proves the layout actions are wired up.
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
   });
 
   // The classic SearchBar (in the navbar) and the cmdk Command.Input both expose
@@ -60,7 +58,13 @@ test.describe('global search palette', () => {
   });
 
   test('clicking the trigger opens the palette', async ({ page }) => {
-    await page.getByTestId('cmdk-trigger').click();
+    await page.getByTestId('cmdk-input-trigger').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+  });
+
+  test('desktop input trigger opens the palette', async ({ page }) => {
+    await expect(page.getByTestId('cmdk-input-trigger')).toBeVisible();
+    await page.getByTestId('cmdk-input-trigger').click();
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
@@ -71,7 +75,7 @@ test.describe('global search palette', () => {
   });
 
   test('focus returns to the trigger after the palette closes', async ({ page }) => {
-    const trigger = page.getByTestId('cmdk-trigger');
+    const trigger = page.getByTestId('cmdk-input-trigger');
     await trigger.focus();
     await expect(trigger).toBeFocused();
     await page.keyboard.press('Control+k');
@@ -145,7 +149,7 @@ test.describe('global search palette', () => {
     // synchronously inside activateAlbum's success path, so they are visible
     // on the very next palette open.
     await page.goto('/photos');
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
     await page.keyboard.press('Control+k');
     dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -170,7 +174,7 @@ test.describe('global search palette', () => {
     await expect(page).toHaveURL(/\/spaces\/[\da-f-]{36}$/);
 
     await page.goto('/photos');
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
     await page.keyboard.press('Control+k');
     dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -179,7 +183,7 @@ test.describe('global search palette', () => {
   });
 
   test('query recents replay on /photos', async ({ page }) => {
-    await page.getByTestId('cmdk-trigger').click();
+    await page.getByTestId('cmdk-input-trigger').click();
     let dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await dialog.getByRole('combobox').fill('beach');
@@ -187,8 +191,8 @@ test.describe('global search palette', () => {
     await expect(page).toHaveURL(/\/photos\?q=beach$/);
 
     await page.goto('/photos');
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
-    await page.getByTestId('cmdk-trigger').click();
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-input-trigger').click();
     dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     const recentGroup = dialog.getByRole('group', { name: /^recent$/i });
@@ -202,7 +206,7 @@ test.describe('global search palette', () => {
     // already loaded, so reload to pick it up before opening the palette.
     await utils.cmdkSeedRecentWithNonexistentSpace(page, admin.userId);
     await page.reload();
-    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
 
     // Cold open with empty query → cmdk renders RECENT (the only seeded source
     // for this user, since prior tests in this file run their own resetDatabase
@@ -239,6 +243,13 @@ test.describe('global search palette', () => {
     dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('[data-command-item]', { hasText: 'Ghost Space' })).toHaveCount(0);
+  });
+
+  test('mobile search icon opens the palette instead of navigating to /search', async ({ page }) => {
+    await page.setViewportSize({ width: 430, height: 932 });
+    await page.locator('#search-button').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page).not.toHaveURL(/\/search$/);
   });
 
   test('palette renders sections in designed order when populated', async ({ page }) => {
@@ -446,7 +457,7 @@ test.describe('global search palette', () => {
 
     test('System Settings and Admin sub-sections are absent', async ({ page }) => {
       await page.goto('/photos');
-      await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+      await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
       await page.keyboard.press('Control+k');
       await page.getByRole('dialog').getByRole('combobox').fill('classific');
       // 'classific' matches only admin system-settings item, which is gated out.
@@ -458,7 +469,7 @@ test.describe('global search palette', () => {
       // Step 1: as admin, navigate via palette to seed a recent entry.
       await utils.setAuthCookies(context, admin.accessToken);
       await page.goto('/photos');
-      await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+      await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
       await page.keyboard.press('Control+k');
       const dialog = page.getByRole('dialog');
       await dialog.getByRole('combobox').fill('auto');
@@ -472,7 +483,7 @@ test.describe('global search palette', () => {
       // Step 2: swap to non-admin cookies (simulating a demotion).
       await utils.setAuthCookies(context, nonAdmin.accessToken);
       await page.goto('/photos');
-      await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+      await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
       await page.keyboard.press('Control+k');
       // Empty query → Recent section should NOT contain Auto-Classification.
       await expect(page.getByText(/auto-classification/i)).toHaveCount(0);
@@ -483,7 +494,7 @@ test.describe('global search palette', () => {
     // These 14 tests cover the v1.2 prefix scoping contract. Each test seeds its own
     // fixtures inline — the outer beforeAll already handled admin setup + the baseline
     // asset upload + metadata drain. We reuse the outer beforeEach so auth cookies and
-    // the /photos landing + cmdk-trigger hydration wait are handled automatically.
+    // the /photos landing + cmdk input trigger hydration wait are handled automatically.
 
     test('scope @ narrows to people section and activating navigates to /people/:id', async ({ page }) => {
       // searchPerson (used for `@alice`) runs a trigram word_similarity filter on
@@ -589,7 +600,7 @@ test.describe('global search palette', () => {
       });
 
       await page.goto('/photos');
-      await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+      await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
       await page.keyboard.press('Control+k');
       const dialog = page.getByRole('dialog');
       await dialog.getByRole('combobox').fill('@');
@@ -722,7 +733,7 @@ test.describe('global search palette', () => {
       await utils.cmdkSeedSpaces(admin.accessToken, ['Bare Slash Space']);
 
       await page.goto('/photos');
-      await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+      await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
       await page.keyboard.press('Control+k');
       const dialog = page.getByRole('dialog');
       await dialog.getByRole('combobox').fill('/');
