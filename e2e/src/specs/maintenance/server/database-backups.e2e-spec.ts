@@ -1,4 +1,5 @@
-import { LoginResponseDto, ManualJobName } from '@immich/sdk';
+import { LoginResponseDto, ManualJobName, login } from '@immich/sdk';
+import { loginDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
 import request from 'supertest';
@@ -207,6 +208,10 @@ describe('/admin/database-backups', () => {
           },
         )
         .toBeFalsy();
+
+      // A full database restore replaces the session table, so acquire a fresh
+      // admin session before the next restore scenarios run.
+      admin = await login({ loginCredentialDto: loginDto.admin });
     });
 
     it.sequential('fail to restore a corrupted backup', { timeout: 60_000 }, async () => {

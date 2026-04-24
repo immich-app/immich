@@ -37,7 +37,27 @@ export class BirthdayMemoryRule implements MemoryRule {
         .flatMap((year) => byYear.get(year) ?? [])
         .slice(0, 12);
 
-      if (assetIds.length < 6 || byYear.size < 2) {
+      if (assetIds.length >= 6 && byYear.size >= 2) {
+        candidates.push({
+          ruleId: this.id,
+          dedupeKey: `birthday:${person.id}:${target.toFormat('yyyy-MM-dd')}`,
+          title: `Happy birthday, ${person.name}`,
+          subtitle: 'Photos from different years',
+          score: 300 + byYear.size * 10 + assetIds.length,
+          assetIds,
+          memoryAt: target,
+          context: { personId: person.id, distinctYears: byYear.size },
+        });
+
+        continue;
+      }
+
+      const fallbackAssetIds = assets
+        .toSorted((a, b) => b.localDateTime.getTime() - a.localDateTime.getTime())
+        .slice(0, 4)
+        .map((asset) => asset.id);
+
+      if (fallbackAssetIds.length < 4) {
         continue;
       }
 
@@ -45,9 +65,9 @@ export class BirthdayMemoryRule implements MemoryRule {
         ruleId: this.id,
         dedupeKey: `birthday:${person.id}:${target.toFormat('yyyy-MM-dd')}`,
         title: `Happy birthday, ${person.name}`,
-        subtitle: 'Photos from different years',
-        score: 100 + byYear.size * 10 + assetIds.length,
-        assetIds,
+        subtitle: `Recent photos of ${person.name}`,
+        score: 250 + fallbackAssetIds.length,
+        assetIds: fallbackAssetIds,
         memoryAt: target,
         context: { personId: person.id, distinctYears: byYear.size },
       });

@@ -286,6 +286,56 @@ describe(MemoryService.name, () => {
       ]);
     });
 
+    it('creates a fallback birthday memory from four single-year Pierre photos', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2026, month: 4, day: 24 }, { zone: 'utc' }) as DateTime<true>;
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Pierre',
+        birthDate: new Date('2025-04-24T00:00:00Z'),
+      });
+      const pierreAssetIds: string[] = [];
+
+      const addPierreAsset = async (localDateTime: string) => {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+        pierreAssetIds.push(asset.id);
+        await Promise.all([
+          ctx.newExif({ assetId: asset.id, city: 'Berlin', country: 'Germany' }),
+          ctx.newJobStatus({ assetId: asset.id }),
+          ctx.newAssetFace({ assetId: asset.id, personId: person.id }),
+          assetRepo.upsertFiles([
+            { assetId: asset.id, type: AssetFileType.Preview, path: `/preview-${asset.id}.jpg` },
+            { assetId: asset.id, type: AssetFileType.Thumbnail, path: `/thumb-${asset.id}.jpg` },
+          ]),
+        ]);
+      };
+
+      await addPierreAsset('2026-04-18T15:25:07.335Z');
+      await addPierreAsset('2026-04-18T15:25:08.244Z');
+      await addPierreAsset('2026-04-18T15:25:09.803Z');
+      await addPierreAsset('2026-04-18T15:25:11.543Z');
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      const memories = await memoryRepo.search(user.id, { type: MemoryType.Rule, for: now.toJSDate() });
+      expect(memories).toEqual([
+        expect.objectContaining({
+          type: MemoryType.Rule,
+          data: expect.objectContaining({
+            ruleId: 'birthday',
+            title: 'Happy birthday, Pierre',
+            subtitle: 'Recent photos of Pierre',
+          }),
+        }),
+      ]);
+      expect(memories[0]?.assets).toHaveLength(4);
+      expect(memories[0]?.assets.map(({ id }) => id).toSorted()).toEqual([...pierreAssetIds].toSorted());
+    });
+
     it('creates a recent-trip rule memory for a dense non-home cluster', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);

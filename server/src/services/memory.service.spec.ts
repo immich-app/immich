@@ -289,6 +289,85 @@ describe(MemoryService.name, () => {
       vi.useRealTimers();
     });
 
+    it('prefers a fallback birthday candidate over recent trip when only one rule slot remains', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-24T12:00:00Z'));
+
+      const user = factory.userAdmin();
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.systemMetadata.get.mockResolvedValue({
+        lastOnThisDayDate: '2026-04-26T00:00:00.000Z',
+        lastRuleDate: '2026-04-23T00:00:00.000Z',
+      });
+      mocks.asset.getByDayOfYear.mockResolvedValue([]);
+      mocks.memory.search.mockResolvedValue([
+        getForMemory(
+          MemoryFactory.create({
+            ownerId: user.id,
+            type: MemoryType.Rule,
+            memoryAt: new Date('2026-04-24T00:00:00Z'),
+            data: {
+              ruleId: 'existing',
+              dedupeKey: 'existing',
+              title: 'Existing',
+            } satisfies RuleMemoryData,
+          }),
+        ),
+      ]);
+      mocks.memory.hasRuleMemory.mockResolvedValue(false);
+      mocks.memory.create.mockResolvedValue(MemoryFactory.create() as any);
+
+      const birthdayRule = {
+        id: 'birthday',
+        evaluate: vi.fn().mockResolvedValue([
+          {
+            ruleId: 'birthday',
+            dedupeKey: 'birthday:person-1:2026-04-24',
+            title: 'Happy birthday, Pierre',
+            subtitle: 'Recent photos of Pierre',
+            score: 254,
+            assetIds: ['a-1', 'a-2', 'a-3', 'a-4'],
+            memoryAt: DateTime.fromISO('2026-04-24T00:00:00Z'),
+          },
+        ]),
+      };
+      const recentTripRule = {
+        id: 'recent_trip',
+        evaluate: vi.fn().mockResolvedValue([
+          {
+            ruleId: 'recent_trip',
+            dedupeKey: 'recent_trip:germany:nurnberg:2026-04-24',
+            title: 'Recent trip to Nurnberg, Germany',
+            subtitle: '20 photos over 30 days',
+            score: 220,
+            assetIds: ['t-1', 't-2', 't-3'],
+            memoryAt: DateTime.fromISO('2026-04-24T00:00:00Z'),
+          },
+        ]),
+      };
+
+      vi.spyOn(sut as never, 'getMemoryRules').mockReturnValue([recentTripRule, birthdayRule] as never);
+
+      await sut.onMemoriesCreate();
+
+      expect(mocks.memory.create).toHaveBeenCalledTimes(1);
+      expect(mocks.memory.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ownerId: user.id,
+          type: MemoryType.Rule,
+          data: expect.objectContaining({
+            ruleId: 'birthday',
+            title: 'Happy birthday, Pierre',
+            subtitle: 'Recent photos of Pierre',
+            score: 254,
+          }),
+        }),
+        new Set(['a-1', 'a-2', 'a-3', 'a-4']),
+      );
+
+      vi.useRealTimers();
+    });
+
     it('should not advance the rule cursor when any owner run fails', async () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date('2026-04-23T12:00:00Z'));
