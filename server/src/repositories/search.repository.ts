@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql, SqlBool } from 'kysely';
+import { Kysely, OrderByDirection, Selectable, SelectQueryBuilder, ShallowDehydrateObject, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
@@ -169,14 +169,15 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
-export interface SpaceScopeOptions {
+export interface SuggestionScopeOptions {
+  albumId?: string;
   spaceId?: string;
   timelineSpaceIds?: string[];
   takenAfter?: Date;
   takenBefore?: Date;
 }
 
-export interface GetStatesOptions extends SpaceScopeOptions {
+export interface GetStatesOptions extends SuggestionScopeOptions {
   country?: string;
 }
 
@@ -184,22 +185,22 @@ export interface GetCitiesOptions extends GetStatesOptions {
   state?: string;
 }
 
-export interface GetCameraModelsOptions extends SpaceScopeOptions {
+export interface GetCameraModelsOptions extends SuggestionScopeOptions {
   make?: string;
   lensModel?: string;
 }
 
-export interface GetCameraMakesOptions extends SpaceScopeOptions {
+export interface GetCameraMakesOptions extends SuggestionScopeOptions {
   model?: string;
   lensModel?: string;
 }
 
-export interface GetCameraLensModelsOptions extends SpaceScopeOptions {
+export interface GetCameraLensModelsOptions extends SuggestionScopeOptions {
   make?: string;
   model?: string;
 }
 
-export interface FilterSuggestionsOptions extends SpaceScopeOptions {
+export interface FilterSuggestionsOptions extends SuggestionScopeOptions {
   personIds?: string[];
   country?: string;
   city?: string;
@@ -210,6 +211,11 @@ export interface FilterSuggestionsOptions extends SpaceScopeOptions {
   mediaType?: AssetType;
   isFavorite?: boolean;
 }
+
+type AccessibleTagScopeOptions = Pick<
+  SuggestionScopeOptions,
+  'spaceId' | 'timelineSpaceIds' | 'takenAfter' | 'takenBefore'
+>;
 
 export interface FilterSuggestionsResult {
   countries: string[];
@@ -557,7 +563,7 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[], options?: SpaceScopeOptions): Promise<string[]> {
+  async getCountries(userIds: string[], options?: SuggestionScopeOptions): Promise<string[]> {
     const res = await this.getExifField('country', userIds, options).execute();
     return res.map((row) => row.country!);
   }
@@ -614,7 +620,7 @@ export class SearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAccessibleTags(
     userIds: string[],
-    options?: SpaceScopeOptions,
+    options?: AccessibleTagScopeOptions,
   ): Promise<Array<{ id: string; value: string }>> {
     return this.db
       .selectFrom('tag')
@@ -689,22 +695,26 @@ export class SearchRepository {
     };
   }
 
-  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
-    field: K,
+  private applySuggestionScope<T extends SelectQueryBuilder<DB, any, any>>(
+    qb: T,
     userIds: string[],
-    options?: SpaceScopeOptions,
+    options?: SuggestionScopeOptions,
   ) {
-    return this.db
-      .selectFrom('asset_exif')
-      .select(field)
-      .distinctOn(field)
-      .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-      .$if(!options?.spaceId && !options?.timelineSpaceIds, (qb) => qb.where('ownerId', '=', anyUuid(userIds)))
-      .where('visibility', '=', AssetVisibility.Timeline)
-      .where('deletedAt', 'is', null)
-      .where(field, 'is not', null)
-      .where(field, '!=', '' as any)
-      .$if(!!options?.spaceId && !options?.timelineSpaceIds, (qb) =>
+    return qb
+      .$if(!!options?.albumId, (qb) =>
+        qb.where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('album_asset')
+              .whereRef('album_asset.assetId', '=', 'asset.id')
+              .where('album_asset.albumId', '=', asUuid(options!.albumId!)),
+          ),
+        ),
+      )
+      .$if(!options?.albumId && !options?.spaceId && !options?.timelineSpaceIds, (qb) =>
+        qb.where('asset.ownerId', '=', anyUuid(userIds)),
+      )
+      .$if(!!options?.spaceId && !options?.timelineSpaceIds && !options?.albumId, (qb) =>
         qb.where((eb) =>
           eb.or([
             eb.exists(
@@ -722,10 +732,10 @@ export class SearchRepository {
           ]),
         ),
       )
-      .$if(!!options?.timelineSpaceIds, (qb) =>
+      .$if(!!options?.timelineSpaceIds && !options?.albumId, (qb) =>
         qb.where((eb) =>
           eb.or([
-            eb('ownerId', '=', anyUuid(userIds)),
+            eb('asset.ownerId', '=', anyUuid(userIds)),
             eb.exists(
               eb
                 .selectFrom('shared_space_asset')
@@ -740,7 +750,27 @@ export class SearchRepository {
             ),
           ]),
         ),
-      )
+      );
+  }
+
+  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
+    field: K,
+    userIds: string[],
+    options?: SuggestionScopeOptions,
+  ) {
+    return this.applySuggestionScope(
+      this.db
+        .selectFrom('asset_exif')
+        .select(field)
+        .distinctOn(field)
+        .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
+        .where('visibility', '=', AssetVisibility.Timeline)
+        .where('deletedAt', 'is', null)
+        .where(field, 'is not', null)
+        .where(field, '!=', '' as any),
+      userIds,
+      options,
+    )
       .$if(!!options?.takenAfter, (qb) => qb.where('asset.fileCreatedAt', '>=', options!.takenAfter!))
       .$if(!!options?.takenBefore, (qb) => qb.where('asset.fileCreatedAt', '<', options!.takenBefore!));
   }
@@ -748,49 +778,15 @@ export class SearchRepository {
   private buildFilteredAssetIds(userIds: string[], options: FilterSuggestionsOptions) {
     const needsExifJoin = !!(options.country || options.city || options.make || options.model || options.rating);
 
-    return this.db
-      .selectFrom('asset')
-      .select('asset.id')
-      .where('asset.visibility', '=', AssetVisibility.Timeline)
-      .where('asset.deletedAt', 'is', null)
-      .$if(!options.spaceId && !options.timelineSpaceIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(userIds)))
-      .$if(!!options.spaceId && !options.timelineSpaceIds, (qb) =>
-        qb.where((eb) =>
-          eb.or([
-            eb.exists(
-              eb
-                .selectFrom('shared_space_asset')
-                .whereRef('shared_space_asset.assetId', '=', 'asset.id')
-                .where('shared_space_asset.spaceId', '=', asUuid(options.spaceId!)),
-            ),
-            eb.exists(
-              eb
-                .selectFrom('shared_space_library')
-                .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
-                .where('shared_space_library.spaceId', '=', asUuid(options.spaceId!)),
-            ),
-          ]),
-        ),
-      )
-      .$if(!!options.timelineSpaceIds, (qb) =>
-        qb.where((eb) =>
-          eb.or([
-            eb('asset.ownerId', '=', anyUuid(userIds)),
-            eb.exists(
-              eb
-                .selectFrom('shared_space_asset')
-                .whereRef('shared_space_asset.assetId', '=', 'asset.id')
-                .where('shared_space_asset.spaceId', '=', anyUuid(options.timelineSpaceIds!)),
-            ),
-            eb.exists(
-              eb
-                .selectFrom('shared_space_library')
-                .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
-                .where('shared_space_library.spaceId', '=', anyUuid(options.timelineSpaceIds!)),
-            ),
-          ]),
-        ),
-      )
+    return this.applySuggestionScope(
+      this.db
+        .selectFrom('asset')
+        .select('asset.id')
+        .where('asset.visibility', '=', AssetVisibility.Timeline)
+        .where('asset.deletedAt', 'is', null),
+      userIds,
+      options,
+    )
       .$if(!!options.takenAfter, (qb) => qb.where('asset.fileCreatedAt', '>=', options.takenAfter!))
       .$if(!!options.takenBefore, (qb) => qb.where('asset.fileCreatedAt', '<', options.takenBefore!))
       .$if(needsExifJoin, (qb) =>

@@ -4,6 +4,7 @@ import { getTimeBucket } from '@immich/sdk';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { TimelineManagerOptions } from '../types';
+import { getTimelineAlbumQueryOptions, mergeTimeBucketAssets } from './album-picker-support';
 
 export async function loadFromTimeBuckets(
   timelineManager: TimelineManager,
@@ -16,6 +17,7 @@ export async function loadFromTimeBuckets(
   }
 
   const timeBucket = toISOYearMonthUTC(timelineMonth.yearMonth);
+  const albumQueryOptions = getTimelineAlbumQueryOptions(options);
   const bucketResponse = await getTimeBucket(
     {
       ...authManager.params,
@@ -29,11 +31,14 @@ export async function loadFromTimeBuckets(
     return;
   }
 
-  if (options.timelineAlbumId) {
+  let mergedBucketResponse = bucketResponse;
+  let isMergedBucket = false;
+
+  if (albumQueryOptions) {
     const albumAssets = await getTimeBucket(
       {
         ...authManager.params,
-        albumId: options.timelineAlbumId,
+        ...albumQueryOptions,
         timeBucket,
       },
       { signal },
@@ -43,6 +48,10 @@ export async function loadFromTimeBuckets(
     }
     for (const id of albumAssets.id) {
       timelineManager.albumAssets.add(id);
+    }
+    if (albumAssets.id.length > 0) {
+      mergedBucketResponse = mergeTimeBucketAssets(bucketResponse, albumAssets);
+      isMergedBucket = mergedBucketResponse.id.length !== bucketResponse.id.length;
     }
   }
 
@@ -63,7 +72,7 @@ export async function loadFromTimeBuckets(
     }
   }
 
-  const unprocessedAssets = timelineMonth.addAssets(bucketResponse, true);
+  const unprocessedAssets = timelineMonth.addAssets(mergedBucketResponse, !isMergedBucket);
   if (unprocessedAssets.length > 0) {
     console.error(
       `Warning: getTimeBucket API returning assets not in requested month: ${timelineMonth.yearMonth.month}, ${JSON.stringify(

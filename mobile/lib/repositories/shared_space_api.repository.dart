@@ -32,7 +32,9 @@ class SharedSpaceApiRepository extends ApiRepository {
     return await checkNull(_api.createSpace(dto));
   }
 
-  Future<void> delete(String id) => _api.removeSpace(id);
+  Future<void> delete(String id) async {
+    await _api.removeSpace(id);
+  }
 
   Future<List<SharedSpaceMemberResponseDto>> getMembers(String id) async {
     final response = await checkNull(_api.getMembers(id));
@@ -48,7 +50,9 @@ class SharedSpaceApiRepository extends ApiRepository {
     return await checkNull(_api.addMember(spaceId, dto));
   }
 
-  Future<void> removeMember(String spaceId, String userId) => _api.removeMember(spaceId, userId);
+  Future<void> removeMember(String spaceId, String userId) async {
+    await _api.removeMember(spaceId, userId);
+  }
 
   Future<SharedSpaceMemberResponseDto> updateMember(String spaceId, String userId, SharedSpaceRole role) async {
     final dto = SharedSpaceMemberUpdateDto(role: role);

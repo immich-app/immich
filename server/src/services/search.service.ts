@@ -228,18 +228,28 @@ export class SearchService extends BaseService {
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
+    if (dto.albumId && dto.spaceId) {
+      throw new BadRequestException('Cannot use albumId with spaceId');
+    }
+
+    if (dto.albumId && dto.withSharedSpaces) {
+      throw new BadRequestException('Cannot use albumId with withSharedSpaces');
+    }
+
     if (dto.spaceId && dto.withSharedSpaces) {
       throw new BadRequestException('Cannot use both spaceId and withSharedSpaces');
     }
 
-    if (dto.spaceId) {
+    if (dto.albumId) {
+      await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
+    } else if (dto.spaceId) {
       await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
 
     let timelineSpaceIds: string[] | undefined;
-    if (dto.withSharedSpaces) {
+    if (!dto.albumId && dto.withSharedSpaces) {
       const spaceRows = await this.sharedSpaceRepository.getSpaceIdsForTimeline(auth.user.id);
       if (spaceRows.length > 0) {
         timelineSpaceIds = spaceRows.map((row) => row.spaceId);
@@ -276,18 +286,28 @@ export class SearchService extends BaseService {
   }
 
   async getFilterSuggestions(auth: AuthDto, dto: FilterSuggestionsRequestDto): Promise<FilterSuggestionsResponseDto> {
+    if (dto.albumId && dto.spaceId) {
+      throw new BadRequestException('Cannot use albumId with spaceId');
+    }
+
+    if (dto.albumId && dto.withSharedSpaces) {
+      throw new BadRequestException('Cannot use albumId with withSharedSpaces');
+    }
+
     if (dto.spaceId && dto.withSharedSpaces) {
       throw new BadRequestException('Cannot use both spaceId and withSharedSpaces');
     }
 
-    if (dto.spaceId) {
+    if (dto.albumId) {
+      await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
+    } else if (dto.spaceId) {
       await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
 
     let timelineSpaceIds: string[] | undefined;
-    if (dto.withSharedSpaces) {
+    if (!dto.albumId && dto.withSharedSpaces) {
       const spaceRows = await this.sharedSpaceRepository.getSpaceIdsForTimeline(auth.user.id);
       if (spaceRows.length > 0) {
         timelineSpaceIds = spaceRows.map((row) => row.spaceId);

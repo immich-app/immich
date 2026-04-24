@@ -30,8 +30,11 @@ const buildAssetSearchSql = (options: Record<string, unknown>) =>
     .selectAll('asset')
     .compile().sql;
 
-const buildFilteredAssetIdsQuery = (sut: SearchRepository, options: Record<string, unknown>) =>
-  (sut as any).buildFilteredAssetIds(['00000000-0000-0000-0000-000000000000'], options);
+const compileFilteredAssetIds = (sut: SearchRepository, options: Record<string, unknown>) =>
+  (sut as any).buildFilteredAssetIds(['00000000-0000-0000-0000-000000000000'], options).compile().sql;
+
+const compileExifField = (sut: SearchRepository, field: 'country' | 'model', options: Record<string, unknown>) =>
+  (sut as any).getExifField(field, ['00000000-0000-0000-0000-000000000000'], options).compile().sql;
 
 const FAILURE_MESSAGE =
   'Do not add any secondary ORDER BY key to the inner searchSmart query. ' +
@@ -224,10 +227,35 @@ describe(SearchRepository.name, () => {
 
   describe('filter suggestions query shape', () => {
     it('uses minimum-threshold rating filtering for facet asset scoping', () => {
-      const sql = buildFilteredAssetIdsQuery(sut, { rating: 4 }).compile().sql;
+      const sql = compileFilteredAssetIds(sut, { rating: 4 });
 
       expect(sql).toMatch(/"asset_exif"\."rating"\s*>=\s*\$\d+/i);
       expect(sql).not.toMatch(/"asset_exif"\."rating"\s*=\s*\$\d+/i);
+    });
+  });
+
+  describe('album-scoped suggestions', () => {
+    it('buildFilteredAssetIds uses album_asset and does not fall back to ownerId scope', () => {
+      const sql = compileFilteredAssetIds(sut, {
+        albumId: '11111111-1111-1111-1111-111111111111',
+        tagIds: ['22222222-2222-2222-2222-222222222222'],
+      });
+
+      expect(sql).toContain('"album_asset"');
+      expect(sql).toContain('"album_asset"."albumId"');
+      expect(sql).toContain('"album_asset"."assetId" = "asset"."id"');
+      expect(sql).not.toContain('"asset"."ownerId" = any(');
+    });
+
+    it('getExifField uses album_asset and does not fall back to ownerId scope', () => {
+      const sql = compileExifField(sut, 'country', {
+        albumId: '11111111-1111-1111-1111-111111111111',
+      });
+
+      expect(sql).toContain('"album_asset"');
+      expect(sql).toContain('"album_asset"."albumId"');
+      expect(sql).toContain('"album_asset"."assetId" = "asset"."id"');
+      expect(sql).not.toContain('"ownerId" = any(');
     });
   });
 

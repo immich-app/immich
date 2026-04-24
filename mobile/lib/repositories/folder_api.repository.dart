@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
@@ -19,8 +21,12 @@ class FolderApiRepository extends ApiRepository {
 
   Future<List<String>> getAllUniquePaths() async {
     try {
-      final list = await _api.getUniqueOriginalPaths();
-      return list ?? [];
+      final response = await _api.getUniqueOriginalPathsWithHttpInfo();
+      if (response.body.isEmpty) {
+        return [];
+      }
+
+      return List<String>.from(jsonDecode(utf8.decode(response.bodyBytes)) as List);
     } catch (e, stack) {
       _log.severe("Failed to fetch unique original links", e, stack);
       return [];

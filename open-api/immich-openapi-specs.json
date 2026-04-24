@@ -10258,6 +10258,17 @@
         "operationId": "getSearchSuggestions",
         "parameters": [
           {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "description": "Scope suggestions to a specific album",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "country",
             "required": false,
             "in": "query",
@@ -10428,6 +10439,17 @@
         "description": "Returns available filter values scoped by all other active filters. Each category excludes its own filter (faceted search).",
         "operationId": "getFilterSuggestions",
         "parameters": [
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "description": "Scope to a specific album",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
           {
             "name": "city",
             "required": false,

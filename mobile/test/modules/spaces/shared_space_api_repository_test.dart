@@ -15,11 +15,20 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(api.SharedSpaceCreateDto(name: ''));
-    registerFallbackValue(api.SharedSpaceMemberCreateDto(userId: '', role: api.SharedSpaceRole.viewer));
-    registerFallbackValue(api.SharedSpaceMemberUpdateDto(role: api.SharedSpaceRole.viewer));
+    registerFallbackValue(
+      api.SharedSpaceMemberCreateDto(
+        userId: '',
+        role: api.SharedSpaceRole.viewer,
+      ),
+    );
+    registerFallbackValue(
+      api.SharedSpaceMemberUpdateDto(role: api.SharedSpaceRole.viewer),
+    );
     registerFallbackValue(api.SharedSpaceAssetAddDto(assetIds: []));
     registerFallbackValue(api.SharedSpaceAssetRemoveDto(assetIds: []));
-    registerFallbackValue(api.SharedSpaceMemberTimelineDto(showInTimeline: false));
+    registerFallbackValue(
+      api.SharedSpaceMemberTimelineDto(showInTimeline: false),
+    );
   });
 
   setUp(() {
@@ -35,22 +44,25 @@ void main() {
     // resolve apiService.sharedSpacesApi on each call, not capture it at
     // construction. Otherwise a cold-start read of sharedSpaceApiRepositoryProvider
     // (before login) pins the repo to an empty-basePath ApiClient forever.
-    test('routes calls to current ApiService.sharedSpacesApi after endpoint change', () async {
-      final oldApi = MockSharedSpacesApi();
-      final newApi = MockSharedSpacesApi();
+    test(
+      'routes calls to current ApiService.sharedSpacesApi after endpoint change',
+      () async {
+        final oldApi = MockSharedSpacesApi();
+        final newApi = MockSharedSpacesApi();
 
-      when(() => mockApiService.sharedSpacesApi).thenReturn(oldApi);
-      final repo = SharedSpaceApiRepository(mockApiService);
+        when(() => mockApiService.sharedSpacesApi).thenReturn(oldApi);
+        final repo = SharedSpaceApiRepository(mockApiService);
 
-      // Simulate ApiService.setEndpoint reassigning the field.
-      when(() => mockApiService.sharedSpacesApi).thenReturn(newApi);
-      when(() => newApi.getAllSpaces()).thenAnswer((_) async => []);
+        // Simulate ApiService.setEndpoint reassigning the field.
+        when(() => mockApiService.sharedSpacesApi).thenReturn(newApi);
+        when(() => newApi.getAllSpaces()).thenAnswer((_) async => []);
 
-      await repo.getAll();
+        await repo.getAll();
 
-      verify(() => newApi.getAllSpaces()).called(1);
-      verifyNever(() => oldApi.getAllSpaces());
-    });
+        verify(() => newApi.getAllSpaces()).called(1);
+        verifyNever(() => oldApi.getAllSpaces());
+      },
+    );
   });
 
   group('getAll', () {
@@ -133,7 +145,10 @@ void main() {
       );
       when(() => mockApi.createSpace(any())).thenAnswer((_) async => space);
 
-      final result = await repository.create('New Space', description: 'A description');
+      final result = await repository.create(
+        'New Space',
+        description: 'A description',
+      );
 
       expect(result.description, equals('A description'));
     });
@@ -141,7 +156,7 @@ void main() {
 
   group('delete', () {
     test('calls removeSpace on API', () async {
-      when(() => mockApi.removeSpace('space-1')).thenAnswer((_) async {});
+      when(() => mockApi.removeSpace('space-1')).thenAnswer((_) async => true);
 
       await repository.delete('space-1');
 
@@ -169,7 +184,9 @@ void main() {
           showInTimeline: true,
         ),
       ];
-      when(() => mockApi.getMembers('space-1')).thenAnswer((_) async => members);
+      when(
+        () => mockApi.getMembers('space-1'),
+      ).thenAnswer((_) async => members);
 
       final result = await repository.getMembers('space-1');
 
@@ -189,7 +206,9 @@ void main() {
         joinedAt: '2024-01-01T00:00:00Z',
         showInTimeline: true,
       );
-      when(() => mockApi.addMember('space-1', any())).thenAnswer((_) async => member);
+      when(
+        () => mockApi.addMember('space-1', any()),
+      ).thenAnswer((_) async => member);
 
       final result = await repository.addMember('space-1', 'user-2');
 
@@ -215,9 +234,15 @@ void main() {
         joinedAt: '2024-01-01T00:00:00Z',
         showInTimeline: true,
       );
-      when(() => mockApi.addMember('space-1', any())).thenAnswer((_) async => member);
+      when(
+        () => mockApi.addMember('space-1', any()),
+      ).thenAnswer((_) async => member);
 
-      final result = await repository.addMember('space-1', 'user-2', role: api.SharedSpaceRole.editor);
+      final result = await repository.addMember(
+        'space-1',
+        'user-2',
+        role: api.SharedSpaceRole.editor,
+      );
 
       expect(result.role, equals(api.SharedSpaceRole.editor));
     });
@@ -225,7 +250,9 @@ void main() {
 
   group('removeMember', () {
     test('calls removeMember on API', () async {
-      when(() => mockApi.removeMember('space-1', 'user-2')).thenAnswer((_) async {});
+      when(
+        () => mockApi.removeMember('space-1', 'user-2'),
+      ).thenAnswer((_) async => true);
 
       await repository.removeMember('space-1', 'user-2');
 
@@ -243,16 +270,28 @@ void main() {
         joinedAt: '2024-01-01T00:00:00Z',
         showInTimeline: true,
       );
-      when(() => mockApi.updateMember('space-1', 'user-2', any())).thenAnswer((_) async => member);
+      when(
+        () => mockApi.updateMember('space-1', 'user-2', any()),
+      ).thenAnswer((_) async => member);
 
-      final result = await repository.updateMember('space-1', 'user-2', api.SharedSpaceRole.editor);
+      final result = await repository.updateMember(
+        'space-1',
+        'user-2',
+        api.SharedSpaceRole.editor,
+      );
 
       expect(result.role, equals(api.SharedSpaceRole.editor));
       verify(
         () => mockApi.updateMember(
           'space-1',
           'user-2',
-          any(that: isA<api.SharedSpaceMemberUpdateDto>().having((d) => d.role, 'role', api.SharedSpaceRole.editor)),
+          any(
+            that: isA<api.SharedSpaceMemberUpdateDto>().having(
+              (d) => d.role,
+              'role',
+              api.SharedSpaceRole.editor,
+            ),
+          ),
         ),
       ).called(1);
     });
@@ -268,15 +307,26 @@ void main() {
         joinedAt: '2024-01-01T00:00:00Z',
         showInTimeline: true,
       );
-      when(() => mockApi.updateMemberTimeline('space-1', any())).thenAnswer((_) async => member);
+      when(
+        () => mockApi.updateMemberTimeline('space-1', any()),
+      ).thenAnswer((_) async => member);
 
-      final result = await repository.updateMemberTimeline('space-1', showInTimeline: true);
+      final result = await repository.updateMemberTimeline(
+        'space-1',
+        showInTimeline: true,
+      );
 
       expect(result.showInTimeline, isTrue);
       verify(
         () => mockApi.updateMemberTimeline(
           'space-1',
-          any(that: isA<api.SharedSpaceMemberTimelineDto>().having((d) => d.showInTimeline, 'showInTimeline', true)),
+          any(
+            that: isA<api.SharedSpaceMemberTimelineDto>().having(
+              (d) => d.showInTimeline,
+              'showInTimeline',
+              true,
+            ),
+          ),
         ),
       ).called(1);
     });
@@ -290,15 +340,26 @@ void main() {
         joinedAt: '2024-01-01T00:00:00Z',
         showInTimeline: false,
       );
-      when(() => mockApi.updateMemberTimeline('space-1', any())).thenAnswer((_) async => member);
+      when(
+        () => mockApi.updateMemberTimeline('space-1', any()),
+      ).thenAnswer((_) async => member);
 
-      final result = await repository.updateMemberTimeline('space-1', showInTimeline: false);
+      final result = await repository.updateMemberTimeline(
+        'space-1',
+        showInTimeline: false,
+      );
 
       expect(result.showInTimeline, isFalse);
       verify(
         () => mockApi.updateMemberTimeline(
           'space-1',
-          any(that: isA<api.SharedSpaceMemberTimelineDto>().having((d) => d.showInTimeline, 'showInTimeline', false)),
+          any(
+            that: isA<api.SharedSpaceMemberTimelineDto>().having(
+              (d) => d.showInTimeline,
+              'showInTimeline',
+              false,
+            ),
+          ),
         ),
       ).called(1);
     });
@@ -306,14 +367,22 @@ void main() {
 
   group('addAssets', () {
     test('calls addAssets on API with correct DTO', () async {
-      when(() => mockApi.addAssets('space-1', any())).thenAnswer((_) async {});
+      when(
+        () => mockApi.addAssets('space-1', any()),
+      ).thenAnswer((_) async => true);
 
       await repository.addAssets('space-1', ['asset-1', 'asset-2']);
 
       verify(
         () => mockApi.addAssets(
           'space-1',
-          any(that: isA<api.SharedSpaceAssetAddDto>().having((d) => d.assetIds, 'assetIds', ['asset-1', 'asset-2'])),
+          any(
+            that: isA<api.SharedSpaceAssetAddDto>().having(
+              (d) => d.assetIds,
+              'assetIds',
+              ['asset-1', 'asset-2'],
+            ),
+          ),
         ),
       ).called(1);
     });
@@ -321,14 +390,22 @@ void main() {
 
   group('removeAssets', () {
     test('calls removeAssets on API with correct DTO', () async {
-      when(() => mockApi.removeAssets('space-1', any())).thenAnswer((_) async {});
+      when(
+        () => mockApi.removeAssets('space-1', any()),
+      ).thenAnswer((_) async => true);
 
       await repository.removeAssets('space-1', ['asset-1']);
 
       verify(
         () => mockApi.removeAssets(
           'space-1',
-          any(that: isA<api.SharedSpaceAssetRemoveDto>().having((d) => d.assetIds, 'assetIds', ['asset-1'])),
+          any(
+            that: isA<api.SharedSpaceAssetRemoveDto>().having(
+              (d) => d.assetIds,
+              'assetIds',
+              ['asset-1'],
+            ),
+          ),
         ),
       ).called(1);
     });

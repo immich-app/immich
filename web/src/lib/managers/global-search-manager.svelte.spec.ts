@@ -54,7 +54,6 @@ import { COMMAND_ITEMS, type CommandItem } from './command-items';
 import {
   GlobalSearchManager,
   RECONCILE_ORDER_BY_SCOPE,
-  type EntityItem,
   type Provider,
   type ProviderStatus,
   type SearchMode,
@@ -2632,17 +2631,17 @@ describe('SWR loading rules', () => {
   });
 
   it('stale-batch providers do not deadlock batchInFlight after a new batch supersedes', async () => {
-    const m = new GlobalSearchManager();
-    const photosProvider = (m as unknown as { providers: { photos: Provider<EntityItem> } }).providers.photos;
-    const originalPhotosRun = photosProvider.run;
     let resolveStalePhotos!: () => void;
+    const m = new GlobalSearchManager();
+    const providers = (m as unknown as { providers: Record<keyof Sections, Provider> }).providers;
+    const originalPhotosRun = providers.photos.run;
     let invocationCount = 0;
-    photosProvider.run = vi.fn((query: string, mode: SearchMode, signal: AbortSignal) => {
+    providers.photos.run = vi.fn((query, mode, signal) => {
       invocationCount++;
       if (invocationCount === 1) {
-        return new Promise(
-          (r) => (resolveStalePhotos = () => r({ status: 'empty' } as ProviderStatus<EntityItem>)),
-        ) as Promise<ProviderStatus<EntityItem>>;
+        return new Promise<ProviderStatus>((resolve) => {
+          resolveStalePhotos = () => resolve({ status: 'ok' as const, items: [], total: 0 });
+        });
       }
       return originalPhotosRun(query, mode, signal);
     });
@@ -2661,7 +2660,7 @@ describe('SWR loading rules', () => {
       expect((m as unknown as { inFlightCounter: number }).inFlightCounter).toBe(0);
       expect(m.batchInFlight).toBe(false);
     } finally {
-      photosProvider.run = originalPhotosRun;
+      providers.photos.run = originalPhotosRun;
     }
   });
 

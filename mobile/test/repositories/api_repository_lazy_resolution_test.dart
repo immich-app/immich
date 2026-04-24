@@ -8,6 +8,7 @@
 // See shared_space_api_repository_test.dart for the prototype version.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:immich_mobile/infrastructure/repositories/search_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/tags_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
@@ -96,7 +97,9 @@ void main() {
 
     when(() => apiService.sessionsApi).thenReturn(newApi);
     // Throw via thenAnswer so expectLater sees the rejection as a Future.
-    when(() => newApi.createSession(any())).thenAnswer((_) => Future.error(Exception('stop')));
+    when(
+      () => newApi.createSession(any()),
+    ).thenAnswer((_) => Future.error(Exception('stop')));
 
     await expectLater(repo.createSession('phone', 'ios'), throwsException);
 
@@ -111,9 +114,14 @@ void main() {
     final repo = PersonApiRepository(apiService);
 
     when(() => apiService.peopleApi).thenReturn(newApi);
-    when(
-      () => newApi.getAllPeople(),
-    ).thenAnswer((_) async => PeopleResponseDto(people: [], hidden: 0, total: 0, hasNextPage: false));
+    when(() => newApi.getAllPeople()).thenAnswer(
+      (_) async => PeopleResponseDto(
+        people: [],
+        hidden: 0,
+        total: 0,
+        hasNextPage: false,
+      ),
+    );
 
     await repo.getAll();
 
@@ -128,7 +136,9 @@ void main() {
     final repo = PartnerApiRepository(apiService);
 
     when(() => apiService.partnersApi).thenReturn(newApi);
-    when(() => newApi.getPartners(PartnerDirection.by)).thenAnswer((_) async => []);
+    when(
+      () => newApi.getPartners(PartnerDirection.by),
+    ).thenAnswer((_) async => []);
 
     await repo.getAll(Direction.sharedByMe);
 
@@ -143,12 +153,14 @@ void main() {
     final repo = FolderApiRepository(apiService);
 
     when(() => apiService.viewApi).thenReturn(newApi);
-    when(() => newApi.getUniqueOriginalPaths()).thenAnswer((_) async => []);
+    when(
+      () => newApi.getUniqueOriginalPathsWithHttpInfo(),
+    ).thenAnswer((_) async => http.Response('[]', 200));
 
     await repo.getAllUniquePaths();
 
-    verify(() => newApi.getUniqueOriginalPaths()).called(1);
-    verifyNever(() => oldApi.getUniqueOriginalPaths());
+    verify(() => newApi.getUniqueOriginalPathsWithHttpInfo()).called(1);
+    verifyNever(() => oldApi.getUniqueOriginalPathsWithHttpInfo());
   });
 
   test('DriftAlbumApiRepository resolves albumsApi lazily', () async {
@@ -159,7 +171,9 @@ void main() {
 
     when(() => apiService.albumsApi).thenReturn(newApi);
     registerFallbackValue(BulkIdsDto(ids: []));
-    when(() => newApi.removeAssetFromAlbum(any(), any())).thenAnswer((_) async => []);
+    when(
+      () => newApi.removeAssetFromAlbum(any(), any()),
+    ).thenAnswer((_) async => []);
 
     await repo.removeAssets('album-1', ['asset-1']);
 
@@ -174,7 +188,9 @@ void main() {
     final repo = AssetApiRepository(apiService);
 
     when(() => apiService.assetsApi).thenReturn(newApi);
-    when(() => newApi.updateAsset(any(), any())).thenAnswer((_) => Future.error(Exception('stop')));
+    when(
+      () => newApi.updateAsset(any(), any()),
+    ).thenAnswer((_) => Future.error(Exception('stop')));
 
     await expectLater(repo.updateDescription('a1', 'desc'), throwsException);
 

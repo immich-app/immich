@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/infrastructure/repositories/api.repository.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
@@ -77,5 +79,19 @@ class SearchApiRepository extends ApiRepository {
     String? state,
     String? make,
     String? model,
-  }) => _api.getSearchSuggestions(type, country: country, state: state, make: make, model: model);
+  }) async {
+    final response = await _api.getSearchSuggestionsWithHttpInfo(
+      type,
+      country: country,
+      state: state,
+      make: make,
+      model: model,
+    );
+
+    if (response.body.isEmpty) {
+      return const [];
+    }
+
+    return List<String>.from(jsonDecode(utf8.decode(response.bodyBytes)) as List);
+  }
 }

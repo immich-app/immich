@@ -25,7 +25,7 @@ class SharedLinkService {
 
   Future<void> deleteSharedLink(String id) async {
     try {
-      return await _apiService.sharedLinksApi.removeSharedLink(id);
+      await _apiService.sharedLinksApi.removeSharedLink(id);
     } catch (e) {
       _log.severe("Failed to delete shared link id - $id", e);
     }

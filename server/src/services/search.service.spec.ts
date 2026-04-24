@@ -380,6 +380,48 @@ describe(SearchService.name, () => {
       expect(callArg).not.toHaveProperty('takenBefore');
     });
 
+    describe('album access (albumId)', () => {
+      it('checks album access and passes albumId to getSearchSuggestions', async () => {
+        const albumId = newUuid();
+        mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set());
+        mocks.access.album.checkSharedAlbumAccess.mockResolvedValue(new Set([albumId]));
+        mocks.search.getCountries.mockResolvedValue(['Germany']);
+
+        const result = await sut.getSearchSuggestions(authStub.user1, {
+          type: SearchSuggestionType.COUNTRY,
+          albumId,
+        });
+
+        expect(result).toEqual(['Germany']);
+        expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalled();
+        expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalled();
+        expect(mocks.search.getCountries).toHaveBeenCalledWith(
+          [authStub.user1.user.id],
+          expect.objectContaining({ albumId }),
+        );
+      });
+
+      it('rejects albumId mixed with spaceId for getSearchSuggestions', async () => {
+        await expect(
+          sut.getSearchSuggestions(authStub.user1, {
+            type: SearchSuggestionType.COUNTRY,
+            albumId: newUuid(),
+            spaceId: newUuid(),
+          }),
+        ).rejects.toThrow('Cannot use albumId with spaceId');
+      });
+
+      it('rejects albumId mixed with withSharedSpaces for getSearchSuggestions', async () => {
+        await expect(
+          sut.getSearchSuggestions(authStub.user1, {
+            type: SearchSuggestionType.COUNTRY,
+            albumId: newUuid(),
+            withSharedSpaces: true,
+          }),
+        ).rejects.toThrow('Cannot use albumId with withSharedSpaces');
+      });
+    });
+
     describe('shared space access (spaceId)', () => {
       it('should check shared space access when spaceId is provided', async () => {
         const spaceId = newUuid();
@@ -1303,6 +1345,49 @@ describe(SearchService.name, () => {
       await expect(
         sut.getFilterSuggestions(auth, { spaceId: newUuid(), withSharedSpaces: true }),
       ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('checks album access and passes albumId to getFilterSuggestions', async () => {
+      const albumId = newUuid();
+      const auth = AuthFactory.create();
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.album.checkSharedAlbumAccess.mockResolvedValue(new Set([albumId]));
+      mocks.search.getFilterSuggestions.mockResolvedValue({
+        countries: ['Germany'],
+        cameraMakes: ['Canon'],
+        tags: [{ id: 'tag-1', value: 'Vacation' }],
+        people: [{ id: 'person-1', name: 'Alice' }],
+        ratings: [5],
+        mediaTypes: ['IMAGE'],
+        hasUnnamedPeople: false,
+      });
+
+      const result = await sut.getFilterSuggestions(auth, { albumId });
+
+      expect(result.countries).toEqual(['Germany']);
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalled();
+      expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalled();
+      expect(mocks.search.getFilterSuggestions).toHaveBeenCalledWith(
+        [auth.user.id],
+        expect.objectContaining({ albumId }),
+      );
+      expect(mocks.sharedSpace.getSpaceIdsForTimeline).not.toHaveBeenCalled();
+    });
+
+    it('rejects albumId mixed with withSharedSpaces for getFilterSuggestions', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(sut.getFilterSuggestions(auth, { albumId: newUuid(), withSharedSpaces: true })).rejects.toThrow(
+        'Cannot use albumId with withSharedSpaces',
+      );
+    });
+
+    it('rejects albumId mixed with spaceId for getFilterSuggestions', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(sut.getFilterSuggestions(auth, { albumId: newUuid(), spaceId: newUuid() })).rejects.toThrow(
+        'Cannot use albumId with spaceId',
+      );
     });
 
     it('should check space access when spaceId is set', async () => {

@@ -900,4 +900,84 @@ describe('TimelineManager', () => {
       expect(calledWith.withStacked).toBeUndefined();
     });
   });
+
+  describe('album picker timeline', () => {
+    let timelineManager: TimelineManager;
+    const pickerOnlyAssets: Record<string, TimelineAsset[]> = {
+      '2024-02-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          id: 'picker-asset',
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-10T12:00:00.000Z'),
+        }),
+      ),
+    };
+    const albumOnlyAssets: Record<string, TimelineAsset[]> = {
+      '2024-04-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          id: 'album-asset',
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-04-10T12:00:00.000Z'),
+        }),
+      ),
+    };
+    const emptyBucket = toResponseDto();
+    const pickerOnlyResponses: Record<string, TimeBucketAssetResponseDto> = {
+      '2024-02-01T00:00:00.000Z': toResponseDto(...pickerOnlyAssets['2024-02-01T00:00:00.000Z']),
+      '2024-04-01T00:00:00.000Z': emptyBucket,
+    };
+    const albumOnlyResponses: Record<string, TimeBucketAssetResponseDto> = {
+      '2024-02-01T00:00:00.000Z': emptyBucket,
+      '2024-04-01T00:00:00.000Z': toResponseDto(...albumOnlyAssets['2024-04-01T00:00:00.000Z']),
+    };
+
+    beforeEach(() => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockImplementation(({ albumId }) =>
+        Promise.resolve(
+          albumId
+            ? [{ count: 1, timeBucket: '2024-04-01T00:00:00.000Z' }]
+            : [{ count: 1, timeBucket: '2024-02-01T00:00:00.000Z' }],
+        ),
+      );
+      sdkMock.getTimeBucket.mockImplementation(({ albumId, timeBucket }) =>
+        Promise.resolve(albumId ? albumOnlyResponses[timeBucket] : pickerOnlyResponses[timeBucket]),
+      );
+    });
+
+    it('unions filtered album months into picker timelines and marks them disabled', async () => {
+      await timelineManager.updateOptions({
+        tagIds: ['tag-1'],
+        timelineAlbumId: 'album-1',
+        visibility: AssetVisibility.Timeline,
+        withPartners: true,
+      });
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+
+      expect(timelineManager.months.map((month) => month.viewId)).toEqual(['2024-4', '2024-2']);
+
+      await timelineManager.loadTimelineMonth({ year: 2024, month: 4 });
+      await timelineManager.loadTimelineMonth({ year: 2024, month: 2 });
+
+      const loadedAssets = await getAssets(timelineManager);
+      expect(loadedAssets.map((asset) => asset.id)).toEqual(['album-asset', 'picker-asset']);
+      expect(timelineManager.albumAssets.has('album-asset')).toBe(true);
+      expect(timelineManager.assetCount).toBe(2);
+      expect(sdkMock.getTimeBuckets).toHaveBeenCalledWith(
+        expect.objectContaining({
+          albumId: 'album-1',
+          tagIds: ['tag-1'],
+          visibility: AssetVisibility.Timeline,
+        }),
+      );
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledWith(
+        expect.objectContaining({
+          albumId: 'album-1',
+          tagIds: ['tag-1'],
+          timeBucket: '2024-04-01T00:00:00.000Z',
+        }),
+        expect.anything(),
+      );
+    });
+  });
 });

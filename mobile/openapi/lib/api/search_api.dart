@@ -126,6 +126,9 @@ class SearchApi {
   ///
   /// Parameters:
   ///
+  /// * [String] albumId:
+  ///   Scope to a specific album
+  ///
   /// * [String] city:
   ///   Filter by city
   ///
@@ -164,7 +167,7 @@ class SearchApi {
   ///
   /// * [bool] withSharedSpaces:
   ///   Include shared spaces the user is a member of
-  Future<Response> getFilterSuggestionsWithHttpInfo({ String? city, String? country, bool? isFavorite, String? make, AssetTypeEnum? mediaType, String? model, List<String>? personIds, int? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
+  Future<Response> getFilterSuggestionsWithHttpInfo({ String? albumId, String? city, String? country, bool? isFavorite, String? make, AssetTypeEnum? mediaType, String? model, List<String>? personIds, int? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions/filters';
 
@@ -175,6 +178,9 @@ class SearchApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (albumId != null) {
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
+    }
     if (city != null) {
       queryParams.addAll(_queryParams('', 'city', city));
     }
@@ -235,6 +241,9 @@ class SearchApi {
   ///
   /// Parameters:
   ///
+  /// * [String] albumId:
+  ///   Scope to a specific album
+  ///
   /// * [String] city:
   ///   Filter by city
   ///
@@ -273,8 +282,8 @@ class SearchApi {
   ///
   /// * [bool] withSharedSpaces:
   ///   Include shared spaces the user is a member of
-  Future<FilterSuggestionsResponseDto?> getFilterSuggestions({ String? city, String? country, bool? isFavorite, String? make, AssetTypeEnum? mediaType, String? model, List<String>? personIds, int? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
-    final response = await getFilterSuggestionsWithHttpInfo( city: city, country: country, isFavorite: isFavorite, make: make, mediaType: mediaType, model: model, personIds: personIds, rating: rating, spaceId: spaceId, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, withSharedSpaces: withSharedSpaces, );
+  Future<FilterSuggestionsResponseDto?> getFilterSuggestions({ String? albumId, String? city, String? country, bool? isFavorite, String? make, AssetTypeEnum? mediaType, String? model, List<String>? personIds, int? rating, String? spaceId, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
+    final response = await getFilterSuggestionsWithHttpInfo( albumId: albumId, city: city, country: country, isFavorite: isFavorite, make: make, mediaType: mediaType, model: model, personIds: personIds, rating: rating, spaceId: spaceId, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, withSharedSpaces: withSharedSpaces, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -297,6 +306,9 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
+  ///
+  /// * [String] albumId:
+  ///   Scope suggestions to a specific album
   ///
   /// * [String] country:
   ///   Filter by country
@@ -327,7 +339,7 @@ class SearchApi {
   ///
   /// * [bool] withSharedSpaces:
   ///   Include suggestions from shared spaces the user is a member of
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? albumId, String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions';
 
@@ -338,6 +350,9 @@ class SearchApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (albumId != null) {
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
+    }
     if (country != null) {
       queryParams.addAll(_queryParams('', 'country', country));
     }
@@ -392,6 +407,9 @@ class SearchApi {
   ///
   /// * [SearchSuggestionType] type (required):
   ///
+  /// * [String] albumId:
+  ///   Scope suggestions to a specific album
+  ///
   /// * [String] country:
   ///   Filter by country
   ///
@@ -421,8 +439,8 @@ class SearchApi {
   ///
   /// * [bool] withSharedSpaces:
   ///   Include suggestions from shared spaces the user is a member of
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, spaceId: spaceId, state: state, takenAfter: takenAfter, takenBefore: takenBefore, withSharedSpaces: withSharedSpaces, );
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? albumId, String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  albumId: albumId, country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, spaceId: spaceId, state: state, takenAfter: takenAfter, takenBefore: takenBefore, withSharedSpaces: withSharedSpaces, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

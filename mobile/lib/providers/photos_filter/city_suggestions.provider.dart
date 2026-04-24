@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:openapi/api.dart';
@@ -7,6 +9,15 @@ import 'package:openapi/api.dart';
 final citySuggestionsProvider = FutureProvider.autoDispose.family<List<String>, String?>((ref, country) async {
   if (country == null || country.isEmpty) return const <String>[];
   final api = ref.watch(apiServiceProvider).searchApi;
-  final cities = await api.getSearchSuggestions(SearchSuggestionType.city, country: country, withSharedSpaces: false);
-  return cities ?? const [];
+  final response = await api.getSearchSuggestionsWithHttpInfo(
+    SearchSuggestionType.city,
+    country: country,
+    withSharedSpaces: false,
+  );
+
+  if (response.body.isEmpty) {
+    return const <String>[];
+  }
+
+  return List<String>.from(jsonDecode(utf8.decode(response.bodyBytes)) as List);
 });

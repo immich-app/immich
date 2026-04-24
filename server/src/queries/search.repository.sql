@@ -264,11 +264,11 @@ from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  "visibility" = $1
   and "deletedAt" is null
   and "state" is not null
-  and "state" != $3
+  and "state" != $2
+  and "asset"."ownerId" = any ($3::uuid[])
 
 -- SearchRepository.getCities
 select distinct
@@ -277,11 +277,11 @@ from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  "visibility" = $1
   and "deletedAt" is null
   and "city" is not null
-  and "city" != $3
+  and "city" != $2
+  and "asset"."ownerId" = any ($3::uuid[])
 
 -- SearchRepository.getCameraMakes
 select distinct
@@ -290,11 +290,11 @@ from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  "visibility" = $1
   and "deletedAt" is null
   and "make" is not null
-  and "make" != $3
+  and "make" != $2
+  and "asset"."ownerId" = any ($3::uuid[])
 
 -- SearchRepository.getCameraModels
 select distinct
@@ -303,11 +303,11 @@ from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  "visibility" = $1
   and "deletedAt" is null
   and "model" is not null
-  and "model" != $3
+  and "model" != $2
+  and "asset"."ownerId" = any ($3::uuid[])
 
 -- SearchRepository.getCameraLensModels
 select distinct
@@ -316,11 +316,11 @@ from
   "asset_exif"
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "ownerId" = any ($1::uuid[])
-  and "visibility" = $2
+  "visibility" = $1
   and "deletedAt" is null
   and "lensModel" is not null
-  and "lensModel" != $3
+  and "lensModel" != $2
+  and "asset"."ownerId" = any ($3::uuid[])
 
 -- SearchRepository.getAccessibleTags
 select distinct
