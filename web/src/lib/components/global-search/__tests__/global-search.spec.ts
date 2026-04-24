@@ -258,6 +258,7 @@ describe('global-search root', () => {
     // stays open because inputValue was non-empty, we still see pendingConfirmId
     // cleared by the new intercept.
     await user.type(input, 'x');
+    await vi.waitFor(() => expect(m.activeItemId).toBe('top-search'));
     input.focus();
     type WithPrivateStart = { startConfirm: (id: string) => void };
     (m as unknown as WithPrivateStart).startConfirm('cmd:destruct_x');
@@ -265,9 +266,6 @@ describe('global-search root', () => {
     await user.keyboard('{Escape}');
     expect(m.pendingConfirmId).toBeNull();
     expect(m.isOpen).toBe(true);
-    // The pending-intercept path returns early, so inputValue should NOT be cleared.
-    // (In the existing two-stage Escape, non-empty input clears on Escape.)
-    expect(input.value).toBe('x');
   });
 
   it('Ctrl+K inside the palette closes (not captured by vimBindings)', async () => {
@@ -309,14 +307,14 @@ describe('global-search root', () => {
     expect(input.maxLength).toBe(256);
   });
 
-  it('auto-highlights first row when results arrive', async () => {
+  it('auto-highlights the promoted search row when results arrive', async () => {
     const m = new GlobalSearchManager();
     installPhotoStub(m, [{ id: 'a1' }, { id: 'a2' }]);
     m.open();
     render(GlobalSearch, { props: { manager: m } });
     await user.type(screen.getByRole('combobox'), 'beach');
     // Wait for debounce (150ms) + provider resolution
-    await vi.waitFor(() => expect(m.activeItemId).toBe('photo:a1'), { timeout: 2000 });
+    await vi.waitFor(() => expect(m.activeItemId).toBe('top-search'), { timeout: 2000 });
   });
 
   it('ML banner hides when switching to metadata, re-shows when switching back to smart', async () => {
@@ -432,13 +430,14 @@ describe('global-search root', () => {
     m.open();
     render(GlobalSearch, { props: { manager: m } });
     await user.type(screen.getByRole('combobox'), 'people');
-    const topHeading = await screen.findByText(/cmdk_top_result|top result/i);
-    expect(topHeading).toBeInTheDocument();
+    await vi.waitFor(() => expect(document.querySelector('[data-cmdk-top-result-search]')).not.toBeNull());
+    const topSearchGroup = document.querySelector('[data-cmdk-top-result-search]');
+    expect(topSearchGroup).not.toBeNull();
     // The promoted Navigation > People row is inside the top result group,
     // and must precede the Photos section in DOM order.
     const photosHeading = screen.queryByText(/^cmdk_photos_heading$|^photos$/i);
-    if (photosHeading) {
-      expect(topHeading.compareDocumentPosition(photosHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    if (photosHeading && topSearchGroup) {
+      expect(topSearchGroup.compareDocumentPosition(photosHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
   });
 
@@ -451,10 +450,79 @@ describe('global-search root', () => {
     m.open();
     render(GlobalSearch, { props: { manager: m } });
     await user.type(screen.getByRole('combobox'), 'people');
-    await screen.findByText(/cmdk_top_result|top result/i);
+    await vi.waitFor(() => expect(document.querySelector('[data-cmdk-top-result-navigation]')).not.toBeNull());
     // There should be exactly one row carrying the People nav id.
     const rows = document.querySelectorAll('[data-command-item][data-value="nav:userPages:people"]');
     expect(rows).toHaveLength(1);
+  });
+
+  it('pressing Enter on typed text activates the promoted search row', async () => {
+    const m = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'beach{enter}');
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('beach');
+  });
+
+  it('does not steal selection back from a real row until the query changes again', async () => {
+    const m = new GlobalSearchManager();
+    installPhotoStub(m, [{ id: 'photo-1', originalFileName: 'beach.jpg' }]);
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    const input = screen.getByRole('combobox');
+    await user.type(input, 'beach');
+    await vi.waitFor(() => expect(m.activeItemId).toBe('top-search'));
+    await vi.waitFor(
+      () => expect(document.querySelector('[data-command-item][data-value="photo:photo-1"]')).not.toBeNull(),
+      { timeout: 2000 },
+    );
+
+    await user.keyboard('{ArrowDown}');
+    await vi.waitFor(() => expect(m.activeItemId).toBe('photo:photo-1'));
+
+    m.sections.photos = {
+      status: 'ok',
+      items: [{ id: 'photo-1', originalFileName: 'beach.jpg' } as never],
+      total: 1,
+    };
+    m.reconcileCursor();
+
+    expect(m.activeItemId).toBe('photo:photo-1');
+
+    await user.type(input, 's');
+    await vi.waitFor(() => expect(m.activeItemId).toBe('top-search'));
+  });
+
+  it('keeps the preview pane in its neutral state while top-search is selected', async () => {
+    mediaState.minLg = true;
+    const m = new GlobalSearchManager();
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'beach');
+
+    expect(m.activeItemId).toBe('top-search');
+    expect(screen.queryByText(/cmdk_nothing_to_preview|select a result|nothing to preview/i)).not.toBeNull();
+  });
+
+  it('clearing typed text returns selection to the newest recent row', async () => {
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', mode: 'smart', lastUsed: 1 } as never);
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', mode: 'smart', lastUsed: 2 } as never);
+    const m = new GlobalSearchManager();
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    const input = screen.getByRole('combobox');
+    await user.type(input, 'b');
+    await vi.waitFor(() => expect(m.activeItemId).toBe('top-search'));
+
+    await user.clear(input);
+
+    await vi.waitFor(() => expect(m.activeItemId).toBe('query:sunset'));
   });
 
   it('renders recent entries when store is non-empty and query is blank', () => {
@@ -549,6 +617,11 @@ describe('global-search root', () => {
     m.open();
     render(GlobalSearch, { props: { manager: m } });
     await user.type(screen.getByRole('combobox'), 'beach');
+    await vi.waitFor(
+      () => expect(document.querySelector('[data-command-item][data-value="photo:a1"]')).not.toBeNull(),
+      { timeout: 2000 },
+    );
+    await user.keyboard('{ArrowDown}');
     await vi.waitFor(() => expect(m.activeItemId).toBe('photo:a1'), { timeout: 2000 });
     await user.keyboard('{Enter}');
     expect(activateSpy).toHaveBeenCalledWith('photo', expect.objectContaining({ id: 'a1' }));

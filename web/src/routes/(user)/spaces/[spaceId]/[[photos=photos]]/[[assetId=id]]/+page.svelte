@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
   import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
   import SearchSortDropdown from '$lib/components/filter-panel/search-sort-dropdown.svelte';
@@ -91,7 +92,8 @@
     mdiPlus,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { SvelteMap } from 'svelte/reactivity';
+  import { untrack } from 'svelte';
+  import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
   type ViewMode = 'view' | 'select-assets' | 'select-cover';
@@ -109,21 +111,30 @@
     () => members,
   );
 
+  function getSearchSortOrder(query: string): FilterState['sortOrder'] {
+    return query.trim().length > 0 ? 'relevance' : 'desc';
+  }
+
   // Sync when navigating between spaces (component persists, data updates)
   $effect(() => {
     if (data.space.id !== space.id) {
+      const nextCommittedSearchQuery = page.url.searchParams.get('q') ?? '';
       space = data.space;
       members = data.members;
-      filters = createFilterState();
+      filters = {
+        ...createFilterState(),
+        sortOrder: getSearchSortOrder(nextCommittedSearchQuery),
+      };
       activities = [];
       hasMoreActivities = false;
       activityOffset = 0;
       spacePeople = [];
       personNames.clear();
       tagNames.clear();
-      searchQuery = '';
       isLoading = false;
-      showSearchResults = false;
+      draftSearchQuery = nextCommittedSearchQuery;
+      lastHydratedSearchQuery = nextCommittedSearchQuery;
+      lastHandledCommittedSearchQuery = nextCommittedSearchQuery;
       heroCollapsed = loadHeroCollapsed(data.space.id);
       panelOpen = false;
       viewMode = 'view';
@@ -147,7 +158,11 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   // Filter state
-  let filters = $state(createFilterState());
+  const initialCommittedSearchQuery = page.url.searchParams.get('q') ?? '';
+  let filters = $state<FilterState>({
+    ...createFilterState(),
+    sortOrder: getSearchSortOrder(initialCommittedSearchQuery),
+  });
   let personNames = new SvelteMap<string, string>();
   let tagNames = new SvelteMap<string, string>();
 
@@ -576,21 +591,93 @@
     await Promise.all([refreshSpace(), loadActivities()]);
   };
 
-  let searchQuery = $state('');
+  const committedSearchQuery = $derived(page.url.searchParams.get('q') ?? '');
+  let draftSearchQuery = $state(initialCommittedSearchQuery);
+  let lastHydratedSearchQuery = $state(initialCommittedSearchQuery);
+  let lastHandledCommittedSearchQuery = $state(initialCommittedSearchQuery);
   let isLoading = $state(false);
-  let showSearchResults = $state(false);
+  const showSearchResults = $derived(committedSearchQuery.trim().length > 0);
+
+  const getSearchPathname = (pathname: string) => {
+    const spaceBasePath = `/spaces/${space.id}`;
+    const photosPath = `${spaceBasePath}/photos`;
+
+    if (pathname === spaceBasePath || pathname === photosPath) {
+      return pathname;
+    }
+
+    if (pathname.startsWith(`${photosPath}/`)) {
+      return photosPath;
+    }
+
+    return pathname;
+  };
+
+  const commitSearch = async (nextQuery = draftSearchQuery) => {
+    const trimmed = nextQuery.trim();
+    const pathname = getSearchPathname(page.url.pathname);
+    const searchParams = new SvelteURLSearchParams(page.url.searchParams);
+
+    if (trimmed) {
+      searchParams.set('q', trimmed);
+    } else {
+      searchParams.delete('q');
+    }
+
+    draftSearchQuery = trimmed;
+
+    const search = searchParams.toString();
+    const nextUrl = pathname + (search ? `?${search}` : '');
+
+    if (nextUrl === page.url.pathname + page.url.search) {
+      return;
+    }
+
+    await goto(nextUrl, {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+  };
 
   const handleSearchSubmit = () => {
-    filters = { ...filters, sortOrder: 'relevance' };
-    showSearchResults = true;
+    void commitSearch();
   };
 
   const clearSearch = () => {
-    searchQuery = '';
     isLoading = false;
-    showSearchResults = false;
-    filters = { ...filters, sortOrder: 'desc' };
+    void commitSearch('');
   };
+
+  $effect(() => {
+    const nextCommittedSearchQuery = committedSearchQuery;
+
+    if (nextCommittedSearchQuery === lastHydratedSearchQuery) {
+      return;
+    }
+
+    untrack(() => {
+      draftSearchQuery = nextCommittedSearchQuery;
+      lastHydratedSearchQuery = nextCommittedSearchQuery;
+    });
+  });
+
+  $effect(() => {
+    const nextCommittedSearchQuery = committedSearchQuery;
+
+    if (nextCommittedSearchQuery === lastHandledCommittedSearchQuery) {
+      return;
+    }
+
+    untrack(() => {
+      isLoading = false;
+      filters = {
+        ...filters,
+        sortOrder: getSearchSortOrder(nextCommittedSearchQuery),
+      };
+      lastHandledCommittedSearchQuery = nextCommittedSearchQuery;
+    });
+  });
 
   const gradientClasses: Record<string, string> = {
     [UserAvatarColor.Primary]: 'from-immich-primary/60 to-immich-primary',
@@ -644,13 +731,14 @@
           <div class="hidden h-10 sm:block sm:w-40 xl:w-60">
             <SearchBar
               placeholder={$t('search')}
-              bind:name={searchQuery}
+              bind:name={draftSearchQuery}
               showLoadingSpinner={isLoading}
               onSearch={({ force }) => {
                 if (force) {
-                  void handleSearchSubmit();
+                  handleSearchSubmit();
                 }
               }}
+              onBlurSearch={handleSearchSubmit}
               onReset={clearSearch}
             />
           </div>
@@ -765,7 +853,7 @@
     <!-- Main Content — pl-4 adds breathing room between filter panel and content -->
     <div class="flex flex-1 flex-col overflow-hidden pl-4">
       <!-- Active filter chips -->
-      {#if viewMode === 'view' && (getActiveFilterCount(filters) > 0 || searchQuery.trim().length > 0)}
+      {#if viewMode === 'view' && (getActiveFilterCount(filters) > 0 || committedSearchQuery.trim().length > 0)}
         <ActiveFiltersBar
           {filters}
           resultCount={showSearchResults ? undefined : totalAssetCount}
@@ -775,13 +863,19 @@
           onClearAll={() => {
             filters = clearFilters(filters);
           }}
-          {searchQuery}
+          searchQuery={committedSearchQuery}
           onClearSearch={clearSearch}
         />
       {/if}
 
       {#if showSearchResults}
-        <SmartSearchResults bind:isLoading {searchQuery} {filters} spaceId={space.id} isShared={true} />
+        <SmartSearchResults
+          searchQuery={committedSearchQuery}
+          bind:isLoading
+          {filters}
+          spaceId={space.id}
+          isShared={true}
+        />
       {/if}
 
       {#if !showSearchResults}

@@ -133,9 +133,10 @@ test.describe('global search palette', () => {
     await dialog.getByRole('combobox').fill('iceland');
 
     const albumsGroup = dialog.getByRole('group', { name: /^albums/i });
-    await expect(albumsGroup.getByText('Iceland Trip 2024')).toBeVisible();
+    const albumRow = albumsGroup.getByText('Iceland Trip 2024');
+    await expect(albumRow).toBeVisible();
 
-    await page.keyboard.press('Enter');
+    await albumRow.click();
     // Album view route is /albums/<uuid> per Route.viewAlbum.
     await expect(page).toHaveURL(/\/albums\/[\da-f-]{36}$/);
 
@@ -161,9 +162,10 @@ test.describe('global search palette', () => {
     await dialog.getByRole('combobox').fill('vacation');
 
     const spacesGroup = dialog.getByRole('group', { name: /^spaces/i });
-    await expect(spacesGroup.getByText('Vacation 2024')).toBeVisible();
+    const spaceRow = spacesGroup.getByText('Vacation 2024');
+    await expect(spaceRow).toBeVisible();
 
-    await page.keyboard.press('Enter');
+    await spaceRow.click();
     // Space view route is /spaces/<uuid> per Route.viewSpace.
     await expect(page).toHaveURL(/\/spaces\/[\da-f-]{36}$/);
 
@@ -344,11 +346,18 @@ test.describe('global search palette', () => {
   // cover the flag-off branch via a mocked featureFlagsManager.
 
   test.describe('navigation provider', () => {
-    test('type "auto" → Auto-Classification appears → Enter opens the settings accordion', async ({ page }) => {
+    test('type "auto" → Auto-Classification appears → clicking the row opens the settings accordion', async ({
+      page,
+    }) => {
       await page.keyboard.press('Control+k');
-      await page.getByRole('dialog').getByRole('combobox').fill('auto');
-      await expect(page.getByText(/auto-classification/i)).toBeVisible();
-      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog');
+      await dialog.getByRole('combobox').fill('auto');
+      const topResultGroup = dialog.locator('[data-cmdk-top-result-navigation]');
+      await expect(topResultGroup.getByText(/auto-classification/i).first()).toBeVisible();
+      await topResultGroup
+        .getByText(/auto-classification/i)
+        .first()
+        .click();
       await expect(page).toHaveURL(/\/admin\/system-settings\?isOpen=classification/);
     });
 
@@ -433,9 +442,14 @@ test.describe('global search palette', () => {
       await page.goto('/photos');
       await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
       await page.keyboard.press('Control+k');
-      await page.getByRole('dialog').getByRole('combobox').fill('auto');
-      await expect(page.getByText(/auto-classification/i)).toBeVisible();
-      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog');
+      await dialog.getByRole('combobox').fill('auto');
+      const topResultGroup = dialog.locator('[data-cmdk-top-result-navigation]');
+      await expect(topResultGroup.getByText(/auto-classification/i).first()).toBeVisible();
+      await topResultGroup
+        .getByText(/auto-classification/i)
+        .first()
+        .click();
       await expect(page).toHaveURL(/classification/);
       // Step 2: swap to non-admin cookies (simulating a demotion).
       await utils.setAuthCookies(context, nonAdmin.accessToken);

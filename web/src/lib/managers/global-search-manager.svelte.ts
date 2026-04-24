@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
+import { page } from '$app/state';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import { Route } from '$lib/route';
@@ -25,7 +26,7 @@ import {
 import { toastManager } from '@immich/ui';
 import { computeCommandScore } from 'bits-ui';
 import { locale as i18nLocale, t, type Translations } from 'svelte-i18n';
-import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet, SvelteURLSearchParams } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import { parseScope, personSuggestionsComparator, type ParsedQuery, type Scope } from './cmdk-prefix';
 import { commandContextManager } from './command-context-manager.svelte';
@@ -83,6 +84,8 @@ export type ActiveItem =
   | { kind: 'space'; data: SharedSpaceResponseDto }
   | { kind: 'nav'; data: NavigationItem }
   | { kind: 'command'; data: CommandItem };
+
+type TopSearchMatch = { id: 'top-search'; query: string };
 
 const VALID_MODES: ReadonlySet<SearchMode> = new Set(['smart', 'metadata', 'description', 'ocr']);
 // Slice size for the albums section. Kept as a named constant so the buildProviders
@@ -1101,6 +1104,9 @@ export class GlobalSearchManager {
   }
 
   reconcileCursor() {
+    if (this.activeItemId === this.topSearchMatch?.id) {
+      return;
+    }
     if (this.getActiveItem() !== null) {
       return;
     }
@@ -1162,6 +1168,59 @@ export class GlobalSearchManager {
       // Fall through to goto if URL parsing fails.
     }
     void goto(route);
+  }
+
+  private getSpaceSearchBasePath(pathname: string): string | null {
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts[0] !== 'spaces' || parts[1] === undefined) {
+      return null;
+    }
+    if (parts.length === 2) {
+      return `/spaces/${parts[1]}`;
+    }
+    if (parts[2] === 'photos') {
+      return `/spaces/${parts[1]}/photos`;
+    }
+    return null;
+  }
+
+  private buildSearchDestination(text: string): string {
+    const pathname = page.url.pathname;
+    const params = new SvelteURLSearchParams(page.url.searchParams);
+    params.set('q', text);
+
+    if (pathname.startsWith('/photos')) {
+      return `/photos?${params.toString()}`;
+    }
+
+    const spaceBasePath = this.getSpaceSearchBasePath(pathname);
+    if (spaceBasePath) {
+      return `${spaceBasePath}?${params.toString()}`;
+    }
+
+    if (pathname.startsWith('/map')) {
+      return `/map?${params.toString()}`;
+    }
+
+    const fresh = new SvelteURLSearchParams();
+    fresh.set('q', text);
+    return `/photos?${fresh.toString()}`;
+  }
+
+  activateSearch(text: string): void {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    addEntry({
+      kind: 'query',
+      id: `query:${trimmed.toLowerCase()}`,
+      text: trimmed,
+      mode: this.mode,
+      lastUsed: Date.now(),
+    });
+    void goto(this.buildSearchDestination(trimmed));
   }
 
   activate(kind: 'photo' | 'person' | 'place' | 'tag' | 'nav' | 'command', item: unknown) {
@@ -1559,6 +1618,14 @@ export class GlobalSearchManager {
       }
     }
     return null;
+  });
+
+  topSearchMatch = $derived.by<TopSearchMatch | null>(() => {
+    const query = this.query.trim();
+    if (this.scope !== 'all' || query.length === 0) {
+      return null;
+    }
+    return { id: 'top-search', query };
   });
 
   /**

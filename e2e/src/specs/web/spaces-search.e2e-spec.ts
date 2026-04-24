@@ -22,9 +22,10 @@ test.describe('Spaces Search', () => {
       space.id,
       assets.map((a) => a.id),
     );
+    await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
   });
 
-  test('search in space shows results or empty state', async ({ context, page }) => {
+  test('search in space commits q to the URL and shows results or empty state', async ({ context, page }) => {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/spaces/${space.id}/photos`);
 
@@ -33,6 +34,7 @@ test.describe('Spaces Search', () => {
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill('test');
     await searchInput.press('Enter');
+    await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=test$`));
 
     // Smart search requires ML (CLIP) — handle both results and empty state
     await expect(page.getByTestId('result-count').or(page.getByTestId('search-empty'))).toBeVisible({
@@ -40,29 +42,24 @@ test.describe('Spaces Search', () => {
     });
   });
 
-  test('clearing search via X button returns to timeline', async ({ context, page }) => {
+  test('navigating away and back rehydrates the committed q state', async ({ context, page }) => {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/spaces/${space.id}/photos`);
 
     const searchInput = page.locator('input[placeholder="Search"]');
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
-    await searchInput.fill('test');
+    await searchInput.fill('sunset');
     await searchInput.press('Enter');
+    await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=sunset$`));
 
-    await expect(page.getByTestId('result-count').or(page.getByTestId('search-empty'))).toBeVisible({
-      timeout: 10_000,
-    });
+    await page.goto('/photos');
+    await page.goBack();
 
-    // Clear via the X button in the search bar
-    const clearButton = page.locator('[aria-label="Clear value"]');
-    await clearButton.click();
-
-    // Search results should disappear, timeline should return
-    await expect(page.getByTestId('result-count')).not.toBeVisible({ timeout: 5000 });
-    await expect(page.getByTestId('search-empty')).not.toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=sunset$`));
+    await expect(searchInput).toHaveValue('sunset');
   });
 
-  test('search chip appears and is removable', async ({ context, page }) => {
+  test('clearing search via X removes q and returns to the timeline', async ({ context, page }) => {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/spaces/${space.id}/photos`);
 
@@ -75,13 +72,14 @@ test.describe('Spaces Search', () => {
       timeout: 10_000,
     });
 
-    // Search chip should be visible with the query text
     await expect(page.getByTestId('search-chip')).toContainText('sunset');
 
-    // Remove chip via the close button
-    await page.getByTestId('search-chip-close').click();
+    const clearButton = page.locator('[aria-label="Clear value"]');
+    await clearButton.click();
 
-    // Search should be cleared
+    await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos$`));
+    await expect(page.getByTestId('result-count')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('search-empty')).not.toBeVisible({ timeout: 5000 });
     await expect(page.getByTestId('search-chip')).not.toBeVisible({ timeout: 5000 });
   });
 

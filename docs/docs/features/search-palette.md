@@ -95,6 +95,8 @@ This is faster than reaching for a sidebar when you just want to glance at recen
 
 ## Top result band
 
+Typing plain free text in the palette also creates a synthetic **Top result** row: **Search for "…"**. Hitting <kbd>Enter</kbd> on that row routes the query to the current page's search surface when one exists. Pages without a filter panel fall back to `/photos?q=...`.
+
 When your query closely matches a single command or navigation entry, that entry is promoted to a **Top result** band at the top of the list. Hitting <kbd>Enter</kbd> activates it immediately, no arrow keys needed.
 
 Promotion is based on a fuzzy score against the title, description, and search keywords. Commands win tie-breaks against navigation entries, so unscoped verbs like `upload` or `album` surface their command first. A short query like `peo` will surface **People** as the top result; `users` will surface **Administration → User Management**.

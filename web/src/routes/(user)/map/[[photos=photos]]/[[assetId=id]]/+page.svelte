@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
   import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
   import { clearFilters, createFilterState, getActiveFilterCount } from '$lib/components/filter-panel/filter-panel';
@@ -20,9 +20,10 @@
   import { delay } from '$lib/utils/asset-utils';
   import { buildMapFilterConfig } from '$lib/utils/map-filter-config';
   import { navigate } from '$lib/utils/navigation';
-  import { getFilteredMapMarkers, getTimeBuckets, type MapMarkerResponseDto } from '@immich/sdk';
+  import { buildSmartSearchParams, SEARCH_FILTER_DEBOUNCE_MS } from '$lib/utils/space-search';
+  import { getFilteredMapMarkers, getTimeBuckets, type MapMarkerResponseDto, searchSmart } from '@immich/sdk';
   import { Icon, IconButton } from '@immich/ui';
-  import { SvelteMap } from 'svelte/reactivity';
+  import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import { mdiArrowLeft, mdiFilterVariant } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -35,7 +36,8 @@
 
   let { data }: Props = $props();
 
-  const spaceId = $derived($page.url.searchParams.get(QueryParameter.SPACE_ID) || undefined);
+  const spaceId = $derived(page.url.searchParams.get(QueryParameter.SPACE_ID) || undefined);
+  const committedQuery = $derived(page.url.searchParams.get('q') ?? '');
 
   let selectedClusterIds = $state.raw(new Set<string>());
   let selectedClusterBBox = $state.raw<SelectionBBox>();
@@ -80,7 +82,7 @@
       },
     };
   });
-  const hasActiveFilters = $derived(getActiveFilterCount(filters) > 0);
+  const hasActiveFilters = $derived(getActiveFilterCount(filters) > 0 || committedQuery.trim().length > 0);
   const noResults = $derived(mapMarkers.length === 0 && hasActiveFilters);
   const timeBucketOptions = $derived.by(() => buildMapTimeBucketOptions(filters, spaceId));
   const mapMarkerOptions = $derived.by(() => buildMapMarkerOptions(filters, spaceId));
@@ -94,25 +96,103 @@
 
   // Debounced marker fetch when filters change
   let fetchTimeout: ReturnType<typeof setTimeout> | undefined;
+  let queryAbortController: AbortController | undefined;
 
   $effect(() => {
     // Read the derived options before the debounce callback so filter changes
     // are tracked as dependencies of this effect.
     const options = mapMarkerOptions;
+    const currentSpaceId = spaceId;
+    const query = committedQuery.trim();
 
     clearTimeout(fetchTimeout);
-    fetchTimeout = setTimeout(() => {
-      void getFilteredMapMarkers(options)
-        .then((result) => {
-          mapMarkers = result;
-        })
-        .catch((error: unknown) => {
-          console.error('Failed to fetch filtered map markers:', error);
-        });
-    }, 200);
+    queryAbortController?.abort();
+    const controller = new AbortController();
+    queryAbortController = controller;
 
-    return () => clearTimeout(fetchTimeout);
+    fetchTimeout = setTimeout(() => {
+      void (async () => {
+        try {
+          const markers = await getFilteredMapMarkers(options);
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          if (!query) {
+            mapMarkers = markers;
+            return;
+          }
+
+          if (markers.length === 0) {
+            mapMarkers = [];
+            return;
+          }
+
+          const matchingIds = new SvelteSet<string>();
+          const unmatchedMarkerIds = new SvelteSet(markers.map((marker) => marker.id));
+          let nextPage: number | null = 1;
+
+          while (nextPage !== null && !controller.signal.aborted) {
+            const { assets } = await searchSmart({
+              smartSearchDto: {
+                ...buildSmartSearchParams({
+                  query,
+                  filters,
+                  spaceId: currentSpaceId,
+                  withSharedSpaces: !currentSpaceId,
+                }),
+                page: nextPage,
+                size: 100,
+              },
+            });
+
+            if (controller.signal.aborted) {
+              return;
+            }
+
+            for (const asset of assets.items) {
+              matchingIds.add(asset.id);
+              unmatchedMarkerIds.delete(asset.id);
+            }
+
+            if (unmatchedMarkerIds.size === 0) {
+              break;
+            }
+
+            nextPage = assets.nextPage === null ? null : Number(assets.nextPage);
+          }
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          mapMarkers = markers.filter((marker) => matchingIds.has(marker.id));
+        } catch (error: unknown) {
+          if (controller.signal.aborted) {
+            return;
+          }
+          console.error('Failed to fetch filtered map markers:', error);
+          mapMarkers = [];
+        }
+      })();
+    }, SEARCH_FILTER_DEBOUNCE_MS);
+
+    return () => {
+      clearTimeout(fetchTimeout);
+      controller.abort();
+    };
   });
+
+  function clearCommittedQuery() {
+    const url = new URL(page.url);
+    url.searchParams.delete('q');
+    void goto(`${url.pathname}${url.search}${url.hash}`, {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+  }
 
   function closeTimelinePanel() {
     isTimelinePanelVisible = false;
@@ -200,6 +280,8 @@
             <ActiveFiltersBar
               {filters}
               resultCount={mapMarkers.length}
+              searchQuery={committedQuery}
+              onClearSearch={clearCommittedQuery}
               {personNames}
               {tagNames}
               onRemoveFilter={(type, id) => {

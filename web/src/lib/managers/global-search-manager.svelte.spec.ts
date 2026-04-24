@@ -54,6 +54,7 @@ import { COMMAND_ITEMS, type CommandItem } from './command-items';
 import {
   GlobalSearchManager,
   RECONCILE_ORDER_BY_SCOPE,
+  type EntityItem,
   type Provider,
   type ProviderStatus,
   type SearchMode,
@@ -93,7 +94,11 @@ vi.mock('$app/navigation', () => ({
 }));
 
 const { mockPage } = vi.hoisted(() => ({
-  mockPage: { route: { id: null as string | null }, params: {} as Record<string, string> },
+  mockPage: {
+    route: { id: null as string | null },
+    params: {} as Record<string, string>,
+    url: new URL('https://gallery.test/photos'),
+  },
 }));
 vi.mock('$app/state', () => ({ page: mockPage }));
 
@@ -146,6 +151,9 @@ describe('GlobalSearchManager (skeleton)', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    mockPage.route.id = null;
+    mockPage.params = {};
+    mockPage.url = new URL('https://gallery.test/photos');
     manager = new GlobalSearchManager();
   });
 
@@ -1159,6 +1167,33 @@ describe('activate("command")', () => {
     manager.open();
     expect(getEntries()).toEqual([]);
   });
+
+  it('activateSearch preserves same-route params but drops stale space asset ids', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos/asset-123?view=grid');
+
+    m.activateSearch('beach');
+
+    expect(goto).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach');
+  });
+
+  it('activateSearch falls back to /photos and drops unrelated params', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/albums?view=list');
+
+    m.activateSearch('beach');
+
+    expect(goto).toHaveBeenCalledWith('/photos?q=beach');
+  });
+
+  it('activateSearch falls back from /spaces/:id/people to /photos', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/people');
+
+    m.activateSearch('beach');
+
+    expect(goto).toHaveBeenCalledWith('/photos?q=beach');
+  });
 });
 
 describe('activateRecent()', () => {
@@ -1431,6 +1466,20 @@ describe('topNavigationMatch', () => {
     m.open();
     m.setQuery('zzzzzz');
     expect(m.topNavigationMatch).toBeNull();
+  });
+});
+
+describe('topSearchMatch', () => {
+  it('is present only for non-empty all-scope queries', () => {
+    const m = new GlobalSearchManager();
+    m.query = ' beach ';
+    expect(m.topSearchMatch).toEqual({ id: 'top-search', query: 'beach' });
+
+    m.query = '';
+    expect(m.topSearchMatch).toBeNull();
+
+    m.query = '@alice';
+    expect(m.topSearchMatch).toBeNull();
   });
 });
 
@@ -2583,24 +2632,37 @@ describe('SWR loading rules', () => {
   });
 
   it('stale-batch providers do not deadlock batchInFlight after a new batch supersedes', async () => {
-    let resolveStalePhotos!: () => void;
-    vi.mocked(searchSmart).mockImplementationOnce(
-      () => new Promise((r) => (resolveStalePhotos = () => r({ assets: { items: [], nextPage: null } } as never))),
-    );
     const m = new GlobalSearchManager();
-    m.open();
-    m.setQuery('first');
-    await vi.advanceTimersByTimeAsync(200);
-    expect(m.batchInFlight).toBe(true);
-    // Second query — runBatch2 resets counter and uses the default empty mock so it settles fast.
-    m.setQuery('second');
-    await vi.advanceTimersByTimeAsync(200);
-    expect(m.batchInFlight).toBe(false);
-    // Release stale photos — check-before-decrement guard must prevent corruption.
-    resolveStalePhotos();
-    await vi.advanceTimersByTimeAsync(10);
-    expect((m as unknown as { inFlightCounter: number }).inFlightCounter).toBe(0);
-    expect(m.batchInFlight).toBe(false);
+    const photosProvider = (m as unknown as { providers: { photos: Provider<EntityItem> } }).providers.photos;
+    const originalPhotosRun = photosProvider.run;
+    let resolveStalePhotos!: () => void;
+    let invocationCount = 0;
+    photosProvider.run = vi.fn((query: string, mode: SearchMode, signal: AbortSignal) => {
+      invocationCount++;
+      if (invocationCount === 1) {
+        return new Promise(
+          (r) => (resolveStalePhotos = () => r({ status: 'empty' } as ProviderStatus<EntityItem>)),
+        ) as Promise<ProviderStatus<EntityItem>>;
+      }
+      return originalPhotosRun(query, mode, signal);
+    });
+    try {
+      m.open();
+      m.setQuery('first');
+      await vi.advanceTimersByTimeAsync(200);
+      expect(m.batchInFlight).toBe(true);
+      // Second query — runBatch2 resets counter and uses the default empty mock so it settles fast.
+      m.setQuery('second');
+      await vi.advanceTimersByTimeAsync(200);
+      expect(m.batchInFlight).toBe(false);
+      // Release stale photos — check-before-decrement guard must prevent corruption.
+      resolveStalePhotos();
+      await vi.advanceTimersByTimeAsync(10);
+      expect((m as unknown as { inFlightCounter: number }).inFlightCounter).toBe(0);
+      expect(m.batchInFlight).toBe(false);
+    } finally {
+      photosProvider.run = originalPhotosRun;
+    }
   });
 
   it('runBatch entry resets inFlightCounter to zero before incrementing per-provider', async () => {
@@ -4113,29 +4175,32 @@ describe('prefix scoping — runBatch gating', () => {
     ]) {
       s.mockClear();
     }
+    const searchSmartCallsBefore = searchSmartSpy.mock.calls.length;
+    const searchPersonCallsBefore = searchPersonSpy.mock.calls.length;
+    const searchPlacesCallsBefore = searchPlacesSpy.mock.calls.length;
 
     m.setQuery('>theme');
     await vi.advanceTimersByTimeAsync(150);
 
-    expect(searchSmartSpy).not.toHaveBeenCalled();
-    expect(searchPersonSpy).not.toHaveBeenCalled();
-    expect(searchPlacesSpy).not.toHaveBeenCalled();
+    expect(searchSmartSpy).toHaveBeenCalledTimes(searchSmartCallsBefore);
+    expect(searchPersonSpy).toHaveBeenCalledTimes(searchPersonCallsBefore);
+    expect(searchPlacesSpy).toHaveBeenCalledTimes(searchPlacesCallsBefore);
     // Navigation section populated via synchronous runNavigationProvider, not runBatch.
     expect(m.sections.navigation.status).toBe('ok');
   });
 
   it('scope people with bare @ bypasses minQueryLength', async () => {
     const m = new GlobalSearchManager();
-    const searchPersonSpy = vi.mocked(searchPerson);
-    searchPersonSpy.mockClear();
+    const getAllPeopleSpy = vi.mocked(getAllPeople);
+    getAllPeopleSpy.mockClear();
 
     m.setQuery('@'); // payload.length = 0, below people.minQueryLength = 2
     await vi.advanceTimersByTimeAsync(150);
 
     // people.minQueryLength=2 would normally set section to idle; bypass
-    // dispatches to the provider's bare branch instead (which does NOT call searchPerson).
+    // dispatches to the bare-suggestions branch instead.
     expect(m.sections.people.status).not.toBe('idle');
-    expect(searchPersonSpy).not.toHaveBeenCalled();
+    expect(getAllPeopleSpy).toHaveBeenCalledTimes(1);
   });
 
   it('scope people with single-char payload relaxes minQueryLength to 1', async () => {
