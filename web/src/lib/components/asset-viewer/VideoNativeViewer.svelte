@@ -211,7 +211,7 @@
 
         <div class="flex flex-col justify-end w-full h-32 px-4 bg-linear-to-b to-black/80">
           <media-control-bar part="bottom" class="flex w-full h-10 gap-2">
-            <media-play-button class="rounded-full p-2 outline-none">
+            <media-play-button class="rounded-full p-2 shrink-0 outline-none">
               <Icon slot="play" icon={mdiPlay} />
               <Icon slot="pause" icon={mdiPause} />
             </media-play-button>
@@ -219,7 +219,9 @@
 
             <span class="flex-grow"></span>
 
-            <div class="volume-wrapper rounded-full bg-light-100/0 hover:bg-light-100 transition-colors duration-400">
+            <div
+              class="volume-wrapper rounded-full shrink-0 bg-light-100/0 hover:bg-light-100 transition-colors duration-400"
+            >
               <media-volume-range class="h-full bg-none outline-none"></media-volume-range>
               <media-mute-button class="p-2 bg-none outline-none">
                 <Icon slot="off" icon={mdiVolumeMute} />
@@ -230,11 +232,11 @@
             </div>
 
             {#if extendedControls}
-              <media-fullscreen-button class="rounded-full p-2 outline-none">
+              <media-fullscreen-button class="rounded-full p-2 shrink-0 outline-none">
                 <Icon slot="enter" icon={mdiFullscreen} />
                 <Icon slot="exit" icon={mdiFullscreenExit} />
               </media-fullscreen-button>
-              <media-settings-menu-button class="rounded-full p-2 outline-none"></media-settings-menu-button>
+              <media-settings-menu-button class="rounded-full p-2 shrink-0 outline-none"></media-settings-menu-button>
             {/if}
           </media-control-bar>
           <media-time-range class="w-full h-8 px-2 pb-3 rounded-lg outline-none"></media-time-range>
@@ -286,9 +288,8 @@
     --media-tooltip-padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3.5);
   }
 
-  /* Needs special handling for some reason */
-  media-time-display:focus-visible {
-    box-shadow: var(--media-focus-box-shadow);
+  media-time-display {
+    font-variant-numeric: tabular-nums;
   }
 
   media-time-range,
