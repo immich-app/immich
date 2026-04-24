@@ -178,6 +178,24 @@ test.describe('global search palette', () => {
     await expect(recentGroup.getByText('Vacation 2024')).toBeVisible();
   });
 
+  test('query recents replay on /photos', async ({ page }) => {
+    await page.getByTestId('cmdk-trigger').click();
+    let dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('combobox').fill('beach');
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/photos\?q=beach$/);
+
+    await page.goto('/photos');
+    await page.getByTestId('cmdk-trigger').waitFor({ state: 'visible' });
+    await page.getByTestId('cmdk-trigger').click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    const recentGroup = dialog.getByRole('group', { name: /^recent$/i });
+    await recentGroup.getByText('beach').click();
+    await expect(page).toHaveURL(/\/photos\?q=beach$/);
+  });
+
   test('stale RECENT space entry triggers toast + removal on activate', async ({ page }) => {
     // Seed a RECENT entry pointing at a well-formed-but-unallocated space UUID
     // for the admin user. The localStorage write happens on the page that's

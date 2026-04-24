@@ -385,7 +385,7 @@ describe('global-search root', () => {
   it('quick-links fallback is replaced by recents once any recent exists', () => {
     // Recents take priority — the empty-empty nav fallback is only the cold
     // path, so a single recent entry must collapse it.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach-query-text', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:beach-query-text', text: 'beach-query-text', lastUsed: 1 });
     const m = new GlobalSearchManager();
     m.open();
     render(GlobalSearch, { props: { manager: m } });
@@ -510,8 +510,8 @@ describe('global-search root', () => {
   });
 
   it('clearing typed text returns selection to the newest recent row', async () => {
-    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', mode: 'smart', lastUsed: 1 } as never);
-    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', mode: 'smart', lastUsed: 2 } as never);
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 2 });
     const m = new GlobalSearchManager();
     m.open();
     render(GlobalSearch, { props: { manager: m } });
@@ -526,7 +526,7 @@ describe('global-search root', () => {
   });
 
   it('renders recent entries when store is non-empty and query is blank', () => {
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
     addEntry({ kind: 'photo', id: 'photo:a1', assetId: 'a1', label: 'sunset.jpg', lastUsed: 2 });
     const m = new GlobalSearchManager();
     m.open();
@@ -539,8 +539,8 @@ describe('global-search root', () => {
     // Seed two recents, highlight the newest, press Delete, assert the row
     // disappears from the DOM in the same tick. This pins the reactive-tick
     // contract between the component and manager.removeRecent/recentsRevision.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
-    addEntry({ kind: 'query', id: 'q:sunset', text: 'sunset', mode: 'smart', lastUsed: 2 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 2 });
     const m = new GlobalSearchManager();
     m.open();
     render(GlobalSearch, { props: { manager: m } });
@@ -550,35 +550,35 @@ describe('global-search root', () => {
     // Highlight the newer entry — mirrors what the auto-highlight / ArrowDown
     // path would do. `{Delete}` is the forward-delete key on full keyboards; on
     // Mac laptops the OS maps Fn+Backspace to it.
-    m.setActiveItem('q:sunset');
+    m.setActiveItem('query:sunset');
     await user.keyboard('{Delete}');
     await vi.waitFor(() => expect(screen.queryByText('sunset')).toBeNull());
     expect(screen.getByText('beach')).toBeInTheDocument();
-    expect(getEntries().map((e) => e.id)).toEqual(['q:beach']);
+    expect(getEntries().map((e) => e.id)).toEqual(['query:beach']);
   });
 
   it('Backspace on a highlighted recent (empty input) removes it', async () => {
     // Backspace is a safe alternative to Delete because it is a no-op in an
     // empty text input — users on Mac laptops without a forward-delete key can
     // still prune recents without an Fn chord.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
-    addEntry({ kind: 'query', id: 'q:sunset', text: 'sunset', mode: 'smart', lastUsed: 2 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 2 });
     const m = new GlobalSearchManager();
     m.open();
     render(GlobalSearch, { props: { manager: m } });
     const input = screen.getByRole('combobox');
     input.focus();
-    m.setActiveItem('q:sunset');
+    m.setActiveItem('query:sunset');
     await user.keyboard('{Backspace}');
     await vi.waitFor(() => expect(screen.queryByText('sunset')).toBeNull());
-    expect(getEntries().map((e) => e.id)).toEqual(['q:beach']);
+    expect(getEntries().map((e) => e.id)).toEqual(['query:beach']);
   });
 
   it('Backspace does NOT remove a recent while the input has text', async () => {
     // Regression guard: Backspace in the empty-input "recents mode" prunes, but
     // once the user has typed something Backspace must revert to its usual text
     // behaviour (delete a character) so the combobox is still editable.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
     const m = new GlobalSearchManager();
     m.open();
     render(GlobalSearch, { props: { manager: m } });
@@ -588,7 +588,7 @@ describe('global-search root', () => {
     await user.keyboard('{Backspace}');
     // Backspace ate the 'i'; the recent entry is still in the store.
     expect(input.value).toBe('h');
-    expect(getEntries().map((e) => e.id)).toEqual(['q:beach']);
+    expect(getEntries().map((e) => e.id)).toEqual(['query:beach']);
   });
 
   it('per-row X button removes the recent entry without activating the row', async () => {
@@ -596,7 +596,7 @@ describe('global-search root', () => {
     // call removeRecent, NOT activateRecent — clicking it should never navigate
     // away from the palette. `stopPropagation` on the button click is the key
     // implementation detail this regression guards.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
     const m = new GlobalSearchManager();
     const activateSpy = vi.spyOn(m, 'activateRecent').mockImplementation(() => {});
     m.open();
@@ -627,16 +627,16 @@ describe('global-search root', () => {
     expect(activateSpy).toHaveBeenCalledWith('photo', expect.objectContaining({ id: 'a1' }));
   });
 
-  it('activateRecent("query", ...) updates the input value via manager.query sync', async () => {
-    addEntry({ kind: 'query', id: 'q:sunset', text: 'sunset', mode: 'smart', lastUsed: 1 });
+  it('activateRecent("query", ...) replays through activateSearch on the current page', () => {
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 1 });
     const m = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
     m.open();
     render(GlobalSearch, { props: { manager: m } });
-    const input = screen.getByRole('combobox') as HTMLInputElement;
-    expect(input.value).toBe('');
-    // Directly invoke activateRecent on the manager — the effect should sync inputValue.
-    m.activateRecent({ kind: 'query', id: 'q:sunset', text: 'sunset', mode: 'smart', lastUsed: 1 });
-    await vi.waitFor(() => expect(input.value).toBe('sunset'));
+
+    m.activateRecent({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 1 });
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('sunset');
   });
 
   it('preview pane is not mounted below 1024 px', () => {

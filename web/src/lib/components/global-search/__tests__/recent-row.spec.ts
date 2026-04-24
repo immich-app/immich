@@ -20,8 +20,9 @@ describe('recent-row', () => {
 
   it('renders query kind with text', () => {
     render(RecentRow, {
-      props: { entry: { kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 } },
+      props: { entry: { kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 } },
     });
+    expect(screen.getByTestId('query-row')).toBeInTheDocument();
     expect(screen.getByText('beach')).toBeInTheDocument();
   });
 

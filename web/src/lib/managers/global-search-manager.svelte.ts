@@ -143,7 +143,7 @@ export const RECONCILE_ORDER_BY_SCOPE: Record<Scope, ReadonlyArray<keyof Section
 function isValidRecentEntry(e: RecentEntry): boolean {
   switch (e.kind) {
     case 'query': {
-      return typeof e.text === 'string' && e.text.length > 0 && VALID_MODES.has(e.mode);
+      return typeof e.text === 'string' && e.text.trim().length > 0;
     }
     case 'photo': {
       return typeof e.assetId === 'string' && e.assetId.length > 0;
@@ -1217,7 +1217,6 @@ export class GlobalSearchManager {
       kind: 'query',
       id: `query:${trimmed.toLowerCase()}`,
       text: trimmed,
-      mode: this.mode,
       lastUsed: Date.now(),
     });
     void goto(this.buildSearchDestination(trimmed));
@@ -1384,13 +1383,12 @@ export class GlobalSearchManager {
       void this.activateSpace(entry.spaceId);
       return;
     }
-    const now = Date.now();
-    addEntry({ ...entry, lastUsed: now });
     if (entry.kind === 'query') {
-      this.setMode(entry.mode);
-      this.setQuery(entry.text);
+      this.activateSearch(entry.text);
       return;
     }
+    const now = Date.now();
+    addEntry({ ...entry, lastUsed: now });
     switch (entry.kind) {
       case 'photo': {
         void goto(Route.viewAsset({ id: entry.assetId }));

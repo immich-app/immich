@@ -10,7 +10,7 @@ const STORAGE_KEY_PREFIX = 'cmdk.recent:';
 const MAX_ENTRIES = 20;
 
 export type RecentEntry =
-  | { kind: 'query'; id: string; text: string; mode: SearchMode; lastUsed: number }
+  | { kind: 'query'; id: string; text: string; lastUsed: number }
   | { kind: 'photo'; id: string; assetId: string; label: string; lastUsed: number }
   | { kind: 'person'; id: string; personId: string; label: string; lastUsed: number }
   | { kind: 'place'; id: string; latitude: number; longitude: number; label: string; lastUsed: number }
@@ -36,6 +36,16 @@ export type RecentEntry =
 
 let warnedOnce = false;
 
+type LegacyQueryRecentEntry = {
+  kind: 'query';
+  id: string;
+  text: string;
+  mode?: SearchMode;
+  lastUsed: number;
+};
+
+type StoredRecentEntry = RecentEntry | LegacyQueryRecentEntry;
+
 function warn(err: unknown) {
   if (warnedOnce) {
     return;
@@ -50,6 +60,24 @@ function currentStorageKey(): string | null {
   return id ? `${STORAGE_KEY_PREFIX}${id}` : null;
 }
 
+function normalizeRecentEntry(entry: StoredRecentEntry): RecentEntry | null {
+  if (entry.kind !== 'query') {
+    return entry;
+  }
+
+  const text = entry.text.trim();
+  if (text.length === 0) {
+    return null;
+  }
+
+  return {
+    kind: 'query',
+    id: `query:${text.toLowerCase()}`,
+    text,
+    lastUsed: entry.lastUsed,
+  };
+}
+
 function rawRead(key: string): RecentEntry[] {
   try {
     const raw = localStorage.getItem(key);
@@ -57,7 +85,19 @@ function rawRead(key: string): RecentEntry[] {
       return [];
     }
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as RecentEntry[]) : [];
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    const normalized = parsed
+      .map((entry) => normalizeRecentEntry(entry as StoredRecentEntry))
+      .filter(Boolean) as RecentEntry[];
+
+    if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+      rawWrite(key, normalized);
+    }
+
+    return normalized;
   } catch (error) {
     warn(error);
     return [];
@@ -85,9 +125,13 @@ export function addEntry(entry: RecentEntry) {
   if (key === null) {
     return;
   }
+  const normalized = normalizeRecentEntry(entry);
+  if (!normalized) {
+    return;
+  }
   const existing = rawRead(key);
-  const deduped = existing.filter((e) => e.id !== entry.id);
-  deduped.push(entry);
+  const deduped = existing.filter((e) => e.id !== normalized.id);
+  deduped.push(normalized);
   deduped.sort((a, b) => b.lastUsed - a.lastUsed);
   rawWrite(key, deduped.slice(0, MAX_ENTRIES));
 }

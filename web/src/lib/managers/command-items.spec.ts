@@ -190,7 +190,7 @@ describe('cmd:clear_recents', () => {
 
   it('clears recents when user is logged in', async () => {
     const key = 'cmdk.recent:test-user';
-    localStorage.setItem(key, JSON.stringify([{ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 }]));
+    localStorage.setItem(key, JSON.stringify([{ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 }]));
     const cmd = COMMAND_ITEMS.find((c) => c.id === 'cmd:clear_recents')!;
     await cmd.handler();
     expect(localStorage.getItem(key)).toBe(JSON.stringify([]));

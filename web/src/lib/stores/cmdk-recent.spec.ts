@@ -32,10 +32,26 @@ describe('cmdk-recent', () => {
     expect(getEntries()).toEqual([]);
   });
 
+  it('normalizes legacy q:* query entries into query:* entries', () => {
+    localStorage.setItem(
+      'cmdk.recent:test-user',
+      JSON.stringify([{ kind: 'query', id: 'q:Beach', text: 'Beach', mode: 'smart', lastUsed: 1 }]),
+    );
+
+    expect(getEntries()).toEqual([{ kind: 'query', id: 'query:beach', text: 'Beach', lastUsed: 1 }]);
+  });
+
+  it('canonicalizes query recents on write and dedupes by lowered trimmed text', () => {
+    addEntry({ kind: 'query', id: 'q: Beach ', text: ' Beach ', lastUsed: 1 } as never);
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 2 });
+
+    expect(getEntries()).toEqual([{ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 2 }]);
+  });
+
   it('addEntry persists, returns newest first', () => {
-    addEntry({ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 });
-    addEntry({ kind: 'query', id: 'q:b', text: 'b', mode: 'smart', lastUsed: 2 });
-    expect(getEntries().map((e) => e.id)).toEqual(['q:b', 'q:a']);
+    addEntry({ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:b', text: 'b', lastUsed: 2 });
+    expect(getEntries().map((e) => e.id)).toEqual(['query:b', 'query:a']);
   });
 
   it('dedupes by id, updating lastUsed', () => {
@@ -48,34 +64,34 @@ describe('cmdk-recent', () => {
 
   it('trims to 20, keeping newest', () => {
     for (let i = 0; i < 25; i++) {
-      addEntry({ kind: 'query', id: `q:${i}`, text: `q${i}`, mode: 'smart', lastUsed: i });
+      addEntry({ kind: 'query', id: `query:${i}`, text: `q${i}`, lastUsed: i });
     }
     const entries = getEntries();
     expect(entries).toHaveLength(20);
-    expect(entries[0].id).toBe('q:24');
-    expect(entries[19].id).toBe('q:5');
+    expect(entries[0].id).toBe('query:q24');
+    expect(entries[19].id).toBe('query:q5');
   });
 
   it('treats corrupt JSON as empty; next write overwrites', () => {
     localStorage.setItem('cmdk.recent:test-user', 'not-valid-json');
     __resetForTests();
     expect(getEntries()).toEqual([]);
-    addEntry({ kind: 'query', id: 'q:x', text: 'x', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:x', text: 'x', lastUsed: 1 });
     expect(getEntries()).toHaveLength(1);
   });
 
   it('QuotaExceededError does not throw; the failing write is silently dropped', () => {
-    addEntry({ kind: 'query', id: 'q:initial', text: 'initial', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:initial', text: 'initial', lastUsed: 1 });
     const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw Object.assign(new Error('quota'), { name: 'QuotaExceededError' });
     });
-    expect(() => addEntry({ kind: 'query', id: 'q:new', text: 'new', mode: 'smart', lastUsed: 2 })).not.toThrow();
+    expect(() => addEntry({ kind: 'query', id: 'query:new', text: 'new', lastUsed: 2 })).not.toThrow();
     spy.mockRestore();
     // The successful write from before the spy is still there; the failed write
     // didn't make it through. No in-memory caching means no "last-known good"
     // state to preserve — the palette will simply miss the newest entry.
     const entries = getEntries();
-    expect(entries.some((e) => e.id === 'q:initial')).toBe(true);
+    expect(entries.some((e) => e.id === 'query:initial')).toBe(true);
   });
 
   it('handles localStorage unavailable (getItem throws)', () => {
@@ -83,12 +99,12 @@ describe('cmdk-recent', () => {
       throw new Error('SecurityError');
     });
     expect(getEntries()).toEqual([]);
-    expect(() => addEntry({ kind: 'query', id: 'q:x', text: 'x', mode: 'smart', lastUsed: 1 })).not.toThrow();
+    expect(() => addEntry({ kind: 'query', id: 'query:x', text: 'x', lastUsed: 1 })).not.toThrow();
     spy.mockRestore();
   });
 
   it('clearEntries empties the store', () => {
-    addEntry({ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 });
     clearEntries();
     expect(getEntries()).toEqual([]);
   });
@@ -99,14 +115,14 @@ describe('cmdk-recent', () => {
     // same browser, opens the palette, and sees user A's recents — including
     // potentially private filenames and query text.
     mockUser.current = { id: 'user-a' };
-    addEntry({ kind: 'query', id: 'q:secret', text: 'secret-query', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:secret-query', text: 'secret-query', lastUsed: 1 });
     addEntry({ kind: 'photo', id: 'photo:p1', assetId: 'p1', label: 'a-private.jpg', lastUsed: 2 });
 
     mockUser.current = { id: 'user-b' };
     expect(getEntries()).toEqual([]);
 
     mockUser.current = { id: 'user-a' };
-    expect(getEntries().map((e) => e.id)).toEqual(['photo:p1', 'q:secret']);
+    expect(getEntries().map((e) => e.id)).toEqual(['photo:p1', 'query:secret-query']);
   });
 
   it('scopes writes per user: user B writes never appear for user A', () => {
@@ -114,14 +130,14 @@ describe('cmdk-recent', () => {
     // logs back in — user A's existing entries are intact and user B's entries
     // are nowhere to be seen.
     mockUser.current = { id: 'user-a' };
-    addEntry({ kind: 'query', id: 'q:a-first', text: 'from-a', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:from-a', text: 'from-a', lastUsed: 1 });
 
     mockUser.current = { id: 'user-b' };
-    addEntry({ kind: 'query', id: 'q:b-first', text: 'from-b', mode: 'smart', lastUsed: 2 });
-    expect(getEntries().map((e) => e.id)).toEqual(['q:b-first']);
+    addEntry({ kind: 'query', id: 'query:from-b', text: 'from-b', lastUsed: 2 });
+    expect(getEntries().map((e) => e.id)).toEqual(['query:from-b']);
 
     mockUser.current = { id: 'user-a' };
-    expect(getEntries().map((e) => e.id)).toEqual(['q:a-first']);
+    expect(getEntries().map((e) => e.id)).toEqual(['query:from-a']);
   });
 
   it('returns [] and silently drops writes when no user is logged in', () => {
@@ -129,7 +145,7 @@ describe('cmdk-recent', () => {
     // must not populate an "anonymous" bucket that the next logged-in user could
     // then inherit. Reads return empty, writes are no-ops.
     mockUser.current = null;
-    addEntry({ kind: 'query', id: 'q:anon', text: 'anonymous', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:anonymous', text: 'anonymous', lastUsed: 1 });
     expect(getEntries()).toEqual([]);
     // Sanity: the entry is not persisted under ANY scoped key either — fetch the
     // whole localStorage snapshot and assert nothing matches the cmdk prefix.
@@ -142,12 +158,12 @@ describe('cmdk-recent', () => {
     // current user's key) is visible on the very next call without any explicit
     // cache-invalidation plumbing. This replaces the previous storage-event
     // listener that existed solely to invalidate a shared in-memory cache.
-    addEntry({ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 });
     localStorage.setItem(
       'cmdk.recent:test-user',
-      JSON.stringify([{ kind: 'query', id: 'q:b', text: 'b', mode: 'smart', lastUsed: 2 }]),
+      JSON.stringify([{ kind: 'query', id: 'query:b', text: 'b', lastUsed: 2 }]),
     );
-    expect(getEntries().map((e) => e.id)).toEqual(['q:b']);
+    expect(getEntries().map((e) => e.id)).toEqual(['query:b']);
   });
 });
 
@@ -209,22 +225,22 @@ describe('removeEntry', () => {
   });
 
   it('removes the matching entry and preserves order', () => {
-    addEntry({ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 });
-    addEntry({ kind: 'query', id: 'q:b', text: 'b', mode: 'smart', lastUsed: 2 });
-    addEntry({ kind: 'query', id: 'q:c', text: 'c', mode: 'smart', lastUsed: 3 });
-    removeEntry('q:b');
-    expect(getEntries().map((e) => e.id)).toEqual(['q:c', 'q:a']);
+    addEntry({ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:b', text: 'b', lastUsed: 2 });
+    addEntry({ kind: 'query', id: 'query:c', text: 'c', lastUsed: 3 });
+    removeEntry('query:b');
+    expect(getEntries().map((e) => e.id)).toEqual(['query:c', 'query:a']);
   });
 
   it('no-op on missing id', () => {
-    addEntry({ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 });
     removeEntry('does-not-exist');
-    expect(getEntries().map((e) => e.id)).toEqual(['q:a']);
+    expect(getEntries().map((e) => e.id)).toEqual(['query:a']);
   });
 
   it('persists the removal to localStorage', () => {
-    addEntry({ kind: 'query', id: 'q:a', text: 'a', mode: 'smart', lastUsed: 1 });
-    removeEntry('q:a');
+    addEntry({ kind: 'query', id: 'query:a', text: 'a', lastUsed: 1 });
+    removeEntry('query:a');
     const raw = localStorage.getItem('cmdk.recent:test-user');
     expect(JSON.parse(raw ?? '[]')).toEqual([]);
   });

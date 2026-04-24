@@ -1154,7 +1154,7 @@ describe('activate("command")', () => {
   });
 
   it('cmd:clear_recents activated through the manager empties RECENT across open/close/open', async () => {
-    addEntry({ kind: 'query', id: 'q:hello', text: 'hello', mode: 'smart', lastUsed: Date.now() });
+    addEntry({ kind: 'query', id: 'query:hello', text: 'hello', lastUsed: Date.now() });
     expect(getEntries().length).toBeGreaterThan(0);
 
     const cmd = COMMAND_ITEMS.find((c) => c.id === 'cmd:clear_recents')!;
@@ -1218,14 +1218,15 @@ describe('activateRecent()', () => {
     vi.useRealTimers();
   });
 
-  it('query entry re-runs the search in place without closing', () => {
+  it('query entries replay through activateSearch without changing mode', () => {
     const m = new GlobalSearchManager();
-    m.open();
-    m.activateRecent({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'metadata', lastUsed: 1 });
-    expect(m.mode).toBe('metadata');
-    expect(m.query).toBe('beach');
-    expect(m.isOpen).toBe(true);
-    expect(goto).not.toHaveBeenCalled();
+    const spy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+
+    m.mode = 'ocr';
+    m.activateRecent({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
+
+    expect(spy).toHaveBeenCalledWith('beach');
+    expect(m.mode).toBe('ocr');
   });
 
   it('photo entry navigates and closes', () => {
@@ -1491,11 +1492,11 @@ describe('removeRecent()', () => {
   });
 
   it('removes the matching recent entry from the store', () => {
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
-    addEntry({ kind: 'query', id: 'q:sunset', text: 'sunset', mode: 'smart', lastUsed: 2 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 2 });
     const m = new GlobalSearchManager();
-    m.removeRecent('q:beach');
-    expect(getEntries().map((e) => e.id)).toEqual(['q:sunset']);
+    m.removeRecent('query:beach');
+    expect(getEntries().map((e) => e.id)).toEqual(['query:sunset']);
   });
 
   it('bumps recentsRevision so Svelte-derived views can re-read', () => {
@@ -1503,10 +1504,10 @@ describe('removeRecent()', () => {
     // because cmdk-recent is a plain-function store (not a Svelte store). Without
     // a reactive tick, a mid-session mutation would leave the deleted row in the
     // DOM until the palette closed and reopened.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
     const m = new GlobalSearchManager();
     const before = m.recentsRevision;
-    m.removeRecent('q:beach');
+    m.removeRecent('query:beach');
     expect(m.recentsRevision).toBeGreaterThan(before);
   });
 
@@ -1520,14 +1521,14 @@ describe('removeRecent()', () => {
   it('reconciles the cursor after removing the currently-highlighted recent', () => {
     // When the user deletes the active row, the highlight must move to the next
     // available entry so keyboard users do not end up on a dead cursor.
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
-    addEntry({ kind: 'query', id: 'q:sunset', text: 'sunset', mode: 'smart', lastUsed: 2 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 2 });
     const m = new GlobalSearchManager();
     m.open();
-    m.setActiveItem('q:sunset');
-    m.removeRecent('q:sunset');
-    // 'q:sunset' is gone, the remaining entry 'q:beach' must take the highlight.
-    expect(m.activeItemId).toBe('q:beach');
+    m.setActiveItem('query:sunset');
+    m.removeRecent('query:sunset');
+    // 'query:sunset' is gone, the remaining entry 'query:beach' must take the highlight.
+    expect(m.activeItemId).toBe('query:beach');
   });
 });
 
@@ -1717,15 +1718,14 @@ describe('edge-case guards', () => {
     warnSpy.mockRestore();
   });
 
-  it('activateRecent with corrupt query entry (invalid mode) no-ops and closes', () => {
+  it('activateRecent with corrupt query entry (blank text) no-ops and closes', () => {
     const m = new GlobalSearchManager();
     m.open();
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     m.activateRecent({
       kind: 'query',
-      id: 'q:bad',
-      text: 'x',
-      mode: 'evil' as unknown as 'smart',
+      id: 'query:bad',
+      text: '   ',
       lastUsed: 1,
     });
     expect(warnSpy).toHaveBeenCalled();
@@ -3209,10 +3209,10 @@ describe('getActiveItem recent-entry preview lookup (cold open)', () => {
   });
 
   it('returns null for a query-kind recent (no meaningful preview)', () => {
-    addEntry({ kind: 'query', id: 'q:beach', text: 'beach', mode: 'smart', lastUsed: 1 });
+    addEntry({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
     const m = new GlobalSearchManager();
     m.open();
-    m.activeItemId = 'q:beach';
+    m.activeItemId = 'query:beach';
     expect(m.getActiveItem()).toBeNull();
   });
 
@@ -4895,11 +4895,12 @@ describe('prefix scoping — defensive recent replay of scoped query', () => {
     localStorage.clear();
   });
 
-  it('activateRecent({kind:query, text:"@alice"}) re-derives scope=people, payload=alice', () => {
+  it('activateRecent({kind:query, text:"@alice"}) replays the raw scoped text through activateSearch', () => {
     const m = new GlobalSearchManager();
-    m.open();
-    m.activateRecent({ kind: 'query', id: 'query:@alice:smart', text: '@alice', mode: 'smart', lastUsed: Date.now() });
-    expect(m.scope).toBe('people');
-    expect(m.payload).toBe('alice');
+    const spy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+
+    m.activateRecent({ kind: 'query', id: 'query:@alice', text: '@alice', lastUsed: Date.now() });
+
+    expect(spy).toHaveBeenCalledWith('@alice');
   });
 });
