@@ -143,9 +143,9 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+          IS_RELEASE: ${{ inputs.environment == 'production' || github.ref == 'refs/heads/main' }}
         run: |
-          if [[ $IS_MAIN == 'true' ]]; then
+          if [[ $IS_RELEASE == 'true' ]]; then
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
@@ -268,20 +268,20 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
           BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
-          GITHUB_REF: ${{ github.ref }}
+          IS_RELEASE: ${{ inputs.environment == 'production' || github.ref == 'refs/heads/main' }}
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
           FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 6
         working-directory: ./mobile/ios
         run: |
-          # Only upload to TestFlight on main branch
-          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+          # Upload to TestFlight on main or when explicitly invoked as a production release.
+          if [[ "$IS_RELEASE" == "true" ]]; then
             if [[ "$ENVIRONMENT" == "development" ]]; then
               bundle exec fastlane gha_testflight_dev
             else
               bundle exec fastlane gha_release_prod
             fi
           else
-            # Build only, no TestFlight upload for non-main branches
+            # Build only, no TestFlight upload
             bundle exec fastlane gha_build_only
           fi
 

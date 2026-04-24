@@ -1,7 +1,7 @@
 name: Docs build
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/**']
   pull_request:
   release:
     types: [published]
@@ -39,7 +39,7 @@ jobs:
           force-filters: |
             - '.github/workflows/docs-build.yml'
           force-events: 'release'
-          force-branches: 'main'
+          force-branches: 'main,release/**'
 
   build:
     name: Docs Build
