@@ -484,8 +484,6 @@ class ApiClient {
           return OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
         case 'OcrConfig':
           return OcrConfig.fromJson(value);
-        case 'OnThisDayDto':
-          return OnThisDayDto.fromJson(value);
         case 'OnboardingDto':
           return OnboardingDto.fromJson(value);
         case 'OnboardingResponseDto':

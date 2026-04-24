@@ -157,6 +157,18 @@ delete from "memory"
 where
   "id" = $1
 
+-- MemoryRepository.hasRuleMemory
+select
+  "id"
+from
+  "memory"
+where
+  "ownerId" = $1
+  and "type" = $2
+  and memory.data ->> 'ruleId' = $3
+  and memory.data ->> 'dedupeKey' = $4
+  and "deletedAt" is null
+
 -- MemoryRepository.getAssetIds
 select
   "assetId"

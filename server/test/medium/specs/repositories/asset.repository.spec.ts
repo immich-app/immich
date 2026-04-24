@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetVisibility } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedSpaceRepository } from 'src/repositories/shared-space.repository';
@@ -29,6 +29,177 @@ beforeAll(async () => {
 });
 
 describe(AssetRepository.name, () => {
+  describe('getMemoryLocationClusters', () => {
+    it('should group previewable timeline assets by country and city within the requested window', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      const addAsset = async ({
+        localDateTime,
+        country,
+        city,
+        withPreview = true,
+      }: {
+        localDateTime: Date;
+        country: string | null;
+        city: string | null;
+        withPreview?: boolean;
+      }) => {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline, localDateTime });
+        await Promise.all([
+          ctx.newExif({ assetId: asset.id, country, city }),
+          ctx.newJobStatus({ assetId: asset.id }),
+          withPreview
+            ? ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: `${asset.id}.jpg` })
+            : null,
+        ]);
+      };
+
+      await addAsset({ localDateTime: new Date('2026-04-15T10:00:00Z'), country: 'France', city: 'Paris' });
+      await addAsset({ localDateTime: new Date('2026-04-16T10:00:00Z'), country: 'France', city: 'Paris' });
+      await addAsset({ localDateTime: new Date('2026-04-17T10:00:00Z'), country: 'France', city: 'Lyon' });
+      await addAsset({ localDateTime: new Date('2026-04-18T10:00:00Z'), country: null, city: null });
+      await addAsset({
+        localDateTime: new Date('2026-04-19T10:00:00Z'),
+        country: 'France',
+        city: 'Paris',
+        withPreview: false,
+      });
+
+      const result = await sut.getMemoryLocationClusters(user.id, {
+        takenAfter: new Date('2026-04-01T00:00:00Z'),
+        takenBefore: new Date('2026-04-30T23:59:59Z'),
+      });
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ country: 'France', city: 'Paris', assetCount: 2, dayCount: 2 }),
+          expect.objectContaining({ country: 'France', city: 'Lyon', assetCount: 1, dayCount: 1 }),
+        ]),
+      );
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe('getMemoryAssetsForLocation', () => {
+    it('should return previewable timeline assets for the requested country and city, including city=null', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const takenAfter = new Date('2026-04-01T00:00:00Z');
+      const takenBefore = new Date('2026-04-30T23:59:59Z');
+
+      const { asset: parisAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2026-04-15T10:00:00Z'),
+      });
+      const { asset: countryOnlyAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2026-04-16T10:00:00Z'),
+      });
+      const { asset: berlinAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2026-04-17T10:00:00Z'),
+      });
+
+      await Promise.all([
+        ctx.newExif({ assetId: parisAsset.id, country: 'France', city: 'Paris' }),
+        ctx.newExif({ assetId: countryOnlyAsset.id, country: 'France', city: null }),
+        ctx.newExif({ assetId: berlinAsset.id, country: 'Germany', city: 'Berlin' }),
+        ctx.newAssetFile({ assetId: parisAsset.id, type: AssetFileType.Preview, path: 'paris.jpg' }),
+        ctx.newAssetFile({ assetId: countryOnlyAsset.id, type: AssetFileType.Preview, path: 'france.jpg' }),
+        ctx.newAssetFile({ assetId: berlinAsset.id, type: AssetFileType.Preview, path: 'berlin.jpg' }),
+      ]);
+
+      await expect(
+        sut.getMemoryAssetsForLocation(user.id, {
+          country: 'France',
+          city: 'Paris',
+          takenAfter,
+          takenBefore,
+        }),
+      ).resolves.toEqual([expect.objectContaining({ id: parisAsset.id })]);
+
+      await expect(
+        sut.getMemoryAssetsForLocation(user.id, {
+          country: 'France',
+          city: null,
+          takenAfter,
+          takenBefore,
+        }),
+      ).resolves.toEqual([expect.objectContaining({ id: countryOnlyAsset.id })]);
+    });
+  });
+
+  describe('getMemoryAssetsForPerson', () => {
+    it('should return previewable timeline assets for the person before the cutoff and deduplicate multiple faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice' });
+      const cutoff = new Date('2026-04-23T23:59:59Z');
+
+      const { asset: matchingAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2025-04-01T12:00:00Z'),
+      });
+      const { asset: duplicateFaceAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2024-04-01T12:00:00Z'),
+      });
+      const { asset: hiddenFaceAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2023-04-01T12:00:00Z'),
+      });
+      const { asset: missingPreviewAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2022-04-01T12:00:00Z'),
+      });
+      const { asset: afterCutoffAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        localDateTime: new Date('2026-05-01T12:00:00Z'),
+      });
+
+      await Promise.all([
+        ctx.newJobStatus({ assetId: matchingAsset.id }),
+        ctx.newJobStatus({ assetId: duplicateFaceAsset.id }),
+        ctx.newJobStatus({ assetId: hiddenFaceAsset.id }),
+        ctx.newJobStatus({ assetId: missingPreviewAsset.id }),
+        ctx.newJobStatus({ assetId: afterCutoffAsset.id }),
+        ctx.newAssetFile({ assetId: matchingAsset.id, type: AssetFileType.Preview, path: 'matching-preview.jpg' }),
+        ctx.newAssetFile({
+          assetId: duplicateFaceAsset.id,
+          type: AssetFileType.Preview,
+          path: 'duplicate-preview.jpg',
+        }),
+        ctx.newAssetFile({ assetId: hiddenFaceAsset.id, type: AssetFileType.Preview, path: 'hidden-preview.jpg' }),
+        ctx.newAssetFile({ assetId: afterCutoffAsset.id, type: AssetFileType.Preview, path: 'after-preview.jpg' }),
+        ctx.newAssetFace({ assetId: matchingAsset.id, personId: person.id, isVisible: true }),
+        ctx.newAssetFace({ assetId: duplicateFaceAsset.id, personId: person.id, isVisible: true }),
+        ctx.newAssetFace({ assetId: duplicateFaceAsset.id, personId: person.id, isVisible: true }),
+        ctx.newAssetFace({ assetId: hiddenFaceAsset.id, personId: person.id, isVisible: false }),
+        ctx.newAssetFace({ assetId: missingPreviewAsset.id, personId: person.id, isVisible: true }),
+        ctx.newAssetFace({ assetId: afterCutoffAsset.id, personId: person.id, isVisible: true }),
+      ]);
+
+      const result = await sut.getMemoryAssetsForPerson(user.id, person.id, cutoff);
+
+      expect(result.map(({ id }) => id).toSorted()).toEqual([duplicateFaceAsset.id, matchingAsset.id].toSorted());
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: matchingAsset.id, localDateTime: new Date('2025-04-01T12:00:00Z') }),
+          expect.objectContaining({ id: duplicateFaceAsset.id, localDateTime: new Date('2024-04-01T12:00:00Z') }),
+        ]),
+      );
+    });
+  });
+
   describe('getTimeBucket', () => {
     it('should order assets by local day first and fileCreatedAt within each day', async () => {
       const { ctx, sut } = setup();

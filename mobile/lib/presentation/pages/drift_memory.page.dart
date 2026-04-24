@@ -15,6 +15,21 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
+String getMemoryTitle(BuildContext context, DriftMemory memory) {
+  final serverTitle = memory.data.title;
+  if (serverTitle != null && serverTitle.isNotEmpty) {
+    return serverTitle;
+  }
+
+  final year = memory.data.year;
+  if (year != null) {
+    final yearsAgo = DateTime.now().year - year;
+    return 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+  }
+
+  return 'memory'.t(context: context);
+}
+
 /// Expects the current asset to be set via [assetViewerProvider] before navigating to this page
 @RoutePage()
 class DriftMemoryPage extends HookConsumerWidget {
@@ -231,8 +246,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                 );
               }
 
-              final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
-              final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+              final title = getMemoryTitle(context, memories[mIndex]);
               // Build horizontal page
               final assetController = memoryAssetPageControllers[mIndex];
               return Column(

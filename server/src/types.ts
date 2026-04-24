@@ -533,9 +533,22 @@ export type StorageAsset = {
 
 export type OnThisDayData = { year: number };
 
-export interface MemoryData {
+export type RuleMemoryData = {
+  ruleId: string;
+  dedupeKey: string;
+  title: string;
+  subtitle?: string;
+  score?: number;
+  context?: Record<string, unknown>;
+};
+
+export interface MemoryDataByType {
   [MemoryType.OnThisDay]: OnThisDayData;
+  [MemoryType.Rule]: RuleMemoryData;
 }
+
+export type MemoryDataOf<T extends MemoryType = MemoryType> = MemoryDataByType[T];
+export type AnyMemoryData = MemoryDataByType[MemoryType];
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
@@ -544,7 +557,9 @@ export type MaintenanceModeState =
   | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
-  lastOnThisDayDate: string;
+  lastOnThisDayDate?: string;
+  /** rule memories have already been created through this date */
+  lastRuleDate?: string;
 };
 export type MediaLocation = { location: string };
 

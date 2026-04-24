@@ -89,7 +89,7 @@ class ImmichAPI(cfg: ServerConfig) {
 
   suspend fun fetchMemory(date: LocalDate): List<MemoryResult> = withContext(Dispatchers.IO) {
     val iso8601 = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
-    val url = buildRequestURL("/memories", listOf("for" to iso8601))
+    val url = buildRequestURL("/memories", listOf("for" to iso8601, "type" to "on_this_day"))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
       applyCustomHeaders()

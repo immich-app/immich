@@ -138,6 +138,21 @@ export class PersonRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { month: 4, day: 23 }] })
+  getBirthdaysForDay(ownerId: string, { month, day }: { month: number; day: number }) {
+    return this.db
+      .selectFrom('person')
+      .select(['id', 'name', 'birthDate'])
+      .where('ownerId', '=', ownerId)
+      .where('isHidden', '=', false)
+      .where('type', '=', 'person')
+      .where('name', '!=', '')
+      .where('birthDate', 'is not', null)
+      .where(sql`extract(month from "birthDate")`, '=', month)
+      .where(sql`extract(day from "birthDate")`, '=', day)
+      .execute();
+  }
+
   @GenerateSql()
   getFileSamples() {
     return this.db

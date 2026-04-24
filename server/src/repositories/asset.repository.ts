@@ -114,6 +114,20 @@ export interface YearMonthDay {
   year: number;
 }
 
+export interface MemoryAsset {
+  id: string;
+  localDateTime: Date;
+}
+
+export interface MemoryLocationCluster {
+  country: string | null;
+  city: string | null;
+  assetCount: number;
+  dayCount: number;
+  firstDate: Date;
+  lastDate: Date;
+}
+
 interface AssetExploreFieldOptions {
   maxFields: number;
   minAssetsPerField: number;
@@ -438,6 +452,118 @@ export class AssetRepository {
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.DATE] })
+  getMemoryAssetsForPerson(ownerId: string, personId: string, takenBefore: Date): Promise<MemoryAsset[]> {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id', 'asset.localDateTime'])
+      .innerJoin('asset_face', 'asset_face.assetId', 'asset.id')
+      .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset_face.personId', '=', personId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.localDateTime', '<=', takenBefore)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_file')
+            .select('asset_file.assetId')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      )
+      .distinctOn(['asset.id'])
+      .orderBy('asset.id')
+      .orderBy('asset.localDateTime', 'desc')
+      .limit(60)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { takenAfter: DummyValue.DATE, takenBefore: DummyValue.DATE }] })
+  getMemoryLocationClusters(
+    ownerId: string,
+    { takenAfter, takenBefore }: { takenAfter: Date; takenBefore: Date },
+  ): Promise<MemoryLocationCluster[]> {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select([
+        'asset_exif.country as country',
+        'asset_exif.city as city',
+        sql<number>`count(*)::int`.as('assetCount'),
+        sql<number>`count(distinct (asset."localDateTime" at time zone 'UTC')::date)::int`.as('dayCount'),
+        sql<Date>`min(asset."localDateTime")`.as('firstDate'),
+        sql<Date>`max(asset."localDateTime")`.as('lastDate'),
+      ])
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.localDateTime', '>=', takenAfter)
+      .where('asset.localDateTime', '<=', takenBefore)
+      .where('asset_exif.country', 'is not', null)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_file')
+            .select('asset_file.assetId')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      )
+      .groupBy(['asset_exif.country', 'asset_exif.city'])
+      .orderBy('assetCount', 'desc')
+      .execute();
+  }
+
+  @GenerateSql({
+    params: [
+      DummyValue.UUID,
+      {
+        country: DummyValue.STRING,
+        city: DummyValue.STRING,
+        takenAfter: DummyValue.DATE,
+        takenBefore: DummyValue.DATE,
+      },
+    ],
+  })
+  getMemoryAssetsForLocation(
+    ownerId: string,
+    {
+      country,
+      city,
+      takenAfter,
+      takenBefore,
+    }: { country: string; city: string | null; takenAfter: Date; takenBefore: Date },
+  ) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.localDateTime', '>=', takenAfter)
+      .where('asset.localDateTime', '<=', takenBefore)
+      .where('asset_exif.country', '=', country)
+      .$if(city !== null, (qb) => qb.where('asset_exif.city', '=', city))
+      .$if(city === null, (qb) => qb.where('asset_exif.city', 'is', null))
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_file')
+            .select('asset_file.assetId')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      )
+      .orderBy('asset.localDateTime', 'asc')
+      .limit(20)
       .execute();
   }
 

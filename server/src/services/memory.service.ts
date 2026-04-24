@@ -6,9 +6,13 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { BirthdayMemoryRule } from 'src/services/memory-rules/birthday.rule';
+import { MemoryRule, MemoryRuleCandidate } from 'src/services/memory-rules/memory-rule.interface';
+import { RecentTripMemoryRule } from 'src/services/memory-rules/recent-trip.rule';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
 const DAYS = 3;
+const RULE_DAILY_LIMIT = 2;
 
 @Injectable()
 export class MemoryService extends BaseService {
@@ -17,9 +21,10 @@ export class MemoryService extends BaseService {
     const users = await this.userRepository.getList({ withDeleted: false });
 
     await this.databaseRepository.withLock(DatabaseLock.MemoryCreation, async () => {
-      const state = await this.systemMetadataRepository.get(SystemMetadataKey.MemoriesState);
+      const state = (await this.systemMetadataRepository.get(SystemMetadataKey.MemoriesState)) ?? {};
+      const nextState = { ...state };
       const start = DateTime.utc().startOf('day').minus({ days: DAYS });
-      const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
+      const lastOnThisDayDate = nextState.lastOnThisDayDate ? DateTime.fromISO(nextState.lastOnThisDayDate) : start;
 
       // generate a memory +/- X days from today
       for (let i = 0; i <= DAYS * 2; i++) {
@@ -35,10 +40,28 @@ export class MemoryService extends BaseService {
           this.logger.error(`Failed to create memories for ${target.toISO()}: ${error}`);
         }
         // update system metadata even when there is an error to minimize the chance of duplicates
+        nextState.lastOnThisDayDate = target.toISO()!;
         await this.systemMetadataRepository.set(SystemMetadataKey.MemoriesState, {
-          ...state,
-          lastOnThisDayDate: target.toISO(),
+          ...nextState,
         });
+      }
+
+      const today = DateTime.utc().startOf('day');
+      const lastRuleDate = nextState.lastRuleDate
+        ? DateTime.fromISO(nextState.lastRuleDate).startOf('day')
+        : today.minus({ days: 1 });
+
+      for (let target = lastRuleDate.plus({ days: 1 }); target <= today; target = target.plus({ days: 1 })) {
+        this.logger.log(`Creating rule memories for ${target.toISO()}`);
+        try {
+          await Promise.all(users.map((owner) => this.createRuleMemories(owner.id, target)));
+          nextState.lastRuleDate = target.toISO()!;
+          await this.systemMetadataRepository.set(SystemMetadataKey.MemoriesState, {
+            ...nextState,
+          });
+        } catch (error) {
+          this.logger.error(`Failed to create rule memories for ${target.toISO()}: ${error}`);
+        }
       }
     });
   }
@@ -62,6 +85,82 @@ export class MemoryService extends BaseService {
         ),
       ),
     );
+  }
+
+  private getMemoryRules(): MemoryRule[] {
+    return [
+      new BirthdayMemoryRule(this.personRepository, this.assetRepository),
+      new RecentTripMemoryRule(this.assetRepository, this.memoryRepository),
+    ];
+  }
+
+  private async createRuleMemories(ownerId: string, target: DateTime) {
+    const existingRuleMemories = await this.memoryRepository.search(ownerId, {
+      type: MemoryType.Rule,
+      for: target.toJSDate(),
+    });
+    const remainingSlots = Math.max(0, RULE_DAILY_LIMIT - existingRuleMemories.length);
+
+    if (remainingSlots === 0) {
+      return;
+    }
+
+    const showAt = target.startOf('day').toJSDate();
+    const hideAt = target.endOf('day').toJSDate();
+    const seenDedupeKeys = new Set<string>();
+    const evaluatedCandidates = await this.evaluateRuleCandidates(ownerId, target);
+    const candidates = evaluatedCandidates.toSorted((left, right) => right.score - left.score);
+    let inserted = 0;
+
+    for (const candidate of candidates) {
+      if (inserted >= remainingSlots) {
+        break;
+      }
+
+      if (seenDedupeKeys.has(candidate.dedupeKey)) {
+        continue;
+      }
+
+      seenDedupeKeys.add(candidate.dedupeKey);
+
+      if (await this.memoryRepository.hasRuleMemory(ownerId, candidate.ruleId, candidate.dedupeKey)) {
+        continue;
+      }
+
+      await this.memoryRepository.create(
+        {
+          ownerId,
+          type: MemoryType.Rule,
+          data: {
+            ruleId: candidate.ruleId,
+            dedupeKey: candidate.dedupeKey,
+            title: candidate.title,
+            subtitle: candidate.subtitle,
+            score: candidate.score,
+            context: candidate.context,
+          },
+          memoryAt: candidate.memoryAt.toJSDate(),
+          showAt,
+          hideAt,
+        },
+        new Set(candidate.assetIds),
+      );
+      inserted++;
+    }
+  }
+
+  private async evaluateRuleCandidates(ownerId: string, target: DateTime): Promise<MemoryRuleCandidate[]> {
+    const candidates: MemoryRuleCandidate[] = [];
+
+    for (const rule of this.getMemoryRules()) {
+      try {
+        candidates.push(...(await rule.evaluate({ ownerId, target })));
+      } catch (error) {
+        this.logger.error(`Failed to evaluate memory rule ${rule.id} for ${ownerId} on ${target.toISO()}: ${error}`);
+      }
+    }
+
+    return candidates;
   }
 
   @OnJob({ name: JobName.MemoryCleanup, queue: QueueName.BackgroundTask })

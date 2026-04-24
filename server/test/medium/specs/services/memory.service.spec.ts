@@ -7,6 +7,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
@@ -25,6 +26,7 @@ const setup = (db?: Kysely<DB>) => {
       AssetRepository,
       DatabaseRepository,
       MemoryRepository,
+      PersonRepository,
       UserRepository,
       SystemMetadataRepository,
       UserRepository,
@@ -234,6 +236,145 @@ describe(MemoryService.name, () => {
 
       const memoriesAfter = await memoryRepo.search(user.id, {});
       expect(memoriesAfter.length).toBe(1);
+    });
+
+    it('creates a birthday rule memory on the birthday itself', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2026, month: 4, day: 23 }, { zone: 'utc' }) as DateTime<true>;
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Alice',
+        birthDate: new Date('1990-04-23T00:00:00Z'),
+      });
+
+      const addBirthdayAsset = async (localDateTime: string) => {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+        await Promise.all([
+          ctx.newExif({ assetId: asset.id, city: 'Berlin', country: 'Germany' }),
+          ctx.newJobStatus({ assetId: asset.id }),
+          ctx.newAssetFace({ assetId: asset.id, personId: person.id }),
+          assetRepo.upsertFiles([
+            { assetId: asset.id, type: AssetFileType.Preview, path: `/preview-${asset.id}.jpg` },
+            { assetId: asset.id, type: AssetFileType.Thumbnail, path: `/thumb-${asset.id}.jpg` },
+          ]),
+        ]);
+      };
+
+      await addBirthdayAsset('2025-04-01T12:00:00Z');
+      await addBirthdayAsset('2024-04-01T12:00:00Z');
+      await addBirthdayAsset('2023-04-01T12:00:00Z');
+      await addBirthdayAsset('2022-04-01T12:00:00Z');
+      await addBirthdayAsset('2021-04-01T12:00:00Z');
+      await addBirthdayAsset('2020-04-01T12:00:00Z');
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      const memories = await memoryRepo.search(user.id, { type: MemoryType.Rule, for: now.toJSDate() });
+      expect(memories).toEqual([
+        expect.objectContaining({
+          type: MemoryType.Rule,
+          data: expect.objectContaining({
+            ruleId: 'birthday',
+            title: 'Happy birthday, Alice',
+            subtitle: 'Photos from different years',
+          }),
+        }),
+      ]);
+    });
+
+    it('creates a recent-trip rule memory for a dense non-home cluster', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2026, month: 4, day: 23 }, { zone: 'utc' }) as DateTime<true>;
+      const { user } = await ctx.newUser();
+
+      const addTripAsset = async ({
+        localDateTime,
+        city,
+        country,
+      }: {
+        localDateTime: string;
+        city: string;
+        country: string;
+      }) => {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+        await Promise.all([
+          ctx.newExif({ assetId: asset.id, city, country }),
+          ctx.newJobStatus({ assetId: asset.id }),
+          assetRepo.upsertFiles([
+            { assetId: asset.id, type: AssetFileType.Preview, path: `/preview-${asset.id}.jpg` },
+            { assetId: asset.id, type: AssetFileType.Thumbnail, path: `/thumb-${asset.id}.jpg` },
+          ]),
+        ]);
+      };
+
+      await addTripAsset({ localDateTime: '2026-01-15T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-01-22T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-02-01T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-02-10T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-02-18T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-03-01T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-03-12T12:00:00Z', city: 'Berlin', country: 'Germany' });
+      await addTripAsset({ localDateTime: '2026-04-15T10:00:00Z', city: 'Paris', country: 'France' });
+      await addTripAsset({ localDateTime: '2026-04-15T18:00:00Z', city: 'Paris', country: 'France' });
+      await addTripAsset({ localDateTime: '2026-04-16T10:00:00Z', city: 'Paris', country: 'France' });
+      await addTripAsset({ localDateTime: '2026-04-16T18:00:00Z', city: 'Paris', country: 'France' });
+      await addTripAsset({ localDateTime: '2026-04-17T10:00:00Z', city: 'Paris', country: 'France' });
+      await addTripAsset({ localDateTime: '2026-04-17T18:00:00Z', city: 'Paris', country: 'France' });
+      await addTripAsset({ localDateTime: '2026-04-18T10:00:00Z', city: 'Paris', country: 'France' });
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      const memories = await memoryRepo.search(user.id, { type: MemoryType.Rule, for: now.toJSDate() });
+      expect(memories).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: MemoryType.Rule,
+            data: expect.objectContaining({
+              ruleId: 'recent_trip',
+              title: 'Recent trip to Paris, France',
+            }),
+          }),
+        ]),
+      );
+    });
+
+    it('does not create a recent-trip rule memory for weak signals', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2026, month: 4, day: 23 }, { zone: 'utc' }) as DateTime<true>;
+      const { user } = await ctx.newUser();
+
+      const addWeakAsset = async (localDateTime: string, city: string, country: string) => {
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+        await Promise.all([
+          ctx.newExif({ assetId: asset.id, city, country }),
+          ctx.newJobStatus({ assetId: asset.id }),
+          assetRepo.upsertFiles([
+            { assetId: asset.id, type: AssetFileType.Preview, path: `/preview-${asset.id}.jpg` },
+            { assetId: asset.id, type: AssetFileType.Thumbnail, path: `/thumb-${asset.id}.jpg` },
+          ]),
+        ]);
+      };
+
+      await addWeakAsset('2026-02-01T12:00:00Z', 'Berlin', 'Germany');
+      await addWeakAsset('2026-03-01T12:00:00Z', 'Berlin', 'Germany');
+      await addWeakAsset('2026-04-15T10:00:00Z', 'Paris', 'France');
+      await addWeakAsset('2026-04-15T18:00:00Z', 'Paris', 'France');
+      await addWeakAsset('2026-04-16T10:00:00Z', 'Paris', 'France');
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      const memories = await memoryRepo.search(user.id, { type: MemoryType.Rule, for: now.toJSDate() });
+      expect(memories).toEqual([]);
     });
   });
 

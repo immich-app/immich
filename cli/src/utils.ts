@@ -80,7 +80,7 @@ export const connect = async (url: string, key: string) => {
   init({ baseUrl: url, apiKey: key });
 
   const [error] = await withError(getMyUser());
-  if (isHttpError(error)) {
+  if (error) {
     logError(error, `Failed to connect to server ${url}`);
     process.exit(1);
   }

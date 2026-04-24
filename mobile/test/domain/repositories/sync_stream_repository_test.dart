@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
@@ -978,5 +979,36 @@ void main() {
       expect(rows, hasLength(1));
       expect(rows.first.libraryId, 'libB');
     });
+  });
+
+  test('stores rule memories from sync without requiring year data', () async {
+    await sut.updateUsersV1([_createUser()]);
+
+    await sut.updateMemoriesV1([
+      SyncMemoryV1(
+        createdAt: DateTime(2026, 4, 23),
+        data: {
+          'ruleId': 'birthday',
+          'title': 'Happy birthday, Alice',
+          'subtitle': 'Photos from different years',
+        },
+        deletedAt: null,
+        hideAt: DateTime(2026, 4, 23, 23, 59),
+        id: 'memory-rule-1',
+        isSaved: false,
+        memoryAt: DateTime(2026, 4, 23),
+        ownerId: 'user-1',
+        seenAt: null,
+        showAt: DateTime(2026, 4, 23),
+        type: MemoryType.rule,
+        updatedAt: DateTime(2026, 4, 23),
+      ),
+    ]);
+
+    final query = db.memoryEntity.select()..where((tbl) => tbl.id.equals('memory-rule-1'));
+    final row = await query.getSingle();
+
+    expect(row.type, MemoryTypeEnum.rule);
+    expect(row.data, contains('"title":"Happy birthday, Alice"'));
   });
 }

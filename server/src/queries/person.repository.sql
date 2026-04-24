@@ -12,6 +12,30 @@ delete from "person"
 where
   "person"."id" in ($1)
 
+-- PersonRepository.getBirthdaysForDay
+select
+  "id",
+  "name",
+  "birthDate"
+from
+  "person"
+where
+  "ownerId" = $1
+  and "isHidden" = $2
+  and "type" = $3
+  and "name" != $4
+  and "birthDate" is not null
+  and extract(
+    month
+    from
+      "birthDate"
+  ) = $5
+  and extract(
+    day
+    from
+      "birthDate"
+  ) = $6
+
 -- PersonRepository.getFileSamples
 select
   "id",

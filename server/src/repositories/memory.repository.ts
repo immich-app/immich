@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { MemorySearchDto } from 'src/dtos/memory.dto';
-import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
+import { AssetOrderWithRandom, AssetVisibility, MemoryType } from 'src/enum';
 import { DB } from 'src/schema';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
@@ -110,6 +110,21 @@ export class MemoryRepository implements IBulkAsset {
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
     await this.db.deleteFrom('memory').where('id', '=', id).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, DummyValue.STRING] })
+  async hasRuleMemory(ownerId: string, ruleId: string, dedupeKey: string) {
+    const result = await this.db
+      .selectFrom('memory')
+      .select('id')
+      .where('ownerId', '=', ownerId)
+      .where('type', '=', MemoryType.Rule)
+      .where(sql<string>`memory.data->>'ruleId'`, '=', ruleId)
+      .where(sql<string>`memory.data->>'dedupeKey'`, '=', dedupeKey)
+      .where('deletedAt', 'is', null)
+      .executeTakeFirst();
+
+    return !!result;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })

@@ -24,10 +24,12 @@ class MemoryType {
   String toJson() => value;
 
   static const onThisDay = MemoryType._(r'on_this_day');
+  static const rule = MemoryType._(r'rule');
 
   /// List of all possible values in this [enum][MemoryType].
   static const values = <MemoryType>[
     onThisDay,
+    rule,
   ];
 
   static MemoryType? fromJson(dynamic value) => MemoryTypeTypeTransformer().decode(value);
@@ -67,6 +69,7 @@ class MemoryTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'on_this_day': return MemoryType.onThisDay;
+        case r'rule': return MemoryType.rule;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

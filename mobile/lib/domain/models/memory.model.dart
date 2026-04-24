@@ -8,23 +8,32 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 enum MemoryTypeEnum {
   // do not change this order!
   onThisDay,
+  rule,
 }
 
 class MemoryData {
-  final int year;
+  final Map<String, dynamic> raw;
 
-  const MemoryData({required this.year});
+  const MemoryData(this.raw);
 
-  MemoryData copyWith({int? year}) {
-    return MemoryData(year: year ?? this.year);
+  int? get year => raw['year'] is int ? raw['year'] as int : (raw['year'] as num?)?.toInt();
+
+  String? get ruleId => raw['ruleId'] as String?;
+
+  String? get title => raw['title'] as String?;
+
+  String? get subtitle => raw['subtitle'] as String?;
+
+  MemoryData copyWith({Map<String, dynamic>? raw}) {
+    return MemoryData(raw ?? this.raw);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'year': year};
+    return Map<String, dynamic>.from(raw);
   }
 
   factory MemoryData.fromMap(Map<String, dynamic> map) {
-    return MemoryData(year: map['year'] as int);
+    return MemoryData(Map<String, dynamic>.from(map));
   }
 
   String toJson() => json.encode(toMap());
@@ -32,17 +41,17 @@ class MemoryData {
   factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => 'MemoryData(year: $year)';
+  String toString() => 'MemoryData(raw: $raw)';
 
   @override
   bool operator ==(covariant MemoryData other) {
     if (identical(this, other)) return true;
 
-    return other.year == year;
+    return const DeepCollectionEquality().equals(other.raw, raw);
   }
 
   @override
-  int get hashCode => year.hashCode;
+  int get hashCode => const DeepCollectionEquality().hash(raw);
 }
 
 // Model for a memory stored in the server

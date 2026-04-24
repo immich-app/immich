@@ -165,6 +165,100 @@ group by
 order by
   ("localDateTime" at time zone 'UTC')::date desc
 
+-- AssetRepository.getMemoryAssetsForPerson
+select distinct
+  on ("asset"."id") "asset"."id",
+  "asset"."localDateTime"
+from
+  "asset"
+  inner join "asset_face" on "asset_face"."assetId" = "asset"."id"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
+where
+  "asset"."ownerId" = $1
+  and "asset_face"."personId" = $2
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+  and "asset"."visibility" = $3
+  and "asset"."deletedAt" is null
+  and "asset"."localDateTime" <= $4
+  and exists (
+    select
+      "asset_file"."assetId"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $5
+  )
+order by
+  "asset"."id",
+  "asset"."localDateTime" desc
+limit
+  $6
+
+-- AssetRepository.getMemoryLocationClusters
+select
+  "asset_exif"."country" as "country",
+  "asset_exif"."city" as "city",
+  count(*)::int as "assetCount",
+  count(
+    distinct (asset."localDateTime" at time zone 'UTC')::date
+  )::int as "dayCount",
+  min(asset."localDateTime") as "firstDate",
+  max(asset."localDateTime") as "lastDate"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."ownerId" = $1
+  and "asset"."visibility" = $2
+  and "asset"."deletedAt" is null
+  and "asset"."localDateTime" >= $3
+  and "asset"."localDateTime" <= $4
+  and "asset_exif"."country" is not null
+  and exists (
+    select
+      "asset_file"."assetId"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $5
+  )
+group by
+  "asset_exif"."country",
+  "asset_exif"."city"
+order by
+  "assetCount" desc
+
+-- AssetRepository.getMemoryAssetsForLocation
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."ownerId" = $1
+  and "asset"."visibility" = $2
+  and "asset"."deletedAt" is null
+  and "asset"."localDateTime" >= $3
+  and "asset"."localDateTime" <= $4
+  and "asset_exif"."country" = $5
+  and "asset_exif"."city" = $6
+  and exists (
+    select
+      "asset_file"."assetId"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $7
+  )
+order by
+  "asset"."localDateTime" asc
+limit
+  $8
+
 -- AssetRepository.getByIds
 select
   "asset".*

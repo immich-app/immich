@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 COPY package* pnpm* .pnpmfile.cjs ./
 COPY ./cli ./cli/
 COPY ./open-api/typescript-sdk ./open-api/typescript-sdk/
+COPY ./patches ./patches/
 RUN corepack enable pnpm && \
   pnpm install --filter @immich/sdk --filter @immich/cli --frozen-lockfile && \
   pnpm --filter @immich/sdk build && \

@@ -21783,7 +21783,9 @@
             "type": "array"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "additionalProperties": {},
+            "description": "Memory data",
+            "type": "object"
           },
           "hideAt": {
             "description": "Date when memory should be hidden",
@@ -21866,7 +21868,9 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "additionalProperties": {},
+            "description": "Memory data",
+            "type": "object"
           },
           "deletedAt": {
             "description": "Deletion date",
@@ -21913,6 +21917,14 @@
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "subtitle": {
+            "description": "Server-defined display subtitle",
+            "type": "string"
+          },
+          "title": {
+            "description": "Server-defined display title",
             "type": "string"
           },
           "type": {
@@ -21965,7 +21977,8 @@
       "MemoryType": {
         "description": "Memory type",
         "enum": [
-          "on_this_day"
+          "on_this_day",
+          "rule"
         ],
         "type": "string"
       },
@@ -22570,20 +22583,6 @@
           "minDetectionScore",
           "minRecognitionScore",
           "modelName"
-        ],
-        "type": "object"
-      },
-      "OnThisDayDto": {
-        "properties": {
-          "year": {
-            "description": "Year for on this day memory",
-            "maximum": 9999,
-            "minimum": 1000,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "year"
         ],
         "type": "object"
       },

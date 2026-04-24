@@ -27,7 +27,7 @@ import {
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { init, register, t } from 'svelte-i18n';
-import { derived, get } from 'svelte/store';
+import { derived, get, type Readable } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -42,6 +42,8 @@ interface DateFormatter {
   formatTime: (date: Date) => string;
   formatDateTime: (date: Date) => string;
 }
+
+type MessageFormatter = typeof t extends Readable<infer Formatter> ? Formatter : never;
 
 export const initLanguage = async () => {
   const preferenceLang = get(lang);
@@ -319,15 +321,25 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
 
-export const memoryLaneTitle = derived(t, ($t) => {
-  return (memory: MemoryResponseDto) => {
-    const now = new Date();
-    if (memory.type === MemoryType.OnThisDay) {
-      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
-    }
+export const getMemoryTitle = (memory: MemoryResponseDto, translate: MessageFormatter, now = new Date()) => {
+  if (memory.title) {
+    return memory.title;
+  }
 
-    return $t('unknown');
-  };
+  if (memory.type === MemoryType.OnThisDay) {
+    const year =
+      typeof (memory.data as Record<string, unknown>).year === 'number' ? (memory.data.year as number) : undefined;
+
+    if (year !== undefined) {
+      return translate('years_ago', { values: { years: now.getFullYear() - year } });
+    }
+  }
+
+  return translate('unknown');
+};
+
+export const memoryLaneTitle = derived(t, ($t) => {
+  return (memory: MemoryResponseDto) => getMemoryTitle(memory, $t);
 });
 
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {

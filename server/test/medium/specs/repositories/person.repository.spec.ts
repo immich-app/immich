@@ -23,6 +23,51 @@ beforeAll(async () => {
 });
 
 describe(PersonRepository.name, () => {
+  describe('getBirthdaysForDay', () => {
+    it('should only return visible named people whose birthday matches the target month and day', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      const { person: matchingPerson } = await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Alice',
+        birthDate: new Date('1990-04-23T00:00:00Z'),
+      });
+      await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Bob',
+        birthDate: new Date('1990-04-24T00:00:00Z'),
+      });
+      await ctx.newPerson({
+        ownerId: user.id,
+        name: '',
+        birthDate: new Date('1990-04-23T00:00:00Z'),
+      });
+      await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Hidden Alice',
+        isHidden: true,
+        birthDate: new Date('1990-04-23T00:00:00Z'),
+      });
+      await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Milo',
+        type: 'pet',
+        birthDate: new Date('1990-04-23T00:00:00Z'),
+      });
+
+      const result = await sut.getBirthdaysForDay(user.id, { month: 4, day: 23 });
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: matchingPerson.id,
+          name: 'Alice',
+          birthDate: new Date('1990-04-23T00:00:00Z'),
+        }),
+      ]);
+    });
+  });
+
   describe('getAllWithoutFaces', () => {
     it('should return persons with no asset_face rows, including named ones', async () => {
       // Regression: the previous query used LEFT JOIN + WHERE on the joined table,

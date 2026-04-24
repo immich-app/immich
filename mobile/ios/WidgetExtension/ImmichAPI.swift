@@ -203,7 +203,10 @@ class ImmichAPI {
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
     // get URL
-    let memoryParams = [URLQueryItem(name: "for", value: date.ISO8601Format())]
+    let memoryParams = [
+      URLQueryItem(name: "for", value: date.ISO8601Format()),
+      URLQueryItem(name: "type", value: "on_this_day"),
+    ]
     guard
       let searchURL = buildRequestURL(
         serverConfig: serverConfig,

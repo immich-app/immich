@@ -14,7 +14,7 @@ class MemoryCreateDto {
   /// Returns a new [MemoryCreateDto] instance.
   MemoryCreateDto({
     this.assetIds = const [],
-    required this.data,
+    this.data = const {},
     this.hideAt,
     this.isSaved,
     required this.memoryAt,
@@ -26,7 +26,8 @@ class MemoryCreateDto {
   /// Asset IDs to associate with memory
   List<String> assetIds;
 
-  OnThisDayDto data;
+  /// Memory data
+  Map<String, Object> data;
 
   /// Date when memory should be hidden
   ///
@@ -72,7 +73,7 @@ class MemoryCreateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryCreateDto &&
     _deepEquality.equals(other.assetIds, assetIds) &&
-    other.data == data &&
+    _deepEquality.equals(other.data, data) &&
     other.hideAt == hideAt &&
     other.isSaved == isSaved &&
     other.memoryAt == memoryAt &&
@@ -144,7 +145,7 @@ class MemoryCreateDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        data: OnThisDayDto.fromJson(json[r'data'])!,
+        data: mapCastOfType<String, Object>(json, r'data')!,
         hideAt: mapDateTime(json, r'hideAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
         memoryAt: mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,

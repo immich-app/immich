@@ -9,6 +9,21 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
+String getMemoryTitle(BuildContext context, DriftMemory memory) {
+  final serverTitle = memory.data.title;
+  if (serverTitle != null && serverTitle.isNotEmpty) {
+    return serverTitle;
+  }
+
+  final year = memory.data.year;
+  if (year != null) {
+    final yearsAgo = DateTime.now().year - year;
+    return 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+  }
+
+  return 'memory'.t(context: context);
+}
+
 class DriftMemoryLane extends ConsumerWidget {
   const DriftMemoryLane({super.key});
 
@@ -50,8 +65,7 @@ class DriftMemoryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final yearsAgo = DateTime.now().year - memory.data.year;
-    final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+    final title = getMemoryTitle(context, memory);
     return Center(
       child: Stack(
         children: [
