@@ -1,12 +1,14 @@
 import { DateTime } from 'luxon';
 import { AssetOrderWithRandom, MemoryType } from 'src/enum';
-import { AssetRepository, MemoryLocationCluster } from 'src/repositories/asset.repository';
+import { AssetRepository, MemoryAsset, MemoryLocationCluster } from 'src/repositories/asset.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MemoryRule, MemoryRuleCandidate, MemoryRuleContext } from 'src/services/memory-rules/memory-rule.interface';
 
 export class RecentTripMemoryRule implements MemoryRule {
   readonly id = 'recent_trip';
   private static readonly HOME_DOMINANCE_RATIO = 1.25;
+  private static readonly BURST_WINDOW_MS = 2 * 60 * 1000;
+  private static readonly SMALL_TRIP_MAX = 6;
 
   constructor(
     private assetRepository: Pick<AssetRepository, 'getMemoryLocationClusters' | 'getMemoryAssetsForLocation'>,
@@ -78,7 +80,7 @@ export class RecentTripMemoryRule implements MemoryRule {
       takenAfter: recentFrom.toJSDate(),
       takenBefore: target.endOf('day').toJSDate(),
     });
-    const assetIds = locationAssets.map(({ id }) => id);
+    const assetIds = this.curateTripAssets(locationAssets);
 
     const placeLabel = candidate.city ? `${candidate.city}, ${candidate.country}` : candidate.country;
     const dedupeDay = target.toFormat('yyyy-MM-dd');
@@ -116,5 +118,95 @@ export class RecentTripMemoryRule implements MemoryRule {
     }
 
     return !!home.city && !!item.city && item.city !== home.city;
+  }
+
+  private curateTripAssets(assets: MemoryAsset[]): string[] {
+    const representatives = this.collapseBurstAssets(assets);
+    if (representatives.length <= RecentTripMemoryRule.SMALL_TRIP_MAX) {
+      return representatives.map(({ id }) => id);
+    }
+
+    const dayBuckets = this.groupAssetsByDay(representatives);
+    const targetSize = this.getTripTargetSize(dayBuckets.length, representatives.length);
+    const selected = this.pickDayCoverage(dayBuckets, targetSize);
+    const selectedIds = new Set(selected.map(({ id }) => id));
+
+    if (selected.length < targetSize) {
+      const remaining = representatives.filter(({ id }) => !selectedIds.has(id));
+      selected.push(...this.pickEvenlySpaced(remaining, targetSize - selected.length));
+    }
+
+    return [...selected]
+      .toSorted((left, right) => left.localDateTime.getTime() - right.localDateTime.getTime())
+      .map(({ id }) => id);
+  }
+
+  private collapseBurstAssets(assets: MemoryAsset[]): MemoryAsset[] {
+    const representatives: MemoryAsset[] = [];
+    let previous: MemoryAsset | undefined;
+
+    for (const asset of assets) {
+      if (
+        !previous ||
+        asset.localDateTime.getTime() - previous.localDateTime.getTime() > RecentTripMemoryRule.BURST_WINDOW_MS
+      ) {
+        representatives.push(asset);
+      }
+      previous = asset;
+    }
+
+    return representatives;
+  }
+
+  private groupAssetsByDay(assets: MemoryAsset[]): MemoryAsset[][] {
+    const byDay = new Map<string, MemoryAsset[]>();
+
+    for (const asset of assets) {
+      const dayKey = DateTime.fromJSDate(asset.localDateTime, { zone: 'utc' }).toISODate();
+      const dayAssets = byDay.get(dayKey!) ?? [];
+      dayAssets.push(asset);
+      byDay.set(dayKey!, dayAssets);
+    }
+
+    return [...byDay.values()];
+  }
+
+  private getTripTargetSize(dayCount: number, representativeCount: number) {
+    if (representativeCount <= RecentTripMemoryRule.SMALL_TRIP_MAX) {
+      return representativeCount;
+    }
+
+    if (dayCount >= 5 || representativeCount >= 18) {
+      return 10;
+    }
+
+    if (dayCount >= 4 || representativeCount >= 12) {
+      return 8;
+    }
+
+    return 7;
+  }
+
+  private pickDayCoverage(dayBuckets: MemoryAsset[][], targetSize: number): MemoryAsset[] {
+    const buckets = dayBuckets.length <= targetSize ? dayBuckets : this.pickEvenlySpaced(dayBuckets, targetSize);
+    return buckets.map((assets) => assets[Math.floor((assets.length - 1) / 2)]!);
+  }
+
+  private pickEvenlySpaced<T>(items: T[], count: number): T[] {
+    if (count <= 0 || items.length === 0) {
+      return [];
+    }
+
+    if (count >= items.length) {
+      return [...items];
+    }
+
+    if (count === 1) {
+      return [items[Math.floor((items.length - 1) / 2)]!];
+    }
+
+    const indexes = Array.from({ length: count }, (_, index) => Math.round((index * (items.length - 1)) / (count - 1)));
+
+    return indexes.map((index) => items[index]!);
   }
 }

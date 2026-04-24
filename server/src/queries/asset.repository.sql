@@ -233,7 +233,8 @@ order by
 
 -- AssetRepository.getMemoryAssetsForLocation
 select
-  "asset"."id"
+  "asset"."id",
+  "asset"."localDateTime"
 from
   "asset"
   inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
@@ -256,8 +257,6 @@ where
   )
 order by
   "asset"."localDateTime" asc
-limit
-  $8
 
 -- AssetRepository.getByIds
 select

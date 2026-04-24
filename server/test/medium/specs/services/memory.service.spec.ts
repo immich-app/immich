@@ -345,6 +345,175 @@ describe(MemoryService.name, () => {
       );
     });
 
+    it('reads back curated recent-trip assets in chronological localDateTime order', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2026, month: 4, day: 23 }, { zone: 'utc' }) as DateTime<true>;
+      const { user } = await ctx.newUser();
+
+      const addTripAsset = async ({
+        localDateTime,
+        fileCreatedAt,
+        city,
+        country,
+      }: {
+        localDateTime: string;
+        fileCreatedAt: string;
+        city: string;
+        country: string;
+      }) => {
+        const { asset } = await ctx.newAsset({
+          ownerId: user.id,
+          localDateTime: new Date(localDateTime),
+          fileCreatedAt: new Date(fileCreatedAt),
+        });
+        await Promise.all([
+          ctx.newExif({ assetId: asset.id, city, country }),
+          ctx.newJobStatus({ assetId: asset.id }),
+          assetRepo.upsertFiles([
+            { assetId: asset.id, type: AssetFileType.Preview, path: `/preview-${asset.id}.jpg` },
+            { assetId: asset.id, type: AssetFileType.Thumbnail, path: `/thumb-${asset.id}.jpg` },
+          ]),
+        ]);
+        return asset.id;
+      };
+
+      await addTripAsset({
+        localDateTime: '2026-01-15T12:00:00Z',
+        fileCreatedAt: '2026-01-15T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      await addTripAsset({
+        localDateTime: '2026-01-22T12:00:00Z',
+        fileCreatedAt: '2026-01-22T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      await addTripAsset({
+        localDateTime: '2026-02-01T12:00:00Z',
+        fileCreatedAt: '2026-02-01T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      await addTripAsset({
+        localDateTime: '2026-02-10T12:00:00Z',
+        fileCreatedAt: '2026-02-10T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      await addTripAsset({
+        localDateTime: '2026-02-18T12:00:00Z',
+        fileCreatedAt: '2026-02-18T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      await addTripAsset({
+        localDateTime: '2026-03-01T12:00:00Z',
+        fileCreatedAt: '2026-03-01T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      await addTripAsset({
+        localDateTime: '2026-03-12T12:00:00Z',
+        fileCreatedAt: '2026-03-12T12:00:00Z',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+
+      const expectedTripIds = [
+        await addTripAsset({
+          localDateTime: '2026-04-15T10:00:00Z',
+          fileCreatedAt: '2026-04-16T20:00:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-15T10:01:00Z',
+          fileCreatedAt: '2026-04-16T19:59:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-15T12:00:00Z',
+          fileCreatedAt: '2026-04-16T19:58:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-15T12:01:00Z',
+          fileCreatedAt: '2026-04-16T19:57:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-15T16:00:00Z',
+          fileCreatedAt: '2026-04-16T19:56:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-16T09:00:00Z',
+          fileCreatedAt: '2026-04-16T19:55:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-16T09:01:00Z',
+          fileCreatedAt: '2026-04-16T19:54:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-16T13:00:00Z',
+          fileCreatedAt: '2026-04-16T19:53:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-16T17:00:00Z',
+          fileCreatedAt: '2026-04-16T19:52:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+        await addTripAsset({
+          localDateTime: '2026-04-16T20:00:00Z',
+          fileCreatedAt: '2026-04-16T19:51:00Z',
+          city: 'Paris',
+          country: 'France',
+        }),
+      ];
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      const [memory] = await memoryRepo.search(user.id, { type: MemoryType.Rule, for: now.toJSDate() });
+      expect(memory?.data).toMatchObject({
+        ruleId: 'recent_trip',
+        title: 'Recent trip to Paris, France',
+      });
+      expect(memory?.assets).toHaveLength(7);
+      expect(memory?.assets.map(({ id }) => id)).toEqual([
+        expectedTripIds[0],
+        expectedTripIds[2],
+        expectedTripIds[4],
+        expectedTripIds[5],
+        expectedTripIds[7],
+        expectedTripIds[8],
+        expectedTripIds[9],
+      ]);
+      expect(memory?.assets.map(({ localDateTime }) => new Date(localDateTime).toISOString())).toEqual([
+        '2026-04-15T10:00:00.000Z',
+        '2026-04-15T12:00:00.000Z',
+        '2026-04-15T16:00:00.000Z',
+        '2026-04-16T09:00:00.000Z',
+        '2026-04-16T13:00:00.000Z',
+        '2026-04-16T17:00:00.000Z',
+        '2026-04-16T20:00:00.000Z',
+      ]);
+    });
+
     it('does not create a recent-trip rule memory for weak signals', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);

@@ -540,10 +540,10 @@ export class AssetRepository {
       takenAfter,
       takenBefore,
     }: { country: string; city: string | null; takenAfter: Date; takenBefore: Date },
-  ) {
+  ): Promise<MemoryAsset[]> {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id'])
+      .select(['asset.id', 'asset.localDateTime'])
       .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .where('asset.ownerId', '=', ownerId)
       .where('asset.visibility', '=', AssetVisibility.Timeline)
@@ -563,7 +563,6 @@ export class AssetRepository {
         ),
       )
       .orderBy('asset.localDateTime', 'asc')
-      .limit(20)
       .execute();
   }
 
