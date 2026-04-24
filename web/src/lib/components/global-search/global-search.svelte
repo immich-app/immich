@@ -98,7 +98,7 @@
   });
 
   $effect(() => {
-    if (manager.activeItemId === manager.topSearchMatch?.id) {
+    if (manager.activeItemId === 'top-search') {
       if (selectedValue !== '') {
         selectedValue = '';
       }
@@ -109,27 +109,54 @@
     }
   });
 
-  let lastAutoSelectedTopSearchQuery = $state<string | null>(null);
-  let lastDismissedTopSearchQuery = $state<string | null>(null);
+  // Key top-slot auto-selection/dismissal by both the current query text and a
+  // monotonically increasing input-edit revision. This lets the preferred top row
+  // (promoted command/nav or the synthetic search row) re-arm after rapid edit
+  // sequences that end back on a previously dismissed string.
+  let inputEditRevision = $state(0);
+  let lastAutoSelectedTopResultToken = $state<string | null>(null);
+  let lastDismissedTopResultToken = $state<string | null>(null);
+  const preferredTopResultId = $derived.by<string | null>(() => {
+    if (manager.topCommandMatch) {
+      return manager.topCommandMatch.id;
+    }
+    if (manager.topNavigationMatch) {
+      return manager.topNavigationMatch.id;
+    }
+    return manager.topSearchMatch?.id ?? null;
+  });
+  const preferredTopResultToken = $derived.by<string | null>(() => {
+    const query = manager.query.trim();
+    if (manager.topCommandMatch) {
+      return `${inputEditRevision}:command:${manager.topCommandMatch.id}:${query}`;
+    }
+    if (manager.topNavigationMatch) {
+      return `${inputEditRevision}:navigation:${manager.topNavigationMatch.id}:${query}`;
+    }
+    if (manager.topSearchMatch) {
+      return `${inputEditRevision}:search:${manager.topSearchMatch.query}`;
+    }
+    return null;
+  });
   let previousActiveItemId = $state<string | null>(null);
   $effect(() => {
-    const topSearchMatch = manager.topSearchMatch;
-    if (!topSearchMatch) {
-      lastAutoSelectedTopSearchQuery = null;
-      lastDismissedTopSearchQuery = null;
+    const topResultId = preferredTopResultId;
+    const topResultToken = preferredTopResultToken;
+    if (!topResultId || !topResultToken) {
+      lastAutoSelectedTopResultToken = null;
+      lastDismissedTopResultToken = null;
       previousActiveItemId = manager.activeItemId;
       return;
     }
-    if (previousActiveItemId === topSearchMatch.id && manager.activeItemId !== topSearchMatch.id) {
-      lastDismissedTopSearchQuery = topSearchMatch.query;
+    if (previousActiveItemId === topResultId && manager.activeItemId !== topResultId) {
+      lastDismissedTopResultToken = topResultToken;
     }
-    if (
-      lastAutoSelectedTopSearchQuery !== topSearchMatch.query &&
-      lastDismissedTopSearchQuery !== topSearchMatch.query
-    ) {
-      selectedValue = '';
-      manager.setActiveItem(topSearchMatch.id);
-      lastAutoSelectedTopSearchQuery = topSearchMatch.query;
+    if (lastAutoSelectedTopResultToken !== topResultToken && lastDismissedTopResultToken !== topResultToken) {
+      if (topResultId === 'top-search') {
+        selectedValue = '';
+      }
+      manager.setActiveItem(topResultId);
+      lastAutoSelectedTopResultToken = topResultToken;
     }
     previousActiveItemId = manager.activeItemId;
   });
@@ -369,6 +396,7 @@
           autofocus
           placeholder={$t('cmdk_placeholder')}
           maxlength={256}
+          oninput={() => inputEditRevision++}
           class="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm focus:outline-none"
         />
         <IconButton

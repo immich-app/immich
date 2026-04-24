@@ -47,18 +47,8 @@ vi.mock('$lib/components/filter-panel/filter-panel.svelte', async () => {
   return { default: MockComponent };
 });
 
-vi.mock('$lib/components/filter-panel/search-sort-dropdown.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/search-sort-dropdown.stub.svelte');
-  return { default: MockComponent };
-});
-
 vi.mock('$lib/components/search/smart-search-results.svelte', async () => {
   const { default: MockComponent } = await import('@test-data/mocks/smart-search-results.stub.svelte');
-  return { default: MockComponent };
-});
-
-vi.mock('$lib/elements/SearchBar.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
   return { default: MockComponent };
 });
 
@@ -219,7 +209,7 @@ function renderPage() {
   });
 }
 
-describe('Photos page search URL sync', () => {
+describe('Photos page search URL state', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPage.url = new URL('https://gallery.test/photos?q=nature');
@@ -228,11 +218,22 @@ describe('Photos page search URL sync', () => {
     mockMemoryManager.memories = [];
   });
 
-  it('hydrates q from the URL and switches search results to relevance sorting', () => {
+  it('renders search results from q without a local search input', () => {
     renderPage();
 
+    expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'nature');
-    expect(screen.getByTestId('search-sort-dropdown')).toHaveAttribute('data-sort-order', 'relevance');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'relevance');
     expect(screen.queryByTestId('timeline-stub')).not.toBeInTheDocument();
+  });
+
+  it('hydrates an explicit search sort from the URL', () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=nature&sort=asc');
+
+    renderPage();
+
+    expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'nature');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'asc');
   });
 });

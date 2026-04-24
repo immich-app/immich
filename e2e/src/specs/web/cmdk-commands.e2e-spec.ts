@@ -24,7 +24,7 @@ test.describe('cmdk commands (v1.3.0)', () => {
     await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
   });
 
-  test('>upload + Enter opens the native file picker', async ({ page }) => {
+  test('>upload activates the native file picker from the Commands section', async ({ page }) => {
     await page.keyboard.press('Control+k');
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -36,11 +36,15 @@ test.describe('cmdk commands (v1.3.0)', () => {
     await expect(dialog.locator('[data-cmdk-commands-section]')).toBeVisible();
     await expect(dialog.getByText(/^upload$/i).first()).toBeVisible();
 
+    const uploadCommand = dialog.locator('[data-command-item][data-value="cmd:upload"]');
+    await expect(uploadCommand).toBeVisible();
+
     // openFileUploadDialog() synthesises a click on a hidden <input type="file">,
-    // which Playwright surfaces as a 'filechooser' event on the page. Register
-    // the listener BEFORE pressing Enter so we never miss the event.
+    // which Playwright surfaces as a 'filechooser' event on the page. Activate
+    // the scoped command row directly; `>theme + Enter` below still covers the
+    // keyboard command-activation path in this suite.
     const fileChooserPromise = page.waitForEvent('filechooser', { timeout: 5000 });
-    await page.keyboard.press('Enter');
+    await uploadCommand.click();
     const fileChooser = await fileChooserPromise;
     expect(fileChooser).toBeTruthy();
   });

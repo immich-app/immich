@@ -3,7 +3,7 @@ import TestWrapper from '$lib/components/TestWrapper.svelte';
 import type { SharedSpaceMemberResponseDto, SharedSpaceResponseDto } from '@immich/sdk';
 import { SharedSpaceRole } from '@immich/sdk';
 import '@testing-library/jest-dom';
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import type { Component } from 'svelte';
 import SpacesPage from './+page.svelte';
 
@@ -59,7 +59,7 @@ vi.mock('$lib/components/filter-panel/search-sort-dropdown.svelte', async () => 
 });
 
 vi.mock('$lib/components/filter-panel/sort-toggle.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
+  const { default: MockComponent } = await import('@test-data/mocks/sort-toggle.stub.svelte');
   return { default: MockComponent };
 });
 
@@ -151,7 +151,7 @@ function renderPage() {
   });
 }
 
-describe('Spaces page search URL sync', () => {
+describe('Spaces page search URL state', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     gotoMock.mockResolvedValue(undefined);
@@ -163,80 +163,25 @@ describe('Spaces page search URL sync', () => {
     sdkMock.getSpacePeople.mockResolvedValue([]);
   });
 
-  it('hydrates the in-page search input from q', () => {
+  it('renders search results from q without a local search input', () => {
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
 
     renderPage();
 
-    expect(screen.getByPlaceholderText(/search/i)).toHaveValue('beach');
+    expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sort-toggle')).not.toBeInTheDocument();
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'beach');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'relevance');
   });
 
-  it('commits a trimmed query on Enter and preserves other params', async () => {
-    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?view=grid');
+  it('hydrates an explicit search sort from the URL', () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach&sort=asc');
 
     renderPage();
 
-    const input = screen.getByPlaceholderText(/search/i);
-    await fireEvent.input(input, { target: { value: '  beach  ' } });
-    await fireEvent.keyDown(input, { key: 'Enter' });
-
-    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach', {
-      replaceState: true,
-      keepFocus: true,
-      noScroll: true,
-    });
-  });
-
-  it('drops a stale asset id when committing a search', async () => {
-    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos/asset-123?view=grid');
-
-    renderPage();
-
-    const input = screen.getByPlaceholderText(/search/i);
-    await fireEvent.input(input, { target: { value: 'beach' } });
-    await fireEvent.keyDown(input, { key: 'Enter' });
-
-    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach', {
-      replaceState: true,
-      keepFocus: true,
-      noScroll: true,
-    });
-  });
-
-  it('commits the draft query on blur', async () => {
-    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos');
-
-    renderPage();
-
-    const input = screen.getByPlaceholderText(/search/i);
-    const outsideButton = document.createElement('button');
-    document.body.append(outsideButton);
-
-    await fireEvent.input(input, { target: { value: 'beach' } });
-    await fireEvent.blur(input, { relatedTarget: outsideButton });
-
-    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/photos?q=beach', {
-      replaceState: true,
-      keepFocus: true,
-      noScroll: true,
-    });
-
-    outsideButton.remove();
-  });
-
-  it('clears q while preserving unrelated params', async () => {
-    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach&view=grid');
-
-    renderPage();
-
-    await fireEvent.click(screen.getByRole('button', { name: /clear/i }));
-
-    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid', {
-      replaceState: true,
-      keepFocus: true,
-      noScroll: true,
-    });
-    expect(screen.getByPlaceholderText(/search/i)).toHaveValue('');
+    expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sort-toggle')).not.toBeInTheDocument();
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'beach');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'asc');
   });
 });

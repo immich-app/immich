@@ -274,9 +274,9 @@
           </div>
         </div>
       {/if}
-      <div class="flex min-h-0 min-w-0 flex-1 flex-col sm:flex-row">
+      <div class="relative flex min-h-0 min-w-0 flex-1 flex-col sm:flex-row">
         {#if hasActiveFilters}
-          <div class="absolute top-0 right-0 left-0 z-10 sm:left-[280px]">
+          <div class="absolute inset-x-0 top-0 z-10">
             <ActiveFiltersBar
               {filters}
               resultCount={mapMarkers.length}

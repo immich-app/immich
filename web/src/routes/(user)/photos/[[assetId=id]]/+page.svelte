@@ -4,7 +4,6 @@
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
   import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
-  import SearchSortDropdown from '$lib/components/filter-panel/search-sort-dropdown.svelte';
   import SmartSearchResults from '$lib/components/search/smart-search-results.svelte';
   import {
     buildFilterContext,
@@ -15,7 +14,6 @@
     type FilterState,
   } from '$lib/components/filter-panel/filter-panel';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -43,6 +41,7 @@
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { createUrl, getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
+  import { buildSearchablePageUrl, getSearchablePageState } from '$lib/utils/searchable-page-search';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -62,23 +61,14 @@
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
-  function getSearchSortOrder(query: string): FilterState['sortOrder'] {
-    return query.trim().length > 0 ? 'relevance' : 'desc';
-  }
-
   // Filter state
-  const initialCommittedQuery = page.url.searchParams.get('q') ?? '';
+  const initialSearchState = getSearchablePageState(page.url);
   let filters = $state<FilterState>({
     ...createFilterState(),
-    sortOrder: getSearchSortOrder(initialCommittedQuery),
+    sortOrder: initialSearchState.sortOrder,
   });
-  // searchQuery is the live SearchBar input value — it updates on every keystroke so the
-  // input reflects what the user is typing. committedQuery is the "applied" query and only
-  // updates on explicit submit (Enter), on clearSearch, or from URL state changes. We key
-  // showSearchResults off committedQuery so typing characters doesn't unmount the Timeline
-  // until the user explicitly submits. This mirrors the spaces page UX.
-  let searchQuery = $state(initialCommittedQuery);
-  let committedQuery = $state(searchQuery);
+  let committedQuery = $state(initialSearchState.query);
+  let lastHandledSearchState = $state(`${initialSearchState.query}:${initialSearchState.sortOrder}`);
   let isLoading = $state(false);
   const showSearchResults = $derived(committedQuery.trim().length > 0);
   const options = $derived(buildPhotosTimelineOptions(filters));
@@ -188,34 +178,28 @@
     assetMultiSelectManager.clear();
   };
 
-  function handleSearchSubmit() {
-    const trimmed = searchQuery.trim();
-    if (!trimmed) {
+  function clearSearch() {
+    isLoading = false;
+    const nextUrl = buildSearchablePageUrl(page.url, '');
+    if (!nextUrl) {
       return;
     }
-    filters = { ...filters, sortOrder: getSearchSortOrder(trimmed) };
-    committedQuery = trimmed;
-    const url = new URL('/photos', globalThis.location.origin);
-    url.searchParams.set('q', trimmed);
-    void goto(url.pathname + url.search, { keepFocus: true, noScroll: true });
-  }
-
-  function clearSearch() {
-    searchQuery = '';
-    committedQuery = '';
-    isLoading = false;
-    filters = { ...filters, sortOrder: 'desc' };
-    void goto('/photos', { replaceState: true, keepFocus: true, noScroll: true });
+    void goto(nextUrl, { replaceState: true, keepFocus: true, noScroll: true });
   }
 
   $effect(() => {
-    const q = page.url.searchParams.get('q') ?? '';
+    const nextSearchState = getSearchablePageState(page.url);
+    const nextToken = `${nextSearchState.query}:${nextSearchState.sortOrder}`;
+
+    if (nextToken === lastHandledSearchState) {
+      return;
+    }
+
     untrack(() => {
-      if (q !== committedQuery) {
-        committedQuery = q;
-        searchQuery = q;
-        filters = { ...filters, sortOrder: getSearchSortOrder(q) };
-      }
+      committedQuery = nextSearchState.query;
+      isLoading = false;
+      filters = { ...filters, sortOrder: nextSearchState.sortOrder };
+      lastHandledSearchState = nextToken;
     });
   });
 
@@ -231,32 +215,6 @@
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
-  {#snippet buttons()}
-    <div class="flex items-center gap-1 max-sm:flex-1 max-sm:min-w-0">
-      <div class="h-10 w-full sm:w-40 xl:w-60">
-        <SearchBar
-          placeholder={$t('search')}
-          bind:name={searchQuery}
-          showLoadingSpinner={isLoading}
-          onSearch={({ force }) => {
-            if (force) {
-              handleSearchSubmit();
-            }
-          }}
-          onReset={clearSearch}
-        />
-      </div>
-      {#if showSearchResults}
-        <SearchSortDropdown
-          sortOrder={filters.sortOrder}
-          onSelect={(mode) => {
-            filters = { ...filters, sortOrder: mode };
-          }}
-        />
-      {/if}
-    </div>
-  {/snippet}
-
   <div class="flex h-full">
     <FilterPanel
       bind:filters

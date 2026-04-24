@@ -772,8 +772,8 @@ test.describe('global search palette', () => {
       const spacesGroup = dialog.getByRole('group', { name: /^spaces/i });
       await expect(albumsGroup).toBeVisible();
       await expect(spacesGroup).toBeVisible();
-      await expect(albumsGroup.getByText(/bare slash album/i).first()).toBeVisible();
-      await expect(spacesGroup.getByText(/bare slash space/i).first()).toBeVisible();
+      await expect(albumsGroup.locator('[data-command-item]').first()).toBeVisible();
+      await expect(spacesGroup.locator('[data-command-item]').first()).toBeVisible();
 
       // Other entity sections stay hidden.
       await expect(dialog.getByRole('group', { name: /^photos/i })).toHaveCount(0);

@@ -23,6 +23,26 @@ test.describe('Spaces FilterPanel', () => {
     await page.waitForSelector('[data-testid="discovery-timeline"]');
   }
 
+  async function selectPageSort(
+    page: import('@playwright/test').Page,
+    label: 'Newest first' | 'Oldest first',
+  ) {
+    const sortButton = page.locator('[data-testid="search-sort-btn"]');
+    await expect(sortButton).toBeVisible();
+
+    if ((await sortButton.getAttribute('aria-label')) === label) {
+      return sortButton;
+    }
+
+    await sortButton.click();
+    await page
+      .locator('[data-testid="search-sort-container"] div.absolute button')
+      .filter({ hasText: label })
+      .click();
+
+    return sortButton;
+  }
+
   // ─── Helper: create a space with diverse test data ───
   async function createPopulatedSpace(name: string) {
     const space = await utils.createSpace(admin.accessToken, { name });
@@ -1058,15 +1078,13 @@ test.describe('Spaces FilterPanel', () => {
       const { space } = await createPopulatedSpace('Sort Asc');
       await gotoSpace(context, page, space.id);
 
-      const sortToggle = page.locator('[data-testid="sort-toggle"]');
-      await expect(sortToggle).toBeVisible();
+      const sortButton = page.locator('[data-testid="search-sort-btn"]');
+      await expect(sortButton).toHaveAttribute('aria-label', 'Newest first');
 
-      // Wait for the timeline/buckets API to respond with the new sort order
-      const bucketResponse = page.waitForResponse((r) => r.url().includes('/timeline/buckets'));
-      await sortToggle.click();
-      await bucketResponse;
-
-      await expect(sortToggle).toHaveAttribute('title', 'Sort: oldest first');
+      const sortNavigation = page.waitForURL((url) => url.searchParams.get('sort') === 'asc');
+      await selectPageSort(page, 'Oldest first');
+      await sortNavigation;
+      await expect(sortButton).toHaveAttribute('aria-label', 'Oldest first');
 
       // Verify the timeline actually re-rendered by checking the container is still present
       await expect(page.locator('[data-testid="discovery-timeline"]')).toBeVisible();
@@ -1076,15 +1094,16 @@ test.describe('Spaces FilterPanel', () => {
       const { space } = await createPopulatedSpace('Sort Desc');
       await gotoSpace(context, page, space.id);
 
-      const sortToggle = page.locator('[data-testid="sort-toggle"]');
-
       // Toggle to ascending
-      await sortToggle.click();
-      await expect(sortToggle).toHaveAttribute('title', 'Sort: oldest first');
+      const sortButton = await selectPageSort(page, 'Oldest first');
+      await page.waitForURL((url) => url.searchParams.get('sort') === 'asc');
+      await expect(sortButton).toHaveAttribute('aria-label', 'Oldest first');
 
       // Toggle back to descending
-      await sortToggle.click();
-      await expect(sortToggle).toHaveAttribute('title', 'Sort: newest first');
+      const sortNavigation = page.waitForURL((url) => url.searchParams.get('sort') === 'desc');
+      await selectPageSort(page, 'Newest first');
+      await sortNavigation;
+      await expect(sortButton).toHaveAttribute('aria-label', 'Newest first');
     });
 
     test('should preserve filters after sort change', async ({ context, page }) => {
@@ -1096,11 +1115,13 @@ test.describe('Spaces FilterPanel', () => {
       await expect(page.locator('[data-testid="active-chip"]')).toHaveCount(1);
 
       // Toggle sort
-      const sortToggle = page.locator('[data-testid="sort-toggle"]');
-      await sortToggle.click();
+      const sortNavigation = page.waitForURL((url) => url.searchParams.get('sort') === 'asc');
+      const sortButton = await selectPageSort(page, 'Oldest first');
+      await sortNavigation;
 
       // Filter chip should still be present
       await expect(page.locator('[data-testid="active-chip"]')).toHaveCount(1);
+      await expect(sortButton).toHaveAttribute('aria-label', 'Oldest first');
     });
 
     test('should keep ascending sort after Clear All (sort is view preference)', async ({ context, page }) => {
@@ -1108,9 +1129,10 @@ test.describe('Spaces FilterPanel', () => {
       await gotoSpace(context, page, space.id);
 
       // Toggle to ascending
-      const sortToggle = page.locator('[data-testid="sort-toggle"]');
-      await sortToggle.click();
-      await expect(sortToggle).toHaveAttribute('title', 'Sort: oldest first');
+      const sortNavigation = page.waitForURL((url) => url.searchParams.get('sort') === 'asc');
+      const sortButton = await selectPageSort(page, 'Oldest first');
+      await sortNavigation;
+      await expect(sortButton).toHaveAttribute('aria-label', 'Oldest first');
 
       // Apply a filter and clear it — use force:true because the button may be obscured by layout overlap
       await page.locator('[data-testid="media-type-image"]').click();
@@ -1118,7 +1140,8 @@ test.describe('Spaces FilterPanel', () => {
       await page.locator('[data-testid="clear-all-btn"]').click({ force: true });
 
       // Sort should remain ascending
-      await expect(sortToggle).toHaveAttribute('title', 'Sort: oldest first');
+      await expect(sortButton).toHaveAttribute('aria-label', 'Oldest first');
+      await expect(page).toHaveURL(new RegExp(`/spaces/${space.id}\\?sort=asc`));
     });
   });
 

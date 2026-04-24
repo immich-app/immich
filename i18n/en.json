@@ -924,7 +924,7 @@
   "cmdk_toast_album_unavailable": "Album no longer available",
   "cmdk_toast_space_unavailable": "You no longer have access to this space",
   "cmdk_top_result": "Top result",
-  "cmdk_top_search_label": "Search for '{{query}}'",
+  "cmdk_top_search_label": "Search for \"{query}\"",
   "cmdk_try_filename": "Try Filename mode",
   "cmdk_unnamed_person": "Unnamed person",
   "collapse": "Collapse",

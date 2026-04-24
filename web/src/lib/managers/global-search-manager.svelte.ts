@@ -6,6 +6,11 @@ import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte'
 import { Route } from '$lib/route';
 import { addEntry, getEntries, makePlaceId, removeEntry, type RecentEntry } from '$lib/stores/cmdk-recent';
 import {
+  buildSearchablePageUrl,
+  getSearchablePageState,
+  type SearchablePageSortOrder,
+} from '$lib/utils/searchable-page-search';
+import {
   getAlbumInfo,
   getAlbumNames,
   getAllPeople,
@@ -26,7 +31,7 @@ import {
 import { toastManager } from '@immich/ui';
 import { computeCommandScore } from 'bits-ui';
 import { locale as i18nLocale, t, type Translations } from 'svelte-i18n';
-import { SvelteMap, SvelteSet, SvelteURLSearchParams } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import { parseScope, personSuggestionsComparator, type ParsedQuery, type Scope } from './cmdk-prefix';
 import { commandContextManager } from './command-context-manager.svelte';
@@ -204,6 +209,7 @@ function loadSearchQueryType(): SearchMode {
 export class GlobalSearchManager {
   isOpen = $state(false);
   query = $state('');
+  searchSortOrder = $state<SearchablePageSortOrder>('relevance');
   mode = $state<SearchMode>(loadSearchQueryType());
   parsedQuery = $derived<ParsedQuery>(parseScope(this.query));
   scope = $derived<Scope>(this.parsedQuery.scope);
@@ -303,6 +309,7 @@ export class GlobalSearchManager {
   private tagsDisabled = false;
   private storageListener?: (e: StorageEvent) => void;
   private mlProbed = false;
+  private keepOpenOnNextNavigate = false;
 
   /**
    * Catalogs fetched lazily on first provider run and shared for the remainder of the
@@ -569,6 +576,14 @@ export class GlobalSearchManager {
 
   open() {
     this.isOpen = true;
+    const currentPageSearchState = getSearchablePageState(page.url);
+    if (currentPageSearchState.isSearchable) {
+      this.query = currentPageSearchState.query;
+      this.searchSortOrder = currentPageSearchState.query ? currentPageSearchState.sortOrder : 'relevance';
+    } else {
+      this.query = '';
+      this.searchSortOrder = 'relevance';
+    }
     if (this.closeController.signal.aborted) {
       this.closeController = new AbortController();
     }
@@ -908,6 +923,7 @@ export class GlobalSearchManager {
   close() {
     this.cancelConfirm();
     this.isOpen = false;
+    this.keepOpenOnNextNavigate = false;
     this.closeController.abort();
     if (this.debounceTimer !== null) {
       clearTimeout(this.debounceTimer);
@@ -938,6 +954,13 @@ export class GlobalSearchManager {
     // Reset query so reopening and re-typing the same string is not a no-op
     // (setQuery short-circuits when `this.query === text`).
     this.query = '';
+    this.searchSortOrder = 'relevance';
+  }
+
+  consumeKeepOpenOnNextNavigate() {
+    const shouldKeepOpen = this.keepOpenOnNextNavigate;
+    this.keepOpenOnNextNavigate = false;
+    return shouldKeepOpen;
   }
 
   toggle() {
@@ -1170,41 +1193,49 @@ export class GlobalSearchManager {
     void goto(route);
   }
 
-  private getSpaceSearchBasePath(pathname: string): string | null {
-    const parts = pathname.split('/').filter(Boolean);
-    if (parts[0] !== 'spaces' || parts[1] === undefined) {
-      return null;
-    }
-    if (parts.length === 2) {
-      return `/spaces/${parts[1]}`;
-    }
-    if (parts[2] === 'photos') {
-      return `/spaces/${parts[1]}/photos`;
-    }
-    return null;
-  }
-
   private buildSearchDestination(text: string): string {
-    const pathname = page.url.pathname;
-    const params = new SvelteURLSearchParams(page.url.searchParams);
-    params.set('q', text);
-
-    if (pathname.startsWith('/photos')) {
-      return `/photos?${params.toString()}`;
+    const searchablePageUrl = buildSearchablePageUrl(page.url, text, this.searchSortOrder);
+    if (searchablePageUrl) {
+      return searchablePageUrl;
     }
 
-    const spaceBasePath = this.getSpaceSearchBasePath(pathname);
-    if (spaceBasePath) {
-      return `${spaceBasePath}?${params.toString()}`;
-    }
-
-    if (pathname.startsWith('/map')) {
+    if (page.url.pathname.startsWith('/map')) {
+      // Ephemeral serialization for navigation only; no reactive state is retained.
+      // eslint-disable-next-line svelte/prefer-svelte-reactivity
+      const params = new URLSearchParams(page.url.searchParams);
+      params.set('q', text);
       return `/map?${params.toString()}`;
     }
 
-    const fresh = new SvelteURLSearchParams();
+    // Ephemeral serialization for navigation only; no reactive state is retained.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const fresh = new URLSearchParams();
     fresh.set('q', text);
+    if (this.searchSortOrder !== 'relevance') {
+      fresh.set('sort', this.searchSortOrder);
+    }
     return `/photos?${fresh.toString()}`;
+  }
+
+  async applySearchSort(sortOrder: SearchablePageSortOrder, text = this.query) {
+    this.searchSortOrder = sortOrder;
+
+    const nextUrl = buildSearchablePageUrl(page.url, text, sortOrder);
+    if (!nextUrl || nextUrl === page.url.pathname + page.url.search) {
+      return;
+    }
+
+    this.keepOpenOnNextNavigate = this.isOpen;
+    try {
+      await goto(nextUrl, {
+        replaceState: true,
+        keepFocus: true,
+        noScroll: true,
+      });
+    } catch (error) {
+      this.keepOpenOnNextNavigate = false;
+      throw error;
+    }
   }
 
   activateSearch(text: string): void {
@@ -1621,6 +1652,13 @@ export class GlobalSearchManager {
   topSearchMatch = $derived.by<TopSearchMatch | null>(() => {
     const query = this.query.trim();
     if (this.scope !== 'all' || query.length === 0) {
+      return null;
+    }
+    // The synthetic free-text search row only owns the top slot when there is no
+    // stronger promoted command/navigation match. This keeps Enter aligned with the
+    // high-confidence command/nav result for queries like `theme` or
+    // `auto-classification`.
+    if (this.topCommandMatch !== null || this.topNavigationMatch !== null) {
       return null;
     }
     return { id: 'top-search', query };

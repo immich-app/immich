@@ -168,4 +168,20 @@ describe('Map page query intersection', () => {
       noScroll: true,
     });
   });
+
+  it('anchors the active filters bar to the map content column instead of a hard-coded desktop offset', () => {
+    mockPage.url = new URL('https://gallery.test/map?q=beach');
+
+    renderPage();
+
+    const activeFiltersBar = screen.getByTestId('active-filters-bar');
+    const overlay = activeFiltersBar.parentElement as HTMLElement | null;
+    const contentColumn = overlay?.parentElement as HTMLElement | null;
+
+    expect(overlay).not.toBeNull();
+    expect(overlay?.className).toContain('absolute');
+    expect(overlay?.className).toContain('inset-x-0');
+    expect(overlay?.className).not.toContain('sm:left-[280px]');
+    expect(contentColumn?.className).toContain('relative');
+  });
 });

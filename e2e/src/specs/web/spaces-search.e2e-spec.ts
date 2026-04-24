@@ -2,6 +2,16 @@ import type { LoginResponseDto, SharedSpaceResponseDto } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { utils } from 'src/utils';
 
+async function submitGlobalSearch(page: import('@playwright/test').Page, query: string) {
+  await page.getByTestId('cmdk-input-trigger').click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const combobox = dialog.getByRole('combobox');
+  await combobox.fill(query);
+  await combobox.press('Enter');
+  await expect(dialog).toBeHidden({ timeout: 10_000 });
+}
+
 test.describe('Spaces Search', () => {
   let admin: LoginResponseDto;
   let space: SharedSpaceResponseDto;
@@ -25,15 +35,18 @@ test.describe('Spaces Search', () => {
     await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
   });
 
-  test('search in space commits q to the URL and shows results or empty state', async ({ context, page }) => {
+  async function gotoSpacePhotos(
+    context: import('@playwright/test').BrowserContext,
+    page: import('@playwright/test').Page,
+  ) {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/spaces/${space.id}/photos`);
+    await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
+  }
 
-    // The search bar is inside a hidden-on-mobile container
-    const searchInput = page.locator('input[placeholder="Search"]');
-    await expect(searchInput).toBeVisible({ timeout: 10_000 });
-    await searchInput.fill('test');
-    await searchInput.press('Enter');
+  test('search in space commits q to the URL and shows results or empty state', async ({ context, page }) => {
+    await gotoSpacePhotos(context, page);
+    await submitGlobalSearch(page, 'test');
     await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=test$`));
 
     // Smart search requires ML (CLIP) — handle both results and empty state
@@ -43,30 +56,21 @@ test.describe('Spaces Search', () => {
   });
 
   test('navigating away and back rehydrates the committed q state', async ({ context, page }) => {
-    await utils.setAuthCookies(context, admin.accessToken);
-    await page.goto(`/spaces/${space.id}/photos`);
-
-    const searchInput = page.locator('input[placeholder="Search"]');
-    await expect(searchInput).toBeVisible({ timeout: 10_000 });
-    await searchInput.fill('sunset');
-    await searchInput.press('Enter');
+    await gotoSpacePhotos(context, page);
+    await submitGlobalSearch(page, 'sunset');
     await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=sunset$`));
 
     await page.goto('/photos');
     await page.goBack();
 
     await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=sunset$`));
-    await expect(searchInput).toHaveValue('sunset');
+    await page.getByTestId('cmdk-input-trigger').click();
+    await expect(page.getByRole('dialog').getByRole('combobox')).toHaveValue('sunset');
   });
 
   test('clearing search via X removes q and returns to the timeline', async ({ context, page }) => {
-    await utils.setAuthCookies(context, admin.accessToken);
-    await page.goto(`/spaces/${space.id}/photos`);
-
-    const searchInput = page.locator('input[placeholder="Search"]');
-    await expect(searchInput).toBeVisible({ timeout: 10_000 });
-    await searchInput.fill('sunset');
-    await searchInput.press('Enter');
+    await gotoSpacePhotos(context, page);
+    await submitGlobalSearch(page, 'sunset');
 
     await expect(page.getByTestId('result-count').or(page.getByTestId('search-empty'))).toBeVisible({
       timeout: 10_000,
@@ -74,8 +78,7 @@ test.describe('Spaces Search', () => {
 
     await expect(page.getByTestId('search-chip')).toContainText('sunset');
 
-    const clearButton = page.locator('[aria-label="Clear value"]');
-    await clearButton.click();
+    await page.getByTestId('search-chip-close').dispatchEvent('click');
 
     await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos$`));
     await expect(page.getByTestId('result-count')).not.toBeVisible({ timeout: 5000 });

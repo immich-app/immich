@@ -3,8 +3,6 @@
   import { page } from '$app/state';
   import FilterPanel from '$lib/components/filter-panel/filter-panel.svelte';
   import ActiveFiltersBar from '$lib/components/filter-panel/active-filters-bar.svelte';
-  import SearchSortDropdown from '$lib/components/filter-panel/search-sort-dropdown.svelte';
-  import SortToggle from '$lib/components/filter-panel/sort-toggle.svelte';
   import {
     buildFilterContext,
     createFilterState,
@@ -28,7 +26,6 @@
   import SpacePanel from '$lib/components/spaces/space-panel.svelte';
   import SpacePeopleStrip from '$lib/components/spaces/space-people-strip.svelte';
   import SpaceLinkedLibrariesModal from '$lib/modals/SpaceLinkedLibrariesModal.svelte';
-  import SearchBar from '$lib/elements/SearchBar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -49,6 +46,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { createUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { buildSearchablePageUrl, getSearchablePageState } from '$lib/utils/searchable-page-search';
   import { loadHeroCollapsed, persistHeroCollapsed } from '$lib/utils/space-hero-storage';
   import {
     addAssets,
@@ -93,7 +91,7 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { untrack } from 'svelte';
-  import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
+  import { SvelteMap } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
   type ViewMode = 'view' | 'select-assets' | 'select-cover';
@@ -110,20 +108,17 @@
     () => space,
     () => members,
   );
-
-  function getSearchSortOrder(query: string): FilterState['sortOrder'] {
-    return query.trim().length > 0 ? 'relevance' : 'desc';
-  }
+  const initialSearchState = getSearchablePageState(page.url);
 
   // Sync when navigating between spaces (component persists, data updates)
   $effect(() => {
     if (data.space.id !== space.id) {
-      const nextCommittedSearchQuery = page.url.searchParams.get('q') ?? '';
+      const nextSearchState = getSearchablePageState(page.url);
       space = data.space;
       members = data.members;
       filters = {
         ...createFilterState(),
-        sortOrder: getSearchSortOrder(nextCommittedSearchQuery),
+        sortOrder: nextSearchState.sortOrder,
       };
       activities = [];
       hasMoreActivities = false;
@@ -132,9 +127,8 @@
       personNames.clear();
       tagNames.clear();
       isLoading = false;
-      draftSearchQuery = nextCommittedSearchQuery;
-      lastHydratedSearchQuery = nextCommittedSearchQuery;
-      lastHandledCommittedSearchQuery = nextCommittedSearchQuery;
+      committedSearchQuery = nextSearchState.query;
+      lastHandledSearchState = `${nextSearchState.query}:${nextSearchState.sortOrder}`;
       heroCollapsed = loadHeroCollapsed(data.space.id);
       panelOpen = false;
       viewMode = 'view';
@@ -158,10 +152,9 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   // Filter state
-  const initialCommittedSearchQuery = page.url.searchParams.get('q') ?? '';
   let filters = $state<FilterState>({
     ...createFilterState(),
-    sortOrder: getSearchSortOrder(initialCommittedSearchQuery),
+    sortOrder: initialSearchState.sortOrder,
   });
   let personNames = new SvelteMap<string, string>();
   let tagNames = new SvelteMap<string, string>();
@@ -591,91 +584,39 @@
     await Promise.all([refreshSpace(), loadActivities()]);
   };
 
-  const committedSearchQuery = $derived(page.url.searchParams.get('q') ?? '');
-  let draftSearchQuery = $state(initialCommittedSearchQuery);
-  let lastHydratedSearchQuery = $state(initialCommittedSearchQuery);
-  let lastHandledCommittedSearchQuery = $state(initialCommittedSearchQuery);
+  let committedSearchQuery = $state(initialSearchState.query);
+  let lastHandledSearchState = $state(`${initialSearchState.query}:${initialSearchState.sortOrder}`);
   let isLoading = $state(false);
   const showSearchResults = $derived(committedSearchQuery.trim().length > 0);
 
-  const getSearchPathname = (pathname: string) => {
-    const spaceBasePath = `/spaces/${space.id}`;
-    const photosPath = `${spaceBasePath}/photos`;
-
-    if (pathname === spaceBasePath || pathname === photosPath) {
-      return pathname;
-    }
-
-    if (pathname.startsWith(`${photosPath}/`)) {
-      return photosPath;
-    }
-
-    return pathname;
-  };
-
-  const commitSearch = async (nextQuery = draftSearchQuery) => {
-    const trimmed = nextQuery.trim();
-    const pathname = getSearchPathname(page.url.pathname);
-    const searchParams = new SvelteURLSearchParams(page.url.searchParams);
-
-    if (trimmed) {
-      searchParams.set('q', trimmed);
-    } else {
-      searchParams.delete('q');
-    }
-
-    draftSearchQuery = trimmed;
-
-    const search = searchParams.toString();
-    const nextUrl = pathname + (search ? `?${search}` : '');
-
-    if (nextUrl === page.url.pathname + page.url.search) {
+  const clearSearch = () => {
+    isLoading = false;
+    const nextUrl = buildSearchablePageUrl(page.url, '');
+    if (!nextUrl) {
       return;
     }
-
-    await goto(nextUrl, {
+    void goto(nextUrl, {
       replaceState: true,
       keepFocus: true,
       noScroll: true,
     });
   };
 
-  const handleSearchSubmit = () => {
-    void commitSearch();
-  };
-
-  const clearSearch = () => {
-    isLoading = false;
-    void commitSearch('');
-  };
-
   $effect(() => {
-    const nextCommittedSearchQuery = committedSearchQuery;
-
-    if (nextCommittedSearchQuery === lastHydratedSearchQuery) {
+    const nextSearchState = getSearchablePageState(page.url);
+    const nextToken = `${nextSearchState.query}:${nextSearchState.sortOrder}`;
+    if (nextToken === lastHandledSearchState) {
       return;
     }
 
     untrack(() => {
-      draftSearchQuery = nextCommittedSearchQuery;
-      lastHydratedSearchQuery = nextCommittedSearchQuery;
-    });
-  });
-
-  $effect(() => {
-    const nextCommittedSearchQuery = committedSearchQuery;
-
-    if (nextCommittedSearchQuery === lastHandledCommittedSearchQuery) {
-      return;
-    }
-
-    untrack(() => {
+      committedSearchQuery = nextSearchState.query;
       isLoading = false;
       filters = {
         ...filters,
-        sortOrder: getSearchSortOrder(nextCommittedSearchQuery),
+        sortOrder: nextSearchState.sortOrder,
       };
-      lastHandledCommittedSearchQuery = nextCommittedSearchQuery;
+      lastHandledSearchState = nextToken;
     });
   });
 
@@ -727,39 +668,6 @@
   {#snippet buttons()}
     {#if viewMode === 'view' && !assetMultiSelectManager.selectionActive}
       <div class="flex items-center gap-1">
-        {#if (space.assetCount ?? 0) > 0}
-          <div class="hidden h-10 sm:block sm:w-40 xl:w-60">
-            <SearchBar
-              placeholder={$t('search')}
-              bind:name={draftSearchQuery}
-              showLoadingSpinner={isLoading}
-              onSearch={({ force }) => {
-                if (force) {
-                  handleSearchSubmit();
-                }
-              }}
-              onBlurSearch={handleSearchSubmit}
-              onReset={clearSearch}
-            />
-          </div>
-        {/if}
-
-        {#if showSearchResults}
-          <SearchSortDropdown
-            sortOrder={filters.sortOrder}
-            onSelect={(mode) => {
-              filters = { ...filters, sortOrder: mode };
-            }}
-          />
-        {:else}
-          <SortToggle
-            sortOrder={filters.sortOrder === 'relevance' ? 'desc' : filters.sortOrder}
-            onToggle={(order) => {
-              filters = { ...filters, sortOrder: order };
-            }}
-          />
-        {/if}
-
         {#if isEditor}
           <IconButton
             variant="ghost"

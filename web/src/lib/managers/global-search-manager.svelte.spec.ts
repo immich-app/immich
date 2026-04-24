@@ -68,6 +68,9 @@ afterEach(() => {
   mockUser.current = { id: 'test-user', isAdmin: true };
   mockFlags.valueOrUndefined = { search: true, map: true, trash: true };
   mockI18nLocale.current = 'en';
+  mockPage.route.id = null;
+  mockPage.params = {};
+  mockPage.url = new URL('https://gallery.test/photos');
 });
 
 vi.mock('@immich/sdk', async () => ({
@@ -169,6 +172,23 @@ describe('GlobalSearchManager (skeleton)', () => {
   it('open() sets isOpen=true', () => {
     manager.open();
     expect(manager.isOpen).toBe(true);
+  });
+
+  it('open() hydrates the current searchable page query and sort', () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
+    manager.open();
+
+    expect(manager.isOpen).toBe(true);
+    expect(manager.query).toBe('beach');
+    expect(manager.searchSortOrder).toBe('asc');
+  });
+
+  it('open() resets the search draft sort to relevance when the current searchable page has no query', () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+    manager.open();
+
+    expect(manager.query).toBe('');
+    expect(manager.searchSortOrder).toBe('relevance');
   });
 
   it('close() resets sections to idle and clears active item', () => {
@@ -1167,13 +1187,14 @@ describe('activate("command")', () => {
     expect(getEntries()).toEqual([]);
   });
 
-  it('activateSearch preserves same-route params but drops stale space asset ids', () => {
+  it('activateSearch preserves same-route params, drops stale space asset ids, and carries an explicit sort', () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos/asset-123?view=grid');
+    m.searchSortOrder = 'asc';
 
     m.activateSearch('beach');
 
-    expect(goto).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach');
+    expect(goto).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach&sort=asc');
   });
 
   it('activateSearch falls back to /photos and drops unrelated params', () => {
@@ -1192,6 +1213,60 @@ describe('activate("command")', () => {
     m.activateSearch('beach');
 
     expect(goto).toHaveBeenCalledWith('/photos?q=beach');
+  });
+
+  it('applySearchSort immediately updates the current searchable page and marks the next navigate to keep the palette open', async () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos?q=beach');
+    m.open();
+
+    await m.applySearchSort('asc', 'beach');
+
+    expect(goto).toHaveBeenCalledWith('/photos?q=beach&sort=asc', {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+    expect(m.consumeKeepOpenOnNextNavigate()).toBe(true);
+    expect(m.consumeKeepOpenOnNextNavigate()).toBe(false);
+  });
+
+  it('applySearchSort does not arm keep-open when the palette is closed', async () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos?q=beach');
+
+    await m.applySearchSort('asc', 'beach');
+
+    expect(goto).toHaveBeenCalledWith('/photos?q=beach&sort=asc', {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+    expect(m.consumeKeepOpenOnNextNavigate()).toBe(false);
+  });
+
+  it('applySearchSort persists an explicit pre-search sort on searchable pages', async () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/spaces/space-1');
+
+    await m.applySearchSort('desc', '');
+
+    expect(goto).toHaveBeenCalledWith('/spaces/space-1?sort=desc', {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+    expect(m.consumeKeepOpenOnNextNavigate()).toBe(false);
+  });
+
+  it('open resets pre-search page sorting back to relevance for a new search session', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos?sort=asc');
+
+    m.open();
+
+    expect(m.query).toBe('');
+    expect(m.searchSortOrder).toBe('relevance');
   });
 });
 
@@ -2594,40 +2669,73 @@ describe('SWR loading rules', () => {
   });
 
   it('setMode preserves ok photos until re-run completes (SWR)', async () => {
-    vi.mocked(searchSmart).mockResolvedValueOnce({
-      assets: { items: [{ id: 'a1' } as never], nextPage: null },
-    } as never);
     const m = new GlobalSearchManager();
-    m.open();
-    m.setQuery('beach');
-    await vi.advanceTimersByTimeAsync(200);
-    expect(m.sections.photos.status).toBe('ok');
-    m.setMode('metadata');
-    expect(m.sections.photos.status).toBe('ok');
+    const photosProvider = (m as unknown as { providers: { photos: Provider<EntityItem> } }).providers.photos;
+    const originalPhotosRun = photosProvider.run;
+    let resolveRerun!: () => void;
+
+    photosProvider.run = vi.fn((_query: string, mode: SearchMode) => {
+      if (mode === 'smart') {
+        return Promise.resolve({
+          status: 'ok',
+          items: [{ id: 'a1' } as EntityItem],
+          total: 1,
+        } as ProviderStatus<EntityItem>);
+      }
+      return new Promise(
+        (r) => (resolveRerun = () => r({ status: 'empty' } as ProviderStatus<EntityItem>)),
+      ) as Promise<ProviderStatus<EntityItem>>;
+    });
+
+    try {
+      m.open();
+      m.setQuery('beach');
+      await vi.advanceTimersByTimeAsync(200);
+      expect(m.sections.photos.status).toBe('ok');
+      m.setMode('metadata');
+      expect(m.sections.photos.status).toBe('ok');
+      await flushMicrotasks();
+      resolveRerun();
+      await vi.advanceTimersByTimeAsync(10);
+    } finally {
+      photosProvider.run = originalPhotosRun;
+    }
   });
 
   it('setMode joins the batch counter — mode switch during live batch does NOT drop stripe early', async () => {
-    // Slow photos provider so the main batch stays in flight.
-    let resolvePhotos!: () => void;
-    vi.mocked(searchSmart).mockImplementationOnce(
-      () => new Promise((r) => (resolvePhotos = () => r({ assets: { items: [], nextPage: null } } as never))),
-    );
     const m = new GlobalSearchManager();
-    m.open();
-    m.setQuery('beach');
-    await vi.advanceTimersByTimeAsync(200);
-    expect(m.batchInFlight).toBe(true);
-    // Mode switch while photos is still in flight — counter should increment, not reset.
-    m.setMode('metadata');
-    expect(m.batchInFlight).toBe(true);
-    // setMode's re-run (searchAssets) resolves first from the default mockResolvedValue.
-    await vi.advanceTimersByTimeAsync(10);
-    // Original photos still in flight — batchInFlight MUST remain true.
-    expect(m.batchInFlight).toBe(true);
-    // Finally, let the original photos resolve.
-    resolvePhotos();
-    await vi.advanceTimersByTimeAsync(10);
-    expect(m.batchInFlight).toBe(false);
+    const photosProvider = (m as unknown as { providers: { photos: Provider<EntityItem> } }).providers.photos;
+    const originalPhotosRun = photosProvider.run;
+    let resolvePhotos!: () => void;
+
+    photosProvider.run = vi.fn((_query: string, mode: SearchMode) => {
+      if (mode === 'smart') {
+        return new Promise(
+          (r) => (resolvePhotos = () => r({ status: 'empty' } as ProviderStatus<EntityItem>)),
+        ) as Promise<ProviderStatus<EntityItem>>;
+      }
+      return Promise.resolve({ status: 'empty' } as ProviderStatus<EntityItem>);
+    });
+
+    try {
+      m.open();
+      m.setQuery('beach');
+      await vi.advanceTimersByTimeAsync(200);
+      expect(m.batchInFlight).toBe(true);
+      // Mode switch while photos is still in flight — counter should increment, not reset.
+      m.setMode('metadata');
+      expect(m.batchInFlight).toBe(true);
+      // setMode's re-run resolves first from the provider override above.
+      await vi.advanceTimersByTimeAsync(10);
+      // Original photos is still unresolved — batchInFlight MUST remain true.
+      expect(m.batchInFlight).toBe(true);
+      // Finally, let the original photos resolve.
+      resolvePhotos();
+      await vi.advanceTimersByTimeAsync(10);
+      expect(m.batchInFlight).toBe(false);
+    } finally {
+      photosProvider.run = originalPhotosRun;
+    }
   });
 
   it('stale-batch providers do not deadlock batchInFlight after a new batch supersedes', async () => {

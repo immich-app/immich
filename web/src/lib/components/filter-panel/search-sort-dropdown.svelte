@@ -7,17 +7,20 @@
   interface Props {
     sortOrder: SortMode;
     onSelect: (mode: SortMode) => void;
+    compact?: boolean;
+    showRelevance?: boolean;
   }
 
-  let { sortOrder, onSelect }: Props = $props();
+  let { sortOrder, onSelect, compact = false, showRelevance = true }: Props = $props();
   let open = $state(false);
 
-  const options: { value: SortMode; label: string; icon: string }[] = [
+  const allOptions: { value: SortMode; label: string; icon: string }[] = [
     { value: 'relevance', label: 'Relevance', icon: mdiMagnify },
     { value: 'desc', label: 'Newest first', icon: mdiSortCalendarDescending },
     { value: 'asc', label: 'Oldest first', icon: mdiSortCalendarAscending },
   ];
 
+  let options = $derived(showRelevance ? allOptions : allOptions.filter((option) => option.value !== 'relevance'));
   let currentOption = $derived(options.find((o) => o.value === sortOrder) ?? options[0]);
 
   function handleSelect(event: MouseEvent, value: SortMode) {
@@ -38,13 +41,18 @@
 <div class="relative" data-testid="search-sort-container">
   <button
     type="button"
-    class="flex items-center gap-1 rounded-full px-3 py-1.5 text-sm text-gray-500 hover:bg-subtle dark:text-gray-400"
+    aria-label={currentOption.label}
+    class={`flex items-center rounded-full py-1.5 text-sm text-gray-500 hover:bg-subtle dark:text-gray-400 ${
+      compact ? 'h-10 w-10 justify-center px-0' : 'gap-1 px-3'
+    }`}
     data-testid="search-sort-btn"
     onclick={() => (open = !open)}
   >
     <Icon icon={currentOption.icon} size="16" />
-    <span>{currentOption.label}</span>
-    <Icon icon={mdiChevronDown} size="14" />
+    {#if !compact}
+      <span>{currentOption.label}</span>
+      <Icon icon={mdiChevronDown} size="14" />
+    {/if}
   </button>
 
   {#if open}

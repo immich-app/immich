@@ -44,4 +44,21 @@ describe('SearchSortDropdown', () => {
     await userEvent.click(screen.getByText('Newest first'));
     expect(onSelect).toHaveBeenCalledWith('desc');
   });
+
+  it('should omit the relevance option when showRelevance is false', async () => {
+    render(SearchSortDropdown, {
+      props: { sortOrder: 'desc', onSelect: vi.fn(), showRelevance: false },
+    });
+    await userEvent.click(screen.getByTestId('search-sort-btn'));
+    expect(screen.queryByText('Relevance')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Newest first')).toHaveLength(2);
+    expect(screen.getByText('Oldest first')).toBeInTheDocument();
+  });
+
+  it('should expose the current option as an aria-label in compact mode', () => {
+    render(SearchSortDropdown, {
+      props: { sortOrder: 'asc', onSelect: vi.fn(), compact: true },
+    });
+    expect(screen.getByTestId('search-sort-btn')).toHaveAttribute('aria-label', 'Oldest first');
+  });
 });
