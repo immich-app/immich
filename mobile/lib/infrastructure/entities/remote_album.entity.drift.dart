@@ -7,11 +7,9 @@ import 'package:immich_mobile/domain/models/album/album.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart'
     as i3;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
     as i5;
 import 'package:drift/internal/modular.dart' as i6;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-    as i7;
 
 typedef $$RemoteAlbumEntityTableCreateCompanionBuilder =
     i1.RemoteAlbumEntityCompanion Function({
@@ -20,7 +18,6 @@ typedef $$RemoteAlbumEntityTableCreateCompanionBuilder =
       i0.Value<String> description,
       i0.Value<DateTime> createdAt,
       i0.Value<DateTime> updatedAt,
-      required String ownerId,
       i0.Value<String?> thumbnailAssetId,
       i0.Value<bool> isActivityEnabled,
       required i2.AlbumAssetOrder order,
@@ -32,7 +29,6 @@ typedef $$RemoteAlbumEntityTableUpdateCompanionBuilder =
       i0.Value<String> description,
       i0.Value<DateTime> createdAt,
       i0.Value<DateTime> updatedAt,
-      i0.Value<String> ownerId,
       i0.Value<String?> thumbnailAssetId,
       i0.Value<bool> isActivityEnabled,
       i0.Value<i2.AlbumAssetOrder> order,
@@ -51,42 +47,10 @@ final class $$RemoteAlbumEntityTableReferences
     super.$_typedResult,
   );
 
-  static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
-      i6.ReadDatabaseContainer(db)
-          .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAlbumEntityTable>('remote_album_entity')
-                  .ownerId,
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$UserEntityTable>('user_entity').id,
-            ),
-          );
-
-  i5.$$UserEntityTableProcessedTableManager get ownerId {
-    final $_column = $_itemColumn<String>('owner_id')!;
-
-    final manager = i5
-        .$$UserEntityTableTableManager(
-          $_db,
-          i6.ReadDatabaseContainer(
-            $_db,
-          ).resultSet<i5.$UserEntityTable>('user_entity'),
-        )
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_ownerIdTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static i7.$RemoteAssetEntityTable _thumbnailAssetIdTable(
+  static i5.$RemoteAssetEntityTable _thumbnailAssetIdTable(
     i0.GeneratedDatabase db,
   ) => i6.ReadDatabaseContainer(db)
-      .resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity')
+      .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity')
       .createAlias(
         i0.$_aliasNameGenerator(
           i6.ReadDatabaseContainer(db)
@@ -94,19 +58,19 @@ final class $$RemoteAlbumEntityTableReferences
               .thumbnailAssetId,
           i6.ReadDatabaseContainer(
             db,
-          ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity').id,
+          ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity').id,
         ),
       );
 
-  i7.$$RemoteAssetEntityTableProcessedTableManager? get thumbnailAssetId {
+  i5.$$RemoteAssetEntityTableProcessedTableManager? get thumbnailAssetId {
     final $_column = $_itemColumn<String>('thumbnail_asset_id');
     if ($_column == null) return null;
-    final manager = i7
+    final manager = i5
         .$$RemoteAssetEntityTableTableManager(
           $_db,
           i6.ReadDatabaseContainer(
             $_db,
-          ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+          ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
         )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_thumbnailAssetIdTable($_db));
@@ -162,51 +126,24 @@ class $$RemoteAlbumEntityTableFilterComposer
     builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
 
-  i5.$$UserEntityTableFilterComposer get ownerId {
-    final i5.$$UserEntityTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.ownerId,
-      referencedTable: i6.ReadDatabaseContainer(
-        $db,
-      ).resultSet<i5.$UserEntityTable>('user_entity'),
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => i5.$$UserEntityTableFilterComposer(
-            $db: $db,
-            $table: i6.ReadDatabaseContainer(
-              $db,
-            ).resultSet<i5.$UserEntityTable>('user_entity'),
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  i7.$$RemoteAssetEntityTableFilterComposer get thumbnailAssetId {
-    final i7.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
+  i5.$$RemoteAssetEntityTableFilterComposer get thumbnailAssetId {
+    final i5.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.thumbnailAssetId,
       referencedTable: i6.ReadDatabaseContainer(
         $db,
-      ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+      ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i7.$$RemoteAssetEntityTableFilterComposer(
+          }) => i5.$$RemoteAssetEntityTableFilterComposer(
             $db: $db,
             $table: i6.ReadDatabaseContainer(
               $db,
-            ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+            ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -261,52 +198,25 @@ class $$RemoteAlbumEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i5.$$UserEntityTableOrderingComposer get ownerId {
-    final i5.$$UserEntityTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.ownerId,
-      referencedTable: i6.ReadDatabaseContainer(
-        $db,
-      ).resultSet<i5.$UserEntityTable>('user_entity'),
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => i5.$$UserEntityTableOrderingComposer(
-            $db: $db,
-            $table: i6.ReadDatabaseContainer(
-              $db,
-            ).resultSet<i5.$UserEntityTable>('user_entity'),
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  i7.$$RemoteAssetEntityTableOrderingComposer get thumbnailAssetId {
-    final i7.$$RemoteAssetEntityTableOrderingComposer composer =
+  i5.$$RemoteAssetEntityTableOrderingComposer get thumbnailAssetId {
+    final i5.$$RemoteAssetEntityTableOrderingComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.thumbnailAssetId,
           referencedTable: i6.ReadDatabaseContainer(
             $db,
-          ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+          ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i7.$$RemoteAssetEntityTableOrderingComposer(
+              }) => i5.$$RemoteAssetEntityTableOrderingComposer(
                 $db: $db,
                 $table: i6.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+                ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -351,52 +261,25 @@ class $$RemoteAlbumEntityTableAnnotationComposer
   i0.GeneratedColumnWithTypeConverter<i2.AlbumAssetOrder, int> get order =>
       $composableBuilder(column: $table.order, builder: (column) => column);
 
-  i5.$$UserEntityTableAnnotationComposer get ownerId {
-    final i5.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.ownerId,
-      referencedTable: i6.ReadDatabaseContainer(
-        $db,
-      ).resultSet<i5.$UserEntityTable>('user_entity'),
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => i5.$$UserEntityTableAnnotationComposer(
-            $db: $db,
-            $table: i6.ReadDatabaseContainer(
-              $db,
-            ).resultSet<i5.$UserEntityTable>('user_entity'),
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  i7.$$RemoteAssetEntityTableAnnotationComposer get thumbnailAssetId {
-    final i7.$$RemoteAssetEntityTableAnnotationComposer composer =
+  i5.$$RemoteAssetEntityTableAnnotationComposer get thumbnailAssetId {
+    final i5.$$RemoteAssetEntityTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.thumbnailAssetId,
           referencedTable: i6.ReadDatabaseContainer(
             $db,
-          ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+          ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i7.$$RemoteAssetEntityTableAnnotationComposer(
+              }) => i5.$$RemoteAssetEntityTableAnnotationComposer(
                 $db: $db,
                 $table: i6.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i7.$RemoteAssetEntityTable>('remote_asset_entity'),
+                ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -420,7 +303,7 @@ class $$RemoteAlbumEntityTableTableManager
           $$RemoteAlbumEntityTableUpdateCompanionBuilder,
           (i1.RemoteAlbumEntityData, i1.$$RemoteAlbumEntityTableReferences),
           i1.RemoteAlbumEntityData,
-          i0.PrefetchHooks Function({bool ownerId, bool thumbnailAssetId})
+          i0.PrefetchHooks Function({bool thumbnailAssetId})
         > {
   $$RemoteAlbumEntityTableTableManager(
     i0.GeneratedDatabase db,
@@ -445,7 +328,6 @@ class $$RemoteAlbumEntityTableTableManager
                 i0.Value<String> description = const i0.Value.absent(),
                 i0.Value<DateTime> createdAt = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-                i0.Value<String> ownerId = const i0.Value.absent(),
                 i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
                 i0.Value<bool> isActivityEnabled = const i0.Value.absent(),
                 i0.Value<i2.AlbumAssetOrder> order = const i0.Value.absent(),
@@ -455,7 +337,6 @@ class $$RemoteAlbumEntityTableTableManager
                 description: description,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
-                ownerId: ownerId,
                 thumbnailAssetId: thumbnailAssetId,
                 isActivityEnabled: isActivityEnabled,
                 order: order,
@@ -467,7 +348,6 @@ class $$RemoteAlbumEntityTableTableManager
                 i0.Value<String> description = const i0.Value.absent(),
                 i0.Value<DateTime> createdAt = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-                required String ownerId,
                 i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
                 i0.Value<bool> isActivityEnabled = const i0.Value.absent(),
                 required i2.AlbumAssetOrder order,
@@ -477,7 +357,6 @@ class $$RemoteAlbumEntityTableTableManager
                 description: description,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
-                ownerId: ownerId,
                 thumbnailAssetId: thumbnailAssetId,
                 isActivityEnabled: isActivityEnabled,
                 order: order,
@@ -490,7 +369,7 @@ class $$RemoteAlbumEntityTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({ownerId = false, thumbnailAssetId = false}) {
+          prefetchHooksCallback: ({thumbnailAssetId = false}) {
             return i0.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -510,21 +389,6 @@ class $$RemoteAlbumEntityTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (ownerId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.ownerId,
-                                referencedTable: i1
-                                    .$$RemoteAlbumEntityTableReferences
-                                    ._ownerIdTable(db),
-                                referencedColumn: i1
-                                    .$$RemoteAlbumEntityTableReferences
-                                    ._ownerIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
                     if (thumbnailAssetId) {
                       state =
                           state.withJoin(
@@ -564,12 +428,8 @@ typedef $$RemoteAlbumEntityTableProcessedTableManager =
       $$RemoteAlbumEntityTableUpdateCompanionBuilder,
       (i1.RemoteAlbumEntityData, i1.$$RemoteAlbumEntityTableReferences),
       i1.RemoteAlbumEntityData,
-      i0.PrefetchHooks Function({bool ownerId, bool thumbnailAssetId})
+      i0.PrefetchHooks Function({bool thumbnailAssetId})
     >;
-i0.Index get idxRemoteAlbumOwnerId => i0.Index(
-  'idx_remote_album_owner_id',
-  'CREATE INDEX IF NOT EXISTS idx_remote_album_owner_id ON remote_album_entity (owner_id)',
-);
 
 class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
     with i0.TableInfo<$RemoteAlbumEntityTable, i1.RemoteAlbumEntityData> {
@@ -636,20 +496,6 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
         requiredDuringInsert: false,
         defaultValue: i4.currentDateAndTime,
       );
-  static const i0.VerificationMeta _ownerIdMeta = const i0.VerificationMeta(
-    'ownerId',
-  );
-  @override
-  late final i0.GeneratedColumn<String> ownerId = i0.GeneratedColumn<String>(
-    'owner_id',
-    aliasedName,
-    false,
-    type: i0.DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-      'REFERENCES user_entity (id) ON DELETE CASCADE',
-    ),
-  );
   static const i0.VerificationMeta _thumbnailAssetIdMeta =
       const i0.VerificationMeta('thumbnailAssetId');
   @override
@@ -698,7 +544,6 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
     description,
     createdAt,
     updatedAt,
-    ownerId,
     thumbnailAssetId,
     isActivityEnabled,
     order,
@@ -748,14 +593,6 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
         _updatedAtMeta,
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
-    }
-    if (data.containsKey('owner_id')) {
-      context.handle(
-        _ownerIdMeta,
-        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_ownerIdMeta);
     }
     if (data.containsKey('thumbnail_asset_id')) {
       context.handle(
@@ -807,10 +644,6 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
         i0.DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
-      ownerId: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.string,
-        data['${effectivePrefix}owner_id'],
-      )!,
       thumbnailAssetId: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
         data['${effectivePrefix}thumbnail_asset_id'],
@@ -850,7 +683,6 @@ class RemoteAlbumEntityData extends i0.DataClass
   final String description;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String ownerId;
   final String? thumbnailAssetId;
   final bool isActivityEnabled;
   final i2.AlbumAssetOrder order;
@@ -860,7 +692,6 @@ class RemoteAlbumEntityData extends i0.DataClass
     required this.description,
     required this.createdAt,
     required this.updatedAt,
-    required this.ownerId,
     this.thumbnailAssetId,
     required this.isActivityEnabled,
     required this.order,
@@ -873,7 +704,6 @@ class RemoteAlbumEntityData extends i0.DataClass
     map['description'] = i0.Variable<String>(description);
     map['created_at'] = i0.Variable<DateTime>(createdAt);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
-    map['owner_id'] = i0.Variable<String>(ownerId);
     if (!nullToAbsent || thumbnailAssetId != null) {
       map['thumbnail_asset_id'] = i0.Variable<String>(thumbnailAssetId);
     }
@@ -897,7 +727,6 @@ class RemoteAlbumEntityData extends i0.DataClass
       description: serializer.fromJson<String>(json['description']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      ownerId: serializer.fromJson<String>(json['ownerId']),
       thumbnailAssetId: serializer.fromJson<String?>(json['thumbnailAssetId']),
       isActivityEnabled: serializer.fromJson<bool>(json['isActivityEnabled']),
       order: i1.$RemoteAlbumEntityTable.$converterorder.fromJson(
@@ -914,7 +743,6 @@ class RemoteAlbumEntityData extends i0.DataClass
       'description': serializer.toJson<String>(description),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'ownerId': serializer.toJson<String>(ownerId),
       'thumbnailAssetId': serializer.toJson<String?>(thumbnailAssetId),
       'isActivityEnabled': serializer.toJson<bool>(isActivityEnabled),
       'order': serializer.toJson<int>(
@@ -929,7 +757,6 @@ class RemoteAlbumEntityData extends i0.DataClass
     String? description,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? ownerId,
     i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
     bool? isActivityEnabled,
     i2.AlbumAssetOrder? order,
@@ -939,7 +766,6 @@ class RemoteAlbumEntityData extends i0.DataClass
     description: description ?? this.description,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
-    ownerId: ownerId ?? this.ownerId,
     thumbnailAssetId: thumbnailAssetId.present
         ? thumbnailAssetId.value
         : this.thumbnailAssetId,
@@ -955,7 +781,6 @@ class RemoteAlbumEntityData extends i0.DataClass
           : this.description,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
       thumbnailAssetId: data.thumbnailAssetId.present
           ? data.thumbnailAssetId.value
           : this.thumbnailAssetId,
@@ -974,7 +799,6 @@ class RemoteAlbumEntityData extends i0.DataClass
           ..write('description: $description, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
           ..write('thumbnailAssetId: $thumbnailAssetId, ')
           ..write('isActivityEnabled: $isActivityEnabled, ')
           ..write('order: $order')
@@ -989,7 +813,6 @@ class RemoteAlbumEntityData extends i0.DataClass
     description,
     createdAt,
     updatedAt,
-    ownerId,
     thumbnailAssetId,
     isActivityEnabled,
     order,
@@ -1003,7 +826,6 @@ class RemoteAlbumEntityData extends i0.DataClass
           other.description == this.description &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.ownerId == this.ownerId &&
           other.thumbnailAssetId == this.thumbnailAssetId &&
           other.isActivityEnabled == this.isActivityEnabled &&
           other.order == this.order);
@@ -1016,7 +838,6 @@ class RemoteAlbumEntityCompanion
   final i0.Value<String> description;
   final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
-  final i0.Value<String> ownerId;
   final i0.Value<String?> thumbnailAssetId;
   final i0.Value<bool> isActivityEnabled;
   final i0.Value<i2.AlbumAssetOrder> order;
@@ -1026,7 +847,6 @@ class RemoteAlbumEntityCompanion
     this.description = const i0.Value.absent(),
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-    this.ownerId = const i0.Value.absent(),
     this.thumbnailAssetId = const i0.Value.absent(),
     this.isActivityEnabled = const i0.Value.absent(),
     this.order = const i0.Value.absent(),
@@ -1037,13 +857,11 @@ class RemoteAlbumEntityCompanion
     this.description = const i0.Value.absent(),
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-    required String ownerId,
     this.thumbnailAssetId = const i0.Value.absent(),
     this.isActivityEnabled = const i0.Value.absent(),
     required i2.AlbumAssetOrder order,
   }) : id = i0.Value(id),
        name = i0.Value(name),
-       ownerId = i0.Value(ownerId),
        order = i0.Value(order);
   static i0.Insertable<i1.RemoteAlbumEntityData> custom({
     i0.Expression<String>? id,
@@ -1051,7 +869,6 @@ class RemoteAlbumEntityCompanion
     i0.Expression<String>? description,
     i0.Expression<DateTime>? createdAt,
     i0.Expression<DateTime>? updatedAt,
-    i0.Expression<String>? ownerId,
     i0.Expression<String>? thumbnailAssetId,
     i0.Expression<bool>? isActivityEnabled,
     i0.Expression<int>? order,
@@ -1062,7 +879,6 @@ class RemoteAlbumEntityCompanion
       if (description != null) 'description': description,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (ownerId != null) 'owner_id': ownerId,
       if (thumbnailAssetId != null) 'thumbnail_asset_id': thumbnailAssetId,
       if (isActivityEnabled != null) 'is_activity_enabled': isActivityEnabled,
       if (order != null) 'order': order,
@@ -1075,7 +891,6 @@ class RemoteAlbumEntityCompanion
     i0.Value<String>? description,
     i0.Value<DateTime>? createdAt,
     i0.Value<DateTime>? updatedAt,
-    i0.Value<String>? ownerId,
     i0.Value<String?>? thumbnailAssetId,
     i0.Value<bool>? isActivityEnabled,
     i0.Value<i2.AlbumAssetOrder>? order,
@@ -1086,7 +901,6 @@ class RemoteAlbumEntityCompanion
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      ownerId: ownerId ?? this.ownerId,
       thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
       isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
       order: order ?? this.order,
@@ -1111,9 +925,6 @@ class RemoteAlbumEntityCompanion
     if (updatedAt.present) {
       map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
     }
-    if (ownerId.present) {
-      map['owner_id'] = i0.Variable<String>(ownerId.value);
-    }
     if (thumbnailAssetId.present) {
       map['thumbnail_asset_id'] = i0.Variable<String>(thumbnailAssetId.value);
     }
@@ -1136,7 +947,6 @@ class RemoteAlbumEntityCompanion
           ..write('description: $description, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
           ..write('thumbnailAssetId: $thumbnailAssetId, ')
           ..write('isActivityEnabled: $isActivityEnabled, ')
           ..write('order: $order')

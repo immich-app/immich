@@ -1,8 +1,8 @@
+import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
 import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$env/static/public';
 import type { ImmichProduct } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
 
 export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
   // TODO is this needed?

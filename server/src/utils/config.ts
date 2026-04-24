@@ -10,8 +10,6 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { DeepPartial } from 'src/types';
 import { getKeysDeep, unsetDeep } from 'src/utils/misc';
 
-export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
-
 type RepoDeps = {
   configRepo: ConfigRepository;
   metadataRepo: SystemMetadataRepository;

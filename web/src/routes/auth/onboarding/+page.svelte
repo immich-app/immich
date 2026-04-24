@@ -1,15 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import OnboardingBackup from './onboarding-backup.svelte';
-  import OnboardingCard from './onboarding-card.svelte';
-  import OnboardingHello from './onboarding-hello.svelte';
-  import OnboardingLocale from './onboarding-language.svelte';
-  import OnboardingMobileApp from './onboarding-mobile-app.svelte';
-  import OnboardingServerPrivacy from './onboarding-server-privacy.svelte';
-  import OnboardingStorageTemplate from './onboarding-storage-template.svelte';
-  import OnboardingTheme from './onboarding-theme.svelte';
-  import OnboardingUserPrivacy from './onboarding-user-privacy.svelte';
+  import OnboardingBackup from './OnboardingBackup.svelte';
+  import OnboardingCard from './OnboardingCard.svelte';
+  import OnboardingHello from './OnboardingHello.svelte';
+  import OnboardingLocale from './OnboardingLanguage.svelte';
+  import OnboardingMobileApp from './OnboardingMobileApp.svelte';
+  import OnboardingServerPrivacy from './OnboardingServerPrivacy.svelte';
+  import OnboardingStorageTemplate from './OnboardingStorageTemplate.svelte';
+  import OnboardingTheme from './OnboardingTheme.svelte';
+  import OnboardingUserPrivacy from './OnboardingUserPrivacy.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';

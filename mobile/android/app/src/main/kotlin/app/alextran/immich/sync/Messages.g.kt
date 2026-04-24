@@ -216,7 +216,7 @@ data class PlatformAsset (
   val updatedAt: Long? = null,
   val width: Long? = null,
   val height: Long? = null,
-  val durationInSeconds: Long,
+  val durationMs: Long,
   val orientation: Long,
   val isFavorite: Boolean,
   val adjustmentTime: Long? = null,
@@ -234,14 +234,14 @@ data class PlatformAsset (
       val updatedAt = pigeonVar_list[4] as Long?
       val width = pigeonVar_list[5] as Long?
       val height = pigeonVar_list[6] as Long?
-      val durationInSeconds = pigeonVar_list[7] as Long
+      val durationMs = pigeonVar_list[7] as Long
       val orientation = pigeonVar_list[8] as Long
       val isFavorite = pigeonVar_list[9] as Boolean
       val adjustmentTime = pigeonVar_list[10] as Long?
       val latitude = pigeonVar_list[11] as Double?
       val longitude = pigeonVar_list[12] as Double?
       val playbackStyle = pigeonVar_list[13] as PlatformAssetPlaybackStyle
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, adjustmentTime, latitude, longitude, playbackStyle)
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationMs, orientation, isFavorite, adjustmentTime, latitude, longitude, playbackStyle)
     }
   }
   fun toList(): List<Any?> {
@@ -253,7 +253,7 @@ data class PlatformAsset (
       updatedAt,
       width,
       height,
-      durationInSeconds,
+      durationMs,
       orientation,
       isFavorite,
       adjustmentTime,
@@ -270,7 +270,7 @@ data class PlatformAsset (
       return true
     }
     val other = other as PlatformAsset
-    return MessagesPigeonUtils.deepEquals(this.id, other.id) && MessagesPigeonUtils.deepEquals(this.name, other.name) && MessagesPigeonUtils.deepEquals(this.type, other.type) && MessagesPigeonUtils.deepEquals(this.createdAt, other.createdAt) && MessagesPigeonUtils.deepEquals(this.updatedAt, other.updatedAt) && MessagesPigeonUtils.deepEquals(this.width, other.width) && MessagesPigeonUtils.deepEquals(this.height, other.height) && MessagesPigeonUtils.deepEquals(this.durationInSeconds, other.durationInSeconds) && MessagesPigeonUtils.deepEquals(this.orientation, other.orientation) && MessagesPigeonUtils.deepEquals(this.isFavorite, other.isFavorite) && MessagesPigeonUtils.deepEquals(this.adjustmentTime, other.adjustmentTime) && MessagesPigeonUtils.deepEquals(this.latitude, other.latitude) && MessagesPigeonUtils.deepEquals(this.longitude, other.longitude) && MessagesPigeonUtils.deepEquals(this.playbackStyle, other.playbackStyle)
+    return MessagesPigeonUtils.deepEquals(this.id, other.id) && MessagesPigeonUtils.deepEquals(this.name, other.name) && MessagesPigeonUtils.deepEquals(this.type, other.type) && MessagesPigeonUtils.deepEquals(this.createdAt, other.createdAt) && MessagesPigeonUtils.deepEquals(this.updatedAt, other.updatedAt) && MessagesPigeonUtils.deepEquals(this.width, other.width) && MessagesPigeonUtils.deepEquals(this.height, other.height) && MessagesPigeonUtils.deepEquals(this.durationMs, other.durationMs) && MessagesPigeonUtils.deepEquals(this.orientation, other.orientation) && MessagesPigeonUtils.deepEquals(this.isFavorite, other.isFavorite) && MessagesPigeonUtils.deepEquals(this.adjustmentTime, other.adjustmentTime) && MessagesPigeonUtils.deepEquals(this.latitude, other.latitude) && MessagesPigeonUtils.deepEquals(this.longitude, other.longitude) && MessagesPigeonUtils.deepEquals(this.playbackStyle, other.playbackStyle)
   }
 
   override fun hashCode(): Int {
@@ -282,7 +282,7 @@ data class PlatformAsset (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.updatedAt)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.width)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.height)
-    result = 31 * result + MessagesPigeonUtils.deepHash(this.durationInSeconds)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.durationMs)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.orientation)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.isFavorite)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.adjustmentTime)

@@ -2,6 +2,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto';
 import {
+  AlbumUserRole,
   AlbumUserRoleSchema,
   AssetOrderSchema,
   AssetTypeSchema,
@@ -211,6 +212,19 @@ const SyncAlbumV1Schema = z
   })
   .meta({ id: 'SyncAlbumV1' });
 
+const SyncAlbumV2Schema = z
+  .object({
+    id: z.string().describe('Album ID'),
+    name: z.string().describe('Album name'),
+    description: z.string().describe('Album description'),
+    createdAt: isoDatetimeToDate.describe('Created at'),
+    updatedAt: isoDatetimeToDate.describe('Updated at'),
+    thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
+    isActivityEnabled: z.boolean().describe('Is activity enabled'),
+    order: AssetOrderSchema,
+  })
+  .meta({ id: 'SyncAlbumV2' });
+
 const SyncAlbumToAssetV1Schema = z
   .object({
     albumId: z.string().describe('Album ID'),
@@ -234,9 +248,20 @@ class SyncAlbumUserV1 extends createZodDto(SyncAlbumUserV1Schema) {}
 @ExtraModel()
 class SyncAlbumV1 extends createZodDto(SyncAlbumV1Schema) {}
 @ExtraModel()
+class SyncAlbumV2 extends createZodDto(SyncAlbumV2Schema) {}
+@ExtraModel()
 class SyncAlbumToAssetV1 extends createZodDto(SyncAlbumToAssetV1Schema) {}
 @ExtraModel()
 class SyncAlbumToAssetDeleteV1 extends createZodDto(SyncAlbumToAssetDeleteV1Schema) {}
+
+export function syncAlbumV2ToV1(
+  albumV2: SyncAlbumV2,
+  albumUsers: { userId: string; role: AlbumUserRole }[],
+): SyncAlbumV1 {
+  const owner = albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+
+  return { ...albumV2, ownerId: owner.userId };
+}
 
 const SyncMemoryV1Schema = z
   .object({
@@ -407,6 +432,7 @@ export type SyncItem = {
   [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
+  [SyncEntityType.AlbumV2]: SyncAlbumV2;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;

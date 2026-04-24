@@ -1,5 +1,4 @@
 import type { CommonPosition } from '$lib/utils/layout-utils';
-
 import {
   ViewportProximity,
   calculateViewerAssetViewportProximity,
@@ -27,7 +26,7 @@ export class ViewerAsset {
   }
 
   position: CommonPosition | undefined = $state.raw();
-  asset: TimelineAsset = <TimelineAsset>$state();
+  asset: TimelineAsset = $state() as TimelineAsset;
   id: string = $derived(this.asset.id);
 
   constructor(group: TimelineDay, asset: TimelineAsset) {

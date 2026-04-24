@@ -8,7 +8,7 @@
   import { modalManager } from '@immich/ui';
   import { mdiText } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
+  import MenuOption from '../../shared-components/context-menu/MenuOption.svelte';
 
   interface Props {
     menuItem?: boolean;

@@ -4,14 +4,14 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import EditNameInput from './edit-name-input.svelte';
-  import MergeFaceSelector from './merge-face-selector.svelte';
-  import UnMergeFaceSelector from './unmerge-face-selector.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
+  import EditNameInput from './EditNameInput.svelte';
+  import MergeFaceSelector from './MergeFaceSelector.svelte';
+  import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -517,7 +517,7 @@
 </header>
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
-  <UnMergeFaceSelector
+  <UnmergeFaceSelector
     assetIds={assetMultiSelectManager.assets.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}

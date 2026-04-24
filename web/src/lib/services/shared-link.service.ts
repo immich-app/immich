@@ -1,11 +1,3 @@
-import { goto } from '$app/navigation';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-import { Route } from '$lib/route';
-import { copyToClipboard } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   createSharedLink,
   getSharedLinkById,
@@ -19,6 +11,14 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
+import { Route } from '$lib/route';
+import { copyToClipboard } from '$lib/utils';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getSharedLinksActions = ($t: MessageFormatter) => {
   const ViewAll: ActionItem = {

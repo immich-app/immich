@@ -223,6 +223,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           '.jp2',
           '.jpe',
           '.jxl',
+          '.mpo',
           '.svg',
           '.tif',
           '.tiff',

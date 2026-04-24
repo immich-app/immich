@@ -5,7 +5,7 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
   import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
   import { Route } from '$lib/route';

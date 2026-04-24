@@ -1,9 +1,9 @@
 <script lang="ts">
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import AlbumsControls from './albums-controls.svelte';
-  import Albums from '$lib/components/album-page/albums-list.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import AlbumsControls from './AlbumsControls.svelte';
+  import Albums from '$lib/components/album-page/AlbumsList.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { Route } from '$lib/route';

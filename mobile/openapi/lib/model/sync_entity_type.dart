@@ -44,6 +44,7 @@ class SyncEntityType {
   static const partnerStackDeleteV1 = SyncEntityType._(r'PartnerStackDeleteV1');
   static const partnerStackV1 = SyncEntityType._(r'PartnerStackV1');
   static const albumV1 = SyncEntityType._(r'AlbumV1');
+  static const albumV2 = SyncEntityType._(r'AlbumV2');
   static const albumDeleteV1 = SyncEntityType._(r'AlbumDeleteV1');
   static const albumUserV1 = SyncEntityType._(r'AlbumUserV1');
   static const albumUserBackfillV1 = SyncEntityType._(r'AlbumUserBackfillV1');
@@ -97,6 +98,7 @@ class SyncEntityType {
     partnerStackDeleteV1,
     partnerStackV1,
     albumV1,
+    albumV2,
     albumDeleteV1,
     albumUserV1,
     albumUserBackfillV1,
@@ -185,6 +187,7 @@ class SyncEntityTypeTypeTransformer {
         case r'PartnerStackDeleteV1': return SyncEntityType.partnerStackDeleteV1;
         case r'PartnerStackV1': return SyncEntityType.partnerStackV1;
         case r'AlbumV1': return SyncEntityType.albumV1;
+        case r'AlbumV2': return SyncEntityType.albumV2;
         case r'AlbumDeleteV1': return SyncEntityType.albumDeleteV1;
         case r'AlbumUserV1': return SyncEntityType.albumUserV1;
         case r'AlbumUserBackfillV1': return SyncEntityType.albumUserBackfillV1;

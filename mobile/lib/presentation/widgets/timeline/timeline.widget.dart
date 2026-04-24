@@ -469,6 +469,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   ref.read(timelineStateProvider.notifier).setScrolling(true);
                 },
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     timeline,
                     if (isBottomWidgetVisible)
