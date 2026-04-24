@@ -43,23 +43,40 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
   }
 }
 
+// Copies [this] bitmap into a native buffer in ARGB_8888 layout, matching
+// what the Dart side expects (PixelFormat.rgba8888, 4 bytes/pixel).
+//
+// Android's ImageDecoder returns wide-gamut bitmaps for 10-bit HEIF/HEIC and
+// AVIF (e.g. RGBA_1010102, RGBA_F16), and setTargetColorSpace(SRGB) does not
+// force an 8-bit output format. Writing those bits verbatim into a buffer
+// Flutter interprets as PixelFormat.rgba8888 produces correctly shaped but
+// garbled colours. Normalise via Bitmap.copy(ARGB_8888), which performs the
+// colour-space and bit-depth conversion inside Skia.
 fun Bitmap.toNativeBuffer(): Map<String, Long>  {
-  val size = width * height * 4
+  val bitmap: Bitmap = if (config == Bitmap.Config.ARGB_8888) {
+    this
+  } else {
+    val converted = copy(Bitmap.Config.ARGB_8888, false)
+      ?: throw IOException("Bitmap.copy(ARGB_8888) returned null for ${width}x${height} $config")
+    recycle()
+    converted
+  }
+  val size = bitmap.width * bitmap.height * 4
   val pointer = NativeBuffer.allocate(size)
   try {
     val buffer = NativeBuffer.wrap(pointer, size)
-    copyPixelsToBuffer(buffer)
+    bitmap.copyPixelsToBuffer(buffer)
     return mapOf(
       "pointer" to pointer,
-      "width" to width.toLong(),
-      "height" to height.toLong(),
-      "rowBytes" to (width * 4).toLong()
+      "width" to bitmap.width.toLong(),
+      "height" to bitmap.height.toLong(),
+      "rowBytes" to (bitmap.width * 4).toLong()
     )
   } catch (e: Exception) {
     NativeBuffer.free(pointer)
     throw e
   } finally {
-    recycle()
+    bitmap.recycle()
   }
 }
 

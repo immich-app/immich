@@ -1,6 +1,8 @@
 package app.alextran.immich.images
 
 import android.content.Context
+import android.graphics.ImageDecoder
+import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import app.alextran.immich.INITIAL_BUFFER_SIZE
@@ -39,7 +41,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   override fun requestImage(
     url: String,
     requestId: Long,
-    @Suppress("UNUSED_PARAMETER") preferEncoded: Boolean, // always returns encoded; setting has no effect on Android
+    preferEncoded: Boolean,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -53,6 +55,25 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         if (signal.isCanceled) {
           NativeBuffer.free(buffer.pointer)
           return@fetch callback(CANCELLED)
+        }
+
+        // When the caller doesn't want the raw bytes (preferEncoded=false),
+        // decode in Kotlin so toNativeBuffer can normalise to ARGB_8888.
+        // Flutter's own encoded-decode path hands the bytes to Android's
+        // ImageDecoder but then memcpys the result as if it were ARGB_8888;
+        // 10-bit HEIF/AVIF sources come back as RGBA_1010102 which produces
+        // garbled colours.
+        if (!preferEncoded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          try {
+            val src = NativeBuffer.wrap(buffer.pointer, buffer.offset).apply { position(0) }
+            val bitmap = ImageDecoder.createSource(src).decodeBitmap()
+            NativeBuffer.free(buffer.pointer)
+            val res = bitmap.toNativeBuffer()
+            callback(Result.success(res))
+            return@fetch
+          } catch (_: Exception) {
+            // Fall through to encoded passthrough; buffer.pointer still owned.
+          }
         }
 
         callback(
