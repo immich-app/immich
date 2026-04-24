@@ -7,6 +7,11 @@ void main() {
     test('ok', () {
       expect("1:02:33".toDuration(), const Duration(hours: 1, minutes: 2, seconds: 33));
     });
+    test('fractional seconds', () {
+      expect("0:00:00.500000".toDuration(), const Duration(milliseconds: 500));
+      expect("0:00:01.250000".toDuration(), const Duration(seconds: 1, milliseconds: 250));
+      expect("1:02:33.123456".toDuration(), const Duration(hours: 1, minutes: 2, seconds: 33, milliseconds: 123));
+    });
     test('malformed', () {
       expect("".toDuration(), isNull);
       expect("1:2".toDuration(), isNull);

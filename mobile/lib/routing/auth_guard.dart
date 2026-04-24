@@ -7,13 +7,15 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/auth.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class AuthGuard extends AutoRouteGuard {
   final ApiService _apiService;
+  final AuthService _authService;
   final _log = Logger("AuthGuard");
-  AuthGuard(this._apiService);
+  AuthGuard(this._apiService, this._authService);
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     resolver.next(true);
@@ -27,7 +29,7 @@ class AuthGuard extends AutoRouteGuard {
       if (res == null || res.authStatus != true) {
         // If the access token is invalid, take user back to login
         _log.fine('User token is invalid. Redirecting to login');
-        unawaited(router.replaceAll([const LoginRoute()]));
+        unawaited(router.replaceAll([const LoginRoute()]).then((_) => _authService.clearLocalData()));
       }
     } on StoreKeyNotFoundException catch (_) {
       // If there is no access token, take us to the login page
@@ -38,7 +40,7 @@ class AuthGuard extends AutoRouteGuard {
       // On an unauthorized request, take us to the login page
       if (e.code == HttpStatus.unauthorized) {
         _log.warning("Unauthorized access token.");
-        unawaited(router.replaceAll([const LoginRoute()]));
+        unawaited(router.replaceAll([const LoginRoute()]).then((_) => _authService.clearLocalData()));
         return;
       }
     } catch (e) {

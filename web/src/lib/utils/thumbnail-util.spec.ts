@@ -1,7 +1,7 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { getAltText } from '$lib/utils/thumbnail-util';
 import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { getAltText } from '$lib/utils/thumbnail-util';
 
 interface Person {
   name: string;

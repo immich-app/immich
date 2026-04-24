@@ -7,6 +7,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SyncAckDeleteDto,
   SyncAckSetDto,
+  syncAlbumV2ToV1,
   syncAssetFaceV2ToV1,
   SyncAssetV1,
   SyncItem,
@@ -60,6 +61,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PartnerStacksV1,
   SyncRequestType.AlbumAssetsV1,
   SyncRequestType.AlbumsV1,
+  SyncRequestType.AlbumsV2,
   SyncRequestType.AlbumUsersV1,
   SyncRequestType.AlbumToAssetsV1,
   SyncRequestType.AssetExifsV1,
@@ -165,6 +167,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.PartnerAssetExifsV1]: () =>
         this.syncPartnerAssetExifsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumsV1]: () => this.syncAlbumsV1(options, response, checkpointMap),
+      [SyncRequestType.AlbumsV2]: () => this.syncAlbumsV2(options, response, checkpointMap),
       [SyncRequestType.AlbumUsersV1]: () => this.syncAlbumUsersV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumToAssetsV1]: () => this.syncAlbumToAssetsV1(options, response, checkpointMap, session.id),
@@ -411,6 +414,21 @@ export class SyncService extends BaseService {
     }
 
     const upsertType = SyncEntityType.AlbumV1;
+    const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      const albumUsers = await this.syncRepository.album.getAlbumUsers(data.id);
+      send(response, { type: upsertType, ids: [updateId], data: syncAlbumV2ToV1(data, albumUsers) });
+    }
+  }
+
+  private async syncAlbumsV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AlbumDeleteV1;
+    const deletes = this.syncRepository.album.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AlbumV2;
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });

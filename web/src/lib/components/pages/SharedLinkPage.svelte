@@ -1,8 +1,8 @@
 <script lang="ts">
-  import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-  import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
+  import AlbumViewer from '$lib/components/album-page/AlbumViewer.svelte';
+  import IndividualSharedViewer from '$lib/components/share-page/IndividualSharedViewer.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import ThemeButton from '$lib/components/shared-components/ThemeButton.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { setSharedLink } from '$lib/utils';

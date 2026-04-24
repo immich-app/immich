@@ -1,4 +1,3 @@
-import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
@@ -51,9 +50,6 @@ const basePath = dirname(__filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
-
-export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
-export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;

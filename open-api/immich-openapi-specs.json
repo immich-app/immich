@@ -7359,6 +7359,38 @@
         "x-immich-state": "Stable"
       }
     },
+    "/oauth/backchannel-logout": {
+      "post": {
+        "description": "Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.",
+        "operationId": "logoutOAuth",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthBackchannelLogoutDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Backchannel OAuth logout",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "description": "Complete the OAuth authorization process by exchanging the authorization code for a session token.",
@@ -10547,44 +10579,6 @@
           }
         ],
         "x-immich-permission": "server.storage",
-        "x-immich-state": "Stable"
-      }
-    },
-    "/server/theme": {
-      "get": {
-        "description": "Retrieve the custom CSS, if existent.",
-        "operationId": "getTheme",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerThemeDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "summary": "Get theme",
-        "tags": [
-          "Server"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          },
-          {
-            "version": "v2",
-            "state": "Stable"
-          }
-        ],
         "x-immich-state": "Stable"
       }
     },
@@ -15285,9 +15279,11 @@
             "type": "string"
           },
           "albumUsers": {
+            "description": "First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically.",
             "items": {
               "$ref": "#/components/schemas/AlbumUserResponseDto"
             },
+            "minItems": 1,
             "type": "array"
           },
           "assetCount": {
@@ -15336,13 +15332,6 @@
           "order": {
             "$ref": "#/components/schemas/AssetOrder"
           },
-          "owner": {
-            "$ref": "#/components/schemas/UserResponseDto"
-          },
-          "ownerId": {
-            "description": "Owner user ID",
-            "type": "string"
-          },
           "shared": {
             "description": "Is shared album",
             "type": "boolean"
@@ -15368,8 +15357,6 @@
           "hasSharedLink",
           "id",
           "isActivityEnabled",
-          "owner",
-          "ownerId",
           "shared",
           "updatedAt"
         ],
@@ -15459,6 +15446,7 @@
         "description": "Album user role",
         "enum": [
           "editor",
+          "owner",
           "viewer"
         ],
         "type": "string"
@@ -16354,7 +16342,6 @@
         "description": "Upload status",
         "enum": [
           "created",
-          "replaced",
           "duplicate"
         ],
         "type": "string"
@@ -16640,7 +16627,8 @@
             "type": "string"
           },
           "duration": {
-            "description": "Video duration (for videos)",
+            "description": "Video/gif duration in hh:mm:ss.SSS format (null for static images)",
+            "nullable": true,
             "type": "string"
           },
           "exifInfo": {
@@ -19068,6 +19056,18 @@
         ],
         "type": "object"
       },
+      "OAuthBackchannelLogoutDto": {
+        "properties": {
+          "logout_token": {
+            "description": "OAuth logout token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "logout_token"
+        ],
+        "type": "object"
+      },
       "OAuthCallbackDto": {
         "properties": {
           "codeVerifier": {
@@ -21372,18 +21372,6 @@
         ],
         "type": "object"
       },
-      "ServerThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
-        ],
-        "type": "object"
-      },
       "ServerVersionHistoryResponseDto": {
         "properties": {
           "createdAt": {
@@ -22537,6 +22525,59 @@
         ],
         "type": "object"
       },
+      "SyncAlbumV2": {
+        "properties": {
+          "createdAt": {
+            "description": "Created at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "description": {
+            "description": "Album description",
+            "type": "string"
+          },
+          "id": {
+            "description": "Album ID",
+            "type": "string"
+          },
+          "isActivityEnabled": {
+            "description": "Is activity enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Album name",
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          },
+          "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Updated at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "id",
+          "isActivityEnabled",
+          "name",
+          "order",
+          "thumbnailAssetId",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "SyncAssetDeleteV1": {
         "properties": {
           "assetId": {
@@ -23222,6 +23263,7 @@
           "PartnerStackDeleteV1",
           "PartnerStackV1",
           "AlbumV1",
+          "AlbumV2",
           "AlbumDeleteV1",
           "AlbumUserV1",
           "AlbumUserBackfillV1",
@@ -23516,6 +23558,7 @@
         "description": "Sync request type",
         "enum": [
           "AlbumsV1",
+          "AlbumsV2",
           "AlbumUsersV1",
           "AlbumToAssetsV1",
           "AlbumAssetsV1",
@@ -24302,6 +24345,10 @@
       },
       "SystemConfigOAuthDto": {
         "properties": {
+          "allowInsecureRequests": {
+            "description": "Allow insecure requests",
+            "type": "boolean"
+          },
           "autoLaunch": {
             "description": "Auto launch",
             "type": "boolean"
@@ -24332,6 +24379,10 @@
             "description": "Enabled",
             "type": "boolean"
           },
+          "endSessionEndpoint": {
+            "description": "End session endpoint",
+            "type": "string"
+          },
           "issuerUrl": {
             "description": "Issuer URL",
             "type": "string"
@@ -24346,6 +24397,10 @@
           },
           "profileSigningAlgorithm": {
             "description": "Profile signing algorithm",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "OAuth prompt parameter (e.g. select_account, login, consent)",
             "type": "string"
           },
           "roleClaim": {
@@ -24379,6 +24434,7 @@
           }
         },
         "required": [
+          "allowInsecureRequests",
           "autoLaunch",
           "autoRegister",
           "buttonText",
@@ -24386,10 +24442,12 @@
           "clientSecret",
           "defaultStorageQuota",
           "enabled",
+          "endSessionEndpoint",
           "issuerUrl",
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",
+          "prompt",
           "roleClaim",
           "scope",
           "signingAlgorithm",
@@ -24906,7 +24964,7 @@
             "type": "array"
           },
           "duration": {
-            "description": "Array of video durations in HH:MM:SS format (null for images)",
+            "description": "Array of video/gif durations in hh:mm:ss.SSS format (null for static images)",
             "items": {
               "nullable": true,
               "type": "string"

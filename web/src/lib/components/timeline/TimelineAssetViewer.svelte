@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
+  import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import { AssetAction } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
@@ -232,7 +232,7 @@
   });
 </script>
 
-{#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+{#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
     cursor={assetCursor}

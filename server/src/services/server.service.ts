@@ -109,11 +109,6 @@ export class ServerService extends BaseService {
     };
   }
 
-  async getTheme() {
-    const { theme } = await this.getConfig({ withCache: false });
-    return theme;
-  }
-
   async getSystemConfig(): Promise<ServerConfigDto> {
     const { setup } = this.configRepository.getEnv();
     const config = await this.getConfig({ withCache: false });

@@ -1,13 +1,13 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
-  import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
-  import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
-  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import Breadcrumbs from '$lib/components/shared-components/tree/Breadcrumbs.svelte';
+  import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
+  import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
+  import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';

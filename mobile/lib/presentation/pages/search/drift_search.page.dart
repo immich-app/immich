@@ -340,11 +340,11 @@ class DriftSearchPage extends HookConsumerWidget {
           child: QuickDatePicker(
             currentInput: dateInputFilter.value,
             onRequestPicker: () {
-              context.pop();
+              ContextHelper(context).pop();
               showDatePicker();
             },
             onSelect: (date) {
-              context.pop();
+              ContextHelper(context).pop();
               datePicked(date);
             },
           ),

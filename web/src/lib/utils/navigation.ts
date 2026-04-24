@@ -1,3 +1,4 @@
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import type { RouteId } from '$app/types';

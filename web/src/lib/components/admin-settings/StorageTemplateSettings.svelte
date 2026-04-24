@@ -2,8 +2,8 @@
   import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';

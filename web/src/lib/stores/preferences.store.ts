@@ -1,7 +1,7 @@
+import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/environment';
 import { defaultLang } from '$lib/constants';
 import { getPreferredLocale } from '$lib/utils/i18n';
-import { persisted } from 'svelte-persisted-store';
 
 // Locale to use for formatting dates, numbers, etc.
 export const locale = persisted('locale', 'default', {

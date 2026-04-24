@@ -24,6 +24,7 @@ class SyncRequestType {
   String toJson() => value;
 
   static const albumsV1 = SyncRequestType._(r'AlbumsV1');
+  static const albumsV2 = SyncRequestType._(r'AlbumsV2');
   static const albumUsersV1 = SyncRequestType._(r'AlbumUsersV1');
   static const albumToAssetsV1 = SyncRequestType._(r'AlbumToAssetsV1');
   static const albumAssetsV1 = SyncRequestType._(r'AlbumAssetsV1');
@@ -49,6 +50,7 @@ class SyncRequestType {
   /// List of all possible values in this [enum][SyncRequestType].
   static const values = <SyncRequestType>[
     albumsV1,
+    albumsV2,
     albumUsersV1,
     albumToAssetsV1,
     albumAssetsV1,
@@ -109,6 +111,7 @@ class SyncRequestTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'AlbumsV1': return SyncRequestType.albumsV1;
+        case r'AlbumsV2': return SyncRequestType.albumsV2;
         case r'AlbumUsersV1': return SyncRequestType.albumUsersV1;
         case r'AlbumToAssetsV1': return SyncRequestType.albumToAssetsV1;
         case r'AlbumAssetsV1': return SyncRequestType.albumAssetsV1;

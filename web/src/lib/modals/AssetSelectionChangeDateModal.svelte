@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/combobox.svelte';
+  import Combobox from '$lib/components/shared-components/Combobox.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';

@@ -104,12 +104,6 @@ const ServerMediaTypesResponseSchema = z
   })
   .meta({ id: 'ServerMediaTypesResponseDto' });
 
-const ServerThemeSchema = z
-  .object({
-    customCss: z.string().describe('Custom CSS for theming'),
-  })
-  .meta({ id: 'ServerThemeDto' });
-
 const ServerConfigSchema = z
   .object({
     oauthButtonText: z.string().describe('OAuth button text'),
@@ -161,7 +155,6 @@ export class ServerVersionHistoryResponseDto extends createZodDto(ServerVersionH
 export class UsageByUserDto extends createZodDto(UsageByUserSchema) {}
 export class ServerStatsResponseDto extends createZodDto(ServerStatsResponseSchema) {}
 export class ServerMediaTypesResponseDto extends createZodDto(ServerMediaTypesResponseSchema) {}
-export class ServerThemeDto extends createZodDto(ServerThemeSchema) {}
 export class ServerConfigDto extends createZodDto(ServerConfigSchema) {}
 export class ServerFeaturesDto extends createZodDto(ServerFeaturesSchema) {}
 

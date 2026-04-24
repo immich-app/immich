@@ -1,6 +1,3 @@
-import type { ReleaseEvent } from '$lib/types';
-import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
-import type { TreeNode } from '$lib/utils/tree-utils';
 import type {
   AlbumResponseDto,
   AlbumUserRole,
@@ -16,6 +13,9 @@ import type {
   UserAdminResponseDto,
   WorkflowResponseDto,
 } from '@immich/sdk';
+import type { ReleaseEvent } from '$lib/types';
+import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
+import type { TreeNode } from '$lib/utils/tree-utils';
 
 export type Events = {
   AppInit: [];

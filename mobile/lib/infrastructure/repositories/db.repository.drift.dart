@@ -105,7 +105,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
     localAlbumEntity,
     localAlbumAssetEntity,
     i7.idxLocalAlbumAssetAlbumAsset,
-    i5.idxRemoteAlbumOwnerId,
     i4.idxLocalAssetChecksum,
     i4.idxLocalAssetCloudId,
     i3.idxStackPrimaryAssetId,
@@ -159,15 +158,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
         limitUpdateKind: i0.UpdateKind.delete,
       ),
       result: [i0.TableUpdate('stack_entity', kind: i0.UpdateKind.delete)],
-    ),
-    i0.WritePropagation(
-      on: i0.TableUpdateQuery.onTableName(
-        'user_entity',
-        limitUpdateKind: i0.UpdateKind.delete,
-      ),
-      result: [
-        i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.delete),
-      ],
     ),
     i0.WritePropagation(
       on: i0.TableUpdateQuery.onTableName(

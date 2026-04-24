@@ -1,8 +1,8 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   id: Sync.each(() => faker.string.uuid()),
@@ -21,7 +21,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   isArchived: false,
   isTrashed: false,
-  duration: '0:00:00.00000',
+  duration: null,
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
@@ -44,7 +44,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   isTrashed: false,
   isImage: true,
   isVideo: false,
-  duration: '0:00:00.00000',
+  duration: null,
   stack: null,
   projectionType: null,
   livePhotoVideoId: Sync.each(() => faker.string.uuid()),

@@ -1,6 +1,6 @@
 [tools]
-terragrunt = "0.99.5"
-opentofu = "1.11.5"
+terragrunt = "1.0.1"
+opentofu = "1.11.6"
 
 [tasks."tg:fmt"]
 run = "terragrunt hclfmt"
