@@ -775,7 +775,7 @@ export class SearchRepository {
           .$if(!!options.city, (qb) => qb.where('asset_exif.city', '=', options.city!))
           .$if(!!options.make, (qb) => qb.where('asset_exif.make', '=', options.make!))
           .$if(!!options.model, (qb) => qb.where('asset_exif.model', '=', options.model!))
-          .$if(!!options.rating, (qb) => qb.where('asset_exif.rating', '=', options.rating!)),
+          .$if(!!options.rating, (qb) => qb.where('asset_exif.rating', '>=', options.rating!)),
       )
       .$if(!!options.personIds?.length && !!options.spaceId, (qb) =>
         qb.where((eb) =>

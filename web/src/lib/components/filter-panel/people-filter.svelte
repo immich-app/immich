@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Icon } from '@immich/ui';
   import { mdiMagnify } from '@mdi/js';
+  import { SvelteMap } from 'svelte/reactivity';
   import type { PersonOption } from './filter-panel';
 
   interface Props {
@@ -17,11 +18,26 @@
 
   const INITIAL_SHOW_COUNT = 5;
 
+  const personCache = new SvelteMap<string, PersonOption>();
+  $effect(() => {
+    for (const person of people) {
+      personCache.set(person.id, person);
+    }
+  });
+
   // Orphaned people: selected but not in current results
   let orphanedPeople = $derived(
     selectedIds
       .filter((id) => !people.some((p) => p.id === id))
-      .map((id) => ({ id, name: id, isOrphaned: true }) as PersonOption & { isOrphaned: boolean }),
+      .map((id) => {
+        const cached = personCache.get(id);
+        return {
+          id,
+          name: cached?.name ?? id,
+          thumbnailUrl: cached?.thumbnailUrl,
+          isOrphaned: true,
+        } as PersonOption & { isOrphaned: boolean };
+      }),
   );
 
   let filteredPeople = $derived(
@@ -104,11 +120,30 @@
         </div>
 
         <!-- Avatar -->
-        <div
-          class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 text-[9px] font-semibold text-white dark:bg-gray-600"
-        >
-          {getInitial(person.name)}
-        </div>
+        {#if person.thumbnailUrl}
+          <img
+            src={person.thumbnailUrl}
+            alt={person.name}
+            class="h-5 w-5 flex-shrink-0 rounded-full object-cover"
+            onerror={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              img.style.display = 'none';
+              img.nextElementSibling?.removeAttribute('style');
+            }}
+          />
+          <div
+            class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[9px] font-semibold text-white"
+            style="display: none; background: {getAvatarGradient(person.name)}"
+          >
+            {getInitial(person.name)}
+          </div>
+        {:else}
+          <div
+            class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 text-[9px] font-semibold text-white dark:bg-gray-600"
+          >
+            {getInitial(person.name)}
+          </div>
+        {/if}
 
         <!-- Label -->
         <span class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left font-medium">{person.name}</span>

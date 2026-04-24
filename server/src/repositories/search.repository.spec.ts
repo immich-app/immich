@@ -30,6 +30,9 @@ const buildAssetSearchSql = (options: Record<string, unknown>) =>
     .selectAll('asset')
     .compile().sql;
 
+const buildFilteredAssetIdsQuery = (sut: SearchRepository, options: Record<string, unknown>) =>
+  (sut as any).buildFilteredAssetIds(['00000000-0000-0000-0000-000000000000'], options);
+
 const FAILURE_MESSAGE =
   'Do not add any secondary ORDER BY key to the inner searchSmart query. ' +
   'See comment at src/repositories/search.repository.ts (above the orderBy call). ' +
@@ -177,6 +180,15 @@ describe(SearchRepository.name, () => {
 
       // No WHERE predicate on the distance operator (<=>).
       expect(innerSql).not.toMatch(/\(smart_search\.embedding <=> \$\d+\)\s*<=/i);
+    });
+  });
+
+  describe('filter suggestions query shape', () => {
+    it('uses minimum-threshold rating filtering for facet asset scoping', () => {
+      const sql = buildFilteredAssetIdsQuery(sut, { rating: 4 }).compile().sql;
+
+      expect(sql).toMatch(/"asset_exif"\."rating"\s*>=\s*\$\d+/i);
+      expect(sql).not.toMatch(/"asset_exif"\."rating"\s*=\s*\$\d+/i);
     });
   });
 

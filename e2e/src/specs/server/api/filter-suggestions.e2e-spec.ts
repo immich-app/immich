@@ -12,6 +12,7 @@ describe('/search/suggestions/filters', () => {
   let assets: AssetMediaResponseDto[];
   let tagNatureId: string;
   let tagTravelId: string;
+  let thresholdPeopleByRating: Record<number, string>;
 
   // Discovered values from unfiltered response
   let unfilteredCountries: string[];
@@ -24,12 +25,14 @@ describe('/search/suggestions/filters', () => {
     admin = await utils.adminSetup();
     websocket = await utils.connectWebsocket(admin.accessToken);
 
-    // Upload 4 test photos with real EXIF (different cameras)
+    // Upload 6 test photos with real EXIF (different cameras)
     const files = [
       { filename: '/albums/nature/prairie_falcon.jpg' }, // Canon EOS R5
       { filename: '/formats/webp/denali.webp' }, // Canon EOS 7D
       { filename: '/formats/raw/Nikon/D80/glarus.nef' }, // Nikon D80
       { filename: '/formats/jpg/el_torcal_rocks.jpg' }, // HP scanner
+      { filename: '/albums/nature/wood_anemones.jpg' },
+      { filename: '/albums/text/japanese-shop.jpg' },
     ];
 
     assets = [];
@@ -58,6 +61,8 @@ describe('/search/suggestions/filters', () => {
       { latitude: 35.6895, longitude: 139.691_71 }, // Tokyo, Japan
       { latitude: 52.524_37, longitude: 13.410_53 }, // Berlin, Germany
       { latitude: 35.6895, longitude: 139.691_71 }, // Tokyo, Japan (same as B)
+      { latitude: 48.2082, longitude: 16.3738 }, // Vienna, Austria
+      { latitude: 59.3293, longitude: 18.0686 }, // Stockholm, Sweden
     ];
 
     for (const [i, dto] of coordinates.entries()) {
@@ -68,8 +73,8 @@ describe('/search/suggestions/filters', () => {
       await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
     }
 
-    // Set ratings: A=5, B=4, C=5, D=3
-    const ratings = [5, 4, 5, 3];
+    // Set ratings: A=5, B=4, C=5, D=3, E=2, F=1
+    const ratings = [5, 4, 5, 3, 2, 1];
     for (const [i, rating] of ratings.entries()) {
       await updateAsset({ id: assets[i].id, updateAssetDto: { rating } }, { headers: asBearerAuth(admin.accessToken) });
     }
@@ -89,6 +94,34 @@ describe('/search/suggestions/filters', () => {
     // A+C get "nature", B+D get "travel"
     await utils.tagAssets(admin.accessToken, tagNatureId, [assets[0].id, assets[2].id]);
     await utils.tagAssets(admin.accessToken, tagTravelId, [assets[1].id, assets[3].id]);
+
+    // Create deterministic People facet fixtures so rating thresholds can be
+    // checked for strict monotonicity:
+    // ★1+ => persons 1-5, ★2+ => 2-5, ... ★5+ => 5.
+    const db = await utils.connectDatabase();
+    thresholdPeopleByRating = {};
+    const personFixtures = [
+      { rating: 1, assetIndex: 5 },
+      { rating: 2, assetIndex: 4 },
+      { rating: 3, assetIndex: 3 },
+      { rating: 4, assetIndex: 1 },
+      { rating: 5, assetIndex: 0 },
+    ];
+
+    for (const { rating, assetIndex } of personFixtures) {
+      const name = `Facet Person ${rating}`;
+      const personResult = await db.query(
+        `INSERT INTO "person" ("ownerId", "name", "thumbnailPath")
+         VALUES ($1, $2, '/test/thumbnail.jpg') RETURNING id`,
+        [admin.userId, name],
+      );
+      const personId = personResult.rows[0].id as string;
+      await db.query(`INSERT INTO "asset_face" ("assetId", "personId") VALUES ($1, $2)`, [
+        assets[assetIndex].id,
+        personId,
+      ]);
+      thresholdPeopleByRating[rating] = name;
+    }
 
     // Discover unfiltered values
     const { body } = await request(app)
@@ -133,9 +166,9 @@ describe('/search/suggestions/filters', () => {
   });
 
   it('should narrow countries when filtering by rating', async () => {
-    // Rating 3 is only on asset D (Tokyo)
+    // Rating 5+ matches only A+C
     const { body } = await request(app)
-      .get('/search/suggestions/filters?rating=3&withSharedSpaces=true')
+      .get('/search/suggestions/filters?rating=5&withSharedSpaces=true')
       .set('Authorization', `Bearer ${admin.accessToken}`)
       .expect(200);
 
@@ -243,16 +276,51 @@ describe('/search/suggestions/filters', () => {
     const natureTagNames = natureFiltered.tags.map((t: { value: string }) => t.value);
     expect(natureTagNames).toContain('nature');
 
-    // Cross-filter by rating 3 (only asset D, Tokyo) → countries + tags should narrow
-    const { body: rating3 } = await request(app)
-      .get('/search/suggestions/filters?rating=3&withSharedSpaces=true')
+    // Cross-filter by rating 5+ (assets A+C) → countries + tags should narrow
+    const { body: rating5 } = await request(app)
+      .get('/search/suggestions/filters?rating=5&withSharedSpaces=true')
       .set('Authorization', `Bearer ${admin.accessToken}`)
       .expect(200);
 
-    expect(rating3.countries.length).toBeLessThan(unfiltered.countries.length);
-    const rating3TagNames = rating3.tags.map((t: { value: string }) => t.value);
-    expect(rating3TagNames).toContain('travel'); // asset D has "travel"
-    expect(rating3TagNames).not.toContain('nature'); // no rating-3 asset has "nature"
+    expect(rating5.countries.length).toBeLessThan(unfiltered.countries.length);
+    const rating5TagNames = rating5.tags.map((t: { value: string }) => t.value);
+    expect(rating5TagNames).toContain('nature');
+    expect(rating5TagNames).not.toContain('travel');
+  });
+
+  it('should keep People facet results monotonic as the minimum rating threshold increases', async () => {
+    const thresholds = [1, 2, 3, 4, 5] as const;
+    const responses = [];
+
+    for (const rating of thresholds) {
+      const response = await request(app)
+        .get(`/search/suggestions/filters?rating=${rating}&withSharedSpaces=true`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .expect(200);
+      responses.push(response.body);
+    }
+
+    const expectedPeopleByThreshold = [
+      [
+        thresholdPeopleByRating[1],
+        thresholdPeopleByRating[2],
+        thresholdPeopleByRating[3],
+        thresholdPeopleByRating[4],
+        thresholdPeopleByRating[5],
+      ],
+      [thresholdPeopleByRating[2], thresholdPeopleByRating[3], thresholdPeopleByRating[4], thresholdPeopleByRating[5]],
+      [thresholdPeopleByRating[3], thresholdPeopleByRating[4], thresholdPeopleByRating[5]],
+      [thresholdPeopleByRating[4], thresholdPeopleByRating[5]],
+      [thresholdPeopleByRating[5]],
+    ];
+
+    for (const [index, body] of responses.entries()) {
+      const actualNames = body.people.map((person: { name: string }) => person.name);
+      expect(actualNames).toEqual(expectedPeopleByThreshold[index]);
+      if (index > 0) {
+        expect(body.people.length).toBeLessThanOrEqual(responses[index - 1].people.length);
+      }
+    }
   });
 
   it('should return all suggestion categories for map view (withSharedSpaces)', async () => {
@@ -420,16 +488,16 @@ describe('/search/suggestions/filters', () => {
     expect(natureFiltered.ratings).toContain(5);
     expect(natureFiltered.ratings).not.toContain(4); // asset B (rated 4) doesn't have "nature"
 
-    // --- Cross-filter within space: filter by rating 4 → should narrow ---
-    const { body: rating4Filtered } = await request(app)
-      .get(`/search/suggestions/filters?spaceId=${space.id}&rating=4`)
+    // --- Cross-filter within space: filter by rating 5+ → should narrow ---
+    const { body: rating5Filtered } = await request(app)
+      .get(`/search/suggestions/filters?spaceId=${space.id}&rating=5`)
       .set('Authorization', `Bearer ${admin.accessToken}`)
       .expect(200);
 
-    // Only asset B has rating 4 in this space, so tags should narrow to just "travel"
-    const rating4TagNames = rating4Filtered.tags.map((t: { value: string }) => t.value);
-    expect(rating4TagNames).toContain('travel');
-    expect(rating4TagNames).not.toContain('nature');
+    // Only asset A is rated 5 in this space, so tags should narrow to just "nature"
+    const rating5TagNames = rating5Filtered.tags.map((t: { value: string }) => t.value);
+    expect(rating5TagNames).toContain('nature');
+    expect(rating5TagNames).not.toContain('travel');
   });
 
   it('should return other filter categories when filtering by space person ID', async () => {

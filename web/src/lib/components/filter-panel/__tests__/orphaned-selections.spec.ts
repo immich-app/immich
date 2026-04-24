@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { FilterPanelConfig } from '../filter-panel';
 import { createFilterState } from '../filter-panel';
 import FilterPanel from '../filter-panel.svelte';
+import PeopleFilter from '../people-filter.svelte';
 
 describe('Orphaned selections', () => {
   beforeEach(() => {
@@ -43,6 +44,33 @@ describe('Orphaned selections', () => {
     expect(orphanedItem).toBeTruthy();
     expect(orphanedItem.getAttribute('aria-pressed')).toBe('true');
     expect(orphanedItem.className).toContain('opacity-50');
+  });
+
+  it('should keep the cached person label when a selected person drops out of suggestions', async () => {
+    const onSelectionChange = vi.fn();
+    const { rerender } = render(PeopleFilter, {
+      props: {
+        people: [{ id: 'p3', name: 'Charlie', thumbnailUrl: '/people/p3/thumbnail' }],
+        selectedIds: ['p3'],
+        onSelectionChange,
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('people-item-p3').textContent).toContain('Charlie');
+    });
+
+    await rerender({
+      people: [{ id: 'p1', name: 'Alice' }],
+      selectedIds: ['p3'],
+      onSelectionChange,
+    });
+
+    await waitFor(() => {
+      const orphanedItem = screen.getByTestId('people-item-p3');
+      expect(orphanedItem.textContent).toContain('Charlie');
+      expect(orphanedItem.textContent).not.toContain('p3');
+    });
   });
 
   it('should preserve orphaned selection in filter state when clicked', async () => {
