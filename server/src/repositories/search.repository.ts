@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
+import { Expression, Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, SqlBool, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -390,14 +390,36 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getAssetsByCity(userIds: string[]) {
+  getAssetsByCity(userIds: string[], albumIds: string[] = []) {
+    // Wintlink fork: accept albumIds to include assets from shared albums in the
+    // Places grid on the Explore page.
+    const applyAccessFilter = <QB extends { where: any }>(qb: QB): QB =>
+      qb.where((eb: any) => {
+        const expressions: Expression<SqlBool>[] = [];
+        if (userIds.length > 0) {
+          expressions.push(eb('asset.ownerId', '=', anyUuid(userIds)));
+        }
+        if (albumIds.length > 0) {
+          expressions.push(
+            eb.exists(
+              eb
+                .selectFrom('album_asset')
+                .whereRef('album_asset.assetId', '=', 'asset.id')
+                .where('album_asset.albumId', 'in', albumIds),
+            ),
+          );
+        }
+        return eb.or(expressions);
+      });
+
     return this.db
       .withRecursive('cte', (qb) => {
-        const base = qb
-          .selectFrom('asset_exif')
-          .select(['city', 'assetId'])
-          .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-          .where('asset.ownerId', '=', anyUuid(userIds))
+        const base = applyAccessFilter(
+          qb
+            .selectFrom('asset_exif')
+            .select(['city', 'assetId'])
+            .innerJoin('asset', 'asset.id', 'asset_exif.assetId'),
+        )
           .where('asset.visibility', '=', AssetVisibility.Timeline)
           .where('asset.type', '=', AssetType.Image)
           .where('asset.deletedAt', 'is', null)
@@ -409,11 +431,12 @@ export class SearchRepository {
           .select(['l.city', 'l.assetId'])
           .innerJoinLateral(
             (qb) =>
-              qb
-                .selectFrom('asset_exif')
-                .select(['city', 'assetId'])
-                .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-                .where('asset.ownerId', '=', anyUuid(userIds))
+              applyAccessFilter(
+                qb
+                  .selectFrom('asset_exif')
+                  .select(['city', 'assetId'])
+                  .innerJoin('asset', 'asset.id', 'asset_exif.assetId'),
+              )
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
                 .where('asset.type', '=', AssetType.Image)
                 .where('asset.deletedAt', 'is', null)
@@ -448,14 +471,14 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[]): Promise<string[]> {
-    const res = await this.getExifField('country', userIds).execute();
+  async getCountries(userIds: string[], albumIds: string[] = []): Promise<string[]> {
+    const res = await this.getExifField('country', userIds, albumIds).execute();
     return res.map((row) => row.country!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
-    const res = await this.getExifField('state', userIds)
+  async getStates(userIds: string[], { country }: GetStatesOptions, albumIds: string[] = []): Promise<string[]> {
+    const res = await this.getExifField('state', userIds, albumIds)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .execute();
 
@@ -463,8 +486,12 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds)
+  async getCities(
+    userIds: string[],
+    { country, state }: GetCitiesOptions,
+    albumIds: string[] = [],
+  ): Promise<string[]> {
+    const res = await this.getExifField('city', userIds, albumIds)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .$if(!!state, (qb) => qb.where('state', '=', state!))
       .execute();
@@ -502,13 +529,34 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
-  private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
+  private getExifField(
+    field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel',
+    userIds: string[],
+    albumIds: string[] = [],
+  ) {
     return this.db
       .selectFrom('asset_exif')
       .select(field)
       .distinctOn(field)
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-      .where('ownerId', '=', anyUuid(userIds))
+      .where((eb) => {
+        // Wintlink fork: include assets from albums the user has access to.
+        const expressions: Expression<SqlBool>[] = [];
+        if (userIds.length > 0) {
+          expressions.push(eb('asset.ownerId', '=', anyUuid(userIds)));
+        }
+        if (albumIds.length > 0) {
+          expressions.push(
+            eb.exists(
+              eb
+                .selectFrom('album_asset')
+                .whereRef('album_asset.assetId', '=', 'asset.id')
+                .where('album_asset.albumId', 'in', albumIds),
+            ),
+          );
+        }
+        return eb.or(expressions);
+      })
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null)

@@ -11,6 +11,15 @@ docker/library
 uploads
 coverage
 
+# Wintlink fork: local testing artefacts (never commit)
+/.env
+/.env.local
+/library-local/
+/postgres-local/
+/docker/library-local/
+/docker/postgres-local/
+/docker/docker-compose.local.yml
+
 mobile/gradle.properties
 mobile/openapi/pubspec.lock
 mobile/*.jks

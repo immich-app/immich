@@ -146,30 +146,40 @@ export class SearchService extends BaseService {
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
-    const userIds = await this.getUserIdsToSearch(auth);
-    const assets = await this.searchRepository.getAssetsByCity(userIds);
+    const [userIds, albumIds] = await Promise.all([
+      this.getUserIdsToSearch(auth),
+      this.getAccessibleAlbumIds(auth),
+    ]);
+    const assets = await this.searchRepository.getAssetsByCity(userIds, albumIds);
     return assets.map((asset) => mapAsset(asset));
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
-    const userIds = await this.getUserIdsToSearch(auth);
-    const suggestions = await this.getSuggestions(userIds, dto);
+    const [userIds, albumIds] = await Promise.all([
+      this.getUserIdsToSearch(auth),
+      this.getAccessibleAlbumIds(auth),
+    ]);
+    const suggestions = await this.getSuggestions(userIds, dto, albumIds);
     if (dto.includeNull) {
       suggestions.push(null);
     }
     return suggestions;
   }
 
-  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
+  private getSuggestions(
+    userIds: string[],
+    dto: SearchSuggestionRequestDto,
+    albumIds: string[] = [],
+  ): Promise<Array<string | null>> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds);
+        return this.searchRepository.getCountries(userIds, albumIds);
       }
       case SearchSuggestionType.STATE: {
-        return this.searchRepository.getStates(userIds, dto);
+        return this.searchRepository.getStates(userIds, dto, albumIds);
       }
       case SearchSuggestionType.CITY: {
-        return this.searchRepository.getCities(userIds, dto);
+        return this.searchRepository.getCities(userIds, dto, albumIds);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
         return this.searchRepository.getCameraMakes(userIds, dto);
@@ -184,6 +194,12 @@ export class SearchService extends BaseService {
         return Promise.resolve([]);
       }
     }
+  }
+
+  // Wintlink fork: albums the user can read (owned + shared with them).
+  private async getAccessibleAlbumIds(auth: AuthDto): Promise<string[]> {
+    const albums = await this.albumRepository.getShared(auth.user.id);
+    return [...new Set(albums.map((album) => album.id))];
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
