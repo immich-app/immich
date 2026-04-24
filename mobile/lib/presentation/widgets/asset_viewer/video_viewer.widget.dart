@@ -148,7 +148,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     if (ref.read(assetViewerProvider).showingDetails) return;
 
     final autoPlayVideo = AppSetting.get(Setting.autoPlayVideo);
-    if (autoPlayVideo) await _notifier.play();
+    if (autoPlayVideo || widget.asset.isMotionPhoto) await _notifier.play();
   }
 
   void _onPlaybackEnded() {

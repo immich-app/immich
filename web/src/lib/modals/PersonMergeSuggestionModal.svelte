@@ -6,7 +6,7 @@
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
-  import ImageThumbnail from '../components/assets/thumbnail/image-thumbnail.svelte';
+  import ImageThumbnail from '../components/assets/thumbnail/ImageThumbnail.svelte';
 
   type Props = {
     personToMerge: PersonResponseDto;

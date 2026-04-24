@@ -1,14 +1,3 @@
-import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, withError } from '$lib/utils';
-import { getByteUnitString } from '$lib/utils/byte-units';
-import { getFormatter } from '$lib/utils/i18n';
-import { navigate } from '$lib/utils/navigation';
-import { asQueryString } from '$lib/utils/shared-links';
 import {
   AssetVisibility,
   bulkTagAssets,
@@ -26,13 +15,22 @@ import {
   type DownloadInfoDto,
   type ExifResponseDto,
   type StackResponseDto,
-  type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { downloadManager } from '$lib/managers/download-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { downloadRequest, withError } from '$lib/utils';
+import { getByteUnitString } from '$lib/utils/byte-units';
+import { getFormatter } from '$lib/utils/i18n';
+import { navigate } from '$lib/utils/navigation';
+import { asQueryString } from '$lib/utils/shared-links';
 import { handleError } from './handle-error';
 
 export const tagAssets = async ({
@@ -102,9 +100,8 @@ export const downloadUrl = (url: string, filename: string) => {
 };
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
-  const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
-  const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
-
+  const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
+  const dto = { ...options, archiveSize };
   const [error, downloadInfo] = await withError(() => getDownloadInfo({ ...authManager.params, downloadInfoDto: dto }));
   if (error) {
     const $t = get(t);

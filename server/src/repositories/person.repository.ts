@@ -9,7 +9,7 @@ import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { removeUndefinedKeys, withFilePath } from 'src/utils/database';
+import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -310,10 +310,13 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions) {
     return this.db
-      .selectFrom('person')
+      .with('similarity_threshold', (db) =>
+        db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
+      )
+      .selectFrom(['similarity_threshold', 'person'])
       .selectAll('person')
       .where('person.ownerId', '=', userId)
-      .where(() => sql`f_unaccent("person"."name") %>> f_unaccent(${personName})`)
+      .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)
       .orderBy(sql`f_unaccent("person"."name") <->>> f_unaccent(${personName})`)
       .limit(100)
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))
@@ -415,7 +418,7 @@ export class PersonRepository {
       (query as any) = query.with('added_embeddings', (db) => db.insertInto('face_search').values(embeddingsToAdd));
     }
 
-    await query.selectFrom(sql`(select 1)`.as('dummy')).execute();
+    await query.selectFrom(dummy).execute();
   }
 
   async update(person: Updateable<PersonTable> & { id: string }) {

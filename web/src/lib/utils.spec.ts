@@ -1,5 +1,5 @@
-import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { AssetTypeEnum } from '@immich/sdk';
+import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 

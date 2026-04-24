@@ -24,18 +24,33 @@ class UsageByUserDto {
   });
 
   /// Number of photos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int photos;
 
   /// User quota size in bytes (null if unlimited)
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
 
   /// Total storage usage in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usage;
 
   /// Storage usage for photos in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usagePhotos;
 
   /// Storage usage for videos in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usageVideos;
 
   /// User ID
@@ -45,6 +60,9 @@ class UsageByUserDto {
   String userName;
 
   /// Number of videos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int videos;
 
   @override

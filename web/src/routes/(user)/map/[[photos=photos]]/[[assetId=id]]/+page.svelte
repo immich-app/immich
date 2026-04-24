@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import MapTimelinePanel from '$lib/components/shared-components/map/MapTimelinePanel.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import MapTimelinePanel from './MapTimelinePanel.svelte';
   import type { SelectionBBox } from '$lib/components/shared-components/map/types';
   import { timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
@@ -61,7 +61,7 @@
           isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-2/3 sm:pe-2 sm:pb-0' : 'h-full w-full',
         ]}
       >
-        {#await import('$lib/components/shared-components/map/map.svelte')}
+        {#await import('$lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex items-center justify-center h-full w-full">
@@ -87,7 +87,7 @@
   </UserPageLayout>
   <Portal target="body">
     {#if assetViewerManager.isViewing}
-      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           cursor={{ current: assetViewerManager.asset! }}
           showNavigation={false}

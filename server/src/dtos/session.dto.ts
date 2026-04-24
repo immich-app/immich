@@ -1,57 +1,43 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Equals, IsInt, IsPositive, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Session } from 'src/database';
-import { Optional, ValidateBoolean } from 'src/validation';
+import z from 'zod';
 
-export class SessionCreateDto {
-  @ApiPropertyOptional({ type: 'number', description: 'Session duration in seconds' })
-  @IsInt()
-  @IsPositive()
-  @Optional()
-  duration?: number;
+const SessionCreateSchema = z
+  .object({
+    duration: z.number().min(1).optional().describe('Session duration in seconds'),
+    deviceType: z.string().optional().describe('Device type'),
+    deviceOS: z.string().optional().describe('Device OS'),
+  })
+  .meta({ id: 'SessionCreateDto' });
 
-  @ApiPropertyOptional({ description: 'Device type' })
-  @IsString()
-  @Optional()
-  deviceType?: string;
+const SessionUpdateSchema = z
+  .object({
+    isPendingSyncReset: z.boolean().optional().describe('Reset pending sync state'),
+  })
+  .meta({ id: 'SessionUpdateDto' });
 
-  @ApiPropertyOptional({ description: 'Device OS' })
-  @IsString()
-  @Optional()
-  deviceOS?: string;
-}
+const SessionResponseSchema = z
+  .object({
+    id: z.string().describe('Session ID'),
+    createdAt: z.string().describe('Creation date'),
+    updatedAt: z.string().describe('Last update date'),
+    expiresAt: z.string().optional().describe('Expiration date'),
+    current: z.boolean().describe('Is current session'),
+    deviceType: z.string().describe('Device type'),
+    deviceOS: z.string().describe('Device OS'),
+    appVersion: z.string().nullable().describe('App version'),
+    isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
+  })
+  .meta({ id: 'SessionResponseDto' });
 
-export class SessionUpdateDto {
-  @ValidateBoolean({ optional: true, description: 'Reset pending sync state' })
-  @Equals(true)
-  isPendingSyncReset?: true;
-}
+const SessionCreateResponseSchema = SessionResponseSchema.extend({
+  token: z.string().describe('Session token'),
+}).meta({ id: 'SessionCreateResponseDto' });
 
-export class SessionResponseDto {
-  @ApiProperty({ description: 'Session ID' })
-  id!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: string;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: string;
-  @ApiPropertyOptional({ description: 'Expiration date' })
-  expiresAt?: string;
-  @ApiProperty({ description: 'Is current session' })
-  current!: boolean;
-  @ApiProperty({ description: 'Device type' })
-  deviceType!: string;
-  @ApiProperty({ description: 'Device OS' })
-  deviceOS!: string;
-  @ApiProperty({ description: 'App version' })
-  appVersion!: string | null;
-  @ApiProperty({ description: 'Is pending sync reset' })
-  isPendingSyncReset!: boolean;
-}
-
-export class SessionCreateResponseDto extends SessionResponseDto {
-  @ApiProperty({ description: 'Session token' })
-  token!: string;
-}
+export class SessionCreateDto extends createZodDto(SessionCreateSchema) {}
+export class SessionUpdateDto extends createZodDto(SessionUpdateSchema) {}
+export class SessionResponseDto extends createZodDto(SessionResponseSchema) {}
+export class SessionCreateResponseDto extends createZodDto(SessionCreateResponseSchema) {}
 
 export const mapSession = (entity: Session, currentId?: string): SessionResponseDto => ({
   id: entity.id,

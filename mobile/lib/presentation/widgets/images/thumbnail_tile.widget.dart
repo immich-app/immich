@@ -129,7 +129,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                       }
 
                       animation.addStatusListener(animationStatusListener);
-                      return to.widget;
+                      return direction == HeroFlightDirection.push ? from.widget : to.widget;
                     },
                   ),
                 ),

@@ -26,6 +26,7 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
@@ -221,9 +222,14 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { result };
   }
 
-  async newAlbum(dto: Insertable<AlbumTable>, assetIds?: string[]) {
+  async newAlbum({ ownerId, ...dto }: Insertable<AlbumTable> & { ownerId: string }, assetIds?: string[]) {
     const album = mediumFactory.albumInsert(dto);
-    const result = await this.get(AlbumRepository).create(album, assetIds ?? [], []);
+    const result = await this.get(AlbumRepository).create(
+      album,
+      assetIds ?? [],
+      [{ userId: ownerId, role: AlbumUserRole.Owner }],
+      ownerId,
+    );
     return { album, result };
   }
 
@@ -500,6 +506,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       });
     }
 
+    case CronRepository: {
+      return automock(CronRepository, { args: [undefined, { setContext: () => {} }], strict: false });
+    }
+
     case EmailRepository: {
       return automock(EmailRepository, { args: [{ setContext: () => {} }] });
     }
@@ -544,8 +554,6 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   const id = asset.id || newUuid();
   const now = newDate();
   const defaults: Insertable<AssetTable> = {
-    deviceAssetId: '',
-    deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
     checksumAlgorithm: ChecksumAlgorithm.sha1File,
@@ -567,9 +575,9 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   };
 };
 
-const albumInsert = (album: Partial<Insertable<AlbumTable>> & { ownerId: string }) => {
+const albumInsert = (album: Partial<Insertable<AlbumTable>>) => {
   const id = album.id || newUuid();
-  const defaults: Omit<Insertable<AlbumTable>, 'ownerId'> = {
+  const defaults: Insertable<AlbumTable> = {
     albumName: 'Album',
   };
 

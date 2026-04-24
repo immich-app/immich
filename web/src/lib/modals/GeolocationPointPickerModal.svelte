@@ -2,8 +2,8 @@
   import { isDefined } from '$lib';
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
-  import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
-  import type Map from '$lib/components/shared-components/map/map.svelte';
+  import CoordinatesInput from '$lib/components/shared-components/CoordinatesInput.svelte';
+  import type Map from '$lib/components/shared-components/map/Map.svelte';
   import { timeDebounceOnSearch, timeToLoadTheMap } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { geolocationManager } from '$lib/managers/geolocation.manager.svelte';
@@ -55,12 +55,6 @@
     }
   });
 
-  $effect(() => {
-    if (searchWord === '') {
-      suggestedPlaces = [];
-    }
-  });
-
   const handleConfirm = (confirmed?: boolean) => {
     if (point && confirmed) {
       geolocationManager.onSelected(point);
@@ -71,7 +65,7 @@
   };
 
   const getLocation = (name: string, admin1Name?: string, admin2Name?: string): string => {
-    return `${name}${admin1Name ? ', ' + admin1Name : ''}${admin2Name ? ', ' + admin2Name : ''}`;
+    return [name, admin1Name, admin2Name].filter(Boolean).join(', ');
   };
 
   const handleSearchPlaces = () => {
@@ -150,7 +144,7 @@
 >
   {#snippet prompt()}
     <div class="flex flex-col w-full h-full gap-2">
-      <div class="relative w-64 sm:w-96 z-1">
+      <div class="relative w-64 sm:w-96 z-1" use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}>
         {#if suggestionContainer}
           <div use:listNavigation={suggestionContainer}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
@@ -167,22 +161,18 @@
         {/if}
 
         <div
-          class="absolute w-full"
+          class="absolute w-full bg-gray-200 dark:bg-gray-700 rounded-b-lg"
           id="suggestion"
           bind:this={suggestionContainer}
-          use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
         >
           {#if !hideSuggestion}
-            {#each suggestedPlaces as place, index (place.latitude + place.longitude)}
+            {#each suggestedPlaces as place (place.latitude + place.longitude)}
               <button
                 type="button"
-                class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
-                suggestedPlaces.length - 1
-                  ? 'rounded-b-lg border-b'
-                  : ''}"
+                class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-12 place-items-center px-5 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] last:rounded-b-lg last:border-b"
                 onclick={() => handleUseSuggested(place.latitude, place.longitude)}
               >
-                <p class="ms-4 text-sm text-gray-700 dark:text-gray-100 truncate">
+                <p class="text-sm text-gray-700 dark:text-gray-100 truncate">
                   {getLocation(place.name, place.admin1name, place.admin2name)}
                 </p>
               </button>
@@ -193,7 +183,7 @@
 
       <span>{$t('pick_a_location')}</span>
       <div class="h-125 min-h-75 w-full z-0">
-        {#await import('$lib/components/shared-components/map/map.svelte')}
+        {#await import('$lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex items-center justify-center h-full w-full">

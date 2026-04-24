@@ -12,13 +12,9 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -27,6 +23,8 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
 
 class BootstrapErrorWidget extends StatelessWidget {
@@ -323,29 +321,27 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               wsProvider.connect();
               unawaited(infoProvider.getServerInfo());
 
-              if (Store.isBetaTimelineEnabled) {
-                bool syncSuccess = false;
+              bool syncSuccess = false;
+              await Future.wait([
+                backgroundManager.syncLocal(full: true),
+                backgroundManager.syncRemote().then((success) => syncSuccess = success),
+              ]);
+
+              if (syncSuccess) {
                 await Future.wait([
-                  backgroundManager.syncLocal(full: true),
-                  backgroundManager.syncRemote().then((success) => syncSuccess = success),
+                  backgroundManager.hashAssets().then((_) {
+                    _resumeBackup(backupProvider);
+                  }),
+                  _resumeBackup(backupProvider),
+                  // TODO: Bring back when the soft freeze issue is addressed
+                  // backgroundManager.syncCloudIds(),
                 ]);
+              } else {
+                await backgroundManager.hashAssets();
+              }
 
-                if (syncSuccess) {
-                  await Future.wait([
-                    backgroundManager.hashAssets().then((_) {
-                      _resumeBackup(backupProvider);
-                    }),
-                    _resumeBackup(backupProvider),
-                    // TODO: Bring back when the soft freeze issue is addressed
-                    // backgroundManager.syncCloudIds(),
-                  ]);
-                } else {
-                  await backgroundManager.hashAssets();
-                }
-
-                if (Store.get(StoreKey.syncAlbums, false)) {
-                  await backgroundManager.syncLinkedAlbum();
-                }
+              if (Store.get(StoreKey.syncAlbums, false)) {
+                await backgroundManager.syncLinkedAlbum();
               }
             } catch (e) {
               log.severe('Failed establishing connection to the server: $e');
@@ -368,58 +364,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     // clean install - change the default of the flag
     // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
-      final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
-      if (needBetaMigration) {
-        bool migrate =
-            (await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text("New Timeline Experience"),
-                content: const Text(
-                  "The old timeline has been deprecated and will be removed in an upcoming release. Would you like to switch to the new timeline now?",
-                ),
-                actions: [
-                  TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text("No")),
-                  ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text("Yes")),
-                ],
-              ),
-            )) ??
-            false;
-        if (migrate != true) {
-          migrate =
-              (await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text("Are you sure?"),
-                  content: const Text(
-                    "If you choose to remain on the old timeline, you will be automatically migrated to the new timeline in an upcoming release. Would you like to switch now?",
-                  ),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text("No")),
-                    ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text("Yes")),
-                  ],
-                ),
-              )) ??
-              false;
-        }
-        await Store.put(StoreKey.needBetaMigration, false);
-        if (migrate) {
-          unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]));
-          return;
-        }
-      }
-
-      unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
-    }
-
-    if (Store.isBetaTimelineEnabled) {
-      return;
-    }
-
-    final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
-    if (hasPermission) {
-      // Resume backup (if enable) then navigate
-      await ref.watch(backupProvider.notifier).resumeBackup();
+      unawaited(context.replaceRoute(const TabShellRoute()));
     }
   }
 

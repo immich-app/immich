@@ -44,7 +44,6 @@ class AssetEditActionItemDtoParameters {
   /// Rotation angle in degrees
   num angle;
 
-  /// Axis to mirror along
   MirrorAxis axis;
 
   @override

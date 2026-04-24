@@ -33,10 +33,7 @@ describe(PartnerController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/partners`).set('Authorization', `Bearer token`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest([
-          'direction should not be empty',
-          expect.stringContaining('direction must be one of the following values:'),
-        ]),
+        errorDto.badRequest([expect.stringContaining('[direction] Invalid option: expected one of')]),
       );
     });
 
@@ -47,7 +44,7 @@ describe(PartnerController.name, () => {
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest([expect.stringContaining('direction must be one of the following values:')]),
+        errorDto.badRequest([expect.stringContaining('[direction] Invalid option: expected one of')]),
       );
     });
   });
@@ -64,7 +61,7 @@ describe(PartnerController.name, () => {
         .send({ sharedWithId: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+      expect(body).toEqual(errorDto.badRequest(['[sharedWithId] Invalid UUID']));
     });
   });
 
@@ -80,7 +77,7 @@ describe(PartnerController.name, () => {
         .send({ inTimeline: true })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+      expect(body).toEqual(errorDto.badRequest(['[id] Invalid UUID']));
     });
   });
 
@@ -95,7 +92,7 @@ describe(PartnerController.name, () => {
         .delete(`/partners/invalid`)
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+      expect(body).toEqual(errorDto.badRequest(['[id] Invalid UUID']));
     });
   });
 });

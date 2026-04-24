@@ -1,9 +1,9 @@
 <script lang="ts">
   import empty2Url from '$lib/assets/empty-2.svg';
-  import Albums from '$lib/components/album-page/albums-list.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import Albums from '$lib/components/album-page/AlbumsList.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import { Route } from '$lib/route';
   import { getAlbumsActions } from '$lib/services/album.service';
   import { getSharedLinksActions } from '$lib/services/shared-link.service';
