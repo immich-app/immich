@@ -252,6 +252,35 @@ test.describe('global search palette', () => {
     await expect(page).not.toHaveURL(/\/search$/);
   });
 
+  test('legacy /search renders results and opens a blank palette from the banner', async ({ page }) => {
+    const legacyQuery = encodeURIComponent(JSON.stringify({ query: 'beach' }));
+    await page.goto(`/search?query=${legacyQuery}`);
+
+    await expect(page.locator('#search-chips')).toContainText('beach');
+    await expect(page.getByText(/use .?k to search/i)).toBeVisible();
+    await expect(page.locator('#asset-selection-app-bar input')).toHaveCount(0);
+
+    await page.getByRole('button', { name: /open palette/i }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('combobox')).toHaveValue('');
+  });
+
+  test('legacy /search banner starts a fresh search on /photos', async ({ page }) => {
+    const legacyQuery = encodeURIComponent(JSON.stringify({ query: 'beach', city: 'Paris' }));
+    await page.goto(`/search?query=${legacyQuery}`);
+
+    await page.getByRole('button', { name: /open palette/i }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('combobox').fill('sunset');
+    await page.keyboard.press('Enter');
+
+    await expect(page).toHaveURL(/\/photos\?q=sunset$/);
+  });
+
   test('palette renders sections in designed order when populated', async ({ page }) => {
     // Seed at least one match in every entity section the palette renders. Per
     // the helper docstring, People + Places are best-effort (people need faces,
