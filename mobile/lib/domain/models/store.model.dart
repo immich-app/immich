@@ -22,7 +22,7 @@ enum StoreKey<T> {
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>._(100),
   loadOriginal<bool>._(101),
-  themeMode<String>._(102),
+  // id 102 (themeMode) moved to user_config.theme-mode
   tilesPerRow<int>._(103),
   dynamicLayout<bool>._(104),
   groupAssetsBy<int>._(105),
@@ -35,7 +35,7 @@ enum StoreKey<T> {
   albumThumbnailCacheSize<int>._(112),
   selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
-  logLevel<int>._(115),
+  // id 115 (logLevel) moved to app_metadata.log-level
   preferRemoteImage<bool>._(116),
   loopVideo<bool>._(117),
   // map related settings

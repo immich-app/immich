@@ -12,6 +12,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
 import '../domain/service.mock.dart';
+import '../infrastructure/repository.mock.dart';
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 
@@ -23,6 +24,7 @@ void main() {
   late MockNetworkService networkService;
   late MockBackgroundSyncManager backgroundSyncManager;
   late MockAppSettingService appSettingsService;
+  late MockCachedMetadataRepository metadataRepository;
   late Drift db;
 
   setUp(() async {
@@ -32,6 +34,7 @@ void main() {
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
     appSettingsService = MockAppSettingService();
+    metadataRepository = MockCachedMetadataRepository();
 
     sut = AuthService(
       authApiRepository,
@@ -40,6 +43,7 @@ void main() {
       networkService,
       backgroundSyncManager,
       appSettingsService,
+      metadataRepository,
     );
 
     registerFallbackValue(Uri());

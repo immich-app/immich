@@ -1,25 +1,80 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart';
+import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/metadata_kind.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/cached_metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 
-const int targetVersion = 25;
+const int targetVersion = 26;
 
-Future<void> migrateDatabaseIfNeeded() async {
+Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int version = Store.get(StoreKey.version, targetVersion);
 
   if (version < 25) {
-    final accessToken = Store.tryGet(StoreKey.accessToken);
-    if (accessToken != null && accessToken.isNotEmpty) {
-      final serverUrls = ApiService.getServerUrls();
-      if (serverUrls.isNotEmpty) {
-        await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
-      }
-    }
+    await _migrateTo25();
+  }
+
+  if (version < 26) {
+    await _migrateTo26(drift);
   }
 
   await Store.put(StoreKey.version, targetVersion);
   return;
+}
+
+Future<void> _migrateTo25() async {
+  final accessToken = Store.tryGet(StoreKey.accessToken);
+  if (accessToken == null || accessToken.isEmpty) return;
+
+  final serverUrls = ApiService.getServerUrls();
+  if (serverUrls.isEmpty) return;
+
+  await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
+}
+
+Future<void> _migrateTo26(Drift drift) async {
+  const int themeModeKey = 102;
+  const int logLevelKey = 115;
+
+  final cache = CachedMetadataRepository.instance;
+  final migrated = <int>[];
+
+  final themeMode = await _readLegacyStoreString(drift, themeModeKey);
+  if (themeMode != null) {
+    final mode = ThemeMode.values.firstWhere((m) => m.name == themeMode, orElse: () => ThemeMode.system);
+    await cache.update(MetadataKind.appConfig, (current) => current.copyWith(themeMode: mode));
+    migrated.add(themeModeKey);
+  }
+
+  final logLevelIndex = await _readLegacyStoreInt(drift, logLevelKey);
+  if (logLevelIndex != null) {
+    final logLevel = LogLevel.values.elementAtOrNull(logLevelIndex) ?? LogLevel.info;
+    await cache.update(MetadataKind.systemConfig, (current) => current.copyWith(logLevel: logLevel));
+    await LogService.I.setLogLevel(logLevel);
+    migrated.add(logLevelKey);
+  }
+
+  await _deleteLegacyStoreRows(drift, migrated);
+}
+
+Future<String?> _readLegacyStoreString(Drift drift, int id) async {
+  final row = await (drift.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+  return row?.stringValue;
+}
+
+Future<int?> _readLegacyStoreInt(Drift drift, int id) async {
+  final row = await (drift.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+  return row?.intValue;
+}
+
+Future<void> _deleteLegacyStoreRows(Drift drift, List<int> ids) async {
+  if (ids.isEmpty) return;
+  await (drift.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
 }
