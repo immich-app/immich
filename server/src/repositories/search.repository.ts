@@ -329,8 +329,12 @@ export class SearchRepository {
     options: SmartSearchOptions,
   ) {
     const hasDistanceThreshold = isActiveDistanceThreshold(options.maxDistance);
+    const personIds = options.personIds?.filter(Boolean) ?? [];
 
-    const baseQuery = searchAssetBuilder(kysely, { ...options, ratingIsMinimum: true })
+    let baseQuery = searchAssetBuilder(kysely, {
+      ...without(options, 'personIds', 'personMatchAny'),
+      ratingIsMinimum: true,
+    })
       .selectAll('asset')
       .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
       .$if(hasDistanceThreshold, (qb) =>
@@ -343,6 +347,27 @@ export class SearchRepository {
       // vchord). Cross-page duplicates from identical embeddings are caught by
       // the frontend dedup in web/src/lib/utils/search-dedup.ts.
       .orderBy(sql`smart_search.embedding <=> ${options.embedding}`);
+
+    if (personIds.length > 0) {
+      // Keep the smart_search ordered scan as the driving path. Materializing the
+      // full matching asset_face set first pushes the planner back to tens of
+      // thousands of smart_search PK lookups on person-filtered queries.
+      baseQuery = baseQuery.where((eb) => {
+        const hasVisiblePersonFace = (personId: string | string[]) =>
+          eb.exists(
+            eb
+              .selectFrom('asset_face')
+              .whereRef('asset_face.assetId', '=', 'asset.id')
+              .where('asset_face.deletedAt', 'is', null)
+              .where('asset_face.isVisible', 'is', true)
+              .where('asset_face.personId', '=', Array.isArray(personId) ? anyUuid(personId) : asUuid(personId)),
+          );
+
+        return options.personMatchAny
+          ? hasVisiblePersonFace(personIds)
+          : eb.and(personIds.map((personId) => hasVisiblePersonFace(personId)));
+      });
+    }
 
     if (options.orderDirection) {
       const orderDirection = options.orderDirection.toLowerCase() as OrderByDirection;

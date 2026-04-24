@@ -64,6 +64,10 @@ const countOuterOrderByExpressions = (compiledSql: string): number => {
   return last[1].split(',').filter((s) => s.trim().length > 0).length;
 };
 
+const countMatches = (compiledSql: string, pattern: RegExp): number => {
+  return [...compiledSql.matchAll(pattern)].length;
+};
+
 describe(SearchRepository.name, () => {
   const sut = new SearchRepository(offlineKysely());
 
@@ -180,6 +184,41 @@ describe(SearchRepository.name, () => {
 
       // No WHERE predicate on the distance operator (<=>).
       expect(innerSql).not.toMatch(/\(smart_search\.embedding <=> \$\d+\)\s*<=/i);
+    });
+
+    it('personIds path uses correlated EXISTS instead of joining grouped asset_face rows', () => {
+      const { base } = buildQueries(sut, { page: 1, size: 100 }, { ...baseOptions, personIds: ['person-1'] });
+      const innerSql = base.compile().sql;
+
+      expect(countOrderByExpressions(innerSql + ' limit', 'limit'), FAILURE_MESSAGE).toBe(1);
+      expect(innerSql).toMatch(/exists\s*\(select\b[\s\S]+from\s+"asset_face"/i);
+      expect(innerSql).toMatch(/"asset_face"\."assetId"\s*=\s*"asset"\."id"/i);
+      expect(innerSql).not.toMatch(/join\s+\(select\s+"assetId"\s+from\s+"asset_face"/i);
+      expect(innerSql).not.toMatch(/group by\s+"assetId"/i);
+    });
+
+    it('personIds all-match path emits one correlated EXISTS per person', () => {
+      const { base } = buildQueries(
+        sut,
+        { page: 1, size: 100 },
+        { ...baseOptions, personIds: ['person-1', 'person-2'] },
+      );
+      const innerSql = base.compile().sql;
+
+      expect(countMatches(innerSql, /exists\s*\(select\b[\s\S]+?from\s+"asset_face"/gi)).toBe(2);
+      expect(innerSql).not.toMatch(/having\s+count\(distinct\s+"personId"\)/i);
+    });
+
+    it('personIds any-match path uses a single correlated EXISTS with any(uuid[])', () => {
+      const { base } = buildQueries(
+        sut,
+        { page: 1, size: 100 },
+        { ...baseOptions, personIds: ['person-1', 'person-2'], personMatchAny: true },
+      );
+      const innerSql = base.compile().sql;
+
+      expect(countMatches(innerSql, /exists\s*\(select\b[\s\S]+?from\s+"asset_face"/gi)).toBe(1);
+      expect(innerSql).toMatch(/"asset_face"\."personId"\s*=\s*any\(\$[\d]+::uuid\[\]\)/i);
     });
   });
 
