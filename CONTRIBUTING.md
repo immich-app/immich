@@ -63,9 +63,11 @@ Gallery uses a **two-phase release flow** so mobile app builds are already live 
 ### Release Mobile P1 (`.github/workflows/gallery-release-mobile.yml`)
 
 1. Maintainer triggers the workflow from the Actions tab. Version is computed automatically from commits since the last tag (rules below), or passed explicitly via input.
-2. The mobile app is built and signed. iOS IPA uploads to TestFlight. Android AAB is attached as a workflow artifact and the APK is attached to the draft release for sideload; Play Store upload is currently disabled while the app is in Google review and will be re-enabled once review completes.
+2. The mobile app is built and signed. Android AAB uploads to the Play Store internal track, iOS IPA uploads to TestFlight, the AAB is attached as a workflow artifact, and the APK is attached to the draft release for sideload.
 3. A **draft** GitHub Release is created pinning the version (tag name), commit SHA (`target_commitish`), and APK (asset). The draft is invisible to end users.
-4. The maintainer manually promotes the Play internal build (once Play uploads are re-enabled — currently the AAB must be uploaded by hand) to **production** in Play Console and submits the App Store for review. Once both stores show the new version live to end users, proceed to phase 2. Typically ~24h.
+4. The maintainer manually promotes the Play internal build to **production** in Play Console and submits the App Store build for review. Once both stores show the new version live to end users, proceed to phase 2. Typically ~24h.
+
+To test the Play Store upload without creating a release draft or uploading to TestFlight, manually run `Gallery Build Mobile` with `environment=production`, a throwaway `version`, and `build_target=android`. This uploads a real Play internal-track build and consumes that Android `versionCode`, but does not publish server images or create a draft release.
 
 ### Release Gallery P2 (`.github/workflows/gallery-release.yml`)
 

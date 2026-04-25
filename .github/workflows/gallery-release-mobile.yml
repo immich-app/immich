@@ -1,14 +1,11 @@
 name: Release Mobile P1
 
-# Phase 1 of the split release cycle. Builds mobile, uploads iOS IPA to
-# TestFlight, and publishes the Android AAB as a workflow artifact for
-# manual upload to Play Console. (Fastlane Play upload is temporarily
-# disabled while the app is in Google review — re-enable in
-# gallery-build-mobile.yml when review clears.) Creates a draft GitHub
-# Release that pins the version (tag name), commit SHA (target_commitish),
-# and APK (asset). The maintainer uploads the AAB to Play internal, promotes
-# to production, submits App Store for review. Once both are live, trigger
-# gallery-release.yml to build the server and promote the draft. See
+# Phase 1 of the split release cycle. Builds mobile, uploads Android AAB to
+# Play Store internal, uploads iOS IPA to TestFlight, and keeps the AAB as a
+# workflow artifact. Creates a draft GitHub Release that pins the version (tag
+# name), commit SHA (target_commitish), and APK (asset). The maintainer
+# promotes the Play internal build to production, submits App Store for review,
+# then triggers gallery-release.yml once both stores are live. See
 # docs/plans/2026-04-17-split-mobile-server-release-design.md.
 
 on:

@@ -2,10 +2,9 @@ name: Gallery Build Mobile
 
 # For production releases, trigger via gallery-release-mobile.yml.
 # Manual workflow_dispatch with a non-empty version input here will
-# upload to TestFlight (and Play Store once that fastlane block is
-# re-enabled) WITHOUT creating a release draft, which breaks the
-# phase-1 → phase-2 handoff. Use only for ad-hoc smoke builds (leave
-# version empty).
+# upload to stores WITHOUT creating a release draft, which breaks the
+# phase-1 → phase-2 handoff. Use build_target=android only for a
+# Play-only dry run; otherwise leave version empty for smoke builds.
 
 on:
   workflow_dispatch:
@@ -23,6 +22,15 @@ on:
         required: false
         type: string
         default: ''
+      build_target:
+        description: 'Mobile platform(s) to build. Use android for a Play-only dry run.'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - android
+          - ios
   workflow_call:
     inputs:
       ref:
@@ -38,6 +46,11 @@ on:
         required: false
         type: string
         default: ''
+      build_target:
+        description: 'Mobile platform(s) to build.'
+        required: false
+        type: string
+        default: 'both'
     secrets:
       KEY_JKS:
         required: true
@@ -86,7 +99,7 @@ jobs:
     permissions:
       contents: read
     # Skip when PR from a fork
-    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' }}
+    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && (inputs.build_target == '' || inputs.build_target == 'both' || inputs.build_target == 'android') }}
     environment: mobile-build
     runs-on: ubuntu-latest
 
@@ -210,34 +223,30 @@ jobs:
           path: mobile/build/app/outputs/flutter-apk/gallery-${{ inputs.version }}.apk
           if-no-files-found: error
 
-      # Play Store upload temporarily disabled while the app is in review —
-      # new internal-track builds can't be pushed until Google finishes review.
-      # The AAB artifact is still produced above and the APK is attached to the
-      # GitHub Release, so sideload users remain unblocked.
-      # - name: Setup Ruby
-      #   if: inputs.version != ''
-      #   uses: ruby/setup-ruby@c515ec17f69368147deb311832da000dd229d338 # v1.297.0
-      #   with:
-      #     ruby-version: '3.3'
-      #     bundler-cache: true
-      #     working-directory: ./mobile/android/gallery-release
-      #
-      # - name: Write Play Store service account key
-      #   if: inputs.version != ''
-      #   working-directory: ./mobile/android/gallery-release
-      #   env:
-      #     PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
-      #   run: printf '%s' "$PLAY_STORE_JSON_KEY" > fastlane/play-store-key.json
-      #
-      # - name: Upload to Play Store internal track
-      #   if: inputs.version != ''
-      #   working-directory: ./mobile/android/gallery-release
-      #   run: bundle exec fastlane android internal
-      #
-      # - name: Remove Play Store service account key
-      #   if: always()
-      #   working-directory: ./mobile/android/gallery-release
-      #   run: rm -f fastlane/play-store-key.json
+      - name: Setup Ruby
+        if: inputs.version != ''
+        uses: ruby/setup-ruby@c515ec17f69368147deb311832da000dd229d338 # v1.297.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: ./mobile/android/gallery-release
+
+      - name: Write Play Store service account key
+        if: inputs.version != ''
+        working-directory: ./mobile/android/gallery-release
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+        run: printf '%s' "$PLAY_STORE_JSON_KEY" > fastlane/play-store-key.json
+
+      - name: Upload to Play Store internal track
+        if: inputs.version != ''
+        working-directory: ./mobile/android/gallery-release
+        run: bundle exec fastlane android internal
+
+      - name: Remove Play Store service account key
+        if: always()
+        working-directory: ./mobile/android/gallery-release
+        run: rm -f fastlane/play-store-key.json
 
       - name: Save Gradle Cache
         id: cache-gradle-save
@@ -256,7 +265,7 @@ jobs:
     name: Build and sign iOS
     permissions:
       contents: read
-    if: ${{ !github.event.pull_request.head.repo.fork }}
+    if: ${{ !github.event.pull_request.head.repo.fork && (inputs.build_target == '' || inputs.build_target == 'both' || inputs.build_target == 'ios') }}
     environment: mobile-build
     runs-on: macos-15
 
