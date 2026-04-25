@@ -54,6 +54,7 @@ import { COMMAND_ITEMS, type CommandItem } from './command-items';
 import {
   GlobalSearchManager,
   RECONCILE_ORDER_BY_SCOPE,
+  type EntityItem,
   type Provider,
   type ProviderStatus,
   type SearchMode,
@@ -2682,9 +2683,9 @@ describe('SWR loading rules', () => {
           total: 1,
         } as ProviderStatus<EntityItem>);
       }
-      return new Promise(
-        (r) => (resolveRerun = () => r({ status: 'empty' } as ProviderStatus<EntityItem>)),
-      ) as Promise<ProviderStatus<EntityItem>>;
+      return new Promise((r) => (resolveRerun = () => r({ status: 'empty' } as ProviderStatus<EntityItem>))) as Promise<
+        ProviderStatus<EntityItem>
+      >;
     });
 
     try {

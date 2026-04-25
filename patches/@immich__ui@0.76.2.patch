@@ -21,3 +21,16 @@ index e649c9c881ff65eb857d14e86f649faed15fe574..a439e0f213231f3c60da9aaf94d4b64a
              on(document.body, 'keydown', (event) => this.#handleKeydown(event));
          }
      }
+diff --git a/dist/components/ImageCarousel/ImageCarousel.svelte b/dist/components/ImageCarousel/ImageCarousel.svelte
+index d0f8cf2a6b4d8ebfcf81ad9bb6744f7c6dd77c45..846ad79556d274e6f646b8841a085f071be13a65 100644
+--- a/dist/components/ImageCarousel/ImageCarousel.svelte
++++ b/dist/components/ImageCarousel/ImageCarousel.svelte
+@@ -39,7 +39,7 @@
+     <div
+       class="absolute start-0 top-0 h-full w-full rounded-xl bg-linear-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
+     ></div>
+-    <p class="absolute start-4 bottom-2 text-lg text-white max-md:text-sm">
++    <p class="absolute start-4 bottom-2 w-[calc(100%-2rem)] whitespace-normal text-lg text-white max-md:text-sm">
+       {item.title}
+     </p>
+   </a>
