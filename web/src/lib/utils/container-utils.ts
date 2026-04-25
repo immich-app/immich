@@ -49,13 +49,6 @@ export const scaleToFit = (dimensions: Size, container: Size): Size => {
   };
 };
 
-const getElementSize = (element: HTMLImageElement | HTMLVideoElement): Size => {
-  if (element instanceof HTMLVideoElement) {
-    return { width: element.clientWidth, height: element.clientHeight };
-  }
-  return { width: element.width, height: element.height };
-};
-
 export const getNaturalSize = (element: HTMLImageElement | HTMLVideoElement): Size => {
   if (element instanceof HTMLVideoElement) {
     return { width: element.videoWidth, height: element.videoHeight };
@@ -63,17 +56,18 @@ export const getNaturalSize = (element: HTMLImageElement | HTMLVideoElement): Si
   return { width: element.naturalWidth, height: element.naturalHeight };
 };
 
-export const getContentMetrics = (element: HTMLImageElement | HTMLVideoElement): ContentMetrics => {
-  const natural = getNaturalSize(element);
-  const client = getElementSize(element);
-  const { width: contentWidth, height: contentHeight } = scaleToFit(natural, client);
+export function computeContentMetrics(content: Size, container: Size): ContentMetrics {
+  if (content.width === 0 || content.height === 0) {
+    return { contentWidth: 0, contentHeight: 0, offsetX: 0, offsetY: 0 };
+  }
+  const { width: contentWidth, height: contentHeight } = scaleToFit(content, container);
   return {
     contentWidth,
     contentHeight,
-    offsetX: (client.width - contentWidth) / 2,
-    offsetY: (client.height - contentHeight) / 2,
+    offsetX: (container.width - contentWidth) / 2,
+    offsetY: (container.height - contentHeight) / 2,
   };
-};
+}
 
 export function mapNormalizedToContent(point: Point, sizeOrMetrics: Size | ContentMetrics): Point {
   if ('contentWidth' in sizeOrMetrics) {
@@ -107,5 +101,27 @@ export function mapNormalizedRectToContent(
     left: tl.x,
     width: br.x - tl.x,
     height: br.y - tl.y,
+  };
+}
+
+function mapContentToNatural(point: Point, metrics: ContentMetrics, naturalSize: Size): Point {
+  return {
+    x: ((point.x - metrics.offsetX) / metrics.contentWidth) * naturalSize.width,
+    y: ((point.y - metrics.offsetY) / metrics.contentHeight) * naturalSize.height,
+  };
+}
+
+export function mapContentRectToNatural(rect: Rect, metrics: ContentMetrics, naturalSize: Size): Rect {
+  const topLeft = mapContentToNatural({ x: rect.left, y: rect.top }, metrics, naturalSize);
+  const bottomRight = mapContentToNatural(
+    { x: rect.left + rect.width, y: rect.top + rect.height },
+    metrics,
+    naturalSize,
+  );
+  return {
+    top: topLeft.y,
+    left: topLeft.x,
+    width: bottomRight.x - topLeft.x,
+    height: bottomRight.y - topLeft.y,
   };
 }
