@@ -322,6 +322,22 @@ describe(SystemConfigService.name, () => {
       });
     });
 
+    it('should accept cron expressions with wildcard steps', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(
+        JSON.stringify({ library: { scan: { cronExpression: '0 */6 * * *' } } }),
+      );
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        library: {
+          scan: {
+            enabled: true,
+            cronExpression: '0 */6 * * *',
+          },
+        },
+      });
+    });
+
     it('should reject an invalid issuer URL', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ oauth: { issuerUrl: 'accounts.google.com' } }));

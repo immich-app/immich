@@ -91,6 +91,15 @@ describe(SystemConfigController.name, () => {
       });
     });
 
+    describe('library', () => {
+      it('should accept the six-hour library scan preset', async () => {
+        const config = validConfig();
+        config.library.scan.cronExpression = '0 */6 * * *';
+        const { status } = await request(ctx.getHttpServer()).put('/system-config').send(config);
+        expect(status).toBe(200);
+      });
+    });
+
     describe('image', () => {
       it('should accept config without optional progressive property', async () => {
         const config = validConfig();
