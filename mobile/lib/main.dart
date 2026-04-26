@@ -55,18 +55,10 @@ void main() async {
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
     await migrateDatabaseIfNeeded();
 
-    runApp(
-      ProviderScope(
-        overrides: [driftProvider.overrideWith(driftOverride(drift))],
-        // Never retry any provider
-        child: const MainWidget(),
-      ),
-    );
+    runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
   } catch (error, stack) {
     runApp(
       ProviderScope(
-        // Never retry any provider
-        retry: (retryCount, error) => null,
         child: BootstrapErrorWidget(error: error.toString(), stack: stack.toString()),
       ),
     );

@@ -57,6 +57,12 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   void initState() {
     super.initState();
 
+    ref.listenManual(
+      remoteAlbumProvider.select((state) => state.albums),
+      (_, _) => sortAlbums(),
+      fireImmediately: true,
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appSettings = ref.read(appSettingsServiceProvider);
       final savedSortMode = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortOrder);
