@@ -1,5 +1,9 @@
 import { createFilterState } from '$lib/components/filter-panel/filter-panel';
-import { buildMapMarkerOptions, buildMapTimeBucketOptions } from '$lib/utils/map-filter-options';
+import {
+  buildMapMarkerOptions,
+  buildMapTimeBucketOptions,
+  buildMapTimelineOptions,
+} from '$lib/utils/map-filter-options';
 import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
 
 describe('buildMapMarkerOptions', () => {
@@ -65,5 +69,48 @@ describe('buildMapTimeBucketOptions', () => {
     expect(buildMapTimeBucketOptions(filters)).toEqual(
       expect.objectContaining({ takenBefore: '2025-01-01T00:00:00.000Z' }),
     );
+  });
+});
+
+describe('buildMapTimelineOptions', () => {
+  it('includes shared spaces for global map cluster timelines', () => {
+    const filters = {
+      ...createFilterState(),
+      personIds: ['person-1'],
+      tagIds: ['tag-1'],
+      rating: 4,
+      mediaType: 'image' as const,
+      selectedYear: 2024,
+      selectedMonth: 7,
+    };
+    const selectedClusterIds = new Set(['asset-1', 'asset-2']);
+
+    expect(buildMapTimelineOptions(filters, '1,2,3,4', selectedClusterIds)).toEqual({
+      bbox: '1,2,3,4',
+      visibility: AssetVisibility.Timeline,
+      withSharedSpaces: true,
+      assetFilter: selectedClusterIds,
+      personIds: ['person-1'],
+      tagIds: ['tag-1'],
+      rating: 4,
+      $type: AssetTypeEnum.Image,
+      takenAfter: '2024-07-01T00:00:00.000Z',
+      takenBefore: '2024-08-01T00:00:00.000Z',
+    });
+  });
+
+  it('uses space-scoped person filters for space map cluster timelines', () => {
+    const filters = {
+      ...createFilterState(),
+      personIds: ['space-person-1'],
+    };
+    const selectedClusterIds = new Set(['asset-1']);
+
+    expect(buildMapTimelineOptions(filters, '1,2,3,4', selectedClusterIds, 'space-1')).toEqual({
+      bbox: '1,2,3,4',
+      spaceId: 'space-1',
+      assetFilter: selectedClusterIds,
+      spacePersonIds: ['space-person-1'],
+    });
   });
 });

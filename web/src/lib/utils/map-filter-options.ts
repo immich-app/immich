@@ -1,8 +1,13 @@
 import { buildFilterContext, type FilterState } from '$lib/components/filter-panel/filter-panel';
 import { AssetTypeEnum, AssetVisibility, MapMediaType } from '@immich/sdk';
 
-function applyCommonMapFilters(base: Record<string, unknown>, filters: FilterState) {
-  if (filters.personIds.length > 0) {
+type MapTimelineSettings = {
+  onlyFavorites?: boolean;
+  withPartners?: boolean;
+};
+
+function applyCommonMapFilters(base: Record<string, unknown>, filters: FilterState, includePersonIds = true) {
+  if (includePersonIds && filters.personIds.length > 0) {
     base.personIds = filters.personIds;
   }
   if (filters.make) {
@@ -55,6 +60,48 @@ export function buildMapTimeBucketOptions(filters: FilterState, spaceId?: string
   );
 
   if (filters.mediaType !== 'all') {
+    base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
+  }
+
+  return base;
+}
+
+export function buildMapTimelineOptions(
+  filters: FilterState | undefined,
+  bbox: string,
+  selectedClusterIds: Set<string>,
+  spaceId?: string,
+  settings: MapTimelineSettings = {},
+): Record<string, unknown> {
+  const base = applyCommonMapFilters(
+    {
+      bbox,
+      ...(spaceId ? { spaceId } : { visibility: AssetVisibility.Timeline, withSharedSpaces: true }),
+      assetFilter: selectedClusterIds,
+    },
+    filters ?? {
+      personIds: [],
+      tagIds: [],
+      mediaType: 'all',
+      sortOrder: 'desc',
+    },
+    false,
+  );
+
+  if (filters?.personIds && filters.personIds.length > 0) {
+    if (spaceId) {
+      base.spacePersonIds = filters.personIds;
+    } else {
+      base.personIds = filters.personIds;
+    }
+  }
+
+  if (!spaceId) {
+    base.isFavorite = filters?.isFavorite ?? (settings.onlyFavorites || undefined);
+    base.withPartners = settings.withPartners || undefined;
+  }
+
+  if (filters?.mediaType && filters.mediaType !== 'all') {
     base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
   }
 
