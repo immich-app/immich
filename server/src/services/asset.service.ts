@@ -97,7 +97,10 @@ export class AssetService extends BaseService {
 
     if (auth.sharedLink) {
       data.people = [];
+      data.unassignedFaces = [];
     } else if (data.ownerId !== auth.user.id) {
+      data.unassignedFaces = [];
+
       if (spaceId) {
         const member = await this.sharedSpaceRepository.getMember(spaceId, auth.user.id);
         if (!member) {

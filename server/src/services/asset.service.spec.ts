@@ -205,6 +205,19 @@ describe(AssetService.name, () => {
       expect((result as any).people[0].spacePersonId).toBe('space-person-1');
     });
 
+    it('should strip unassigned faces for space member with spaceId', async () => {
+      const asset = AssetFactory.from().exif().face({ id: 'unassigned-face-id' }).build();
+      mocks.access.asset.checkSpaceAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(asset as any);
+      mocks.sharedSpace.getMember.mockResolvedValue({ userId: authStub.admin.user.id } as any);
+      mocks.access.asset.checkSpaceAccessForSpace.mockResolvedValue(new Set([asset.id]));
+      mocks.sharedSpace.findSpacePersonsByLinkedPersonIds.mockResolvedValue(new Map());
+
+      const result = await sut.get(authStub.admin, asset.id, 'space-id');
+
+      expect(result).toHaveProperty('unassignedFaces', []);
+    });
+
     it('should strip people for space member without spaceId', async () => {
       const asset = AssetFactory.from()
         .exif()
