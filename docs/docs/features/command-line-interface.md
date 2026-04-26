@@ -10,7 +10,7 @@ Gallery has a command line interface (CLI) that allows you to perform certain ac
 More features are planned for the future.
 
 :::tip Google Photos Takeout
-If you are looking to import your Google Photos takeout, we recommend this community maintained tool [immich-go](https://github.com/simulot/immich-go)
+If you are looking to import your Google Photos Takeout, use Gallery's [Google Photos Import](/features/google-photos-import) from the web app. The community-maintained [immich-go](https://github.com/simulot/immich-go) tool is still useful for advanced command-line workflows.
 :::
 
 ## Requirements

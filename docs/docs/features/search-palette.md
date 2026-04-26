@@ -2,7 +2,7 @@
 
 A keyboard-driven command palette that searches everything in your library — photos, people, places, tags — and jumps to any admin or settings page, all from one input. Press <kbd>Cmd</kbd>+<kbd>K</kbd> (macOS) or <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows / Linux) to open it from anywhere in Gallery.
 
-The classic search bar in the navbar still works exactly as before. The palette is a second, faster entry point optimised for "I know what I'm looking for, get me there in three keystrokes".
+The top navigation search field opens this same palette. On searchable pages, the sort control next to the search field applies immediately to the current view, so searching and sorting live in one consistent place instead of separate page-specific search bars.
 
 ## What you can search
 
@@ -101,12 +101,27 @@ When your query closely matches a single command or navigation entry, that entry
 
 Promotion is based on a fuzzy score against the title, description, and search keywords. Commands win tie-breaks against navigation entries, so unscoped verbs like `upload` or `album` surface their command first. A short query like `peo` will surface **People** as the top result; `users` will surface **Administration → User Management**.
 
+### Page-aware search
+
+When you open the palette from a page that supports inline search, Gallery preloads the page's current query and sort mode. Submitting a new free-text query updates the page URL instead of navigating away:
+
+| Current page                          | Where **Search for "…"** applies                                   |
+| ------------------------------------- | ------------------------------------------------------------------ |
+| **Photos**                            | `/photos?q=...` with the selected relevance / newest / oldest sort |
+| **Shared space detail**               | That space's timeline, scoped to the space's assets                |
+| **Shared space photos route**         | That space's photos route, preserving route context                |
+| **Map**                               | The map markers, combined with active map filters                  |
+| Any other page without a search scope | Falls back to the Photos timeline                                  |
+
+The URL carries the query in `q` and, when needed, the sort in `sort=asc` or `sort=desc`. Clearing the search chip removes `q` and returns the page to its normal date ordering.
+
 ## Recents
 
-Every result you activate is added to a **Recent** list (per user, per browser). When you reopen the palette with an empty query, your last few activations are shown immediately so you can repeat a workflow with two keystrokes.
+Every destination or free-text search you activate is added to a **Recent** list (per user, per browser). When you reopen the palette with an empty query, your last few activations are shown immediately so you can repeat a workflow with two keystrokes.
 
 - Recent entries that are no longer accessible (admin pages after a demotion, deleted people, removed tags) are filtered out automatically the next time you open the palette.
 - Remove a single entry with the **×** button on the row, or with <kbd>Delete</kbd> while it's highlighted.
+- Re-activating a query recent runs that query immediately on the current searchable page, instead of just filling the input.
 
 ## Quick links fallback
 

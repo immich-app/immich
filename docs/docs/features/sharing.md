@@ -10,6 +10,12 @@ Albums can be shared between users on the same Gallery instance. The shared user
 
 After creating an album, you can access the sharing options by clicking on the share icon. When sharing an album, you can select the users you want to share the album with and assign them permissions either as editors (read-write) or viewers (read-only).
 
+#### Filtering albums on web
+
+Album detail pages include the same filter panel used on the main Photos timeline. You can narrow an album by people, location, camera, tags, rating, media type, favorites, and date range. Filter suggestions are scoped to the current album, so visible options only reflect assets that are actually in that album.
+
+The **Add photos** picker also supports filters. This makes it easier to add a focused set of assets to a large album without leaving the album workflow.
+
 #### Web
 
 <img src={require('./img/shared-album.webp').default} width='60%' title='Shared album option' caption='ok' />

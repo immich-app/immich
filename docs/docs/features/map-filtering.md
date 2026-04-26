@@ -14,7 +14,13 @@ Open the map from the sidebar or from a Space's map button. The filter panel app
 - **Media type** — photos, videos, or both
 - **Timeline** — pick a year or month to see photos from that period
 
-Markers on the map update as you change filters. When you click a cluster, the timeline panel also respects your active filters.
+Markers on the map update as you change filters. When you click a cluster, the timeline panel also respects your active filters and its counts stay scoped to the filtered result set.
+
+## Searching the map
+
+Use <kbd>Cmd</kbd>+<kbd>K</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> from the map and submit a free-text query. Gallery applies the query to the current map URL as `q=...` and combines it with the active map filters.
+
+Map search uses smart search to find matching assets, then intersects those results with the geotagged marker set. Clearing the search chip removes only the query and keeps the other map filters intact.
 
 ## Global map vs. space map
 

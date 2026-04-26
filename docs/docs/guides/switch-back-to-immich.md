@@ -101,5 +101,6 @@ For transparency, here is what the cleanup script changes:
 - **Drops Gallery-only functions and triggers** that reference the dropped tables.
 - **Strips the `classification` key** out of the `system-config` row in `system_metadata`.
 - **Deletes fork migration rows** from `kysely_migrations` and `migration_overrides`, so upstream Immich's migrator does not see them as unknown migrations.
+- **Rolls back upstream migrations that Gallery pulled in after the currently supported Immich tag** when needed. Gallery may be rebased onto upstream commits newer than the Immich release you switch back to, so the script also removes those migration rows and reverses their schema changes before vanilla Immich starts.
 
 The script's own header documents every step in detail.

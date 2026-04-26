@@ -1,6 +1,6 @@
 # Dynamic Filter Suggestions
 
-When you apply a filter on the Photos page, all other filter panels dynamically update to show only values that exist in the current result set. Every visible option is guaranteed to return results.
+When you apply a filter on the Photos page or inside an album, all other filter panels dynamically update to show only values that exist in the current result set. Every visible option is guaranteed to return results.
 
 ## How it works
 
@@ -14,16 +14,16 @@ This is called **faceted search** -- the same pattern used by Amazon, eBay, and 
 
 ## What updates
 
-| Filter     | Updates when other filters change? | Notes                                                  |
-| ---------- | ---------------------------------- | ------------------------------------------------------ |
-| People     | Yes                                | Only people appearing in the filtered photos           |
-| Location   | Yes (countries)                    | Cities update when you expand a country                |
-| Camera     | Yes (makes)                        | Models update when you expand a make                   |
-| Tags       | Yes                                | Only tags assigned to filtered photos                  |
-| Rating     | Yes                                | Stars not present in the result set are hidden         |
-| Media Type | Yes                                | Photo/Video buttons hidden when no assets of that type |
-| Timeline   | Drives filtering                   | Selecting a year/month narrows all other panels        |
-| Favorites  | Not dynamic                        | Simple toggle, always visible                          |
+| Filter     | Updates when other filters change? | Notes                                                    |
+| ---------- | ---------------------------------- | -------------------------------------------------------- |
+| People     | Yes                                | Only people appearing in the filtered photos             |
+| Location   | Yes (countries)                    | Cities update when you expand a country                  |
+| Camera     | Yes (makes)                        | Models update when you expand a make                     |
+| Tags       | Yes                                | Only tags assigned to filtered photos                    |
+| Rating     | Yes                                | Shows ratings that can still satisfy the current minimum |
+| Media Type | Yes                                | Photo/Video buttons hidden when no assets of that type   |
+| Timeline   | Drives filtering                   | Selecting a year/month narrows all other panels          |
+| Favorites  | Not dynamic                        | Simple toggle, always visible                            |
 
 ## Orphaned selections
 
@@ -42,6 +42,8 @@ Previous in-flight requests are automatically cancelled when a new filter change
 ## Architecture
 
 A single API endpoint (`GET /search/suggestions/filters`) returns all suggestion categories in one round trip. The server runs 6 parallel queries -- one per category -- each applying all active filters **except its own category**. This exclusion is what makes it faceted: selecting Germany still shows all countries that match the other filters, not just Germany.
+
+For album detail pages, the same endpoint is scoped with `albumId`. Album scoping cannot be combined with `spaceId` or `withSharedSpaces`, because an album and a space are separate collection boundaries.
 
 ### Server flow
 
@@ -79,10 +81,12 @@ All 6 extraction queries share a common `buildFilteredAssetIds` helper that appl
 
 ## Supported pages
 
-| Page   | Dynamic suggestions? | Notes                                        |
-| ------ | -------------------- | -------------------------------------------- |
-| Photos | Yes                  | Full cross-filter scoping                    |
-| Map    | Not yet              | Uses individual providers (temporal scoping) |
-| Spaces | Not yet              | Uses individual providers (temporal scoping) |
+| Page         | Dynamic suggestions? | Notes                                           |
+| ------------ | -------------------- | ----------------------------------------------- |
+| Photos       | Yes                  | Full cross-filter scoping                       |
+| Album detail | Yes                  | Scoped to assets already in the current album   |
+| Album picker | Yes                  | Filters the assets available to add to an album |
+| Map          | Partial              | Uses individual providers plus active filters   |
+| Spaces       | Partial              | Uses individual providers plus active filters   |
 
 Map and Spaces pages can adopt the unified endpoint in the future with minimal changes -- the `suggestionsProvider` interface is generic and the endpoint supports `spaceId` scoping.

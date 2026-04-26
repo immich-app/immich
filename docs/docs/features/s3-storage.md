@@ -247,3 +247,13 @@ When S3 is the write backend, uploads follow this path:
 Profile images (both user-uploaded and OAuth-synced) follow the same pattern: the file is written to disk first, then uploaded to S3 if the write backend is S3, and the local temp file is cleaned up.
 
 For operations that require filesystem access (ffmpeg transcoding, exiftool metadata extraction), the S3 backend provides a `downloadToTemp()` method that streams the object to a local temp file and returns a cleanup function.
+
+### Archive Downloads
+
+Album, selection, and shared-link archive downloads work with both disk and S3-backed assets. For S3 assets, Gallery opens object streams lazily and serializes ZIP entry appends so large archives do not exhaust the S3 connection pool. This is most visible in `proxy` mode or when downloading many S3-only assets through the server.
+
+### Cleanup Behavior
+
+Deleting a user removes that user's storage prefix from the active backend. On S3, Gallery lists and deletes all objects under the user's prefix; on disk, it removes the matching directory tree. The cleanup is idempotent, so rerunning a failed delete is safe.
+
+Sidecar copy operations also respect the target asset's backend. Copying XMP metadata from one asset to another downloads the source sidecar to a temporary local file when needed, then writes the target sidecar either to disk or to the relative S3 key for that asset.

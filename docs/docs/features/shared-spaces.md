@@ -244,7 +244,9 @@ This tracking is per-member — your "last viewed" timestamp updates each time y
 
 ## Search
 
-When a space has photos, a search bar appears at the top of the space detail page. Searches use smart/semantic search scoped to only that space's assets, so results are limited to photos within the space.
+Use <kbd>Cmd</kbd>+<kbd>K</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd> from a space detail page and submit the **Search for "…"** top result. Searches use smart/semantic search scoped to only that space's assets, so results are limited to photos within the space.
+
+The search query is stored in the space URL as `q=...`. The sort control in the top bar switches between relevance, newest first, and oldest first, and the active search chip can clear the query without clearing your other filters.
 
 ## Map View
 

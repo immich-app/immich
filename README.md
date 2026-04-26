@@ -39,7 +39,7 @@ Create collaborative photo-sharing spaces where multiple users can contribute an
 
 ### [Smart Search & Filters](https://opennoodle.de/features/smart-search-filters)
 
-A unified FilterPanel available on the Photos timeline, Shared Spaces, and Map view. Filter by people, location, camera, tags, rating, media type, and favorites — with a temporal picker for year/month scoping. Filters are contextual: narrowing the time range automatically refreshes suggestions so you only see cameras, locations, and people that actually appear in that period. Combine filters with CLIP-powered smart search in Spaces for natural language queries scoped to your filtered results. Collapsible section selector lets you show only the filter categories you care about. [Feature page](https://opennoodle.de/features/smart-search-filters) · [Spaces filtering](https://opennoodle.de/features/spaces-filtering) · [Map filtering](https://opennoodle.de/features/map-filtering) · [Documentation](https://docs.opennoodle.de/features/map-filtering)
+A unified FilterPanel available on the Photos timeline, albums, Shared Spaces, and Map view. Filter by people, location, camera, tags, rating, media type, and favorites — with a temporal picker for year/month scoping. Filters are contextual: narrowing the time range automatically refreshes suggestions so you only see cameras, locations, and people that actually appear in that period. Combine filters with CLIP-powered smart search in Spaces and Map for natural language queries scoped to your filtered results. Collapsible section selector lets you show only the filter categories you care about. [Feature page](https://opennoodle.de/features/smart-search-filters) · [Spaces filtering](https://opennoodle.de/features/spaces-filtering) · [Map filtering](https://opennoodle.de/features/map-filtering) · [Documentation](https://docs.opennoodle.de/features/map-filtering)
 
 ### [User Groups](https://opennoodle.de/features/user-groups)
 
@@ -51,7 +51,11 @@ Store your photos and videos in any S3-compatible object storage — AWS S3, Min
 
 ### [Search Palette](https://opennoodle.de/features/search-palette)
 
-A keyboard-driven command palette — press <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> from anywhere to search photos, people, places, and tags, and jump to any admin or settings page from one input. Five providers run in parallel and group into named sections; the Photos section toggles between Smart (CLIP), Filename, Description, and OCR matching modes via <kbd>Ctrl</kbd>+<kbd>/</kbd>. Empty sections collapse, navigation results fuzzy-match the live page catalog, and an unhealthy ML server triggers a one-tap fall back to filename mode. The palette also surfaces context-aware verbs for the page you're on: viewing an album exposes download / rename / share / leave / delete; viewing a shared space exposes add member, manage members, add all my photos, leave, and delete. Destructive commands use an inline two-step confirm — press <kbd>Enter</kbd> once to arm, again to execute, or <kbd>Esc</kbd> to cancel — so you never lose work to a stray keypress. [Feature page](https://opennoodle.de/features/search-palette) · [Documentation](https://docs.opennoodle.de/features/search-palette)
+A keyboard-driven command palette — press <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> from anywhere to search photos, people, places, and tags, and jump to any admin or settings page from one input. Five providers run in parallel and group into named sections; the Photos section toggles between Smart (CLIP), Filename, Description, and OCR matching modes via <kbd>Ctrl</kbd>+<kbd>/</kbd>. Empty sections collapse, navigation results fuzzy-match the live page catalog, and an unhealthy ML server triggers a one-tap fall back to filename mode. The palette also powers page search: submit a free-text query from Photos, Spaces, or Map to update that page's scoped search, with query recents and sort controls in the top bar. The palette surfaces context-aware verbs for the page you're on: viewing an album exposes download / rename / share / leave / delete; viewing a shared space exposes add member, manage members, add all my photos, leave, and delete. Destructive commands use an inline two-step confirm — press <kbd>Enter</kbd> once to arm, again to execute, or <kbd>Esc</kbd> to cancel — so you never lose work to a stray keypress. [Feature page](https://opennoodle.de/features/search-palette) · [Documentation](https://docs.opennoodle.de/features/search-palette)
+
+### [Memories](https://docs.opennoodle.de/features/memories)
+
+Server-curated memories surface meaningful photo sets automatically. Alongside classic "On this day" cards, Gallery can generate rule-based birthday memories from named people with birthdays and recent-trip memories from location patterns that differ from your usual baseline. The nightly memories task deduplicates cards, caps rule memories per day, and sends server-defined titles and subtitles to web and mobile clients. [Documentation](https://docs.opennoodle.de/features/memories)
 
 ### [Auto-Classification](https://opennoodle.de/features/auto-classification)
 
@@ -67,7 +71,7 @@ Automatically detect and tag pets in your photos using YOLO11 object detection. 
 
 ### [Google Photos Import](https://opennoodle.de/features/google-photos-import)
 
-Import your Google Takeout archive directly from the web UI — no command-line tools needed. A guided 5-step wizard walks you through selecting your Takeout zip or folder, scanning and extracting photos, reviewing metadata, and uploading. The importer preserves original dates, GPS coordinates, descriptions, favorite and archived status, and album structure. Everything runs client-side in the browser using zip.js for extraction and the existing upload API, so no additional server configuration is required. [Feature page](https://opennoodle.de/features/google-photos-import)
+Import your Google Takeout archive directly from the web UI — no command-line tools needed. A guided 5-step wizard walks you through selecting your Takeout zip or folder, scanning and extracting photos, reviewing metadata, and uploading. The importer preserves original dates, GPS coordinates, descriptions, favorite and archived status, and album structure, including localized Google Photos folders and newer `.supplemental-metadata.json` sidecars. Everything runs client-side in the browser using zip.js for extraction and the existing upload API, so no additional server configuration is required. [Feature page](https://opennoodle.de/features/google-photos-import) · [Documentation](https://docs.opennoodle.de/features/google-photos-import)
 
 ### [Image Editing & Video Trimming](https://opennoodle.de/features/image-editing)
 
@@ -194,7 +198,7 @@ That's it. To switch back to upstream Immich later, flip the two image names bac
 | Global Map                                   | Yes    | Yes |
 | Partner Sharing                              | Yes    | Yes |
 | Facial recognition and clustering            | Yes    | Yes |
-| Memories (x years ago)                       | Yes    | Yes |
+| Memories (x years ago, birthdays, trips)     | Yes    | Yes |
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
