@@ -402,7 +402,7 @@ export class AlbumRepository {
                 sql`unnest(${roles}::album_user_role_enum[])`.as('role'),
               ]),
           )
-          .returning(['album_user.albumId', 'album_user.userId', 'album_user.role']),
+          .returning(['album_user.albumId', 'album_user.userId', 'album_user.role', 'album_user.isFavorite']),
       )
       .with('album_asset', (db) =>
         db

@@ -19,6 +19,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."isFavorite",
           (
             select
               to_json(obj)
@@ -98,6 +99,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."isFavorite",
           (
             select
               to_json(obj)
@@ -195,6 +197,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."isFavorite",
           (
             select
               to_json(obj)
@@ -258,6 +261,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."isFavorite",
           (
             select
               to_json(obj)
@@ -334,6 +338,70 @@ where
 order by
   "album"."createdAt" desc
 
+-- AlbumRepository.getFavorites
+select
+  "album".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "album_user"."role",
+          "album_user"."isFavorite",
+          (
+            select
+              to_json(obj)
+            from
+              (
+                select
+                  "id",
+                  "name",
+                  "email",
+                  "avatarColor",
+                  "profileImagePath",
+                  "profileChangedAt"
+                from
+                  (
+                    select
+                      1
+                  ) as "dummy"
+              ) as obj
+          ) as "user"
+        from
+          "album_user"
+          inner join "user" on "user"."id" = "album_user"."userId"
+        where
+          "album_user"."albumId" = "album"."id"
+        order by
+          "album_user"."role",
+          "album_user"."userId" = $1 desc,
+          "user"."name" asc
+      ) as agg
+  ) as "albumUsers",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "shared_link".*
+        from
+          "shared_link"
+        where
+          "shared_link"."albumId" = "album"."id"
+      ) as agg
+  ) as "sharedLinks"
+from
+  "album"
+  inner join "album_user" on "album_user"."albumId" = "album"."id"
+  and "album_user"."userId" = $2
+  and "album_user"."isFavorite" = true
+where
+  "album"."deletedAt" is null
+order by
+  "album"."createdAt" desc
+
 -- AlbumRepository.getNotShared
 select
   "album".*,
@@ -357,6 +425,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."isFavorite",
           (
             select
               to_json(obj)
@@ -461,7 +530,8 @@ with
     returning
       "album_user"."albumId",
       "album_user"."userId",
-      "album_user"."role"
+      "album_user"."role",
+      "album_user"."isFavorite"
   ),
   "album_asset" as (
     insert into
@@ -485,6 +555,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."isFavorite",
           (
             select
               to_json(obj)

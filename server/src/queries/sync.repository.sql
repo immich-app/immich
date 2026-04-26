@@ -331,6 +331,7 @@ select
   "album_user"."albumId" as "albumId",
   "album_user"."userId" as "userId",
   "album_user"."role",
+  "album_user"."isFavorite",
   "album_user"."updateId"
 from
   "album_user" as "album_user"
@@ -368,6 +369,7 @@ select
   "album_user"."albumId" as "albumId",
   "album_user"."userId" as "userId",
   "album_user"."role",
+  "album_user"."isFavorite",
   "album_user"."updateId"
 from
   "album_user" as "album_user"
