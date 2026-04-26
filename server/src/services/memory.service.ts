@@ -19,6 +19,13 @@ export class MemoryService extends BaseService {
     await this.databaseRepository.withLock(DatabaseLock.MemoryCreation, async () => {
       const state = await this.systemMetadataRepository.get(SystemMetadataKey.MemoriesState);
       const start = DateTime.utc().startOf('day').minus({ days: DAYS });
+      const systemConfig = await this.systemMetadataRepository.get(SystemMetadataKey.SystemConfig)
+      const isManualGenerate = DateTime.now().toFormat('HH:mm') !== systemConfig?.nightlyTasks?.startTime
+      if (isManualGenerate && state) {
+        state["lastOnThisDayDate"] = start.toISO();
+        // if not cleanup, record will duplicates
+        this.onMemoriesCleanup();
+      }
       const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
 
       // generate a memory +/- X days from today

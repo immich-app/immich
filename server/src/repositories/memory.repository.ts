@@ -12,21 +12,16 @@ import { IBulkAsset } from 'src/types';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
-  constructor(@InjectKysely() private db: Kysely<DB>) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) { }
 
   async cleanup() {
-    await this.db
-      .deleteFrom('memory_asset')
-      .using('asset')
-      .whereRef('memory_asset.assetId', '=', 'asset.id')
-      .where('asset.visibility', '!=', AssetVisibility.Timeline)
-      .execute();
+    await this.db.transaction().execute(async (trx) => {
+      await trx.deleteFrom('memory_asset').execute();
+    });
 
-    return this.db
-      .deleteFrom('memory')
-      .where('createdAt', '<', DateTime.now().minus({ days: 30 }).toJSDate())
-      .where('isSaved', '=', false)
-      .execute();
+    return await this.db.transaction().execute(async (trx) => {
+      await trx.deleteFrom('memory').execute();
+    });
   }
 
   searchBuilder(ownerId: string, dto: MemorySearchDto) {
