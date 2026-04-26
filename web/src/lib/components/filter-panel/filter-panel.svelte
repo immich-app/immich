@@ -16,7 +16,6 @@
   } from '@mdi/js';
   import { untrack } from 'svelte';
   import type {
-    FilterContext,
     FilterPanelConfig,
     FilterSection as FilterSectionType,
     FilterState,
@@ -81,19 +80,9 @@
   let availableRatings = $state<number[] | undefined>();
   let availableMediaTypes = $state<string[] | undefined>();
 
-  // Stable filterContext that only updates when temporal values actually change.
-  // Derived directly from selectedYear/selectedMonth (not the full filters object)
-  // to prevent $effect blocks in LocationFilter/CameraFilter from re-triggering
-  // on non-temporal filter changes.
-  let filterContext: FilterContext | undefined = $state();
-  $effect(() => {
-    const year = filters.selectedYear;
-    const month = filters.selectedMonth;
-    const next = buildFilterContext({ selectedYear: year, selectedMonth: month } as FilterState);
-    if (filterContext?.takenAfter !== next?.takenAfter || filterContext?.takenBefore !== next?.takenBefore) {
-      filterContext = next;
-    }
-  });
+  let filterContext = $derived(buildFilterContext(filters));
+  let locationFilterContext = $derived(buildFilterContext(filters, ['country', 'city']));
+  let cameraFilterContext = $derived(buildFilterContext(filters, ['make', 'model']));
 
   // Unified suggestions re-fetch: replaces mount effects + temporal re-fetch when suggestionsProvider is set
   let prevFilters: FilterState | undefined = $state();
@@ -664,7 +653,7 @@
                 {countries}
                 selectedCity={filters.city}
                 selectedCountry={filters.country}
-                context={filterContext}
+                context={locationFilterContext}
                 onCityFetch={async (country, ctx) => {
                   if (providers.cities) {
                     return providers.cities(country, ctx);
@@ -678,7 +667,7 @@
                 makes={cameraMakes}
                 selectedMake={filters.make}
                 selectedModel={filters.model}
-                context={filterContext}
+                context={cameraFilterContext}
                 onModelFetch={async (make, ctx) => {
                   if (providers.cameraModels) {
                     return providers.cameraModels(make, ctx);

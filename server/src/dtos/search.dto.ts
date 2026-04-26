@@ -135,6 +135,16 @@ const SearchSuggestionRequestBaseSchema = z.object({
   albumId: z.uuidv4().optional().describe('Scope suggestions to a specific album'),
   country: z.string().optional().describe('Filter by country'),
   state: z.string().optional().describe('Filter by state/province'),
+  personIds: z
+    .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(z.uuidv4()))
+    .optional()
+    .describe('Filter by person IDs'),
+  tagIds: z
+    .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(z.uuidv4()))
+    .optional()
+    .describe('Filter by tag IDs'),
+  rating: z.coerce.number().int().min(1).max(5).optional().describe('Filter by rating (1-5)'),
+  isFavorite: stringToBool.optional().describe('Filter by favorites'),
   make: z.string().optional().describe('Filter by camera make'),
   model: z.string().optional().describe('Filter by camera model'),
   lensModel: z.string().optional().describe('Filter by lens model'),

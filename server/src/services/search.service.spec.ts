@@ -140,6 +140,24 @@ describe(SearchService.name, () => {
       expect(mocks.search.getCities).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
     });
 
+    it('should pass active filters to city suggestions', async () => {
+      const personIds = [newUuid()];
+      mocks.search.getCities.mockResolvedValue(['Berlin']);
+
+      await sut.getSearchSuggestions(authStub.user1, {
+        includeNull: false,
+        type: SearchSuggestionType.CITY,
+        country: 'Germany',
+        personIds,
+        rating: 4,
+      });
+
+      expect(mocks.search.getCities).toHaveBeenCalledWith(
+        [authStub.user1.user.id],
+        expect.objectContaining({ country: 'Germany', personIds, rating: 4 }),
+      );
+    });
+
     it('should return search suggestions for city (including null)', async () => {
       mocks.search.getCities.mockResolvedValue(['Denver']);
       mocks.partner.getAll.mockResolvedValue([]);

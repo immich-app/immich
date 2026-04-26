@@ -272,16 +272,24 @@ where
 
 -- SearchRepository.getCities
 select distinct
-  on ("city") "city"
+  "city"
 from
   "asset_exif"
-  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "visibility" = $1
-  and "deletedAt" is null
+  "assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+    where
+      "asset"."visibility" = $1
+      and "asset"."deletedAt" is null
+      and "asset"."ownerId" = any ($2::uuid[])
+  )
   and "city" is not null
-  and "city" != $2
-  and "asset"."ownerId" = any ($3::uuid[])
+  and "city" != $3
+order by
+  "city"
 
 -- SearchRepository.getCameraMakes
 select distinct

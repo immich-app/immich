@@ -126,6 +126,31 @@ describe('buildFilterContext', () => {
     });
   });
 
+  it('should include active filters for dependent suggestions', () => {
+    const state = createFilterState();
+    state.personIds = ['person-1'];
+    state.tagIds = ['tag-1'];
+    state.rating = 4;
+    state.isFavorite = true;
+
+    expect(buildFilterContext(state)).toEqual({
+      personIds: ['person-1'],
+      tagIds: ['tag-1'],
+      rating: 4,
+      isFavorite: true,
+    });
+  });
+
+  it('should exclude requested filters from dependent suggestion context', () => {
+    const state = createFilterState();
+    state.personIds = ['person-1'];
+    state.tagIds = ['tag-1'];
+
+    expect(buildFilterContext(state, ['personIds'])).toEqual({
+      tagIds: ['tag-1'],
+    });
+  });
+
   it('should handle December correctly (rolls over to next year)', () => {
     const state = createFilterState();
     state.selectedYear = 2023;

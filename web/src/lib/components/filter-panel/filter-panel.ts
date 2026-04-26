@@ -86,22 +86,46 @@ export function getActiveFilterCount(state: FilterState): number {
 export type FilterContext = {
   takenAfter?: string;
   takenBefore?: string;
+  personIds?: string[];
+  tagIds?: string[];
+  rating?: number;
+  isFavorite?: boolean;
 };
 
-export function buildFilterContext(state: FilterState): FilterContext | undefined {
-  if (!state.selectedYear) {
-    return undefined;
+export function buildFilterContext(
+  state: FilterState,
+  exclude: Array<keyof FilterState> = [],
+): FilterContext | undefined {
+  const context: FilterContext = {};
+  const includes = (key: keyof FilterState) => !exclude.includes(key);
+
+  if (includes('personIds') && state.personIds?.length > 0) {
+    context.personIds = state.personIds;
   }
-  if (state.selectedMonth) {
-    return {
-      takenAfter: new Date(Date.UTC(state.selectedYear, state.selectedMonth - 1, 1)).toISOString(),
-      takenBefore: new Date(Date.UTC(state.selectedYear, state.selectedMonth, 1)).toISOString(),
-    };
+
+  if (includes('tagIds') && state.tagIds?.length > 0) {
+    context.tagIds = state.tagIds;
   }
-  return {
-    takenAfter: new Date(Date.UTC(state.selectedYear, 0, 1)).toISOString(),
-    takenBefore: new Date(Date.UTC(state.selectedYear + 1, 0, 1)).toISOString(),
-  };
+
+  if (includes('rating') && state.rating !== undefined) {
+    context.rating = state.rating;
+  }
+
+  if (includes('isFavorite') && state.isFavorite !== undefined) {
+    context.isFavorite = state.isFavorite;
+  }
+
+  if (state.selectedYear && includes('selectedYear')) {
+    if (state.selectedMonth && includes('selectedMonth')) {
+      context.takenAfter = new Date(Date.UTC(state.selectedYear, state.selectedMonth - 1, 1)).toISOString();
+      context.takenBefore = new Date(Date.UTC(state.selectedYear, state.selectedMonth, 1)).toISOString();
+    } else {
+      context.takenAfter = new Date(Date.UTC(state.selectedYear, 0, 1)).toISOString();
+      context.takenBefore = new Date(Date.UTC(state.selectedYear + 1, 0, 1)).toISOString();
+    }
+  }
+
+  return Object.keys(context).length > 0 ? context : undefined;
 }
 
 export function clearFilters(state: FilterState): FilterState {

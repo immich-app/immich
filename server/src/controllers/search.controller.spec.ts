@@ -226,6 +226,27 @@ describe(SearchController.name, () => {
         expect(status).toBe(400);
         expect(body).toEqual(errorDto.badRequest([expect.stringContaining('albumId cannot exist alongside spaceId')]));
       });
+
+      it('accepts personIds for scoped city suggestions', async () => {
+        const personId = '33333333-3333-4333-8333-333333333333';
+        ctx.authenticate.mockResolvedValue({});
+        service.getSearchSuggestions.mockResolvedValue(['Berlin']);
+
+        const { status, body } = await request(ctx.getHttpServer())
+          .get('/search/suggestions')
+          .query({ type: 'city', country: 'Germany', personIds: personId });
+
+        expect(status).toBe(200);
+        expect(body).toEqual(['Berlin']);
+        expect(service.getSearchSuggestions).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            type: 'city',
+            country: 'Germany',
+            personIds: [personId],
+          }),
+        );
+      });
     });
 
     describe('GET /search/suggestions/filters', () => {

@@ -316,6 +316,9 @@ class SearchApi {
   /// * [bool] includeNull:
   ///   Include null values in suggestions
   ///
+  /// * [bool] isFavorite:
+  ///   Filter by favorites
+  ///
   /// * [String] lensModel:
   ///   Filter by lens model
   ///
@@ -325,11 +328,20 @@ class SearchApi {
   /// * [String] model:
   ///   Filter by camera model
   ///
+  /// * [List<String>] personIds:
+  ///   Filter by person IDs
+  ///
+  /// * [int] rating:
+  ///   Filter by rating (1-5)
+  ///
   /// * [String] spaceId:
   ///   Scope suggestions to a specific shared space
   ///
   /// * [String] state:
   ///   Filter by state/province
+  ///
+  /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
   ///
   /// * [DateTime] takenAfter:
   ///   Filter suggestions by taken date (after)
@@ -339,7 +351,7 @@ class SearchApi {
   ///
   /// * [bool] withSharedSpaces:
   ///   Include suggestions from shared spaces the user is a member of
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? albumId, String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? albumId, String? country, bool? includeNull, bool? isFavorite, String? lensModel, String? make, String? model, List<String>? personIds, int? rating, String? spaceId, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions';
 
@@ -359,6 +371,9 @@ class SearchApi {
     if (includeNull != null) {
       queryParams.addAll(_queryParams('', 'includeNull', includeNull));
     }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
     if (lensModel != null) {
       queryParams.addAll(_queryParams('', 'lensModel', lensModel));
     }
@@ -368,11 +383,20 @@ class SearchApi {
     if (model != null) {
       queryParams.addAll(_queryParams('', 'model', model));
     }
+    if (personIds != null) {
+      queryParams.addAll(_queryParams('multi', 'personIds', personIds));
+    }
+    if (rating != null) {
+      queryParams.addAll(_queryParams('', 'rating', rating));
+    }
     if (spaceId != null) {
       queryParams.addAll(_queryParams('', 'spaceId', spaceId));
     }
     if (state != null) {
       queryParams.addAll(_queryParams('', 'state', state));
+    }
+    if (tagIds != null) {
+      queryParams.addAll(_queryParams('multi', 'tagIds', tagIds));
     }
     if (takenAfter != null) {
       queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
@@ -416,6 +440,9 @@ class SearchApi {
   /// * [bool] includeNull:
   ///   Include null values in suggestions
   ///
+  /// * [bool] isFavorite:
+  ///   Filter by favorites
+  ///
   /// * [String] lensModel:
   ///   Filter by lens model
   ///
@@ -425,11 +452,20 @@ class SearchApi {
   /// * [String] model:
   ///   Filter by camera model
   ///
+  /// * [List<String>] personIds:
+  ///   Filter by person IDs
+  ///
+  /// * [int] rating:
+  ///   Filter by rating (1-5)
+  ///
   /// * [String] spaceId:
   ///   Scope suggestions to a specific shared space
   ///
   /// * [String] state:
   ///   Filter by state/province
+  ///
+  /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
   ///
   /// * [DateTime] takenAfter:
   ///   Filter suggestions by taken date (after)
@@ -439,8 +475,8 @@ class SearchApi {
   ///
   /// * [bool] withSharedSpaces:
   ///   Include suggestions from shared spaces the user is a member of
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? albumId, String? country, bool? includeNull, String? lensModel, String? make, String? model, String? spaceId, String? state, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  albumId: albumId, country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, spaceId: spaceId, state: state, takenAfter: takenAfter, takenBefore: takenBefore, withSharedSpaces: withSharedSpaces, );
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? albumId, String? country, bool? includeNull, bool? isFavorite, String? lensModel, String? make, String? model, List<String>? personIds, int? rating, String? spaceId, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, bool? withSharedSpaces, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  albumId: albumId, country: country, includeNull: includeNull, isFavorite: isFavorite, lensModel: lensModel, make: make, model: model, personIds: personIds, rating: rating, spaceId: spaceId, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, withSharedSpaces: withSharedSpaces, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

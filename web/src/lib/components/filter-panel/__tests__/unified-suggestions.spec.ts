@@ -172,4 +172,32 @@ describe('Unified suggestionsProvider', () => {
       expect(screen.getByText('Germany')).toBeTruthy();
     });
   });
+
+  it('should pass active filters when fetching dependent cities', async () => {
+    const citiesProvider = vi.fn().mockResolvedValue(['Berlin']);
+    const config = createUnifiedConfig({
+      providers: {
+        cities: citiesProvider,
+      },
+    });
+    render(FilterPanel, { props: { config, timeBuckets } });
+
+    await vi.advanceTimersByTimeAsync(0);
+    await waitFor(() => expect(screen.getByText('Alice')).toBeTruthy());
+
+    await fireEvent.click(screen.getByTestId('people-item-p1'));
+    await vi.advanceTimersByTimeAsync(50);
+    await waitFor(() => expect(config.suggestionsProvider).toHaveBeenCalledTimes(2));
+
+    await fireEvent.click(screen.getByTestId('location-country-Germany'));
+
+    await waitFor(() => {
+      expect(citiesProvider).toHaveBeenCalledWith(
+        'Germany',
+        expect.objectContaining({
+          personIds: ['p1'],
+        }),
+      );
+    });
+  });
 });

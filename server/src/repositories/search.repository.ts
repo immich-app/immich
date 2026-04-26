@@ -177,11 +177,23 @@ export interface SuggestionScopeOptions {
   takenBefore?: Date;
 }
 
+interface FilterSuggestionFilterOptions {
+  personIds?: string[];
+  country?: string;
+  city?: string;
+  make?: string;
+  model?: string;
+  tagIds?: string[];
+  rating?: number;
+  mediaType?: AssetType;
+  isFavorite?: boolean;
+}
+
 export interface GetStatesOptions extends SuggestionScopeOptions {
   country?: string;
 }
 
-export interface GetCitiesOptions extends GetStatesOptions {
+export interface GetCitiesOptions extends SuggestionScopeOptions, FilterSuggestionFilterOptions {
   state?: string;
 }
 
@@ -200,17 +212,7 @@ export interface GetCameraLensModelsOptions extends SuggestionScopeOptions {
   model?: string;
 }
 
-export interface FilterSuggestionsOptions extends SuggestionScopeOptions {
-  personIds?: string[];
-  country?: string;
-  city?: string;
-  make?: string;
-  model?: string;
-  tagIds?: string[];
-  rating?: number;
-  mediaType?: AssetType;
-  isFavorite?: boolean;
-}
+export interface FilterSuggestionsOptions extends SuggestionScopeOptions, FilterSuggestionFilterOptions {}
 
 type AccessibleTagScopeOptions = Pick<
   SuggestionScopeOptions,
@@ -579,9 +581,16 @@ export class SearchRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
   async getCities(userIds: string[], options: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds, options)
-      .$if(!!options.country, (qb) => qb.where('country', '=', options.country!))
+    const filteredIds = this.buildFilteredAssetIds(userIds, without(options, 'city'));
+    const res = await this.db
+      .selectFrom('asset_exif')
+      .select('city')
+      .distinct()
+      .where('assetId', 'in', filteredIds)
+      .where('city', 'is not', null)
+      .where('city', '!=', '')
       .$if(!!options.state, (qb) => qb.where('state', '=', options.state!))
+      .orderBy('city')
       .execute();
 
     return res.map((row) => row.city!);

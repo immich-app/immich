@@ -10298,6 +10298,15 @@
             }
           },
           {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "description": "Filter by favorites",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "lensModel",
             "required": false,
             "in": "query",
@@ -10325,6 +10334,31 @@
             }
           },
           {
+            "name": "personIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by person IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+              }
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "description": "Filter by rating (1-5)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "integer"
+            }
+          },
+          {
             "name": "spaceId",
             "required": false,
             "in": "query",
@@ -10342,6 +10376,20 @@
             "description": "Filter by state/province",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "tagIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by tag IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+              }
             }
           },
           {
