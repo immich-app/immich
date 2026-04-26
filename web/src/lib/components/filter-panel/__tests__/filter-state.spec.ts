@@ -17,6 +17,12 @@ describe('FilterState utilities', () => {
     expect(state.selectedMonth).toBeUndefined();
   });
 
+  it('should create default state with custom dates undefined', () => {
+    const state = createFilterState();
+    expect(state.dateAfter).toBeUndefined();
+    expect(state.dateBefore).toBeUndefined();
+  });
+
   it('should allow setting selectedYear and selectedMonth', () => {
     const state = createFilterState();
     state.selectedYear = 2023;
@@ -54,6 +60,25 @@ describe('FilterState utilities', () => {
     // Other filters should still count normally
     state.personIds = ['p1'];
     expect(getActiveFilterCount(state)).toBe(2);
+  });
+
+  it('should count custom date range as one active temporal filter', () => {
+    const state = createFilterState();
+    state.dateAfter = '2024-01-01';
+    expect(getActiveFilterCount(state)).toBe(1);
+
+    state.dateBefore = '2024-12-31';
+    expect(getActiveFilterCount(state)).toBe(1);
+
+    state.personIds = ['p1'];
+    expect(getActiveFilterCount(state)).toBe(2);
+  });
+
+  it('should not count empty custom date strings as active temporal filters', () => {
+    const state = createFilterState();
+    state.dateAfter = '';
+    state.dateBefore = '';
+    expect(getActiveFilterCount(state)).toBe(0);
   });
 
   it('should not double-count country when city is set', () => {
@@ -96,6 +121,20 @@ describe('FilterState utilities', () => {
     expect(cleared.selectedYear).toBeUndefined();
     expect(cleared.selectedMonth).toBeUndefined();
     expect(cleared.personIds).toEqual([]);
+  });
+
+  it('should clear custom dates on clearFilters', () => {
+    const state = createFilterState();
+    state.dateAfter = '2024-01-01';
+    state.dateBefore = '2024-12-31';
+    state.selectedYear = 2023;
+    state.selectedMonth = 8;
+
+    const cleared = clearFilters(state);
+    expect(cleared.dateAfter).toBeUndefined();
+    expect(cleared.dateBefore).toBeUndefined();
+    expect(cleared.selectedYear).toBeUndefined();
+    expect(cleared.selectedMonth).toBeUndefined();
   });
 });
 
@@ -180,5 +219,73 @@ describe('buildFilterContext', () => {
     const ctx = buildFilterContext(state)!;
     expect(ctx.takenAfter).toContain('T00:00:00.000Z');
     expect(ctx.takenBefore).toContain('T00:00:00.000Z');
+  });
+
+  it('should build bounded custom date context with exclusive end date', () => {
+    const state = createFilterState();
+    state.dateAfter = '2024-01-01';
+    state.dateBefore = '2024-12-31';
+    expect(buildFilterContext(state)).toEqual({
+      takenAfter: '2024-01-01T00:00:00.000Z',
+      takenBefore: '2025-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should build from-only custom date context', () => {
+    const state = createFilterState();
+    state.dateAfter = '2024-01-01';
+    expect(buildFilterContext(state)).toEqual({
+      takenAfter: '2024-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should not build context for empty custom date strings', () => {
+    const state = createFilterState();
+    state.dateAfter = '';
+    state.dateBefore = '';
+    expect(buildFilterContext(state)).toBeUndefined();
+  });
+
+  it('should build to-only custom date context with exclusive end date', () => {
+    const state = createFilterState();
+    state.dateBefore = '2024-12-31';
+    expect(buildFilterContext(state)).toEqual({
+      takenBefore: '2025-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should ignore invalid custom date strings', () => {
+    const state = createFilterState();
+    state.dateAfter = 'not-a-date';
+    state.dateBefore = '2024-02-31';
+    expect(buildFilterContext(state)).toBeUndefined();
+  });
+
+  it('should build from-only context when to date is invalid', () => {
+    const state = createFilterState();
+    state.dateAfter = '2024-01-01';
+    state.dateBefore = '2024-02-31';
+    expect(buildFilterContext(state)).toEqual({
+      takenAfter: '2024-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should build to-only context when from date is malformed', () => {
+    const state = createFilterState();
+    state.dateAfter = '01/01/2024';
+    state.dateBefore = '2024-12-31';
+    expect(buildFilterContext(state)).toEqual({
+      takenBefore: '2025-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('should prefer custom date context over year and month context', () => {
+    const state = createFilterState();
+    state.selectedYear = 2023;
+    state.selectedMonth = 8;
+    state.dateAfter = '2024-01-01';
+    expect(buildFilterContext(state)).toEqual({
+      takenAfter: '2024-01-01T00:00:00.000Z',
+    });
   });
 });

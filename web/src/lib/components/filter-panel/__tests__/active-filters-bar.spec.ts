@@ -289,6 +289,79 @@ describe('ActiveFiltersBar', () => {
     expect(chips[0].textContent).toContain('Dec 2015');
   });
 
+  it('should render bounded custom date range as one timeline chip', () => {
+    const filters = createFilterState();
+    filters.dateAfter = '2024-01-01';
+    filters.dateBefore = '2024-12-31';
+
+    const { getAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    const chips = getAllByTestId('active-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0].textContent).toContain('Jan 1, 2024 - Dec 31, 2024');
+  });
+
+  it('should render from-only custom date range as one timeline chip', () => {
+    const filters = createFilterState();
+    filters.dateAfter = '2024-01-01';
+
+    const { getAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    const chips = getAllByTestId('active-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0].textContent).toContain('After Jan 1, 2024');
+  });
+
+  it('should render to-only custom date range as one timeline chip', () => {
+    const filters = createFilterState();
+    filters.dateBefore = '2024-12-31';
+
+    const { getAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    const chips = getAllByTestId('active-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0].textContent).toContain('Before Dec 31, 2024');
+  });
+
+  it('should prefer custom date range chip over selected year and month', () => {
+    const filters = createFilterState();
+    filters.dateAfter = '2024-01-01';
+    filters.dateBefore = '2024-12-31';
+    filters.selectedYear = 2023;
+    filters.selectedMonth = 8;
+
+    const { getAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    const chips = getAllByTestId('active-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0].textContent).toContain('Jan 1, 2024 - Dec 31, 2024');
+    expect(chips[0].textContent).not.toContain('Aug 2023');
+  });
+
   it('should remove timeline filter on chip close', async () => {
     let removedType: string | undefined;
     const onRemoveFilter = (type: string) => {
@@ -308,6 +381,24 @@ describe('ActiveFiltersBar', () => {
 
     await fireEvent.click(getByTestId('chip-close'));
     expect(removedType).toBe('timeline');
+  });
+
+  it('should remove custom timeline filter on chip close', async () => {
+    const onRemoveFilter = vi.fn();
+    const filters = createFilterState();
+    filters.dateAfter = '2024-01-01';
+    filters.dateBefore = '2024-12-31';
+
+    const { getByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter,
+        onClearAll: () => {},
+      },
+    });
+
+    await fireEvent.click(getByTestId('chip-close'));
+    expect(onRemoveFilter).toHaveBeenCalledWith('timeline', undefined);
   });
 
   it('should not show Clear All when no filters active', () => {

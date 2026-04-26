@@ -2,24 +2,104 @@
   import { aggregateYears, getMonthsForYear } from './temporal-utils';
 
   const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const CUSTOM_RANGE_ERROR_ID = 'custom-date-range-error';
 
   interface Props {
     timeBuckets: Array<{ timeBucket: string; count: number }>;
+    dateAfter?: string;
+    dateBefore?: string;
     selectedYear?: number;
     selectedMonth?: number;
+    onCustomRangeChange?: (dateAfter?: string, dateBefore?: string) => void;
     onYearSelect?: (year: number | undefined) => void;
     onMonthSelect?: (year: number, month: number | undefined) => void;
   }
 
-  let { timeBuckets, selectedYear, selectedMonth, onYearSelect, onMonthSelect }: Props = $props();
+  let {
+    timeBuckets,
+    dateAfter,
+    dateBefore,
+    selectedYear,
+    selectedMonth,
+    onCustomRangeChange,
+    onYearSelect,
+    onMonthSelect,
+  }: Props = $props();
 
   let years = $derived(aggregateYears(timeBuckets));
   let months = $derived(selectedYear === undefined ? [] : getMonthsForYear(timeBuckets, selectedYear));
+  let fromValue = $state('');
+  let toValue = $state('');
+  let customRangeError = $state<string | undefined>();
+  let customRangeErrorTarget = $state<'from' | 'to' | 'range' | undefined>();
+
+  $effect(() => {
+    fromValue = dateAfter ?? '';
+    toValue = dateBefore ?? '';
+    clearCustomRangeError();
+  });
+
+  function parseDateOnly(value: string): { valid: true; value?: string } | { valid: false } {
+    if (value === '') {
+      return { valid: true };
+    }
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) {
+      return { valid: false };
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+      return { valid: false };
+    }
+
+    return { valid: true, value };
+  }
+
+  function clearCustomRangeError() {
+    customRangeError = undefined;
+    customRangeErrorTarget = undefined;
+  }
+
+  function clearCustomRangeState() {
+    fromValue = '';
+    toValue = '';
+    clearCustomRangeError();
+  }
+
+  function validateAndEmitCustomRange() {
+    const parsedFrom = parseDateOnly(fromValue);
+    if (!parsedFrom.valid) {
+      customRangeError = 'Enter a valid From date';
+      customRangeErrorTarget = 'from';
+      return;
+    }
+
+    const parsedTo = parseDateOnly(toValue);
+    if (!parsedTo.valid) {
+      customRangeError = 'Enter a valid To date';
+      customRangeErrorTarget = 'to';
+      return;
+    }
+
+    if (parsedFrom.value && parsedTo.value && parsedFrom.value > parsedTo.value) {
+      customRangeError = 'From date must be on or before To date';
+      customRangeErrorTarget = 'range';
+      return;
+    }
+
+    clearCustomRangeError();
+    onCustomRangeChange?.(parsedFrom.value, parsedTo.value);
+  }
 
   function handleYearClick(year: number, count: number) {
     if (count === 0) {
       return;
     }
+    clearCustomRangeState();
     onYearSelect?.(year);
   }
 
@@ -27,6 +107,7 @@
     if (count === 0) {
       return;
     }
+    clearCustomRangeState();
     if (selectedMonth === month) {
       // Toggle off: deselect month
       onMonthSelect?.(year, undefined);
@@ -36,11 +117,56 @@
   }
 
   function handleBackToAll() {
+    clearCustomRangeState();
     onYearSelect?.(undefined);
   }
 </script>
 
 <div data-testid="temporal-picker">
+  <div class="mb-4 space-y-2" data-testid="custom-date-range">
+    <div class="grid grid-cols-2 gap-2.5">
+      <label class="flex flex-col gap-1.5 text-[11px] font-medium leading-none text-gray-600 dark:text-gray-300">
+        <span class="px-0.5">From</span>
+        <input
+          bind:value={fromValue}
+          oninput={validateAndEmitCustomRange}
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="YYYY-MM-DD"
+          pattern={String.raw`\d{4}-\d{2}-\d{2}`}
+          aria-invalid={customRangeErrorTarget === 'from' || customRangeErrorTarget === 'range' ? 'true' : undefined}
+          aria-describedby={customRangeErrorTarget === 'from' || customRangeErrorTarget === 'range'
+            ? CUSTOM_RANGE_ERROR_ID
+            : undefined}
+          class="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-xs text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-immich-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:focus:border-immich-dark-primary"
+          data-testid="custom-date-from-input"
+        />
+      </label>
+      <label class="flex flex-col gap-1.5 text-[11px] font-medium leading-none text-gray-600 dark:text-gray-300">
+        <span class="px-0.5">To</span>
+        <input
+          bind:value={toValue}
+          oninput={validateAndEmitCustomRange}
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="YYYY-MM-DD"
+          pattern={String.raw`\d{4}-\d{2}-\d{2}`}
+          aria-invalid={customRangeErrorTarget === 'to' || customRangeErrorTarget === 'range' ? 'true' : undefined}
+          aria-describedby={customRangeErrorTarget === 'to' || customRangeErrorTarget === 'range'
+            ? CUSTOM_RANGE_ERROR_ID
+            : undefined}
+          class="h-8 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-xs text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-immich-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:focus:border-immich-dark-primary"
+          data-testid="custom-date-to-input"
+        />
+      </label>
+    </div>
+    {#if customRangeError}
+      <p id={CUSTOM_RANGE_ERROR_ID} role="alert" class="text-xs text-red-600 dark:text-red-400">{customRangeError}</p>
+    {/if}
+  </div>
+
   {#if selectedYear !== undefined}
     <!-- Breadcrumb -->
     <div class="mb-2 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-300">

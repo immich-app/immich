@@ -1,6 +1,19 @@
 import { createFilterState } from '$lib/components/filter-panel/filter-panel';
-import { buildMapTimeBucketOptions } from '$lib/utils/map-filter-options';
+import { buildMapMarkerOptions, buildMapTimeBucketOptions } from '$lib/utils/map-filter-options';
 import { AssetTypeEnum, AssetVisibility } from '@immich/sdk';
+
+describe('buildMapMarkerOptions', () => {
+  it('includes custom dates in map marker options', () => {
+    const filters = { ...createFilterState(), dateAfter: '2024-01-01', dateBefore: '2024-12-31' };
+
+    expect(buildMapMarkerOptions(filters)).toEqual(
+      expect.objectContaining({
+        takenAfter: '2024-01-01T00:00:00.000Z',
+        takenBefore: '2025-01-01T00:00:00.000Z',
+      }),
+    );
+  });
+});
 
 describe('buildMapTimeBucketOptions', () => {
   it('includes active global map filters in time bucket requests', () => {
@@ -44,5 +57,13 @@ describe('buildMapTimeBucketOptions', () => {
       country: 'Australia',
       $type: AssetTypeEnum.Image,
     });
+  });
+
+  it('includes custom dates in map time bucket options', () => {
+    const filters = { ...createFilterState(), dateBefore: '2024-12-31' };
+
+    expect(buildMapTimeBucketOptions(filters)).toEqual(
+      expect.objectContaining({ takenBefore: '2025-01-01T00:00:00.000Z' }),
+    );
   });
 });

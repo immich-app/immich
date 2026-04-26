@@ -35,6 +35,17 @@ describe('buildAlbumTimelineOptions', () => {
       takenBefore: '2024-03-01T00:00:00.000Z',
     });
   });
+
+  it('maps custom dates for album timeline options', () => {
+    const filters = { ...createFilterState(), dateAfter: '2024-01-01', dateBefore: '2024-12-31' };
+
+    expect(buildAlbumTimelineOptions('album-1', AssetOrder.Desc, filters)).toEqual(
+      expect.objectContaining({
+        takenAfter: '2024-01-01T00:00:00.000Z',
+        takenBefore: '2025-01-01T00:00:00.000Z',
+      }),
+    );
+  });
 });
 
 describe('buildAlbumAssetPickerOptions', () => {
@@ -57,5 +68,13 @@ describe('buildAlbumAssetPickerOptions', () => {
       takenAfter: '2023-01-01T00:00:00.000Z',
       takenBefore: '2024-01-01T00:00:00.000Z',
     });
+  });
+
+  it('maps custom dates for album asset picker options', () => {
+    const filters = { ...createFilterState(), dateAfter: '2024-01-01' };
+
+    expect(buildAlbumAssetPickerOptions('album-1', filters)).toEqual(
+      expect.objectContaining({ takenAfter: '2024-01-01T00:00:00.000Z' }),
+    );
   });
 });

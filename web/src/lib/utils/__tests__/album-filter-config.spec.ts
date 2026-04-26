@@ -80,6 +80,23 @@ describe('buildAlbumDetailFilterConfig', () => {
       expect.objectContaining({ albumId: 'album-1', make: 'Sony' }),
     );
   });
+
+  it('passes custom dates to album detail filter suggestions', async () => {
+    const config = buildAlbumDetailFilterConfig('album-1');
+    await config.suggestionsProvider!({
+      ...createFilterState(),
+      dateAfter: '2024-01-01',
+      dateBefore: '2024-12-31',
+    });
+
+    expect(getFilterSuggestions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        albumId: 'album-1',
+        takenAfter: '2024-01-01T00:00:00.000Z',
+        takenBefore: '2025-01-01T00:00:00.000Z',
+      }),
+    );
+  });
 });
 
 describe('buildAlbumAssetPickerFilterConfig', () => {
@@ -101,5 +118,19 @@ describe('buildAlbumAssetPickerFilterConfig', () => {
     expect(filterRequest).not.toHaveProperty('withSharedSpaces');
     expect(cityRequest).not.toHaveProperty('albumId');
     expect(cityRequest).not.toHaveProperty('withSharedSpaces');
+  });
+
+  it('passes custom dates to album asset picker filter suggestions', async () => {
+    const config = buildAlbumAssetPickerFilterConfig();
+    await config.suggestionsProvider!({
+      ...createFilterState(),
+      dateBefore: '2024-12-31',
+    });
+
+    expect(getFilterSuggestions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        takenBefore: '2025-01-01T00:00:00.000Z',
+      }),
+    );
   });
 });

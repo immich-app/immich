@@ -1,17 +1,11 @@
-import type { FilterState } from '$lib/components/filter-panel/filter-panel';
-import { buildFilterContext } from '$lib/components/filter-panel/filter-panel';
-import { AssetOrder, AssetTypeEnum, AssetVisibility } from '@immich/sdk';
+import { buildFilterContext, type FilterState } from '$lib/components/filter-panel/filter-panel';
+import { AssetOrder, AssetTypeEnum } from '@immich/sdk';
 
-export function buildPhotosTimelineOptions(filters: FilterState): Record<string, unknown> {
-  const base: Record<string, unknown> = {
-    visibility: AssetVisibility.Timeline,
-    withStacked: true,
-    withPartners: true,
-    withSharedSpaces: true,
-  };
+export function buildSpaceTimelineOptions(spaceId: string, filters: FilterState): Record<string, unknown> {
+  const base: Record<string, unknown> = { spaceId, withStacked: true };
 
   if (filters.personIds.length > 0) {
-    base.personIds = filters.personIds;
+    base.spacePersonIds = filters.personIds;
   }
   if (filters.city) {
     base.city = filters.city;
@@ -37,19 +31,17 @@ export function buildPhotosTimelineOptions(filters: FilterState): Record<string,
   base.order = filters.sortOrder === 'asc' ? AssetOrder.Asc : AssetOrder.Desc;
 
   const context = buildFilterContext(filters);
-  if (context) {
-    if (context.takenAfter) {
-      base.takenAfter = context.takenAfter;
-    }
-    if (context.takenBefore) {
-      base.takenBefore = context.takenBefore;
-    }
+  if (context?.takenAfter) {
+    base.takenAfter = context.takenAfter;
+  }
+  if (context?.takenBefore) {
+    base.takenBefore = context.takenBefore;
   }
 
   return base;
 }
 
-export function handlePhotosRemoveFilter(filters: FilterState, type: string, id?: string): FilterState {
+export function handleSpaceRemoveFilter(filters: FilterState, type: string, id?: string): FilterState {
   switch (type) {
     case 'person': {
       return { ...filters, personIds: filters.personIds.filter((p) => p !== id) };

@@ -83,6 +83,8 @@
       filters.tagIds,
       filters.rating,
       filters.mediaType,
+      filters.dateAfter,
+      filters.dateBefore,
       filters.selectedYear,
       filters.selectedMonth,
       filters.sortOrder,

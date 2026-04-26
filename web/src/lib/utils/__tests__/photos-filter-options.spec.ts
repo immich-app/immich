@@ -91,6 +91,27 @@ describe('buildPhotosTimelineOptions', () => {
     expect(options.takenBefore).toBe('2023-09-01T00:00:00.000Z');
   });
 
+  it('should set bounded custom date range using UTC from buildFilterContext', () => {
+    const filters = { ...createFilterState(), dateAfter: '2024-01-01', dateBefore: '2024-12-31' };
+    const options = buildPhotosTimelineOptions(filters);
+    expect(options.takenAfter).toBe('2024-01-01T00:00:00.000Z');
+    expect(options.takenBefore).toBe('2025-01-01T00:00:00.000Z');
+  });
+
+  it('should set from-only custom date range using UTC from buildFilterContext', () => {
+    const filters = { ...createFilterState(), dateAfter: '2024-01-01' };
+    const options = buildPhotosTimelineOptions(filters);
+    expect(options.takenAfter).toBe('2024-01-01T00:00:00.000Z');
+    expect(options).not.toHaveProperty('takenBefore');
+  });
+
+  it('should set to-only custom date range using UTC from buildFilterContext', () => {
+    const filters = { ...createFilterState(), dateBefore: '2024-12-31' };
+    const options = buildPhotosTimelineOptions(filters);
+    expect(options).not.toHaveProperty('takenAfter');
+    expect(options.takenBefore).toBe('2025-01-01T00:00:00.000Z');
+  });
+
   it('should preserve withPartners and withSharedSpaces when filters are active', () => {
     const filters = { ...createFilterState(), country: 'Japan', rating: 5 };
     const options = buildPhotosTimelineOptions(filters);
@@ -206,8 +227,16 @@ describe('handlePhotosRemoveFilter', () => {
   });
 
   it('should clear timeline (both year and month)', () => {
-    const filters = { ...createFilterState(), selectedYear: 2023, selectedMonth: 8 };
+    const filters = {
+      ...createFilterState(),
+      dateAfter: '2024-01-01',
+      dateBefore: '2024-12-31',
+      selectedYear: 2023,
+      selectedMonth: 8,
+    };
     const result = handlePhotosRemoveFilter(filters, 'timeline');
+    expect(result.dateAfter).toBeUndefined();
+    expect(result.dateBefore).toBeUndefined();
     expect(result.selectedYear).toBeUndefined();
     expect(result.selectedMonth).toBeUndefined();
   });

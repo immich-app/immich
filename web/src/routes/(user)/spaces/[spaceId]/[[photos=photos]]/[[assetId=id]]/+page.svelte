@@ -48,10 +48,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { buildSearchablePageUrl, getSearchablePageState } from '$lib/utils/searchable-page-search';
   import { loadHeroCollapsed, persistHeroCollapsed } from '$lib/utils/space-hero-storage';
+  import { buildSpaceTimelineOptions, handleSpaceRemoveFilter } from '$lib/utils/space-filter-options';
   import {
     addAssets,
     bulkAddAssets,
-    AssetOrder,
     AssetTypeEnum,
     AssetVisibility,
     getFilterSuggestions,
@@ -239,37 +239,7 @@
   };
 
   function handleRemoveFilter(type: string, id?: string) {
-    switch (type) {
-      case 'person': {
-        filters = { ...filters, personIds: filters.personIds.filter((p) => p !== id) };
-        break;
-      }
-      case 'location': {
-        filters = { ...filters, city: undefined, country: undefined };
-        break;
-      }
-      case 'camera': {
-        filters = { ...filters, make: undefined, model: undefined };
-        break;
-      }
-      case 'tag': {
-        filters = { ...filters, tagIds: filters.tagIds.filter((t) => t !== id) };
-        break;
-      }
-      case 'rating': {
-        filters = { ...filters, rating: undefined };
-        break;
-      }
-      case 'media':
-      case 'mediaType': {
-        filters = { ...filters, mediaType: 'all' };
-        break;
-      }
-      case 'timeline': {
-        filters = { ...filters, selectedYear: undefined, selectedMonth: undefined };
-        break;
-      }
-    }
+    filters = handleSpaceRemoveFilter(filters, type, id);
   }
 
   const currentMember = $derived(members.find((m) => m.userId === authManager.user.id));
@@ -288,46 +258,7 @@
     if (viewMode === 'select-assets') {
       return { visibility: AssetVisibility.Timeline, timelineSpaceId: space.id };
     }
-    const base: Record<string, unknown> = { spaceId: space.id, withStacked: true };
-    // Apply filter state — personIds maps to spacePersonIds for Spaces context
-    if (filters.personIds.length > 0) {
-      base.spacePersonIds = filters.personIds;
-    }
-    if (filters.city) {
-      base.city = filters.city;
-    }
-    if (filters.country) {
-      base.country = filters.country;
-    }
-    if (filters.make) {
-      base.make = filters.make;
-    }
-    if (filters.model) {
-      base.model = filters.model;
-    }
-    if (filters.tagIds.length > 0) {
-      base.tagIds = filters.tagIds;
-    }
-    if (filters.rating !== undefined) {
-      base.rating = filters.rating;
-    }
-    if (filters.mediaType !== 'all') {
-      base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
-    }
-    base.order = filters.sortOrder === 'asc' ? AssetOrder.Asc : AssetOrder.Desc;
-
-    // Temporal date-range filtering
-    if (filters.selectedYear && filters.selectedMonth) {
-      const start = new Date(filters.selectedYear, filters.selectedMonth - 1, 1);
-      const end = new Date(filters.selectedYear, filters.selectedMonth, 0, 23, 59, 59, 999);
-      base.takenAfter = start.toISOString();
-      base.takenBefore = end.toISOString();
-    } else if (filters.selectedYear) {
-      base.takenAfter = new Date(filters.selectedYear, 0, 1).toISOString();
-      base.takenBefore = new Date(filters.selectedYear, 11, 31, 23, 59, 59, 999).toISOString();
-    }
-
-    return base;
+    return buildSpaceTimelineOptions(space.id, filters);
   });
 
   const isSelectionMode = $derived(viewMode === 'select-assets' || viewMode === 'select-cover');

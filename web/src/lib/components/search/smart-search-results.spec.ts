@@ -79,6 +79,22 @@ describe('SmartSearchResults', () => {
     );
   });
 
+  it('triggers re-fetch when custom date range changes', async () => {
+    const { rerender } = render(SmartSearchResults, { props: baseProps });
+    await vi.advanceTimersByTimeAsync(SEARCH_FILTER_DEBOUNCE_MS);
+    expect(searchSmartMock).toHaveBeenCalledTimes(1);
+
+    await rerender({ ...baseProps, filters: { ...baseFilters, dateAfter: '2024-01-01' } });
+    await vi.advanceTimersByTimeAsync(SEARCH_FILTER_DEBOUNCE_MS);
+
+    expect(searchSmartMock).toHaveBeenCalledTimes(2);
+    expect(searchSmartMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        smartSearchDto: expect.objectContaining({ takenAfter: '2024-01-01T00:00:00.000Z' }),
+      }),
+    );
+  });
+
   // Test 42
   it('debounces multiple consecutive filter changes within the window into a single fetch', async () => {
     const { rerender } = render(SmartSearchResults, { props: baseProps });

@@ -2,6 +2,12 @@
   import type { FilterState } from './filter-panel';
 
   const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'UTC',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   interface Props {
     filters: FilterState;
@@ -29,6 +35,22 @@
     type: string;
     id?: string;
     label: string;
+  }
+
+  function formatDateOnly(value: string): string {
+    return DATE_FORMATTER.format(new Date(`${value}T00:00:00.000Z`));
+  }
+
+  function buildCustomDateLabel(dateAfter: string | undefined, dateBefore: string | undefined): string | undefined {
+    if (dateAfter && dateBefore) {
+      return `${formatDateOnly(dateAfter)} - ${formatDateOnly(dateBefore)}`;
+    }
+    if (dateAfter) {
+      return `After ${formatDateOnly(dateAfter)}`;
+    }
+    if (dateBefore) {
+      return `Before ${formatDateOnly(dateBefore)}`;
+    }
   }
 
   let chips = $derived.by(() => {
@@ -73,7 +95,10 @@
     }
 
     // Timeline chip
-    if (filters.selectedYear !== undefined) {
+    const customDateLabel = buildCustomDateLabel(filters.dateAfter, filters.dateBefore);
+    if (customDateLabel) {
+      result.push({ type: 'timeline', label: customDateLabel });
+    } else if (filters.selectedYear !== undefined) {
       const label =
         filters.selectedMonth === undefined
           ? `${filters.selectedYear}`

@@ -1,4 +1,4 @@
-import type { FilterState } from '$lib/components/filter-panel/filter-panel';
+import { buildFilterContext, type FilterState } from '$lib/components/filter-panel/filter-panel';
 import { AssetOrder, AssetTypeEnum, type SmartSearchDto } from '@immich/sdk';
 
 export const SEARCH_FILTER_DEBOUNCE_MS = 250;
@@ -47,14 +47,12 @@ export function buildSmartSearchParams(args: {
   if (filters.mediaType !== 'all') {
     params.type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
   }
-  if (filters.selectedYear && filters.selectedMonth) {
-    const start = new Date(filters.selectedYear, filters.selectedMonth - 1, 1);
-    const end = new Date(filters.selectedYear, filters.selectedMonth, 0, 23, 59, 59, 999);
-    params.takenAfter = start.toISOString();
-    params.takenBefore = end.toISOString();
-  } else if (filters.selectedYear) {
-    params.takenAfter = new Date(filters.selectedYear, 0, 1).toISOString();
-    params.takenBefore = new Date(filters.selectedYear, 11, 31, 23, 59, 59, 999).toISOString();
+  const context = buildFilterContext(filters);
+  if (context?.takenAfter) {
+    params.takenAfter = context.takenAfter;
+  }
+  if (context?.takenBefore) {
+    params.takenBefore = context.takenBefore;
   }
 
   if (filters.sortOrder === 'asc') {

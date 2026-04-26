@@ -132,8 +132,8 @@ describe('buildSmartSearchParams', () => {
         query: 'beach',
         filters: { ...baseFilters, selectedYear: 2024, selectedMonth: 1 },
       });
-      expect(result.takenAfter).toBe(new Date(2024, 0, 1).toISOString());
-      expect(result.takenBefore).toBe(new Date(2024, 1, 0, 23, 59, 59, 999).toISOString());
+      expect(result.takenAfter).toBe('2024-01-01T00:00:00.000Z');
+      expect(result.takenBefore).toBe('2024-02-01T00:00:00.000Z');
     });
 
     it('builds takenAfter/takenBefore for selectedYear only', () => {
@@ -141,8 +141,28 @@ describe('buildSmartSearchParams', () => {
         query: 'beach',
         filters: { ...baseFilters, selectedYear: 2024 },
       });
-      expect(result.takenAfter).toBe(new Date(2024, 0, 1).toISOString());
-      expect(result.takenBefore).toBe(new Date(2024, 11, 31, 23, 59, 59, 999).toISOString());
+      expect(result.takenAfter).toBe('2024-01-01T00:00:00.000Z');
+      expect(result.takenBefore).toBe('2025-01-01T00:00:00.000Z');
+    });
+
+    it('builds takenAfter/takenBefore from custom dates', () => {
+      const result = buildSmartSearchParams({
+        query: 'beach',
+        filters: { ...baseFilters, dateAfter: '2024-01-01', dateBefore: '2024-12-31' },
+      });
+
+      expect(result.takenAfter).toBe('2024-01-01T00:00:00.000Z');
+      expect(result.takenBefore).toBe('2025-01-01T00:00:00.000Z');
+    });
+
+    it('prefers custom dates over selected year and month', () => {
+      const result = buildSmartSearchParams({
+        query: 'beach',
+        filters: { ...baseFilters, selectedYear: 2023, selectedMonth: 8, dateAfter: '2024-01-01' },
+      });
+
+      expect(result.takenAfter).toBe('2024-01-01T00:00:00.000Z');
+      expect(result.takenBefore).toBeUndefined();
     });
   });
 

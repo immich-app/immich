@@ -105,6 +105,8 @@
       mediaType: filters.mediaType,
       isFavorite: filters.isFavorite,
       sortOrder: filters.sortOrder,
+      dateAfter: filters.dateAfter,
+      dateBefore: filters.dateBefore,
       selectedYear: filters.selectedYear,
       selectedMonth: filters.selectedMonth,
     };
@@ -113,8 +115,16 @@
 
     const isInitialMount = prev === undefined;
     const temporalChanged =
-      !isInitialMount && (prev.selectedYear !== current.selectedYear || prev.selectedMonth !== current.selectedMonth);
-    const isTemporalClear = temporalChanged && current.selectedYear === undefined;
+      !isInitialMount &&
+      (prev.dateAfter !== current.dateAfter ||
+        prev.dateBefore !== current.dateBefore ||
+        prev.selectedYear !== current.selectedYear ||
+        prev.selectedMonth !== current.selectedMonth);
+    const isTemporalClear =
+      temporalChanged &&
+      current.dateAfter === undefined &&
+      current.dateBefore === undefined &&
+      current.selectedYear === undefined;
 
     const delay = isInitialMount || isTemporalClear ? 0 : temporalChanged ? 200 : 50;
 
@@ -168,18 +178,25 @@
   let isRefetching = $state(false);
 
   // Debounced re-fetch when temporal filter changes.
-  // We track filters.selectedYear and filters.selectedMonth directly instead of
+  // We track temporal fields directly instead of
   // filterContext to avoid re-triggering when non-temporal filters change.
   $effect(() => {
     if (config.suggestionsProvider) {
       return;
     }
 
-    // Track only the two temporal fields — this is what determines re-fetch
+    // Track only temporal fields — this is what determines re-fetch
+    const dateAfter = filters.dateAfter;
+    const dateBefore = filters.dateBefore;
     const year = filters.selectedYear;
     const month = filters.selectedMonth;
     // Build context from tracked values (not from filterContext which would track all of filters)
-    const currentContext = buildFilterContext({ selectedYear: year, selectedMonth: month } as FilterState);
+    const currentContext = buildFilterContext({
+      dateAfter,
+      dateBefore,
+      selectedYear: year,
+      selectedMonth: month,
+    } as FilterState);
     const currentTakenAfter = currentContext?.takenAfter;
     const currentTakenBefore = currentContext?.takenBefore;
 
@@ -492,12 +509,16 @@
     filters = { ...filters, mediaType: type };
   }
 
+  function handleCustomDateRangeChange(dateAfter: string | undefined, dateBefore: string | undefined) {
+    filters = { ...filters, dateAfter, dateBefore, selectedYear: undefined, selectedMonth: undefined };
+  }
+
   function handleYearSelect(year: number | undefined) {
-    filters = { ...filters, selectedYear: year, selectedMonth: undefined };
+    filters = { ...filters, dateAfter: undefined, dateBefore: undefined, selectedYear: year, selectedMonth: undefined };
   }
 
   function handleMonthSelect(year: number, month: number | undefined) {
-    filters = { ...filters, selectedYear: year, selectedMonth: month };
+    filters = { ...filters, dateAfter: undefined, dateBefore: undefined, selectedYear: year, selectedMonth: month };
   }
 
   function hasActiveFilter(section: string): boolean {
@@ -524,7 +545,9 @@
         return filters.isFavorite !== undefined;
       }
       case 'timeline': {
-        return filters.selectedYear !== undefined;
+        return (
+          filters.dateAfter !== undefined || filters.dateBefore !== undefined || filters.selectedYear !== undefined
+        );
       }
       default: {
         return false;
@@ -636,8 +659,11 @@
             {#if section === 'timeline'}
               <TemporalPicker
                 {timeBuckets}
+                dateAfter={filters.dateAfter}
+                dateBefore={filters.dateBefore}
                 selectedYear={filters.selectedYear}
                 selectedMonth={filters.selectedMonth}
+                onCustomRangeChange={handleCustomDateRangeChange}
                 onYearSelect={handleYearSelect}
                 onMonthSelect={handleMonthSelect}
               />
