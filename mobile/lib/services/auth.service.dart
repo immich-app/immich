@@ -125,6 +125,7 @@ class AuthService {
       Store.delete(StoreKey.accessToken),
       Store.delete(StoreKey.assetETag),
       Store.delete(StoreKey.autoEndpointSwitching),
+      Store.delete(StoreKey.autoEndpointLocationDisclosureAccepted),
       Store.delete(StoreKey.preferredWifiName),
       Store.delete(StoreKey.localEndpoint),
       Store.delete(StoreKey.externalEndpointList),
@@ -143,6 +144,10 @@ class AuthService {
   Future<String?> setOpenApiServiceEndpoint() async {
     final enable = _authRepository.getEndpointSwitchingFeature();
     if (!enable) {
+      return null;
+    }
+
+    if (!Store.get(StoreKey.autoEndpointLocationDisclosureAccepted, false)) {
       return null;
     }
 

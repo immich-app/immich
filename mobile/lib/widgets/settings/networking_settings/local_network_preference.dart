@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -89,6 +91,10 @@ class LocalNetworkPreference extends HookConsumerWidget {
     }
 
     autofillCurrentNetwork() async {
+      if (!Store.get(StoreKey.autoEndpointLocationDisclosureAccepted, false)) {
+        return;
+      }
+
       final wifiName = await ref.read(networkProvider.notifier).getWifiName();
 
       if (wifiName == null) {

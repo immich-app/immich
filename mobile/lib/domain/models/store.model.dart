@@ -62,6 +62,7 @@ enum StoreKey<T> {
   preferredWifiName<String>._(133),
   localEndpoint<String>._(134),
   externalEndpointList<String>._(135),
+  autoEndpointLocationDisclosureAccepted<bool>._(142),
 
   // Video settings
   loadOriginalVideo<bool>._(136),

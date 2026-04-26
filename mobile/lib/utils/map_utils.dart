@@ -75,23 +75,20 @@ class MapUtils {
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
-      bool shouldRequestPermission = false;
+      bool shouldContinueFromDisclosure = false;
 
-      if (permission == LocationPermission.denied && !silent) {
-        shouldRequestPermission = await showDialog(
-          context: context,
-          builder: (context) => _LocationPermissionDisabledDialog(),
-        );
-        if (shouldRequestPermission) {
+      if ((permission == LocationPermission.denied || permission == LocationPermission.deniedForever) && !silent) {
+        shouldContinueFromDisclosure =
+            await showDialog<bool>(context: context, builder: (context) => _LocationPermissionDisabledDialog()) ??
+            false;
+        if (shouldContinueFromDisclosure && permission == LocationPermission.denied) {
           permission = await Geolocator.requestPermission();
+        } else if (shouldContinueFromDisclosure && permission == LocationPermission.deniedForever) {
+          await Geolocator.openAppSettings();
         }
       }
 
       if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-        // Open app settings only if you did not request for permission before
-        if (permission == LocationPermission.deniedForever && !shouldRequestPermission && !silent) {
-          await Geolocator.openAppSettings();
-        }
         return (null, LocationPermission.deniedForever);
       }
 

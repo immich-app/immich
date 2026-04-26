@@ -617,7 +617,7 @@
   "back_close_deselect": "Malantaŭen, fermi, aŭ malelekti",
   "background_backup_running_error": "Savkopiado jam estas fone okazanta, do ne eblas nun lanĉi alian savkopiadon",
   "background_location_permission": "Rajtigo fone uzi geografian lokon",
-  "background_location_permission_content": "Por ŝanĝi retaliron dum fona funkciado, Immich devas *ĉiam* havi atingorajton al lokiga informo, por povi legi nomojn de vifiaj retoj",
+  "background_location_permission_content": "Noodle Gallery uzas permeson pri fona loko por plu legi la nomon de la Wi‑Fi-reto dum aŭtomata servilŝanĝo funkcias fone. La nomo de la Wi‑Fi-reto estas konservata sur ĉi tiu aparato por kongruigo, kaj via preciza aparata loko ne estas konservata aŭ dividata.",
   "background_options": "Agordoj pri fonaj funkcioj",
   "backup": "Savkopio",
   "backup_album_selection_page_albums_device": "Albumoj en la aparato ({count})",

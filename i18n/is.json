@@ -582,7 +582,7 @@
   "back_close_deselect": "Til baka, loka eða hætta við val",
   "background_backup_running_error": "Afritun er nú þegar í gangi í bakgrunni, get ekki hafið handvirka afritun",
   "background_location_permission": "Leyfi á staðsetningu afritunar",
-  "background_location_permission_content": "Til að skipta um net í bakgrunni þarf Immich *alltaf* að hafa nákvæman aðgang að nákvæmum staðsetningargögnum svo að forritið geti lesið heitið á Wi-Fi netinu",
+  "background_location_permission_content": "Noodle Gallery notar staðsetningarheimild í bakgrunni til að halda áfram að lesa heiti Wi‑Fi-netsins á meðan sjálfvirk skipting á netþjóni keyrir í bakgrunni. Heiti Wi‑Fi-netsins er vistað á þessu tæki til samsvörunar og nákvæm staðsetning tækisins er hvorki vistuð né deilt.",
   "background_options": "Bakgrunnsvalmöguleikar",
   "backup": "Afrit",
   "backup_album_selection_page_albums_device": "Myndasöfn á tæki ({count})",
