@@ -55,6 +55,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/x-canon-cr3', extension: '.cr3' },
     { mimetype: 'image/x-canon-crw', extension: '.crw' },
     { mimetype: 'image/x-epson-erf', extension: '.erf' },
+    { mimetype: 'image/x-exr', extension: '.exr' },
     { mimetype: 'image/x-fuji-raf', extension: '.raf' },
     { mimetype: 'image/x-hasselblad-3fr', extension: '.3fr' },
     { mimetype: 'image/x-hasselblad-fff', extension: '.fff' },
@@ -159,6 +160,7 @@ describe('mimeTypes', () => {
     for (const img of [
       'a.avif',
       'a.bmp',
+      'a.exr',
       'a.gif',
       'a.heic',
       'a.heif',

@@ -156,6 +156,7 @@ where
           '%.srf',
           '%.srw',
           '%.x3f',
+          '%.exr',
           '%.heic',
           '%.heif',
           '%.hif',

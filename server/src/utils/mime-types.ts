@@ -51,6 +51,7 @@ const webSupportedImage = {
 
 const webUnsupportedImage = {
   ...raw,
+  '.exr': ['image/x-exr'],
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
   '.hif': ['image/hif'],
@@ -81,6 +82,7 @@ const extensionOverrides: Record<string, string> = {
 const transparentCapableExtensions = new Set([
   '.avif',
   '.bmp',
+  '.exr',
   '.gif',
   '.heic',
   '.heif',

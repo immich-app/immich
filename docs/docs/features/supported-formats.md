@@ -12,6 +12,7 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 | :---------- | :---------------------------- | :----------------: | :-------------- |
 | `AVIF`      | `.avif`                       | :white_check_mark: |                 |
 | `BMP`       | `.bmp`                        | :white_check_mark: |                 |
+| `OpenEXR`   | `.exr`                        | :white_check_mark: |                 |
 | `GIF`       | `.gif`                        | :white_check_mark: |                 |
 | `HEIC`      | `.heic`                       | :white_check_mark: |                 |
 | `HEIF`      | `.heif`                       | :white_check_mark: |                 |

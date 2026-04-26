@@ -190,6 +190,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           '.dcr',
           '.dng',
           '.erf',
+          '.exr',
           '.fff',
           '.iiq',
           '.k25',

@@ -69,6 +69,7 @@ const validImages = [
   '.dcr',
   '.dng',
   '.erf',
+  '.exr',
   '.fff',
   '.gif',
   '.heic',
