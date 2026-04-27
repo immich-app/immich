@@ -4,13 +4,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:logging/logging.dart';
 
 class ViewIntentResolvedAsset {
@@ -29,23 +29,35 @@ class ViewIntentResolvedAsset {
 
 final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
   (ref) => ViewIntentAssetResolver(
-    ref,
-    ref.read(localAssetRepository),
-    ref.read(nativeSyncApiProvider),
-    ref.read(timelineFactoryProvider),
+    localAssetRepository: ref.read(localAssetRepository),
+    nativeSyncApi: ref.read(nativeSyncApiProvider),
+    timelineFactory: ref.read(timelineFactoryProvider),
+    timelineRepository: ref.read(timelineRepositoryProvider),
   ),
 );
 
 class ViewIntentAssetResolver {
-  final Ref _ref;
   final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final TimelineFactory _timelineFactory;
+  final DriftTimelineRepository _timelineRepository;
   static final Logger _logger = Logger('ViewIntentAssetResolver');
 
-  const ViewIntentAssetResolver(this._ref, this._localAssetRepository, this._nativeSyncApi, this._timelineFactory);
+  const ViewIntentAssetResolver({
+    required DriftLocalAssetRepository localAssetRepository,
+    required NativeSyncApi nativeSyncApi,
+    required TimelineFactory timelineFactory,
+    required DriftTimelineRepository timelineRepository,
+  }) : _localAssetRepository = localAssetRepository,
+       _nativeSyncApi = nativeSyncApi,
+       _timelineFactory = timelineFactory,
+       _timelineRepository = timelineRepository;
 
-  Future<ViewIntentResolvedAsset> resolve(ViewIntentPayload attachment) async {
+  Future<ViewIntentResolvedAsset> resolve(
+    ViewIntentPayload attachment, {
+    required List<String> timelineUsers,
+    required TimelineService mainTimelineService,
+  }) async {
     final localAssetId = attachment.localAssetId;
     final path = attachment.path;
     _logger.fine('resolve start, localAssetId=$localAssetId, path=$path, mimeType=${attachment.mimeType}');
@@ -56,7 +68,11 @@ class ViewIntentAssetResolver {
     if (localAssetId != null) {
       // Try the direct local-id match first when the intent resolves to a real
       // MediaStore asset.
-      final mainTimelineAsset = await _resolveMainTimelineAssetByLocalId(localAssetId);
+      final mainTimelineAsset = await _resolveMainTimelineAssetByLocalId(
+        localAssetId,
+        timelineUsers,
+        mainTimelineService,
+      );
       if (mainTimelineAsset != null) {
         _logger.fine('presenting main timeline asset via localAssetId: ${mainTimelineAsset.asset}');
         return mainTimelineAsset;
@@ -69,7 +85,7 @@ class ViewIntentAssetResolver {
     final checksum = await _resolveChecksumForMatching(attachment, localAsset: localAsset);
     _logger.fine('resolve checksum for matching: $checksum');
     if (checksum != null) {
-      final mainTimelineAsset = await _resolveMainTimelineAssetByChecksum(checksum);
+      final mainTimelineAsset = await _resolveMainTimelineAssetByChecksum(checksum, timelineUsers, mainTimelineService);
       if (mainTimelineAsset != null) {
         final lookupType = localAssetId != null ? 'checksum fallback' : 'checksum-only match';
         _logger.fine('presenting main timeline asset via $lookupType: ${mainTimelineAsset.asset}');
@@ -92,61 +108,59 @@ class ViewIntentAssetResolver {
     );
   }
 
-  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByLocalId(String localAssetId) async {
+  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByLocalId(
+    String localAssetId,
+    List<String> timelineUsers,
+    TimelineService mainTimelineService,
+  ) async {
     _logger.fine('resolve main timeline by localId start: $localAssetId');
     return _resolveMainTimelineAsset(
-      (effectiveTimelineUsers) =>
-          _ref.read(timelineRepositoryProvider).getMainTimelineIndexByLocalId(effectiveTimelineUsers, localAssetId),
+      () => _timelineRepository.getMainTimelineIndexByLocalId(timelineUsers, localAssetId),
+      timelineUsers: timelineUsers,
+      mainTimelineService: mainTimelineService,
       lookupLabel: 'localId=$localAssetId',
     );
   }
 
-  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByChecksum(String checksum) async {
+  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetByChecksum(
+    String checksum,
+    List<String> timelineUsers,
+    TimelineService mainTimelineService,
+  ) async {
     // Some ACTION_VIEW sources do not provide a local MediaStore id, so
     // checksum is the only way to match the incoming file to an existing
     // merged asset.
     _logger.fine('resolve main timeline by checksum start: $checksum');
     return _resolveMainTimelineAsset(
-      (effectiveTimelineUsers) =>
-          _ref.read(timelineRepositoryProvider).getMainTimelineIndexByChecksum(effectiveTimelineUsers, checksum),
+      () => _timelineRepository.getMainTimelineIndexByChecksum(timelineUsers, checksum),
+      timelineUsers: timelineUsers,
+      mainTimelineService: mainTimelineService,
       lookupLabel: 'checksum=$checksum',
     );
   }
 
   Future<ViewIntentResolvedAsset?> _resolveMainTimelineAsset(
-    Future<int?> Function(List<String> effectiveTimelineUsers) findIndex, {
+    Future<int?> Function() findIndex, {
+    required List<String> timelineUsers,
+    required TimelineService mainTimelineService,
     required String lookupLabel,
   }) async {
-    final effectiveTimelineUsers = _resolveMainTimelineUsers();
-    _logger.fine('resolve main timeline users for $lookupLabel: $effectiveTimelineUsers');
-    if (effectiveTimelineUsers.isEmpty) {
-      _logger.fine('resolve main timeline aborted for $lookupLabel: effectiveTimelineUsers is empty');
+    _logger.fine('resolve main timeline users for $lookupLabel: $timelineUsers');
+    if (timelineUsers.isEmpty) {
+      _logger.fine('resolve main timeline aborted for $lookupLabel: timelineUsers is empty');
       return null;
     }
 
-    final index = await findIndex(effectiveTimelineUsers);
+    final index = await findIndex();
     _logger.fine('resolve main timeline index for $lookupLabel: $index');
     if (index == null) {
       return null;
     }
 
-    return _resolveMainTimelineAssetAt(index);
+    return _resolveMainTimelineAssetAt(index, mainTimelineService);
   }
 
-  List<String> _resolveMainTimelineUsers() {
-    final timelineUsers = _ref.read(timelineUsersProvider).valueOrNull;
-    final currentUserId = _ref.read(currentUserProvider)?.id;
-    final effectiveTimelineUsers = timelineUsers != null && timelineUsers.isNotEmpty
-        ? timelineUsers
-        : (currentUserId != null ? [currentUserId] : const <String>[]);
-    _logger.fine(
-      'resolve main timeline users source, timelineUsers=$timelineUsers, currentUserId=$currentUserId, effective=$effectiveTimelineUsers',
-    );
-    return effectiveTimelineUsers;
-  }
-
-  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetAt(int index) async {
-    final timelineService = _ref.read(timelineServiceProvider);
+  Future<ViewIntentResolvedAsset?> _resolveMainTimelineAssetAt(int index, TimelineService timelineService) async {
     _logger.fine(
       'resolve main timeline asset at index start: index=$index, origin=${timelineService.origin}, totalAssets=${timelineService.totalAssets}',
     );

@@ -41,6 +41,8 @@ class MockWidgetService extends Mock implements WidgetService {}
 
 class FakePageRouteInfo extends Fake implements PageRouteInfo<dynamic> {}
 
+class FakeTimelineService extends Fake implements TimelineService {}
+
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
   int cleanupStaleTempFilesCalls = 0;
@@ -107,6 +109,8 @@ void main() {
     registerFallbackValue(FakePageRouteInfo());
     registerFallbackValue(_pageRoutePredicate);
     registerFallbackValue(_localAsset(id: 'fallback'));
+    registerFallbackValue(<String>[]);
+    registerFallbackValue(FakeTimelineService());
   });
 
   setUp(() async {
@@ -135,6 +139,7 @@ void main() {
     );
 
     authNotifier = container.read(authProvider.notifier) as TestAuthNotifier;
+    await container.read(timelineUsersProvider.future);
     handler = container.read(_handlerProvider);
 
     addTearDown(() async {
@@ -149,7 +154,13 @@ void main() {
     await handler.handle(payload);
 
     expect(container.read(viewIntentPendingProvider), payload);
-    verifyNever(() => resolver.resolve(payload));
+    verifyNever(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    );
   });
 
   testWidgets('flushDeferredViewIntent waits for main timeline readiness before flushing pending attachment', (
@@ -159,7 +170,13 @@ void main() {
     container.read(viewIntentPendingProvider.notifier).defer(payload);
     authNotifier.setAuthenticated(true);
 
-    when(() => resolver.resolve(payload)).thenAnswer((_) async {
+    when(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    ).thenAnswer((_) async {
       return ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService, initialIndex: 0);
     });
 
@@ -167,7 +184,13 @@ void main() {
     await tester.pump();
 
     expect(container.read(viewIntentPendingProvider), payload);
-    verifyNever(() => resolver.resolve(payload));
+    verifyNever(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    );
 
     container.read(viewIntentMainTimelineReadyProvider.notifier).markMountedOnce();
     await tester.pump();
@@ -175,13 +198,21 @@ void main() {
     await tester.idle();
 
     expect(container.read(viewIntentPendingProvider), isNull);
-    verify(() => resolver.resolve(payload)).called(1);
+    verify(
+      () => resolver.resolve(payload, timelineUsers: ['user-1'], mainTimelineService: deepLinkTimelineService),
+    ).called(1);
   });
 
   test('flushDeferredViewIntent does nothing when there is no pending attachment', () async {
     await handler.flushDeferredViewIntent();
 
-    verifyNever(() => resolver.resolve(payload));
+    verifyNever(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    );
   });
 
   test('onAppResumed cleans stale temp files when no attachment is present', () async {
@@ -190,7 +221,13 @@ void main() {
     await handler.onAppResumed();
 
     expect(viewIntentService.cleanupStaleTempFilesCalls, 1);
-    verifyNever(() => resolver.resolve(payload));
+    verifyNever(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    );
   });
 
   test('onAppResumed does not clean stale temp files while pending attachment exists', () async {
@@ -200,12 +237,24 @@ void main() {
     await handler.onAppResumed();
 
     expect(viewIntentService.cleanupStaleTempFilesCalls, 0);
-    verifyNever(() => resolver.resolve(payload));
+    verifyNever(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    );
   });
 
   testWidgets('onAppResumed handles attachment immediately when authenticated', (tester) async {
     viewIntentService.consumedAttachment = payload;
-    when(() => resolver.resolve(payload)).thenAnswer(
+    when(
+      () => resolver.resolve(
+        payload,
+        timelineUsers: any(named: 'timelineUsers'),
+        mainTimelineService: any(named: 'mainTimelineService'),
+      ),
+    ).thenAnswer(
       (_) async =>
           ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService, initialIndex: 0),
     );
@@ -216,7 +265,9 @@ void main() {
     await tester.pump();
     await tester.idle();
 
-    verify(() => resolver.resolve(payload)).called(1);
+    verify(
+      () => resolver.resolve(payload, timelineUsers: ['user-1'], mainTimelineService: deepLinkTimelineService),
+    ).called(1);
   });
 }
 

@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_main_timeline_ready.provider.dart';
@@ -82,7 +83,11 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       return;
     }
 
-    final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
+    final resolvedAsset = await _viewIntentAssetResolver.resolve(
+      attachment,
+      timelineUsers: _resolveMainTimelineUsers(),
+      mainTimelineService: _ref.read(timelineServiceProvider),
+    );
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
       resolvedAsset.asset,
@@ -90,6 +95,16 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       resolvedAsset.initialIndex,
       viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
+  }
+
+  List<String> _resolveMainTimelineUsers() {
+    final timelineUsers = _ref.read(timelineUsersProvider).valueOrNull;
+    final currentUserId = _ref.read(authProvider).userId;
+    final effectiveTimelineUsers = timelineUsers != null && timelineUsers.isNotEmpty ? timelineUsers : [currentUserId];
+    _logger.fine(
+      'resolve main timeline users source, timelineUsers=$timelineUsers, currentUserId=$currentUserId, effective=$effectiveTimelineUsers',
+    );
+    return effectiveTimelineUsers;
   }
 
   Future<void> _openAssetViewer(
