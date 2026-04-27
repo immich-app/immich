@@ -87,6 +87,8 @@ const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
   queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
   language: z.string().optional().describe('Search language code'),
   page: z.number().min(1).optional().describe('Page number'),
+  originalFileName: z.string().trim().optional().describe('Filter by original file name'),
+  description: z.string().trim().optional().describe('Filter by description text'),
 }).meta({ id: 'SmartSearchDto' });
 
 const SearchPlacesSchema = z

@@ -129,7 +129,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions;
+  SearchOcrOptions &
+  SearchPathOptions;
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 

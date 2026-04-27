@@ -2238,6 +2238,7 @@
   "tap_to_run_job": "Tap to run job",
   "template": "Template",
   "text_recognition": "Text recognition",
+  "text_filters": "Text filters",
   "theme": "Theme",
   "theme_selection": "Theme selection",
   "theme_selection_description": "Automatically set the theme to light or dark based on your browser's system preference",

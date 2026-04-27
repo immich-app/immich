@@ -8,6 +8,7 @@
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/SearchRatingsSection.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/SearchTagsSection.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/SearchTextSection.svelte';
+  import SearchTextFiltersSection from '$lib/components/shared-components/search-bar/SearchTextFiltersSection.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
@@ -50,14 +51,13 @@
     if ('query' in searchQuery && searchQuery.query) {
       query = searchQuery.query;
     }
-    if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
-      query = searchQuery.originalFileName;
-    }
 
     return {
       query,
-      ocr: searchQuery.ocr,
+      ocr: searchQuery.ocr || '',
+      description: 'description' in searchQuery ? searchQuery.description || '' : '',
       queryType: defaultQueryType(),
+      originalFileName: 'originalFileName' in searchQuery ? searchQuery.originalFileName || '' : '',
       queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
       tagIds:
@@ -100,8 +100,10 @@
   const resetForm = () => {
     filter = {
       query: '',
-      ocr: undefined,
+      ocr: '',
+      description: '',
       queryType: defaultQueryType(), // retain from localStorage or default
+      originalFileName: '',
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
       location: {},
@@ -130,9 +132,9 @@
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
       queryAssetId: filter.queryAssetId || undefined,
-      ocr: filter.queryType === 'ocr' ? query : undefined,
-      originalFileName: filter.queryType === 'metadata' ? query : undefined,
-      description: filter.queryType === 'description' ? query : undefined,
+      ocr: filter.queryType === 'ocr' ? query : filter.ocr || undefined,
+      originalFileName: filter.queryType === 'metadata' ? query : filter.originalFileName || undefined,
+      description: filter.queryType === 'description' ? query : filter.description || undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -167,6 +169,9 @@
   // Will be called whenever queryType changes, not just onsubmit.
   $effect(() => {
     storeQueryType(filter.queryType);
+    if (filter.queryType === 'metadata') filter.query = filter.originalFileName;
+    else if (filter.queryType === 'description') filter.query = filter.description;
+    else if (filter.queryType === 'ocr') filter.query = filter.ocr;
   });
 </script>
 
@@ -179,6 +184,10 @@
 
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+
+        <!-- FILENAME FILTER -->
+        <SearchTextFiltersSection
+          bind:filename={filter.originalFileName} bind:description={filter.description} bind:ocr={filter.ocr} queryType={filter.queryType} />
 
         <!-- TAGS -->
         <SearchTagsSection bind:selectedTags={filter.tagIds} />
