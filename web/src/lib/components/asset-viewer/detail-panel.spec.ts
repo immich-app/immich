@@ -1,6 +1,9 @@
+import { getAppleMapsUrl, getGoogleMapsUrl, getOpenStreetMapUrl } from '$lib/utils/exif-utils';
 import { renderWithTooltips } from '$tests/helpers';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+import { assetFactory } from '@test-data/factories/asset-factory';
 import '@testing-library/jest-dom';
+import { screen, waitFor } from '@testing-library/svelte';
 import DetailPanel from './detail-panel.svelte';
 
 const { getAllAlbumsMock, getAssetInfoMock } = vi.hoisted(() => ({
@@ -34,15 +37,29 @@ vi.mock('$lib/managers/auth-manager.svelte', () => ({
 
 vi.mock('$lib/managers/asset-viewer-manager.svelte', () => ({
   assetViewerManager: {
+    closeDetailPanel: vi.fn(),
     closeEditFacesPanel: vi.fn(),
+    isEditFacesPanelOpen: false,
+    isShowAssetPath: false,
+    openEditFacesPanel: vi.fn(),
+    toggleAssetPath: vi.fn(),
+    toggleFaceEditMode: vi.fn(),
   },
 }));
 
 vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
   featureFlagsManager: {
-    value: { smartSearch: false },
+    value: {
+      map: true,
+      smartSearch: false,
+    },
   },
 }));
+
+vi.mock('$lib/components/shared-components/map/map.svelte', async () => {
+  const { default: MockComponent } = await import('@test-data/mocks/map-component.stub.svelte');
+  return { default: MockComponent };
+});
 
 vi.mock('$lib/components/asset-viewer/detail-panel-date.svelte', async () => {
   const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
@@ -151,5 +168,37 @@ describe('DetailPanel', () => {
 
     const image = container.querySelector('img[src*="/shared-spaces/space-1/people/space-person-1/thumbnail"]');
     expect(image).toBeTruthy();
+  });
+
+  it('renders Google, Apple, and OpenStreetMap links in the image info panel map popup', async () => {
+    const lat = 48.853_41;
+    const lon = 2.3488;
+    const asset = assetFactory.build({
+      id: 'asset-with-location',
+      ownerId: 'owner-1',
+      exifInfo: {
+        latitude: lat,
+        longitude: lon,
+        city: 'Paris',
+        country: 'France',
+      },
+    });
+
+    renderWithTooltips(DetailPanel, { asset });
+
+    await waitFor(() => expect(screen.getByTestId('map-popup')).toBeInTheDocument());
+
+    const googleLink = screen.getByRole('link', { name: 'open_in_google_maps' });
+    const appleLink = screen.getByRole('link', { name: 'open_in_apple_maps' });
+    const openStreetMapLink = screen.getByRole('link', { name: 'open_in_openstreetmap' });
+
+    expect(googleLink).toHaveAttribute('href', getGoogleMapsUrl(lat, lon));
+    expect(appleLink).toHaveAttribute('href', getAppleMapsUrl(lat, lon));
+    expect(openStreetMapLink).toHaveAttribute('href', getOpenStreetMapUrl(lat, lon));
+
+    for (const link of [googleLink, appleLink, openStreetMapLink]) {
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
   });
 });
