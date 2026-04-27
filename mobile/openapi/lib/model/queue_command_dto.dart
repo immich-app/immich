@@ -17,7 +17,6 @@ class QueueCommandDto {
     this.force,
   });
 
-  /// Queue command to execute
   QueueCommand command;
 
   /// Force the command execution (if applicable)

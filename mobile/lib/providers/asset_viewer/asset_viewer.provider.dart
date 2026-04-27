@@ -2,7 +2,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class AssetViewerState {
   final double backgroundOpacity;
@@ -100,11 +99,11 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
       return;
     }
     state = state.copyWith(showingDetails: showing, showingControls: showing ? true : state.showingControls);
-    if (showing) {
-      final heroTag = state.currentAsset?.heroTag;
-      if (heroTag != null) {
-        ref.read(videoPlayerProvider(heroTag).notifier).pause();
-      }
+
+    final heroTag = state.currentAsset?.heroTag;
+    if (heroTag != null) {
+      final notifier = ref.read(videoPlayerProvider(heroTag).notifier);
+      showing ? notifier.hold() : notifier.release();
     }
   }
 

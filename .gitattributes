@@ -6,6 +6,12 @@ mobile/openapi/**/*.dart linguist-generated=true
 mobile/lib/**/*.g.dart -diff -merge
 mobile/lib/**/*.g.dart linguist-generated=true
 
+mobile/android/**/*.g.kt -diff -merge
+mobile/android/**/*.g.kt linguist-generated=true
+
+mobile/ios/**/*.g.swift -diff -merge
+mobile/ios/**/*.g.swift linguist-generated=true
+
 mobile/lib/**/*.drift.dart -diff -merge
 mobile/lib/**/*.drift.dart linguist-generated=true
 

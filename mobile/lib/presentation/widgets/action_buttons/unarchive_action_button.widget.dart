@@ -16,12 +16,12 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 Future<void> performUnArchiveAction(BuildContext context, WidgetRef ref, {required ActionSource source}) async {
   if (!context.mounted) return;
 
-  final result = await ref.read(actionProvider.notifier).unArchive(source);
-  ref.read(multiSelectProvider.notifier).reset();
-
   if (source == ActionSource.viewer) {
     EventStream.shared.emit(const ViewerReloadAssetEvent());
   }
+
+  final result = await ref.read(actionProvider.notifier).unArchive(source);
+  ref.read(multiSelectProvider.notifier).reset();
 
   final successMessage = 'unarchive_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 

@@ -22,7 +22,6 @@ class MaintenanceDetectInstallStorageFolderDto {
   /// Number of files in the folder
   num files;
 
-  /// Storage folder
   StorageFolder folder;
 
   /// Whether the folder is readable

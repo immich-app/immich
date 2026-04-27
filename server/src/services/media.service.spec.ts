@@ -1,3 +1,4 @@
+import { ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
@@ -27,6 +28,7 @@ import { PersonFactory } from 'test/factories/person.factory';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personThumbnailStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { getForGenerateThumbnail } from 'test/mappers';
 import { factory, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -367,8 +369,10 @@ describe(MediaService.name, () => {
     });
 
     it('should skip thumbnail generation if asset type is unknown', async () => {
-      const asset = AssetFactory.create({ type: 'foo' as AssetType });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      const asset = AssetFactory.from({ type: 'foo' as AssetType })
+        .exif()
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.media.probe).not.toHaveBeenCalled();
@@ -377,17 +381,17 @@ describe(MediaService.name, () => {
     });
 
     it('should skip video thumbnail generation if no video stream', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video });
+      const asset = AssetFactory.from({ type: AssetType.Video }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.noVideoStreams);
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await expect(sut.handleGenerateThumbnails({ id: asset.id })).rejects.toThrowError();
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
     });
 
     it('should skip invisible assets', async () => {
-      const asset = AssetFactory.create({ visibility: AssetVisibility.Hidden });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      const asset = AssetFactory.from({ visibility: AssetVisibility.Hidden }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       expect(await sut.handleGenerateThumbnails({ id: asset.id })).toEqual(JobStatus.Skipped);
 
@@ -398,7 +402,7 @@ describe(MediaService.name, () => {
     it('should delete previous preview if different path', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.Webp } } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -415,7 +419,7 @@ describe(MediaService.name, () => {
         .exif({ profileDescription: 'Adobe RGB', bitsPerSample: 14 })
         .files([AssetFileType.Preview, AssetFileType.Thumbnail])
         .build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
 
@@ -490,9 +494,9 @@ describe(MediaService.name, () => {
     });
 
     it('should generate a thumbnail for a video', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
@@ -500,13 +504,18 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: [
-            '-fps_mode vfr',
-            '-frames:v 1',
-            '-update 1',
-            '-v verbose',
-            String.raw`-vf fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
+            '-fps_mode',
+            'vfr',
+            '-frames:v',
+            '1',
+            '-update',
+            '1',
+            '-v',
+            'verbose',
+            '-vf',
+            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
           ],
           twoPass: false,
         }),
@@ -532,9 +541,9 @@ describe(MediaService.name, () => {
     });
 
     it('should tonemap thumbnail for hdr video', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
@@ -542,13 +551,18 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: [
-            '-fps_mode vfr',
-            '-frames:v 1',
-            '-update 1',
-            '-v verbose',
-            String.raw`-vf fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+            '-fps_mode',
+            'vfr',
+            '-frames:v',
+            '1',
+            '-update',
+            '1',
+            '-v',
+            'verbose',
+            '-vf',
+            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -574,25 +588,30 @@ describe(MediaService.name, () => {
     });
 
     it('should always generate video thumbnail in one pass', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { twoPass: true, maxBitrate: '5000k' },
       });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: [
-            '-fps_mode vfr',
-            '-frames:v 1',
-            '-update 1',
-            '-v verbose',
-            String.raw`-vf fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+            '-fps_mode',
+            'vfr',
+            '-frames:v',
+            '1',
+            '-update',
+            '1',
+            '-v',
+            'verbose',
+            '-vf',
+            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
           ],
           twoPass: false,
         }),
@@ -600,16 +619,16 @@ describe(MediaService.name, () => {
     });
 
     it('should not skip intra frames for MTS file', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamMTS);
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: ['-sws_flags accurate_rnd+full_chroma_int'],
+          inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
           outputOptions: expect.any(Array),
           progress: expect.any(Object),
           twoPass: false,
@@ -618,9 +637,9 @@ describe(MediaService.name, () => {
     });
 
     it('should override reserved color metadata', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamReserved);
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -628,7 +647,8 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-bsf:v hevc_metadata=colour_primaries=1:matrix_coefficients=1:transfer_characteristics=1',
+            '-bsf:v',
+            'hevc_metadata=colour_primaries=1:matrix_coefficients=1:transfer_characteristics=1',
           ]),
           outputOptions: expect.any(Array),
           progress: expect.any(Object),
@@ -638,10 +658,10 @@ describe(MediaService.name, () => {
     });
 
     it('should use scaling divisible by 2 even when using quick sync', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -658,7 +678,7 @@ describe(MediaService.name, () => {
     it.each(Object.values(ImageFormat))('should generate an image preview in %s format', async (format) => {
       const asset = AssetFactory.from().exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { preview: { format } } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `/data/thumbs/${asset.ownerId}/${asset.id.slice(0, 2)}/${asset.id.slice(2, 4)}/${asset.id}_preview.${format}`;
@@ -708,7 +728,7 @@ describe(MediaService.name, () => {
     it.each(Object.values(ImageFormat))('should generate an image thumbnail in %s format', async (format) => {
       const asset = AssetFactory.from().exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format } } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       const previewPath = `/data/thumbs/${asset.ownerId}/${asset.id.slice(0, 2)}/${asset.id.slice(2, 4)}/${asset.id}_preview.jpeg`;
@@ -760,7 +780,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { progressive: true }, thumbnail: { progressive: false } },
       });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -799,7 +819,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { progressive: false }, thumbnail: { format: ImageFormat.Jpeg, progressive: true } },
       });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -834,12 +854,12 @@ describe(MediaService.name, () => {
     });
 
     it('should never set isProgressive for videos', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
       mocks.systemMetadata.get.mockResolvedValue({
         image: { preview: { progressive: true }, thumbnail: { progressive: true } },
       });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -860,7 +880,7 @@ describe(MediaService.name, () => {
     it('should delete previous thumbnail if different path', async () => {
       const asset = AssetFactory.from().exif().file({ type: AssetFileType.Preview }).build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { thumbnail: { format: ImageFormat.Webp } } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -879,7 +899,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -896,7 +916,7 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -910,7 +930,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -925,7 +945,7 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -941,7 +961,7 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -958,7 +978,7 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -977,7 +997,7 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
 
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1018,7 +1038,7 @@ describe(MediaService.name, () => {
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1056,7 +1076,7 @@ describe(MediaService.name, () => {
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jxl });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1104,7 +1124,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1156,7 +1176,7 @@ describe(MediaService.name, () => {
           bitsPerSample: 14,
         })
         .build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1187,7 +1207,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1219,7 +1239,7 @@ describe(MediaService.name, () => {
         })
         .build();
 
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1264,7 +1284,7 @@ describe(MediaService.name, () => {
           bitsPerSample: 14,
         })
         .build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1303,7 +1323,7 @@ describe(MediaService.name, () => {
           bitsPerSample: 14,
         })
         .build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
@@ -1338,7 +1358,7 @@ describe(MediaService.name, () => {
 
     it('should skip videos', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video }).exif().build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       await expect(sut.handleAssetEditThumbnailGeneration({ id: asset.id })).resolves.toBe(JobStatus.Success);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -1355,7 +1375,7 @@ describe(MediaService.name, () => {
         ])
         .build();
 
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       mocks.person.getFaces.mockResolvedValue([]);
@@ -1377,7 +1397,7 @@ describe(MediaService.name, () => {
         .exif()
         .edit({ action: AssetEditAction.Crop, parameters: { height: 1152, width: 1512, x: 216, y: 1512 } })
         .build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
 
@@ -1405,7 +1425,7 @@ describe(MediaService.name, () => {
           { type: AssetFileType.FullSize, path: 'edited3.jpg', isEdited: true },
         ])
         .build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
 
       const status = await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
 
@@ -1423,7 +1443,7 @@ describe(MediaService.name, () => {
 
     it('should generate all 3 edited files if an asset has edits', async () => {
       const asset = AssetFactory.from().exif().edit().build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
 
@@ -1449,7 +1469,7 @@ describe(MediaService.name, () => {
 
     it('should generate the original thumbhash if no edits exist', async () => {
       const asset = AssetFactory.from().exif().build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       mocks.media.generateThumbhash.mockResolvedValue(factory.buffer());
 
       await sut.handleAssetEditThumbnailGeneration({ id: asset.id, source: 'upload' });
@@ -1459,7 +1479,7 @@ describe(MediaService.name, () => {
 
     it('should apply thumbhash if job source is edit and edits exist', async () => {
       const asset = AssetFactory.from().exif().edit().build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
       const thumbhashBuffer = factory.buffer();
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       mocks.person.getFaces.mockResolvedValue([]);
@@ -1928,7 +1948,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-map 0:1', '-map 0:3']),
+          outputOptions: expect.arrayContaining(['-map', '0:1', '-map', '0:3']),
           twoPass: false,
         }),
       );
@@ -1948,7 +1968,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-map 0:0', '-map 0:2']),
+          outputOptions: expect.arrayContaining(['-map', '0:0', '-map', '0:2']),
           twoPass: false,
         }),
       );
@@ -2143,7 +2163,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v copy', '-c:a aac']),
+          outputOptions: expect.arrayContaining(['-c:v', 'copy', '-c:a', 'aac']),
           twoPass: false,
         }),
       );
@@ -2164,7 +2184,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.not.arrayContaining(['-tag:v hvc1']),
+          outputOptions: expect.not.arrayContaining(['-tag:v', 'hvc1']),
           twoPass: false,
         }),
       );
@@ -2185,7 +2205,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v copy', '-tag:v hvc1']),
+          outputOptions: expect.arrayContaining(['-c:v', 'copy', '-tag:v', 'hvc1']),
           twoPass: false,
         }),
       );
@@ -2200,7 +2220,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264', '-c:a', 'copy']),
           twoPass: false,
         }),
       );
@@ -2214,7 +2234,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v copy', '-c:a copy']),
+          outputOptions: expect.arrayContaining(['-c:v', 'copy', '-c:a', 'copy']),
           twoPass: false,
         }),
       );
@@ -2250,7 +2270,9 @@ describe(MediaService.name, () => {
     });
 
     it('should delete existing transcode if current policy does not require transcoding', async () => {
-      const asset = AssetFactory.create({ type: AssetType.Video, encodedVideoPath: '/encoded/video/path.mp4' });
+      const asset = AssetFactory.from({ type: AssetType.Video })
+        .file({ type: AssetFileType.EncodedVideo, path: '/encoded/video/path.mp4' })
+        .build();
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Disabled } });
       mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
@@ -2260,7 +2282,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
-        data: { files: [asset.encodedVideoPath] },
+        data: { files: ['/encoded/video/path.mp4'] },
       });
     });
 
@@ -2273,7 +2295,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264', '-maxrate', '4500k', '-bufsize', '9000k']),
           twoPass: false,
         }),
       );
@@ -2288,7 +2310,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264', '-maxrate', '4500k', '-bufsize', '9000k']),
           twoPass: false,
         }),
       );
@@ -2303,7 +2325,16 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
+          outputOptions: expect.arrayContaining([
+            '-c:v',
+            'h264',
+            '-b:v',
+            '3104k',
+            '-minrate',
+            '1552k',
+            '-maxrate',
+            '4500k',
+          ]),
           twoPass: true,
         }),
       );
@@ -2318,7 +2349,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264', '-c:a', 'copy']),
           twoPass: false,
         }),
       );
@@ -2339,7 +2370,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
+          outputOptions: expect.arrayContaining(['-b:v', '3104k', '-minrate', '1552k', '-maxrate', '4500k']),
           twoPass: true,
         }),
       );
@@ -2375,7 +2406,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-cpu-used 2']),
+          outputOptions: expect.arrayContaining(['-cpu-used', '2']),
           twoPass: false,
         }),
       );
@@ -2405,7 +2436,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-threads 2']),
+          outputOptions: expect.arrayContaining(['-threads', '2']),
           twoPass: false,
         }),
       );
@@ -2420,7 +2451,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-threads 1', '-x264-params frame-threads=1:pools=none']),
+          outputOptions: expect.arrayContaining(['-threads', '1', '-x264-params', 'frame-threads=1:pools=none']),
           twoPass: false,
         }),
       );
@@ -2450,7 +2481,14 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v hevc', '-threads 1', '-x265-params frame-threads=1:pools=none']),
+          outputOptions: expect.arrayContaining([
+            '-c:v',
+            'hevc',
+            '-threads',
+            '1',
+            '-x265-params',
+            'frame-threads=1:pools=none',
+          ]),
           twoPass: false,
         }),
       );
@@ -2481,15 +2519,24 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
-            '-c:v libsvtav1',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:3',
-            '-v verbose',
-            '-vf scale=-2:720',
-            '-preset 12',
-            '-crf 23',
+            '-c:v',
+            'libsvtav1',
+            '-movflags',
+            'faststart',
+            '-fps_mode',
+            'passthrough',
+            '-map',
+            '0:0',
+            '-map',
+            '0:3',
+            '-v',
+            'verbose',
+            '-vf',
+            'scale=-2:720',
+            '-preset',
+            '12',
+            '-crf',
+            '23',
           ]),
           twoPass: false,
         }),
@@ -2505,7 +2552,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-preset 4']),
+          outputOptions: expect.arrayContaining(['-preset', '4']),
           twoPass: false,
         }),
       );
@@ -2520,7 +2567,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-svtav1-params mbr=2M']),
+          outputOptions: expect.arrayContaining(['-svtav1-params', 'mbr=2M']),
           twoPass: false,
         }),
       );
@@ -2535,7 +2582,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-svtav1-params lp=4']),
+          outputOptions: expect.arrayContaining(['-svtav1-params', 'lp=4']),
           twoPass: false,
         }),
       );
@@ -2552,7 +2599,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-svtav1-params lp=4:mbr=2M']),
+          outputOptions: expect.arrayContaining(['-svtav1-params', 'lp=4:mbr=2M']),
           twoPass: false,
         }),
       );
@@ -2569,6 +2616,50 @@ describe(MediaService.name, () => {
       });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    describe('should skip transcoding for accepted audio codecs with optimal policy if video is fine', () => {
+      const acceptedCodecs = [
+        { codec: 'aac', probeStub: probeStub.audioStreamAac },
+        { codec: 'mp3', probeStub: probeStub.audioStreamMp3 },
+        { codec: 'opus', probeStub: probeStub.audioStreamOpus },
+      ];
+
+      beforeEach(() => {
+        mocks.systemMetadata.get.mockResolvedValue({
+          ffmpeg: {
+            targetVideoCodec: VideoCodec.Hevc,
+            transcode: TranscodePolicy.Optimal,
+            targetResolution: '1080p',
+          },
+        });
+      });
+
+      it.each(acceptedCodecs)('should skip $codec', async ({ probeStub }) => {
+        mocks.media.probe.mockResolvedValue(probeStub);
+        await sut.handleVideoConversion({ id: 'video-id' });
+        expect(mocks.media.transcode).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should use libopus audio encoder when target audio is opus', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.audioStreamAac);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          targetAudioCodec: AudioCodec.Opus,
+          transcode: TranscodePolicy.All,
+        },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:a', 'libopus']),
+          twoPass: false,
+        }),
+      );
     });
 
     it('should fail if hwaccel is enabled for an unsupported codec', async () => {
@@ -2595,23 +2686,38 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
           outputOptions: expect.arrayContaining([
-            '-tune hq',
-            '-qmin 0',
-            '-rc-lookahead 20',
-            '-i_qfactor 0.75',
-            `-c:v h264_nvenc`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:3',
-            '-g 256',
-            '-v verbose',
-            '-vf hwupload_cuda,scale_cuda=-2:720:format=nv12',
-            '-preset p1',
-            '-cq:v 23',
+            '-tune',
+            'hq',
+            '-qmin',
+            '0',
+            '-rc-lookahead',
+            '20',
+            '-i_qfactor',
+            '0.75',
+            '-c:v',
+            'h264_nvenc',
+            '-c:a',
+            'copy',
+            '-movflags',
+            'faststart',
+            '-fps_mode',
+            'passthrough',
+            '-map',
+            '0:0',
+            '-map',
+            '0:3',
+            '-g',
+            '256',
+            '-v',
+            'verbose',
+            '-vf',
+            'hwupload_cuda,scale_cuda=-2:720:format=nv12',
+            '-preset',
+            'p1',
+            '-cq:v',
+            '23',
           ]),
           twoPass: false,
         }),
@@ -2632,7 +2738,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
           outputOptions: expect.arrayContaining([expect.stringContaining('-multipass')]),
           twoPass: false,
         }),
@@ -2649,8 +2755,8 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
-          outputOptions: expect.arrayContaining(['-cq:v 23', '-maxrate 10000k', '-bufsize 6897k']),
+          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
+          outputOptions: expect.arrayContaining(['-cq:v', '23', '-maxrate', '10000k', '-bufsize', '6897k']),
           twoPass: false,
         }),
       );
@@ -2666,7 +2772,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
           outputOptions: expect.not.stringContaining('-maxrate'),
           twoPass: false,
         }),
@@ -2683,7 +2789,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
           twoPass: false,
         }),
@@ -2698,7 +2804,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
+          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-multipass')]),
           twoPass: false,
         }),
@@ -2716,10 +2822,13 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-hwaccel cuda',
-            '-hwaccel_output_format cuda',
+            '-hwaccel',
+            'cuda',
+            '-hwaccel_output_format',
+            'cuda',
             '-noautorotate',
-            '-threads 1',
+            '-threads',
+            '1',
           ]),
           outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
           twoPass: false,
@@ -2737,7 +2846,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
+          inputOptions: expect.arrayContaining(['-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
               'tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=hable:tonemap_mode=lum:transfer=bt709:peak=100:format=nv12',
@@ -2758,7 +2867,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
+          inputOptions: expect.arrayContaining(['-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda']),
           outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
           twoPass: false,
         }),
@@ -2776,25 +2885,42 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device hw',
+            '-init_hw_device',
+            'qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device',
+            'hw',
           ]),
           outputOptions: expect.arrayContaining([
-            `-c:v h264_qsv`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:3',
-            '-bf 7',
-            '-refs 5',
-            '-g 256',
-            '-v verbose',
-            '-vf hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq:format=nv12',
-            '-preset 7',
-            '-global_quality:v 23',
-            '-maxrate 10000k',
-            '-bufsize 20000k',
+            '-c:v',
+            'h264_qsv',
+            '-c:a',
+            'copy',
+            '-movflags',
+            'faststart',
+            '-fps_mode',
+            'passthrough',
+            '-map',
+            '0:0',
+            '-map',
+            '0:3',
+            '-bf',
+            '7',
+            '-refs',
+            '5',
+            '-g',
+            '256',
+            '-v',
+            'verbose',
+            '-vf',
+            'hwupload=extra_hw_frames=64,scale_qsv=-1:720:mode=hq:format=nv12',
+            '-preset',
+            '7',
+            '-global_quality:v',
+            '23',
+            '-maxrate',
+            '10000k',
+            '-bufsize',
+            '20000k',
           ]),
           twoPass: false,
         }),
@@ -2816,8 +2942,10 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device hw',
+            '-init_hw_device',
+            'qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device',
+            'hw',
           ]),
           outputOptions: expect.any(Array),
           twoPass: false,
@@ -2836,8 +2964,10 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device hw',
+            '-init_hw_device',
+            'qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device',
+            'hw',
           ]),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
           twoPass: false,
@@ -2856,10 +2986,12 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device hw',
+            '-init_hw_device',
+            'qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device',
+            'hw',
           ]),
-          outputOptions: expect.arrayContaining(['-low_power 1']),
+          outputOptions: expect.arrayContaining(['-low_power', '1']),
           twoPass: false,
         }),
       );
@@ -2885,10 +3017,12 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD129',
-            '-filter_hw_device hw',
+            '-init_hw_device',
+            'qsv=hw,child_device=/dev/dri/renderD129',
+            '-filter_hw_device',
+            'hw',
           ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_qsv`]),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264_qsv']),
           twoPass: false,
         }),
       );
@@ -2907,12 +3041,17 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-hwaccel_output_format qsv',
-            '-async_depth 4',
+            '-hwaccel',
+            'qsv',
+            '-hwaccel_output_format',
+            'qsv',
+            '-async_depth',
+            '4',
             '-noautorotate',
-            '-threads 1',
-            '-qsv_device /dev/dri/renderD128',
+            '-threads',
+            '1',
+            '-qsv_device',
+            '/dev/dri/renderD128',
           ]),
           outputOptions: expect.arrayContaining([expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq')]),
           twoPass: false,
@@ -2933,10 +3072,14 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-hwaccel_output_format qsv',
-            '-async_depth 4',
-            '-threads 1',
+            '-hwaccel',
+            'qsv',
+            '-hwaccel_output_format',
+            'qsv',
+            '-async_depth',
+            '4',
+            '-threads',
+            '1',
           ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
@@ -2960,7 +3103,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel qsv', '-qsv_device /dev/dri/renderD129']),
+          inputOptions: expect.arrayContaining(['-hwaccel', 'qsv', '-qsv_device', '/dev/dri/renderD129']),
           outputOptions: expect.any(Array),
           twoPass: false,
         }),
@@ -2980,10 +3123,14 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-hwaccel qsv',
-            '-hwaccel_output_format qsv',
-            '-async_depth 4',
-            '-threads 1',
+            '-hwaccel',
+            'qsv',
+            '-hwaccel_output_format',
+            'qsv',
+            '-async_depth',
+            '4',
+            '-threads',
+            '1',
           ]),
           outputOptions: expect.arrayContaining([expect.stringContaining('format=nv12')]),
           twoPass: false,
@@ -3000,21 +3147,34 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device',
+            'accel',
           ]),
           outputOptions: expect.arrayContaining([
-            `-c:v h264_vaapi`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:3',
-            '-g 256',
-            '-v verbose',
-            '-vf hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
-            '-compression_level 7',
-            '-rc_mode 1',
+            '-c:v',
+            'h264_vaapi',
+            '-c:a',
+            'copy',
+            '-movflags',
+            'faststart',
+            '-fps_mode',
+            'passthrough',
+            '-map',
+            '0:0',
+            '-map',
+            '0:3',
+            '-g',
+            '256',
+            '-v',
+            'verbose',
+            '-vf',
+            'hwupload=extra_hw_frames=64,scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12',
+            '-compression_level',
+            '7',
+            '-rc_mode',
+            '1',
           ]),
           twoPass: false,
         }),
@@ -3032,15 +3192,22 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device',
+            'accel',
           ]),
           outputOptions: expect.arrayContaining([
-            `-c:v h264_vaapi`,
-            '-b:v 6897k',
-            '-maxrate 10000k',
-            '-minrate 3448.5k',
-            '-rc_mode 3',
+            '-c:v',
+            'h264_vaapi',
+            '-b:v',
+            '6897k',
+            '-maxrate',
+            '10000k',
+            '-minrate',
+            '3448.5k',
+            '-rc_mode',
+            '3',
           ]),
           twoPass: false,
         }),
@@ -3056,15 +3223,22 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device',
+            'accel',
           ]),
           outputOptions: expect.arrayContaining([
-            `-c:v h264_vaapi`,
-            '-c:a copy',
-            '-qp:v 23',
-            '-global_quality:v 23',
-            '-rc_mode 1',
+            '-c:v',
+            'h264_vaapi',
+            '-c:a',
+            'copy',
+            '-qp:v',
+            '23',
+            '-global_quality:v',
+            '23',
+            '-rc_mode',
+            '1',
           ]),
           twoPass: false,
         }),
@@ -3082,8 +3256,10 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device',
+            'accel',
           ]),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-compression_level')]),
           twoPass: false,
@@ -3101,10 +3277,12 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD129',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD129',
+            '-filter_hw_device',
+            'accel',
           ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264_vaapi']),
           twoPass: false,
         }),
       );
@@ -3122,10 +3300,12 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device',
+            'accel',
           ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264_vaapi']),
           twoPass: false,
         }),
       );
@@ -3144,11 +3324,15 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-hwaccel vaapi',
-            '-hwaccel_output_format vaapi',
+            '-hwaccel',
+            'vaapi',
+            '-hwaccel_output_format',
+            'vaapi',
             '-noautorotate',
-            '-threads 1',
-            '-hwaccel_device /dev/dri/renderD128',
+            '-threads',
+            '1',
+            '-hwaccel_device',
+            '/dev/dri/renderD128',
           ]),
           outputOptions: expect.arrayContaining([expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc')]),
           twoPass: false,
@@ -3168,7 +3352,14 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_output_format vaapi', '-threads 1']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel',
+            'vaapi',
+            '-hwaccel_output_format',
+            'vaapi',
+            '-threads',
+            '1',
+          ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
               'hwmap=derive_device=opencl,tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=hable:tonemap_mode=lum:peak=100,hwmap=derive_device=vaapi:reverse=1,format=vaapi',
@@ -3191,7 +3382,14 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_output_format vaapi', '-threads 1']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel',
+            'vaapi',
+            '-hwaccel_output_format',
+            'vaapi',
+            '-threads',
+            '1',
+          ]),
           outputOptions: expect.arrayContaining([expect.stringContaining('format=nv12')]),
           twoPass: false,
         }),
@@ -3210,7 +3408,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_device /dev/dri/renderD129']),
+          inputOptions: expect.arrayContaining(['-hwaccel', 'vaapi', '-hwaccel_device', '/dev/dri/renderD129']),
           outputOptions: expect.any(Array),
           twoPass: false,
         }),
@@ -3230,10 +3428,12 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device accel',
+            '-init_hw_device',
+            'vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device',
+            'accel',
           ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264_vaapi']),
           twoPass: false,
         }),
       );
@@ -3253,7 +3453,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264']),
           twoPass: false,
         }),
       );
@@ -3270,7 +3470,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264']),
           twoPass: false,
         }),
       );
@@ -3295,24 +3495,39 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-hwaccel rkmpp',
-            '-hwaccel_output_format drm_prime',
-            '-afbc rga',
+            '-hwaccel',
+            'rkmpp',
+            '-hwaccel_output_format',
+            'drm_prime',
+            '-afbc',
+            'rga',
             '-noautorotate',
           ]),
           outputOptions: expect.arrayContaining([
-            `-c:v h264_rkmpp`,
-            '-c:a copy',
-            '-movflags faststart',
-            '-fps_mode passthrough',
-            '-map 0:0',
-            '-map 0:3',
-            '-g 256',
-            '-v verbose',
-            '-vf scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',
-            '-level 51',
-            '-rc_mode CQP',
-            '-qp_init 23',
+            '-c:v',
+            'h264_rkmpp',
+            '-c:a',
+            'copy',
+            '-movflags',
+            'faststart',
+            '-fps_mode',
+            'passthrough',
+            '-map',
+            '0:0',
+            '-map',
+            '0:3',
+            '-g',
+            '256',
+            '-v',
+            'verbose',
+            '-vf',
+            'scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',
+            '-level',
+            '51',
+            '-rc_mode',
+            'CQP',
+            '-qp_init',
+            '23',
           ]),
           twoPass: false,
         }),
@@ -3334,8 +3549,24 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
-          outputOptions: expect.arrayContaining([`-c:v hevc_rkmpp`, '-level 153', '-rc_mode AVBR', '-b:v 10000k']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel',
+            'rkmpp',
+            '-hwaccel_output_format',
+            'drm_prime',
+            '-afbc',
+            'rga',
+          ]),
+          outputOptions: expect.arrayContaining([
+            '-c:v',
+            'hevc_rkmpp',
+            '-level',
+            '153',
+            '-rc_mode',
+            'AVBR',
+            '-b:v',
+            '10000k',
+          ]),
           twoPass: false,
         }),
       );
@@ -3351,8 +3582,24 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
-          outputOptions: expect.arrayContaining([`-c:v h264_rkmpp`, '-level 51', '-rc_mode CQP', '-qp_init 30']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel',
+            'rkmpp',
+            '-hwaccel_output_format',
+            'drm_prime',
+            '-afbc',
+            'rga',
+          ]),
+          outputOptions: expect.arrayContaining([
+            '-c:v',
+            'h264_rkmpp',
+            '-level',
+            '51',
+            '-rc_mode',
+            'CQP',
+            '-qp_init',
+            '30',
+          ]),
           twoPass: false,
         }),
       );
@@ -3368,7 +3615,14 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel',
+            'rkmpp',
+            '-hwaccel_output_format',
+            'drm_prime',
+            '-afbc',
+            'rga',
+          ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
               'scale_rkrga=-2:720:format=p010:afbc=1:async_depth=4,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0:tonemap_mode=lum:peak=100,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
@@ -3390,7 +3644,14 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
+          inputOptions: expect.arrayContaining([
+            '-hwaccel',
+            'rkmpp',
+            '-hwaccel_output_format',
+            'drm_prime',
+            '-afbc',
+            'rga',
+          ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining('scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4'),
           ]),
@@ -3452,9 +3713,12 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
-            '-c:v h264',
-            '-c:a copy',
-            '-vf tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p',
+            '-c:v',
+            'h264',
+            '-c:a',
+            'copy',
+            '-vf',
+            'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p',
           ]),
           twoPass: false,
         }),
@@ -3471,9 +3735,12 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
-            '-c:v h264',
-            '-c:a copy',
-            '-vf tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p',
+            '-c:v',
+            'h264',
+            '-c:a',
+            'copy',
+            '-vf',
+            'tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p',
           ]),
           twoPass: false,
         }),
@@ -3489,7 +3756,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf format=yuv420p']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264', '-c:a', 'copy', '-vf', 'format=yuv420p']),
           twoPass: false,
         }),
       );
@@ -3504,7 +3771,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf scale=-2:720,format=yuv420p']),
+          outputOptions: expect.arrayContaining(['-c:v', 'h264', '-c:a', 'copy', '-vf', 'scale=-2:720,format=yuv420p']),
           twoPass: false,
         }),
       );
@@ -3550,7 +3817,7 @@ describe(MediaService.name, () => {
         expect.stringContaining('video-id.mp4'),
         expect.objectContaining({
           inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining(['-c:a copy']),
+          outputOptions: expect.arrayContaining(['-c:a', 'copy']),
           twoPass: false,
         }),
       );
@@ -3559,15 +3826,15 @@ describe(MediaService.name, () => {
 
   describe('isSRGB', () => {
     it('should return true for srgb colorspace', () => {
-      expect(sut.isSRGB({ colorspace: 'sRGB' } as Exif)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB' } as ShallowDehydrateObject<Exif>)).toEqual(true);
     });
 
     it('should return true for srgb profile description', () => {
-      expect(sut.isSRGB({ profileDescription: 'sRGB v1.31' } as Exif)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB v1.31' } as ShallowDehydrateObject<Exif>)).toEqual(true);
     });
 
     it('should return true for 8-bit image with no colorspace metadata', () => {
-      expect(sut.isSRGB({ bitsPerSample: 8 } as Exif)).toEqual(true);
+      expect(sut.isSRGB({ bitsPerSample: 8 } as ShallowDehydrateObject<Exif>)).toEqual(true);
     });
 
     it('should return true for image with no colorspace or bit depth metadata', () => {
@@ -3575,23 +3842,25 @@ describe(MediaService.name, () => {
     });
 
     it('should return false for non-srgb colorspace', () => {
-      expect(sut.isSRGB({ colorspace: 'Adobe RGB' } as Exif)).toEqual(false);
+      expect(sut.isSRGB({ colorspace: 'Adobe RGB' } as ShallowDehydrateObject<Exif>)).toEqual(false);
     });
 
     it('should return false for non-srgb profile description', () => {
-      expect(sut.isSRGB({ profileDescription: 'sP3C' } as Exif)).toEqual(false);
+      expect(sut.isSRGB({ profileDescription: 'sP3C' } as ShallowDehydrateObject<Exif>)).toEqual(false);
     });
 
     it('should return false for 16-bit image with no colorspace metadata', () => {
-      expect(sut.isSRGB({ bitsPerSample: 16 } as Exif)).toEqual(false);
+      expect(sut.isSRGB({ bitsPerSample: 16 } as ShallowDehydrateObject<Exif>)).toEqual(false);
     });
 
     it('should return true for 16-bit image with sRGB colorspace', () => {
-      expect(sut.isSRGB({ colorspace: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
+      expect(sut.isSRGB({ colorspace: 'sRGB', bitsPerSample: 16 } as ShallowDehydrateObject<Exif>)).toEqual(true);
     });
 
     it('should return true for 16-bit image with sRGB profile', () => {
-      expect(sut.isSRGB({ profileDescription: 'sRGB', bitsPerSample: 16 } as Exif)).toEqual(true);
+      expect(sut.isSRGB({ profileDescription: 'sRGB', bitsPerSample: 16 } as ShallowDehydrateObject<Exif>)).toEqual(
+        true,
+      );
     });
   });
 

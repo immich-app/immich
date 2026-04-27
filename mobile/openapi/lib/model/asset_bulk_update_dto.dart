@@ -70,6 +70,9 @@ class AssetBulkUpdateDto {
 
   /// Latitude coordinate
   ///
+  /// Minimum value: -90
+  /// Maximum value: 90
+  ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
@@ -78,6 +81,9 @@ class AssetBulkUpdateDto {
   num? latitude;
 
   /// Longitude coordinate
+  ///
+  /// Minimum value: -180
+  /// Maximum value: 180
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -90,7 +96,7 @@ class AssetBulkUpdateDto {
   ///
   /// Minimum value: -1
   /// Maximum value: 5
-  num? rating;
+  int? rating;
 
   /// Time zone (IANA timezone)
   ///
@@ -101,7 +107,6 @@ class AssetBulkUpdateDto {
   ///
   String? timeZone;
 
-  /// Asset visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -217,9 +222,7 @@ class AssetBulkUpdateDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
-        rating: json[r'rating'] == null
-            ? null
-            : num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );

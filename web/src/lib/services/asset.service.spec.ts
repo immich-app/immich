@@ -1,17 +1,18 @@
-import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
-import { user as userStore } from '$lib/stores/user.store';
-import { setSharedLink } from '$lib/utils';
-import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfo } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
+import { vitest } from 'vitest';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
+import { setSharedLink } from '$lib/utils';
+import { getFormatter } from '$lib/utils/i18n';
 import { assetFactory } from '@test-data/factories/asset-factory';
+import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
-import { vitest } from 'vitest';
 
 vitest.mock('@immich/ui', () => ({
   toastManager: {
-    success: vitest.fn(),
+    primary: vitest.fn(),
   },
 }));
 
@@ -32,11 +33,15 @@ vitest.mock('$lib/utils', async () => {
 
 describe('AssetService', () => {
   describe('getAssetActions', () => {
+    beforeEach(() => {
+      authManager.setPreferences(preferencesFactory.build());
+    });
+
     it('should allow shared link downloads if the user owns the asset and shared link downloads are disabled', () => {
       const ownerId = 'owner';
       const user = userAdminFactory.build({ id: ownerId });
       const asset = assetFactory.build({ ownerId });
-      userStore.set(user);
+      authManager.setUser(user);
       setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
@@ -46,7 +51,7 @@ describe('AssetService', () => {
       const ownerId = 'owner';
       const user = userAdminFactory.build({ id: 'non-owner' });
       const asset = assetFactory.build({ ownerId });
-      userStore.set(user);
+      authManager.setUser(user);
       setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(false);
@@ -67,7 +72,7 @@ describe('AssetService', () => {
       const asset = assetFactory.build({ originalFileName: 'asset.heic' });
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
-      expect(toastManager.success).toHaveBeenCalledWith('formatter');
+      expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
 
     it('should use the motion asset originalFileName when showing toasts', async () => {
@@ -78,8 +83,8 @@ describe('AssetService', () => {
       const asset = assetFactory.build({ originalFileName: 'asset.heic', livePhotoVideoId: '1' });
       await handleDownloadAsset(asset, { edited: false });
       expect($t).toHaveBeenNthCalledWith(1, 'downloading_asset_filename', { values: { filename: 'asset.heic' } });
-      expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset.mov' } });
-      expect(toastManager.success).toHaveBeenCalledWith('formatter');
+      expect($t).toHaveBeenNthCalledWith(2, 'downloading_asset_filename', { values: { filename: 'asset-motion.mov' } });
+      expect(toastManager.primary).toHaveBeenCalledWith('formatter');
     });
   });
 });

@@ -3,11 +3,11 @@
   import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
-  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
-  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ManagePeopleVisibility from './ManagePeopleVisibility.svelte';
+  import PeopleCard from './PeopleCard.svelte';
+  import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
+  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
@@ -157,7 +157,7 @@
             break;
           }
         }
-        toastManager.success($t('change_name_successfully'));
+        toastManager.primary($t('change_name_successfully'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -178,7 +178,7 @@
         return person;
       });
 
-      toastManager.success($t('changed_visibility_successfully'));
+      toastManager.primary($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -198,7 +198,7 @@
         return person;
       });
 
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
+      toastManager.primary(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
     }

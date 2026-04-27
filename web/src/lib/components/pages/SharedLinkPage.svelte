@@ -1,10 +1,10 @@
 <script lang="ts">
-  import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
-  import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { user } from '$lib/stores/user.store';
+  import AlbumViewer from '$lib/components/album-page/AlbumViewer.svelte';
+  import IndividualSharedViewer from '$lib/components/share-page/IndividualSharedViewer.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import ThemeButton from '$lib/components/shared-components/ThemeButton.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
@@ -31,10 +31,9 @@
 
   const { data }: Props = $props();
 
-  let { gridScrollTarget } = assetViewingStore;
   let { sharedLink, passwordRequired, key, slug, meta } = $state(data);
   let { title, description } = $state(meta);
-  let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
+  let isOwned = $derived(authManager.authenticated && authManager.user.id === sharedLink?.userId);
   let password = $state('');
 
   const handlePasswordSubmit = async () => {
@@ -48,7 +47,7 @@
         $t('shared_photos_and_videos_count', { values: { assetCount: sharedLink.assets.length } });
       await tick();
       await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetViewerManager.gridScrollTarget },
         { forceNavigate: true, replaceState: true },
       );
     } catch (error) {

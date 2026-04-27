@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
@@ -75,6 +76,7 @@ enum ActionButtonType {
   viewInTimeline,
   download,
   upload,
+  openInBrowser,
   unstack,
   archive,
   unarchive,
@@ -141,8 +143,7 @@ enum ActionButtonType {
             !context.isInLockedView && //
             context.currentAlbum != null,
       ActionButtonType.setAlbumCover =>
-        context.isOwner && //
-            !context.isInLockedView && //
+        !context.isInLockedView && //
             context.currentAlbum != null && //
             context.selectedCount == 1,
       ActionButtonType.unstack =>
@@ -150,6 +151,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.trash &&
             !context.isInLockedView && //
             context.isStacked,
+      ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
@@ -237,6 +239,13 @@ enum ActionButtonType {
       ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => UnStackActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.openInBrowser => OpenInBrowserActionButton(
+        remoteId: context.asset.remoteId!,
+        origin: context.timelineOrigin,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+        iconColor: context.originalTheme?.iconTheme.color,
+      ),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(
         assetId: (context.asset as RemoteAsset).id,
         iconOnly: iconOnly,
@@ -263,8 +272,7 @@ enum ActionButtonType {
         onPressed: buildContext == null
             ? null
             : () async {
-                await buildContext.maybePop();
-                await buildContext.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+                await buildContext.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
                 EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
               },
       ),

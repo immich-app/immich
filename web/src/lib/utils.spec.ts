@@ -1,5 +1,5 @@
-import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { AssetTypeEnum } from '@immich/sdk';
+import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -71,6 +71,32 @@ describe('utils', () => {
       const url = getAssetUrl({ asset });
 
       expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for video assets with forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset, forceOriginal: true });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for video assets without forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
       expect(url).toContain(asset.id);
     });
 

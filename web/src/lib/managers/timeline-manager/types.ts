@@ -1,5 +1,5 @@
-import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
+import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 
 export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
 
@@ -18,6 +18,7 @@ export type Direction = 'earlier' | 'later';
 export type TimelineAsset = {
   id: string;
   ownerId: string;
+  tags?: string[];
   ratio: number;
   thumbhash: string | null;
   localDateTime: TimelineDateTime;

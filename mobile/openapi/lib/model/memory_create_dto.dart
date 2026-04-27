@@ -67,7 +67,6 @@ class MemoryCreateDto {
   ///
   DateTime? showAt;
 
-  /// Memory type
   MemoryType type;
 
   @override
@@ -101,7 +100,9 @@ class MemoryCreateDto {
       json[r'assetIds'] = this.assetIds;
       json[r'data'] = this.data;
     if (this.hideAt != null) {
-      json[r'hideAt'] = this.hideAt!.toUtc().toIso8601String();
+      json[r'hideAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.hideAt!.millisecondsSinceEpoch
+        : this.hideAt!.toUtc().toIso8601String();
     } else {
     //  json[r'hideAt'] = null;
     }
@@ -110,14 +111,20 @@ class MemoryCreateDto {
     } else {
     //  json[r'isSaved'] = null;
     }
-      json[r'memoryAt'] = this.memoryAt.toUtc().toIso8601String();
+      json[r'memoryAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.memoryAt.millisecondsSinceEpoch
+        : this.memoryAt.toUtc().toIso8601String();
     if (this.seenAt != null) {
-      json[r'seenAt'] = this.seenAt!.toUtc().toIso8601String();
+      json[r'seenAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.seenAt!.millisecondsSinceEpoch
+        : this.seenAt!.toUtc().toIso8601String();
     } else {
     //  json[r'seenAt'] = null;
     }
     if (this.showAt != null) {
-      json[r'showAt'] = this.showAt!.toUtc().toIso8601String();
+      json[r'showAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.showAt!.millisecondsSinceEpoch
+        : this.showAt!.toUtc().toIso8601String();
     } else {
     //  json[r'showAt'] = null;
     }
@@ -138,11 +145,11 @@ class MemoryCreateDto {
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         data: OnThisDayDto.fromJson(json[r'data'])!,
-        hideAt: mapDateTime(json, r'hideAt', r''),
+        hideAt: mapDateTime(json, r'hideAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r'')!,
-        seenAt: mapDateTime(json, r'seenAt', r''),
-        showAt: mapDateTime(json, r'showAt', r''),
+        memoryAt: mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
+        seenAt: mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        showAt: mapDateTime(json, r'showAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         type: MemoryType.fromJson(json[r'type'])!,
       );
     }

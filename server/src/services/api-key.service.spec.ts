@@ -1,7 +1,10 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Permission } from 'src/enum';
 import { ApiKeyService } from 'src/services/api-key.service';
-import { factory, newUuid } from 'test/small.factory';
+import { ApiKeyFactory } from 'test/factories/api-key.factory';
+import { AuthFactory } from 'test/factories/auth.factory';
+import { SessionFactory } from 'test/factories/session.factory';
+import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(ApiKeyService.name, () => {
@@ -14,8 +17,8 @@ describe(ApiKeyService.name, () => {
 
   describe('create', () => {
     it('should create a new key', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.All] });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions: [Permission.All] });
       const key = 'super-secret';
 
       mocks.crypto.randomBytesAsText.mockReturnValue(key);
@@ -34,8 +37,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should not require a name', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
       const key = 'super-secret';
 
       mocks.crypto.randomBytesAsText.mockReturnValue(key);
@@ -54,7 +57,9 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should throw an error if the api key does not have sufficient permissions', async () => {
-      const auth = factory.auth({ apiKey: { permissions: [Permission.AssetRead] } });
+      const auth = AuthFactory.from()
+        .apiKey({ permissions: [Permission.AssetRead] })
+        .build();
 
       await expect(sut.create(auth, { permissions: [Permission.AssetUpdate] })).rejects.toBeInstanceOf(
         BadRequestException,
@@ -65,7 +70,7 @@ describe(ApiKeyService.name, () => {
   describe('update', () => {
     it('should throw an error if the key is not found', async () => {
       const id = newUuid();
-      const auth = factory.auth();
+      const auth = AuthFactory.create();
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
 
@@ -77,8 +82,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should update a key', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
       const newName = 'New name';
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
@@ -93,8 +98,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should update permissions', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
       const newPermissions = [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate];
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
@@ -111,8 +116,8 @@ describe(ApiKeyService.name, () => {
     describe('api key auth', () => {
       it('should prevent adding Permission.all', async () => {
         const permissions = [Permission.ApiKeyCreate, Permission.ApiKeyUpdate, Permission.AssetRead];
-        const auth = factory.auth({ apiKey: { permissions } });
-        const apiKey = factory.apiKey({ userId: auth.user.id, permissions });
+        const auth = AuthFactory.from().apiKey({ permissions }).build();
+        const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions });
 
         mocks.apiKey.getById.mockResolvedValue(apiKey);
 
@@ -125,8 +130,8 @@ describe(ApiKeyService.name, () => {
 
       it('should prevent adding a new permission', async () => {
         const permissions = [Permission.ApiKeyCreate, Permission.ApiKeyUpdate, Permission.AssetRead];
-        const auth = factory.auth({ apiKey: { permissions } });
-        const apiKey = factory.apiKey({ userId: auth.user.id, permissions });
+        const auth = AuthFactory.from().apiKey({ permissions }).build();
+        const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions });
 
         mocks.apiKey.getById.mockResolvedValue(apiKey);
 
@@ -138,8 +143,10 @@ describe(ApiKeyService.name, () => {
       });
 
       it('should allow removing permissions', async () => {
-        const auth = factory.auth({ apiKey: { permissions: [Permission.ApiKeyUpdate, Permission.AssetRead] } });
-        const apiKey = factory.apiKey({
+        const auth = AuthFactory.from()
+          .apiKey({ permissions: [Permission.ApiKeyUpdate, Permission.AssetRead] })
+          .build();
+        const apiKey = ApiKeyFactory.create({
           userId: auth.user.id,
           permissions: [Permission.AssetRead, Permission.AssetDelete],
         });
@@ -158,10 +165,10 @@ describe(ApiKeyService.name, () => {
       });
 
       it('should allow adding new permissions', async () => {
-        const auth = factory.auth({
-          apiKey: { permissions: [Permission.ApiKeyUpdate, Permission.AssetRead, Permission.AssetUpdate] },
-        });
-        const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.AssetRead] });
+        const auth = AuthFactory.from()
+          .apiKey({ permissions: [Permission.ApiKeyUpdate, Permission.AssetRead, Permission.AssetUpdate] })
+          .build();
+        const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions: [Permission.AssetRead] });
 
         mocks.apiKey.getById.mockResolvedValue(apiKey);
         mocks.apiKey.update.mockResolvedValue(apiKey);
@@ -183,7 +190,7 @@ describe(ApiKeyService.name, () => {
 
   describe('delete', () => {
     it('should throw an error if the key is not found', async () => {
-      const auth = factory.auth();
+      const auth = AuthFactory.create();
       const id = newUuid();
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
@@ -194,8 +201,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should delete a key', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
       mocks.apiKey.delete.mockResolvedValue();
@@ -208,8 +215,8 @@ describe(ApiKeyService.name, () => {
 
   describe('getMine', () => {
     it('should not work with a session token', async () => {
-      const session = factory.session();
-      const auth = factory.auth({ session });
+      const session = SessionFactory.create();
+      const auth = AuthFactory.from().session(session).build();
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
 
@@ -219,8 +226,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should throw an error if the key is not found', async () => {
-      const apiKey = factory.authApiKey();
-      const auth = factory.auth({ apiKey });
+      const apiKey = ApiKeyFactory.create();
+      const auth = AuthFactory.from().apiKey(apiKey).build();
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
 
@@ -230,8 +237,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should get a key by id', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
 
@@ -243,7 +250,7 @@ describe(ApiKeyService.name, () => {
 
   describe('getById', () => {
     it('should throw an error if the key is not found', async () => {
-      const auth = factory.auth();
+      const auth = AuthFactory.create();
       const id = newUuid();
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
@@ -254,8 +261,8 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should get a key by id', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
 
@@ -267,8 +274,8 @@ describe(ApiKeyService.name, () => {
 
   describe('getAll', () => {
     it('should return all the keys for a user', async () => {
-      const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const auth = AuthFactory.create();
+      const apiKey = ApiKeyFactory.create({ userId: auth.user.id });
 
       mocks.apiKey.getByUserId.mockResolvedValue([apiKey]);
 

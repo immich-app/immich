@@ -6,7 +6,7 @@
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
-  import ImageThumbnail from '../components/assets/thumbnail/image-thumbnail.svelte';
+  import ImageThumbnail from '../components/assets/thumbnail/ImageThumbnail.svelte';
 
   type Props = {
     personToMerge: PersonResponseDto;
@@ -38,7 +38,7 @@
         id: personToBeMergedInto.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
-      toastManager.success($t('merge_people_successfully'));
+      toastManager.primary($t('merge_people_successfully'));
       onClose([personToMerge, personToBeMergedInto]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));

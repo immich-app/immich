@@ -1,3 +1,4 @@
+import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset, AssetFile } from 'src/database';
@@ -64,12 +65,7 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
 }
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
-
-export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
-
 export type GenerateThumbhashOptions = DecodeImageOptions;
-
-export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { raw: RawImageInfo };
 
 export interface GenerateThumbnailsOptions {
   colorspace: string;
@@ -253,6 +249,7 @@ export interface INotifySignupJob extends IEntityJob {
 
 export interface INotifyAlbumInviteJob extends IEntityJob {
   recipientId: string;
+  senderName: string;
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
@@ -350,7 +347,6 @@ export type JobItem =
   | { name: JobName.FileDelete; data: IDeleteFilesJob }
 
   // Cleanup
-  | { name: JobName.AuditLogCleanup; data?: IBaseJob }
   | { name: JobName.SessionCleanup; data?: IBaseJob }
 
   // Tags
@@ -548,3 +544,5 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
 }
+
+export type MaybeDehydrated<T> = T | ShallowDehydrateObject<T>;

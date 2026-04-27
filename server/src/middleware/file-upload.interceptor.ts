@@ -3,13 +3,16 @@ import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { NextFunction, RequestHandler } from 'express';
-import multer, { StorageEngine, diskStorage } from 'multer';
+import multer from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
+import { join } from 'node:path';
+import { pipeline } from 'node:stream';
 import { Observable } from 'rxjs';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { RouteKey } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
 import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util';
@@ -26,8 +29,6 @@ export function getFiles(files: UploadFiles) {
   };
 }
 
-type DiskStorageCallback = (error: Error | null, result: string) => void;
-
 type ImmichMulterFile = Express.Multer.File & { uuid: string };
 
 interface Callback<T> {
@@ -35,33 +36,20 @@ interface Callback<T> {
   (error: null, result: T): void;
 }
 
-const callbackify = <T>(target: (...arguments_: any[]) => T, callback: Callback<T>) => {
-  try {
-    return callback(null, target());
-  } catch (error: Error | any) {
-    return callback(error);
-  }
-};
-
 @Injectable()
 export class FileUploadInterceptor implements NestInterceptor {
   private handlers: {
     userProfile: RequestHandler;
     assetUpload: RequestHandler;
   };
-  private defaultStorage: StorageEngine;
 
   constructor(
     private reflect: Reflector,
     private assetService: AssetMediaService,
+    private storageRepository: StorageRepository,
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
-
-    this.defaultStorage = diskStorage({
-      filename: this.filename.bind(this),
-      destination: this.destination.bind(this),
-    });
 
     const instance = multer({
       fileFilter: this.fileFilter.bind(this),
@@ -99,60 +87,60 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private fileFilter(request: AuthRequest, file: Express.Multer.File, callback: multer.FileFilterCallback) {
-    return callbackify(() => this.assetService.canUploadFile(asUploadRequest(request, file)), callback);
-  }
-
-  private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(
-      () => this.assetService.getUploadFilename(asUploadRequest(request, file)),
-      callback as Callback<string>,
-    );
-  }
-
-  private destination(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(
-      () => this.assetService.getUploadFolder(asUploadRequest(request, file)),
-      callback as Callback<string>,
-    );
+    try {
+      callback(null, this.assetService.canUploadFile(asUploadRequest(request, file)));
+    } catch (error: Error | any) {
+      callback(error);
+    }
   }
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
-    (file as ImmichMulterFile).uuid = randomUUID();
-
     request.on('error', (error) => {
       this.logger.warn('Request error while uploading file, cleaning up', error);
       this.assetService.onUploadError(request, file).catch(this.logger.error);
     });
 
-    if (!this.isAssetUploadFile(file)) {
-      this.defaultStorage._handleFile(request, file, callback);
-      return;
-    }
+    try {
+      (file as ImmichMulterFile).uuid = randomUUID();
 
-    const hash = createHash('sha1');
-    file.stream.on('data', (chunk) => hash.update(chunk));
-    this.defaultStorage._handleFile(request, file, (error, info) => {
-      if (error) {
-        hash.destroy();
-        callback(error);
-      } else {
-        callback(null, { ...info, checksum: hash.digest() });
-      }
-    });
+      const uploadRequest = asUploadRequest(request, file);
+
+      const path = join(
+        this.assetService.getUploadFolder(uploadRequest),
+        this.assetService.getUploadFilename(uploadRequest),
+      );
+
+      const writeStream = this.storageRepository.createWriteStream(path);
+      const hash = file.fieldname === UploadFieldName.ASSET_DATA ? createHash('sha1') : null;
+
+      let size = 0;
+
+      file.stream.on('data', (chunk) => {
+        hash?.update(chunk);
+        size += chunk.length;
+      });
+
+      pipeline(file.stream, writeStream, (error) => {
+        if (error) {
+          hash?.destroy();
+          return callback(error);
+        }
+        callback(null, {
+          path,
+          size,
+          checksum: hash?.digest(),
+        });
+      });
+    } catch (error: Error | any) {
+      callback(error);
+    }
   }
 
-  private removeFile(request: AuthRequest, file: Express.Multer.File, callback: (error: Error | null) => void) {
-    this.defaultStorage._removeFile(request, file, callback);
-  }
-
-  private isAssetUploadFile(file: Express.Multer.File) {
-    switch (file.fieldname as UploadFieldName) {
-      case UploadFieldName.ASSET_DATA: {
-        return true;
-      }
-    }
-
-    return false;
+  private removeFile(_request: AuthRequest, file: Express.Multer.File, callback: (error: Error | null) => void) {
+    this.storageRepository
+      .unlink(file.path)
+      .then(() => callback(null))
+      .catch(callback);
   }
 
   private getHandler(route: RouteKey) {

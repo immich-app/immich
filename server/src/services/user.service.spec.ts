@@ -3,10 +3,11 @@ import { UserAdmin } from 'src/database';
 import { CacheControl, JobName, UserMetadataKey } from 'src/enum';
 import { UserService } from 'src/services/user.service';
 import { ImmichFileResponse } from 'src/utils/file';
+import { AuthFactory } from 'test/factories/auth.factory';
+import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const makeDeletedAt = (daysAgo: number) => {
@@ -28,8 +29,8 @@ describe(UserService.name, () => {
 
   describe('getAll', () => {
     it('admin should get all users', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
 
       mocks.user.getList.mockResolvedValue([user]);
 
@@ -39,8 +40,8 @@ describe(UserService.name, () => {
     });
 
     it('non-admin should get all users when publicUsers enabled', async () => {
-      const user = factory.userAdmin();
-      const auth = factory.auth({ user });
+      const user = UserFactory.create();
+      const auth = AuthFactory.create(user);
 
       mocks.user.getList.mockResolvedValue([user]);
 
@@ -105,27 +106,41 @@ describe(UserService.name, () => {
 
     it('should throw an error if the user profile could not be updated with the new image', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
-      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
       mocks.user.get.mockResolvedValue(user);
       mocks.user.update.mockRejectedValue(new InternalServerErrorException('mocked error'));
 
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
     });
 
-    it('should delete the previous profile image', async () => {
-      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+    it('should throw BadRequestException and clean up raw upload when thumbnail processing fails', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
-      const files = [user.profileImagePath];
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.media.generateThumbnail.mockRejectedValue(new Error('not an image'));
+
+      await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
+    });
+
+    it('should delete the raw upload and the previous profile image', async () => {
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
+      const file = { path: '/profile/path' } as Express.Multer.File;
 
       mocks.user.get.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([
+        [{ name: JobName.FileDelete, data: { files: [file.path, user.profileImagePath] } }],
+      ]);
     });
 
-    it('should not delete the profile image if it has not been set', async () => {
+    it('should delete only the raw upload if no previous profile image is set', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
 
       mocks.user.get.mockResolvedValue(userStub.admin);
@@ -133,7 +148,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
@@ -149,7 +164,7 @@ describe(UserService.name, () => {
     });
 
     it('should delete the profile image if user has one', async () => {
-      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
       const files = [user.profileImagePath];
 
       mocks.user.get.mockResolvedValue(user);
@@ -178,7 +193,7 @@ describe(UserService.name, () => {
     });
 
     it('should return the profile picture', async () => {
-      const user = factory.userAdmin({ profileImagePath: '/path/to/profile.jpg' });
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
       mocks.user.get.mockResolvedValue(user);
 
       await expect(sut.getProfileImage(user.id)).resolves.toEqual(
@@ -190,6 +205,19 @@ describe(UserService.name, () => {
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith(user.id, {});
+    });
+
+    it('should return the profile picture with the content-type matching the stored file', async () => {
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.webp' });
+      mocks.user.get.mockResolvedValue(user);
+
+      await expect(sut.getProfileImage(user.id)).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/path/to/profile.webp',
+          contentType: 'image/webp',
+          cacheControl: CacheControl.None,
+        }),
+      );
     });
   });
 
@@ -205,7 +233,7 @@ describe(UserService.name, () => {
     });
 
     it('should queue user ready for deletion', async () => {
-      const user = factory.user();
+      const user = UserFactory.create();
       mocks.user.getDeletedAfter.mockResolvedValue([{ id: user.id }]);
 
       await sut.handleUserDeleteCheck();

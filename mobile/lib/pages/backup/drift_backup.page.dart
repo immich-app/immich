@@ -45,14 +45,17 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+      final backupNotifier = ref.read(driftBackupProvider.notifier);
+      final syncManager = ref.read(backgroundSyncProvider);
 
-      ref.read(driftBackupProvider.notifier).updateSyncing(true);
-      syncSuccess = await ref.read(backgroundSyncProvider).syncRemote();
-      ref.read(driftBackupProvider.notifier).updateSyncing(false);
+      await backupNotifier.getBackupStatus(currentUser.id);
+
+      backupNotifier.updateSyncing(true);
+      syncSuccess = await syncManager.syncRemote();
+      backupNotifier.updateSyncing(false);
 
       if (mounted) {
-        await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+        await backupNotifier.getBackupStatus(currentUser.id);
       }
     });
   }
@@ -82,9 +85,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       }
 
       if (syncSuccess == null) {
-        ref.read(driftBackupProvider.notifier).updateSyncing(true);
+        backupNotifier.updateSyncing(true);
         syncSuccess = await backupSyncManager.syncRemote();
-        ref.read(driftBackupProvider.notifier).updateSyncing(false);
+        backupNotifier.updateSyncing(false);
       }
 
       await backupNotifier.getBackupStatus(currentUser.id);
@@ -148,10 +151,12 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                         children: [
                           Icon(Icons.warning_rounded, color: context.colorScheme.error, fill: 1),
                           const SizedBox(width: 8),
-                          Text(
-                            context.t.backup_error_sync_failed,
-                            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
-                            textAlign: TextAlign.center,
+                          Flexible(
+                            child: Text(
+                              context.t.backup_error_sync_failed,
+                              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ],
                       ),
@@ -344,6 +349,7 @@ class _RemainderCard extends ConsumerWidget {
                       remainderCount.toString(),
                       style: context.textTheme.titleLarge?.copyWith(
                         color: context.colorScheme.onSurface.withAlpha(syncStatus.isRemoteSyncing ? 50 : 255),
+                        fontFeatures: [const FontFeature.tabularFigures()],
                       ),
                     ),
                     if (syncStatus.isRemoteSyncing)
@@ -483,6 +489,7 @@ class _PreparingStatusState extends ConsumerState {
                     style: context.textTheme.titleMedium?.copyWith(
                       color: context.colorScheme.primary,
                       fontWeight: FontWeight.w600,
+                      fontFeatures: [const FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -507,6 +514,7 @@ class _PreparingStatusState extends ConsumerState {
                   style: context.textTheme.titleMedium?.copyWith(
                     color: context.primaryColor,
                     fontWeight: FontWeight.w600,
+                    fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),
               ],

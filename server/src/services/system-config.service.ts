@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
 import { OnEvent } from 'src/decorators';
@@ -16,15 +15,6 @@ export class SystemConfigService extends BaseService {
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
     await this.eventRepository.emit('ConfigInit', { newConfig: config });
-
-    if (
-      process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT ||
-      process.env.IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
-    ) {
-      this.logger.deprecate(
-        'IMMICH_MACHINE_LEARNING_PING_TIMEOUT and MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME have been moved to system config(`machineLearning.availabilityChecks`) and will be removed in a future release.',
-      );
-    }
   }
 
   @OnEvent({ name: 'AppShutdown' })
@@ -61,7 +51,7 @@ export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'ConfigValidate' })
   onConfigValidate({ newConfig, oldConfig }: ArgOf<'ConfigValidate'>) {
     const { logLevel } = this.configRepository.getEnv();
-    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && logLevel) {
+    if (!_.isEqual(toPlainObject(newConfig.logging), oldConfig.logging) && logLevel) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }

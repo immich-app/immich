@@ -47,15 +47,15 @@ describe(UserService.name, () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
       const user = mediumFactory.userInsert();
-      await expect(sut.createUser({ email: user.email })).resolves.toMatchObject({ email: user.email });
-      await expect(sut.createUser({ email: user.email })).rejects.toThrow('User exists');
+      await expect(sut.createUser({ name: 'Test', email: user.email })).resolves.toMatchObject({ email: user.email });
+      await expect(sut.createUser({ name: 'Test', email: user.email })).rejects.toThrow('User exists');
     });
 
     it('should not return password', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
       const dto = mediumFactory.userInsert({ password: 'password' });
-      const user = await sut.createUser({ email: dto.email, password: 'password' });
+      const user = await sut.createUser({ name: 'Test', email: dto.email, password: 'password' });
       expect((user as any).password).toBeUndefined();
     });
   });

@@ -16,7 +16,7 @@ class AssetMetadataBulkResponseDto {
     required this.assetId,
     required this.key,
     required this.updatedAt,
-    required this.value,
+    this.value = const {},
   });
 
   /// Asset ID
@@ -29,14 +29,14 @@ class AssetMetadataBulkResponseDto {
   DateTime updatedAt;
 
   /// Metadata value (object)
-  Object value;
+  Map<String, Object> value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetMetadataBulkResponseDto &&
     other.assetId == assetId &&
     other.key == key &&
     other.updatedAt == updatedAt &&
-    other.value == value;
+    _deepEquality.equals(other.value, value);
 
   @override
   int get hashCode =>
@@ -53,7 +53,9 @@ class AssetMetadataBulkResponseDto {
     final json = <String, dynamic>{};
       json[r'assetId'] = this.assetId;
       json[r'key'] = this.key;
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAt.millisecondsSinceEpoch
+        : this.updatedAt.toUtc().toIso8601String();
       json[r'value'] = this.value;
     return json;
   }
@@ -69,8 +71,8 @@ class AssetMetadataBulkResponseDto {
       return AssetMetadataBulkResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
         key: mapValueOfType<String>(json, r'key')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
-        value: mapValueOfType<Object>(json, r'value')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
+        value: mapCastOfType<String, Object>(json, r'value')!,
       );
     }
     return null;
