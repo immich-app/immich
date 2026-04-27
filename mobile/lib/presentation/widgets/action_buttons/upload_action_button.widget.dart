@@ -33,6 +33,9 @@ class UploadActionButton extends ConsumerWidget {
     final isTimeline = source == ActionSource.timeline;
     final viewerIntentFilePath = source == ActionSource.viewer ? ref.read(viewIntentFilePathProvider) : null;
     List<LocalAsset>? assets;
+    var isUploadDialogOpen = false;
+    var wasUploadCancelled = false;
+    Future<void>? uploadDialogFuture;
 
     if (source == ActionSource.timeline) {
       assets = ref.read(multiSelectProvider).selectedAssets.whereType<LocalAsset>().toList();
@@ -41,13 +44,20 @@ class UploadActionButton extends ConsumerWidget {
       }
       ref.read(multiSelectProvider.notifier).reset();
     } else {
-      unawaited(
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => const _UploadProgressDialog(),
-        ),
-      );
+      isUploadDialogOpen = true;
+      uploadDialogFuture =
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => _UploadProgressDialog(
+              onCancel: () {
+                wasUploadCancelled = true;
+              },
+            ),
+          ).whenComplete(() {
+            isUploadDialogOpen = false;
+          });
+      unawaited(uploadDialogFuture);
     }
 
     var success = false;
@@ -72,7 +82,7 @@ class UploadActionButton extends ConsumerWidget {
       uploadedRemoteAssetId = result.remoteAssetIds.isNotEmpty ? result.remoteAssetIds.first : null;
     }
 
-    if (!isTimeline && context.mounted) {
+    if (!isTimeline && context.mounted && isUploadDialogOpen) {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
@@ -81,7 +91,7 @@ class UploadActionButton extends ConsumerWidget {
       unawaited(ref.read(mainTimelineHandoffProvider).startIfNeeded(origin, remoteAssetId: uploadedRemoteAssetId));
     }
 
-    if (context.mounted && !success) {
+    if (context.mounted && !success && !wasUploadCancelled) {
       ImmichToast.show(
         context: context,
         msg: 'scaffold_body_error_occurred'.t(context: context),
@@ -104,7 +114,9 @@ class UploadActionButton extends ConsumerWidget {
 }
 
 class _UploadProgressDialog extends ConsumerWidget {
-  const _UploadProgressDialog();
+  final VoidCallback onCancel;
+
+  const _UploadProgressDialog({required this.onCancel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -134,7 +146,8 @@ class _UploadProgressDialog extends ConsumerWidget {
           onPressed: () {
             ref.read(manualUploadCancelTokenProvider)?.complete();
             ref.read(manualUploadCancelTokenProvider.notifier).state = null;
-            Navigator.of(context).pop();
+            onCancel();
+            Navigator.of(context, rootNavigator: true).pop();
           },
           labelText: 'cancel'.t(context: context),
         ),
