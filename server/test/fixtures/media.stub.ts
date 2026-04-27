@@ -1,3 +1,4 @@
+import { NotNull } from 'kysely';
 import { ColorMatrix, ColorPrimaries, ColorTransfer, DvProfile, DvSignalCompatibility } from 'src/enum';
 import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types';
 
@@ -392,9 +393,9 @@ export const videoInfoStub = {
 };
 
 interface SelectedStreams {
-  videoStream: VideoStreamInfo | null;
+  videoStream: VideoStreamInfo & { timeBase: NotNull };
   audioStream: AudioStreamInfo | null;
-  format: VideoFormat | null;
+  format: VideoFormat;
 }
 
 const toSelectedStreams = (info: VideoInfo) => ({

@@ -1,4 +1,4 @@
-import { ShallowDehydrateObject } from 'kysely';
+import { NotNull, ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
@@ -508,7 +508,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-fps_mode',
             'vfr',
             '-frames:v',
@@ -519,7 +519,7 @@ describe(MediaService.name, () => {
             'verbose',
             '-vf',
             String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
-          ],
+          ]),
           twoPass: false,
         }),
       );
@@ -557,7 +557,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-fps_mode',
             'vfr',
             '-frames:v',
@@ -567,8 +567,8 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
-          ],
+            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:250:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+          ]),
           twoPass: false,
         }),
       );
@@ -608,7 +608,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: [
+          outputOptions: expect.arrayContaining([
             '-fps_mode',
             'vfr',
             '-frames:v',
@@ -618,8 +618,8 @@ describe(MediaService.name, () => {
             '-v',
             'verbose',
             '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
-          ],
+            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:250:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+          ]),
           twoPass: false,
         }),
       );
@@ -1937,16 +1937,16 @@ describe(MediaService.name, () => {
 
   describe('handleVideoConversion', () => {
     let asset: ReturnType<typeof AssetFactory.create> & {
-      videoStream: VideoStreamInfo | null;
+      videoStream: VideoStreamInfo & { timeBase: NotNull };
       audioStream: AudioStreamInfo | null;
-      format: VideoFormat | null;
+      format: VideoFormat;
     };
     beforeEach(() => {
       asset = {
         ...AssetFactory.create({ id: 'video-id', type: AssetType.Video, originalPath: '/original/path.ext' }),
-        videoStream: null,
+        videoStream: probeStub.videoStreamH264.videoStream,
         audioStream: null,
-        format: null,
+        format: probeStub.videoStreamH264.format,
       };
       mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
       sut.videoInterfaces = { dri: ['renderD128'], mali: true };

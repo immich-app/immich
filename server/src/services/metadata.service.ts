@@ -326,7 +326,7 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const videoData =
-      format?.formatName && format?.formatLongName && video?.codecName
+      format?.formatName && format?.formatLongName && video?.codecName && video?.timeBase
         ? {
             assetId: asset.id,
             bitrate: video.bitrate,

@@ -627,9 +627,12 @@ select
           "asset_audio"."profile",
           "asset_audio"."bitrate"
         from
-          "asset_audio"
+          (
+            select
+              1
+          ) as "dummy"
         where
-          "asset_audio"."assetId" = "asset"."id"
+          "asset_audio"."assetId" is not null
       ) as obj
   ) as "audioStream",
   (
@@ -695,7 +698,8 @@ select
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "asset_video" on "asset_video"."assetId" = "asset"."id"
+  inner join "asset_video" on "asset_video"."assetId" = "asset"."id"
+  left join "asset_audio" on "asset_audio"."assetId" = "asset"."id"
 where
   "asset"."id" = $1
   and "asset"."type" = 'VIDEO'

@@ -32,8 +32,8 @@ export class AssetVideoTable {
   @Column({ type: 'integer' })
   frameCount!: number;
 
-  @Column({ type: 'integer', nullable: true })
-  timeBase!: number | null;
+  @Column({ type: 'integer' })
+  timeBase!: number;
 
   @Column({ type: smallint })
   index!: number;

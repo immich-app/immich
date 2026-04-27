@@ -14,7 +14,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   "assetId" uuid NOT NULL,
   "bitrate" integer NOT NULL,
   "frameCount" integer NOT NULL,
-  "timeBase" integer,
+  "timeBase" integer NOT NULL,
   "index" smallint NOT NULL,
   "profile" smallint,
   "level" smallint,
