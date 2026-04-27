@@ -37,22 +37,22 @@
     }
   };
 
+  const isPersonVisible = (person: PersonResponseDto) => {
+    const isHidden = overrides.get(person.id) ?? person.isHidden;
+    if (toggleVisibility === ToggleVisibility.HIDE_ALL) {
+      return false;
+    } else if (toggleVisibility === ToggleVisibility.HIDE_UNNANEMD && !person.name) {
+      return false;
+    }
+    return !isHidden;
+  };
+
+  let filteredPeople = $derived(
+    toggleVisibility === ToggleVisibility.SHOW_ALL ? people : people.filter((person) => isPersonVisible(person)),
+  );
+
   const handleToggleVisibility = () => {
     toggleVisibility = getNextVisibility(toggleVisibility);
-
-    for (const person of people) {
-      let isHidden = overrides.get(person.id) ?? person.isHidden;
-
-      if (toggleVisibility === ToggleVisibility.HIDE_ALL) {
-        isHidden = true;
-      } else if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
-        isHidden = false;
-      } else if (toggleVisibility === ToggleVisibility.HIDE_UNNANEMD && !person.name) {
-        isHidden = true;
-      }
-
-      setHiddenOverride(person, isHidden);
-    }
   };
 
   const handleSaveVisibility = async () => {
@@ -147,7 +147,7 @@
   </div>
 
   <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8">
-    <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
+    <PeopleInfiniteScroll people={filteredPeople} hasNextPage={true} {loadNextPage}>
       {#snippet children({ person })}
         {@const hidden = overrides.get(person.id) ?? person.isHidden}
         <button
