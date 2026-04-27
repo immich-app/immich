@@ -58,6 +58,8 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   Widget build(BuildContext context) {
     final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
     final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
+    final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
+    final error = ref.watch(driftBackupProvider.select((state) => state.error));
 
     for (final item in uploadItems.values) {
       if (item.isFailed == true) {
@@ -83,7 +85,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         elevation: 0,
         scrolledUnderElevation: 1,
       ),
-      body: _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress),
+      body: _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress, isSyncing, error),
     );
   }
 
@@ -92,7 +94,13 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     List<DriftUploadStatus> uploadingItems,
     List<DriftUploadStatus> failedItems,
     Map<String, double> iCloudProgress,
+    bool isSyncing,
+    BackupError error,
   ) {
+    final showUploadSlots = isSyncing || uploadingItems.isNotEmpty;
+    final showSyncErrorBanner =
+        error == BackupError.syncFailed && !isSyncing && uploadingItems.isEmpty && failedItems.isEmpty;
+
     return CustomScrollView(
       slivers: [
         // iCloud Downloads Section
@@ -119,30 +127,73 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
           ),
         ],
 
-        // Uploading Section
-        SliverToBoxAdapter(
-          child: _buildSectionHeader(
-            context,
-            title: "uploading".t(context: context),
-            count: uploadingItems.length,
-            color: context.colorScheme.primary,
+        // Sync error banner — shown when sync failed but there are no upload errors to display
+        if (showSyncErrorBanner)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Card(
+                elevation: 0,
+                color: context.colorScheme.errorContainer,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.sync_problem_rounded, color: context.colorScheme.error),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "backup_error_sync_failed".t(context: context),
+                              style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "backup_error_sync_failed_detail".t(context: context),
+                              style: context.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              // Use slot-based assignment to prevent items from jumping
-              final slots = _assignItemsToSlots(uploadingItems);
-              final item = slots[index];
-              if (item != null) {
-                return _buildCurrentUploadCard(context, item);
-              } else {
-                return _buildPlaceholderCard(context);
-              }
-            }, childCount: 3),
+
+        // Uploading Section — only shown when uploads are active or queued
+        if (showUploadSlots) ...[
+          SliverToBoxAdapter(
+            child: _buildSectionHeader(
+              context,
+              title: "uploading".t(context: context),
+              count: uploadingItems.length,
+              color: context.colorScheme.primary,
+            ),
           ),
-        ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                // Use slot-based assignment to prevent items from jumping
+                final slots = _assignItemsToSlots(uploadingItems);
+                final item = slots[index];
+                if (item != null) {
+                  return _buildCurrentUploadCard(context, item);
+                } else {
+                  return _buildPlaceholderCard(context);
+                }
+              }, childCount: _maxSlots),
+            ),
+          ),
+        ],
 
         // Errors Section
         if (failedItems.isNotEmpty) ...[
@@ -499,14 +550,35 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   }
 }
 
-class _CurrentUploadThumbnail extends ConsumerWidget {
+class _CurrentUploadThumbnail extends ConsumerStatefulWidget {
   final String taskId;
   const _CurrentUploadThumbnail({required this.taskId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CurrentUploadThumbnail> createState() => _CurrentUploadThumbnailState();
+}
+
+class _CurrentUploadThumbnailState extends ConsumerState<_CurrentUploadThumbnail> {
+  late Future<LocalAsset?> _assetFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _assetFuture = _getAsset();
+  }
+
+  Future<LocalAsset?> _getAsset() async {
+    try {
+      return await ref.read(localAssetRepository).getById(widget.taskId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<LocalAsset?>(
-      future: _getAsset(ref),
+      future: _assetFuture,
       builder: (context, snapshot) {
         return SizedBox(
           width: 48,
@@ -525,22 +597,35 @@ class _CurrentUploadThumbnail extends ConsumerWidget {
       },
     );
   }
-
-  Future<LocalAsset?> _getAsset(WidgetRef ref) async {
-    try {
-      return await ref.read(localAssetRepository).getById(taskId);
-    } catch (e) {
-      return null;
-    }
-  }
 }
 
-class FileDetailDialog extends ConsumerWidget {
+class FileDetailDialog extends ConsumerStatefulWidget {
   final DriftUploadStatus uploadStatus;
   const FileDetailDialog({super.key, required this.uploadStatus});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FileDetailDialog> createState() => _FileDetailDialogState();
+}
+
+class _FileDetailDialogState extends ConsumerState<FileDetailDialog> {
+  late Future<LocalAsset?> _assetFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _assetFuture = _getAssetDetails();
+  }
+
+  Future<LocalAsset?> _getAssetDetails() async {
+    try {
+      return await ref.read(localAssetRepository).getById(widget.uploadStatus.taskId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       insetPadding: const EdgeInsets.all(20),
       backgroundColor: context.colorScheme.surfaceContainerLow,
@@ -563,7 +648,7 @@ class FileDetailDialog extends ConsumerWidget {
       content: SizedBox(
         width: double.maxFinite,
         child: FutureBuilder<LocalAsset?>(
-          future: _getAssetDetails(ref, uploadStatus.taskId),
+          future: _assetFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
@@ -593,12 +678,16 @@ class FileDetailDialog extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (asset != null)
                     _buildInfoSection(context, [
-                      _buildInfoRow(context, "filename".t(context: context), path.basename(uploadStatus.filename)),
+                      _buildInfoRow(
+                        context,
+                        "filename".t(context: context),
+                        path.basename(widget.uploadStatus.filename),
+                      ),
                       _buildInfoRow(context, "local_id".t(context: context), asset.id),
                       _buildInfoRow(
                         context,
                         "file_size".t(context: context),
-                        formatHumanReadableBytes(uploadStatus.fileSize, 2),
+                        formatHumanReadableBytes(widget.uploadStatus.fileSize, 2),
                       ),
                       if (asset.width != null) _buildInfoRow(context, "width".t(context: context), "${asset.width}px"),
                       if (asset.height != null)
@@ -661,13 +750,5 @@ class FileDetailDialog extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Future<LocalAsset?> _getAssetDetails(WidgetRef ref, String localAssetId) async {
-    try {
-      return await ref.read(localAssetRepository).getById(localAssetId);
-    } catch (e) {
-      return null;
-    }
   }
 }
