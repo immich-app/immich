@@ -12,6 +12,7 @@
     activeColor?: string;
     textColor?: string;
     onClick: () => void;
+    onMiddleClick?: () => void;
     shortcut?: Shortcut | null;
     shortcutLabel?: string;
   }
@@ -23,6 +24,7 @@
     activeColor = 'bg-slate-300',
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
     onClick,
+    onMiddleClick = undefined,
     shortcut = null,
     shortcutLabel = '',
   }: Props = $props();
@@ -35,6 +37,10 @@
     $optionClickCallbackStore?.();
     onClick();
   };
+
+  const handleMiddleClick = () => {
+    onMiddleClick && onMiddleClick();
+  }
 
   if (shortcut && !shortcutLabel) {
     shortcutLabel = computeShortcutLabel(shortcut);
@@ -51,6 +57,7 @@
 <li
   {id}
   onclick={handleClick}
+  onauxclick={handleMiddleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
   class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive

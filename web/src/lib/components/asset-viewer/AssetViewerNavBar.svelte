@@ -193,6 +193,7 @@
               <MenuOption
                 icon={mdiImageSearch}
                 onClick={() => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id }))}
+                onMiddleClick={() => window.open(Route.photos({ at: stack?.primaryAssetId ?? asset.id }), '_blank')}
                 text={$t('view_in_timeline')}
               />
             {/if}
@@ -201,6 +202,7 @@
             <MenuOption
               icon={mdiCompare}
               onClick={() => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }))}
+              onMiddleClick={() => window.open(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }), '_blank')}
               text={$t('view_similar_photos')}
             />
           {/if}
