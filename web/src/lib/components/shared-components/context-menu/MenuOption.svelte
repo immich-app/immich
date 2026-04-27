@@ -39,8 +39,10 @@
   };
 
   const handleMiddleClick = () => {
-    onMiddleClick && onMiddleClick();
-  }
+    if (onMiddleClick) {
+      onMiddleClick();
+    }
+  };
 
   if (shortcut && !shortcutLabel) {
     shortcutLabel = computeShortcutLabel(shortcut);
