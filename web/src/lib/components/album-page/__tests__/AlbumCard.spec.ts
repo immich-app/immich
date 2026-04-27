@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, waitFor, type RenderResult } from '@testing-library/svelte';
+import { waitFor, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
@@ -40,7 +40,7 @@ describe('AlbumCard component', () => {
       shared: true,
     },
   ])('shows album data without thumbnail with count $count - shared: $shared', async ({ album, count, shared }) => {
-    sut = render(AlbumCard, { album, showItemCount: true });
+    sut = renderWithTooltips(AlbumCard, { album, showItemCount: true });
 
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
@@ -64,7 +64,7 @@ describe('AlbumCard component', () => {
       shared: false,
       albumName: 'some album name',
     });
-    sut = render(AlbumCard, { album, showItemCount: true });
+    sut = renderWithTooltips(AlbumCard, { album, showItemCount: true });
 
     const albumImgElement = sut.getByTestId('album-image');
     const albumNameElement = sut.getByTestId('album-name');
@@ -79,7 +79,7 @@ describe('AlbumCard component', () => {
 
   it('hides context menu when "onShowContextMenu" is undefined', () => {
     const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
-    sut = render(AlbumCard, { album });
+    sut = renderWithTooltips(AlbumCard, { album });
 
     const contextButtonParent = sut.queryByTestId('context-button-parent');
     expect(contextButtonParent).not.toBeInTheDocument();
