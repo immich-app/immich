@@ -20429,6 +20429,17 @@
         ],
         "type": "object"
       },
+      "ClassificationFaceExclusion": {
+        "default": "off",
+        "description": "Face exclusion rule for this classification category",
+        "enum": [
+          "off",
+          "any_assigned_face",
+          "named_people",
+          "named_visible_people"
+        ],
+        "type": "string"
+      },
       "Colorspace": {
         "description": "Colorspace",
         "enum": [
@@ -28325,6 +28336,9 @@
           "enabled": {
             "description": "Whether this category is enabled",
             "type": "boolean"
+          },
+          "faceExclusion": {
+            "$ref": "#/components/schemas/ClassificationFaceExclusion"
           },
           "name": {
             "description": "Category name",

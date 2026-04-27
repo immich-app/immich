@@ -152,6 +152,12 @@ const SystemConfigMachineLearningSchema = z
   })
   .meta({ id: 'SystemConfigMachineLearningDto' });
 
+const ClassificationFaceExclusionSchema = z
+  .enum(['off', 'any_assigned_face', 'named_people', 'named_visible_people'])
+  .default('off')
+  .describe('Face exclusion rule for this classification category')
+  .meta({ id: 'ClassificationFaceExclusion' });
+
 const SystemConfigClassificationCategorySchema = z
   .object({
     name: z.string().describe('Category name'),
@@ -164,6 +170,7 @@ const SystemConfigClassificationCategorySchema = z
       .describe('Cosine similarity threshold for matching this category'),
     action: z.enum(['tag', 'tag_and_archive']).describe('Action to take when an asset matches'),
     enabled: z.boolean().describe('Whether this category is enabled'),
+    faceExclusion: ClassificationFaceExclusionSchema,
   })
   .meta({ id: 'SystemConfigClassificationCategoryDto' });
 

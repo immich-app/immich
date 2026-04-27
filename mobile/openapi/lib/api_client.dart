@@ -332,6 +332,8 @@ class ApiClient {
           return CastUpdate.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
+        case 'ClassificationFaceExclusion':
+          return ClassificationFaceExclusionTypeTransformer().decode(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
         case 'ContributorCountResponseDto':

@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults, SystemConfig } from 'src/config';
+import { SystemConfigSchema } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
@@ -277,6 +278,67 @@ describe(SystemConfigService.name, () => {
       });
 
       await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
+    });
+
+    it('should default missing classification faceExclusion to off', () => {
+      const result = SystemConfigSchema.parse({
+        ...defaults,
+        classification: {
+          enabled: true,
+          categories: [
+            {
+              name: 'Nature',
+              prompts: ['a landscape photo'],
+              similarity: 0.28,
+              action: 'tag',
+              enabled: true,
+            },
+          ],
+        },
+      });
+
+      expect(result.classification.categories[0].faceExclusion).toBe('off');
+    });
+
+    it('should accept all classification faceExclusion modes', () => {
+      const result = SystemConfigSchema.parse({
+        ...defaults,
+        classification: {
+          enabled: true,
+          categories: [
+            {
+              name: 'Any Assigned Face',
+              prompts: ['a test prompt'],
+              similarity: 0.28,
+              action: 'tag',
+              enabled: true,
+              faceExclusion: 'any_assigned_face',
+            },
+            {
+              name: 'Named People',
+              prompts: ['a test prompt'],
+              similarity: 0.28,
+              action: 'tag',
+              enabled: true,
+              faceExclusion: 'named_people',
+            },
+            {
+              name: 'Named Visible People',
+              prompts: ['a test prompt'],
+              similarity: 0.28,
+              action: 'tag',
+              enabled: true,
+              faceExclusion: 'named_visible_people',
+            },
+          ],
+        },
+      });
+
+      expect(result.classification.categories.map((category) => category.faceExclusion)).toEqual([
+        'any_assigned_face',
+        'named_people',
+        'named_visible_people',
+      ]);
     });
 
     it('should load the config from a json file', async () => {

@@ -1,15 +1,30 @@
-import { AssetVisibility, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
+import { AssetVisibility, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ClassificationService } from 'src/services/classification.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const makeClassificationConfig = (
-  categories: Array<{ name: string; prompts: string[]; similarity: number; action: string; enabled?: boolean }> = [],
+  categories: Array<{
+    name: string;
+    prompts: string[];
+    similarity: number;
+    action: string;
+    enabled?: boolean;
+    faceExclusion?: 'off' | 'any_assigned_face' | 'named_people' | 'named_visible_people';
+  }> = [],
   enabled = true,
+  facialRecognitionEnabled = true,
 ) => ({
-  classification: { enabled, categories: categories.map((c) => ({ ...c, enabled: c.enabled ?? true })) },
-  machineLearning: { clip: { modelName: 'test-model' } },
+  classification: {
+    enabled,
+    categories: categories.map((c) => ({ ...c, enabled: c.enabled ?? true, faceExclusion: c.faceExclusion ?? 'off' })),
+  },
+  machineLearning: {
+    enabled: true,
+    clip: { modelName: 'test-model' },
+    facialRecognition: { enabled: facialRecognitionEnabled },
+  },
 });
 
 describe(ClassificationService.name, () => {
@@ -74,6 +89,272 @@ describe(ClassificationService.name, () => {
 
       expect(result).toBe(JobStatus.Skipped);
       expect(mocks.classification.setClassifiedAt).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should not wait for face queues or load face summary when all enabled categories are face exclusion off', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.machineLearning.encodeText.mockResolvedValue('[1,0,0]');
+      mocks.tag.upsertValue.mockResolvedValue({ id: 'tag-id', value: 'Auto/Sunsets' } as any);
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'Sunsets',
+            prompts: ['sunset sky'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'off',
+          },
+        ]),
+      );
+
+      await sut.handleClassify({ id: 'asset-1' });
+
+      expect(mocks.job.waitForQueueCompletion).not.toHaveBeenCalled();
+      expect(mocks.classification.getFaceSummary).not.toHaveBeenCalled();
+    });
+
+    it('should skip any_assigned_face category when the asset has an assigned face', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.machineLearning.encodeText.mockResolvedValue('[1,0,0]');
+      mocks.classification.getFaceSummary.mockResolvedValue({
+        hasAssignedFace: true,
+        hasNamedPerson: false,
+        hasNamedVisiblePerson: false,
+      });
+      mocks.tag.upsertValue.mockResolvedValue({ id: 'tag-id', value: 'Auto/Screenshots' } as any);
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'People',
+            prompts: ['a portrait'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'any_assigned_face',
+          },
+          {
+            name: 'Screenshots',
+            prompts: ['a screenshot'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'off',
+          },
+        ]),
+      );
+
+      await sut.handleClassify({ id: 'asset-1' });
+
+      expect(mocks.job.waitForQueueCompletion).toHaveBeenCalledWith(
+        QueueName.FaceDetection,
+        QueueName.FacialRecognition,
+      );
+      expect(mocks.job.waitForQueueCompletion.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.classification.getFaceSummary.mock.invocationCallOrder[0],
+      );
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledTimes(1);
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith('a screenshot', { modelName: 'test-model' });
+    });
+
+    it('should skip named_people category only when a named person exists', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.machineLearning.encodeText.mockResolvedValue('[1,0,0]');
+      mocks.classification.getFaceSummary.mockResolvedValue({
+        hasAssignedFace: true,
+        hasNamedPerson: false,
+        hasNamedVisiblePerson: false,
+      });
+      mocks.tag.upsertValue.mockResolvedValue({ id: 'tag-id', value: 'Auto/People' } as any);
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'People',
+            prompts: ['a portrait'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'named_people',
+          },
+        ]),
+      );
+
+      await sut.handleClassify({ id: 'asset-1' });
+
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith('a portrait', { modelName: 'test-model' });
+      expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([{ tagId: 'tag-id', assetId: 'asset-1' }]);
+    });
+
+    it('should skip named_people category when a named person exists', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.classification.getFaceSummary.mockResolvedValue({
+        hasAssignedFace: true,
+        hasNamedPerson: true,
+        hasNamedVisiblePerson: true,
+      });
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'People',
+            prompts: ['a portrait'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'named_people',
+          },
+        ]),
+      );
+
+      const result = await sut.handleClassify({ id: 'asset-1' });
+
+      expect(result).toBe(JobStatus.Skipped);
+      expect(mocks.machineLearning.encodeText).not.toHaveBeenCalled();
+      expect(mocks.tag.upsertAssetIds).not.toHaveBeenCalled();
+      expect(mocks.classification.setClassifiedAt).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should ignore hidden named people for named_visible_people', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.machineLearning.encodeText.mockResolvedValue('[1,0,0]');
+      mocks.classification.getFaceSummary.mockResolvedValue({
+        hasAssignedFace: true,
+        hasNamedPerson: true,
+        hasNamedVisiblePerson: false,
+      });
+      mocks.tag.upsertValue.mockResolvedValue({ id: 'tag-id', value: 'Auto/People' } as any);
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'People',
+            prompts: ['a portrait'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'named_visible_people',
+          },
+        ]),
+      );
+
+      await sut.handleClassify({ id: 'asset-1' });
+
+      expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([{ tagId: 'tag-id', assetId: 'asset-1' }]);
+    });
+
+    it('should skip named_visible_people category when a visible named person exists', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.classification.getFaceSummary.mockResolvedValue({
+        hasAssignedFace: true,
+        hasNamedPerson: true,
+        hasNamedVisiblePerson: true,
+      });
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'People',
+            prompts: ['a portrait'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'named_visible_people',
+          },
+        ]),
+      );
+
+      const result = await sut.handleClassify({ id: 'asset-1' });
+
+      expect(result).toBe(JobStatus.Skipped);
+      expect(mocks.machineLearning.encodeText).not.toHaveBeenCalled();
+      expect(mocks.tag.upsertAssetIds).not.toHaveBeenCalled();
+      expect(mocks.classification.setClassifiedAt).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should skip face-aware categories when facial recognition is disabled and still classify off categories', async () => {
+      mocks.asset.getById.mockResolvedValue({
+        id: 'asset-1',
+        ownerId: 'user-1',
+        visibility: AssetVisibility.Timeline,
+      } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      mocks.machineLearning.encodeText.mockResolvedValue('[1,0,0]');
+      mocks.tag.upsertValue.mockResolvedValue({ id: 'tag-id', value: 'Auto/Screenshots' } as any);
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig(
+          [
+            {
+              name: 'People',
+              prompts: ['a portrait'],
+              similarity: 0.8,
+              action: 'tag',
+              faceExclusion: 'named_people',
+            },
+            {
+              name: 'Screenshots',
+              prompts: ['a screenshot'],
+              similarity: 0.8,
+              action: 'tag',
+              faceExclusion: 'off',
+            },
+          ],
+          true,
+          false,
+        ),
+      );
+
+      await sut.handleClassify({ id: 'asset-1' });
+
+      expect(mocks.job.waitForQueueCompletion).not.toHaveBeenCalled();
+      expect(mocks.classification.getFaceSummary).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledTimes(1);
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith('a screenshot', { modelName: 'test-model' });
+    });
+
+    it('should mark classified when all enabled categories require disabled facial recognition', async () => {
+      mocks.asset.getById.mockResolvedValue({ id: 'asset-1', ownerId: 'user-1' } as any);
+      mocks.search.getEmbedding.mockResolvedValue('[1,0,0]' as any);
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig(
+          [
+            {
+              name: 'People',
+              prompts: ['a portrait'],
+              similarity: 0.8,
+              action: 'tag',
+              faceExclusion: 'named_people',
+            },
+          ],
+          true,
+          false,
+        ),
+      );
+
+      const result = await sut.handleClassify({ id: 'asset-1' });
+
+      expect(result).toBe(JobStatus.Skipped);
+      expect(mocks.classification.setClassifiedAt).toHaveBeenCalledWith('asset-1');
+      expect(mocks.machineLearning.encodeText).not.toHaveBeenCalled();
     });
 
     it('should tag asset when similarity exceeds threshold', async () => {
@@ -523,6 +804,64 @@ describe(ClassificationService.name, () => {
       expect(mocks.classification.resetClassifiedAt).not.toHaveBeenCalled();
       expect(mocks.classification.streamUnclassifiedAssets).not.toHaveBeenCalled();
     });
+
+    it('should queue face work before forced classification when enabled categories are face-aware', async () => {
+      mocks.classification.streamUnclassifiedAssets.mockReturnValue(makeStream([{ id: 'asset-1', ownerId: 'user-1' }]));
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig([
+          {
+            name: 'People',
+            prompts: ['a portrait'],
+            similarity: 0.8,
+            action: 'tag',
+            faceExclusion: 'named_people',
+          },
+        ]),
+      );
+
+      await sut.handleClassifyQueueAll({ force: true });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetDetectFacesQueueAll,
+        data: { force: true },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FacialRecognitionQueueAll,
+        data: { force: true },
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetClassify, data: { id: 'asset-1' } }]);
+    });
+
+    it('should not queue face work before forced classification when facial recognition is disabled', async () => {
+      mocks.classification.streamUnclassifiedAssets.mockReturnValue(makeStream([{ id: 'asset-1', ownerId: 'user-1' }]));
+      sut['getConfig'] = vi.fn().mockResolvedValue(
+        makeClassificationConfig(
+          [
+            {
+              name: 'People',
+              prompts: ['a portrait'],
+              similarity: 0.8,
+              action: 'tag',
+              faceExclusion: 'named_people',
+            },
+          ],
+          true,
+          false,
+        ),
+      );
+
+      await sut.handleClassifyQueueAll({ force: true });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
+        name: JobName.AssetDetectFacesQueueAll,
+        data: { force: true },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
+        name: JobName.FacialRecognitionQueueAll,
+        data: { force: true },
+      });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetClassify, data: { id: 'asset-1' } }]);
+    });
   });
 
   describe('scanLibrary', () => {
@@ -709,6 +1048,29 @@ describe(ClassificationService.name, () => {
       await sut.onConfigUpdate({ oldConfig, newConfig } as any);
 
       expect(mocks.classification.removeAutoTagAssignments).not.toHaveBeenCalled();
+    });
+
+    it('should not clean up tags when only face exclusion changes', async () => {
+      const oldConfig = makeClassificationConfig([
+        { name: 'Screenshots', prompts: ['screenshot'], similarity: 0.28, action: 'tag', faceExclusion: 'off' },
+      ]);
+      const newConfig = makeClassificationConfig([
+        {
+          name: 'Screenshots',
+          prompts: ['screenshot'],
+          similarity: 0.28,
+          action: 'tag',
+          faceExclusion: 'named_people',
+        },
+      ]);
+
+      await sut.onConfigUpdate({ oldConfig, newConfig } as any);
+
+      expect(mocks.classification.removeAutoTagAssignments).not.toHaveBeenCalled();
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(
+        SystemMetadataKey.ClassificationConfigState,
+        newConfig.classification,
+      );
     });
 
     it('should write classification snapshot to system metadata after diff', async () => {

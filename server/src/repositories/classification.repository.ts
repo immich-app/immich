@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetVisibility } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
+
+export interface ClassificationFaceSummary {
+  hasAssignedFace: boolean;
+  hasNamedPerson: boolean;
+  hasNamedVisiblePerson: boolean;
+}
 
 @Injectable()
 export class ClassificationRepository {
@@ -59,6 +65,31 @@ export class ClassificationRepository {
       .set({ classifiedAt: new Date().toISOString() })
       .where('assetId', '=', assetId)
       .execute();
+  }
+
+  async getFaceSummary(assetId: string): Promise<ClassificationFaceSummary> {
+    const row = await this.db
+      .selectFrom('asset_face')
+      .innerJoin('person', 'person.id', 'asset_face.personId')
+      .select([
+        sql<boolean>`count(*) > 0`.as('hasAssignedFace'),
+        sql<boolean>`count(*) filter (where btrim("person"."name") != '') > 0`.as('hasNamedPerson'),
+        sql<boolean>`count(*) filter (where btrim("person"."name") != '' and "person"."isHidden" is false) > 0`.as(
+          'hasNamedVisiblePerson',
+        ),
+      ])
+      .where('asset_face.assetId', '=', assetId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
+      .where('asset_face.personId', 'is not', null)
+      .where('person.type', '=', 'person')
+      .executeTakeFirst();
+
+    return {
+      hasAssignedFace: row?.hasAssignedFace ?? false,
+      hasNamedPerson: row?.hasNamedPerson ?? false,
+      hasNamedVisiblePerson: row?.hasNamedVisiblePerson ?? false,
+    };
   }
 
   streamUnclassifiedAssets() {

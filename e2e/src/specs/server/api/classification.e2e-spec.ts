@@ -210,8 +210,22 @@ describe('/classification', () => {
     describe('round-trip', () => {
       it('preserves a custom categories array across PUT/GET', async () => {
         const customCategories = [
-          { name: 'Pets', prompts: ['a cat', 'a dog'], similarity: 0.55, action: 'tag', enabled: true },
-          { name: 'Food', prompts: ['food'], similarity: 0.6, action: 'tag_and_archive', enabled: false },
+          {
+            name: 'Pets',
+            prompts: ['a cat', 'a dog'],
+            similarity: 0.55,
+            action: 'tag',
+            faceExclusion: 'off',
+            enabled: true,
+          },
+          {
+            name: 'Food',
+            prompts: ['food'],
+            similarity: 0.6,
+            action: 'tag_and_archive',
+            faceExclusion: 'off',
+            enabled: false,
+          },
         ];
         const update = {
           ...baseConfig,

@@ -1,12 +1,20 @@
 <script lang="ts">
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { Action, getConfig, scanClassification, updateConfig, type SystemConfigDto } from '@immich/sdk';
+  import {
+    Action,
+    ClassificationFaceExclusion,
+    getConfig,
+    scanClassification,
+    updateConfig,
+    type SystemConfigDto,
+  } from '@immich/sdk';
   import { Button, IconButton, modalManager, Switch, Text, toastManager } from '@immich/ui';
   import { mdiContentSave, mdiDelete, mdiPencil, mdiPlus, mdiUndoVariant } from '@mdi/js';
   import { onMount } from 'svelte';
 
   type Category = SystemConfigDto['classification']['categories'][number];
+  type FaceExclusion = NonNullable<Category['faceExclusion']>;
 
   const disabled = $derived(featureFlagsManager.value.configFile);
 
@@ -21,12 +29,23 @@
   let formPrompts = $state('');
   let formSimilarity = $state(0.28);
   let formAction: Action = $state(Action.Tag);
+  let formFaceExclusion: FaceExclusion = $state(ClassificationFaceExclusion.Off);
   let formEnabled = $state(true);
 
   const actionLabels: Record<string, string> = {
     tag: 'Tag only',
     tag_and_archive: 'Tag and archive',
   };
+
+  const faceExclusionLabels: Record<FaceExclusion, string> = {
+    [ClassificationFaceExclusion.Off]: 'Off',
+    [ClassificationFaceExclusion.AnyAssignedFace]: 'Any assigned face',
+    [ClassificationFaceExclusion.NamedPeople]: 'Named people',
+    [ClassificationFaceExclusion.NamedVisiblePeople]: 'Named, visible people',
+  };
+
+  const getFaceExclusion = (category: Partial<Category>): FaceExclusion =>
+    category.faceExclusion ?? ClassificationFaceExclusion.Off;
 
   const getSimilarityLabel = (value: number): string => {
     if (value < 0.22) {
@@ -58,6 +77,7 @@
     formPrompts = '';
     formSimilarity = 0.28;
     formAction = Action.Tag;
+    formFaceExclusion = ClassificationFaceExclusion.Off;
     formEnabled = true;
   };
 
@@ -69,6 +89,7 @@
     formPrompts = category.prompts.join('\n');
     formSimilarity = category.similarity;
     formAction = category.action;
+    formFaceExclusion = getFaceExclusion(category);
     formEnabled = category.enabled;
   };
 
@@ -100,6 +121,7 @@
         prompts,
         similarity: formSimilarity,
         action: formAction,
+        faceExclusion: formFaceExclusion,
         enabled: formEnabled,
       };
 
@@ -245,6 +267,31 @@
           </select>
         </div>
 
+        <div>
+          <label for="category-face-exclusion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Face exclusion
+          </label>
+          <select
+            id="category-face-exclusion"
+            bind:value={formFaceExclusion}
+            {disabled}
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-immich-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value={ClassificationFaceExclusion.Off}>
+              {faceExclusionLabels[ClassificationFaceExclusion.Off]}
+            </option>
+            <option value={ClassificationFaceExclusion.AnyAssignedFace}>
+              {faceExclusionLabels[ClassificationFaceExclusion.AnyAssignedFace]}
+            </option>
+            <option value={ClassificationFaceExclusion.NamedPeople}>
+              {faceExclusionLabels[ClassificationFaceExclusion.NamedPeople]}
+            </option>
+            <option value={ClassificationFaceExclusion.NamedVisiblePeople}>
+              {faceExclusionLabels[ClassificationFaceExclusion.NamedVisiblePeople]}
+            </option>
+          </select>
+        </div>
+
         {#if editingIndex !== null}
           <div class="flex items-center gap-2">
             <Switch bind:checked={formEnabled} {disabled} />
@@ -276,19 +323,28 @@
         class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-4 bg-slate-50 dark:bg-gray-900 p-4"
         class:opacity-50={!category.enabled}
       >
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <Text fontWeight="medium">{category.name}</Text>
+              <div class="min-w-0">
+                <Text fontWeight="medium" class="block truncate break-words">{category.name}</Text>
+              </div>
+              <div class="mt-1 flex flex-wrap gap-2">
                 <span
-                  class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                  class="inline-flex max-w-full items-center rounded-full px-2 py-0.5 text-xs font-medium break-words whitespace-normal
                     {category.action === 'tag_and_archive'
                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
                     : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}"
                 >
                   {actionLabels[category.action] ?? category.action}
                 </span>
+                {#if getFaceExclusion(category) !== ClassificationFaceExclusion.Off}
+                  <span
+                    class="inline-flex max-w-full items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 break-words whitespace-normal dark:bg-emerald-900 dark:text-emerald-200"
+                  >
+                    {faceExclusionLabels[getFaceExclusion(category)]}
+                  </span>
+                {/if}
               </div>
               <Text size="tiny" color="muted">
                 {category.prompts.length} prompt{category.prompts.length === 1 ? '' : 's'} &middot; {getSimilarityLabel(
@@ -299,7 +355,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex shrink-0 items-center gap-2">
             <Switch checked={category.enabled} onCheckedChange={() => handleToggleEnabled(index)} {disabled} />
             <IconButton
               shape="round"

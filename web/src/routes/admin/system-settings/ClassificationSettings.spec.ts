@@ -1,7 +1,15 @@
-import { Action, getConfig, scanClassification, updateConfig, type SystemConfigDto } from '@immich/sdk';
+import {
+  Action,
+  ClassificationFaceExclusion,
+  getConfig,
+  scanClassification,
+  updateConfig,
+  type SystemConfigDto,
+} from '@immich/sdk';
 import { modalManager, toastManager } from '@immich/ui';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ClassificationSettings from './ClassificationSettings.svelte';
 
@@ -10,6 +18,12 @@ vi.mock('@immich/sdk', () => ({
   updateConfig: vi.fn(),
   scanClassification: vi.fn(),
   Action: { Tag: 'tag', TagAndArchive: 'tag_and_archive' },
+  ClassificationFaceExclusion: {
+    Off: 'off',
+    AnyAssignedFace: 'any_assigned_face',
+    NamedPeople: 'named_people',
+    NamedVisiblePeople: 'named_visible_people',
+  },
 }));
 
 const mockFeatureFlags = { configFile: false, smartSearch: true, trash: true };
@@ -46,6 +60,7 @@ const makeCategory = (
   prompts: ['a screenshot'],
   similarity: 0.28,
   action: Action.Tag,
+  faceExclusion: ClassificationFaceExclusion.Off,
   enabled: true,
   ...overrides,
 });
@@ -227,6 +242,122 @@ describe('ClassificationSettings', () => {
     });
 
     expect(scanClassification).not.toHaveBeenCalled();
+  });
+
+  it('should show face exclusion dropdown when creating a category', async () => {
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText('Add Category')).toBeInTheDocument();
+    });
+
+    await fireEvent.click(screen.getByText('Add Category'));
+
+    expect(screen.getByLabelText('Face exclusion')).toBeInTheDocument();
+    expect(screen.getByLabelText('Face exclusion')).toHaveValue('off');
+  });
+
+  it('should save selected face exclusion for a new category', async () => {
+    const user = userEvent.setup();
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText('Add Category')).toBeInTheDocument();
+    });
+
+    await fireEvent.click(screen.getByText('Add Category'));
+    await fireEvent.input(screen.getByLabelText('Name'), { target: { value: 'Nature' } });
+    await fireEvent.input(screen.getByLabelText('Prompts (one per line)'), { target: { value: 'a landscape photo' } });
+    const faceExclusionSelect = screen.getByLabelText('Face exclusion') as HTMLSelectElement;
+    // Svelte's select binding reads `:checked`; mirror browser behavior because happy-dom does not match it.
+    const querySelectedOption = vi.spyOn(faceExclusionSelect, 'querySelector');
+    querySelectedOption.mockImplementation((selector: string) => {
+      if (selector === ':checked') {
+        return faceExclusionSelect.selectedOptions.item(0);
+      }
+      return Element.prototype.querySelector.call(faceExclusionSelect, selector);
+    });
+
+    try {
+      await user.selectOptions(faceExclusionSelect, ClassificationFaceExclusion.NamedVisiblePeople);
+      await fireEvent.click(screen.getByText('Save'));
+    } finally {
+      querySelectedOption.mockRestore();
+    }
+
+    await waitFor(() => {
+      expect(updateConfig).toHaveBeenCalledWith({
+        systemConfigDto: expect.objectContaining({
+          classification: expect.objectContaining({
+            categories: [
+              expect.objectContaining({
+                name: 'Nature',
+                faceExclusion: ClassificationFaceExclusion.NamedVisiblePeople,
+              }),
+            ],
+          }),
+        }),
+      });
+    });
+  });
+
+  it('should default old categories without faceExclusion to Off in the editor', async () => {
+    vi.mocked(getConfig).mockResolvedValue(
+      makeConfig([
+        {
+          name: 'Legacy',
+          prompts: ['legacy prompt'],
+          similarity: 0.28,
+          action: Action.Tag,
+          enabled: true,
+        } as SystemConfigDto['classification']['categories'][number],
+      ]),
+    );
+
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText('Legacy')).toBeInTheDocument();
+    });
+
+    await fireEvent.click(screen.getByLabelText('Edit'));
+
+    expect(screen.getByLabelText('Face exclusion')).toHaveValue('off');
+  });
+
+  it('should show non-Off face exclusion in the category summary', async () => {
+    vi.mocked(getConfig).mockResolvedValue(
+      makeConfig([makeCategory({ faceExclusion: ClassificationFaceExclusion.NamedPeople })]),
+    );
+
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText('Named people')).toBeInTheDocument();
+    });
+  });
+
+  it('should render summary badges in a separate wrapping row under the category name', async () => {
+    const categoryName = 'Very long category name that should not collide with controls';
+    vi.mocked(getConfig).mockResolvedValue(
+      makeConfig([
+        makeCategory({
+          name: categoryName,
+          action: Action.TagAndArchive,
+          faceExclusion: ClassificationFaceExclusion.NamedVisiblePeople,
+        }),
+      ]),
+    );
+
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText(categoryName)).toBeInTheDocument();
+    });
+
+    const nameRow = screen.getByText(categoryName).closest('.min-w-0');
+    expect(nameRow).toBeInTheDocument();
+    expect(nameRow).not.toHaveTextContent('Tag and archive');
+    expect(nameRow).not.toHaveTextContent('Named, visible people');
+
+    const metadataRow = screen.getByText('Tag and archive').parentElement;
+    expect(metadataRow).toContainElement(screen.getByText('Named, visible people'));
+    expect(metadataRow).toHaveClass('flex', 'flex-wrap', 'gap-2');
   });
 
   it('should disable controls when config file is active', async () => {

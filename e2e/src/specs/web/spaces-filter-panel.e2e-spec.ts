@@ -2,6 +2,20 @@ import type { LoginResponseDto } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { utils } from 'src/utils';
 
+async function selectPageSort(page: import('@playwright/test').Page, label: 'Newest first' | 'Oldest first') {
+  const sortButton = page.locator('[data-testid="search-sort-btn"]');
+  await expect(sortButton).toBeVisible();
+
+  if ((await sortButton.getAttribute('aria-label')) === label) {
+    return sortButton;
+  }
+
+  await sortButton.click();
+  await page.locator('[data-testid="search-sort-container"] div.absolute button').filter({ hasText: label }).click();
+
+  return sortButton;
+}
+
 test.describe('Spaces FilterPanel', () => {
   let admin: LoginResponseDto;
 
@@ -21,26 +35,6 @@ test.describe('Spaces FilterPanel', () => {
     await page.goto(`/spaces/${spaceId}`);
     // Wait for the timeline container to be present (always rendered, even for empty spaces)
     await page.waitForSelector('[data-testid="discovery-timeline"]');
-  }
-
-  async function selectPageSort(
-    page: import('@playwright/test').Page,
-    label: 'Newest first' | 'Oldest first',
-  ) {
-    const sortButton = page.locator('[data-testid="search-sort-btn"]');
-    await expect(sortButton).toBeVisible();
-
-    if ((await sortButton.getAttribute('aria-label')) === label) {
-      return sortButton;
-    }
-
-    await sortButton.click();
-    await page
-      .locator('[data-testid="search-sort-container"] div.absolute button')
-      .filter({ hasText: label })
-      .click();
-
-    return sortButton;
   }
 
   // ─── Helper: create a space with diverse test data ───
@@ -1141,7 +1135,7 @@ test.describe('Spaces FilterPanel', () => {
 
       // Sort should remain ascending
       await expect(sortButton).toHaveAttribute('aria-label', 'Oldest first');
-      await expect(page).toHaveURL(new RegExp(`/spaces/${space.id}\\?sort=asc`));
+      await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}\?sort=asc`));
     });
   });
 

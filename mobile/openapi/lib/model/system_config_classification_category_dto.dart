@@ -15,6 +15,7 @@ class SystemConfigClassificationCategoryDto {
   SystemConfigClassificationCategoryDto({
     required this.action,
     required this.enabled,
+    this.faceExclusion,
     required this.name,
     this.prompts = const [],
     required this.similarity,
@@ -25,6 +26,14 @@ class SystemConfigClassificationCategoryDto {
 
   /// Whether this category is enabled
   bool enabled;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  ClassificationFaceExclusion? faceExclusion;
 
   /// Category name
   String name;
@@ -42,6 +51,7 @@ class SystemConfigClassificationCategoryDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigClassificationCategoryDto &&
     other.action == action &&
     other.enabled == enabled &&
+    other.faceExclusion == faceExclusion &&
     other.name == name &&
     _deepEquality.equals(other.prompts, prompts) &&
     other.similarity == similarity;
@@ -51,17 +61,23 @@ class SystemConfigClassificationCategoryDto {
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
     (enabled.hashCode) +
+    (faceExclusion == null ? 0 : faceExclusion!.hashCode) +
     (name.hashCode) +
     (prompts.hashCode) +
     (similarity.hashCode);
 
   @override
-  String toString() => 'SystemConfigClassificationCategoryDto[action=$action, enabled=$enabled, name=$name, prompts=$prompts, similarity=$similarity]';
+  String toString() => 'SystemConfigClassificationCategoryDto[action=$action, enabled=$enabled, faceExclusion=$faceExclusion, name=$name, prompts=$prompts, similarity=$similarity]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
       json[r'enabled'] = this.enabled;
+    if (this.faceExclusion != null) {
+      json[r'faceExclusion'] = this.faceExclusion;
+    } else {
+    //  json[r'faceExclusion'] = null;
+    }
       json[r'name'] = this.name;
       json[r'prompts'] = this.prompts;
       json[r'similarity'] = this.similarity;
@@ -79,6 +95,7 @@ class SystemConfigClassificationCategoryDto {
       return SystemConfigClassificationCategoryDto(
         action: SystemConfigClassificationCategoryDtoActionEnum.fromJson(json[r'action'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        faceExclusion: ClassificationFaceExclusion.fromJson(json[r'faceExclusion']),
         name: mapValueOfType<String>(json, r'name')!,
         prompts: json[r'prompts'] is Iterable
             ? (json[r'prompts'] as Iterable).cast<String>().toList(growable: false)

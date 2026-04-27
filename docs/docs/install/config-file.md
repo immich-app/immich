@@ -268,6 +268,7 @@ The `classification` section configures [Auto-Classification](/features/auto-cla
       "prompts": ["a landscape photo of mountains", "a photo of a forest", "a sunset over water"],
       "similarity": 0.28,
       "action": "tag",
+      "faceExclusion": "off",
       "enabled": true
     },
     {
@@ -275,13 +276,27 @@ The `classification` section configures [Auto-Classification](/features/auto-cla
       "prompts": ["a screenshot of a phone screen", "a screenshot of a website"],
       "similarity": 0.25,
       "action": "tag_and_archive",
+      "faceExclusion": "off",
       "enabled": true
     }
   ]
 }
 ```
 
-The first category tags matching photos as `Auto/Nature`. The second tags and archives screenshots so they don't clutter your timeline. See the [Auto-Classification docs](/features/auto-classification) for the full field reference and prompt writing tips.
+The first category tags matching photos as `Auto/Nature`. The second tags and archives screenshots so they don't clutter your timeline.
+
+`faceExclusion` controls whether the category skips assets with known human faces. Valid values are:
+
+- `off`
+- `any_assigned_face`
+- `named_people`
+- `named_visible_people`
+
+Unassigned detected faces and pets are not counted as known human faces.
+
+Face-aware categories require facial recognition. When facial recognition is disabled, categories with a non-`off` `faceExclusion` value are skipped.
+
+See the [Auto-Classification docs](/features/auto-classification) for the full field reference and prompt writing tips.
 :::
 
 ### Step 2 - Specify the file location

@@ -2637,6 +2637,7 @@ export type SystemConfigClassificationCategoryDto = {
     action: Action;
     /** Whether this category is enabled */
     enabled: boolean;
+    faceExclusion?: ClassificationFaceExclusion;
     /** Category name */
     name: string;
     /** CLIP text prompts for this category */
@@ -8466,6 +8467,12 @@ export enum SyncRequestType {
 export enum Action {
     Tag = "tag",
     TagAndArchive = "tag_and_archive"
+}
+export enum ClassificationFaceExclusion {
+    Off = "off",
+    AnyAssignedFace = "any_assigned_face",
+    NamedPeople = "named_people",
+    NamedVisiblePeople = "named_visible_people"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

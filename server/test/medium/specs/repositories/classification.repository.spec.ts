@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetVisibility } from 'src/enum';
+import { AssetVisibility, SourceType } from 'src/enum';
 import { ClassificationRepository } from 'src/repositories/classification.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -114,6 +114,85 @@ describe(ClassificationRepository.name, () => {
         .executeTakeFirstOrThrow();
 
       expect(status.classifiedAt).not.toBeNull();
+    });
+  });
+
+  describe('getFaceSummary', () => {
+    it('should return false booleans for an asset without assigned faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+
+      await expect(sut.getFaceSummary(asset.id)).resolves.toEqual({
+        hasAssignedFace: false,
+        hasNamedPerson: false,
+        hasNamedVisiblePerson: false,
+      });
+    });
+
+    it('should detect assigned, named, and visible named human faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', isHidden: false, type: 'person' });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      await expect(sut.getFaceSummary(asset.id)).resolves.toEqual({
+        hasAssignedFace: true,
+        hasNamedPerson: true,
+        hasNamedVisiblePerson: true,
+      });
+    });
+
+    it('should detect hidden named people but exclude them from visible named people', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', isHidden: true, type: 'person' });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      await expect(sut.getFaceSummary(asset.id)).resolves.toEqual({
+        hasAssignedFace: true,
+        hasNamedPerson: true,
+        hasNamedVisiblePerson: false,
+      });
+    });
+
+    it('should treat assigned unnamed people as assigned but not named', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: '   ', isHidden: false, type: 'person' });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      await expect(sut.getFaceSummary(asset.id)).resolves.toEqual({
+        hasAssignedFace: true,
+        hasNamedPerson: false,
+        hasNamedVisiblePerson: false,
+      });
+    });
+
+    it('should ignore invisible deleted and pet rows', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', type: 'person' });
+      const { person: pet } = await ctx.newPerson({ ownerId: user.id, name: 'Spot', type: 'pet', species: 'dog' });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id, isVisible: false });
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id, deletedAt: new Date() });
+      await ctx.newAssetFace({ assetId: asset.id, personId: pet.id, sourceType: SourceType.MachineLearning });
+
+      await expect(sut.getFaceSummary(asset.id)).resolves.toEqual({
+        hasAssignedFace: false,
+        hasNamedPerson: false,
+        hasNamedVisiblePerson: false,
+      });
     });
   });
 

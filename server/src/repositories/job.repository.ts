@@ -194,14 +194,32 @@ export class JobRepository {
 
   async waitForQueueCompletion(...queues: QueueName[]): Promise<void> {
     const getPending = async () => {
-      const results = await Promise.all(queues.map(async (name) => ({ pending: await this.isActive(name), name })));
-      return results.filter(({ pending }) => pending).map(({ name }) => name);
+      const results = await Promise.all(
+        queues.map(async (name) => {
+          const [counts, paused] = await Promise.all([this.getJobCounts(name), this.isPaused(name)]);
+          const pending = counts.active + counts.waiting + counts.delayed + counts.paused;
+          return { counts, name, paused, pending };
+        }),
+      );
+
+      return results.filter(({ pending }) => pending > 0);
     };
 
     let pending = await getPending();
 
     while (pending.length > 0) {
-      this.logger.verbose(`Waiting for ${pending[0]} queue to stop...`);
+      const blocked = pending[0];
+      const message =
+        `Waiting for ${blocked.name} queue to finish ` +
+        `(${blocked.counts.active} active, ${blocked.counts.waiting} waiting, ` +
+        `${blocked.counts.delayed} delayed, ${blocked.counts.paused} paused)`;
+
+      if (blocked.paused) {
+        this.logger.warn(`${message}; queue is paused`);
+      } else {
+        this.logger.verbose(`${message}...`);
+      }
+
       await setTimeout(1000);
       pending = await getPending();
     }

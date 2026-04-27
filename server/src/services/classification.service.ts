@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
+import { type ClassificationFaceExclusion, type SystemConfig } from 'src/config';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetVisibility, ImmichWorker, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import { type ClassificationFaceSummary } from 'src/repositories/classification.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
+import { isFacialRecognitionEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
 type ClassificationConfig = SystemConfig['classification'];
@@ -105,7 +107,7 @@ export class ClassificationService extends BaseService {
 
   @OnJob({ name: JobName.AssetClassifyQueueAll, queue: QueueName.Classification })
   async handleClassifyQueueAll({ force }: JobOf<JobName.AssetClassifyQueueAll>): Promise<JobStatus> {
-    const { classification } = await this.getConfig({ withCache: true });
+    const { classification, machineLearning } = await this.getConfig({ withCache: true });
 
     if (!classification.enabled) {
       return JobStatus.Skipped;
@@ -113,6 +115,15 @@ export class ClassificationService extends BaseService {
 
     if (force) {
       await this.classificationRepository.resetClassifiedAt();
+    }
+
+    const faceAwareCategories = classification.categories.filter(
+      (category) => category.enabled && this.isFaceAwareCategory(category),
+    );
+
+    if (force && faceAwareCategories.length > 0 && isFacialRecognitionEnabled(machineLearning)) {
+      await this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force: true } });
+      await this.jobRepository.queue({ name: JobName.FacialRecognitionQueueAll, data: { force: true } });
     }
 
     const stream = this.classificationRepository.streamUnclassifiedAssets();
@@ -154,10 +165,16 @@ export class ClassificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    const eligibleCategories = await this.getEligibleCategories(enabledCategories, machineLearning, id);
+    if (eligibleCategories.length === 0) {
+      await this.classificationRepository.setClassifiedAt(id);
+      return JobStatus.Skipped;
+    }
+
     const assetEmbedding = this.parseEmbedding(embedding);
     let shouldArchive = false;
 
-    for (const category of enabledCategories) {
+    for (const category of eligibleCategories) {
       let bestSimilarity = -1;
       for (const prompt of category.prompts) {
         const promptEmbedding = await this.getOrEncodePrompt(prompt, machineLearning.clip.modelName);
@@ -187,6 +204,51 @@ export class ClassificationService extends BaseService {
 
     await this.classificationRepository.setClassifiedAt(id);
     return JobStatus.Success;
+  }
+
+  private getFaceExclusion(category: ClassificationConfig['categories'][number]): ClassificationFaceExclusion {
+    return category.faceExclusion ?? 'off';
+  }
+
+  private isFaceAwareCategory(category: ClassificationConfig['categories'][number]) {
+    return this.getFaceExclusion(category) !== 'off';
+  }
+
+  private matchesFaceExclusion(rule: ClassificationFaceExclusion, summary: ClassificationFaceSummary) {
+    switch (rule) {
+      case 'any_assigned_face': {
+        return summary.hasAssignedFace;
+      }
+      case 'named_people': {
+        return summary.hasNamedPerson;
+      }
+      case 'named_visible_people': {
+        return summary.hasNamedVisiblePerson;
+      }
+      case 'off': {
+        return false;
+      }
+    }
+  }
+
+  private async getEligibleCategories(
+    categories: ClassificationConfig['categories'],
+    machineLearning: SystemConfig['machineLearning'],
+    assetId: string,
+  ) {
+    const faceAwareCategories = categories.filter((category) => this.isFaceAwareCategory(category));
+    if (faceAwareCategories.length === 0) {
+      return categories;
+    }
+
+    if (!isFacialRecognitionEnabled(machineLearning)) {
+      return categories.filter((category) => !this.isFaceAwareCategory(category));
+    }
+
+    await this.jobRepository.waitForQueueCompletion(QueueName.FaceDetection, QueueName.FacialRecognition);
+    const faceSummary = await this.classificationRepository.getFaceSummary(assetId);
+
+    return categories.filter((category) => !this.matchesFaceExclusion(this.getFaceExclusion(category), faceSummary));
   }
 
   private parseEmbedding(raw: string): number[] {
