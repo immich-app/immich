@@ -3,11 +3,11 @@ import { buildFilterContext } from '$lib/components/filter-panel/filter-panel';
 import { AssetOrder, AssetTypeEnum, AssetVisibility } from '@immich/sdk';
 
 export function buildPhotosTimelineOptions(filters: FilterState): Record<string, unknown> {
+  const includeSharedTimelineAssets = filters.isFavorite === undefined;
   const base: Record<string, unknown> = {
     visibility: AssetVisibility.Timeline,
     withStacked: true,
-    withPartners: true,
-    withSharedSpaces: true,
+    ...(includeSharedTimelineAssets ? { withPartners: true, withSharedSpaces: true } : {}),
   };
 
   if (filters.personIds.length > 0) {
@@ -30,6 +30,9 @@ export function buildPhotosTimelineOptions(filters: FilterState): Record<string,
   }
   if (filters.rating !== undefined) {
     base.rating = filters.rating;
+  }
+  if (filters.isFavorite !== undefined) {
+    base.isFavorite = filters.isFavorite;
   }
   if (filters.mediaType !== 'all') {
     base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
@@ -69,6 +72,10 @@ export function handlePhotosRemoveFilter(filters: FilterState, type: string, id?
     case 'media':
     case 'mediaType': {
       return { ...filters, mediaType: 'all' };
+    }
+    case 'favorites':
+    case 'isFavorite': {
+      return { ...filters, isFavorite: undefined };
     }
     case 'timeline': {
       return {

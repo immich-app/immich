@@ -3,7 +3,7 @@ import TestWrapper from '$lib/components/TestWrapper.svelte';
 import type { SharedSpaceMemberResponseDto, SharedSpaceResponseDto } from '@immich/sdk';
 import { SharedSpaceRole } from '@immich/sdk';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { Component } from 'svelte';
 import SpacesPage from './+page.svelte';
 
@@ -44,7 +44,7 @@ vi.mock('$lib/components/OnEvents.svelte', async () => {
 });
 
 vi.mock('$lib/components/filter-panel/filter-panel.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/bindable-filter-panel.stub.svelte');
+  const { default: MockComponent } = await import('@test-data/mocks/filter-panel-favorites.stub.svelte');
   return { default: MockComponent };
 });
 
@@ -183,5 +183,26 @@ describe('Spaces page search URL state', () => {
     expect(screen.queryByTestId('sort-toggle')).not.toBeInTheDocument();
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'beach');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'asc');
+  });
+
+  it('exposes favorites in the spaces filter panel', () => {
+    renderPage();
+
+    expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+      'data-sections',
+      'timeline,people,location,camera,tags,rating,media,favorites',
+    );
+  });
+
+  it('narrows space search results to favorites within the space when selected', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+
+    renderPage();
+    await fireEvent.click(screen.getByTestId('select-favorites-filter'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-is-favorite', 'true');
+      expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-space-id', 'space-1');
+    });
   });
 });

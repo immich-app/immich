@@ -97,8 +97,14 @@ export function buildMapTimelineOptions(
   }
 
   if (!spaceId) {
-    base.isFavorite = filters?.isFavorite ?? (settings.onlyFavorites || undefined);
-    base.withPartners = settings.withPartners || undefined;
+    const isFavorite = filters?.isFavorite ?? (settings.onlyFavorites || undefined);
+
+    if (isFavorite !== undefined) {
+      base.isFavorite = isFavorite;
+    }
+    if (isFavorite === undefined && settings.withPartners) {
+      base.withPartners = true;
+    }
   }
 
   if (filters?.mediaType && filters.mediaType !== 'all') {

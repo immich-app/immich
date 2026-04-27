@@ -94,6 +94,11 @@
       result.push({ type: 'mediaType', label: 'Videos only' });
     }
 
+    // Favorites chip
+    if (filters.isFavorite === true) {
+      result.push({ type: 'favorites', label: 'Favorites' });
+    }
+
     // Timeline chip
     const customDateLabel = buildCustomDateLabel(filters.dateAfter, filters.dateBefore);
     if (customDateLabel) {

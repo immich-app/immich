@@ -27,7 +27,16 @@ beforeEach(() => {
 describe('buildAlbumDetailFilterConfig', () => {
   it('keeps the album filter sections in plan order', () => {
     const config = buildAlbumDetailFilterConfig('album-1');
-    expect(config.sections).toEqual(['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media']);
+    expect(config.sections).toEqual([
+      'timeline',
+      'people',
+      'location',
+      'camera',
+      'tags',
+      'rating',
+      'media',
+      'favorites',
+    ]);
   });
 
   it('passes albumId to filter suggestions, maps suggestions, and scopes dependent providers', async () => {
@@ -97,12 +106,30 @@ describe('buildAlbumDetailFilterConfig', () => {
       }),
     );
   });
+
+  it('passes isFavorite to album detail filter suggestions', async () => {
+    const config = buildAlbumDetailFilterConfig('album-1');
+    await config.suggestionsProvider!({ ...createFilterState(), isFavorite: true });
+
+    expect(getFilterSuggestions).toHaveBeenCalledWith(
+      expect.objectContaining({ albumId: 'album-1', isFavorite: true }),
+    );
+  });
 });
 
 describe('buildAlbumAssetPickerFilterConfig', () => {
   it('keeps the picker filter sections in plan order', () => {
     const config = buildAlbumAssetPickerFilterConfig();
-    expect(config.sections).toEqual(['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media']);
+    expect(config.sections).toEqual([
+      'timeline',
+      'people',
+      'location',
+      'camera',
+      'tags',
+      'rating',
+      'media',
+      'favorites',
+    ]);
   });
 
   it('does not send albumId or withSharedSpaces', async () => {
@@ -132,5 +159,12 @@ describe('buildAlbumAssetPickerFilterConfig', () => {
         takenBefore: '2025-01-01T00:00:00.000Z',
       }),
     );
+  });
+
+  it('passes isFavorite to album asset picker filter suggestions', async () => {
+    const config = buildAlbumAssetPickerFilterConfig();
+    await config.suggestionsProvider!({ ...createFilterState(), isFavorite: true });
+
+    expect(getFilterSuggestions).toHaveBeenCalledWith(expect.objectContaining({ isFavorite: true }));
   });
 });

@@ -46,6 +46,17 @@ describe('buildAlbumTimelineOptions', () => {
       }),
     );
   });
+
+  it('maps favorites for album timeline options', () => {
+    const filters = { ...createFilterState(), isFavorite: true };
+
+    expect(buildAlbumTimelineOptions('album-1', AssetOrder.Desc, filters)).toEqual(
+      expect.objectContaining({
+        albumId: 'album-1',
+        isFavorite: true,
+      }),
+    );
+  });
 });
 
 describe('buildAlbumAssetPickerOptions', () => {
@@ -76,5 +87,18 @@ describe('buildAlbumAssetPickerOptions', () => {
     expect(buildAlbumAssetPickerOptions('album-1', filters)).toEqual(
       expect.objectContaining({ takenAfter: '2024-01-01T00:00:00.000Z' }),
     );
+  });
+
+  it('maps favorites and omits partners for album asset picker options', () => {
+    const filters = { ...createFilterState(), isFavorite: true };
+    const options = buildAlbumAssetPickerOptions('album-1', filters);
+
+    expect(options).toEqual(
+      expect.objectContaining({
+        timelineAlbumId: 'album-1',
+        isFavorite: true,
+      }),
+    );
+    expect(options).not.toHaveProperty('withPartners');
   });
 });

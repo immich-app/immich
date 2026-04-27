@@ -6,7 +6,7 @@ import {
 import { createUrl } from '$lib/utils';
 import { AssetTypeEnum, getFilterSuggestions, getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
 
-const sections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'] as const;
+const sections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'] as const;
 
 function mapSuggestions(response: Awaited<ReturnType<typeof getFilterSuggestions>>) {
   return {
@@ -34,6 +34,7 @@ function toSuggestionRequest(filters: FilterState) {
     model: filters.model,
     tagIds: filters.tagIds.length > 0 ? filters.tagIds : undefined,
     rating: filters.rating,
+    isFavorite: filters.isFavorite,
     mediaType:
       filters.mediaType === 'all'
         ? undefined

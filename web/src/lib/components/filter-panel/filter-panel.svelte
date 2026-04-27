@@ -338,20 +338,95 @@
     favorites: 'Favorites',
   };
 
+  const sectionToggleLabels: Record<string, string> = {
+    ...sectionTitles,
+    // Avoid colliding with asset action buttons labeled "Favorite" in browser automation.
+    favorites: 'Starred filter section',
+  };
+
+  type StoredSectionSet = string[] | { selected?: string[]; known?: string[] };
+
+  const LEGACY_INTRODUCED_SECTIONS = new Set<FilterSectionType>(['favorites']);
+
+  function isFilterSection(value: string, configSections: FilterSectionType[]): value is FilterSectionType {
+    return configSections.includes(value as FilterSectionType);
+  }
+
+  function getValidSections(values: unknown, configSections: FilterSectionType[]): FilterSectionType[] {
+    if (!Array.isArray(values)) {
+      return [];
+    }
+    return values.filter((value): value is FilterSectionType => {
+      return typeof value === 'string' && isFilterSection(value, configSections);
+    });
+  }
+
+  function getLegacyKnownSections(
+    selected: FilterSectionType[],
+    configSections: FilterSectionType[],
+  ): FilterSectionType[] {
+    const selectedSections = new Set(selected);
+    return configSections.filter(
+      (section) => selectedSections.has(section) || !LEGACY_INTRODUCED_SECTIONS.has(section),
+    );
+  }
+
+  function getLegacySections(
+    values: unknown,
+    configSections: FilterSectionType[],
+    fallback: () => SvelteSet<FilterSectionType>,
+  ): SvelteSet<FilterSectionType> {
+    if (!Array.isArray(values)) {
+      return fallback();
+    }
+
+    const selected = getValidSections(values, configSections);
+    if (values.length > 0 && selected.length === 0) {
+      return fallback();
+    }
+
+    const known = getLegacyKnownSections(selected, configSections);
+    const knownSet = new Set(known);
+    const introduced = configSections.filter((section) => !knownSet.has(section));
+    return new SvelteSet([...selected, ...introduced]);
+  }
+
+  function hydrateSectionSet(
+    configSections: FilterSectionType[],
+    raw: string | null,
+    fallback: () => SvelteSet<FilterSectionType>,
+  ): SvelteSet<FilterSectionType> {
+    if (raw === null) {
+      return fallback();
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as StoredSectionSet;
+      if (Array.isArray(parsed)) {
+        return getLegacySections(parsed, configSections, fallback);
+      }
+
+      const selected = getValidSections(parsed?.selected, configSections);
+      const known = getValidSections(parsed?.known, configSections);
+      const knownSet = new Set(known);
+      const introduced = configSections.filter((section) => !knownSet.has(section));
+
+      return new SvelteSet([...selected, ...introduced]);
+    } catch {
+      return fallback();
+    }
+  }
+
+  function serializeSectionSet(sections: SvelteSet<FilterSectionType>, configSections: FilterSectionType[]): string {
+    return JSON.stringify({
+      selected: [...sections],
+      known: [...configSections],
+    });
+  }
+
   function loadVisibleSections(configSections: FilterSectionType[], key: string): SvelteSet<FilterSectionType> {
     if (browser) {
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const parsed = JSON.parse(raw) as string[];
-          const valid = parsed.filter((s): s is FilterSectionType => configSections.includes(s as FilterSectionType));
-          if (valid.length > 0) {
-            return new SvelteSet(valid);
-          }
-        }
-      } catch {
-        /* corrupted JSON or localStorage unavailable — fall through to default */
-      }
+      return hydrateSectionSet(configSections, localStorage.getItem(key), () => new SvelteSet(configSections));
     }
     return new SvelteSet(configSections);
   }
@@ -362,19 +437,11 @@
 
   function loadExpandedSections(configSections: FilterSectionType[]): SvelteSet<FilterSectionType> {
     if (browser) {
-      try {
-        const raw = localStorage.getItem(EXPANDED_SECTIONS_KEY);
-        if (raw !== null) {
-          const parsed = JSON.parse(raw) as string[];
-          const valid = parsed.filter((s): s is FilterSectionType => configSections.includes(s as FilterSectionType));
-          // Return the validated set even if empty — an empty array means the user
-          // explicitly collapsed all sections. Only fall through to default when
-          // there's no localStorage entry at all (raw === null).
-          return new SvelteSet(valid);
-        }
-      } catch {
-        /* corrupted JSON — fall through to default */
-      }
+      return hydrateSectionSet(
+        configSections,
+        localStorage.getItem(EXPANDED_SECTIONS_KEY),
+        () => new SvelteSet(configSections),
+      );
     }
     return new SvelteSet(configSections);
   }
@@ -408,7 +475,7 @@
   $effect(() => {
     if (browser) {
       try {
-        localStorage.setItem(storageKey, JSON.stringify([...visibleSections]));
+        localStorage.setItem(storageKey, serializeSectionSet(visibleSections, config.sections));
       } catch {
         /* localStorage unavailable */
       }
@@ -428,7 +495,7 @@
   $effect(() => {
     if (browser) {
       try {
-        localStorage.setItem(EXPANDED_SECTIONS_KEY, JSON.stringify([...expandedSections]));
+        localStorage.setItem(EXPANDED_SECTIONS_KEY, serializeSectionSet(expandedSections, config.sections));
       } catch {
         /* localStorage unavailable */
       }
@@ -618,7 +685,7 @@
               ? 'bg-primary/10 text-primary'
               : 'text-gray-400 hover:bg-subtle hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400'}"
             onclick={() => toggleSection(section)}
-            aria-label={sectionTitles[section]}
+            aria-label={sectionToggleLabels[section]}
             aria-pressed={visibleSections.has(section)}
             title={sectionTitles[section]}
             data-testid="section-toggle-{section}"

@@ -1,6 +1,8 @@
 import TestWrapper from '$lib/components/TestWrapper.svelte';
+import { buildPhotosTimelineOptions } from '$lib/utils/photos-filter-options';
+import { getSearchSuggestions } from '@immich/sdk';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { Component } from 'svelte';
 import PhotosPage from './+page.svelte';
 
@@ -43,7 +45,7 @@ vi.mock('$lib/components/filter-panel/active-filters-bar.svelte', async () => {
 });
 
 vi.mock('$lib/components/filter-panel/filter-panel.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
+  const { default: MockComponent } = await import('@test-data/mocks/filter-panel-favorites.stub.svelte');
   return { default: MockComponent };
 });
 
@@ -235,5 +237,57 @@ describe('Photos page search URL state', () => {
     expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'nature');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'asc');
+  });
+
+  it('exposes favorites in the photos filter panel', () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    renderPage();
+
+    expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+      'data-sections',
+      'timeline,people,location,camera,tags,rating,media,favorites',
+    );
+  });
+
+  it('passes favorites into photos timeline options when selected', async () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    renderPage();
+    await fireEvent.click(screen.getByTestId('select-favorites-filter'));
+
+    await waitFor(() => {
+      expect(buildPhotosTimelineOptions).toHaveBeenCalledWith(expect.objectContaining({ isFavorite: true }));
+    });
+  });
+
+  it('narrows search results to favorites without shared spaces when selected', async () => {
+    renderPage();
+
+    await fireEvent.click(screen.getByTestId('select-favorites-filter'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-is-favorite', 'true');
+      expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-with-shared-spaces', 'false');
+    });
+  });
+
+  it('narrows dependent suggestions to favorites without shared spaces when selected', async () => {
+    renderPage();
+
+    await fireEvent.click(screen.getByTestId('select-favorites-filter'));
+    await fireEvent.click(screen.getByTestId('load-city-suggestions'));
+    await fireEvent.click(screen.getByTestId('load-camera-model-suggestions'));
+
+    await waitFor(() => {
+      expect(getSearchSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ country: 'Germany', isFavorite: true }),
+      );
+      expect(getSearchSuggestions).toHaveBeenCalledWith(expect.objectContaining({ make: 'Sony', isFavorite: true }));
+    });
+
+    for (const [request] of vi.mocked(getSearchSuggestions).mock.calls) {
+      expect(request).not.toHaveProperty('withSharedSpaces');
+    }
   });
 });

@@ -113,4 +113,54 @@ describe('buildMapTimelineOptions', () => {
       spacePersonIds: ['space-person-1'],
     });
   });
+
+  it('omits partners when favorites filter is selected for global map cluster timelines', () => {
+    const filters = {
+      ...createFilterState(),
+      isFavorite: true,
+    };
+    const selectedClusterIds = new Set(['asset-1']);
+
+    const options = buildMapTimelineOptions(filters, '1,2,3,4', selectedClusterIds, undefined, {
+      withPartners: true,
+    });
+
+    expect(options).toEqual(
+      expect.objectContaining({
+        isFavorite: true,
+      }),
+    );
+    expect(options).not.toHaveProperty('withPartners');
+  });
+
+  it('omits partners when map favorites setting is enabled for global map cluster timelines', () => {
+    const selectedClusterIds = new Set(['asset-1']);
+
+    const options = buildMapTimelineOptions(createFilterState(), '1,2,3,4', selectedClusterIds, undefined, {
+      onlyFavorites: true,
+      withPartners: true,
+    });
+
+    expect(options).toEqual(
+      expect.objectContaining({
+        isFavorite: true,
+      }),
+    );
+    expect(options).not.toHaveProperty('withPartners');
+  });
+
+  it('keeps partners when global map cluster timelines are not narrowed to favorites', () => {
+    const selectedClusterIds = new Set(['asset-1']);
+
+    const options = buildMapTimelineOptions(createFilterState(), '1,2,3,4', selectedClusterIds, undefined, {
+      withPartners: true,
+    });
+
+    expect(options).toEqual(
+      expect.objectContaining({
+        withPartners: true,
+      }),
+    );
+    expect(options).not.toHaveProperty('isFavorite');
+  });
 });

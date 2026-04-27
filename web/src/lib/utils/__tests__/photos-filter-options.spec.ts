@@ -119,6 +119,15 @@ describe('buildPhotosTimelineOptions', () => {
     expect(options.withSharedSpaces).toBe(true);
   });
 
+  it('should include isFavorite and omit shared timeline inclusions when favorites is selected', () => {
+    const filters = { ...createFilterState(), isFavorite: true };
+    const options = buildPhotosTimelineOptions(filters);
+
+    expect(options.isFavorite).toBe(true);
+    expect(options).not.toHaveProperty('withPartners');
+    expect(options).not.toHaveProperty('withSharedSpaces');
+  });
+
   it('should handle multiple simultaneous filters', () => {
     const filters = {
       ...createFilterState(),
@@ -209,6 +218,13 @@ describe('handlePhotosRemoveFilter', () => {
     const filters = { ...createFilterState(), mediaType: 'image' as const };
     const result = handlePhotosRemoveFilter(filters, 'mediaType');
     expect(result.mediaType).toBe('all');
+  });
+
+  it('should clear favorites filter', () => {
+    const filters = { ...createFilterState(), isFavorite: true };
+
+    expect(handlePhotosRemoveFilter(filters, 'favorites').isFavorite).toBeUndefined();
+    expect(handlePhotosRemoveFilter(filters, 'isFavorite').isFavorite).toBeUndefined();
   });
 
   it('should preserve sortOrder when removing filters', () => {

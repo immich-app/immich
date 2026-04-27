@@ -5,10 +5,12 @@
     isLoading?: boolean;
     searchQuery?: string;
     filters?: FilterState;
+    withSharedSpaces?: boolean;
+    spaceId?: string;
     [key: string]: unknown;
   }
 
-  let { isLoading = $bindable(false), searchQuery = '', filters, ...rest }: Props = $props();
+  let { isLoading = $bindable(false), searchQuery = '', filters, withSharedSpaces, spaceId, ...rest }: Props = $props();
 </script>
 
 <div
@@ -17,4 +19,7 @@
   data-loading={String(isLoading)}
   data-search-query={searchQuery}
   data-sort-order={filters?.sortOrder ?? ''}
+  data-is-favorite={String(filters?.isFavorite)}
+  data-with-shared-spaces={String(withSharedSpaces)}
+  data-space-id={spaceId ?? ''}
 ></div>

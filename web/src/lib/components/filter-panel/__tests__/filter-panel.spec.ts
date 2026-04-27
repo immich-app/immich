@@ -308,12 +308,18 @@ describe('hidden prop', () => {
 
 describe('Section Selector', () => {
   const STORAGE_KEY = 'gallery-filter-visible-sections';
-  const allSections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'] as const;
+  const allSections: FilterSection[] = [
+    'timeline',
+    'people',
+    'location',
+    'camera',
+    'tags',
+    'rating',
+    'media',
+    'favorites',
+  ];
 
-  function renderPanel(
-    sections: Array<(typeof allSections)[number]> = [...allSections],
-    filters?: ReturnType<typeof createFilterState>,
-  ) {
+  function renderPanel(sections: FilterSection[] = [...allSections], filters?: ReturnType<typeof createFilterState>) {
     return render(FilterPanel, {
       props: {
         config: { sections: [...sections], providers: {} },
@@ -341,6 +347,14 @@ describe('Section Selector', () => {
     for (const section of allSections) {
       expect(screen.getByTestId(`section-toggle-${section}`)).toBeTruthy();
     }
+  });
+
+  it('should keep favorites section toggle label distinct from asset favorite action', () => {
+    renderPanel(['favorites']);
+
+    const favoritesToggle = screen.getByTestId('section-toggle-favorites');
+    expect(favoritesToggle).toHaveAttribute('aria-label', 'Starred filter section');
+    expect(favoritesToggle).toHaveAttribute('title', 'Favorites');
   });
 
   // Test 2
@@ -531,9 +545,9 @@ describe('Section Selector', () => {
   it('should write updated visibility to localStorage when section is toggled', async () => {
     renderPanel(['people', 'rating']);
     await fireEvent.click(screen.getByTestId('section-toggle-people'));
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as string[];
-    expect(stored).toContain('rating');
-    expect(stored).not.toContain('people');
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as { selected: string[] };
+    expect(stored.selected).toContain('rating');
+    expect(stored.selected).not.toContain('people');
   });
 
   // Test 22
@@ -542,6 +556,53 @@ describe('Section Selector', () => {
     renderPanel(['people', 'rating']);
     expect(screen.queryByTestId('filter-section-people')).toBeNull();
     expect(screen.getByTestId('filter-section-rating')).toBeTruthy();
+  });
+
+  it('should add favorites to legacy visible-section preferences without unhiding known hidden sections', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(['people']));
+
+    renderPanel(['people', 'rating', 'favorites']);
+
+    expect(screen.getByTestId('filter-section-people')).toBeTruthy();
+    expect(screen.getByTestId('filter-section-favorites')).toBeTruthy();
+    expect(screen.queryByTestId('filter-section-rating')).toBeNull();
+  });
+
+  it('should add favorites to empty legacy visible-section preferences without unhiding all known sections', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+
+    renderPanel(['people', 'rating', 'favorites']);
+
+    expect(screen.getByTestId('filter-section-favorites')).toBeTruthy();
+    expect(screen.queryByTestId('filter-section-people')).toBeNull();
+    expect(screen.queryByTestId('filter-section-rating')).toBeNull();
+  });
+
+  it('should fall back to all visible when legacy visible-section preferences only contain unknown sections', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(['obsolete-section']));
+
+    renderPanel(['people', 'rating', 'favorites']);
+
+    expect(screen.getByTestId('filter-section-people')).toBeTruthy();
+    expect(screen.getByTestId('filter-section-rating')).toBeTruthy();
+    expect(screen.getByTestId('filter-section-favorites')).toBeTruthy();
+  });
+
+  it('should add sections missing from stored known-section metadata without unhiding known hidden sections', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        selected: ['people'],
+        known: ['people', 'rating', 'favorites'],
+      }),
+    );
+
+    renderPanel(['people', 'rating', 'favorites', 'media']);
+
+    expect(screen.getByTestId('filter-section-people')).toBeTruthy();
+    expect(screen.getByTestId('filter-section-media')).toBeTruthy();
+    expect(screen.queryByTestId('filter-section-rating')).toBeNull();
+    expect(screen.queryByTestId('filter-section-favorites')).toBeNull();
   });
 
   // Test 23
@@ -643,9 +704,9 @@ describe('Section Accordion Persistence', () => {
     renderPanel(['people', 'rating']);
     const peopleHeader = screen.getByTestId('filter-section-people').querySelector('button')!;
     await fireEvent.click(peopleHeader);
-    const stored = JSON.parse(localStorage.getItem(EXPANDED_KEY) ?? '[]') as string[];
-    expect(stored).not.toContain('people');
-    expect(stored).toContain('rating');
+    const stored = JSON.parse(localStorage.getItem(EXPANDED_KEY) ?? '{}') as { selected: string[] };
+    expect(stored.selected).not.toContain('people');
+    expect(stored.selected).toContain('rating');
   });
 
   it('should restore collapsed sections from localStorage on mount', () => {
@@ -655,6 +716,54 @@ describe('Section Accordion Persistence', () => {
     const ratingContent = screen.getByTestId('filter-section-rating').querySelector('.filter-section-content');
     expect(peopleContent).toBeNull();
     expect(ratingContent).toBeTruthy();
+  });
+
+  it('should expand favorites for legacy expanded-section preferences without expanding known collapsed sections', () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['people']));
+
+    renderPanel(['people', 'rating', 'favorites']);
+
+    const peopleContent = screen.getByTestId('filter-section-people').querySelector('.filter-section-content');
+    const ratingContent = screen.getByTestId('filter-section-rating').querySelector('.filter-section-content');
+    const favoritesContent = screen.getByTestId('filter-section-favorites').querySelector('.filter-section-content');
+
+    expect(peopleContent).toBeTruthy();
+    expect(favoritesContent).toBeTruthy();
+    expect(ratingContent).toBeNull();
+  });
+
+  it('should fall back to all expanded when legacy expanded-section preferences only contain unknown sections', () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['obsolete-section']));
+
+    renderPanel(['people', 'rating', 'favorites']);
+
+    const peopleContent = screen.getByTestId('filter-section-people').querySelector('.filter-section-content');
+    const ratingContent = screen.getByTestId('filter-section-rating').querySelector('.filter-section-content');
+    const favoritesContent = screen.getByTestId('filter-section-favorites').querySelector('.filter-section-content');
+
+    expect(peopleContent).toBeTruthy();
+    expect(ratingContent).toBeTruthy();
+    expect(favoritesContent).toBeTruthy();
+  });
+
+  it('should expand newly introduced sections from stored known-section metadata', () => {
+    localStorage.setItem(
+      EXPANDED_KEY,
+      JSON.stringify({
+        selected: ['people'],
+        known: ['people', 'rating', 'favorites'],
+      }),
+    );
+
+    renderPanel(['people', 'rating', 'favorites', 'media']);
+
+    const mediaContent = screen.getByTestId('filter-section-media').querySelector('.filter-section-content');
+    const ratingContent = screen.getByTestId('filter-section-rating').querySelector('.filter-section-content');
+    const favoritesContent = screen.getByTestId('filter-section-favorites').querySelector('.filter-section-content');
+
+    expect(mediaContent).toBeTruthy();
+    expect(ratingContent).toBeNull();
+    expect(favoritesContent).toBeNull();
   });
 
   it('should keep all sections collapsed when localStorage has empty array', () => {
@@ -687,8 +796,8 @@ describe('Section Accordion Persistence', () => {
     renderPanel(['people', 'rating']);
     const peopleHeader = screen.getByTestId('filter-section-people').querySelector('button')!;
     await fireEvent.click(peopleHeader);
-    const stored = JSON.parse(localStorage.getItem(EXPANDED_KEY) ?? '[]') as string[];
-    expect(stored).toContain('people');
-    expect(stored).toContain('rating');
+    const stored = JSON.parse(localStorage.getItem(EXPANDED_KEY) ?? '{}') as { selected: string[] };
+    expect(stored.selected).toContain('people');
+    expect(stored.selected).toContain('rating');
   });
 });

@@ -177,7 +177,7 @@
   });
 
   const filterConfig: FilterPanelConfig = {
-    sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media'],
+    sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'],
     suggestionsProvider: async (filters: FilterState) => {
       const context = buildFilterContext(filters);
       const response = await getFilterSuggestions({

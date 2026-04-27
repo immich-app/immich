@@ -156,6 +156,28 @@ describe('album detail filter panel route', () => {
     expect(screen.getByTestId('active-chip')).toHaveTextContent('Album Person');
   });
 
+  it('applies favorites independently in album view and picker modes', async () => {
+    renderPage();
+    const user = userEvent.setup();
+
+    await waitFor(() => expect(screen.getByTestId('favorites-only')).toBeInTheDocument());
+    await user.click(screen.getByTestId('favorites-only'));
+
+    expect(screen.getByTestId('active-chip')).toHaveTextContent('Favorites');
+    expect(screen.getByTestId('timeline-options').textContent).toContain('"isFavorite":true');
+
+    await fireEvent.click(screen.getByLabelText('add_photos'));
+    await waitFor(() => expect(screen.getByTestId('favorites-only')).toBeInTheDocument());
+    expect(screen.queryByTestId('active-chip')).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId('favorites-only'));
+
+    expect(screen.getByTestId('active-chip')).toHaveTextContent('Favorites');
+    expect(screen.getByTestId('timeline-options').textContent).toContain('"timelineAlbumId":"');
+    expect(screen.getByTestId('timeline-options').textContent).toContain('"isFavorite":true');
+    expect(screen.getByTestId('timeline-options').textContent).not.toContain('"withPartners":true');
+  });
+
   it('keeps timelineAlbumId in picker options after filters change and shows filtered empty state', async () => {
     renderPage();
     const user = userEvent.setup();

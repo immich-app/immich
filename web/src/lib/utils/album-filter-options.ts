@@ -23,6 +23,9 @@ function applyCommonFilterFields(base: Record<string, unknown>, filters: FilterS
   if (filters.rating !== undefined) {
     base.rating = filters.rating;
   }
+  if (filters.isFavorite !== undefined) {
+    base.isFavorite = filters.isFavorite;
+  }
   if (filters.mediaType !== 'all') {
     base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
   }
@@ -48,7 +51,7 @@ export function buildAlbumAssetPickerOptions(albumId: string, filters: FilterSta
   return applyCommonFilterFields(
     {
       visibility: AssetVisibility.Timeline,
-      withPartners: true,
+      ...(filters.isFavorite === undefined ? { withPartners: true } : {}),
       timelineAlbumId: albumId,
     },
     filters,

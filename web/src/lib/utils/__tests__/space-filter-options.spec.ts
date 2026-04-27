@@ -69,6 +69,17 @@ describe('buildSpaceTimelineOptions', () => {
       }),
     );
   });
+
+  it('preserves favorites in spaces timeline options', () => {
+    const filters = { ...createFilterState(), isFavorite: true };
+
+    expect(buildSpaceTimelineOptions('space-1', filters)).toEqual(
+      expect.objectContaining({
+        spaceId: 'space-1',
+        isFavorite: true,
+      }),
+    );
+  });
 });
 
 describe('handleSpaceRemoveFilter', () => {
@@ -86,5 +97,12 @@ describe('handleSpaceRemoveFilter', () => {
     expect(result.dateBefore).toBeUndefined();
     expect(result.selectedYear).toBeUndefined();
     expect(result.selectedMonth).toBeUndefined();
+  });
+
+  it('clears favorites when removing favorites filter', () => {
+    const filters = { ...createFilterState(), isFavorite: true };
+
+    expect(handleSpaceRemoveFilter(filters, 'favorites').isFavorite).toBeUndefined();
+    expect(handleSpaceRemoveFilter(filters, 'isFavorite').isFavorite).toBeUndefined();
   });
 });
