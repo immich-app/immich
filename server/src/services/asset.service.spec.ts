@@ -205,6 +205,87 @@ describe(AssetService.name, () => {
       expect((result as any).people[0].spacePersonId).toBe('space-person-1');
     });
 
+    it('should map spacePersonId for asset owner in shared space context', async () => {
+      const asset = AssetFactory.from({ ownerId: authStub.user1.user.id })
+        .exif()
+        .face({}, (f) => f.person({ id: 'person-1', name: 'Test Person' }))
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.sharedSpace.getMember.mockResolvedValue({ userId: authStub.user1.user.id } as any);
+      mocks.access.asset.checkSpaceAccessForSpace.mockResolvedValue(new Set([asset.id]));
+      mocks.sharedSpace.findSpacePersonsByLinkedPersonIds.mockResolvedValue(
+        new Map([['person-1', { id: 'space-person-1', isHidden: false }]]),
+      );
+
+      const result = await sut.get(authStub.user1, asset.id, 'space-id');
+
+      expect(result).toHaveProperty('people');
+      expect((result as any).people.length).toBeGreaterThan(0);
+      expect((result as any).people[0].spacePersonId).toBe('space-person-1');
+    });
+
+    it('should reject asset owner with explicit spaceId when they are not a member', async () => {
+      const asset = AssetFactory.from({ ownerId: authStub.user1.user.id })
+        .exif()
+        .face({}, (f) => f.person({ id: 'person-1', name: 'Test Person' }))
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.sharedSpace.getMember.mockResolvedValue(void 0 as any);
+
+      await expect(sut.get(authStub.user1, asset.id, 'space-id')).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('should strip people for asset owner when the asset is not in the specified space', async () => {
+      const asset = AssetFactory.from({ ownerId: authStub.user1.user.id })
+        .exif()
+        .face({}, (f) => f.person({ id: 'person-1', name: 'Test Person' }))
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.sharedSpace.getMember.mockResolvedValue({ userId: authStub.user1.user.id } as any);
+      mocks.access.asset.checkSpaceAccessForSpace.mockResolvedValue(new Set());
+
+      const result = await sut.get(authStub.user1, asset.id, 'space-id');
+
+      expect(result).toHaveProperty('people', []);
+    });
+
+    it('should filter hidden space persons for asset owner with explicit spaceId', async () => {
+      const asset = AssetFactory.from({ ownerId: authStub.user1.user.id })
+        .exif()
+        .face({}, (f) => f.person({ id: 'person-1', name: 'Test Person' }))
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.sharedSpace.getMember.mockResolvedValue({ userId: authStub.user1.user.id } as any);
+      mocks.access.asset.checkSpaceAccessForSpace.mockResolvedValue(new Set([asset.id]));
+      mocks.sharedSpace.findSpacePersonsByLinkedPersonIds.mockResolvedValue(
+        new Map([['person-1', { id: 'space-person-1', isHidden: true }]]),
+      );
+
+      const result = await sut.get(authStub.user1, asset.id, 'space-id');
+
+      expect(result).toHaveProperty('people', []);
+    });
+
+    it('should filter unmapped people for asset owner with explicit spaceId', async () => {
+      const asset = AssetFactory.from({ ownerId: authStub.user1.user.id })
+        .exif()
+        .face({}, (f) => f.person({ id: 'person-1', name: 'Test Person' }))
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.sharedSpace.getMember.mockResolvedValue({ userId: authStub.user1.user.id } as any);
+      mocks.access.asset.checkSpaceAccessForSpace.mockResolvedValue(new Set([asset.id]));
+      mocks.sharedSpace.findSpacePersonsByLinkedPersonIds.mockResolvedValue(new Map());
+
+      const result = await sut.get(authStub.user1, asset.id, 'space-id');
+
+      expect(result).toHaveProperty('people', []);
+    });
+
     it('should strip unassigned faces for space member with spaceId', async () => {
       const asset = AssetFactory.from().exif().face({ id: 'unassigned-face-id' }).build();
       mocks.access.asset.checkSpaceAccess.mockResolvedValue(new Set([asset.id]));

@@ -98,56 +98,58 @@ export class AssetService extends BaseService {
     if (auth.sharedLink) {
       data.people = [];
       data.unassignedFaces = [];
+    } else if (spaceId) {
+      if (data.ownerId !== auth.user.id) {
+        data.unassignedFaces = [];
+      }
+
+      const member = await this.sharedSpaceRepository.getMember(spaceId, auth.user.id);
+      if (!member) {
+        throw new ForbiddenException('Not a member of this space');
+      }
+
+      const hasSpaceAccess = await this.accessRepository.asset.checkSpaceAccessForSpace(
+        auth.user.id,
+        spaceId,
+        new Set([id]),
+      );
+      if (hasSpaceAccess.size === 0 || !data.people) {
+        data.people = [];
+      } else {
+        const globalPersonIds = data.people.map((p) => p.id);
+        const spacePersonMap = await this.sharedSpaceRepository.findSpacePersonsByLinkedPersonIds(
+          spaceId,
+          globalPersonIds,
+        );
+        for (const person of data.people) {
+          const spacePerson = spacePersonMap.get(person.id);
+          if (spacePerson) {
+            person.spacePersonId = spacePerson.id;
+          }
+        }
+        data.people = data.people.filter((p) => p.spacePersonId && !spacePersonMap.get(p.id)?.isHidden);
+      }
     } else if (data.ownerId !== auth.user.id) {
       data.unassignedFaces = [];
 
-      if (spaceId) {
-        const member = await this.sharedSpaceRepository.getMember(spaceId, auth.user.id);
-        if (!member) {
-          throw new ForbiddenException('Not a member of this space');
-        }
-
-        const hasSpaceAccess = await this.accessRepository.asset.checkSpaceAccessForSpace(
-          auth.user.id,
-          spaceId,
-          new Set([id]),
+      // No spaceId — try to find a space containing this asset for this user
+      const spaceForAsset = await this.sharedSpaceRepository.findSpaceForAssetAndUser(id, auth.user.id);
+      if (spaceForAsset) {
+        const globalPersonIds = (data.people || []).map((p) => p.id);
+        const spacePersonMap = await this.sharedSpaceRepository.findSpacePersonsByLinkedPersonIds(
+          spaceForAsset.spaceId,
+          globalPersonIds,
         );
-        if (hasSpaceAccess.size === 0 || !data.people) {
-          data.people = [];
-        } else {
-          const globalPersonIds = data.people.map((p) => p.id);
-          const spacePersonMap = await this.sharedSpaceRepository.findSpacePersonsByLinkedPersonIds(
-            spaceId,
-            globalPersonIds,
-          );
-          for (const person of data.people) {
-            const spacePerson = spacePersonMap.get(person.id);
-            if (spacePerson) {
-              person.spacePersonId = spacePerson.id;
-            }
+        for (const person of data.people || []) {
+          const spacePerson = spacePersonMap.get(person.id);
+          if (spacePerson) {
+            person.spacePersonId = spacePerson.id;
           }
-          data.people = data.people.filter((p) => p.spacePersonId && !spacePersonMap.get(p.id)?.isHidden);
         }
+        data.people = (data.people || []).filter((p) => p.spacePersonId && !spacePersonMap.get(p.id)?.isHidden);
+        data.resolvedSpaceId = spaceForAsset.spaceId;
       } else {
-        // No spaceId — try to find a space containing this asset for this user
-        const spaceForAsset = await this.sharedSpaceRepository.findSpaceForAssetAndUser(id, auth.user.id);
-        if (spaceForAsset) {
-          const globalPersonIds = (data.people || []).map((p) => p.id);
-          const spacePersonMap = await this.sharedSpaceRepository.findSpacePersonsByLinkedPersonIds(
-            spaceForAsset.spaceId,
-            globalPersonIds,
-          );
-          for (const person of data.people || []) {
-            const spacePerson = spacePersonMap.get(person.id);
-            if (spacePerson) {
-              person.spacePersonId = spacePerson.id;
-            }
-          }
-          data.people = (data.people || []).filter((p) => p.spacePersonId && !spacePersonMap.get(p.id)?.isHidden);
-          data.resolvedSpaceId = spaceForAsset.spaceId;
-        } else {
-          data.people = [];
-        }
+        data.people = [];
       }
     }
 
