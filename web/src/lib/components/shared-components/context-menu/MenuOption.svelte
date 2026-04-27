@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import type { Shortcut } from '$lib/actions/shortcut';
   import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
@@ -11,8 +12,9 @@
     icon?: IconLike;
     activeColor?: string;
     textColor?: string;
-    onClick: () => void;
-    onMiddleClick?: () => void;
+    href?: string | null;
+    onClick?: (() => void) | null;
+    onAuxClick?: (() => void) | null;
     shortcut?: Shortcut | null;
     shortcutLabel?: string;
   }
@@ -23,8 +25,9 @@
     icon,
     activeColor = 'bg-slate-300',
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
-    onClick,
-    onMiddleClick = undefined,
+    href = null,
+    onClick = null,
+    onAuxClick = null,
     shortcut = null,
     shortcutLabel = '',
   }: Props = $props();
@@ -33,23 +36,30 @@
 
   let isActive = $derived($selectedIdStore === id);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     $optionClickCallbackStore?.();
-    onClick();
+    if (onClick) {
+      onClick();
+    }
+    if (href) {
+      await goto(href);
+    }
   };
 
-  const handleMiddleClick = () => {
-    if (onMiddleClick) {
-      onMiddleClick();
+  const handleAuxClick = () => {
+    if (onAuxClick) {
+      onAuxClick();
+    }
+    if (href) {
+      window.open(href, '_blank');
     }
   };
 
   if (shortcut && !shortcutLabel) {
     shortcutLabel = computeShortcutLabel(shortcut);
   }
-  const bindShortcutIfSet = shortcut
-    ? (n: HTMLElement) => bindShortcut(n, { shortcut, onShortcut: onClick })
-    : () => {};
+  const bindShortcutIfSet =
+    shortcut && onClick ? (n: HTMLElement) => bindShortcut(n, { shortcut, onShortcut: onClick }) : () => {};
 </script>
 
 <svelte:document use:bindShortcutIfSet />
@@ -59,10 +69,10 @@
 <li
   {id}
   onclick={handleClick}
-  onauxclick={handleMiddleClick}
+  onauxclick={handleAuxClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
+  class="w-full p-4 relative text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
     ? activeColor
     : 'bg-slate-100'}"
   role="menuitem"
@@ -83,6 +93,18 @@
       <p class="text-xs text-gray-500">
         {subtitle}
       </p>
+    {/if}
+    {#if href !== null}
+      <a
+        class="z-2 absolute w-full top-0 bottom-0 left-0"
+        style:cursor="unset"
+        {href}
+        onclick={(evt) => evt.preventDefault()}
+        onauxclick={(evt) => evt.preventDefault()}
+        tabindex={-1}
+        aria-label="Thumbnail URL"
+      >
+      </a>
     {/if}
   </div>
 </li>

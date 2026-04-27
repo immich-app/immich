@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToStackAction from '$lib/components/asset-viewer/actions/AddToStackAction.svelte';
@@ -192,8 +191,7 @@
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
-                onClick={() => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id }))}
-                onMiddleClick={() => window.open(Route.photos({ at: stack?.primaryAssetId ?? asset.id }), '_blank')}
+                href={Route.photos({ at: stack?.primaryAssetId ?? asset.id })}
                 text={$t('view_in_timeline')}
               />
             {/if}
@@ -201,8 +199,7 @@
           {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
             <MenuOption
               icon={mdiCompare}
-              onClick={() => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }))}
-              onMiddleClick={() => window.open(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }), '_blank')}
+              href={Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id })}
               text={$t('view_similar_photos')}
             />
           {/if}

@@ -79,6 +79,7 @@
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
+  let assetUrl = $derived(currentUrlReplaceAssetId(asset.id));
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -101,15 +102,25 @@
     onClick?.($state.snapshot(asset));
   };
 
+  const openInNewTab = () => {
+    window.open(assetUrl, '_blank');
+  };
+
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
-      window.open(currentUrlReplaceAssetId(asset.id), '_blank');
+      openInNewTab();
       return;
     }
 
     e.stopPropagation();
     e.preventDefault();
     callClickHandlers();
+  };
+
+  const handleAuxClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    openInNewTab();
   };
 
   const onMouseEnter = () => {
@@ -228,6 +239,7 @@
     }
   }}
   onclick={handleClick}
+  onauxclick={handleAuxClick}
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
@@ -398,8 +410,9 @@
         <a
           class="z-2 absolute w-full top-0 bottom-0"
           style:cursor="unset"
-          href={currentUrlReplaceAssetId(asset.id)}
+          href={assetUrl}
           onclick={(evt) => evt.preventDefault()}
+          onauxclick={(evt) => evt.preventDefault()}
           tabindex={-1}
           aria-label="Thumbnail URL"
         >
