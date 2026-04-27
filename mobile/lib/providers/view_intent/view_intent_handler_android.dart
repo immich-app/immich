@@ -7,10 +7,9 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_main_timeline_ready.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -40,7 +39,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   Future<void> onAppResumed() => _checkForViewIntent();
 
   @override
-  Future<void> onUserAuthenticated() => _flushPending();
+  Future<void> flushDeferredViewIntent() => _flushPending();
 
   Future<void> _checkForViewIntent() async {
     final attachment = await _viewIntentService.consumeViewIntent();
@@ -55,22 +54,21 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   }
 
   Future<void> _flushPending() async {
+    if (_ref.read(viewIntentPendingProvider) == null) {
+      return;
+    }
+
+    try {
+      await _ref.read(viewIntentMainTimelineReadyProvider.notifier).wait(timeout: const Duration(seconds: 3));
+    } catch (_) {
+      return;
+    }
+
     final pendingAttachment = _ref.read(viewIntentPendingProvider.notifier).takeIfFresh();
     _logger.info('flushPending, pendingAttachment:$pendingAttachment}');
     if (pendingAttachment != null) {
-      await _prepareDeferredViewIntentResolution(pendingAttachment);
       await handle(pendingAttachment);
     }
-  }
-
-  Future<void> _prepareDeferredViewIntentResolution(ViewIntentPayload attachment) async {
-    // Deferred intents that arrived before login should resolve only after the
-    // remote timeline data is available for merged timeline lookup.
-    await _ref.read(backgroundSyncProvider).syncRemote();
-    await _ref.read(timelineUsersProvider.future);
-    _logger.fine(
-      'prepare deferred view intent resolution complete, timelineUsers=${_ref.read(timelineUsersProvider).valueOrNull}',
-    );
   }
 
   @override

@@ -7,13 +7,12 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
-import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_main_timeline_ready.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -27,8 +26,6 @@ import 'package:mocktail/mocktail.dart';
 class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 
 class MockViewIntentAssetResolver extends Mock implements ViewIntentAssetResolver {}
-
-class MockBackgroundSyncManager extends Mock implements BackgroundSyncManager {}
 
 class MockAppRouter extends Mock implements AppRouter {}
 
@@ -98,7 +95,6 @@ void main() {
 
   late TestViewIntentService viewIntentService;
   late MockViewIntentAssetResolver resolver;
-  late MockBackgroundSyncManager backgroundSyncManager;
   late MockAppRouter router;
   late TestAuthNotifier authNotifier;
   late ProviderContainer container;
@@ -113,30 +109,28 @@ void main() {
     registerFallbackValue(_localAsset(id: 'fallback'));
   });
 
-  setUp(() {
+  setUp(() async {
     viewIntentService = TestViewIntentService();
     resolver = MockViewIntentAssetResolver();
-    backgroundSyncManager = MockBackgroundSyncManager();
     router = MockAppRouter();
     payload = ViewIntentPayload(path: '/tmp/incoming.jpg', mimeType: 'image/jpeg', localAssetId: 'local-1');
     deepLinkAsset = _localAsset(id: 'local-1');
-    deepLinkTimelineService = _timelineServiceFromAssets([deepLinkAsset], TimelineOrigin.deepLink);
+    deepLinkTimelineService = await _createReadyTimelineService([deepLinkAsset], TimelineOrigin.deepLink);
 
     when(() => router.removeWhere(any())).thenReturn(false);
     when(() => router.push(any())).thenAnswer((_) async => null);
-    when(() => backgroundSyncManager.syncRemote()).thenAnswer((_) async => true);
 
     container = ProviderContainer(
       overrides: [
         viewIntentServiceProvider.overrideWithValue(viewIntentService),
         viewIntentAssetResolverProvider.overrideWithValue(resolver),
-        backgroundSyncProvider.overrideWithValue(backgroundSyncManager),
         appRouterProvider.overrideWithValue(router),
+        timelineServiceProvider.overrideWithValue(deepLinkTimelineService),
+        timelineUsersProvider.overrideWith((ref) => Stream.value(['user-1'])),
         authProvider.overrideWith((ref) {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
           return authNotifier;
         }),
-        timelineUsersProvider.overrideWith((ref) => Stream.value(['user-1'])),
       ],
     );
 
@@ -156,40 +150,37 @@ void main() {
 
     expect(container.read(viewIntentPendingProvider), payload);
     verifyNever(() => resolver.resolve(payload));
-    verifyNever(() => backgroundSyncManager.syncRemote());
   });
 
-  testWidgets('onUserAuthenticated flushes pending after remote sync preparation', (tester) async {
-    final calls = <String>[];
+  testWidgets('flushDeferredViewIntent waits for main timeline readiness before flushing pending attachment', (
+    tester,
+  ) async {
     authNotifier.setAuthenticated(false);
     container.read(viewIntentPendingProvider.notifier).defer(payload);
     authNotifier.setAuthenticated(true);
 
-    when(() => backgroundSyncManager.syncRemote()).thenAnswer((_) async {
-      calls.add('syncRemote');
-      return true;
-    });
     when(() => resolver.resolve(payload)).thenAnswer((_) async {
-      calls.add('resolve');
       return ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService, initialIndex: 0);
     });
 
-    unawaited(handler.onUserAuthenticated());
+    unawaited(handler.flushDeferredViewIntent());
     await tester.pump();
+
+    expect(container.read(viewIntentPendingProvider), payload);
+    verifyNever(() => resolver.resolve(payload));
+
+    container.read(viewIntentMainTimelineReadyProvider.notifier).markMountedOnce();
     await tester.pump();
     await tester.pump();
     await tester.idle();
 
     expect(container.read(viewIntentPendingProvider), isNull);
-    expect(calls, ['syncRemote', 'resolve']);
-    verify(() => backgroundSyncManager.syncRemote()).called(1);
     verify(() => resolver.resolve(payload)).called(1);
   });
 
-  test('onUserAuthenticated does nothing when there is no pending attachment', () async {
-    await handler.onUserAuthenticated();
+  test('flushDeferredViewIntent does nothing when there is no pending attachment', () async {
+    await handler.flushDeferredViewIntent();
 
-    verifyNever(() => backgroundSyncManager.syncRemote());
     verifyNever(() => resolver.resolve(payload));
   });
 
@@ -260,4 +251,14 @@ TimelineService _timelineServiceFromAssets(List<BaseAsset> assets, TimelineOrigi
     bucketSource: () => Stream.value([Bucket(assetCount: assets.length)]),
     origin: origin,
   ));
+}
+
+Future<TimelineService> _createReadyTimelineService(List<BaseAsset> assets, TimelineOrigin origin) async {
+  final timelineService = _timelineServiceFromAssets(assets, origin);
+
+  if (!timelineService.isReady) {
+    await timelineService.watchStatus().firstWhere((status) => status == TimelineStatus.ready);
+  }
+
+  return timelineService;
 }

@@ -329,6 +329,8 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 backgroundManager.syncRemote().then((success) => syncSuccess = success),
               ]);
 
+              await viewIntentHandler.flushDeferredViewIntent();
+
               if (syncSuccess) {
                 await Future.wait([
                   backgroundManager.hashAssets().then((_) {
@@ -345,10 +347,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               if (Store.get(StoreKey.syncAlbums, false)) {
                 await backgroundManager.syncLinkedAlbum();
               }
-
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                unawaited(viewIntentHandler.onUserAuthenticated());
-              });
             } catch (e) {
               log.severe('Failed establishing connection to the server: $e');
             }

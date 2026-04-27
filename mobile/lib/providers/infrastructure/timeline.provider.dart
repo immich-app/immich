@@ -41,3 +41,23 @@ final timelineUsersProvider = StreamProvider<List<String>>((ref) {
 
   return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
 });
+
+final timelineStatusProvider = StreamProvider.autoDispose.family<TimelineStatus, TimelineService>((
+  ref,
+  timelineService,
+) async* {
+  yield timelineService.status;
+  yield* timelineService.watchStatus();
+});
+
+Future<void> waitForTimelineReady(TimelineService timelineService, Duration timeout) {
+  if (timelineService.isReady) {
+    return Future.value();
+  }
+
+  return timelineService
+      .watchStatus()
+      .firstWhere((status) => status == TimelineStatus.ready)
+      .timeout(timeout)
+      .then((_) {});
+}

@@ -174,9 +174,11 @@ class LoginForm extends HookConsumerWidget {
 
     Future<void> handleSyncFlow() async {
       final backgroundManager = ref.read(backgroundSyncProvider);
+      final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       await backgroundManager.syncLocal(full: true);
       await backgroundManager.syncRemote();
+      await viewIntentHandler.flushDeferredViewIntent();
       await backgroundManager.hashAssets();
 
       if (Store.get(StoreKey.syncAlbums, false)) {
@@ -251,10 +253,7 @@ class LoginForm extends HookConsumerWidget {
           }
           unawaited(handleSyncFlow());
           ref.read(websocketProvider.notifier).connect();
-          unawaited(context.replaceRoute(const TabShellRoute()));
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            unawaited(ref.read(viewIntentHandlerProvider).onUserAuthenticated());
-          });
+          unawaited(context.router.replaceAll([const TabShellRoute()]));
           return;
         }
       } catch (error) {
@@ -341,10 +340,7 @@ class LoginForm extends HookConsumerWidget {
               await getManageMediaPermission();
             }
             unawaited(handleSyncFlow());
-            unawaited(context.replaceRoute(const TabShellRoute()));
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              unawaited(ref.read(viewIntentHandlerProvider).onUserAuthenticated());
-            });
+            unawaited(context.router.replaceAll([const TabShellRoute()]));
             return;
           }
         } catch (error, stack) {

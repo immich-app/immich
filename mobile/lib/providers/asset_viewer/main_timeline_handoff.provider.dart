@@ -14,6 +14,7 @@ import 'package:immich_mobile/services/view_intent.service.dart';
 typedef MainTimelineIndexLookup = Future<int?> Function(List<String> userIds, String value);
 typedef MainTimelineHandoff = Future<void> Function(List<String> userIds, int index, String? viewIntentFilePath);
 typedef UploadReadyWaiter = Future<void> Function(bool Function(dynamic data) predicate, Duration timeout);
+typedef TimelineReadyWaiter = Future<void> Function(TimelineService timelineService, Duration timeout);
 
 final mainTimelineHandoffProvider = Provider.autoDispose<MainTimelineHandoffCoordinator>((ref) {
   final keepAliveLink = ref.keepAlive();
@@ -36,7 +37,11 @@ final mainTimelineHandoffProvider = Provider.autoDispose<MainTimelineHandoffCoor
       final timelineService = ref.read(timelineFactoryProvider).main(userIds);
 
       try {
-        final asset = await MainTimelineHandoffCoordinator.resolveAssetFromMainTimelineService(timelineService, index);
+        final asset = await resolveAssetFromMainTimelineService(
+          timelineService,
+          index,
+          waitForTimelineReady: waitForTimelineReady,
+        );
         if (asset == null) {
           await timelineService.dispose();
           return;
@@ -72,39 +77,40 @@ final mainTimelineHandoffProvider = Provider.autoDispose<MainTimelineHandoffCoor
   return coordinator;
 });
 
-class MainTimelineHandoffCoordinator {
-  static Future<BaseAsset?> resolveAssetFromMainTimelineService(
-    TimelineService timelineService,
-    int index, {
-    Duration timeout = const Duration(seconds: 3),
-    Duration retryInterval = const Duration(milliseconds: 100),
-  }) async {
-    final deadline = DateTime.now().add(timeout);
+Future<BaseAsset?> resolveAssetFromMainTimelineService(
+  TimelineService timelineService,
+  int index, {
+  required TimelineReadyWaiter waitForTimelineReady,
+  Duration timeout = const Duration(seconds: 3),
+  Duration retryInterval = const Duration(milliseconds: 100),
+}) async {
+  final deadline = DateTime.now().add(timeout);
 
-    if (timelineService.totalAssets == 0) {
-      try {
-        await timelineService.watchBuckets().first.timeout(timeout);
-      } catch (_) {
-        return null;
-      }
+  if (!timelineService.isReady) {
+    try {
+      await waitForTimelineReady(timelineService, timeout);
+    } catch (_) {
+      return null;
     }
-
-    while (DateTime.now().isBefore(deadline)) {
-      final totalAssets = timelineService.totalAssets;
-
-      if (index < totalAssets) {
-        final asset = await timelineService.getAssetAsync(index);
-        if (asset != null) {
-          return asset;
-        }
-      }
-
-      await Future<void>.delayed(retryInterval);
-    }
-
-    return null;
   }
 
+  while (DateTime.now().isBefore(deadline)) {
+    final totalAssets = timelineService.totalAssets;
+
+    if (index < totalAssets) {
+      final asset = await timelineService.getAssetAsync(index);
+      if (asset != null) {
+        return asset;
+      }
+    }
+
+    await Future<void>.delayed(retryInterval);
+  }
+
+  return null;
+}
+
+class MainTimelineHandoffCoordinator {
   final BaseAsset? Function() _getCurrentAsset;
   final String? Function() _getViewIntentFilePath;
   final List<String> Function() _resolveMainTimelineUsers;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provider.dart';
 
@@ -150,6 +151,45 @@ void main() {
     await start;
 
     expect(handoffs, isEmpty);
+  });
+
+  test('resolveAssetFromMainTimelineService waits for timeline readiness', () async {
+    final buckets = StreamController<List<Bucket>>();
+    final asset = _remoteAsset(localId: 'local-1', checksum: 'checksum-1');
+    final timelineService = TimelineService((
+      assetSource: (index, count) async => [asset],
+      bucketSource: () => buckets.stream,
+      origin: TimelineOrigin.main,
+    ));
+
+    addTearDown(() async {
+      await timelineService.dispose();
+      await buckets.close();
+    });
+
+    expect(timelineService.isReady, isFalse);
+
+    final resolveFuture = resolveAssetFromMainTimelineService(
+      timelineService,
+      0,
+      waitForTimelineReady: (timelineService, _) async {
+        for (var i = 0; i < 20 && !timelineService.isReady; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
+      },
+      timeout: const Duration(seconds: 1),
+      retryInterval: const Duration(milliseconds: 10),
+    );
+
+    await flush();
+    expect(timelineService.isReady, isFalse);
+
+    buckets.add(const [Bucket(assetCount: 1)]);
+
+    final resolved = await resolveFuture;
+    await flush();
+    expect(timelineService.isReady, isTrue);
+    expect(resolved, same(asset));
   });
 }
 

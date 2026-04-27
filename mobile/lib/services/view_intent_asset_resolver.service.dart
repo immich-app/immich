@@ -7,7 +7,6 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -54,9 +53,6 @@ class ViewIntentAssetResolver {
       throw StateError('ViewIntent resolution requires either a localAssetId or a materialized file path.');
     }
 
-    final localAsset = localAssetId != null ? await _localAssetRepository.getById(localAssetId) : null;
-    _logger.fine('resolve local asset loaded: $localAsset');
-
     if (localAssetId != null) {
       // Try the direct local-id match first when the intent resolves to a real
       // MediaStore asset.
@@ -66,6 +62,9 @@ class ViewIntentAssetResolver {
         return mainTimelineAsset;
       }
     }
+
+    final localAsset = localAssetId != null ? await _localAssetRepository.getById(localAssetId) : null;
+    _logger.fine('resolve local asset loaded: $localAsset');
 
     final checksum = await _resolveChecksumForMatching(attachment, localAsset: localAsset);
     _logger.fine('resolve checksum for matching: $checksum');
@@ -151,7 +150,25 @@ class ViewIntentAssetResolver {
     _logger.fine(
       'resolve main timeline asset at index start: index=$index, origin=${timelineService.origin}, totalAssets=${timelineService.totalAssets}',
     );
-    final asset = await MainTimelineHandoffCoordinator.resolveAssetFromMainTimelineService(timelineService, index);
+    if (!timelineService.isReady) {
+      try {
+        await waitForTimelineReady(timelineService, const Duration(seconds: 3));
+      } catch (_) {
+        return null;
+      }
+    }
+
+    BaseAsset? asset;
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (DateTime.now().isBefore(deadline)) {
+      if (index < timelineService.totalAssets) {
+        asset = await timelineService.getAssetAsync(index);
+        if (asset != null) {
+          break;
+        }
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
     _logger.fine(
       'resolve main timeline asset at index result: index=$index, totalAssetsAfterWait=${timelineService.totalAssets}, asset=$asset',
     );

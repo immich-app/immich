@@ -230,9 +230,8 @@ TimelineService _timelineServiceFromAssets(List<BaseAsset> assets, TimelineOrigi
 
 Future<TimelineService> _createReadyTimelineService(List<BaseAsset> assets, TimelineOrigin origin) async {
   final timelineService = _timelineServiceFromAssets(assets, origin);
-  final expectedAssetCount = assets.length;
 
-  for (var i = 0; i < 20 && timelineService.totalAssets != expectedAssetCount; i++) {
+  for (var i = 0; i < 20 && !timelineService.isReady; i++) {
     await Future<void>.delayed(Duration.zero);
   }
 

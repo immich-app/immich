@@ -11,7 +11,7 @@ class StubViewIntentHandler implements ViewIntentHandler {
   Future<void> onAppResumed() async {}
 
   @override
-  Future<void> onUserAuthenticated() async {}
+  Future<void> flushDeferredViewIntent() async {}
 
   @override
   Future<void> handle(ViewIntentPayload attachment) async {}

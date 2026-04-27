@@ -18,6 +18,8 @@ typedef TimelineBucketSource = Stream<List<Bucket>> Function();
 
 typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource, TimelineOrigin origin});
 
+enum TimelineStatus { uninitialized, ready, disposed }
+
 enum TimelineOrigin {
   main,
   localAlbum,
@@ -97,9 +99,13 @@ class TimelineService {
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];
   StreamSubscription? _bucketSubscription;
+  final StreamController<TimelineStatus> _statusController = StreamController<TimelineStatus>.broadcast();
 
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
+  TimelineStatus _status = TimelineStatus.uninitialized;
+  TimelineStatus get status => _status;
+  bool get isReady => _status == TimelineStatus.ready;
 
   TimelineService(TimelineQuery query)
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
@@ -135,12 +141,17 @@ class TimelineService {
 
         // change the state's total assets count only after the buffer is reloaded
         _totalAssets = totalAssets;
+        if (_status == TimelineStatus.uninitialized) {
+          _status = TimelineStatus.ready;
+          _statusController.add(_status);
+        }
         EventStream.shared.emit(const TimelineReloadEvent());
       });
     });
   }
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
+  Stream<TimelineStatus> watchStatus() => _statusController.stream;
 
   Future<List<BaseAsset>> loadAssets(int index, int count) => _mutex.run(() => _loadAssets(index, count));
 
@@ -243,5 +254,12 @@ class TimelineService {
     _bucketSubscription = null;
     _buffer = [];
     _bufferOffset = 0;
+    if (_status != TimelineStatus.disposed) {
+      _status = TimelineStatus.disposed;
+      if (!_statusController.isClosed) {
+        _statusController.add(_status);
+      }
+    }
+    await _statusController.close();
   }
 }

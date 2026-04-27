@@ -9,7 +9,7 @@ abstract class ViewIntentHandler {
 
   Future<void> onAppResumed();
 
-  Future<void> onUserAuthenticated();
+  Future<void> flushDeferredViewIntent();
 
   Future<void> handle(ViewIntentPayload attachment);
 }
