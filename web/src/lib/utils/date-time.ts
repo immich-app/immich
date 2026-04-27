@@ -7,9 +7,26 @@ export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }
 
-const getDateRange = (startTimestamp: string, endTimestamp: string, format: 'short' | 'long') => {
-  // We don't need to check if the locale is set/nonempty. MDN's Intl docs:
-  // "If the application doesn't provide a locales argument, or the runtime doesn't have a locale that matches the request, then the runtime's default locale is used."
+export function getFullDateFormat(dateTime: DateTime | undefined) {
+  if (!dateTime || !dateTime.isValid) {
+    return '';
+  }
+  return dateTime.toLocaleString(
+    {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'longOffset',
+    },
+    { locale: get(locale) },
+  );
+}
+
+export const getShortDateRange = (startTimestamp: string, endTimestamp: string) => {
   const userLocale = get(locale);
   const startDate = DateTime.fromISO(startTimestamp).setZone('UTC');
   const endDate = DateTime.fromISO(endTimestamp).setZone('UTC');
