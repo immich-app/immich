@@ -102,7 +102,7 @@
         onclick={(evt) => evt.preventDefault()}
         onauxclick={(evt) => evt.preventDefault()}
         tabindex={-1}
-        aria-label="Thumbnail URL"
+        aria-label="Menu URL"
       >
       </a>
     {/if}
