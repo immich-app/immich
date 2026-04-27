@@ -259,7 +259,9 @@ class ViewIntentAssetResolver {
   LocalAsset _toViewIntentAsset(ViewIntentPayload attachment, String? checksum) {
     final now = DateTime.now();
     return LocalAsset(
-      // todo Temp solution, need to provide FileBackedAsset extends BaseAsset for cover this case in right way
+      // TODO(Ombodi): Introduce a file-backed BaseAsset for path-only view intents.
+      // The viewer currently expects a BaseAsset, so this temporary LocalAsset
+      // adapts an unmanaged file into the existing timeline/viewer pipeline.
       id: attachment.localAssetId ?? '-${attachment.path!.hashCode.abs()}',
       name: attachment.fileName,
       checksum: checksum,
