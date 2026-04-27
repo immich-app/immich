@@ -189,6 +189,120 @@ describe(SyncEntityType.AssetOcrV1, () => {
     await ctx.syncAckAll(auth, updatedResponse);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetOcrV1]);
   });
+
+  it('should update asset OCR visibility flag', async () => {
+    const { auth, user, ctx } = await setup();
+
+    const ocrRepo = ctx.get(OcrRepository);
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ocrRepo.upsert(
+      asset.id,
+      [
+        {
+          assetId: asset.id,
+          x1: 0.1,
+          y1: 0.2,
+          x2: 0.9,
+          y2: 0.2,
+          x3: 0.9,
+          y3: 0.8,
+          x4: 0.1,
+          y4: 0.8,
+          boxScore: 0.95,
+          textScore: 0.92,
+          text: 'Hello World',
+          isVisible: true,
+        },
+      ],
+      'Hello World',
+    );
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          x1: 0.1,
+          y1: 0.2,
+          x2: 0.9,
+          y2: 0.2,
+          x3: 0.9,
+          y3: 0.8,
+          x4: 0.1,
+          y4: 0.8,
+          boxScore: 0.95,
+          textScore: 0.92,
+          text: 'Hello World',
+          isVisible: true,
+        },
+        type: 'AssetOcrV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+
+    await ctx.syncAckAll(auth, response);
+
+    await ocrRepo.upsert(
+      asset.id,
+      [
+        {
+          assetId: asset.id,
+          x1: 0.1,
+          y1: 0.2,
+          x2: 0.9,
+          y2: 0.2,
+          x3: 0.9,
+          y3: 0.8,
+          x4: 0.1,
+          y4: 0.8,
+          boxScore: 0.95,
+          textScore: 0.92,
+          text: 'Hello World',
+          isVisible: false,
+        },
+      ],
+      'Hello World',
+    );
+
+    const updatedResponse = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    expect(updatedResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          deletedAt: expect.any(String),
+        },
+        type: 'AssetOcrDeleteV1',
+      },
+      {
+        ack: expect.any(String),
+        data: {
+          id: expect.any(String),
+          assetId: asset.id,
+          x1: 0.1,
+          y1: 0.2,
+          x2: 0.9,
+          y2: 0.2,
+          x3: 0.9,
+          y3: 0.8,
+          x4: 0.1,
+          y4: 0.8,
+          boxScore: 0.95,
+          textScore: 0.92,
+          text: 'Hello World',
+          isVisible: false,
+        },
+        type: 'AssetOcrV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+
+    await ctx.syncAckAll(auth, updatedResponse);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetOcrV1]);
+  });
 });
 
 describe(SyncEntityType.AssetOcrDeleteV1, () => {
