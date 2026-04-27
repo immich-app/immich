@@ -190,6 +190,7 @@ export class TimelineMonth {
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
+        localOffsetHours: bucketAssets.localOffsetHours[i],
         createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).toLocal().toObject(),
         fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
