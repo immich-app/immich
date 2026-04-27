@@ -281,6 +281,10 @@ export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserRes
   return ids;
 };
 
+export const getOwnedAssetsObjects = (assets: TimelineAsset[], user: UserResponseDto | null): TimelineAsset[] => {
+  return [...assets].filter((a) => user && a.ownerId === user.id);
+};
+
 export type StackResponse = {
   stack?: StackResponseDto;
   toDeleteIds: string[];
