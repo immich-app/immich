@@ -47,20 +47,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`CREATE OR REPLACE FUNCTION public.asset_edit_delete()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
-    BEGIN
-      UPDATE asset
-      SET "isEdited" = false
-      FROM deleted_edit
-      WHERE asset.id = deleted_edit."assetId" AND asset."isEdited"
-        AND NOT EXISTS (SELECT FROM asset_edit edit WHERE edit."assetId" = asset.id);
-      RETURN NULL;
-    END
-  $function$
-`.execute(db);
   await sql`DROP TRIGGER "asset_ocr_delete_audit" ON "asset_ocr";`.execute(db);
   await sql`DROP INDEX "asset_ocr_updateId_idx";`.execute(db);
   await sql`ALTER TABLE "asset_ocr" DROP COLUMN "updateId";`.execute(db);
