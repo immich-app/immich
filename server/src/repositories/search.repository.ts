@@ -897,25 +897,7 @@ export class SearchRepository {
 
     // When spaceId is set, return shared_space_person records (space-specific IDs and names)
     if (options.spaceId) {
-      const spacePeople = await this.db
-        .selectFrom('shared_space_person')
-        .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
-        .leftJoin('person', 'person.id', 'asset_face.personId')
-        .select(['shared_space_person.id', 'shared_space_person.name'])
-        .select('person.name as personalName')
-        .where('shared_space_person.spaceId', '=', asUuid(options.spaceId))
-        .where('shared_space_person.isHidden', '=', false)
-        .where((eb) =>
-          eb.exists(
-            eb
-              .selectFrom('shared_space_person_face')
-              .innerJoin('asset_face as af', 'af.id', 'shared_space_person_face.assetFaceId')
-              .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
-              .where('af.assetId', 'in', filteredIds),
-          ),
-        )
-        .orderBy('shared_space_person.name')
-        .execute();
+      const spacePeople = await this.buildFilteredSpacePeopleQuery(filteredIds, options.spaceId).execute();
 
       // Use space person name, fallback to global person name
       const people = spacePeople
@@ -923,8 +905,7 @@ export class SearchRepository {
           id: p.id,
           name: p.name || (p as any).personalName || '',
         }))
-        .filter((p) => p.name !== '')
-        .toSorted((a, b) => a.name.localeCompare(b.name));
+        .filter((p) => p.name !== '');
 
       const hasUnnamedPeople = spacePeople.some((p) => !p.name && !(p as any).personalName);
 
@@ -932,21 +913,7 @@ export class SearchRepository {
     }
 
     // Global: return person records
-    const people = await this.db
-      .selectFrom('person')
-      .select(['person.id', 'person.name'])
-      .where('person.name', '!=', '')
-      .where('person.isHidden', '=', false)
-      .where((eb) =>
-        eb.exists(
-          eb
-            .selectFrom('asset_face')
-            .whereRef('asset_face.personId', '=', 'person.id')
-            .where('asset_face.assetId', 'in', filteredIds),
-        ),
-      )
-      .orderBy('person.name')
-      .execute();
+    const people = await this.buildFilteredGlobalPeopleQuery(filteredIds).execute();
 
     const unnamed = await this.db
       .selectFrom('person')
@@ -964,6 +931,46 @@ export class SearchRepository {
       .executeTakeFirst();
 
     return { people, hasUnnamedPeople: !!unnamed };
+  }
+
+  private buildFilteredSpacePeopleQuery(filteredIds: SelectQueryBuilder<DB, 'asset', { id: string }>, spaceId: string) {
+    return this.db
+      .selectFrom('shared_space_person')
+      .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
+      .leftJoin('person', 'person.id', 'asset_face.personId')
+      .select(['shared_space_person.id', 'shared_space_person.name'])
+      .select(['person.name as personalName', 'person.isFavorite'])
+      .where('shared_space_person.spaceId', '=', asUuid(spaceId))
+      .where('shared_space_person.isHidden', '=', false)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('shared_space_person_face')
+            .innerJoin('asset_face as af', 'af.id', 'shared_space_person_face.assetFaceId')
+            .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
+            .where('af.assetId', 'in', filteredIds),
+        ),
+      )
+      .orderBy(sql`coalesce("person"."isFavorite", false)`, 'desc')
+      .orderBy(sql`coalesce(nullif("shared_space_person"."name", ''), nullif("person"."name", ''), '')`);
+  }
+
+  private buildFilteredGlobalPeopleQuery(filteredIds: SelectQueryBuilder<DB, 'asset', { id: string }>) {
+    return this.db
+      .selectFrom('person')
+      .select(['person.id', 'person.name'])
+      .where('person.name', '!=', '')
+      .where('person.isHidden', '=', false)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.personId', '=', 'person.id')
+            .where('asset_face.assetId', 'in', filteredIds),
+        ),
+      )
+      .orderBy('person.isFavorite', 'desc')
+      .orderBy('person.name');
   }
 
   private async getFilteredRatings(userIds: string[], options: FilterSuggestionsOptions): Promise<number[]> {

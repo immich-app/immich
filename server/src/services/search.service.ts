@@ -314,8 +314,7 @@ export class SearchService extends BaseService {
       }
     }
 
-    const result = await this.searchRepository.getFilterSuggestions(userIds, { ...dto, timelineSpaceIds });
-    return { ...result, people: result.people.toSorted((a, b) => a.name.localeCompare(b.name)) };
+    return await this.searchRepository.getFilterSuggestions(userIds, { ...dto, timelineSpaceIds });
   }
 
   private getSuggestions(

@@ -307,5 +307,75 @@ describe(SearchService.name, () => {
 
       expect(result.people.map((p) => p.name)).toContain('Bob');
     });
+
+    it('should return favorite people before alphabetical matches', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: favoriteAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { person: favoritePerson } = await ctx.newPerson({ ownerId: user.id, name: 'Zelda', isFavorite: true });
+      await ctx.newAssetFace({ assetId: favoriteAsset.id, personId: favoritePerson.id });
+
+      const { asset: nonFavoriteAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { person: nonFavoritePerson } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', isFavorite: false });
+      await ctx.newAssetFace({ assetId: nonFavoriteAsset.id, personId: nonFavoritePerson.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const result = await sut.getFilterSuggestions(auth, {});
+
+      expect(result.people.map((p) => p.name)).toEqual(['Zelda', 'Alice']);
+    });
+
+    it('should return favorite-backed space people before alphabetical matches', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: 'owner' });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id, role: 'viewer' });
+
+      const { asset: favoriteAsset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: favoriteAsset.id, addedById: owner.id });
+      const { person: favoritePerson } = await ctx.newPerson({ ownerId: owner.id, name: 'Zelda', isFavorite: true });
+      const { assetFace: favoriteFace } = await ctx.newAssetFace({
+        assetId: favoriteAsset.id,
+        personId: favoritePerson.id,
+      });
+      const favoriteSpacePerson = await ctx.database
+        .insertInto('shared_space_person')
+        .values({ spaceId: space.id, name: 'Zelda Space', representativeFaceId: favoriteFace.id })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      await ctx.database
+        .insertInto('shared_space_person_face')
+        .values({ personId: favoriteSpacePerson.id, assetFaceId: favoriteFace.id })
+        .execute();
+
+      const { asset: nonFavoriteAsset } = await ctx.newAsset({ ownerId: owner.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: nonFavoriteAsset.id, addedById: owner.id });
+      const { person: nonFavoritePerson } = await ctx.newPerson({
+        ownerId: owner.id,
+        name: 'Alice',
+        isFavorite: false,
+      });
+      const { assetFace: nonFavoriteFace } = await ctx.newAssetFace({
+        assetId: nonFavoriteAsset.id,
+        personId: nonFavoritePerson.id,
+      });
+      const nonFavoriteSpacePerson = await ctx.database
+        .insertInto('shared_space_person')
+        .values({ spaceId: space.id, name: 'Alice Space', representativeFaceId: nonFavoriteFace.id })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      await ctx.database
+        .insertInto('shared_space_person_face')
+        .values({ personId: nonFavoriteSpacePerson.id, assetFaceId: nonFavoriteFace.id })
+        .execute();
+
+      const auth = factory.auth({ user: { id: member.id } });
+      const result = await sut.getFilterSuggestions(auth, { spaceId: space.id });
+
+      expect(result.people.map((p) => p.name)).toEqual(['Zelda Space', 'Alice Space']);
+    });
   });
 });

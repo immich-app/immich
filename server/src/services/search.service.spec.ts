@@ -1335,13 +1335,13 @@ describe(SearchService.name, () => {
       expect(result.hasUnnamedPeople).toBe(true);
     });
 
-    it('should return people sorted alphabetically by name', async () => {
+    it('should preserve repository ordering for people suggestions', async () => {
       const auth = AuthFactory.create();
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.search.getFilterSuggestions.mockResolvedValue({
         ...emptyResult,
         people: [
-          { id: 'p3', name: 'Charlie' },
+          { id: 'p3', name: 'Zelda' },
           { id: 'p1', name: 'Alice' },
           { id: 'p2', name: 'Bob' },
         ],
@@ -1350,9 +1350,9 @@ describe(SearchService.name, () => {
       const result = await sut.getFilterSuggestions(auth, {});
 
       expect(result.people).toEqual([
+        { id: 'p3', name: 'Zelda' },
         { id: 'p1', name: 'Alice' },
         { id: 'p2', name: 'Bob' },
-        { id: 'p3', name: 'Charlie' },
       ]);
     });
 
