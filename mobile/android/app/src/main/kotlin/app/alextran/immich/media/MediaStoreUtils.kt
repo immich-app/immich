@@ -5,6 +5,10 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.util.Log
+import android.webkit.MimeTypeMap
+
+private const val TAG = "MediaStoreUtils"
 
 object MediaStoreUtils {
   private fun externalFilesUri(): Uri =
@@ -30,6 +34,14 @@ object MediaStoreUtils {
       3 -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
       else -> externalFilesUri()
     }
+
+  fun resolveMimeType(context: Context, uri: Uri, fallbackMimeType: String? = null): String? {
+    return context.contentResolver.getType(uri)
+      ?: fallbackMimeType
+      ?: resolveMimeTypeFromDisplayName(context, uri)
+      ?: resolveMimeTypeFromPath(uri.path)
+      ?: resolveMimeTypeFromPath(uri.toString())
+  }
 
   fun resolveLocalIdByRelativePath(context: Context, path: String, mimeType: String): String? {
     val fileName = path.substringAfterLast('/', missingDelimiterValue = path)
@@ -74,6 +86,39 @@ object MediaStoreUtils {
       selection = "${MediaStore.MediaColumns.DISPLAY_NAME}=? AND ${MediaStore.MediaColumns.SIZE}=?",
       selectionArgs = arrayOf(displayName, size.toString()),
     )
+  }
+
+  private fun resolveMimeTypeFromDisplayName(context: Context, uri: Uri): String? {
+    return try {
+      context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+        if (!cursor.moveToFirst()) {
+          return null
+        }
+
+        val displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (displayNameIndex < 0) {
+          return null
+        }
+
+        resolveMimeTypeFromPath(cursor.getString(displayNameIndex))
+      }
+    } catch (e: Exception) {
+      Log.w(TAG, "Failed to resolve MIME type from display name: $uri", e)
+      null
+    }
+  }
+
+  private fun resolveMimeTypeFromPath(path: String?): String? {
+    if (path.isNullOrBlank()) {
+      return null
+    }
+
+    val extension = path.substringAfterLast('.', missingDelimiterValue = "").substringBefore('?').substringBefore('#')
+    if (extension.isBlank()) {
+      return null
+    }
+
+    return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.lowercase())
   }
 
   private fun queryLatestId(

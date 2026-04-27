@@ -83,7 +83,7 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
 
     ioScope.launch {
       try {
-        val mimeType = context.contentResolver.getType(uri)
+        val mimeType = MediaStoreUtils.resolveMimeType(context, uri, intent.type)
         if (mimeType == null || (!mimeType.startsWith("image/") && !mimeType.startsWith("video/"))) {
           callback(Result.success(null))
           return@launch
