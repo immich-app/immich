@@ -5,7 +5,7 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import type { AlbumResponseDto } from '@immich/sdk';
+  import { AlbumUserRole, type AlbumResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -43,9 +43,11 @@
         icon={mdiShareVariantOutline}
         size="16"
         class="inline ms-1 opacity-70"
-        title={album.ownerId === authManager.user.id
+        title={album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Owner
           ? $t('shared_by_you')
-          : $t('shared_by_user', { values: { user: album.owner.name } })}
+          : $t('shared_by_user', {
+              values: { user: album.albumUsers[0].user.name },
+            })}
       />
     {/if}
   </td>

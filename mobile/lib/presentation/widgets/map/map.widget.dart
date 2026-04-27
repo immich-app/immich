@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
@@ -53,6 +54,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
   final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
+  final GlobalKey _bottomSheetKey = GlobalKey();
   StreamSubscription? _eventSubscription;
 
   @override
@@ -184,7 +186,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     return Stack(
       children: [
         _Map(initialLocation: widget.initialLocation, onMapCreated: onMapCreated, onMapReady: onMapReady),
-        _DynamicBottomSheet(bottomSheetOffset: bottomSheetOffset),
+        _DynamicBottomSheet(bottomSheetOffset: bottomSheetOffset, sheetKey: _bottomSheetKey),
         _DynamicMyLocationButton(onZoomToLocation: onZoomToLocation, bottomSheetOffset: bottomSheetOffset),
       ],
     );
@@ -224,8 +226,9 @@ class _Map extends StatelessWidget {
 
 class _DynamicBottomSheet extends StatefulWidget {
   final ValueNotifier<double> bottomSheetOffset;
+  final GlobalKey sheetKey;
 
-  const _DynamicBottomSheet({required this.bottomSheetOffset});
+  const _DynamicBottomSheet({required this.bottomSheetOffset, required this.sheetKey});
 
   @override
   State<_DynamicBottomSheet> createState() => _DynamicBottomSheetState();
@@ -236,10 +239,13 @@ class _DynamicBottomSheetState extends State<_DynamicBottomSheet> {
   Widget build(BuildContext context) {
     return NotificationListener<DraggableScrollableNotification>(
       onNotification: (notification) {
-        widget.bottomSheetOffset.value = notification.extent;
-        return true;
+        final sheet = notification.context.findAncestorWidgetOfExactType<BaseBottomSheet>();
+        if (sheet?.key == widget.sheetKey) {
+          widget.bottomSheetOffset.value = notification.extent;
+        }
+        return false;
       },
-      child: const MapBottomSheet(),
+      child: MapBottomSheet(sheetKey: widget.sheetKey),
     );
   }
 }

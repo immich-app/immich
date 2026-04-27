@@ -42,7 +42,7 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
 };
 
 export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
-  const isOwned = authManager.user.id === album.ownerId;
+  const isOwned = album.albumUsers[0].user.id === authManager.user.id;
 
   const Share: ActionItem = {
     title: $t('share'),

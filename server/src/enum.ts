@@ -61,6 +61,7 @@ export enum AssetFileType {
 
 export enum AlbumUserRole {
   Editor = 'editor',
+  Owner = 'owner',
   Viewer = 'viewer',
 }
 
@@ -797,6 +798,7 @@ export enum ExitCode {
 
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
+  AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
   AlbumAssetsV1 = 'AlbumAssetsV1',
@@ -852,6 +854,7 @@ export enum SyncEntityType {
   PartnerStackV1 = 'PartnerStackV1',
 
   AlbumV1 = 'AlbumV1',
+  AlbumV2 = 'AlbumV2',
   AlbumDeleteV1 = 'AlbumDeleteV1',
 
   AlbumUserV1 = 'AlbumUserV1',

@@ -3,7 +3,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
-  import type { AlbumResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -85,12 +85,13 @@
       {/if}
 
       {#if showOwner}
-        {#if authManager.user.id === album.ownerId}
+        {@const owner = album.albumUsers[0].user}
+        {#if owner.id === authManager.user.id}
           <p>{$t('owned')}</p>
-        {:else if album.owner}
-          <p>{$t('shared_by_user', { values: { user: album.owner.name } })}</p>
         {:else}
-          <p>{$t('shared')}</p>
+          <p>
+            {$t('shared_by_user', { values: { user: owner.name } })}
+          </p>
         {/if}
       {:else if album.shared}
         <p>{$t('shared')}</p>

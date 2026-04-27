@@ -3,6 +3,7 @@
  */
 
 import {
+  AlbumUserRole,
   AssetTypeEnum,
   AssetVisibility,
   UserAvatarColor,
@@ -420,9 +421,7 @@ export function getAlbum(
     albumThumbnailAssetId: album.thumbnailAssetId,
     createdAt: album.createdAt,
     updatedAt: album.updatedAt,
-    ownerId: albumOwner.id,
-    owner: albumOwner,
-    albumUsers: [], // Empty array for non-shared album
+    albumUsers: [{ user: albumOwner, role: AlbumUserRole.Owner }],
     shared: false,
     hasSharedLink: false,
     isActivityEnabled: true,

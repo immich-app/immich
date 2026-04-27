@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
 class MapBottomSheet extends StatelessWidget {
-  const MapBottomSheet({super.key});
+  final Key? sheetKey;
+
+  const MapBottomSheet({super.key, this.sheetKey});
 
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
+      key: sheetKey,
       initialChildSize: 0.25,
       maxChildSize: 0.75,
       shouldCloseOnMinExtent: false,
@@ -49,7 +53,7 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const Timeline(appBar: null, bottomSheet: null, withScrubber: false),
+      child: const Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
     );
   }
 }

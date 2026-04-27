@@ -316,6 +316,7 @@ part 'model/sync_album_to_asset_v1.dart';
 part 'model/sync_album_user_delete_v1.dart';
 part 'model/sync_album_user_v1.dart';
 part 'model/sync_album_v1.dart';
+part 'model/sync_album_v2.dart';
 part 'model/sync_asset_delete_v1.dart';
 part 'model/sync_asset_edit_delete_v1.dart';
 part 'model/sync_asset_edit_v1.dart';
