@@ -141,7 +141,14 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     duration: Durations.short4,
                     child: Align(
                       alignment: Alignment.topRight,
-                      child: _AssetTypeIcons(asset: asset, showStackIndicator: widget.showStackIndicator),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _AssetTypeIcons(asset: asset),
+                          if (widget.showStackIndicator) _StackIndicator(asset: asset),
+                        ],
+                      ),
                     ),
                   ),
                 if (storageIndicator && asset != null)
@@ -283,14 +290,12 @@ class _TileOverlayIcon extends StatelessWidget {
 
 class _AssetTypeIcons extends StatelessWidget {
   final BaseAsset asset;
-  final bool showStackIndicator;
 
-  const _AssetTypeIcons({required this.asset, required this.showStackIndicator});
+  const _AssetTypeIcons({required this.asset});
 
   @override
   Widget build(BuildContext context) {
     final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
-    final shouldShowStackIcon = showStackIndicator && remoteAsset?.stackId != null;
     final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
 
     return Column(
@@ -299,11 +304,6 @@ class _AssetTypeIcons extends StatelessWidget {
       children: [
         if (asset.isVideo)
           Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
-        if (shouldShowStackIcon)
-          const Padding(
-            padding: EdgeInsets.only(right: 10.0, top: 6.0),
-            child: _TileOverlayIcon(Icons.burst_mode_rounded),
-          ),
         if (isLivePhoto)
           const Padding(
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
@@ -312,6 +312,24 @@ class _AssetTypeIcons extends StatelessWidget {
         if (asset.isAnimatedImage)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
       ],
+    );
+  }
+}
+
+class _StackIndicator extends StatelessWidget {
+  final BaseAsset asset;
+
+  const _StackIndicator({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    if (asset is! RemoteAsset || (asset as RemoteAsset).stackId == null) {
+      return const SizedBox.shrink();
+    }
+
+    return const Padding(
+      padding: EdgeInsets.only(right: 10.0, top: 6.0),
+      child: _TileOverlayIcon(Icons.burst_mode_rounded),
     );
   }
 }
