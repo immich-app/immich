@@ -45,10 +45,11 @@ const { mockPage } = vi.hoisted(() => ({
 }));
 vi.mock('$app/state', () => ({ page: mockPage }));
 
+import { commandContextManager } from '$lib/managers/command-context-manager.svelte';
 import { GlobalSearchManager, type Provider, type Sections } from '$lib/managers/global-search-manager.svelte';
 import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
 import { addEntry, getEntries, __resetForTests as resetRecentStore } from '$lib/stores/cmdk-recent';
-import { getMlHealth, searchAssets, searchSmart } from '@immich/sdk';
+import { AssetVisibility, getMlHealth, searchAssets, searchSmart } from '@immich/sdk';
 import { modalManager } from '@immich/ui';
 import GlobalSearch from '../global-search.svelte';
 
@@ -149,6 +150,9 @@ describe('global-search root', () => {
     mockPage.url = new URL('https://gallery.test/photos');
     mockPage.route.id = null;
     mockPage.params = {};
+    commandContextManager.setAlbum(null);
+    commandContextManager.setSpace(null);
+    commandContextManager.setSelection(null);
     // Default: stable non-admin user with an id so cmdk-recent scoping writes to a
     // predictable localStorage key. Tests that need admin-scoped navigation results
     // override `isAdmin` explicitly; anonymous-user edge cases flip to `null`.
@@ -288,6 +292,39 @@ describe('global-search root', () => {
     await user.keyboard('{Escape}');
     expect(m.pendingConfirmId).toBeNull();
     expect(m.isOpen).toBe(true);
+  });
+
+  it('promoted destructive command renders the red confirm hint after first Enter', async () => {
+    mockPage.route.id = '/(user)/photos/[[assetId=id]]';
+    commandContextManager.setSelection({
+      routeId: mockPage.route.id,
+      token: Symbol('selection-test'),
+      options: {
+        getAssets: () => [
+          {
+            id: 'asset-1',
+            ownerId: 'test-user',
+            visibility: AssetVisibility.Timeline,
+            isFavorite: false,
+            isTrashed: false,
+          } as never,
+        ],
+        clearSelection: vi.fn(),
+        getOnDelete: () => vi.fn(),
+      },
+    });
+
+    const m = new GlobalSearchManager();
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+    await user.type(screen.getByRole('combobox'), 'delete selected');
+
+    await vi.waitFor(() => expect(m.topCommandMatch?.id).toBe('cmd:selection_delete'));
+    await user.keyboard('{Enter}');
+
+    expect(m.pendingConfirmId).toBe('cmd:selection_delete');
+    expect(screen.getByText(/cmdk_cmd_confirm_hint/)).toBeInTheDocument();
+    expect(screen.queryByText('cmdk_cmd_selection_delete_description')).toBeNull();
   });
 
   it('Ctrl+K inside the palette closes (not captured by vimBindings)', async () => {
@@ -918,6 +955,46 @@ describe('global-search root', () => {
     expect(entityOrder[3]).toMatch(/^cmdk_people_heading$|^People$/i);
     expect(entityOrder[4]).toMatch(/^cmdk_places_heading$|^Places$/i);
     expect(entityOrder[5]).toMatch(/^cmdk_tags_heading$|^Tags$/i);
+  });
+
+  it('renders secondary selection commands before entity results when a command is promoted', async () => {
+    mockPage.route.id = '/(user)/photos/[[assetId=id]]';
+    commandContextManager.setSelection({
+      routeId: mockPage.route.id,
+      token: Symbol('selection-test'),
+      options: {
+        getAssets: () => [
+          {
+            id: 'asset-1',
+            ownerId: 'test-user',
+            visibility: AssetVisibility.Timeline,
+            isFavorite: false,
+            isTrashed: false,
+          } as never,
+        ],
+        clearSelection: vi.fn(),
+        canAddToAlbum: () => true,
+        canAddToSpace: () => true,
+      },
+    });
+
+    const m = new GlobalSearchManager();
+    installPhotoStub(m, [{ id: 'photo-1', originalFileName: 'add-photo.jpg' }]);
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+    await user.type(screen.getByRole('combobox'), 'add');
+
+    await vi.waitFor(() => expect(m.topCommandMatch?.id).toBe('cmd:selection_add_to_album'));
+    await vi.waitFor(() =>
+      expect(document.querySelector('[data-command-item][data-value="photo:photo-1"]')).not.toBeNull(),
+    );
+    const commandsSection = document.querySelector('[data-cmdk-commands-section]');
+    const addToSpaceRow = document.querySelector('[data-command-item][data-value="cmd:selection_add_to_space"]');
+    const photosHeading = screen.getByText(/^cmdk_photos_heading$|^Photos$/i);
+
+    expect(commandsSection).not.toBeNull();
+    expect(addToSpaceRow).not.toBeNull();
+    expect(commandsSection!.compareDocumentPosition(photosHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('min query length gating: typing 1 char fires Photos only (Albums/Spaces/People/Places/Tags stay idle)', async () => {

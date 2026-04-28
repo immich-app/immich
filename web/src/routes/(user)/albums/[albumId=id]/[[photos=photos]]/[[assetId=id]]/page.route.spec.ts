@@ -1,6 +1,7 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
+import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { albumFactory } from '@test-data/factories/album-factory';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
@@ -11,13 +12,19 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlbumPage from './+page.svelte';
 
+const { registerAlbumContextMock, registerSelectionContextMock } = vi.hoisted(() => ({
+  registerAlbumContextMock: vi.fn(),
+  registerSelectionContextMock: vi.fn(),
+}));
+
 vi.mock('$lib/components/timeline/Timeline.svelte', async () => {
   const { default: MockTimeline } = await import('./mock-timeline.test-wrapper.svelte');
   return { default: MockTimeline };
 });
 
 vi.mock('$lib/managers/command-context-manager.svelte', () => ({
-  registerAlbumContext: () => {},
+  registerAlbumContext: registerAlbumContextMock,
+  registerSelectionContext: registerSelectionContextMock,
 }));
 
 vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
@@ -101,6 +108,7 @@ function renderPage(album = albumFactory.build({ assetCount: 2 })) {
 describe('album detail filter panel route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    assetMultiSelectManager.clear();
     Element.prototype.animate = getAnimateMock();
   });
 
@@ -120,6 +128,40 @@ describe('album detail filter panel route', () => {
     renderPage(albumFactory.build({ assetCount: 0 }));
 
     await waitFor(() => expect(screen.queryByTestId('discovery-panel')).not.toBeInTheDocument());
+  });
+
+  it('registers cmdk selection context for album view mode only', async () => {
+    renderPage();
+
+    expect(registerSelectionContextMock).toHaveBeenCalledOnce();
+    const options = registerSelectionContextMock.mock.calls[0][0];
+    expect(options.canAddToAlbum()).toBe(true);
+    expect(options.getAssets()).toBe(assetMultiSelectManager.assets);
+    expect(options.getOnFavorite()).toEqual(expect.any(Function));
+    expect(options.getOnArchive()).toEqual(expect.any(Function));
+    expect(options.getOnDelete()).toEqual(expect.any(Function));
+    expect(options.getOnUndoDelete()).toEqual(expect.any(Function));
+
+    await fireEvent.click(screen.getByLabelText('add_photos'));
+    expect(options.getAssets()).toEqual([]);
+    expect(options.canAddToAlbum()).toBe(false);
+    expect(options.getOnFavorite()).toBeUndefined();
+    expect(options.getOnArchive()).toBeUndefined();
+    expect(options.getOnDelete()).toBeUndefined();
+    expect(options.getOnUndoDelete()).toBeUndefined();
+  });
+
+  it('does not expose timeline-backed cmdk callbacks before the album timeline manager is bound', () => {
+    renderPage(albumFactory.build({ id: 'without-bound-timeline-manager', assetCount: 2 }));
+
+    expect(registerSelectionContextMock).toHaveBeenCalledOnce();
+    const options = registerSelectionContextMock.mock.calls[0][0];
+    expect(options.canAddToAlbum()).toBe(true);
+    expect(options.getAssets()).toBe(assetMultiSelectManager.assets);
+    expect(options.getOnFavorite()).toBeUndefined();
+    expect(options.getOnArchive()).toBeUndefined();
+    expect(options.getOnDelete()).toBeUndefined();
+    expect(options.getOnUndoDelete()).toBeUndefined();
   });
 
   it('keeps the filter panel visible when timeline months exist but the manager asset count is zero', async () => {

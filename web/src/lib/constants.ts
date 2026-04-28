@@ -74,6 +74,8 @@ export enum OpenQueryParam {
 
 export const maximumLengthSearchPeople = 1000;
 
+export const MAX_SPACE_ASSETS_PER_REQUEST = 10_000;
+
 // time to load the map before displaying the loading spinner
 export const timeToLoadTheMap: number = 100;
 

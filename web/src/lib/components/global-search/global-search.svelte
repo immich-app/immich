@@ -545,7 +545,10 @@
                       onSelect={() => manager.topCommandMatch && manager.activate('command', manager.topCommandMatch)}
                       class="group"
                     >
-                      <CommandRow item={manager.topCommandMatch} />
+                      <CommandRow
+                        item={manager.topCommandMatch}
+                        pending={manager.topCommandMatch.id === manager.pendingConfirmId}
+                      />
                     </Command.Item>
                   </Command.GroupItems>
                 </Command.Group>
@@ -566,6 +569,12 @@
                     </Command.Item>
                   </Command.GroupItems>
                 </Command.Group>
+              {/if}
+              {#if manager.topCommandMatch}
+                <GlobalSearchCommandsSection
+                  status={manager.sections.commands}
+                  onActivate={(item) => manager.activate('command', item)}
+                />
               {/if}
               <GlobalSearchSection
                 heading={$t('cmdk_photos_heading')}
@@ -638,10 +647,12 @@
                   <TagRow item={item as never} />
                 {/snippet}
               </GlobalSearchSection>
-              <GlobalSearchCommandsSection
-                status={manager.sections.commands}
-                onActivate={(item) => manager.activate('command', item)}
-              />
+              {#if !manager.topCommandMatch}
+                <GlobalSearchCommandsSection
+                  status={manager.sections.commands}
+                  onActivate={(item) => manager.activate('command', item)}
+                />
+              {/if}
               <GlobalSearchNavigationSections
                 status={dedupedNavigationStatus}
                 onActivate={(item) => manager.activate('nav', item)}

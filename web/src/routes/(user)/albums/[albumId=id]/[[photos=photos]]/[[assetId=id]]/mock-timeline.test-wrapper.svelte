@@ -12,6 +12,10 @@
   let { timelineManager = $bindable(), options = {}, album, children }: Props = $props();
 
   $effect(() => {
+    if (album?.id === 'without-bound-timeline-manager') {
+      return;
+    }
+
     const tagIds = Array.isArray(options.tagIds) ? options.tagIds : [];
     const empty = tagIds.includes('tag-no-match') || album?.assetCount === 0;
     const monthsOnly = album?.id === 'timeline-months-only';

@@ -1,13 +1,24 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { SharedSpaceMemberResponseDto, SharedSpaceResponseDto } from '@immich/sdk';
-import { SharedSpaceRole } from '@immich/sdk';
+import { AssetVisibility, SharedSpaceRole } from '@immich/sdk';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { Component } from 'svelte';
 import SpacesPage from './+page.svelte';
 
-const { gotoMock, mockPage, mockAssetMultiSelectManager, mockAuthManager, mockEventManager } = vi.hoisted(() => ({
+const OVER_SPACE_ASSET_LIMIT = 10_001;
+
+const {
+  gotoMock,
+  mockPage,
+  mockAssetMultiSelectManager,
+  mockAuthManager,
+  mockEventManager,
+  mockRegisterSelectionContext,
+  mockRegisterSpaceContext,
+} = vi.hoisted(() => ({
   gotoMock: vi.fn().mockResolvedValue(undefined),
   mockPage: {
     url: new URL('https://gallery.test/spaces/space-1/photos'),
@@ -16,7 +27,7 @@ const { gotoMock, mockPage, mockAssetMultiSelectManager, mockAuthManager, mockEv
   },
   mockAssetMultiSelectManager: {
     selectionActive: false,
-    assets: [],
+    assets: [] as TimelineAsset[],
     clear: vi.fn(),
     isAllUserOwned: true,
   },
@@ -28,10 +39,29 @@ const { gotoMock, mockPage, mockAssetMultiSelectManager, mockAuthManager, mockEv
     on: vi.fn(),
     off: vi.fn(),
   },
+  mockRegisterSelectionContext: vi.fn(),
+  mockRegisterSpaceContext: vi.fn(),
 }));
 
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
 vi.mock('$app/state', () => ({ page: mockPage }));
+
+vi.mock('@immich/ui', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@immich/ui')>();
+  const { default: MockIconButton } = await import('./mock-icon-button.test-wrapper.svelte');
+  return {
+    ...actual,
+    IconButton: MockIconButton,
+    modalManager: {
+      show: vi.fn(),
+      showDialog: vi.fn(),
+    },
+    toastManager: {
+      success: vi.fn(),
+      error: vi.fn(),
+    },
+  };
+});
 
 vi.mock('$lib/components/layouts/user-page-layout.svelte', async () => {
   const { default: MockComponent } = await import('$lib/components/spaces/mock-user-page-layout.test-wrapper.svelte');
@@ -68,6 +98,11 @@ vi.mock('$lib/components/search/smart-search-results.svelte', async () => {
   return { default: MockComponent };
 });
 
+vi.mock('$lib/components/shared-components/control-app-bar.svelte', async () => {
+  const { default: MockComponent } = await import('./mock-control-app-bar.test-wrapper.svelte');
+  return { default: MockComponent };
+});
+
 vi.mock('$lib/components/shared-components/context-menu/button-context-menu.svelte', async () => {
   const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
   return { default: MockComponent };
@@ -84,7 +119,7 @@ vi.mock('$lib/components/spaces/space-panel.svelte', async () => {
 });
 
 vi.mock('$lib/components/timeline/Timeline.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/bindable-timeline.stub.svelte');
+  const { default: MockComponent } = await import('./mock-timeline.test-wrapper.svelte');
   return { default: MockComponent };
 });
 
@@ -93,7 +128,10 @@ vi.mock('$lib/managers/asset-multi-select-manager.svelte', () => ({
 }));
 
 vi.mock('$lib/managers/auth-manager.svelte', () => ({ authManager: mockAuthManager }));
-vi.mock('$lib/managers/command-context-manager.svelte', () => ({ registerSpaceContext: vi.fn() }));
+vi.mock('$lib/managers/command-context-manager.svelte', () => ({
+  registerSelectionContext: mockRegisterSelectionContext,
+  registerSpaceContext: mockRegisterSpaceContext,
+}));
 vi.mock('$lib/managers/event-manager.svelte', () => ({ eventManager: mockEventManager }));
 vi.mock('$lib/utils/space-hero-storage', () => ({
   loadHeroCollapsed: vi.fn().mockReturnValue(false),
@@ -136,11 +174,35 @@ function makeMember(overrides: Partial<SharedSpaceMemberResponseDto> = {}): Shar
   };
 }
 
-function renderPage() {
+function makeTimelineAsset(overrides: Partial<TimelineAsset> = {}): TimelineAsset {
+  return {
+    id: 'asset-1',
+    ownerId: 'user-1',
+    ratio: 1,
+    thumbhash: null,
+    localDateTime: '2026-01-01T00:00:00.000Z',
+    fileCreatedAt: '2026-01-01T00:00:00.000Z',
+    visibility: AssetVisibility.Timeline,
+    isFavorite: false,
+    isTrashed: false,
+    isVideo: false,
+    isImage: true,
+    stack: null,
+    duration: null,
+    projectionType: null,
+    livePhotoVideoId: null,
+    city: null,
+    country: null,
+    people: null,
+    ...overrides,
+  } as unknown as TimelineAsset;
+}
+
+function renderPage(overrides: { space?: SharedSpaceResponseDto; members?: SharedSpaceMemberResponseDto[] } = {}) {
   const props = {
     data: {
-      space: makeSpace(),
-      members: [makeMember()],
+      space: overrides.space ?? makeSpace(),
+      members: overrides.members ?? [makeMember()],
       meta: { title: 'Test Space' },
     },
   };
@@ -159,6 +221,8 @@ describe('Spaces page search URL state', () => {
     mockAssetMultiSelectManager.assets = [];
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos');
     vi.mocked(sdkMock.markSpaceViewed).mockResolvedValue(void 0 as never);
+    sdkMock.addAssets.mockResolvedValue(void 0 as never);
+    sdkMock.getSpace.mockResolvedValue(makeSpace());
     sdkMock.getSpaceActivities.mockResolvedValue([]);
     sdkMock.getSpacePeople.mockResolvedValue([]);
   });
@@ -203,6 +267,101 @@ describe('Spaces page search URL state', () => {
     await waitFor(() => {
       expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-is-favorite', 'true');
       expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-space-id', 'space-1');
+    });
+  });
+
+  it('space cmdk add-photos command enters select-assets mode for writable users', async () => {
+    renderPage();
+    const options = mockRegisterSpaceContext.mock.calls[0][2];
+    const addPhotosToCurrentSpace = options.getAddPhotosToCurrentSpace();
+
+    expect(addPhotosToCurrentSpace).toEqual(expect.any(Function));
+    addPhotosToCurrentSpace?.();
+
+    await waitFor(() => expect(screen.getByLabelText('add_to_space')).toBeInTheDocument());
+    expect(options.getAddPhotosToCurrentSpace()).toBeUndefined();
+  });
+
+  it('registers normal space view favorite/archive callbacks and no add-to-current-space', () => {
+    renderPage();
+
+    expect(mockRegisterSelectionContext).toHaveBeenCalledOnce();
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+    expect(options.canAddToAlbum()).toBe(false);
+    expect(options.getAssets()).toBe(mockAssetMultiSelectManager.assets);
+    expect(options.getOnFavorite()).toEqual(expect.any(Function));
+    expect(options.getOnArchive()).toEqual(expect.any(Function));
+    expect(options.getOnDelete?.()).toBeUndefined();
+    expect(options.getAddSelectedToCurrentSpace()).toBeUndefined();
+  });
+
+  it('select-assets mode exposes only addSelectedToCurrentSpace for writable users', async () => {
+    renderPage();
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+
+    await fireEvent.click(screen.getByLabelText('add_photos'));
+
+    await waitFor(() => expect(options.getAddSelectedToCurrentSpace()).toEqual(expect.any(Function)));
+    expect(options.getOnFavorite()).toBeUndefined();
+    expect(options.getOnArchive()).toBeUndefined();
+    expect(options.getOnDelete?.()).toBeUndefined();
+  });
+
+  it('viewer users cannot expose addSelectedToCurrentSpace', () => {
+    renderPage({
+      members: [makeMember({ role: SharedSpaceRole.Viewer })],
+    });
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+    const spaceOptions = mockRegisterSpaceContext.mock.calls[0][2];
+
+    expect(screen.queryByLabelText('add_photos')).not.toBeInTheDocument();
+    expect(options.getAddSelectedToCurrentSpace()).toBeUndefined();
+    expect(spaceOptions.getAddPhotosToCurrentSpace()).toBeUndefined();
+  });
+
+  it('addSelectedToCurrentSpace rejects empty and over-limit selections', async () => {
+    renderPage();
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+    await fireEvent.click(screen.getByLabelText('add_photos'));
+    const addSelected = options.getAddSelectedToCurrentSpace() as () => Promise<boolean>;
+
+    mockAssetMultiSelectManager.assets = [];
+    await expect(addSelected()).resolves.toBe(false);
+
+    mockAssetMultiSelectManager.assets = Array.from({ length: OVER_SPACE_ASSET_LIMIT }, (_, index) =>
+      makeTimelineAsset({ id: `asset-${index}` }),
+    );
+    await expect(addSelected()).resolves.toBe(false);
+    expect(sdkMock.addAssets).not.toHaveBeenCalled();
+  });
+
+  it('addSelectedToCurrentSpace and plus button share the awaited helper', async () => {
+    renderPage();
+    mockAssetMultiSelectManager.assets = [makeTimelineAsset({ id: 'asset-1' })];
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+
+    await fireEvent.click(screen.getByLabelText('add_photos'));
+    const addSelected = options.getAddSelectedToCurrentSpace() as () => Promise<boolean>;
+    await expect(addSelected()).resolves.toBe(true);
+    expect(sdkMock.addAssets).toHaveBeenCalledWith({
+      id: 'space-1',
+      sharedSpaceAssetAddDto: { assetIds: ['asset-1'] },
+    });
+    expect(mockEventManager.emit).toHaveBeenCalledWith('SpaceAddAssets', { assetIds: ['asset-1'], spaceId: 'space-1' });
+    expect(mockAssetMultiSelectManager.clear).toHaveBeenCalled();
+
+    vi.clearAllMocks();
+    sdkMock.addAssets.mockResolvedValue(void 0 as never);
+    sdkMock.getSpace.mockResolvedValue(makeSpace());
+    sdkMock.getSpaceActivities.mockResolvedValue([]);
+    mockAssetMultiSelectManager.selectionActive = false;
+    mockAssetMultiSelectManager.assets = [makeTimelineAsset({ id: 'asset-2' })];
+    await fireEvent.click(screen.getByLabelText('add_photos'));
+    mockAssetMultiSelectManager.selectionActive = true;
+    await fireEvent.click(screen.getByLabelText('add_to_space'));
+    expect(sdkMock.addAssets).toHaveBeenCalledWith({
+      id: 'space-1',
+      sharedSpaceAssetAddDto: { assetIds: ['asset-2'] },
     });
   });
 });

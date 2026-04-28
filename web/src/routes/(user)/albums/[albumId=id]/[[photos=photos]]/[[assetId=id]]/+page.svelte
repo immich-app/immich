@@ -41,7 +41,7 @@
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { registerAlbumContext } from '$lib/managers/command-context-manager.svelte';
+  import { registerAlbumContext, registerSelectionContext } from '$lib/managers/command-context-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -228,6 +228,22 @@
   });
 
   registerAlbumContext(() => album);
+  registerSelectionContext({
+    getAssets: () => (viewMode === AlbumPageViewMode.VIEW ? assetMultiSelectManager.assets : []),
+    clearSelection: () => assetMultiSelectManager.clear(),
+    canAddToAlbum: () => viewMode === AlbumPageViewMode.VIEW,
+    getOnFavorite: () =>
+      viewMode === AlbumPageViewMode.VIEW && timelineManager
+        ? (ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))
+        : undefined,
+    getOnArchive: () =>
+      viewMode === AlbumPageViewMode.VIEW && timelineManager
+        ? (ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))
+        : undefined,
+    getOnDelete: () => (viewMode === AlbumPageViewMode.VIEW && timelineManager ? handleRemoveAssets : undefined),
+    getOnUndoDelete: () =>
+      viewMode === AlbumPageViewMode.VIEW && timelineManager ? handleUndoRemoveAssets : undefined,
+  });
 
   $effect(() => {
     if (data.album.id !== album.id) {

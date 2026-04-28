@@ -6,25 +6,27 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { Component } from 'svelte';
 import PhotosPage from './+page.svelte';
 
-const { mockPage, mockAssetMultiSelectManager, mockAuthManager, mockMemoryManager } = vi.hoisted(() => ({
-  mockPage: {
-    url: new URL('https://gallery.test/photos?q=nature'),
-    route: { id: '/(user)/photos/[[assetId=id]]' },
-    params: {},
-  },
-  mockAssetMultiSelectManager: {
-    selectionActive: false,
-    assets: [],
-    clear: vi.fn(),
-    isAllUserOwned: true,
-  },
-  mockAuthManager: {
-    preferences: { memories: { enabled: false } },
-  },
-  mockMemoryManager: {
-    memories: [],
-  },
-}));
+const { mockPage, mockAssetMultiSelectManager, mockAuthManager, mockMemoryManager, mockRegisterSelectionContext } =
+  vi.hoisted(() => ({
+    mockPage: {
+      url: new URL('https://gallery.test/photos?q=nature'),
+      route: { id: '/(user)/photos/[[assetId=id]]' },
+      params: {},
+    },
+    mockAssetMultiSelectManager: {
+      selectionActive: false,
+      assets: [],
+      clear: vi.fn(),
+      isAllUserOwned: true,
+    },
+    mockAuthManager: {
+      preferences: { memories: { enabled: false } },
+    },
+    mockMemoryManager: {
+      memories: [],
+    },
+    mockRegisterSelectionContext: vi.fn(),
+  }));
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('$app/state', () => ({ page: mockPage }));
@@ -65,7 +67,8 @@ vi.mock('$lib/components/shared-components/empty-placeholder.svelte', async () =
 });
 
 vi.mock('$lib/components/timeline/Timeline.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/bindable-timeline.stub.svelte');
+  const { default: MockComponent } =
+    await import('../../albums/[albumId=id]/[[photos=photos]]/[[assetId=id]]/mock-timeline.test-wrapper.svelte');
   return { default: MockComponent };
 });
 
@@ -154,6 +157,10 @@ vi.mock('$lib/managers/asset-viewer-manager.svelte', () => ({
 
 vi.mock('$lib/managers/auth-manager.svelte', () => ({
   authManager: mockAuthManager,
+}));
+
+vi.mock('$lib/managers/command-context-manager.svelte', () => ({
+  registerSelectionContext: mockRegisterSelectionContext,
 }));
 
 vi.mock('$lib/managers/memory-manager.svelte', () => ({
@@ -289,5 +296,35 @@ describe('Photos page search URL state', () => {
     for (const [request] of vi.mocked(getSearchSuggestions).mock.calls) {
       expect(request).not.toHaveProperty('withSharedSpaces');
     }
+  });
+
+  it('registers cmdk selection context with photo-page callbacks', () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    renderPage();
+
+    expect(mockRegisterSelectionContext).toHaveBeenCalledOnce();
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+    expect(options.getAssets()).toBe(mockAssetMultiSelectManager.assets);
+    expect(options.canAddToAlbum()).toBe(true);
+    expect(options.canAddToSpace()).toBe(true);
+    expect(options.getOnFavorite()).toEqual(expect.any(Function));
+    expect(options.getOnArchive()).toEqual(expect.any(Function));
+    expect(options.getOnDelete()).toEqual(expect.any(Function));
+    expect(options.getOnUndoDelete()).toEqual(expect.any(Function));
+  });
+
+  it('photo-page cmdk callbacks are live functions and clearSelection delegates to the selection manager', () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    renderPage();
+    const options = mockRegisterSelectionContext.mock.calls[0][0];
+
+    expect(options.getOnFavorite()).toEqual(expect.any(Function));
+    expect(options.getOnArchive()).toEqual(expect.any(Function));
+    expect(options.getOnDelete()).toEqual(expect.any(Function));
+    expect(options.getOnUndoDelete()).toEqual(expect.any(Function));
+    options.clearSelection();
+    expect(mockAssetMultiSelectManager.clear).toHaveBeenCalledOnce();
   });
 });

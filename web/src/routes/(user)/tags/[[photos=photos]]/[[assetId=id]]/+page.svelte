@@ -25,6 +25,7 @@
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { registerSelectionContext } from '$lib/managers/command-context-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -59,6 +60,22 @@
     timelineManager.removeAssets(assetIds);
     assetMultiSelectManager.clear();
   };
+
+  registerSelectionContext({
+    getAssets: () => assetMultiSelectManager.assets,
+    clearSelection: () => assetMultiSelectManager.clear(),
+    canAddToAlbum: () => true,
+    getOnFavorite: () =>
+      timelineManager
+        ? (ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))
+        : undefined,
+    getOnArchive: () =>
+      timelineManager
+        ? (ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))
+        : undefined,
+    getOnDelete: () => (timelineManager ? (assetIds) => timelineManager.removeAssets(assetIds) : undefined),
+    getOnUndoDelete: () => (timelineManager ? (assets) => timelineManager.upsertAssets(assets) : undefined),
+  });
 
   const onRefresh = async () => {
     tags = await getAllTags();

@@ -16,7 +16,7 @@ Each query runs in parallel against the configured providers and groups the resu
 | **Tags**          | Tags assigned to your assets, plus inherited tags from parent tags.          |
 | **Albums**        | Your albums, matched on album name.                                          |
 | **Shared spaces** | Spaces you own or belong to, matched on space name.                          |
-| **Commands**      | Stateless verbs — upload files, create things, sign out, toggle theme, etc.  |
+| **Commands**      | Verbs — upload files, create things, sign out, toggle theme, manage pages.   |
 | **Navigation**    | Admin and settings pages — fuzzy-matched against the live page catalog.      |
 
 Empty sections collapse silently so the result list stays tight. If smart search is unhealthy (the ML server is unreachable), a banner appears at the top of the palette and offers a one-tap switch to filename mode.
@@ -34,21 +34,27 @@ The other sections (People, Places, Tags, Commands, Navigation) are unaffected b
 
 ## Commands
 
-Commands are stateless verbs you can fire from the palette without leaving your current page. They live in their own section above **Go to…** and ship out of the box with these entries:
+Commands are verbs you can fire from the palette without leaving your current page. They live in their own section above **Go to…**, and the list is permission-aware: admin-only commands, album commands, space commands, and selection commands only appear when the current user and page context can run them.
 
-| Command                   | What it does                                          |
-| ------------------------- | ----------------------------------------------------- |
-| **Upload files**          | Opens the file picker so you can add photos or videos |
-| **Create album**          | Creates a new album and jumps you straight into it    |
-| **Create shared space**   | Opens the **Create shared space** modal               |
-| **Sign out**              | Logs you out and returns to the login screen          |
-| **Keyboard shortcuts**    | Opens the keyboard-shortcuts cheatsheet               |
-| **Toggle theme**          | Flips between light and dark mode                     |
-| **Clear palette recents** | Empties your **Recent** list in the palette           |
+Commands never appear in the **Recent** list. They're verbs, not destinations, and re-firing them belongs in the muscle-memory of the palette itself.
+
+### Global commands
+
+These commands are available everywhere after login:
+
+| Command                          | What it does                                          |
+| -------------------------------- | ----------------------------------------------------- |
+| **Theme**                        | Switches between light and dark themes                |
+| **Upload**                       | Opens the file picker so you can add photos or videos |
+| **New Album**                    | Creates a new album and jumps you straight into it    |
+| **Create shared space**          | Opens the **Create shared space** modal               |
+| **Sign Out**                     | Logs you out and returns to the login screen          |
+| **Keyboard shortcuts**           | Opens the keyboard-shortcuts cheatsheet               |
+| **Clear recent palette entries** | Empties your **Recent** list in the palette           |
 
 ### Admin queue commands
 
-Administrators see an extra group of commands for driving the job queues without leaving whatever page they're on. They are hidden from non-admin users and never appear in the result list for them.
+Administrators see an extra group of commands for driving the job queues without leaving whatever page they're on. They are hidden from non-admin users.
 
 | Command                      | What it does                                                                              |
 | ---------------------------- | ----------------------------------------------------------------------------------------- |
@@ -63,22 +69,122 @@ Administrators see an extra group of commands for driving the job queues without
 
 Each **Run…** command confirms with a toast like **Started: Thumbnail generation**. The bulk commands (**Pause all queues**, **Resume all queues**, **Clear failed jobs**) fire a parallel request per admin-visible queue. If every request succeeds you get a single green confirmation; if any fail, a yellow warning toast reports **"N of M queue operations failed"** and the others still take effect. These commands target the same set of queues shown on **Administration → Jobs**, so the Jobs page is still the right place to watch per-queue progress in detail.
 
+### Album commands
+
+When you open the palette from an album page, album-specific commands appear according to your permissions on that album:
+
+| Command                     | When it appears                      | What it does                                        |
+| --------------------------- | ------------------------------------ | --------------------------------------------------- |
+| **Rename this album**       | Album owner                          | Opens the album edit modal                          |
+| **Share this album**        | Album owner                          | Opens album sharing and access management           |
+| **Download this album**     | Anyone who can access the album      | Downloads all album assets as a zip                 |
+| **Leave this shared album** | Shared-album member who is not owner | Removes you from the album and returns to Albums    |
+| **Delete this album**       | Album owner                          | Permanently removes the album and returns to Albums |
+
+### Selection commands
+
+When one or more assets are selected on a supported timeline page, the palette also shows bulk actions for that live selection:
+
+| Command                        | When it appears                                                                                           | What it does                                                                |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Add selected to album...**   | Selection exists on a page that can add assets to albums                                                  | Opens the album picker for the selected assets                              |
+| **Add selected to space...**   | Selection exists on a page that can add assets to spaces                                                  | Opens a space picker so you can choose a writable shared space              |
+| **Add selected to this space** | Current shared-space page is writable, the page is in the add-assets flow, and the selected count is safe | Adds the selected assets to the current writable shared space               |
+| **Add selected to favorites**  | Selected assets are owned by you and are not all already favorites                                        | Marks the selected assets as favorites                                      |
+| **Archive selected**           | Selected assets are owned by you and are not all already archived                                         | Moves the selected assets to archive                                        |
+| **Delete selected**            | Selected assets are owned by you                                                                          | Moves selected assets to trash, or permanently deletes assets already there |
+
+These commands only appear when the current page can safely run them. Favorite, archive, and delete require assets you own. **Add selected to this space** is shown only inside a writable shared space, only while choosing assets to add, and only when the selected count is within the per-request shared-space limit. Readers and other non-writers do not see commands that would modify the space.
+
+### Shared-space commands
+
+When you open the palette from a shared-space page, space-specific commands appear according to your role in that space:
+
+| Command                             | When it appears               | What it does                                                    |
+| ----------------------------------- | ----------------------------- | --------------------------------------------------------------- |
+| **Add photos to this space**        | Current space is writable     | Starts the asset-selection flow for adding photos to this space |
+| **Manage space members**            | Space owner                   | Opens the member management modal                               |
+| **Add a member to this space**      | Space owner                   | Opens the add-member modal                                      |
+| **Add all my photos to this space** | Current space is writable     | Queues a background job to add all of your assets to the space  |
+| **Leave this space**                | Space member who is not owner | Removes you from the space and returns to Spaces                |
+| **Delete this space**               | Space owner                   | Permanently removes the space and returns to Spaces             |
+
+Readers and other non-writers do not see write actions like **Add photos to this space**, **Add selected to this space**, or **Add all my photos to this space**. Space-owner actions are separate from write access: a user can be able to add photos without being able to manage members or delete the space.
+
+### Destructive confirmations
+
+Destructive commands keep the palette confirmation step: press <kbd>Enter</kbd> once to arm the command, then press <kbd>Enter</kbd> again to confirm or <kbd>Esc</kbd> to cancel. This applies to destructive album commands, destructive space commands, and **Delete selected**. Permanent asset deletes can still show the normal delete confirmation modal after the palette confirmation.
+
+## Navigation entries
+
+Navigation entries are destinations rather than commands. They appear in the **Navigation**, **Admin**, and **System Settings** groups, and can be found with normal search or the `>` prefix.
+
+Admin pages and system settings are hidden from non-admin users. Feature-gated destinations, such as **Map** and **Trash**, only appear when that server feature is enabled.
+
+User pages:
+
+| Entry         | Where it goes            |
+| ------------- | ------------------------ |
+| **Photos**    | Main library timeline    |
+| **Albums**    | Album list               |
+| **People**    | People and face list     |
+| **Tags**      | Tag browser              |
+| **Map**       | Map view, when enabled   |
+| **Sharing**   | Shared links and sharing |
+| **Spaces**    | Shared spaces list       |
+| **Trash**     | Trash, when enabled      |
+| **Favorites** | Favorite assets          |
+| **Archive**   | Archived assets          |
+| **Memories**  | Memories page            |
+
+Admin pages:
+
+| Entry                  | Where it goes                    |
+| ---------------------- | -------------------------------- |
+| **Users**              | User management                  |
+| **External Libraries** | External library management      |
+| **Job Queues**         | Processing queues                |
+| **Server Stats**       | System statistics                |
+| **Maintenance**        | Backup, restore, and maintenance |
+
+System settings:
+
+| Entry                          | Opens this settings panel |
+| ------------------------------ | ------------------------- |
+| **Authentication Settings**    | Authentication            |
+| **Database Dump Settings**     | Backup                    |
+| **Image Settings**             | Image                     |
+| **Job Settings**               | Jobs                      |
+| **External Library**           | External libraries        |
+| **Logging**                    | Logging                   |
+| **Machine Learning Settings**  | Machine learning          |
+| **Auto-Classification**        | Classification            |
+| **Map & GPS Settings**         | Location and map          |
+| **Metadata Settings**          | Metadata                  |
+| **Nightly Tasks Settings**     | Nightly tasks             |
+| **Notification Settings**      | Notifications             |
+| **Server Settings**            | Server                    |
+| **Storage Template**           | Storage template          |
+| **Theme Settings**             | Theme                     |
+| **Trash Settings**             | Trash                     |
+| **User Settings**              | User settings             |
+| **Version Check**              | Version checks            |
+| **Video Transcoding Settings** | Video transcoding         |
+
 ### Unscoped: command-first tie-break
 
-When a command and a navigation entry score similarly against an unscoped query, the command wins the **Top result** slot. So plain `album` activates **Create album** on <kbd>Enter</kbd>, and plain `upload` activates **Upload files** — even though the Albums and Library pages also match.
-
-Commands never appear in the **Recent** list — they're verbs, not destinations, and re-firing them belongs in the muscle-memory of the palette itself.
+When a command and a navigation entry score similarly against an unscoped query, the command wins the **Top result** slot. So plain `album` activates **New Album** on <kbd>Enter</kbd>, and plain `upload` activates **Upload** — even though the Albums and Library pages also match.
 
 ## Prefix shortcuts
 
 Start a query with a prefix character to restrict results to a single scope. The prefix is consumed by the palette and is not part of the query text, so `@alice`, `#xmas`, `/trip`, and `>theme` search the relevant scope for `alice`, `xmas`, `trip`, and `theme` respectively.
 
-| Prefix | Scope                      | What it searches                           |
-| ------ | -------------------------- | ------------------------------------------ |
-| `@`    | **People**                 | Named faces only                           |
-| `#`    | **Tags**                   | Your tags only                             |
-| `/`    | **Albums + shared spaces** | Both collection types at once              |
-| `>`    | **Commands + navigation**  | Stateless verbs and admin / settings pages |
+| Prefix | Scope                      | What it searches                            |
+| ------ | -------------------------- | ------------------------------------------- |
+| `@`    | **People**                 | Named faces only                            |
+| `#`    | **Tags**                   | Your tags only                              |
+| `/`    | **Albums + shared spaces** | Both collection types at once               |
+| `>`    | **Commands + navigation**  | Palette commands and admin / settings pages |
 
 When a prefix is active, all other sections (Photos, Places, and the two you didn't pick) are hidden for the duration of that query. Prefixes are handy when a bare query is dominated by photos and you want a single section to come through cleanly, or when you know exactly which kind of thing you're after.
 

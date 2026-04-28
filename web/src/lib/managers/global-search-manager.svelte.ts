@@ -1685,6 +1685,8 @@ export class GlobalSearchManager {
     const flags = featureFlagsManager.valueOrUndefined;
     const translate = get(t);
     const ctx = commandContextManager.getContext();
+    const cmdSearch = this.getCommandSearchStrings();
+    let best: { item: CommandItem; score: number } | null = null;
     for (const item of COMMAND_ITEMS) {
       if (item.adminOnly && !isAdmin) {
         continue;
@@ -1703,11 +1705,22 @@ export class GlobalSearchManager {
         }
       }
       const label = translate(item.labelKey as Translations);
-      if (isAlmostExactCommandMatch(q, label)) {
-        return item;
+      if (!isAlmostExactCommandMatch(q, label)) {
+        continue;
+      }
+      const corpus = cmdSearch.get(item.id);
+      if (!corpus) {
+        continue;
+      }
+      const score = computeCommandScore(corpus, q);
+      if (score <= 0) {
+        continue;
+      }
+      if (best === null || score > best.score) {
+        best = { item, score };
       }
     }
-    return null;
+    return best?.item ?? null;
   });
 
   announcementText = $derived.by(() => {

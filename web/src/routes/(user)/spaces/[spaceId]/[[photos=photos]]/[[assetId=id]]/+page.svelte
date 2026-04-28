@@ -20,9 +20,7 @@
   import SpaceMap from '$lib/components/spaces/space-map.svelte';
   import SpaceNewAssetsDivider from '$lib/components/spaces/space-new-assets-divider.svelte';
   import SpaceOnboardingBanner from '$lib/components/spaces/space-onboarding-banner.svelte';
-  import SpaceAssetLimitWarning, {
-    MAX_SPACE_ASSETS_PER_REQUEST,
-  } from '$lib/components/spaces/space-asset-limit-warning.svelte';
+  import SpaceAssetLimitWarning from '$lib/components/spaces/space-asset-limit-warning.svelte';
   import SpacePanel from '$lib/components/spaces/space-panel.svelte';
   import SpacePeopleStrip from '$lib/components/spaces/space-people-strip.svelte';
   import SpaceLinkedLibrariesModal from '$lib/modals/SpaceLinkedLibrariesModal.svelte';
@@ -39,9 +37,10 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import { registerSpaceContext } from '$lib/managers/command-context-manager.svelte';
+  import { registerSelectionContext, registerSpaceContext } from '$lib/managers/command-context-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { Route } from '$lib/route';
+  import { MAX_SPACE_ASSETS_PER_REQUEST } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { createUrl } from '$lib/utils';
@@ -104,10 +103,6 @@
   let space: SharedSpaceResponseDto = $state(data.space);
   let members: SharedSpaceMemberResponseDto[] = $state(data.members);
 
-  registerSpaceContext(
-    () => space,
-    () => members,
-  );
   const initialSearchState = getSearchablePageState(page.url);
 
   // Sync when navigating between spaces (component persists, data updates)
@@ -249,6 +244,19 @@
   );
   const showInTimeline = $derived(currentMember?.showInTimeline ?? true);
 
+  registerSpaceContext(
+    () => space,
+    () => members,
+    {
+      getAddPhotosToCurrentSpace: () =>
+        viewMode === 'view' && isEditor && !assetMultiSelectManager.selectionActive
+          ? () => {
+              viewMode = 'select-assets';
+            }
+          : undefined,
+    },
+  );
+
   const totalAssetCount = $derived(timelineManager?.assetCount ?? 0);
   const isTimelineEmpty = $derived(
     timelineManager?.isInitialized && totalAssetCount === 0 && getActiveFilterCount(filters) === 0,
@@ -382,19 +390,53 @@
     }
   };
 
-  const handleAddAssets = async () => {
+  let skipNextLocalSpaceAddEventForSpaceId: string | null = null;
+
+  const applySpaceAddSuccess = async () => {
+    await Promise.all([refreshSpace(), loadActivities()]);
+    assetMultiSelectManager.clear();
+    viewMode = 'view';
+  };
+
+  const addSelectedAssetsToCurrentSpace = async () => {
     const assetIds = assetMultiSelectManager.assets.map((a) => a.id);
     if (assetIds.length === 0 || assetIds.length > MAX_SPACE_ASSETS_PER_REQUEST) {
-      return;
+      return false;
     }
     try {
       await addAssets({ id: space.id, sharedSpaceAssetAddDto: { assetIds } });
+      skipNextLocalSpaceAddEventForSpaceId = space.id;
       eventManager.emit('SpaceAddAssets', { assetIds, spaceId: space.id });
       toastManager.success($t('added_to_space_count', { values: { count: assetIds.length } }));
+      await applySpaceAddSuccess();
+      return true;
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_space'));
+      return false;
+    } finally {
+      skipNextLocalSpaceAddEventForSpaceId = null;
     }
   };
+
+  const handleAddAssets = async () => {
+    await addSelectedAssetsToCurrentSpace();
+  };
+
+  registerSelectionContext({
+    getAssets: () => assetMultiSelectManager.assets,
+    clearSelection: () => assetMultiSelectManager.clear(),
+    canAddToAlbum: () => false,
+    getOnFavorite: () =>
+      viewMode === 'view' && timelineManager
+        ? (ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))
+        : undefined,
+    getOnArchive: () =>
+      viewMode === 'view' && timelineManager
+        ? (ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))
+        : undefined,
+    getAddSelectedToCurrentSpace: () =>
+      viewMode === 'select-assets' && isEditor ? addSelectedAssetsToCurrentSpace : undefined,
+  });
 
   const handleBulkAddAssets = async () => {
     const confirmed = await modalManager.showDialog({
@@ -504,10 +546,14 @@
     }
   };
 
-  const onSpaceAddAssets = async () => {
-    await Promise.all([refreshSpace(), loadActivities()]);
-    assetMultiSelectManager.clear();
-    viewMode = 'view';
+  const onSpaceAddAssets = async ({ spaceId }: { assetIds: string[]; spaceId: string }) => {
+    if (spaceId !== space.id) {
+      return;
+    }
+    if (skipNextLocalSpaceAddEventForSpaceId === spaceId) {
+      return;
+    }
+    await applySpaceAddSuccess();
   };
 
   const onSpaceRemoveAssets = async ({ assetIds }: { assetIds: string[]; spaceId: string }) => {

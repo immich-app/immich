@@ -15,6 +15,7 @@
 
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { registerSelectionContext } from '$lib/managers/command-context-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetVisibility } from '@immich/sdk';
@@ -42,6 +43,17 @@
     timelineManager.removeAssets(assetIds);
     assetMultiSelectManager.clear();
   };
+
+  registerSelectionContext({
+    getAssets: () => assetMultiSelectManager.assets,
+    clearSelection: () => assetMultiSelectManager.clear(),
+    canAddToAlbum: () => true,
+    getOnFavorite: () =>
+      timelineManager
+        ? (ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))
+        : undefined,
+    getOnDelete: () => (timelineManager ? (assetIds) => timelineManager.removeAssets(assetIds) : undefined),
+  });
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} title={data.meta.title} scrollbar={false}>
