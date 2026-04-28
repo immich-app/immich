@@ -427,7 +427,7 @@ class PersonAccess {
   }
 
   /**
-   * Wintlink fork: read-level access to a person. The user can read a person if
+   * Shared-albums fork: read-level access to a person. The user can read a person if
    * they own it OR if at least one of the person's faces is on an asset that
    * belongs to an album shared with them (or that they own).
    */

@@ -35,7 +35,7 @@ LEFT JOIN
 WHERE
 	rae.deleted_at IS NULL
 	AND rae.visibility = 0 -- timeline visibility
-	-- Wintlink fork: include assets from albums shared with the user
+	-- Shared-albums fork: include assets from albums shared with the user
 	-- (owned by any user in :user_ids, or shared with any of them).
 	AND (
 		rae.owner_id IN :user_ids
@@ -125,7 +125,7 @@ FROM
 	WHERE
 		rae.deleted_at IS NULL
 		AND rae.visibility = 0 -- timeline visibility
-		-- Wintlink fork: include assets from albums shared with the user.
+		-- Shared-albums fork: include assets from albums shared with the user.
 		AND (
 			rae.owner_id IN :user_ids
 			OR EXISTS (

@@ -391,7 +391,7 @@ export class SearchRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   getAssetsByCity(userIds: string[], albumIds: string[] = []) {
-    // Wintlink fork: accept albumIds to include assets from shared albums in the
+    // Shared-albums fork: accept albumIds to include assets from shared albums in the
     // Places grid on the Explore page.
     const applyAccessFilter = <QB extends { where: any }>(qb: QB): QB =>
       qb.where((eb: any) => {
@@ -540,7 +540,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where((eb) => {
-        // Wintlink fork: include assets from albums the user has access to.
+        // Shared-albums fork: include assets from albums the user has access to.
         const expressions: Expression<SqlBool>[] = [];
         if (userIds.length > 0) {
           expressions.push(eb('asset.ownerId', '=', anyUuid(userIds)));

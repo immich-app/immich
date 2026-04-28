@@ -150,7 +150,7 @@ export class PersonRepository {
 
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
-    // Wintlink fork: a person is visible to `userId` either because they own the
+    // Shared-albums fork: a person is visible to `userId` either because they own the
     // person record themselves, or because one of the person's faces is on an
     // asset that lives in an album shared with (or owned by) the user.
     const items = await this.db
@@ -384,7 +384,7 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getNumberOfPeople(userId: string) {
     const zero = sql.lit(0);
-    // Wintlink fork: count persons the user owns PLUS persons surfaced through
+    // Shared-albums fork: count persons the user owns PLUS persons surfaced through
     // albums shared with them. Aligned with getAllForUser's visibility rules.
     return this.db
       .selectFrom('person')

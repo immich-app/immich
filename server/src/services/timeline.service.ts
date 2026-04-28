@@ -42,7 +42,7 @@ export class TimelineService extends BaseService {
       }
     }
 
-    // Wintlink fork: fold in assets from albums the caller has access to.
+    // Shared-albums fork: fold in assets from albums the caller has access to.
     // Only applied when the timeline is being requested for the caller themselves
     // (userId matches auth.user.id) — otherwise a user asking for somebody else's
     // timeline should not see their own shared-album assets smuggled in.

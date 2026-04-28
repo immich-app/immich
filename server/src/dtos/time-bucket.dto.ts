@@ -42,7 +42,7 @@ export class TimeBucketDto {
   @ValidateBoolean({
     optional: true,
     description:
-      'Include assets from albums shared with the authenticated user (Wintlink fork). When true, photos belonging to any album the user has access to appear in the timeline alongside their own.',
+      'Include assets from albums shared with the authenticated user. When true, photos belonging to any album the user has access to appear in the timeline alongside their own.',
   })
   withSharedAlbums?: boolean;
 

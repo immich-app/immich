@@ -79,7 +79,7 @@ interface AssetBuilderOptions {
   tagId?: string;
   personId?: string;
   userIds?: string[];
-  // Wintlink fork: when set, assets belonging to any of these albums are
+  // Shared-albums fork: when set, assets belonging to any of these albums are
   // included in addition to the `userIds` filter (OR, not AND).
   includeAlbumIds?: string[];
   withStacked?: boolean;

@@ -85,7 +85,7 @@
     visibility: $mapSettings.includeArchived ? undefined : AssetVisibility.Timeline,
     isFavorite: $mapSettings.onlyFavorites || undefined,
     withPartners: $mapSettings.withPartners || undefined,
-    // Wintlink fork: align cluster drill-in with the markers the map already shows.
+    // Shared-albums fork: align cluster drill-in with the markers the map already shows.
     withSharedAlbums: $mapSettings.withSharedAlbums || undefined,
     assetFilter: selectedClusterIds,
   });

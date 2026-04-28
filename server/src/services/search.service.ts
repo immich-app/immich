@@ -196,7 +196,7 @@ export class SearchService extends BaseService {
     }
   }
 
-  // Wintlink fork: albums the user can read (owned + shared with them).
+  // Shared-albums fork: albums the user can read (owned + shared with them).
   private async getAccessibleAlbumIds(auth: AuthDto): Promise<string[]> {
     const albums = await this.albumRepository.getShared(auth.user.id);
     return [...new Set(albums.map((album) => album.id))];

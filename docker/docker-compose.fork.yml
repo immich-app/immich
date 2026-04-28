@@ -1,14 +1,15 @@
 #
-# Fork deployment compose for Wintlink/immich
+# Deployment compose for the immich-shared-albums fork.
 #
 # This file builds custom Immich server + ML images from the source in this
 # repository, instead of pulling ghcr.io/immich-app/* release images.
 #
-# Usage on your server:
+# Usage on your server (replace the URL with your own fork if you re-forked):
 #   git clone https://github.com/Wintlink/immich.git
 #   cd immich
+#   git checkout feature/shared-albums-full-integration
 #   cp docker/example.env .env        # then edit .env with your paths
-#   docker compose -f docker/docker-compose.fork.yml up -d --build
+#   docker compose --env-file .env -f docker/docker-compose.fork.yml up -d --build
 #
 # Volume paths mirror the stock docker-compose.yml (UPLOAD_LOCATION + DB_DATA_LOCATION)
 # so you can migrate from a vanilla Immich install without moving any data.
@@ -19,7 +20,7 @@ name: immich
 services:
   immich-server:
     container_name: immich_server
-    image: immich-server-wintlink:latest
+    image: immich-server-shared-albums:latest
     build:
       context: ../
       dockerfile: server/Dockerfile
@@ -27,8 +28,8 @@ services:
       - ${UPLOAD_LOCATION}:/data
       - /etc/localtime:/etc/localtime:ro
       # External library: point this at your photo tree (read-only).
-      # Then declare /mnt/media/famille as an external library in the Immich UI.
-      - ${EXTERNAL_LIBRARY_PATH}:/mnt/media/famille:ro
+      # Then declare /mnt/media/external as an external library in the Immich UI.
+      - ${EXTERNAL_LIBRARY_PATH}:/mnt/media/external:ro
     env_file:
       - ../.env
     ports:
@@ -42,7 +43,7 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    image: immich-machine-learning-wintlink:latest
+    image: immich-machine-learning-shared-albums:latest
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
@@ -87,7 +88,7 @@ services:
     environment:
       API_URL: http://immich-server:2283/api
       API_KEY: ${ALBUM_CREATOR_API_KEY}
-      ROOT_PATH: /mnt/media/famille
+      ROOT_PATH: /mnt/media/external
       ALBUM_LEVELS: "1,3"
       ALBUM_LEVEL_SEPARATOR: " - "
       CRON_EXPRESSION: "0 * * * *"

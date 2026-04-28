@@ -23,7 +23,7 @@ class MapService with ErrorLoggerMixin {
     bool? isFavorite,
     bool? withArchived,
     bool? withPartners,
-    // Wintlink fork: when true (default on), markers from assets in albums
+    // Shared-albums fork: when true (default on), markers from assets in albums
     // shared with the user are included alongside their own.
     bool? withSharedAlbums = true,
     DateTime? fileCreatedAfter,

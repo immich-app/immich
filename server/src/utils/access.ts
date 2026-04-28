@@ -294,7 +294,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.PersonRead: {
-      // Wintlink fork: read covers owned persons AND those visible via shared albums.
+      // Shared-albums fork: read covers owned persons AND those visible via shared albums.
       return await access.person.checkReadAccess(auth.user.id, ids);
     }
 

@@ -40,6 +40,57 @@
 </p>
 
 
+> [!IMPORTANT]
+> ## 🔀 You are looking at the Shared-Albums fork of Immich
+>
+> This is a community fork of Immich based on the official `v2.7.5` release. It
+> adds **first-class integration of shared albums into every screen** for users
+> who only have access via sharing — instead of confining shared content to a
+> separate "Shared albums" page.
+>
+> | Screen | Stock Immich behaviour | This fork |
+> |---|---|---|
+> | Home / Main timeline | Shared assets are hidden | ✅ Mixed in alongside the user's own |
+> | Map | Markers only for owned + partner assets | ✅ Markers from shared albums included; cluster drill-in works |
+> | Explore → People | Faces are scoped per-account; names don't propagate | ✅ Names assigned by the album owner are visible (read-only) to recipients |
+> | Explore → Places & search suggestions | Owner-only EXIF locations | ✅ Cities / countries / states from shared-album EXIF included |
+>
+> **No DB schema changes** vs. upstream `v2.7.5`. Switching to and rolling back
+> from this fork is reversible and preserves all data (users, faces, albums,
+> EXIF, library).
+>
+> **Read-only by design**: shared-album recipients can browse and search shared
+> content but cannot rename people, edit metadata, or delete assets they don't
+> own. All write paths still require ownership.
+>
+> ### Quick start
+>
+> ```bash
+> git clone https://github.com/Wintlink/immich.git
+> cd immich
+> git checkout feature/shared-albums-full-integration
+> cp docker/example.env .env       # then edit .env (UPLOAD_LOCATION, DB_*, EXTERNAL_LIBRARY_PATH)
+> docker compose --env-file .env -f docker/docker-compose.fork.yml up -d --build
+> ```
+>
+> Open `http://<host>:2283` once the build finishes (~10-20 minutes the first time).
+>
+> Full instructions, migration from a stock install, mobile build, and rollback
+> procedure: see **[DEPLOY.md](./DEPLOY.md)**.
+>
+> ### Useful links
+> - Reference fork: https://github.com/Wintlink/immich
+> - Active branch: `feature/shared-albums-full-integration`
+> - Upstream Immich repo: https://github.com/immich-app/immich
+> - Upstream documentation: https://docs.immich.app
+>
+> Bug reports specific to the fork → [Wintlink/immich/issues](https://github.com/Wintlink/immich/issues).
+> Bug reports that also reproduce upstream → [immich-app/immich/issues](https://github.com/immich-app/immich/issues).
+>
+> ---
+>
+> **Below is the original upstream README.**
+
 > [!WARNING]
 > ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
 > 
