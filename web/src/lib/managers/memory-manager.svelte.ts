@@ -1,24 +1,11 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { asLocalTimeISO } from '$lib/utils/date-time';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
-import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
+import { findMemoryAsset, removeAssetsFromMemoryList, type MemoryAssetSource } from '$lib/utils/memory-viewer-source';
+import { deleteMemory, removeMemoryAssets, searchMemories, updateMemory, type MemoryResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
 
-type MemoryIndex = {
-  memoryIndex: number;
-  assetIndex: number;
-};
-
-export type MemoryAsset = MemoryIndex & {
-  memory: MemoryResponseDto;
-  asset: TimelineAsset;
-  previousMemory?: MemoryResponseDto;
-  previous?: MemoryAsset;
-  next?: MemoryAsset;
-  nextMemory?: MemoryResponseDto;
-};
+export type MemoryAsset = MemoryAssetSource;
 
 class MemoryManager {
   #loading: Promise<void> | undefined;
@@ -40,45 +27,13 @@ class MemoryManager {
   }
 
   memories = $state<MemoryResponseDto[]>([]);
-  private memoryAssets = $derived.by(() => {
-    const memoryAssets: MemoryAsset[] = [];
-    let previous: MemoryAsset | undefined;
-    for (const [memoryIndex, memory] of this.memories.entries()) {
-      for (const [assetIndex, asset] of memory.assets.entries()) {
-        const current = {
-          memory,
-          memoryIndex,
-          previousMemory: this.memories[memoryIndex - 1],
-          nextMemory: this.memories[memoryIndex + 1],
-          asset: toTimelineAsset(asset),
-          assetIndex,
-          previous,
-        };
-
-        memoryAssets.push(current);
-
-        if (previous) {
-          previous.next = current;
-        }
-
-        previous = current;
-      }
-    }
-
-    return memoryAssets;
-  });
 
   getMemoryAsset(assetId: string | undefined) {
-    return this.memoryAssets.find((memoryAsset) => memoryAsset.asset.id === assetId) ?? this.memoryAssets[0];
+    return findMemoryAsset(this.memories, assetId);
   }
 
   hideAssetsFromMemory(ids: string[]) {
-    const idSet = new Set<string>(ids);
-    for (const memory of this.memories) {
-      memory.assets = memory.assets.filter((asset) => !idSet.has(asset.id));
-    }
-    // if we removed all assets from a memory, then lets remove those memories (we don't show memories with 0 assets)
-    this.memories = this.memories.filter((memory) => memory.assets.length > 0);
+    this.memories = removeAssetsFromMemoryList(this.memories, ids);
   }
 
   async deleteMemory(id: string) {

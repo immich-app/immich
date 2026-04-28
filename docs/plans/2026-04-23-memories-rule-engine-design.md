@@ -55,7 +55,6 @@ This keeps the initial patch moderate while minimizing future fork maintenance.
 
 - user-configurable rules
 - per-rule user toggles
-- per-rule admin toggles
 - fully declarative/config-defined rules
 - replacing or re-ranking `on_this_day`
 - any new UI surface that separates rule memories visually from existing memories

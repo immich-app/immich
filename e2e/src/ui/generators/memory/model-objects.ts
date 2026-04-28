@@ -10,6 +10,10 @@ export type MemoryConfig = {
   ownerId: string;
   year: number;
   memoryAt: string;
+  createdAt?: string;
+  showAt?: string;
+  title?: string;
+  subtitle?: string;
   isSaved?: boolean;
 };
 
@@ -27,8 +31,11 @@ export function generateMemory(config: MemoryConfig, assets: MockTimelineAsset[]
     assets: assets.map((asset) => toAssetResponseDto(asset)),
     data: { year: config.year } as MemoryResponseDto['data'],
     memoryAt: config.memoryAt,
-    createdAt: now,
+    createdAt: config.createdAt ?? now,
     updatedAt: now,
+    showAt: config.showAt,
+    title: config.title,
+    subtitle: config.subtitle,
     isSaved: config.isSaved ?? false,
     ownerId: config.ownerId,
     type: MemoryType.OnThisDay,

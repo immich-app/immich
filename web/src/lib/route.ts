@@ -90,7 +90,8 @@ export const Route = {
     '/map' + (point ? `#${point.zoom}/${point.lat}/${point.lng}` : ''),
 
   // memories
-  memories: (params?: { id?: string }) => '/memory' + asQueryString(params),
+  memories: () => '/memories',
+  memoryViewer: (params?: { id?: string; source?: 'history' }) => '/memory' + asQueryString(params),
 
   // partners
   viewPartner: ({ id }: { id: string }) => `/partners/${id}`,

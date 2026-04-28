@@ -1,3 +1,4 @@
+import { Route } from '$lib/route';
 import type { ServerFeaturesDto } from '@immich/sdk';
 import {
   mdiAccountMultipleOutline,
@@ -69,6 +70,7 @@ const SYSTEM_SETTINGS_SOURCE: ReadonlyArray<[key: string, baseKey: string, icon:
   ['machine-learning', 'machine_learning_settings', mdiRobotOutline],
   ['classification', 'classification_settings', mdiMagnifyScan],
   ['location', 'map_gps_settings', mdiMapMarkerOutline],
+  ['memories', 'memories_settings', mdiHistory],
   ['metadata', 'metadata_settings', mdiDatabaseOutline],
   ['nightly-tasks', 'nightly_tasks_settings', mdiClockOutline],
   ['notifications', 'notification_settings', mdiBellOutline],
@@ -238,7 +240,7 @@ const USER_PAGES: readonly NavigationItem[] = [
     labelKey: 'memories',
     descriptionKey: 'cmdk_nav_memories_description',
     icon: mdiHistory,
-    route: '/memory',
+    route: Route.memories(),
     adminOnly: false,
   },
 ];

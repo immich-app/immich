@@ -21,6 +21,7 @@
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
+    mdiHistory,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
@@ -83,6 +84,10 @@
   <NavbarGroup title={$t('library')} size="tiny" />
 
   <NavbarItem title={$t('favorites')} href={Route.favorites()} icon={mdiHeartOutline} activeIcon={mdiHeart} />
+
+  {#if authManager.preferences.memories.enabled}
+    <NavbarItem title={$t('memories')} href={Route.memories()} icon={mdiHistory} />
+  {/if}
 
   <NavbarItem
     title={$t('albums')}

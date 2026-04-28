@@ -22,6 +22,7 @@ class SystemConfigDto {
     required this.logging,
     required this.machineLearning,
     required this.map,
+    required this.memories,
     required this.metadata,
     required this.newVersionCheck,
     required this.nightlyTasks,
@@ -54,6 +55,8 @@ class SystemConfigDto {
   SystemConfigMachineLearningDto machineLearning;
 
   SystemConfigMapDto map;
+
+  SystemConfigMemoriesDto memories;
 
   SystemConfigMetadataDto metadata;
 
@@ -92,6 +95,7 @@ class SystemConfigDto {
     other.logging == logging &&
     other.machineLearning == machineLearning &&
     other.map == map &&
+    other.memories == memories &&
     other.metadata == metadata &&
     other.newVersionCheck == newVersionCheck &&
     other.nightlyTasks == nightlyTasks &&
@@ -118,6 +122,7 @@ class SystemConfigDto {
     (logging.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
+    (memories.hashCode) +
     (metadata.hashCode) +
     (newVersionCheck.hashCode) +
     (nightlyTasks.hashCode) +
@@ -133,7 +138,7 @@ class SystemConfigDto {
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[backup=$backup, classification=$classification, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[backup=$backup, classification=$classification, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, memories=$memories, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -146,6 +151,7 @@ class SystemConfigDto {
       json[r'logging'] = this.logging;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
+      json[r'memories'] = this.memories;
       json[r'metadata'] = this.metadata;
       json[r'newVersionCheck'] = this.newVersionCheck;
       json[r'nightlyTasks'] = this.nightlyTasks;
@@ -180,6 +186,7 @@ class SystemConfigDto {
         logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
+        memories: SystemConfigMemoriesDto.fromJson(json[r'memories'])!,
         metadata: SystemConfigMetadataDto.fromJson(json[r'metadata'])!,
         newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
         nightlyTasks: SystemConfigNightlyTasksDto.fromJson(json[r'nightlyTasks'])!,
@@ -249,6 +256,7 @@ class SystemConfigDto {
     'logging',
     'machineLearning',
     'map',
+    'memories',
     'metadata',
     'newVersionCheck',
     'nightlyTasks',

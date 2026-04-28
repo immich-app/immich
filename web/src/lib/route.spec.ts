@@ -24,6 +24,26 @@ describe('Route', () => {
     });
   });
 
+  describe(Route.memories.name, () => {
+    it('should link to the memories index', () => {
+      expect(Route.memories()).toBe('/memories');
+    });
+  });
+
+  describe('memoryViewer', () => {
+    it('should link to the memory viewer', () => {
+      expect(Route.memoryViewer()).toBe('/memory');
+    });
+
+    it('should support an asset id', () => {
+      expect(Route.memoryViewer({ id: 'asset-id' })).toBe('/memory?id=asset-id');
+    });
+
+    it('should support the history source', () => {
+      expect(Route.memoryViewer({ id: 'asset-id', source: 'history' })).toBe('/memory?id=asset-id&source=history');
+    });
+  });
+
   describe(Route.tags.name, () => {
     it('should work', () => {
       expect(Route.tags()).toBe('/tags');

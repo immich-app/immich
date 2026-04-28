@@ -844,6 +844,8 @@ class ApiClient {
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':
           return SystemConfigMapDto.fromJson(value);
+        case 'SystemConfigMemoriesDto':
+          return SystemConfigMemoriesDto.fromJson(value);
         case 'SystemConfigMetadataDto':
           return SystemConfigMetadataDto.fromJson(value);
         case 'SystemConfigNewVersionCheckDto':

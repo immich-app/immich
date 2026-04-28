@@ -9,7 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 describe('NAVIGATION_ITEMS schema', () => {
   it('has exactly 35 items', () => {
-    expect(NAVIGATION_ITEMS).toHaveLength(35);
+    expect(NAVIGATION_ITEMS).toHaveLength(36);
   });
 
   it('every item has non-empty required fields', () => {
@@ -44,7 +44,7 @@ describe('NAVIGATION_ITEMS schema', () => {
 
   it('system-settings routes match the /admin/system-settings?isOpen=<key> pattern', () => {
     const items = NAVIGATION_ITEMS.filter((i) => i.category === 'systemSettings');
-    expect(items).toHaveLength(19);
+    expect(items).toHaveLength(20);
     for (const item of items) {
       expect(item.route).toMatch(/^\/admin\/system-settings\?isOpen=[a-z-]+$/);
       expect(item.adminOnly).toBe(true);
@@ -101,6 +101,21 @@ describe('NAVIGATION_ITEMS schema', () => {
     );
     for (const key of ourKeys) {
       expect(sourceKeys.has(key)).toBe(true);
+    }
+  });
+
+  it('drift guard: every accordion source key has a systemSettings navigation item', () => {
+    const sourcePath = resolve(here, '..', '..', 'routes', 'admin', 'system-settings', '+page.svelte');
+    const source = readFileSync(sourcePath, 'utf8');
+    const sourceKeys = new Set([...source.matchAll(/key:\s*'([a-z-]+)'/g)].map((m) => m[1]));
+    const ourKeys = new Set(
+      NAVIGATION_ITEMS.filter((i) => i.category === 'systemSettings').map((i) =>
+        i.route.replace('/admin/system-settings?isOpen=', ''),
+      ),
+    );
+
+    for (const key of sourceKeys) {
+      expect(ourKeys.has(key)).toBe(true);
     }
   });
 });

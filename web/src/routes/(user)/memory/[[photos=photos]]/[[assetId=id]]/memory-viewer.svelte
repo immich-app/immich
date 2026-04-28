@@ -22,14 +22,29 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { memoryManager, type MemoryAsset } from '$lib/managers/memory-manager.svelte';
+  import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import {
+    findMemoryAsset,
+    getMemoryViewerExitRoute,
+    removeAssetsFromMemoryList,
+    type MemoryAssetSource,
+  } from '$lib/utils/memory-viewer-source';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
+  import {
+    AssetMediaSize,
+    AssetTypeEnum,
+    deleteMemory,
+    getAssetInfo,
+    removeMemoryAssets,
+    searchMemories,
+    updateMemory,
+    type MemoryResponseDto,
+  } from '@immich/sdk';
   import { ActionButton, IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -60,7 +75,11 @@
   let galleryFirstLoad = $state(true);
   let playerInitialized = $state(false);
   let paused = $state(false);
-  let current = $state<MemoryAsset | undefined>(undefined);
+  let current = $state<MemoryAssetSource | undefined>(undefined);
+  let historyMemories = $state<MemoryResponseDto[]>([]);
+  let historyMemoriesLoading = $state<Promise<void> | undefined>(undefined);
+  let isHistorySource = $derived(page.url.searchParams.get('source') === 'history');
+  let activeMemories = $derived(isHistorySource ? historyMemories : memoryManager.memories);
   const currentAssetId = $derived(current?.asset.id);
   const currentMemoryAssetFull = $derived.by(async () =>
     currentAssetId ? await getAssetInfo({ ...authManager.params, id: currentAssetId }) : undefined,
@@ -80,7 +99,9 @@
   const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
-  const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
+  const memoryViewerSource = $derived(isHistorySource ? 'history' : undefined);
+  const exitRoute = $derived(getMemoryViewerExitRoute(memoryViewerSource));
+  const asHref = (asset: { id: string }) => Route.memoryViewer({ id: asset.id, source: memoryViewerSource });
 
   const handleNavigate = async (asset?: { id: string }) => {
     if (assetViewerManager.isViewing) {
@@ -113,7 +134,7 @@
   const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
-  const handleEscape = async () => goto(Route.photos());
+  const handleEscape = async () => goto(exitRoute);
   const handleSelectAll = () =>
     assetMultiSelectManager.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
 
@@ -184,7 +205,11 @@
     if (!current) {
       return;
     }
-    memoryManager.hideAssetsFromMemory(ids);
+    if (isHistorySource) {
+      historyMemories = removeAssetsFromMemoryList(historyMemories, ids);
+    } else {
+      memoryManager.hideAssetsFromMemory(ids);
+    }
     init(page);
   };
 
@@ -193,7 +218,19 @@
       return;
     }
 
-    await memoryManager.deleteAssetFromMemory(current.asset.id);
+    const memoryId = current.memory.id;
+    const assetId = current.asset.id;
+    if (isHistorySource) {
+      if (current.memory.assets.length === 1) {
+        await deleteMemory({ id: memoryId });
+        historyMemories = historyMemories.filter((memory) => memory.id !== memoryId);
+      } else {
+        await removeMemoryAssets({ id: memoryId, bulkIdsDto: { ids: [assetId] } });
+        historyMemories = removeAssetsFromMemoryList(historyMemories, [assetId]);
+      }
+    } else {
+      await memoryManager.deleteAssetFromMemory(assetId);
+    }
     init(page);
   };
 
@@ -202,7 +239,13 @@
       return;
     }
 
-    await memoryManager.deleteMemory(current.memory.id);
+    const memoryId = current.memory.id;
+    if (isHistorySource) {
+      await deleteMemory({ id: memoryId });
+      historyMemories = historyMemories.filter((memory) => memory.id !== memoryId);
+    } else {
+      await memoryManager.deleteMemory(memoryId);
+    }
     toastManager.primary($t('removed_memory'));
     init(page);
   };
@@ -212,8 +255,21 @@
       return;
     }
 
+    const memoryId = current.memory.id;
     const newSavedState = !current.memory.isSaved;
-    await memoryManager.updateMemorySaved(current.memory.id, newSavedState);
+    if (isHistorySource) {
+      await updateMemory({
+        id: memoryId,
+        memoryUpdateDto: {
+          isSaved: newSavedState,
+        },
+      });
+      historyMemories = historyMemories.map((memory) =>
+        memory.id === memoryId ? { ...memory, isSaved: newSavedState } : memory,
+      );
+    } else {
+      await memoryManager.updateMemorySaved(memoryId, newSavedState);
+    }
     toastManager.primary(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
     init(page);
   };
@@ -251,12 +307,12 @@
 
   const loadFromParams = (page: Page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
-    return memoryManager.getMemoryAsset(assetId);
+    return isHistorySource ? findMemoryAsset(historyMemories, assetId) : memoryManager.getMemoryAsset(assetId);
   };
 
   const init = (target: Page | NavigationTarget | null) => {
-    if (memoryManager.memories.length === 0) {
-      return handlePromiseError(goto(Route.photos()));
+    if (activeMemories.length === 0) {
+      return handlePromiseError(goto(exitRoute));
     }
 
     current = loadFromParams(target);
@@ -265,6 +321,16 @@
       setProgressDuration(current.asset);
     }
     playerInitialized = false;
+  };
+
+  const loadHistoryMemories = () => {
+    if (!historyMemoriesLoading) {
+      historyMemoriesLoading = searchMemories({}).then((memories) => {
+        historyMemories = memories.filter((memory) => memory.assets.length > 0);
+      });
+    }
+
+    return historyMemoriesLoading;
   };
 
   const resetAndPlay = () => {
@@ -288,7 +354,7 @@
   };
 
   afterNavigate(({ from, to }) => {
-    memoryManager.ready().then(
+    (isHistorySource ? loadHistoryMemories() : memoryManager.ready()).then(
       () => {
         let target;
         if (to?.params?.assetId) {
@@ -379,7 +445,7 @@
   bind:clientWidth={viewport.width}
 >
   {#if current}
-    <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
+    <ControlAppBar onClose={() => goto(exitRoute)} forceDark multiRow>
       {#snippet leading()}
         {#if current}
           <p class="text-lg">

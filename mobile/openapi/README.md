@@ -695,6 +695,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigLoggingDto](doc//SystemConfigLoggingDto.md)
  - [SystemConfigMachineLearningDto](doc//SystemConfigMachineLearningDto.md)
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
+ - [SystemConfigMemoriesDto](doc//SystemConfigMemoriesDto.md)
  - [SystemConfigMetadataDto](doc//SystemConfigMetadataDto.md)
  - [SystemConfigNewVersionCheckDto](doc//SystemConfigNewVersionCheckDto.md)
  - [SystemConfigNightlyTasksDto](doc//SystemConfigNightlyTasksDto.md)

@@ -69,7 +69,7 @@ jobs:
         uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
         with:
           github-token: ${{ github.token }}
-          version: auto
+          version: 1.30.0
           working-directory: ./mobile
 
       - name: Generate translation file

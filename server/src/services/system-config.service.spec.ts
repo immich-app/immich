@@ -9,6 +9,7 @@ import {
   LogLevel,
   OAuthTokenEndpointAuthMethod,
   QueueName,
+  SystemMetadataKey,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -23,6 +24,7 @@ import { newTestService, ServiceMocks } from 'test/utils';
 const partialConfig = {
   ffmpeg: { crf: 30 },
   oauth: { autoLaunch: true },
+  memories: { retentionDays: 0 },
   trash: { days: 10 },
   user: { deleteDelay: 15 },
 } satisfies DeepPartial<SystemConfig>;
@@ -134,6 +136,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
     missingThumbnails: true,
     generateMemories: true,
     syncQuotaUsage: true,
+  },
+  memories: {
+    retentionDays: 0,
+    birthday: true,
+    recentTrips: true,
   },
   reverseGeocoding: {
     enabled: true,
@@ -273,6 +280,7 @@ describe(SystemConfigService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { crf: 30 },
         oauth: { autoLaunch: true },
+        memories: { retentionDays: 0 },
         trash: { days: 10 },
         user: { deleteDelay: 15 },
       });
@@ -368,6 +376,34 @@ describe(SystemConfigService.name, () => {
       });
     });
 
+    it('should default generated memory settings', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        memories: { retentionDays: 365, birthday: true, recentTrips: true },
+      });
+    });
+
+    it('should accept zero generated memory retention from a config file', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ memories: { retentionDays: 0 } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        memories: { retentionDays: 0 },
+      });
+    });
+
+    it('should accept disabled generated memory rules from a config file', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(
+        JSON.stringify({ memories: { birthday: false, recentTrips: false } }),
+      );
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        memories: { birthday: false, recentTrips: false },
+      });
+    });
+
     it('should accept valid cron expressions', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(
@@ -438,6 +474,8 @@ describe(SystemConfigService.name, () => {
           crf: 30
         oauth:
           autoLaunch: true
+        memories:
+          retentionDays: 0
         trash:
           days: 10
         user:
@@ -533,6 +571,16 @@ describe(SystemConfigService.name, () => {
         throws: '[ffmpeg.transcode] Invalid option: expected one of',
       },
       {
+        should: 'validate generated memory retention',
+        config: { memories: { retentionDays: -1 } },
+        throws: '[memories.retentionDays] Too small: expected number to be >=0',
+      },
+      {
+        should: 'validate generated memory rule flags',
+        config: { memories: { birthday: 'invalid' } },
+        throws: '[memories.birthday] Invalid input: expected boolean, received string',
+      },
+      {
         should: 'validate required oauth fields',
         config: { oauth: { enabled: true } },
         check: (c: SystemConfig) => expect(c.oauth.enabled).toBe(true),
@@ -567,6 +615,22 @@ describe(SystemConfigService.name, () => {
         'ConfigUpdate',
         expect.objectContaining({ oldConfig: expect.any(Object), newConfig: updatedConfig }),
       );
+    });
+
+    it('should persist disabled generated memory rules', async () => {
+      const config = structuredClone(defaults);
+      config.memories.birthday = false;
+      config.memories.recentTrips = false;
+      mocks.systemMetadata.get
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({ memories: { birthday: false, recentTrips: false } });
+
+      await expect(sut.updateSystemConfig(config)).resolves.toMatchObject({
+        memories: { birthday: false, recentTrips: false },
+      });
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemConfig, {
+        memories: { birthday: false, recentTrips: false },
+      });
     });
 
     it('should throw an error if a config file is in use', async () => {

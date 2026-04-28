@@ -2040,7 +2040,7 @@ describe('navigation memo cache', () => {
     const cache = (
       m as unknown as { getNavigationSearchStrings: () => Map<string, string> }
     ).getNavigationSearchStrings();
-    expect(cache.size).toBe(35);
+    expect(cache.size).toBe(NAVIGATION_ITEMS.length);
     for (const [id, str] of cache) {
       expect(id.startsWith('nav:')).toBe(true);
       expect(str.length).toBeGreaterThan(0);
@@ -2060,7 +2060,7 @@ describe('navigation memo cache', () => {
     const cache = (
       m as unknown as { getNavigationSearchStrings: () => Map<string, string> }
     ).getNavigationSearchStrings();
-    expect(cache.size).toBe(35);
+    expect(cache.size).toBe(NAVIGATION_ITEMS.length);
   });
 
   it('clears the cached table when the locale subscription fires with a new value', () => {
@@ -2076,7 +2076,7 @@ describe('navigation memo cache', () => {
       m as unknown as { getNavigationSearchStrings: () => Map<string, string> }
     ).getNavigationSearchStrings();
     expect(second).not.toBe(first);
-    expect(second.size).toBe(35);
+    expect(second.size).toBe(NAVIGATION_ITEMS.length);
   });
 });
 
@@ -3327,7 +3327,7 @@ describe('Batch 4 post-review: route consistency, SWR cursor, debounce-window cl
   it('activateRecent navigates to the LIVE NavigationItem.route even when the saved entry.route is stale', () => {
     const m = new GlobalSearchManager();
     m.open();
-    // Saved entry has a fake old path; the live catalog has '/memory' for memories.
+    // Saved entry has a fake old path; the live catalog has '/memories' for memories.
     const staleEntry = {
       kind: 'navigate' as const,
       id: 'nav:userPages:memories',
@@ -3339,8 +3339,8 @@ describe('Batch 4 post-review: route consistency, SWR cursor, debounce-window cl
     };
     addEntry(staleEntry);
     m.activateRecent(staleEntry);
-    // NAVIGATION_ITEMS defines memories.route as '/memory'. The live value must win.
-    expect(goto).toHaveBeenCalledWith('/memory');
+    // NAVIGATION_ITEMS defines memories.route as '/memories'. The live value must win.
+    expect(goto).toHaveBeenCalledWith('/memories');
     expect(goto).not.toHaveBeenCalledWith('/old-memories-path');
   });
 

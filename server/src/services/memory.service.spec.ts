@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { defaults } from 'src/config';
 import { MemoryType, SystemMetadataKey } from 'src/enum';
 import { MemoryService } from 'src/services/memory.service';
 import { OnThisDayData, RuleMemoryData } from 'src/types';
@@ -23,10 +24,22 @@ describe(MemoryService.name, () => {
   });
 
   describe('onMemoryCleanup', () => {
-    it('should clean up memories', async () => {
+    it('should clean up memories using configured retention days', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ memories: { retentionDays: 0 } });
       mocks.memory.cleanup.mockResolvedValue([]);
+
       await sut.onMemoriesCleanup();
-      expect(mocks.memory.cleanup).toHaveBeenCalled();
+
+      expect(mocks.memory.cleanup).toHaveBeenCalledWith(0);
+    });
+
+    it('should clean up memories using default retention days', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+      mocks.memory.cleanup.mockResolvedValue([]);
+
+      await sut.onMemoriesCleanup();
+
+      expect(mocks.memory.cleanup).toHaveBeenCalledWith(defaults.memories.retentionDays);
     });
   });
 
@@ -134,6 +147,87 @@ describe(MemoryService.name, () => {
         SystemMetadataKey.MemoriesState,
         expect.objectContaining({ lastRuleDate: '2026-04-23T00:00:00.000Z' }),
       );
+
+      vi.useRealTimers();
+    });
+
+    it('should skip birthday rule memories when birthday memories are disabled', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-23T12:00:00Z'));
+
+      const user = factory.userAdmin();
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.systemMetadata.get.mockImplementation((key) =>
+        Promise.resolve(
+          key === SystemMetadataKey.SystemConfig
+            ? { memories: { birthday: false, recentTrips: true } }
+            : {
+                lastOnThisDayDate: '2026-04-25T00:00:00.000Z',
+                lastRuleDate: '2026-04-22T00:00:00.000Z',
+              },
+        ),
+      );
+      mocks.asset.getByDayOfYear.mockResolvedValue([]);
+      mocks.asset.getMemoryLocationClusters.mockResolvedValue([]);
+
+      await sut.onMemoriesCreate();
+
+      expect(mocks.person.getBirthdaysForDay).not.toHaveBeenCalled();
+      expect(mocks.asset.getMemoryLocationClusters).toHaveBeenCalled();
+
+      vi.useRealTimers();
+    });
+
+    it('should skip recent trip rule memories when recent trip memories are disabled', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-23T12:00:00Z'));
+
+      const user = factory.userAdmin();
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.systemMetadata.get.mockImplementation((key) =>
+        Promise.resolve(
+          key === SystemMetadataKey.SystemConfig
+            ? { memories: { birthday: true, recentTrips: false } }
+            : {
+                lastOnThisDayDate: '2026-04-25T00:00:00.000Z',
+                lastRuleDate: '2026-04-22T00:00:00.000Z',
+              },
+        ),
+      );
+      mocks.asset.getByDayOfYear.mockResolvedValue([]);
+      mocks.person.getBirthdaysForDay.mockResolvedValue([]);
+
+      await sut.onMemoriesCreate();
+
+      expect(mocks.person.getBirthdaysForDay).toHaveBeenCalled();
+      expect(mocks.asset.getMemoryLocationClusters).not.toHaveBeenCalled();
+
+      vi.useRealTimers();
+    });
+
+    it('should not create rule memories when all generated memory rules are disabled', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-23T12:00:00Z'));
+
+      const user = factory.userAdmin();
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.systemMetadata.get.mockImplementation((key) =>
+        Promise.resolve(
+          key === SystemMetadataKey.SystemConfig
+            ? { memories: { birthday: false, recentTrips: false } }
+            : {
+                lastOnThisDayDate: '2026-04-25T00:00:00.000Z',
+                lastRuleDate: '2026-04-22T00:00:00.000Z',
+              },
+        ),
+      );
+      mocks.asset.getByDayOfYear.mockResolvedValue([]);
+
+      await sut.onMemoriesCreate();
+
+      expect(mocks.person.getBirthdaysForDay).not.toHaveBeenCalled();
+      expect(mocks.asset.getMemoryLocationClusters).not.toHaveBeenCalled();
+      expect(mocks.memory.create).not.toHaveBeenCalled();
 
       vi.useRealTimers();
     });

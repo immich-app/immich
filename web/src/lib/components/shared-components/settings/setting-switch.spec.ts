@@ -18,6 +18,7 @@ describe('SettingSwitch component', () => {
     expect(subtitleId).not.toBeNull();
     expect(label.htmlFor).not.toBe('');
     expect(switchElement).not.toBeNull();
+    expect(switchElement?.getAttribute('aria-labelledby')).toBe(label.id);
     expect(switchElement?.getAttribute('aria-describedby')).toBe(subtitleId);
   });
 });

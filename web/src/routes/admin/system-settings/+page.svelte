@@ -9,6 +9,7 @@
   import LoggingSettings from './LoggingSettings.svelte';
   import MachineLearningSettings from './MachineLearningSettings.svelte';
   import MapSettings from './MapSettings.svelte';
+  import MemoriesSettings from './MemoriesSettings.svelte';
   import MetadataSettings from './MetadataSettings.svelte';
   import NewVersionCheckSettings from './NewVersionCheckSettings.svelte';
   import NightlyTasksSettings from './NightlyTasksSettings.svelte';
@@ -36,6 +37,7 @@
     mdiDatabaseOutline,
     mdiFileDocumentOutline,
     mdiFolderOutline,
+    mdiHistory,
     mdiImageOutline,
     mdiLockOutline,
     mdiMagnifyScan,
@@ -141,6 +143,13 @@
       subtitle: $t('admin.nightly_tasks_settings_description'),
       key: 'nightly-tasks',
       icon: mdiClockOutline,
+    },
+    {
+      component: MemoriesSettings,
+      title: $t('admin.memories_settings'),
+      subtitle: $t('admin.memories_settings_description'),
+      key: 'memories',
+      icon: mdiHistory,
     },
     {
       component: NotificationSettings,
