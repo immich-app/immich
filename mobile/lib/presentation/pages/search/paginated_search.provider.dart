@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/search.service.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/infrastructure/search.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 
 final searchPreFilterProvider = NotifierProvider<SearchFilterProvider, SearchFilter?>(SearchFilterProvider.new);
 
@@ -31,13 +32,20 @@ class SearchState {
   const SearchState({this.assets = const [], this.nextPage = 1, this.isLoading = false});
 }
 
-final paginatedSearchProvider = StateNotifierProvider<PaginatedSearchNotifier, SearchState>(
-  (ref) => PaginatedSearchNotifier(ref.watch(searchServiceProvider)),
-);
+final paginatedSearchProvider = StateNotifierProvider<PaginatedSearchNotifier, SearchState>((ref) {
+  final notifier = PaginatedSearchNotifier(ref.watch(searchServiceProvider));
+  ref.listen<int>(syncStatusProvider.select((state) => state.remoteContentChangedCount), (previous, next) {
+    if (previous != null && next != previous) {
+      unawaited(notifier.refreshActiveSearch());
+    }
+  });
+  return notifier;
+});
 
 class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   final SearchService _searchService;
   final _assetCountController = StreamController<int>.broadcast();
+  SearchFilter? _activeFilter;
 
   PaginatedSearchNotifier(this._searchService) : super(const SearchState());
 
@@ -45,6 +53,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
 
   Future<void> search(SearchFilter filter) async {
     if (state.nextPage == null || state.isLoading) return;
+    _activeFilter = filter;
 
     state = SearchState(assets: state.assets, nextPage: state.nextPage, isLoading: true);
 
@@ -61,7 +70,19 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
     _assetCountController.add(assets.length);
   }
 
+  Future<void> refreshActiveSearch() async {
+    final filter = _activeFilter;
+    if (filter == null || state.isLoading) {
+      return;
+    }
+
+    state = const SearchState();
+    _assetCountController.add(0);
+    await search(filter);
+  }
+
   void clear() {
+    _activeFilter = null;
     state = const SearchState();
     _assetCountController.add(0);
   }

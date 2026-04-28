@@ -8,6 +8,7 @@ import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
@@ -169,7 +170,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleSyncAssetEditReady(dynamic data) {
-    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEdit(data));
+    unawaited(
+      _ref.read(backgroundSyncProvider).syncWebsocketEdit(data).then((_) {
+        _ref.read(syncStatusProvider.notifier).markRemoteContentChanged();
+      }),
+    );
   }
 
   void _processBatchedAssetUploadReady() {
@@ -181,6 +186,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     try {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatch(_batchedAssetUploadReady.toList()).then((_) {
+          _ref.read(syncStatusProvider.notifier).markRemoteContentChanged();
           if (isSyncAlbumEnabled) {
             _ref.read(backgroundSyncProvider).syncLinkedAlbum();
           }

@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/search.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/photos_filter/filter_debounce.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
 final photosTimelineQueryProvider = Provider<TimelineService>((ref) {
@@ -23,6 +24,8 @@ final photosTimelineQueryProvider = Provider<TimelineService>((ref) {
     ref.onDispose(svc.dispose);
     return svc;
   }
+
+  ref.watch(syncStatusProvider.select((state) => state.remoteContentChangedCount));
 
   final search = ref.watch(searchServiceProvider);
   final svc = buildPhotosFilterSearchTimeline(factory: factory, search: search, filter: filter);

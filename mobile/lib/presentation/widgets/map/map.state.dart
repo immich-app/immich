@@ -6,6 +6,7 @@ import 'package:immich_mobile/infrastructure/repositories/timeline.repository.da
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -121,6 +122,8 @@ class MapStateNotifier extends Notifier<MapState> {
 // This provider watches the markers from the map service and serves the markers.
 // It should be used only after the map service provider is overridden
 final mapMarkerProvider = FutureProvider.family<Map<String, dynamic>, LatLngBounds?>((ref, bounds) async {
+  ref.watch(syncStatusProvider.select((state) => state.remoteContentChangedCount));
+
   final mapService = ref.watch(mapServiceProvider);
   final markers = await mapService.getMarkers(bounds);
   final features = List.filled(markers.length, const <String, dynamic>{});

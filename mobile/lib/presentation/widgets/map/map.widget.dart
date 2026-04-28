@@ -15,6 +15,7 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -59,6 +60,11 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   void initState() {
     super.initState();
     _eventSubscription = EventStream.shared.listen<MapMarkerReloadEvent>(_onEvent);
+    ref.listenManual<int>(syncStatusProvider.select((state) => state.remoteContentChangedCount), (previous, next) {
+      if (previous != null && next != previous) {
+        _debouncer.run(() => setBounds(forceReload: true));
+      }
+    });
   }
 
   @override
@@ -140,6 +146,9 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     unawaited(
       _reloadMutex.run(() async {
         if (mounted && (ref.read(mapStateProvider.notifier).setBounds(bounds) || forceReload)) {
+          if (forceReload) {
+            ref.invalidate(mapMarkerProvider(bounds));
+          }
           final markers = await ref.read(mapMarkerProvider(bounds).future);
           await reloadMarkers(markers);
         }

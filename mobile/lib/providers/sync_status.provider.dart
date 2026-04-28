@@ -22,6 +22,7 @@ class SyncStatusState {
   final SyncStatus localSyncStatus;
   final SyncStatus hashJobStatus;
   final SyncStatus cloudIdSyncStatus;
+  final int remoteContentChangedCount;
 
   final String? errorMessage;
 
@@ -30,6 +31,7 @@ class SyncStatusState {
     this.localSyncStatus = SyncStatus.idle,
     this.hashJobStatus = SyncStatus.idle,
     this.cloudIdSyncStatus = SyncStatus.idle,
+    this.remoteContentChangedCount = 0,
     this.errorMessage,
   });
 
@@ -38,6 +40,7 @@ class SyncStatusState {
     SyncStatus? localSyncStatus,
     SyncStatus? hashJobStatus,
     SyncStatus? cloudIdSyncStatus,
+    int? remoteContentChangedCount,
     String? errorMessage,
   }) {
     return SyncStatusState(
@@ -45,6 +48,7 @@ class SyncStatusState {
       localSyncStatus: localSyncStatus ?? this.localSyncStatus,
       hashJobStatus: hashJobStatus ?? this.hashJobStatus,
       cloudIdSyncStatus: cloudIdSyncStatus ?? this.cloudIdSyncStatus,
+      remoteContentChangedCount: remoteContentChangedCount ?? this.remoteContentChangedCount,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -62,11 +66,19 @@ class SyncStatusState {
         other.localSyncStatus == localSyncStatus &&
         other.hashJobStatus == hashJobStatus &&
         other.cloudIdSyncStatus == cloudIdSyncStatus &&
+        other.remoteContentChangedCount == remoteContentChangedCount &&
         other.errorMessage == errorMessage;
   }
 
   @override
-  int get hashCode => Object.hash(remoteSyncStatus, localSyncStatus, hashJobStatus, cloudIdSyncStatus, errorMessage);
+  int get hashCode => Object.hash(
+    remoteSyncStatus,
+    localSyncStatus,
+    hashJobStatus,
+    cloudIdSyncStatus,
+    remoteContentChangedCount,
+    errorMessage,
+  );
 }
 
 class SyncStatusNotifier extends Notifier<SyncStatusState> {
@@ -90,7 +102,13 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   }
 
   void startRemoteSync() => setRemoteSyncStatus(SyncStatus.syncing);
-  void completeRemoteSync() => setRemoteSyncStatus(SyncStatus.success);
+  void markRemoteContentChanged() =>
+      state = state.copyWith(remoteContentChangedCount: state.remoteContentChangedCount + 1);
+  void completeRemoteSync() => state = state.copyWith(
+    remoteSyncStatus: SyncStatus.success,
+    remoteContentChangedCount: state.remoteContentChangedCount + 1,
+    errorMessage: null,
+  );
   void errorRemoteSync(String error) => setRemoteSyncStatus(SyncStatus.error, error);
 
   ///

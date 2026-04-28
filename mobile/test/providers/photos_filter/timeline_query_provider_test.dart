@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart' as infra;
 import 'package:immich_mobile/providers/photos_filter/photos_filter.provider.dart';
 import 'package:immich_mobile/providers/photos_filter/timeline_query.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -110,6 +111,29 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 5));
       verify(() => search.search(any(), 1)).called(1);
       verify(() => factory.fromAssetStream(any(), any(), TimelineOrigin.search)).called(1);
+    });
+
+    test('remote content changes refresh the active search-backed timeline', () async {
+      final factory = _MockFactory();
+      final search = _MockSearch();
+      final fake = _FakeService();
+      when(() => search.search(any(), 1)).thenAnswer((_) async => const SearchResult(assets: []));
+      when(() => factory.fromAssetStream(any(), any(), TimelineOrigin.search)).thenReturn(fake);
+
+      final container = _container(factory: factory, search: search, user: _user('u1'));
+      await container.read(timelineUsersProvider.future);
+      container.read(photosFilterProvider.notifier).setNotInAlbum(true);
+      addTearDown(container.dispose);
+
+      container.read(photosTimelineQueryProvider);
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      verify(() => search.search(any(), 1)).called(1);
+
+      container.read(syncStatusProvider.notifier).markRemoteContentChanged();
+      container.read(photosTimelineQueryProvider);
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+
+      verify(() => search.search(any(), 1)).called(1);
     });
 
     test('disposes the created service when the container disposes', () async {
