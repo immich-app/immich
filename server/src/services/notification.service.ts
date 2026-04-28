@@ -226,8 +226,8 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumInvite' })
-  async onAlbumInvite({ id, userId }: ArgOf<'AlbumInvite'>) {
-    await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId } });
+  async onAlbumInvite({ id, userId, senderName }: ArgOf<'AlbumInvite'>) {
+    await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId, senderName } });
   }
 
   @OnEvent({ name: 'SessionDelete' })
@@ -303,7 +303,7 @@ export class NotificationService extends BaseService {
   }
 
   @OnJob({ name: JobName.NotifyAlbumInvite, queue: QueueName.Notification })
-  async handleAlbumInvite({ id, recipientId }: JobOf<JobName.NotifyAlbumInvite>) {
+  async handleAlbumInvite({ id, recipientId, senderName }: JobOf<JobName.NotifyAlbumInvite>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
     if (!album) {
       return JobStatus.Skipped;
@@ -314,7 +314,7 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, album.owner.name);
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, senderName);
 
     const { emailNotifications } = getPreferences(recipient.metadata);
 
@@ -331,7 +331,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
         albumName: album.albumName,
-        senderName: album.owner.name,
+        senderName,
         recipientName: recipient.name,
         cid: attachment ? attachment.cid : undefined,
       },
@@ -360,8 +360,8 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const owner = await this.userRepository.get(album.ownerId, { withDeleted: false });
-    if (!owner) {
+    const recipient = await this.userRepository.get(recipientId, { withDeleted: false });
+    if (!recipient) {
       return JobStatus.Skipped;
     }
 

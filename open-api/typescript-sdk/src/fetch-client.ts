@@ -457,6 +457,7 @@ export type AlbumResponseDto = {
     albumName: string;
     /** Thumbnail asset ID */
     albumThumbnailAssetId: string | null;
+    /** First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically. */
     albumUsers: AlbumUserResponseDto[];
     /** Number of assets */
     assetCount: number;
@@ -476,9 +477,6 @@ export type AlbumResponseDto = {
     /** Last modified asset timestamp */
     lastModifiedAssetTimestamp?: string;
     order?: AssetOrder;
-    owner: UserResponseDto;
-    /** Owner user ID */
-    ownerId: string;
     /** Is shared album */
     shared: boolean;
     /** Start date (earliest asset) */
@@ -1408,6 +1406,10 @@ export type OAuthConfigDto = {
 export type OAuthAuthorizeResponseDto = {
     /** OAuth authorization URL */
     url: string;
+};
+export type OAuthBackchannelLogoutDto = {
+    /** OAuth logout token */
+    logout_token: string;
 };
 export type OAuthCallbackDto = {
     /** OAuth code verifier (PKCE) */
@@ -2514,6 +2516,8 @@ export type SystemConfigOAuthDto = {
     defaultStorageQuota: number | null;
     /** Enabled */
     enabled: boolean;
+    /** End session endpoint */
+    endSessionEndpoint: string;
     /** Issuer URL */
     issuerUrl: string;
     /** Mobile override enabled */
@@ -2522,6 +2526,8 @@ export type SystemConfigOAuthDto = {
     mobileRedirectUri: string;
     /** Profile signing algorithm */
     profileSigningAlgorithm: string;
+    /** OAuth prompt parameter (e.g. select_account, login, consent) */
+    prompt: string;
     /** Role claim */
     roleClaim: string;
     /** Scope */
@@ -2868,6 +2874,23 @@ export type SyncAlbumV1 = {
     order: AssetOrder;
     /** Owner ID */
     ownerId: string;
+    /** Thumbnail asset ID */
+    thumbnailAssetId: string | null;
+    /** Updated at */
+    updatedAt: string;
+};
+export type SyncAlbumV2 = {
+    /** Created at */
+    createdAt: string;
+    /** Album description */
+    description: string;
+    /** Album ID */
+    id: string;
+    /** Is activity enabled */
+    isActivityEnabled: boolean;
+    /** Album name */
+    name: string;
+    order: AssetOrder;
     /** Thumbnail asset ID */
     thumbnailAssetId: string | null;
     /** Updated at */
@@ -4910,6 +4933,18 @@ export function startOAuth({ oAuthConfigDto }: {
     })));
 }
 /**
+ * Backchannel OAuth logout
+ */
+export function logoutOAuth({ oAuthBackchannelLogoutDto }: {
+    oAuthBackchannelLogoutDto: OAuthBackchannelLogoutDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/oauth/backchannel-logout", oazapfts.form({
+        ...opts,
+        method: "POST",
+        body: oAuthBackchannelLogoutDto
+    })));
+}
+/**
  * Finish OAuth
  */
 export function finishOAuth({ oAuthCallbackDto }: {
@@ -6715,6 +6750,7 @@ export enum AssetVisibility {
 }
 export enum AlbumUserRole {
     Editor = "editor",
+    Owner = "owner",
     Viewer = "viewer"
 }
 export enum BulkIdErrorReason {
@@ -6883,7 +6919,6 @@ export enum Permission {
 }
 export enum AssetMediaStatus {
     Created = "created",
-    Replaced = "replaced",
     Duplicate = "duplicate"
 }
 export enum AssetUploadAction {
@@ -7095,6 +7130,7 @@ export enum SyncEntityType {
     PartnerStackDeleteV1 = "PartnerStackDeleteV1",
     PartnerStackV1 = "PartnerStackV1",
     AlbumV1 = "AlbumV1",
+    AlbumV2 = "AlbumV2",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
     AlbumUserBackfillV1 = "AlbumUserBackfillV1",
@@ -7127,6 +7163,7 @@ export enum SyncEntityType {
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
+    AlbumsV2 = "AlbumsV2",
     AlbumUsersV1 = "AlbumUsersV1",
     AlbumToAssetsV1 = "AlbumToAssetsV1",
     AlbumAssetsV1 = "AlbumAssetsV1",

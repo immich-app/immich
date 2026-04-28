@@ -33,6 +33,22 @@ export function IsIPRange(options?: IsIPRangeOptions) {
 }
 
 /**
+ * Like z.object().partial(), but rejects objects where every field is undefined.
+ * Use for update/patch DTOs where at least one field must be provided.
+ *
+ * @example
+ * nonEmptyPartial({ name: z.string(), bio: z.string() }).meta({ id: 'UpdateDto' });
+ */
+export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
+  return z
+    .object(shape)
+    .partial()
+    .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
+      message: 'At least one field must be provided',
+    });
+}
+
+/**
  * Zod schema that validates sibling-exclusion for object schemas.
  * Validation passes when the target property is missing, or when none of the sibling properties are present.
  * Use with .pipe() like IsIPRange.

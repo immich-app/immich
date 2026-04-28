@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LargeAssetData from '$lib/components/utilities-page/large-assets/large-asset-data.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import LargeAssetData from './LargeAssetData.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
-  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
+  import { getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -17,7 +18,7 @@
 
   let { data }: Props = $props();
 
-  let assets = $derived(data.assets);
+  let assets = $state(data.assets);
   let asset = $derived(data.asset);
 
   $effect(() => {
@@ -36,11 +37,17 @@
     return asset;
   };
 
-  const onAction = (payload: Action) => {
+  const preAction = async (payload: Action) => {
     if (payload.type == 'trash') {
-      assets = assets.filter((a) => a.id != payload.asset.id);
-      assetViewerManager.showAssetViewer(false);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      (await navigateToAsset(assetCursor?.nextAsset)) ||
+        (await navigateToAsset(assetCursor?.previousAsset)) ||
+        assetViewerManager.showAssetViewer(false);
     }
+  };
+
+  const onAssetsDelete = (assetIds: string[]) => {
+    assets = assets.filter(({ id }) => !assetIds.includes(id));
   };
 
   const onViewAsset = async (asset: AssetResponseDto) => {
@@ -54,9 +61,11 @@
   });
 </script>
 
+<OnEvents {onAssetsDelete} />
+
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-    {#if assets && data.assets.length > 0}
+    {#if assets && assets.length > 0}
       {#each assets as asset (asset.id)}
         <LargeAssetData {asset} {onViewAsset} />
       {/each}
@@ -69,13 +78,13 @@
 </UserPageLayout>
 
 {#if assetViewerManager.isViewing}
-  {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onRandom}
-        {onAction}
+        {preAction}
         onClose={() => {
           assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

@@ -126,6 +126,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**lockAuthSession**](doc//AuthenticationApi.md#lockauthsession) | **POST** /auth/session/lock | Lock auth session
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | Login
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | Logout
+*AuthenticationApi* | [**logoutOAuth**](doc//AuthenticationApi.md#logoutoauth) | **POST** /oauth/backchannel-logout | Backchannel OAuth logout
 *AuthenticationApi* | [**redirectOAuthToMobile**](doc//AuthenticationApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | Redirect OAuth to mobile
 *AuthenticationApi* | [**resetPinCode**](doc//AuthenticationApi.md#resetpincode) | **DELETE** /auth/pin-code | Reset pin code
 *AuthenticationApi* | [**setupPinCode**](doc//AuthenticationApi.md#setuppincode) | **POST** /auth/pin-code | Setup pin code
@@ -567,6 +568,7 @@ Class | Method | HTTP request | Description
  - [SyncAlbumUserDeleteV1](doc//SyncAlbumUserDeleteV1.md)
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
+ - [SyncAlbumV2](doc//SyncAlbumV2.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
  - [SyncAssetEditDeleteV1](doc//SyncAssetEditDeleteV1.md)
  - [SyncAssetEditV1](doc//SyncAssetEditV1.md)

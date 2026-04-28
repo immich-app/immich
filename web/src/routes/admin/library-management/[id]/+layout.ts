@@ -1,8 +1,8 @@
+import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
+import { redirect } from '@sveltejs/kit';
 import { Route } from '$lib/route';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
-import { redirect } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ params: { id }, url, depends }) => {

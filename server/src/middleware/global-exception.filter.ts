@@ -20,14 +20,16 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
     const response = ctx.getResponse<Response>();
     const { status, body } = this.fromError(error);
     if (!response.headersSent) {
-      response.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+      response.header('X-Correlation-ID', this.cls.getId());
+      response.status(status).json({ ...body, statusCode: status });
     }
   }
 
   handleError(res: Response, error: Error) {
     const { status, body } = this.fromError(error);
     if (!res.headersSent) {
-      res.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+      res.header('X-Correlation-ID', this.cls.getId());
+      res.status(status).json({ ...body, statusCode: status });
     }
   }
 

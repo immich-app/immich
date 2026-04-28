@@ -124,6 +124,10 @@ const OAuthAuthorizeResponseSchema = z
   })
   .meta({ id: 'OAuthAuthorizeResponseDto' });
 
+const OAuthBackchannelLogoutSchema = z
+  .object({ logout_token: z.string().describe('OAuth logout token') })
+  .meta({ id: 'OAuthBackchannelLogoutDto' });
+
 const AuthStatusResponseSchema = z
   .object({
     pinCode: z.boolean().describe('Has PIN code set'),
@@ -147,4 +151,5 @@ export class ValidateAccessTokenResponseDto extends createZodDto(ValidateAccessT
 export class OAuthCallbackDto extends createZodDto(OAuthCallbackSchema) {}
 export class OAuthConfigDto extends createZodDto(OAuthConfigSchema) {}
 export class OAuthAuthorizeResponseDto extends createZodDto(OAuthAuthorizeResponseSchema) {}
+export class OAuthBackchannelLogoutDto extends createZodDto(OAuthBackchannelLogoutSchema) {}
 export class AuthStatusResponseDto extends createZodDto(AuthStatusResponseSchema) {}

@@ -163,6 +163,7 @@ where
           '%.jp2',
           '%.jpe',
           '%.jxl',
+          '%.mpo',
           '%.svg',
           '%.tif',
           '%.tiff'

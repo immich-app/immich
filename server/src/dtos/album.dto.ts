@@ -1,7 +1,6 @@
 import { ShallowDehydrateObject } from 'kysely';
-import _ from 'lodash';
 import { createZodDto } from 'nestjs-zod';
-import { AlbumUser, AuthSharedLink, User } from 'src/database';
+import { AlbumUser, AuthSharedLink } from 'src/database';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
@@ -104,7 +103,6 @@ const ContributorCountResponseSchema = z
 export const AlbumResponseSchema = z
   .object({
     id: z.string().describe('Album ID'),
-    ownerId: z.string().describe('Owner user ID'),
     albumName: z.string().describe('Album name'),
     description: z.string().describe('Album description'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -113,9 +111,13 @@ export const AlbumResponseSchema = z
     updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
     albumThumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
     shared: z.boolean().describe('Is shared album'),
-    albumUsers: z.array(AlbumUserResponseSchema),
+    albumUsers: z
+      .array(AlbumUserResponseSchema)
+      .min(1)
+      .describe(
+        'First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically.',
+      ),
     hasSharedLink: z.boolean().describe('Has shared link'),
-    owner: UserResponseSchema,
     assetCount: z.int().min(0).describe('Number of assets'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     lastModifiedAssetTimestamp: z
@@ -155,8 +157,6 @@ export type MapAlbumDto = {
   createdAt: Date;
   updatedAt: Date;
   id: string;
-  ownerId: string;
-  owner: ShallowDehydrateObject<User>;
   isActivityEnabled: boolean;
   order: AssetOrder;
 };
@@ -174,12 +174,10 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     }
   }
 
-  const albumUsersSorted = _.orderBy(albumUsers, ['role', 'user.name']);
-
   const assets = entity.assets || [];
 
   const hasSharedLink = !!entity.sharedLinks && entity.sharedLinks.length > 0;
-  const hasSharedUser = albumUsers.length > 0;
+  const hasSharedUser = albumUsers.length > 1;
 
   let startDate = assets.at(0)?.localDateTime;
   let endDate = assets.at(-1)?.localDateTime;
@@ -195,9 +193,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     createdAt: asDateString(entity.createdAt),
     updatedAt: asDateString(entity.updatedAt),
     id: entity.id,
-    ownerId: entity.ownerId,
-    owner: mapUser(entity.owner),
-    albumUsers: albumUsersSorted,
+    albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate: asDateString(startDate),
