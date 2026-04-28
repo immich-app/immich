@@ -20,6 +20,11 @@ WHERE (library_id IS NOT NULL);
 ''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)')
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_remote_asset_visible_stack
+ON remote_asset_entity (stack_id, owner_id, created_at DESC, id)
+WHERE deleted_at IS NULL AND visibility = 0;
+''')
 @TableIndex.sql(
   "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME('%Y-%m-%d', local_date_time))",
 )

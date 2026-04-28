@@ -3,6 +3,7 @@ import 'stack.entity.dart';
 import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
+import 'visible_stack_representative.drift';
 
 mergedAsset: 
 SELECT
@@ -31,14 +32,14 @@ SELECT
 FROM
 	remote_asset_entity rae
 LEFT JOIN
-	stack_entity se ON rae.stack_id = se.id
+	visible_stack_representative vsr ON rae.stack_id = vsr.stack_id AND rae.owner_id = vsr.owner_id
 WHERE
 	rae.deleted_at IS NULL
 	AND rae.visibility = 0 -- timeline visibility
 	AND rae.owner_id IN :user_ids
 	AND (
 		rae.stack_id IS NULL
-		OR rae.id = se.primary_asset_id
+		OR rae.id = vsr.asset_id
 	)
 
 UNION ALL
@@ -104,14 +105,14 @@ FROM
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
-        stack_entity se ON rae.stack_id = se.id
+        visible_stack_representative vsr ON rae.stack_id = vsr.stack_id AND rae.owner_id = vsr.owner_id
 	WHERE
 		rae.deleted_at IS NULL
 		AND rae.visibility = 0 -- timeline visibility
 		AND rae.owner_id in :user_ids
 		AND (
 			rae.stack_id IS NULL
-			OR rae.id = se.primary_asset_id
+			OR rae.id = vsr.asset_id
 		)
 	UNION ALL
 	SELECT

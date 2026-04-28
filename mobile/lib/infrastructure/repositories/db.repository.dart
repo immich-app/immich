@@ -84,7 +84,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -249,6 +249,10 @@ class Drift extends $Drift {
           from23To24: (m, v24) async {
             await customStatement('DROP INDEX IF EXISTS idx_remote_album_owner_id');
             await m.alterTable(TableMigration(v24.remoteAlbumEntity));
+          },
+          from24To25: (m, v25) async {
+            await m.createIndex(v25.idxRemoteAssetVisibleStack);
+            await m.create(v25.visibleStackRepresentative);
           },
         ),
       );

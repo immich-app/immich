@@ -1709,6 +1709,10 @@ i0.Index get idxRemoteAssetStackId => i0.Index(
   'idx_remote_asset_stack_id',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
 );
+i0.Index get idxRemoteAssetVisibleStack => i0.Index(
+  'idx_remote_asset_visible_stack',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_visible_stack ON remote_asset_entity (stack_id, owner_id, created_at DESC, id) WHERE deleted_at IS NULL AND visibility = 0',
+);
 i0.Index get idxRemoteAssetLocalDateTimeDay => i0.Index(
   'idx_remote_asset_local_date_time_day',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
