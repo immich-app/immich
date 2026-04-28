@@ -21,7 +21,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
     const { status, body } = this.fromError(error);
     if (!response.headersSent) {
       response.header('X-Correlation-ID', this.cls.getId());
-      response.status(status).json({ ...body, statusCode: status });
+      response.status(status).json(body);
     }
   }
 
@@ -29,7 +29,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
     const { status, body } = this.fromError(error);
     if (!res.headersSent) {
       res.header('X-Correlation-ID', this.cls.getId());
-      res.status(status).json({ ...body, statusCode: status });
+      res.status(status).json(body);
     }
   }
 
@@ -38,7 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
 
     if (error instanceof HttpException) {
       const status = error.getStatus();
-      let body = error.getResponse();
+      let body = error.getResponse() as Record<string, unknown>;
 
       // unclear what circumstances would return a string
       if (typeof body === 'string') {
@@ -53,12 +53,13 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
             message: zodError.issues.map((issue) =>
               issue.path.length > 0 ? `[${issue.path.join('.')}] ${issue.message}` : issue.message,
             ),
-            error: 'Bad Request',
           };
         }
       }
 
-      return { status, body };
+      // NestJS built-in exceptions include an `error` string field that duplicates the status code
+      const { error: _, ...safeBody } = body;
+      return { status, body: safeBody };
     }
 
     return {
