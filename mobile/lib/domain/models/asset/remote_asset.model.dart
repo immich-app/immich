@@ -81,15 +81,10 @@ class RemoteAsset extends BaseAsset {
         stackId == other.stackId;
   }
 
+  // Mirrors `==` above, which deliberately does not compare localId.
   @override
   int get hashCode =>
-      super.hashCode ^
-      id.hashCode ^
-      ownerId.hashCode ^
-      localId.hashCode ^
-      thumbHash.hashCode ^
-      visibility.hashCode ^
-      stackId.hashCode;
+      super.hashCode ^ id.hashCode ^ ownerId.hashCode ^ thumbHash.hashCode ^ visibility.hashCode ^ stackId.hashCode;
 
   RemoteAsset copyWith({
     String? id,

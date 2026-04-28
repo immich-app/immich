@@ -49,17 +49,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       return;
     }
 
-    final added = await ref
-        .read(remoteAlbumProvider.notifier)
-        .addAssets(
-          _album.id,
-          newAssets.map((asset) {
-            final remoteAsset = asset as RemoteAsset;
-            return remoteAsset.id;
-          }).toList(),
-        );
+    final added = await ref.read(remoteAlbumProvider.notifier).addAssetsToAlbum(_album.id, newAssets);
 
-    if (added > 0) {
+    if (added > 0 && context.mounted) {
       ImmichToast.show(
         context: context,
         msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
