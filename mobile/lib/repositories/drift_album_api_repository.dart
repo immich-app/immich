@@ -1,9 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 // ignore: import_rule_openapi
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' hide AlbumUserRole;
 
 final driftAlbumApiRepositoryProvider = Provider(
   (ref) => DriftAlbumApiRepository(ref.watch(apiServiceProvider).albumsApi),
@@ -14,12 +15,17 @@ class DriftAlbumApiRepository extends ApiRepository {
 
   DriftAlbumApiRepository(this._api);
 
-  Future<RemoteAlbum> createDriftAlbum(String name, {required Iterable<String> assetIds, String? description}) async {
+  Future<RemoteAlbum> createDriftAlbum(
+    String name,
+    UserDto owner, {
+    required Iterable<String> assetIds,
+    String? description,
+  }) async {
     final responseDto = await checkNull(
       _api.createAlbum(CreateAlbumDto(albumName: name, description: description, assetIds: assetIds.toList())),
     );
 
-    return responseDto.toRemoteAlbum();
+    return responseDto.toRemoteAlbum(owner);
   }
 
   Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
@@ -50,7 +56,8 @@ class DriftAlbumApiRepository extends ApiRepository {
   }
 
   Future<RemoteAlbum> updateAlbum(
-    String albumId, {
+    String albumId,
+    UserDto owner, {
     String? name,
     String? description,
     String? thumbnailAssetId,
@@ -75,17 +82,16 @@ class DriftAlbumApiRepository extends ApiRepository {
       ),
     );
 
-    return responseDto.toRemoteAlbum();
+    return responseDto.toRemoteAlbum(owner);
   }
 
   Future<void> deleteAlbum(String albumId) {
     return _api.deleteAlbum(albumId);
   }
 
-  Future<RemoteAlbum> addUsers(String albumId, Iterable<String> userIds) async {
+  Future<void> addUsers(String albumId, Iterable<String> userIds) async {
     final albumUsers = userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
-    final response = await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
-    return response.toRemoteAlbum();
+    await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
   }
 
   Future<void> removeUser(String albumId, {required String userId}) async {
@@ -99,11 +105,12 @@ class DriftAlbumApiRepository extends ApiRepository {
 }
 
 extension on AlbumResponseDto {
-  RemoteAlbum toRemoteAlbum() {
+  RemoteAlbum toRemoteAlbum(final UserDto user) {
     return RemoteAlbum(
       id: id,
       name: albumName,
-      ownerId: owner.id,
+      ownerId: user.id,
+      ownerName: user.name,
       description: description,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -111,7 +118,6 @@ extension on AlbumResponseDto {
       isActivityEnabled: isActivityEnabled,
       order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
-      ownerName: owner.name,
       isShared: albumUsers.length > 2,
     );
   }

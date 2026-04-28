@@ -1,0 +1,31 @@
+<script lang="ts">
+  import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
+  import AssetCover from '$lib/components/sharedlinks-page/covers/AssetCover.svelte';
+  import NoCover from '$lib/components/sharedlinks-page/covers/NoCover.svelte';
+  import { getAssetMediaUrl } from '$lib/utils';
+  import type { SharedLinkResponseDto } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
+
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+    preload?: boolean;
+    class?: string;
+  }
+
+  let { sharedLink, preload = false, class: className = '' }: Props = $props();
+</script>
+
+<div class="relative shrink-0 size-22">
+  {#if sharedLink?.album}
+    <AlbumCover album={sharedLink.album} class={className} {preload} />
+  {:else if sharedLink.assets[0]}
+    <AssetCover
+      alt={$t('individual_share')}
+      class={className}
+      {preload}
+      src={getAssetMediaUrl({ id: sharedLink.assets[0].id })}
+    />
+  {:else}
+    <NoCover alt={$t('unnamed_share')} class={className} {preload} />
+  {/if}
+</div>

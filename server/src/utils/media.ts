@@ -91,14 +91,14 @@ export class BaseConfig implements VideoCodecSWConfig {
   ) {
     const options = {
       inputOptions: this.getBaseInputOptions(videoStream, format),
-      outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
+      outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v', 'verbose'],
       twoPass: this.eligibleForTwoPass(),
       progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
     } as TranscodeCommand;
     if ([TranscodeTarget.All, TranscodeTarget.Video].includes(target)) {
       const filters = this.getFilterOptions(videoStream);
       if (filters.length > 0) {
-        options.outputOptions.push(`-vf ${filters.join(',')}`);
+        options.outputOptions.push('-vf', filters.join(','));
       }
     }
 
@@ -121,36 +121,40 @@ export class BaseConfig implements VideoCodecSWConfig {
     const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioEncoder() : 'copy';
 
     const options = [
-      `-c:v ${videoCodec}`,
-      `-c:a ${audioCodec}`,
+      '-c:v',
+      videoCodec,
+      '-c:a',
+      audioCodec,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
-      '-movflags faststart',
-      '-fps_mode passthrough',
-      // explicitly selects the video stream instead of leaving it up to FFmpeg
-      `-map 0:${videoStream.index}`,
-      // Strip metadata like capture date, camera, and GPS
-      '-map_metadata -1',
+      '-movflags',
+      'faststart',
+      '-fps_mode',
+      'passthrough',
+      '-map',
+      `0:${videoStream.index}`,
+      '-map_metadata',
+      '-1',
     ];
 
     if (audioStream) {
-      options.push(`-map 0:${audioStream.index}`);
+      options.push('-map', `0:${audioStream.index}`);
     }
     if (this.getBFrames() > -1) {
-      options.push(`-bf ${this.getBFrames()}`);
+      options.push('-bf', `${this.getBFrames()}`);
     }
     if (this.getRefs() > 0) {
-      options.push(`-refs ${this.getRefs()}`);
+      options.push('-refs', `${this.getRefs()}`);
     }
     if (this.getGopSize() > 0) {
-      options.push(`-g ${this.getGopSize()}`);
+      options.push('-g', `${this.getGopSize()}`);
     }
 
     if (
       this.config.targetVideoCodec === VideoCodec.Hevc &&
       (videoCodec !== 'copy' || videoStream.codecName === 'hevc')
     ) {
-      options.push('-tag:v hvc1');
+      options.push('-tag:v', 'hvc1');
     }
 
     return options;
@@ -173,26 +177,32 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   getPresetOptions() {
-    return [`-preset ${this.config.preset}`];
+    return ['-preset', this.config.preset];
   }
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
     if (this.eligibleForTwoPass()) {
       return [
-        `-b:v ${bitrates.target}${bitrates.unit}`,
-        `-minrate ${bitrates.min}${bitrates.unit}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
+        '-b:v',
+        `${bitrates.target}${bitrates.unit}`,
+        '-minrate',
+        `${bitrates.min}${bitrates.unit}`,
+        '-maxrate',
+        `${bitrates.max}${bitrates.unit}`,
       ];
     } else if (bitrates.max > 0) {
       // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
       return [
-        `-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.max * 2}${bitrates.unit}`,
+        `-${this.useCQP() ? 'q:v' : 'crf'}`,
+        `${this.config.crf}`,
+        '-maxrate',
+        `${bitrates.max}${bitrates.unit}`,
+        '-bufsize',
+        `${bitrates.max * 2}${bitrates.unit}`,
       ];
     } else {
-      return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`];
+      return [`-${this.useCQP() ? 'q:v' : 'crf'}`, `${this.config.crf}`];
     }
   }
 
@@ -204,7 +214,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     if (this.config.threads <= 0) {
       return [];
     }
-    return [`-threads ${this.config.threads}`];
+    return ['-threads', `${this.config.threads}`];
   }
 
   eligibleForTwoPass() {
@@ -395,8 +405,8 @@ export class ThumbnailConfig extends BaseConfig {
     // skip_frame nointra skips all frames for some MPEG-TS files. Look at ffmpeg tickets 7950 and 7895 for more details.
     const options =
       format?.formatName === 'mpegts'
-        ? ['-sws_flags accurate_rnd+full_chroma_int']
-        : ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
+        ? ['-sws_flags', 'accurate_rnd+full_chroma_int']
+        : ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'];
 
     const metadataOverrides = [];
     if (videoStream.colorPrimaries === 'reserved') {
@@ -413,14 +423,14 @@ export class ThumbnailConfig extends BaseConfig {
 
     if (metadataOverrides.length > 0) {
       // workaround for https://fftrac-bg.ffmpeg.org/ticket/11020
-      options.push(`-bsf:v ${videoStream.codecName}_metadata=${metadataOverrides.join(':')}`);
+      options.push('-bsf:v', `${videoStream.codecName}_metadata=${metadataOverrides.join(':')}`);
     }
 
     return options;
   }
 
   getBaseOutputOptions() {
-    return ['-fps_mode vfr', '-frames:v 1', '-update 1'];
+    return ['-fps_mode', 'vfr', '-frames:v', '1', '-update', '1'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
@@ -455,7 +465,7 @@ export class H264Config extends BaseConfig {
   getOutputThreadOptions() {
     const options = super.getOutputThreadOptions();
     if (this.config.threads === 1) {
-      options.push('-x264-params frame-threads=1:pools=none');
+      options.push('-x264-params', 'frame-threads=1:pools=none');
     }
 
     return options;
@@ -466,7 +476,7 @@ export class HEVCConfig extends BaseConfig {
   getOutputThreadOptions() {
     const options = super.getOutputThreadOptions();
     if (this.config.threads === 1) {
-      options.push('-x265-params frame-threads=1:pools=none');
+      options.push('-x265-params', 'frame-threads=1:pools=none');
     }
 
     return options;
@@ -477,7 +487,7 @@ export class VP9Config extends BaseConfig {
   getPresetOptions() {
     const speed = Math.min(this.getPresetIndex(), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
     if (speed >= 0) {
-      return [`-cpu-used ${speed}`];
+      return ['-cpu-used', `${speed}`];
     }
     return [];
   }
@@ -486,17 +496,20 @@ export class VP9Config extends BaseConfig {
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0 && this.eligibleForTwoPass()) {
       return [
-        `-b:v ${bitrates.target}${bitrates.unit}`,
-        `-minrate ${bitrates.min}${bitrates.unit}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
+        '-b:v',
+        `${bitrates.target}${bitrates.unit}`,
+        '-minrate',
+        `${bitrates.min}${bitrates.unit}`,
+        '-maxrate',
+        `${bitrates.max}${bitrates.unit}`,
       ];
     }
 
-    return [`-${this.useCQP() ? 'q:v' : 'crf'} ${this.config.crf}`, `-b:v ${bitrates.max}${bitrates.unit}`];
+    return [`-${this.useCQP() ? 'q:v' : 'crf'}`, `${this.config.crf}`, '-b:v', `${bitrates.max}${bitrates.unit}`];
   }
 
   getOutputThreadOptions() {
-    return ['-row-mt 1', ...super.getOutputThreadOptions()];
+    return ['-row-mt', '1', ...super.getOutputThreadOptions()];
   }
 
   eligibleForTwoPass() {
@@ -512,13 +525,13 @@ export class AV1Config extends BaseConfig {
   getPresetOptions() {
     const speed = this.getPresetIndex() + 4; // Use 4 as slowest, giving us an effective range of 4-12 which is far more useful than 0-8
     if (speed >= 0) {
-      return [`-preset ${speed}`];
+      return ['-preset', `${speed}`];
     }
     return [];
   }
 
   getBitrateOptions() {
-    const options = [`-crf ${this.config.crf}`];
+    const options = ['-crf', `${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     const svtparams = [];
     if (this.config.threads > 0) {
@@ -528,7 +541,7 @@ export class AV1Config extends BaseConfig {
       svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`);
     }
     if (svtparams.length > 0) {
-      options.push(`-svtav1-params ${svtparams.join(':')}`);
+      options.push('-svtav1-params', svtparams.join(':'));
     }
     return options;
   }
@@ -552,23 +565,27 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
   }
 
   getBaseInputOptions() {
-    return [`-init_hw_device cuda=cuda:${this.device}`, '-filter_hw_device cuda'];
+    return ['-init_hw_device', `cuda=cuda:${this.device}`, '-filter_hw_device', 'cuda'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = [
       // below settings recommended from https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/index.html#command-line-for-latency-tolerant-high-quality-transcoding
-      '-tune hq',
-      '-qmin 0',
-      '-rc-lookahead 20',
-      '-i_qfactor 0.75',
+      '-tune',
+      'hq',
+      '-qmin',
+      '0',
+      '-rc-lookahead',
+      '20',
+      '-i_qfactor',
+      '0.75',
       ...super.getBaseOutputOptions(target, videoStream, audioStream),
     ];
     if (this.getBFrames() > 0) {
-      options.push('-b_ref_mode middle', '-b_qfactor 1.1');
+      options.push('-b_ref_mode', 'middle', '-b_qfactor', '1.1');
     }
     if (this.config.temporalAQ) {
-      options.push('-temporal-aq 1');
+      options.push('-temporal-aq', '1');
     }
     return options;
   }
@@ -589,26 +606,33 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
       return [];
     }
     presetIndex = 7 - Math.min(6, presetIndex); // map to p1-p7; p7 is the highest quality, so reverse index
-    return [`-preset p${presetIndex}`];
+    return ['-preset', `p${presetIndex}`];
   }
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0 && this.config.twoPass) {
       return [
-        `-b:v ${bitrates.target}${bitrates.unit}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.target}${bitrates.unit}`,
-        '-multipass 2',
+        '-b:v',
+        `${bitrates.target}${bitrates.unit}`,
+        '-maxrate',
+        `${bitrates.max}${bitrates.unit}`,
+        '-bufsize',
+        `${bitrates.target}${bitrates.unit}`,
+        '-multipass',
+        '2',
       ];
     } else if (bitrates.max > 0) {
       return [
-        `-cq:v ${this.config.crf}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-bufsize ${bitrates.target}${bitrates.unit}`,
+        '-cq:v',
+        `${this.config.crf}`,
+        '-maxrate',
+        `${bitrates.max}${bitrates.unit}`,
+        '-bufsize',
+        `${bitrates.target}${bitrates.unit}`,
       ];
     } else {
-      return [`-cq:v ${this.config.crf}`];
+      return ['-cq:v', `${this.config.crf}`];
     }
   }
 
@@ -627,7 +651,7 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
 
 export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
   getBaseInputOptions() {
-    return ['-hwaccel cuda', '-hwaccel_output_format cuda', '-noautorotate', ...this.getInputThreadOptions()];
+    return ['-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda', '-noautorotate', ...this.getInputThreadOptions()];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -664,7 +688,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
   }
 
   getInputThreadOptions() {
-    return [`-threads 1`];
+    return ['-threads', '1'];
   }
 
   getOutputThreadOptions() {
@@ -674,14 +698,14 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
 
 export class QsvSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    return [`-init_hw_device qsv=hw,child_device=${this.device}`, '-filter_hw_device hw'];
+    return ['-init_hw_device', `qsv=hw,child_device=${this.device}`, '-filter_hw_device', 'hw'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = super.getBaseOutputOptions(target, videoStream, audioStream);
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
     if (this.config.targetVideoCodec === VideoCodec.Vp9) {
-      options.push('-low_power 1');
+      options.push('-low_power', '1');
     }
     return options;
   }
@@ -701,14 +725,14 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
       return [];
     }
     presetIndex = Math.min(6, presetIndex) + 1; // 1 to 7
-    return [`-preset ${presetIndex}`];
+    return ['-preset', `${presetIndex}`];
   }
 
   getBitrateOptions() {
-    const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`];
+    const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'}`, `${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
-      options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);
+      options.push('-maxrate', `${bitrates.max}${bitrates.unit}`, '-bufsize', `${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
   }
@@ -744,11 +768,15 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   getBaseInputOptions() {
     return [
-      '-hwaccel qsv',
-      '-hwaccel_output_format qsv',
-      '-async_depth 4',
+      '-hwaccel',
+      'qsv',
+      '-hwaccel_output_format',
+      'qsv',
+      '-async_depth',
+      '4',
       '-noautorotate',
-      `-qsv_device ${this.device}`,
+      '-qsv_device',
+      this.device,
       ...this.getInputThreadOptions(),
     ];
   }
@@ -791,13 +819,13 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   }
 
   getInputThreadOptions() {
-    return [`-threads 1`];
+    return ['-threads', '1'];
   }
 }
 
 export class VaapiSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    return [`-init_hw_device vaapi=accel:${this.device}`, '-filter_hw_device accel'];
+    return ['-init_hw_device', `vaapi=accel:${this.device}`, '-filter_hw_device', 'accel'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -816,7 +844,7 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
       return [];
     }
     presetIndex = Math.min(6, presetIndex) + 1; // 1 to 7
-    return [`-compression_level ${presetIndex}`];
+    return ['-compression_level', `${presetIndex}`];
   }
 
   getBitrateOptions() {
@@ -824,21 +852,25 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
     const options = [];
 
     if (this.config.targetVideoCodec === VideoCodec.Vp9) {
-      options.push('-bsf:v vp9_raw_reorder,vp9_superframe');
+      options.push('-bsf:v', 'vp9_raw_reorder,vp9_superframe');
     }
 
     // VAAPI doesn't allow setting both quality and max bitrate
     if (bitrates.max > 0) {
       options.push(
-        `-b:v ${bitrates.target}${bitrates.unit}`,
-        `-maxrate ${bitrates.max}${bitrates.unit}`,
-        `-minrate ${bitrates.min}${bitrates.unit}`,
-        '-rc_mode 3',
+        '-b:v',
+        `${bitrates.target}${bitrates.unit}`,
+        '-maxrate',
+        `${bitrates.max}${bitrates.unit}`,
+        '-minrate',
+        `${bitrates.min}${bitrates.unit}`,
+        '-rc_mode',
+        '3',
       ); // variable bitrate
     } else if (this.useCQP()) {
-      options.push(`-qp:v ${this.config.crf}`, `-global_quality:v ${this.config.crf}`, '-rc_mode 1');
+      options.push('-qp:v', `${this.config.crf}`, '-global_quality:v', `${this.config.crf}`, '-rc_mode', '1');
     } else {
-      options.push(`-global_quality:v ${this.config.crf}`, '-rc_mode 4');
+      options.push('-global_quality:v', `${this.config.crf}`, '-rc_mode', '4');
     }
 
     return options;
@@ -856,10 +888,13 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
 export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
   getBaseInputOptions() {
     return [
-      '-hwaccel vaapi',
-      '-hwaccel_output_format vaapi',
+      '-hwaccel',
+      'vaapi',
+      '-hwaccel_output_format',
+      'vaapi',
       '-noautorotate',
-      `-hwaccel_device ${this.device}`,
+      '-hwaccel_device',
+      this.device,
       ...this.getInputThreadOptions(),
     ];
   }
@@ -902,7 +937,7 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
   }
 
   getInputThreadOptions() {
-    return [`-threads 1`];
+    return ['-threads', '1'];
   }
 }
 
@@ -919,11 +954,11 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
     switch (this.config.targetVideoCodec) {
       case VideoCodec.H264: {
         // from ffmpeg_mpp help, commonly referred to as H264 level 5.1
-        return ['-level 51'];
+        return ['-level', '51'];
       }
       case VideoCodec.Hevc: {
         // from ffmpeg_mpp help, commonly referred to as HEVC level 5.1
-        return ['-level 153'];
+        return ['-level', '153'];
       }
       default: {
         throw new Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
@@ -935,10 +970,10 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
     const bitrate = this.getMaxBitrateValue();
     if (bitrate > 0) {
       // -b:v specifies max bitrate, average bitrate is derived automatically...
-      return ['-rc_mode AVBR', `-b:v ${bitrate}${this.getBitrateUnit()}`];
+      return ['-rc_mode', 'AVBR', '-b:v', `${bitrate}${this.getBitrateUnit()}`];
     }
     // use CRF value as QP value
-    return ['-rc_mode CQP', `-qp_init ${this.config.crf}`];
+    return ['-rc_mode', 'CQP', '-qp_init', `${this.config.crf}`];
   }
 
   getSupportedCodecs() {
@@ -952,7 +987,7 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
 
 export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
   getBaseInputOptions() {
-    return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
+    return ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {

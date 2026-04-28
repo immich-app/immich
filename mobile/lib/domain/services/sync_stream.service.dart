@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -196,23 +197,26 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid &&
-            (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-                Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
-          final hasPermission = await _localFilesManager.hasManageMediaPermission();
-          if (hasPermission) {
+        await _runWithManageMediaPermission(
+          logContext: "Trashed Assets",
+          action: () async {
             final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
             final trashedAssetsMap = Map<String, DateTime>.fromEntries(
               remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => MapEntry(e.checksum, e.deletedAt!)),
             );
             await _handleRemoteTrashed(trashedAssetsMap, reviewMode);
             await _applyRemoteRestoreToLocal();
-          } else {
-            _logger.warning("sync Trashed Assets cannot proceed because MANAGE_MEDIA permission is missing");
-          }
-        }
+          },
+        );
         return;
       case SyncEntityType.assetDeleteV1:
+        await _runWithManageMediaPermission(
+          logContext: "Deleted Assets",
+          action: () async {
+            final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
+            await _handleRemoteDeleted(remoteSyncAssets.map((e) => e.assetId));
+          },
+        );
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
@@ -236,6 +240,8 @@ class SyncStreamService {
         return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'partner backfill');
       case SyncEntityType.albumV1:
         return _syncStreamRepository.updateAlbumsV1(data.cast());
+      case SyncEntityType.albumV2:
+        return _syncStreamRepository.updateAlbumsV2(data.cast());
       case SyncEntityType.albumDeleteV1:
         return _syncStreamRepository.deleteAlbumsV1(data.cast());
       case SyncEntityType.albumUserV1:
@@ -391,6 +397,21 @@ class SyncStreamService {
     }
   }
 
+  Future<void> _handleRemoteDeleted(Iterable<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
+      return Future.value();
+    } else {
+      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(
+        Map.fromEntries(remoteIds.map((id) => MapEntry(id, DateTime.now()))),
+      );
+      if (localAssetsToTrash.isNotEmpty) {
+        await _trashLocalAssets(localAssetsToTrash);
+      } else {
+        _logger.info("No assets found in backup-enabled albums for remote assets: $remoteIds");
+      }
+    }
+  }
+
   Future<void> _handleRemoteTrashed(Map<String, DateTime> trashedAssetsMap, bool reviewMode) async {
     if (trashedAssetsMap.isEmpty) {
       return Future.value();
@@ -423,6 +444,21 @@ class SyncStreamService {
     }
   }
 
+  Future<void> _trashLocalAssets(Map<String, List<RemoteDeletedLocalAsset>> localAssetsToTrash) async {
+    final mediaUrls = await Future.wait(
+      localAssetsToTrash.values
+          .expand((e) => e)
+          .map(
+            (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset.asset).then((e) => e?.getMediaUrl()),
+          ),
+    );
+    _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
+    final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+    if (result) {
+      await _trashedLocalAssetRepository.trashLocalAssets(localAssetsToTrash);
+    }
+  }
+
   Future<void> _applyRemoteRestoreToLocal() async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (assetsToRestore.isNotEmpty) {
@@ -431,5 +467,24 @@ class SyncStreamService {
     } else {
       _logger.info("No remote assets found for restoration");
     }
+  }
+
+  Future<void> _runWithManageMediaPermission({
+    required String logContext,
+    required Future<void> Function() action,
+  }) async {
+    if (!CurrentPlatform.isAndroid ||
+        (!Store.get(StoreKey.manageLocalMediaAndroid, false) &&
+            !Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
+      return;
+    }
+
+    final hasPermission = await _localFilesManager.hasManageMediaPermission();
+    if (!hasPermission) {
+      _logger.warning("sync $logContext cannot proceed because MANAGE_MEDIA permission is missing");
+      return;
+    }
+
+    await action();
   }
 }

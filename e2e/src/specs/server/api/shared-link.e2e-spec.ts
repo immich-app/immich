@@ -243,9 +243,21 @@ describe('/shared-links', () => {
     });
 
     it('should get data for correct password protected link', async () => {
+      const response = await request(app)
+        .post('/shared-links/login')
+        .send({ password: 'foo' })
+        .query({ key: linkWithPassword.key });
+
+      expect(response.status).toBe(201);
+
+      const cookies = response.get('Set-Cookie') ?? [];
+      expect(cookies).toHaveLength(1);
+      expect(cookies[0]).toContain('immich_shared_link_token');
+
       const { status, body } = await request(app)
         .get('/shared-links/me')
-        .query({ key: linkWithPassword.key, password: 'foo' });
+        .query({ key: linkWithPassword.key })
+        .set('Cookie', cookies);
 
       expect(status).toBe(200);
       expect(body).toEqual(

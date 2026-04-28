@@ -12,8 +12,8 @@
   import { mdiKeyboardReturn } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import AlbumListItem from '../components/asset-viewer/album-list-item.svelte';
-  import NewAlbumListItem from '../components/shared-components/album-selection/new-album-list-item.svelte';
+  import AlbumListItem from '../components/asset-viewer/AlbumListItem.svelte';
+  import NewAlbumListItem from '../components/shared-components/album-selection/NewAlbumListItem.svelte';
 
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);

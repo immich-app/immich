@@ -80,9 +80,9 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`
 2. Build the `@immich/ui` project via `pnpm run build`
-3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
-4. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
-5. Uncomment the import statement in `web/src/app.css` file `@import '/usr/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
+3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)
+4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui/packages/ui')`)
+5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
 6. Start up the stack via `make dev`
 7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)
 

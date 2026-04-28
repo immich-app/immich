@@ -13,7 +13,7 @@ part of openapi.api;
 class CastResponse {
   /// Returns a new [CastResponse] instance.
   CastResponse({
-    this.gCastEnabled = false,
+    required this.gCastEnabled,
   });
 
   /// Whether Google Cast is enabled

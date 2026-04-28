@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
@@ -38,13 +37,9 @@ Cancelable<T?> runInIsolateGentle<T>({
         BackgroundIsolateBinaryMessenger.ensureInitialized(token);
         DartPluginRegistrant.ensureInitialized();
 
-        final (isar, drift, logDb) = await Bootstrap.initDB();
-        await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false, listenStoreUpdates: false);
+        final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
         final ref = ProviderContainer(
           overrides: [
-            // TODO: Remove once isar is removed
-            dbProvider.overrideWithValue(isar),
-            isarProvider.overrideWithValue(isar),
             cancellationProvider.overrideWithValue(cancelledChecker),
             driftProvider.overrideWith(driftOverride(drift)),
           ],
@@ -66,15 +61,6 @@ Cancelable<T?> runInIsolateGentle<T>({
             await LogService.I.dispose();
             await logDb.close();
             await drift.close();
-
-            // Close Isar safely
-            try {
-              if (isar.isOpen) {
-                await isar.close();
-              }
-            } catch (e) {
-              dPrint(() => "Error closing Isar: $e");
-            }
           } catch (error, stack) {
             dPrint(() => "Error closing resources in isolate: $error, $stack");
           } finally {

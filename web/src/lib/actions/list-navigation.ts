@@ -1,5 +1,5 @@
-import { shortcuts } from '$lib/actions/shortcut';
 import type { Action } from 'svelte/action';
+import { shortcuts } from '$lib/actions/shortcut';
 
 /**
  * Enables keyboard navigation (up and down arrows) for a list of elements.

@@ -122,11 +122,20 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     for (final slice in trashedAssetsMap.keys.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
-                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                innerJoin(
+                  _db.localAlbumEntity,
+                  _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+                  useColumns: false,
+                ),
                 innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                innerJoin(
+                  _db.remoteAssetEntity,
+                  _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+                  useColumns: false,
+                ),
               ])..where(
                 _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                    _db.localAssetEntity.checksum.isIn(slice),
+                    _db.remoteAssetEntity.id.isIn(slice),
               ))
               .get();
 
@@ -138,6 +147,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         );
       }
     }
+
     return result;
   }
 

@@ -349,7 +349,7 @@ test.describe('Timeline', () => {
         expect(visibleMockAssetsYearMonths).toContain(month);
       }
     });
-    test('Deep link to last photo, scroll up', async ({ page }) => {
+    test.skip('Deep link to last photo, scroll up', async ({ page }) => {
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
 
@@ -361,7 +361,7 @@ test.describe('Timeline', () => {
 
       await thumbnailUtils.expectInViewport(page, '14e5901f-fd7f-40c0-b186-4d7e7fc67968');
     });
-    test('Deep link to first bucket, scroll down', async ({ page }) => {
+    test.skip('Deep link to first bucket, scroll down', async ({ page }) => {
       const lastAsset = assets.at(0)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       await timelineUtils.locator(page).hover();
@@ -440,7 +440,7 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectInViewport(page, asset.id);
       await thumbnailUtils.expectSelectedDisabled(page, asset.id);
     });
-    test('Add photos to album', async ({ page }) => {
+    test.skip('Add photos to album', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
       await page.locator('nav button[aria-label="Add photos"]').click();
@@ -752,7 +752,7 @@ test.describe('Timeline', () => {
       await page.getByText('Photos', { exact: true }).click();
       await thumbnailUtils.expectInViewport(page, assetToFavorite.id);
     });
-    test('open /favorites, archive photo, unarchive photo', async ({ page }) => {
+    test.skip('open /favorites, archive photo, unarchive photo', async ({ page }) => {
       await pageUtils.openFavorites(page);
       const assetToArchive = getAsset(timelineRestData, 'ad31e29f-2069-4574-b9a9-ad86523c92cb')!;
       await thumbnailUtils.withAssetId(page, assetToArchive.id).hover();

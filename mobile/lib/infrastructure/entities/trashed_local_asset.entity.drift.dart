@@ -16,7 +16,7 @@ typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInSeconds,
+      i0.Value<int?> durationMs,
       required String id,
       required String albumId,
       i0.Value<String?> checksum,
@@ -33,7 +33,7 @@ typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInSeconds,
+      i0.Value<int?> durationMs,
       i0.Value<String> id,
       i0.Value<String> albumId,
       i0.Value<String?> checksum,
@@ -84,8 +84,8 @@ class $$TrashedLocalAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -171,8 +171,8 @@ class $$TrashedLocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -240,8 +240,8 @@ class $$TrashedLocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<int> get height =>
       $composableBuilder(column: $table.height, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => column,
   );
 
@@ -326,7 +326,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String> albumId = const i0.Value.absent(),
                 i0.Value<String?> checksum = const i0.Value.absent(),
@@ -342,7 +342,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInSeconds: durationInSeconds,
+                durationMs: durationMs,
                 id: id,
                 albumId: albumId,
                 checksum: checksum,
@@ -359,7 +359,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 required String id,
                 required String albumId,
                 i0.Value<String?> checksum = const i0.Value.absent(),
@@ -375,7 +375,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInSeconds: durationInSeconds,
+                durationMs: durationMs,
                 id: id,
                 albumId: albumId,
                 checksum: checksum,
@@ -498,17 +498,17 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const i0.VerificationMeta _durationInSecondsMeta =
-      const i0.VerificationMeta('durationInSeconds');
+  static const i0.VerificationMeta _durationMsMeta = const i0.VerificationMeta(
+    'durationMs',
+  );
   @override
-  late final i0.GeneratedColumn<int> durationInSeconds =
-      i0.GeneratedColumn<int>(
-        'duration_in_seconds',
-        aliasedName,
-        true,
-        type: i0.DriftSqlType.int,
-        requiredDuringInsert: false,
-      );
+  late final i0.GeneratedColumn<int> durationMs = i0.GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
@@ -599,7 +599,7 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     updatedAt,
     width,
     height,
-    durationInSeconds,
+    durationMs,
     id,
     albumId,
     checksum,
@@ -652,13 +652,10 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
     }
-    if (data.containsKey('duration_in_seconds')) {
+    if (data.containsKey('duration_ms')) {
       context.handle(
-        _durationInSecondsMeta,
-        durationInSeconds.isAcceptableOrUnknown(
-          data['duration_in_seconds']!,
-          _durationInSecondsMeta,
-        ),
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -733,9 +730,9 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}height'],
       ),
-      durationInSeconds: attachedDatabase.typeMapping.read(
+      durationMs: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
-        data['${effectivePrefix}duration_in_seconds'],
+        data['${effectivePrefix}duration_ms'],
       ),
       id: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
@@ -800,7 +797,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
   final DateTime updatedAt;
   final int? width;
   final int? height;
-  final int? durationInSeconds;
+  final int? durationMs;
   final String id;
   final String albumId;
   final String? checksum;
@@ -815,7 +812,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     required this.updatedAt,
     this.width,
     this.height,
-    this.durationInSeconds,
+    this.durationMs,
     required this.id,
     required this.albumId,
     this.checksum,
@@ -841,8 +838,8 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || height != null) {
       map['height'] = i0.Variable<int>(height);
     }
-    if (!nullToAbsent || durationInSeconds != null) {
-      map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = i0.Variable<int>(durationMs);
     }
     map['id'] = i0.Variable<String>(id);
     map['album_id'] = i0.Variable<String>(albumId);
@@ -880,7 +877,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
-      durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
       id: serializer.fromJson<String>(json['id']),
       albumId: serializer.fromJson<String>(json['albumId']),
       checksum: serializer.fromJson<String?>(json['checksum']),
@@ -905,7 +902,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'width': serializer.toJson<int?>(width),
       'height': serializer.toJson<int?>(height),
-      'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
+      'durationMs': serializer.toJson<int?>(durationMs),
       'id': serializer.toJson<String>(id),
       'albumId': serializer.toJson<String>(albumId),
       'checksum': serializer.toJson<String?>(checksum),
@@ -929,7 +926,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     DateTime? updatedAt,
     i0.Value<int?> width = const i0.Value.absent(),
     i0.Value<int?> height = const i0.Value.absent(),
-    i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+    i0.Value<int?> durationMs = const i0.Value.absent(),
     String? id,
     String? albumId,
     i0.Value<String?> checksum = const i0.Value.absent(),
@@ -944,9 +941,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     updatedAt: updatedAt ?? this.updatedAt,
     width: width.present ? width.value : this.width,
     height: height.present ? height.value : this.height,
-    durationInSeconds: durationInSeconds.present
-        ? durationInSeconds.value
-        : this.durationInSeconds,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
     id: id ?? this.id,
     albumId: albumId ?? this.albumId,
     checksum: checksum.present ? checksum.value : this.checksum,
@@ -965,9 +960,9 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
-      durationInSeconds: data.durationInSeconds.present
-          ? data.durationInSeconds.value
-          : this.durationInSeconds,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
       id: data.id.present ? data.id.value : this.id,
       albumId: data.albumId.present ? data.albumId.value : this.albumId,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
@@ -993,7 +988,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
@@ -1013,7 +1008,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     updatedAt,
     width,
     height,
-    durationInSeconds,
+    durationMs,
     id,
     albumId,
     checksum,
@@ -1032,7 +1027,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           other.updatedAt == this.updatedAt &&
           other.width == this.width &&
           other.height == this.height &&
-          other.durationInSeconds == this.durationInSeconds &&
+          other.durationMs == this.durationMs &&
           other.id == this.id &&
           other.albumId == this.albumId &&
           other.checksum == this.checksum &&
@@ -1050,7 +1045,7 @@ class TrashedLocalAssetEntityCompanion
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> width;
   final i0.Value<int?> height;
-  final i0.Value<int?> durationInSeconds;
+  final i0.Value<int?> durationMs;
   final i0.Value<String> id;
   final i0.Value<String> albumId;
   final i0.Value<String?> checksum;
@@ -1065,7 +1060,7 @@ class TrashedLocalAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInSeconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
     this.albumId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
@@ -1081,7 +1076,7 @@ class TrashedLocalAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInSeconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     required String id,
     required String albumId,
     this.checksum = const i0.Value.absent(),
@@ -1101,7 +1096,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? width,
     i0.Expression<int>? height,
-    i0.Expression<int>? durationInSeconds,
+    i0.Expression<int>? durationMs,
     i0.Expression<String>? id,
     i0.Expression<String>? albumId,
     i0.Expression<String>? checksum,
@@ -1117,7 +1112,7 @@ class TrashedLocalAssetEntityCompanion
       if (updatedAt != null) 'updated_at': updatedAt,
       if (width != null) 'width': width,
       if (height != null) 'height': height,
-      if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
+      if (durationMs != null) 'duration_ms': durationMs,
       if (id != null) 'id': id,
       if (albumId != null) 'album_id': albumId,
       if (checksum != null) 'checksum': checksum,
@@ -1135,7 +1130,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Value<DateTime>? updatedAt,
     i0.Value<int?>? width,
     i0.Value<int?>? height,
-    i0.Value<int?>? durationInSeconds,
+    i0.Value<int?>? durationMs,
     i0.Value<String>? id,
     i0.Value<String>? albumId,
     i0.Value<String?>? checksum,
@@ -1151,7 +1146,7 @@ class TrashedLocalAssetEntityCompanion
       updatedAt: updatedAt ?? this.updatedAt,
       width: width ?? this.width,
       height: height ?? this.height,
-      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      durationMs: durationMs ?? this.durationMs,
       id: id ?? this.id,
       albumId: albumId ?? this.albumId,
       checksum: checksum ?? this.checksum,
@@ -1185,8 +1180,8 @@ class TrashedLocalAssetEntityCompanion
     if (height.present) {
       map['height'] = i0.Variable<int>(height.value);
     }
-    if (durationInSeconds.present) {
-      map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds.value);
+    if (durationMs.present) {
+      map['duration_ms'] = i0.Variable<int>(durationMs.value);
     }
     if (id.present) {
       map['id'] = i0.Variable<String>(id.value);
@@ -1227,7 +1222,7 @@ class TrashedLocalAssetEntityCompanion
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')

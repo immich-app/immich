@@ -54,8 +54,6 @@ export class AssetFactory {
       status: AssetStatus.Active,
       checksum: newSha1(),
       checksumAlgorithm: ChecksumAlgorithm.sha1File,
-      deviceAssetId: '',
-      deviceId: '',
       duplicateId: null,
       duration: null,
       fileCreatedAt: new Date(now++),

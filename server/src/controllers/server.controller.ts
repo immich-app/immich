@@ -11,7 +11,6 @@ import {
   ServerPingResponse,
   ServerStatsResponseDto,
   ServerStorageResponseDto,
-  ServerThemeDto,
   ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server.dto';
@@ -102,16 +101,6 @@ export class ServerController {
   })
   getServerFeatures(): Promise<ServerFeaturesDto> {
     return this.service.getFeatures();
-  }
-
-  @Get('theme')
-  @Endpoint({
-    summary: 'Get theme',
-    description: 'Retrieve the custom CSS, if existent.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  getTheme(): Promise<ServerThemeDto> {
-    return this.service.getTheme();
   }
 
   @Get('config')

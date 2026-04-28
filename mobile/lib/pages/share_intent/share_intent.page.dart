@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
@@ -66,7 +65,7 @@ class ShareIntentPage extends ConsumerWidget {
         ),
         leading: IconButton(
           onPressed: () {
-            context.navigateTo(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
+            context.navigateTo(const TabShellRoute());
           },
           icon: const Icon(Icons.arrow_back),
         ),

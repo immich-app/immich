@@ -309,7 +309,7 @@ describe('/tags', () => {
         .get(`/tags/${uuidDto.invalid}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
+      expect(body).toEqual(errorDto.badRequest(['[id] Invalid UUID']));
     });
 
     it('should get tag details', async () => {
@@ -427,7 +427,7 @@ describe('/tags', () => {
         .delete(`/tags/${uuidDto.invalid}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
+      expect(body).toEqual(errorDto.badRequest(['[id] Invalid UUID']));
     });
 
     it('should delete a tag', async () => {

@@ -71,12 +71,7 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
-    registerFallbackValue(
-      RemoteDeletedLocalAsset(
-        asset: LocalAssetStub.image1,
-        remoteDeletedAt: DateTime(2025, 1, 1),
-      ),
-    );
+    registerFallbackValue(RemoteDeletedLocalAsset(asset: LocalAssetStub.image1, remoteDeletedAt: DateTime(2025, 1, 1)));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
@@ -176,9 +171,9 @@ void main() {
       syncMigrationRepository: mockSyncMigrationRepo,
     );
 
-    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer(
-          (_) async => <String, List<RemoteDeletedLocalAsset>>{},
-    );
+    when(
+      () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+    ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
     when(() => mockTrashedLocalAssetRepo.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
@@ -549,12 +544,20 @@ void main() {
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
     });
 
-    test("does not request local deletions for permanent remote delete events", () async {
+    test("requests local deletions lookup by remote ids for permanent remote delete events", () async {
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((
+        invocation,
+      ) async {
+        final lookup = invocation.positionalArguments.first as Map<String, DateTime>;
+        expect(lookup.keys.toSet(), equals({'remote-asset'}));
+        return {};
+      });
+
       final events = [SyncStreamStub.assetDeleteV1];
 
       await simulateEvents(events);
 
-      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()));
+      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
     });
