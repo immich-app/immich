@@ -20,6 +20,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
+import 'package:immich_mobile/providers/asset_viewer/play_original_video_provider.dart'; // <--- new import
 
 class NativeVideoViewer extends ConsumerStatefulWidget {
   final BaseAsset asset;
@@ -43,7 +44,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   static final _log = Logger('NativeVideoViewer');
 
   NativeVideoPlayerController? _controller;
-  late final Future<VideoSource?> _videoSource;
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
@@ -54,13 +54,16 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _videoSource = _createSource();
+    ref.listenManual(playOriginalVideoOverrideProvider(widget.asset.heroTag), (previous, next) {
+      if (previous != null && previous != next) {
+        _loadVideo(forceReload: true);
+      }
+    });
   }
 
   @override
   void didUpdateWidget(NativeVideoViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (widget.isCurrent == oldWidget.isCurrent || _controller == null) return;
 
     if (!widget.isCurrent) {
@@ -68,7 +71,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       _notifier.pause();
       return;
     }
-
     // Prevent unnecessary loading when swiping between assets.
     _loadTimer = Timer(const Duration(milliseconds: 200), _loadVideo);
   }
@@ -93,22 +95,18 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
   }
 
-  Future<VideoSource?> _createSource() async {
+  Future<VideoSource?> _createSource({bool? playOriginalOverride}) async {
     if (!mounted) return null;
-
     final videoAsset = await ref.read(assetServiceProvider).getAsset(widget.asset) ?? widget.asset;
     if (!mounted) return null;
-
     try {
       if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
         final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
         final file = await StorageRepository().getFileForAsset(id);
         if (!mounted) return null;
-
         if (file == null) {
           throw Exception('No file found for the video');
         }
-
         // Pass a file:// URI so Android's Uri.parse doesn't
         // interpret characters like '#' as fragment identifiers.
         return VideoSource.init(
@@ -118,9 +116,8 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       }
 
       final remoteId = (videoAsset as RemoteAsset).id;
-
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-      final isOriginalVideo = ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo);
+      final bool isOriginalVideo = playOriginalOverride ?? ref.read(effectivePlayOriginalVideoProvider(widget.asset.heroTag));
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String videoUrl = videoAsset.livePhotoVideoId != null
           ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
@@ -135,27 +132,17 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   void _onPlaybackReady() async {
     if (!mounted || !widget.isCurrent) return;
-
     _notifier.onNativePlaybackReady();
-
-    // onPlaybackReady may be called multiple times, usually when more data
-    // loads. If this is not the first time that the player has become ready, we
-    // should not autoplay.
     if (_isVideoReady) return;
-
     setState(() => _isVideoReady = true);
-
     if (ref.read(assetViewerProvider).showingDetails) return;
-
     final autoPlayVideo = AppSetting.get(Setting.autoPlayVideo);
     if (autoPlayVideo || widget.asset.isMotionPhoto) await _notifier.play();
   }
 
   void _onPlaybackEnded() {
     if (!mounted) return;
-
     _notifier.onNativePlaybackEnded();
-
     if (_controller?.playbackInfo?.status == PlaybackStatus.stopped) {
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
     }
@@ -178,13 +165,17 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
   }
 
-  void _loadVideo() async {
+  void _loadVideo({bool forceReload = false}) async {
     final nc = _controller;
     if (nc == null || nc.videoSource != null || !mounted) return;
-
-    final source = await _videoSource;
+    if (forceReload) {
+      await _notifier.pause();
+      setState(() => _isVideoReady = false);
+    }
+    final source = await _createSource(
+      playOriginalOverride: ref.read(playOriginalVideoOverrideProvider(widget.asset.heroTag)),
+    );
     if (source == null || !mounted) return;
-
     await _notifier.load(source);
     final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
     await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
@@ -193,16 +184,12 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   void _initController(NativeVideoPlayerController nc) {
     if (_controller != null || !mounted) return;
-
     _notifier.attachController(nc);
-
     nc.onPlaybackPositionChanged.addListener(_onPlaybackPositionChanged);
     nc.onPlaybackStatusChanged.addListener(_onPlaybackStatusChanged);
     nc.onPlaybackReady.addListener(_onPlaybackReady);
     nc.onPlaybackEnded.addListener(_onPlaybackEnded);
-
     _controller = nc;
-
     if (widget.isCurrent) _loadVideo();
   }
 
@@ -210,7 +197,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
-
     return IgnorePointer(
       child: Stack(
         children: [
