@@ -6,6 +6,7 @@ enum Setting<T> {
   showStorageIndicator<bool>(StoreKey.storageIndicator, true),
   loadOriginal<bool>(StoreKey.loadOriginal, false),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, false),
+  loadOriginalVideoOnLocalNetwork<bool>(StoreKey.loadOriginalVideoOnLocalNetwork, false),
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, true),
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, false),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false),

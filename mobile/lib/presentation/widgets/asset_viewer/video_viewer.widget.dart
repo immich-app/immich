@@ -150,7 +150,8 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
       final isOriginalVideo =
           forceOriginal ||
-          (ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo) &&
+          ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo) ||
+          (ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideoOnLocalNetwork) &&
               await _isUsingLocalNetwork());
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String videoUrl = videoAsset.livePhotoVideoId != null

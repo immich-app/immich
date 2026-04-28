@@ -65,6 +65,7 @@ enum StoreKey<T> {
 
   // Video settings
   loadOriginalVideo<bool>._(136),
+  loadOriginalVideoOnLocalNetwork<bool>._(142),
   manageLocalMediaAndroid<bool>._(137),
 
   // Read-only Mode settings

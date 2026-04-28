@@ -34,6 +34,11 @@ enum AppSettingsEnum<T> {
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, "loadOriginalVideo", false),
+  loadOriginalVideoOnLocalNetwork<bool>(
+    StoreKey.loadOriginalVideoOnLocalNetwork,
+    "loadOriginalVideoOnLocalNetwork",
+    false,
+  ),
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),
   tapToNavigate<bool>(StoreKey.tapToNavigate, "tapToNavigate", false),
   mapThemeMode<int>(StoreKey.mapThemeMode, null, 0),

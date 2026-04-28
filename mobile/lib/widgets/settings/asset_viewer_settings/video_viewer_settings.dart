@@ -14,6 +14,9 @@ class VideoViewerSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final useLoopVideo = useAppSettingsState(AppSettingsEnum.loopVideo);
     final useOriginalVideo = useAppSettingsState(AppSettingsEnum.loadOriginalVideo);
+    final useOriginalVideoOnLocalNetwork = useAppSettingsState(
+      AppSettingsEnum.loadOriginalVideoOnLocalNetwork,
+    );
     final useAutoPlayVideo = useAppSettingsState(AppSettingsEnum.autoPlayVideo);
 
     return Column(
@@ -39,6 +42,12 @@ class VideoViewerSettings extends HookConsumerWidget {
           valueNotifier: useOriginalVideo,
           title: "setting_video_viewer_original_video_title".t(context: context),
           subtitle: "setting_video_viewer_original_video_subtitle".t(context: context),
+          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
+        ),
+        SettingsSwitchListTile(
+          valueNotifier: useOriginalVideoOnLocalNetwork,
+          title: "setting_video_viewer_original_video_on_local_network_title".t(context: context),
+          subtitle: "setting_video_viewer_original_video_on_local_network_subtitle".t(context: context),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],
