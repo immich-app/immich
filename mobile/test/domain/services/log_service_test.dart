@@ -4,7 +4,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/config/log_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/metadata_kind.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:logging/logging.dart';
@@ -30,21 +30,20 @@ final _kWarnLog = LogMessage(
 void main() {
   late LogService sut;
   late LogRepository mockLogRepo;
-  late MockCachedMetadataRepository mockMetadataRepository;
+  late MockMetadataRepository mockMetadataRepository;
 
   setUp(() async {
     mockLogRepo = MockLogRepository();
-    mockMetadataRepository = MockCachedMetadataRepository();
+    mockMetadataRepository = MockMetadataRepository();
 
     registerFallbackValue(_kInfoLog);
-    SystemConfig identityMutator(SystemConfig c) => c;
-    registerFallbackValue(identityMutator);
+    registerFallbackValue(LogLevel.info);
 
     when(() => mockLogRepo.truncate(limit: any(named: 'limit'))).thenAnswer((_) async => {});
     when(
-      () => mockMetadataRepository.read(MetadataKind.systemConfig),
+      () => mockMetadataRepository.systemConfig,
     ).thenReturn(const SystemConfig(log: LogConfig(level: LogLevel.fine)));
-    when(() => mockMetadataRepository.update<SystemConfig>(MetadataKind.systemConfig, any())).thenAnswer((_) async {});
+    when(() => mockMetadataRepository.write<LogLevel>(MetadataKey.logLevel, any())).thenAnswer((_) async {});
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
@@ -63,7 +62,7 @@ void main() {
     });
 
     test('Sets log level based on the metadata repository', () {
-      verify(() => mockMetadataRepository.read(MetadataKind.systemConfig)).called(1);
+      verify(() => mockMetadataRepository.systemConfig).called(1);
       expect(Logger.root.level, Level.FINE);
     });
   });
@@ -74,13 +73,10 @@ void main() {
     });
 
     test('Updates the log level via metadata repository', () {
-      final mutator =
-          verify(
-                () => mockMetadataRepository.update<SystemConfig>(MetadataKind.systemConfig, captureAny()),
-              ).captured.firstOrNull
-              as SystemConfig Function(SystemConfig)?;
-      final result = mutator?.call(const SystemConfig());
-      expect(result?.log.level, LogLevel.shout);
+      final captured = verify(
+        () => mockMetadataRepository.write<LogLevel>(MetadataKey.logLevel, captureAny()),
+      ).captured.firstOrNull;
+      expect(captured, LogLevel.shout);
     });
 
     test('Sets log level on logger', () {

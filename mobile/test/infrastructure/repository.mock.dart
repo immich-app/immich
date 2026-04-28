@@ -1,8 +1,8 @@
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/cached_metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -18,7 +18,7 @@ import 'package:mocktail/mocktail.dart';
 
 class MockDriftStoreRepository extends Mock implements DriftStoreRepository {}
 
-class MockCachedMetadataRepository extends Mock implements CachedMetadataRepository {}
+class MockMetadataRepository extends Mock implements MetadataRepository {}
 
 class MockLogRepository extends Mock implements LogRepository {}
 

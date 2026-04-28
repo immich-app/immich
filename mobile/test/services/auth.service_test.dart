@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -24,7 +25,7 @@ void main() {
   late MockNetworkService networkService;
   late MockBackgroundSyncManager backgroundSyncManager;
   late MockAppSettingService appSettingsService;
-  late MockCachedMetadataRepository metadataRepository;
+  late MockMetadataRepository metadataRepository;
   late Drift db;
 
   setUp(() async {
@@ -34,7 +35,7 @@ void main() {
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
     appSettingsService = MockAppSettingService();
-    metadataRepository = MockCachedMetadataRepository();
+    metadataRepository = MockMetadataRepository();
 
     sut = AuthService(
       authApiRepository,
@@ -114,6 +115,10 @@ void main() {
   });
 
   group('logout', () {
+    setUp(() {
+      when(() => metadataRepository.clearDomain(MetadataDomain.appConfig)).thenAnswer((_) async {});
+    });
+
     test('Should logout user', () async {
       when(() => authApiRepository.logout()).thenAnswer((_) async => {});
       when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/metadata_kind.dart';
-import 'package:immich_mobile/infrastructure/repositories/cached_metadata.repository.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
@@ -12,10 +12,10 @@ import 'package:logging/logging.dart';
 ///
 /// It listens to Dart's [Logger.root], buffers logs in memory (optionally),
 /// writes them to a persistent [LogRepository], and manages log levels via
-/// [CachedMetadataRepository].
+/// [MetadataRepository].
 class LogService {
   final LogRepository _logRepository;
-  final CachedMetadataRepository _metadataRepository;
+  final MetadataRepository _metadataRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -38,7 +38,7 @@ class LogService {
 
   static Future<LogService> init({
     required LogRepository logRepository,
-    required CachedMetadataRepository metadataRepository,
+    required MetadataRepository metadataRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -51,12 +51,12 @@ class LogService {
 
   static Future<LogService> create({
     required LogRepository logRepository,
-    required CachedMetadataRepository metadataRepository,
+    required MetadataRepository metadataRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, metadataRepository, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
-    final level = instance._metadataRepository.read(MetadataKind.systemConfig).log.level;
+    final level = instance._metadataRepository.systemConfig.log.level;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level.index) ?? Level.INFO;
     return instance;
   }
@@ -91,7 +91,7 @@ class LogService {
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _metadataRepository.update(MetadataKind.systemConfig, (current) => current.copyWith(logLevel: level));
+    await _metadataRepository.write(MetadataKey.logLevel, level);
     Logger.root.level = level.toLevel();
   }
 

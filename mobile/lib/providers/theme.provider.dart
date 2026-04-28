@@ -9,7 +9,7 @@ import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
-final immichThemeModeProvider = StateProvider<ThemeMode>((ref) => ref.read(appConfigProvider).theme.mode);
+final immichThemeModeProvider = StateProvider<ThemeMode>((ref) => ref.watch(appConfigProvider).theme.mode);
 
 final immichThemePresetProvider = StateProvider<ImmichColorPreset>((ref) {
   final appSettingsProvider = ref.watch(appSettingsServiceProvider);
