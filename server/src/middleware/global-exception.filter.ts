@@ -17,12 +17,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   }
 
   catch(error: Error, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const res = ctx.getResponse<Response>();
-    const { status, body } = this.fromError(error);
-    if (!res.headersSent) {
-      res.header(ImmichHeader.CorrelationId, this.cls.getId()).status(status).json(body);
-    }
+    this.handleError(host.switchToHttp().getResponse<Response>(), error);
   }
 
   handleError(res: Response, error: Error) {
