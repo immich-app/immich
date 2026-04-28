@@ -12,10 +12,12 @@ import 'package:immich_mobile/infrastructure/repositories/storage.repository.dar
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/play_original_video_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
@@ -43,7 +45,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   static final _log = Logger('NativeVideoViewer');
 
   NativeVideoPlayerController? _controller;
-  late final Future<VideoSource?> _videoSource;
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
@@ -54,7 +55,12 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _videoSource = _createSource();
+
+    ref.listenManual(playOriginalVideoProvider(widget.asset.heroTag), (previous, next) {
+      if (previous != null && previous != next) {
+        _loadVideo(forceReload: true);
+      }
+    });
   }
 
   @override
@@ -93,7 +99,29 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
   }
 
-  Future<VideoSource?> _createSource() async {
+  Future<bool> _isUsingLocalNetwork() async {
+    final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
+    final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+    if (localEndpoint != null &&
+        serverEndpoint != null &&
+        _normalizeUrl(localEndpoint) == _normalizeUrl(serverEndpoint)) {
+      return true;
+    }
+
+    final savedWifiName = Store.tryGet(StoreKey.preferredWifiName);
+    if (savedWifiName == null || savedWifiName.isEmpty) {
+      return false;
+    }
+
+    final wifiName = await ref.read(networkProvider.notifier).getWifiName();
+    return wifiName == savedWifiName;
+  }
+
+  String _normalizeUrl(String url) {
+    return url.replaceFirst(RegExp(r'/api/?$'), '').replaceFirst(RegExp(r'/+$'), '');
+  }
+
+  Future<VideoSource?> _createSource({required bool forceOriginal}) async {
     if (!mounted) return null;
 
     final videoAsset = await ref.read(assetServiceProvider).getAsset(widget.asset) ?? widget.asset;
@@ -120,7 +148,10 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final remoteId = (videoAsset as RemoteAsset).id;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-      final isOriginalVideo = ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo);
+      final isOriginalVideo =
+          forceOriginal ||
+          (ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo) &&
+              await _isUsingLocalNetwork());
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String videoUrl = videoAsset.livePhotoVideoId != null
           ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
@@ -178,11 +209,16 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
   }
 
-  void _loadVideo() async {
+  void _loadVideo({bool forceReload = false}) async {
     final nc = _controller;
-    if (nc == null || nc.videoSource != null || !mounted) return;
+    if (nc == null || (nc.videoSource != null && !forceReload) || !mounted) return;
 
-    final source = await _videoSource;
+    if (forceReload) {
+      await _notifier.pause();
+      setState(() => _isVideoReady = false);
+    }
+
+    final source = await _createSource(forceOriginal: ref.read(playOriginalVideoProvider(widget.asset.heroTag)));
     if (source == null || !mounted) return;
 
     await _notifier.load(source);
