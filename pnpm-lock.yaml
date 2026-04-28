@@ -366,8 +366,8 @@ importers:
         specifier: ^6.0.0
         version: 6.1.3(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)
       '@nestjs/swagger':
-        specifier: 11.4.1
-        version: 11.4.1(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2)
+        specifier: ^11.4.2
+        version: 11.4.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2)
       '@nestjs/websockets':
         specifier: ^11.0.4
         version: 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(@nestjs/platform-socket.io@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -511,7 +511,7 @@ importers:
         version: 7.0.1(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)
       nestjs-zod:
         specifier: ^5.3.0
-        version: 5.3.0(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.4.1(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6)
+        version: 5.3.0(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.4.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6)
       nodemailer:
         specifier: ^8.0.0
         version: 8.0.5
@@ -3601,8 +3601,8 @@ packages:
       prettier:
         optional: true
 
-  '@nestjs/swagger@11.4.1':
-    resolution: {integrity: sha512-GuGzs8F1Cb3n+eEarmOqB4nt2ai+x4XGOYUXNYplOtDeB59DaFY5E16bsHsBWXiWgD1ywbyKQ5OVv02bQtB1Dw==}
+  '@nestjs/swagger@11.4.2':
+    resolution: {integrity: sha512-aBihEogDMj/bLEcaqhkvyX/ZVWUw/bmnhKzR0zwUoyGJikvZyaq7rOPYl/H7Lxkkr3c90SJxyuv1AX2UT1WKlw==}
     peerDependencies:
       '@fastify/static': ^8.0.0 || ^9.0.0
       '@nestjs/common': ^11.0.1
@@ -16037,7 +16037,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@nestjs/swagger@11.4.1(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2)':
+  '@nestjs/swagger@11.4.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2)':
     dependencies:
       '@microsoft/tsdoc': 0.16.0
       '@nestjs/common': 11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -22704,14 +22704,14 @@ snapshots:
       response-time: 2.3.4
       tslib: 2.8.1
 
-  nestjs-zod@5.3.0(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.4.1(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6):
+  nestjs-zod@5.3.0(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.4.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6):
     dependencies:
       '@nestjs/common': 11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       deepmerge: 4.3.1
       rxjs: 7.8.2
       zod: 4.3.6
     optionalDependencies:
-      '@nestjs/swagger': 11.4.1(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2)
+      '@nestjs/swagger': 11.4.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-transformer@0.5.1)(reflect-metadata@0.2.2)
 
   next-tick@1.1.0: {}
 
