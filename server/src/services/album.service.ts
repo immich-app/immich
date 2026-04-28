@@ -114,7 +114,6 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Cannot share album with owner');
       }
     }
-    albumUsers.unshift({ userId: auth.user.id, role: AlbumUserRole.Owner });
 
     const allowedAssetIdsSet = await this.checkAccess({
       auth,
@@ -133,7 +132,7 @@ export class AlbumService extends BaseService {
         order: getPreferences(userMetadata).albums.defaultAssetOrder,
       },
       assetIds,
-      albumUsers,
+      [{ userId: auth.user.id, role: AlbumUserRole.Owner }, ...albumUsers],
       auth.user.id,
     );
 
