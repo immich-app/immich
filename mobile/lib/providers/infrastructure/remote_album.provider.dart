@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -8,7 +6,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
+import 'package:immich_mobile/providers/album/pending_album_uploads.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -109,8 +107,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
 
   /// Creates an album from a heterogeneous asset selection. Already-remote
   /// assets seed the album immediately; local-only assets are uploaded and
-  /// linked one-by-one as each upload completes. Per-asset progress is
-  /// reported via [assetUploadProgressProvider].
+  /// linked one-by-one as each upload completes.
   Future<RemoteAlbum?> createAlbumWithAssets({
     required String title,
     String? description,
@@ -123,18 +120,21 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       }
 
       final candidates = RemoteAlbumService.categorizeCandidates(assets);
-      final album = await _runWithProgressBridge(
-        candidates.localAssetsToUpload,
-        (callbacks) => _remoteAlbumService.createAlbumWithAssets(
-          title: title,
-          owner: currentUser,
-          description: description,
-          candidates: candidates,
-          uploadCallbacks: callbacks,
-        ),
+      final album = await _remoteAlbumService.createAlbumWithAssets(
+        title: title,
+        owner: currentUser,
+        description: description,
+        candidates: candidates,
       );
 
       state = state.copyWith(albums: [...state.albums, album]);
+
+      // The createAlbum API returns the album with its initial asset count, but
+      // any local-only assets are uploaded and linked afterward — re-read to
+      // pick up the post-upload junction rows.
+      if (candidates.localAssetsToUpload.isNotEmpty) {
+        await _refreshAlbumInState(album.id);
+      }
 
       return album;
     } catch (error, stack) {
@@ -193,14 +193,18 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<int> addAssets(String albumId, List<String> assetIds) {
-    return _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+  Future<int> addAssets(String albumId, List<String> assetIds) async {
+    final added = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+    if (added > 0) {
+      await _refreshAlbumInState(albumId);
+    }
+    return added;
   }
 
   /// Adds a heterogeneous asset selection to an album. Already-remote assets
-  /// are linked immediately; local-only assets are uploaded and linked one-by-
-  /// one as each upload completes. Per-asset progress is reported via
-  /// [assetUploadProgressProvider].
+  /// are linked immediately; local-only assets are queued in
+  /// [pendingAlbumUploadsProvider] (so the album page can show them with
+  /// progress indicators), uploaded, and linked one-by-one as each finishes.
   Future<int> addAssetsToAlbum(String albumId, Iterable<BaseAsset> assets) async {
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) {
@@ -208,60 +212,40 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     }
 
     final candidates = RemoteAlbumService.categorizeCandidates(assets);
+    final pendingNotifier = ref.read(pendingAlbumUploadsProvider(albumId).notifier);
+    pendingNotifier.enqueue(candidates.localAssetsToUpload);
+
     try {
-      return await _runWithProgressBridge(
-        candidates.localAssetsToUpload,
-        (callbacks) => _remoteAlbumService.addAssetsToAlbum(
-          albumId: albumId,
-          uploader: currentUser,
-          candidates: candidates,
-          uploadCallbacks: callbacks,
+      final added = await _remoteAlbumService.addAssetsToAlbum(
+        albumId: albumId,
+        uploader: currentUser,
+        candidates: candidates,
+        uploadCallbacks: UploadCallbacks(
+          onProgress: (localAssetId, _, bytes, totalBytes) {
+            final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
+            pendingNotifier.updateProgress(localAssetId, progress);
+          },
+          onSuccess: (localAssetId, _) => pendingNotifier.remove(localAssetId),
+          onError: (localAssetId, _) => pendingNotifier.markFailed(localAssetId),
         ),
       );
+      if (added > 0) {
+        await _refreshAlbumInState(albumId);
+      }
+      return added;
     } catch (error, stack) {
       _logger.severe('Failed to add assets to album $albumId', error, stack);
       rethrow;
     }
   }
 
-  /// Bridges [UploadCallbacks] from the service to [assetUploadProgressProvider]
-  /// and the manual upload cancel token, so the UI's existing progress overlays
-  /// pick up the work without each caller wiring it manually.
-  Future<T> _runWithProgressBridge<T>(
-    List<LocalAsset> localAssets,
-    Future<T> Function(UploadCallbacks callbacks) action,
-  ) async {
-    if (localAssets.isEmpty) {
-      return action(const UploadCallbacks());
-    }
-
-    final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
-    final cancelToken = Completer<void>();
-    ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
-
-    for (final asset in localAssets) {
-      progressNotifier.setProgress(asset.id, 0.0);
-    }
-
-    try {
-      return await action(
-        UploadCallbacks(
-          onProgress: (localAssetId, _, bytes, totalBytes) {
-            final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
-            progressNotifier.setProgress(localAssetId, progress);
-          },
-          onSuccess: (localAssetId, _) {
-            progressNotifier.remove(localAssetId);
-          },
-          onError: (localAssetId, _) {
-            progressNotifier.setError(localAssetId);
-          },
-        ),
-      );
-    } finally {
-      ref.read(manualUploadCancelTokenProvider.notifier).state = null;
-      Future.delayed(const Duration(seconds: 2), progressNotifier.clear);
-    }
+  /// Re-reads a single album from the local DB and replaces it in [state] so
+  /// that views bound to the album list (counts, thumbnails) reflect the
+  /// latest junction-table changes without a full `refresh()`.
+  Future<void> _refreshAlbumInState(String albumId) async {
+    final updated = await _remoteAlbumService.get(albumId);
+    if (updated == null) return;
+    state = state.copyWith(albums: state.albums.map((album) => album.id == albumId ? updated : album).toList());
   }
 
   Future<void> addUsers(String albumId, List<String> userIds) {
