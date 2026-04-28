@@ -22,7 +22,6 @@ export enum ImmichHeader {
   SharedLinkKey = 'x-immich-share-key',
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
-  Cid = 'x-immich-cid',
 }
 
 export enum ImmichQuery {
