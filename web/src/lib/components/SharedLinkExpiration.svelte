@@ -35,7 +35,7 @@
 
   const setSelectedDate = (value: DateTime | undefined) => {
     selectedPresetValue = null; // Clear preset when manually setting date
-    expiresAt = value ? value.toISO() : null;
+    expiresAt = value ? value.toUTC().toISO() : null;
   };
 
   const selectPreset = (value: number) => {
@@ -44,8 +44,8 @@
       expiresAt = null;
       return;
     }
-    const newDate = DateTime.now().plus(value);
-    expiresAt = newDate.toISO();
+    const newDate = DateTime.now().plus({ milliseconds: value });
+    expiresAt = newDate.toUTC().toISO();
   };
 
   const isSelected = (value: number) => {
