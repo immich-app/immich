@@ -21,7 +21,7 @@ import { AssetFileType, AssetVisibility, DatabaseExtension, ExifOrientation } fr
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
+import { AudioStreamInfo, VectorExtension, VideoFormat, VideoStreamInfo } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
