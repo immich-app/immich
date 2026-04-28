@@ -18,19 +18,17 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
 
   catch(error: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const res = ctx.getResponse<Response>();
     const { status, body } = this.fromError(error);
-    if (!response.headersSent) {
-      response.header(ImmichHeader.CorrelationId, this.cls.getId());
-      response.status(status).json(body);
+    if (!res.headersSent) {
+      res.header(ImmichHeader.CorrelationId, this.cls.getId()).status(status).json(body);
     }
   }
 
   handleError(res: Response, error: Error) {
     const { status, body } = this.fromError(error);
     if (!res.headersSent) {
-      res.header(ImmichHeader.CorrelationId, this.cls.getId());
-      res.status(status).json(body);
+      res.header(ImmichHeader.CorrelationId, this.cls.getId()).status(status).json(body);
     }
   }
 
