@@ -65,14 +65,8 @@ export class AssetTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  @Column()
-  deviceAssetId!: string;
-
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
-
-  @Column()
-  deviceId!: string;
 
   @Column()
   type!: AssetType;

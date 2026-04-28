@@ -18,10 +18,13 @@ class DatabaseBackupDto {
     required this.timezone,
   });
 
+  /// Backup filename
   String filename;
 
+  /// Backup file size
   num filesize;
 
+  /// Backup timezone
   String timezone;
 
   @override

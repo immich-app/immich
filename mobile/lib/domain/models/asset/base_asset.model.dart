@@ -1,3 +1,5 @@
+import 'package:immich_mobile/domain/models/exif.model.dart';
+
 part 'local_asset.model.dart';
 part 'remote_asset.model.dart';
 
@@ -68,6 +70,8 @@ sealed class BaseAsset {
   bool get hasLocal => storage == AssetState.local || storage == AssetState.merged;
   bool get isLocalOnly => storage == AssetState.local;
   bool get isRemoteOnly => storage == AssetState.remote;
+
+  bool get isEditable => false;
 
   // Overridden in subclasses
   AssetState get storage;

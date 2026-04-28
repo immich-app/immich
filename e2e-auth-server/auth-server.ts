@@ -66,7 +66,9 @@ const getClaims = (sub: string, use?: string) => {
 };
 
 const setup = async () => {
-  const { privateKey, publicKey } = await generateKeyPair('RS256');
+  const { privateKey, publicKey } = await generateKeyPair('RS256', {
+    extractable: true,
+  });
 
   const redirectUris = [
     'http://127.0.0.1:2285/auth/login',

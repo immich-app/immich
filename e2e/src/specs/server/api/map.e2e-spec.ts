@@ -109,7 +109,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lon=123')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
+      expect(body).toEqual(errorDto.badRequest(['[lat] Invalid input: expected number, received NaN']));
     });
 
     it('should throw an error if a lat is not a number', async () => {
@@ -117,7 +117,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lat=abc&lon=123.456')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
+      expect(body).toEqual(errorDto.badRequest(['[lat] Invalid input: expected number, received NaN']));
     });
 
     it('should throw an error if a lat is out of range', async () => {
@@ -125,7 +125,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lat=91&lon=123.456')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lat must be a number between -90 and 90']));
+      expect(body).toEqual(errorDto.badRequest(['[lat] Too big: expected number to be <=90']));
     });
 
     it('should throw an error if a lon is not provided', async () => {
@@ -133,7 +133,7 @@ describe('/map', () => {
         .get('/map/reverse-geocode?lat=75')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['lon must be a number between -180 and 180']));
+      expect(body).toEqual(errorDto.badRequest(['[lon] Invalid input: expected number, received NaN']));
     });
 
     const reverseGeocodeTestCases = [

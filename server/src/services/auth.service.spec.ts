@@ -13,6 +13,7 @@ import { SessionFactory } from 'test/factories/session.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { userStub } from 'test/fixtures/user.stub';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -209,11 +210,13 @@ describe(AuthService.name, () => {
     it('should sign up the admin', async () => {
       mocks.user.getAdmin.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue({
+        ...userStub.admin,
         ...dto,
         id: 'admin',
+        name: 'immich admin',
         createdAt: new Date('2021-01-01'),
         metadata: [] as UserMetadataItem[],
-      } as unknown as UserAdmin);
+      } as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
         avatarColor: expect.any(String),
@@ -628,6 +631,26 @@ describe(AuthService.name, () => {
       );
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
+    });
+
+    it('should normalize the email from the OAuth profile before linking', async () => {
+      const user = UserFactory.create();
+      const profile = OAuthProfileFactory.create({ email: '  TEST@IMMICH.CLOUD  ' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@immich.cloud');
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
     });
 

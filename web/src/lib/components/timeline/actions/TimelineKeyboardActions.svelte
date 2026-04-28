@@ -147,7 +147,6 @@
       { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
       { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
       { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
-      { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
       { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
       { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
       { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
@@ -166,6 +165,9 @@
         { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
         { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
       );
+    } else {
+      // conflicting shortcuts
+      shortcuts.push({ shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') });
     }
 
     return shortcuts;

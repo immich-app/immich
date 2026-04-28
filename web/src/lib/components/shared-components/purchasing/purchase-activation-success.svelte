@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   import { Button, Icon } from '@immich/ui';
   import { mdiPartyPopper } from '@mdi/js';
@@ -22,7 +22,7 @@
     <SettingSwitch
       title={$t('show_supporter_badge')}
       subtitle={$t('show_supporter_badge_description')}
-      bind:checked={$preferences.purchase.showSupportBadge}
+      bind:checked={authManager.preferences.purchase.showSupportBadge}
       onToggle={setSupportBadgeVisibility}
     />
   </div>

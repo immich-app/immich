@@ -6,7 +6,6 @@
   import { dateFormats } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   import {
@@ -30,12 +29,12 @@
     const serverInfo = await getAboutInfo();
     isServerProduct = serverInfo.licensed;
 
-    const userInfo = await getMyUser();
-    if (userInfo.license) {
-      $user = { ...$user, license: userInfo.license };
+    const response = await getMyUser();
+    if (response.license) {
+      authManager.setUser(response);
     }
 
-    if (isServerProduct && $user.isAdmin) {
+    if (isServerProduct && authManager.user.isAdmin) {
       serverPurchaseInfo = await getServerPurchaseInfo();
     }
   };
@@ -111,7 +110,7 @@
         <SettingSwitch
           title={$t('show_supporter_badge')}
           subtitle={$t('show_supporter_badge_description')}
-          bind:checked={$preferences.purchase.showSupportBadge}
+          bind:checked={authManager.preferences.purchase.showSupportBadge}
           onToggle={setSupportBadgeVisibility}
         />
       </div>
@@ -128,7 +127,7 @@
               {$t('purchase_server_title')}
             </p>
 
-            {#if $user.isAdmin && serverPurchaseInfo?.activatedAt}
+            {#if authManager.user.isAdmin && serverPurchaseInfo?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 {$t('purchase_activated_time', {
                   values: {
@@ -142,7 +141,7 @@
           </div>
         </div>
 
-        {#if $user.isAdmin}
+        {#if authManager.user.isAdmin}
           <div class="text-right mt-4">
             <Button shape="round" size="small" color="danger" onclick={removeServerProductKey}
               >{$t('purchase_button_remove_key')}</Button
@@ -159,11 +158,11 @@
             <p class="text-primary font-semibold text-lg">
               {$t('purchase_individual_title')}
             </p>
-            {#if $user.license?.activatedAt}
+            {#if authManager.user.license?.activatedAt}
               <p class="dark:text-white text-sm mt-1 col-start-2">
                 {$t('purchase_activated_time', {
                   values: {
-                    date: new Date($user.license?.activatedAt).toLocaleString($locale, dateFormats.settings),
+                    date: new Date(authManager.user.license?.activatedAt).toLocaleString($locale, dateFormats.settings),
                   },
                 })}
               </p>

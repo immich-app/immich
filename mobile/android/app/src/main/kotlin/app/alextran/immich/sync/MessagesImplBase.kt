@@ -94,11 +94,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
 
-    // _special_format requires S Extensions 21+
+    // _special_format: added in API level 37, also in S Extensions 21+
     // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
     private fun hasSpecialFormatColumn(): Boolean =
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-        SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21
+      Build.VERSION.SDK_INT >= 37 ||
+        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+          SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21)
   }
 
   protected fun getCursor(

@@ -13,6 +13,7 @@ part of openapi.api;
 class SystemConfigOAuthDto {
   /// Returns a new [SystemConfigOAuthDto] instance.
   SystemConfigOAuthDto({
+    required this.allowInsecureRequests,
     required this.autoLaunch,
     required this.autoRegister,
     required this.buttonText,
@@ -33,6 +34,9 @@ class SystemConfigOAuthDto {
     required this.tokenEndpointAuthMethod,
   });
 
+  /// Allow insecure requests
+  bool allowInsecureRequests;
+
   /// Auto launch
   bool autoLaunch;
 
@@ -51,7 +55,7 @@ class SystemConfigOAuthDto {
   /// Default storage quota
   ///
   /// Minimum value: 0
-  int? defaultStorageQuota;
+  num? defaultStorageQuota;
 
   /// Enabled
   bool enabled;
@@ -62,7 +66,7 @@ class SystemConfigOAuthDto {
   /// Mobile override enabled
   bool mobileOverrideEnabled;
 
-  /// Mobile redirect URI
+  /// Mobile redirect URI (set to empty string to disable)
   String mobileRedirectUri;
 
   /// Profile signing algorithm
@@ -74,6 +78,7 @@ class SystemConfigOAuthDto {
   /// Scope
   String scope;
 
+  /// Signing algorithm
   String signingAlgorithm;
 
   /// Storage label claim
@@ -85,13 +90,14 @@ class SystemConfigOAuthDto {
   /// Timeout
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int timeout;
 
-  /// Token endpoint auth method
   OAuthTokenEndpointAuthMethod tokenEndpointAuthMethod;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
+    other.allowInsecureRequests == allowInsecureRequests &&
     other.autoLaunch == autoLaunch &&
     other.autoRegister == autoRegister &&
     other.buttonText == buttonText &&
@@ -114,6 +120,7 @@ class SystemConfigOAuthDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (allowInsecureRequests.hashCode) +
     (autoLaunch.hashCode) +
     (autoRegister.hashCode) +
     (buttonText.hashCode) +
@@ -134,10 +141,11 @@ class SystemConfigOAuthDto {
     (tokenEndpointAuthMethod.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
+  String toString() => 'SystemConfigOAuthDto[allowInsecureRequests=$allowInsecureRequests, autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'allowInsecureRequests'] = this.allowInsecureRequests;
       json[r'autoLaunch'] = this.autoLaunch;
       json[r'autoRegister'] = this.autoRegister;
       json[r'buttonText'] = this.buttonText;
@@ -172,12 +180,15 @@ class SystemConfigOAuthDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigOAuthDto(
+        allowInsecureRequests: mapValueOfType<bool>(json, r'allowInsecureRequests')!,
         autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
         autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
         clientId: mapValueOfType<String>(json, r'clientId')!,
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
-        defaultStorageQuota: mapValueOfType<int>(json, r'defaultStorageQuota'),
+        defaultStorageQuota: json[r'defaultStorageQuota'] == null
+            ? null
+            : num.parse('${json[r'defaultStorageQuota']}'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
@@ -237,6 +248,7 @@ class SystemConfigOAuthDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'allowInsecureRequests',
     'autoLaunch',
     'autoRegister',
     'buttonText',

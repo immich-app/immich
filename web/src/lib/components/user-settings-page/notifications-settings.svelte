@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyPreferences } from '@immich/sdk';
   import { Button, Field, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
-  let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
-  let albumUpdateNotificationEnabled = $state($preferences?.emailNotifications?.albumUpdate ?? true);
+  let emailNotificationsEnabled = $state(authManager.preferences.emailNotifications?.enabled ?? true);
+  let albumInviteNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumInvite ?? true);
+  let albumUpdateNotificationEnabled = $state(authManager.preferences.emailNotifications?.albumUpdate ?? true);
 
   const handleSave = async () => {
     try {
-      const data = await updateMyPreferences({
+      const response = await updateMyPreferences({
         userPreferencesUpdateDto: {
           emailNotifications: {
             enabled: emailNotificationsEnabled,
@@ -22,10 +22,7 @@
         },
       });
 
-      $preferences.emailNotifications.enabled = data.emailNotifications.enabled;
-      $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
-      $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
-
+      authManager.setPreferences(response);
       toastManager.primary($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
