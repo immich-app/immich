@@ -183,8 +183,10 @@ class RemoteAlbumService {
     return album.added.length;
   }
 
-  /// Adds an asset selection to an album, uploading any local-only assets
-  /// first and linking each one as soon as its upload completes.
+  /// !TODO The name here is not clear as we have addAssets method above,
+  /// which is only add remote assets to album, for the next PR, we will allow
+  /// adding local assets from album from the timeline as well with this flow.
+  /// So saving that for the next refactor
   Future<int> addAssetsToAlbum({
     required String albumId,
     required UserDto uploader,

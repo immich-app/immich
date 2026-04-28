@@ -39,7 +39,8 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> addAssets(BuildContext context) async {
-    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(_album.id);
+    final notifier = ref.read(remoteAlbumProvider.notifier);
+    final albumAssets = await notifier.getAssets(_album.id);
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
       DriftAssetSelectionTimelineRoute(lockedSelectionAssets: albumAssets.toSet()),
@@ -49,7 +50,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       return;
     }
 
-    final added = await ref.read(remoteAlbumProvider.notifier).addAssetsToAlbum(_album.id, newAssets);
+    final added = await notifier.addAssetsToAlbum(_album.id, newAssets);
 
     if (added > 0 && context.mounted) {
       ImmichToast.show(
