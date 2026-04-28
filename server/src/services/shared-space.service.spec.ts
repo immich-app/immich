@@ -3520,6 +3520,28 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personId, { name: 'New Name' });
     });
 
+    it('should update person birth date', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const birthDate = '1984-05-09';
+      const person = factory.sharedSpacePerson({ id: personId, spaceId });
+      const updatedPerson = factory.sharedSpacePerson({ id: personId, spaceId, birthDate });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
+      mocks.sharedSpace.getPersonById
+        .mockResolvedValueOnce(person)
+        .mockResolvedValueOnce({ ...updatedPerson, personalName: null, personalThumbnailPath: null });
+      mocks.sharedSpace.updatePerson.mockResolvedValue(updatedPerson);
+      mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      const result = await sut.updateSpacePerson(auth, spaceId, personId, { birthDate });
+
+      expect(result.birthDate).toBe(birthDate);
+      expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personId, { birthDate });
+    });
+
     it('should reject representativeFaceId that does not belong to an asset in the space', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();

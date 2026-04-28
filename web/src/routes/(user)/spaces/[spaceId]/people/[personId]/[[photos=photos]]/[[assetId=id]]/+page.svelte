@@ -1,0 +1,376 @@
+<script lang="ts">
+  import { goto, invalidateAll } from '$app/navigation';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import PeopleMergeSelector from '$lib/components/people/people-merge-selector.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
+  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import RemoveFromSpaceAction from '$lib/components/timeline/actions/RemoveFromSpaceAction.svelte';
+  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+  import { createUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { locale } from '$lib/stores/preferences.store';
+  import {
+    getSpacePeople,
+    mergeSpacePeople,
+    SharedSpaceRole,
+    updateSpacePerson,
+    type SharedSpaceMemberResponseDto,
+    type SharedSpacePersonResponseDto,
+  } from '@immich/sdk';
+  import { ContextMenuButton, modalManager, toastManager, type ActionItem } from '@immich/ui';
+  import { mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiCalendarEditOutline, mdiDotsVertical } from '@mdi/js';
+  import { DateTime } from 'luxon';
+  import { tick } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
+
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
+
+  const PAGE_SIZE = 100;
+
+  const space = $derived(data.space);
+  const members: SharedSpaceMemberResponseDto[] = $derived(data.members);
+  const routeStateKey = $derived(`${data.space.id}:${data.person.id}:${data.person.updatedAt}:${data.action ?? ''}`);
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let personOverride = $state<SharedSpacePersonResponseDto>();
+  let personOverrideKey = $state('');
+  const person = $derived(personOverrideKey === routeStateKey && personOverride ? personOverride : data.person);
+  let isEditingName = $state(false);
+  let editedName = $state('');
+  let nameInput = $state<HTMLInputElement>();
+
+  let actionOverride = $state<string | null>();
+  let actionOverrideKey = $state('');
+  const action = $derived(actionOverrideKey === routeStateKey ? actionOverride : data.action);
+
+  const options = $derived({
+    spaceId: space.id,
+    spacePersonId: person.id,
+    withStacked: true,
+  });
+
+  const currentMember = $derived(members.find((member) => member.userId === authManager.user.id));
+  const isEditor = $derived(
+    currentMember?.role === SharedSpaceRole.Owner || currentMember?.role === SharedSpaceRole.Editor,
+  );
+  const thumbnailUrl = $derived(
+    createUrl(`/shared-spaces/${space.id}/people/${person.id}/thumbnail`, { updatedAt: person.updatedAt }),
+  );
+
+  const setPerson = (updatedPerson: SharedSpacePersonResponseDto) => {
+    personOverride = updatedPerson;
+    personOverrideKey = routeStateKey;
+  };
+
+  const setAction = (updatedAction: string | null) => {
+    actionOverride = updatedAction;
+    actionOverrideKey = routeStateKey;
+  };
+
+  const startEditingName = () => {
+    if (!isEditor) {
+      return;
+    }
+    editedName = person.name;
+    isEditingName = true;
+    void tick().then(() => nameInput?.focus());
+  };
+
+  const cancelEditingName = () => {
+    editedName = person.name;
+    isEditingName = false;
+  };
+
+  const saveName = async () => {
+    if (!isEditingName) {
+      return;
+    }
+
+    isEditingName = false;
+    if (editedName === person.name) {
+      return;
+    }
+
+    try {
+      const updatedPerson = await updateSpacePerson({
+        id: space.id,
+        personId: person.id,
+        sharedSpacePersonUpdateDto: { name: editedName },
+      });
+      setPerson({ ...person, ...updatedPerson, name: updatedPerson.name ?? editedName });
+      toastManager.success($t('change_name_successfully'));
+    } catch (error) {
+      editedName = person.name;
+      handleError(error, $t('errors.unable_to_save_name'));
+    }
+  };
+
+  const getThumbUrl = (person: SharedSpacePersonResponseDto): string => {
+    return createUrl(`/shared-spaces/${space.id}/people/${person.id}/thumbnail`, { updatedAt: person.updatedAt });
+  };
+
+  const getMergeDisplayName = (person: SharedSpacePersonResponseDto) => person.name || '';
+
+  const loadMergePeople = async () => {
+    return getSpacePeople({ id: space.id, limit: PAGE_SIZE });
+  };
+
+  const mergePeople = async (
+    targetPerson: SharedSpacePersonResponseDto,
+    selectedPeople: SharedSpacePersonResponseDto[],
+  ) => {
+    await mergeSpacePeople({
+      id: space.id,
+      personId: targetPerson.id,
+      sharedSpacePersonMergeDto: { ids: selectedPeople.map(({ id }) => id) },
+    });
+    toastManager.success($t('spaces_people_merged'));
+    return targetPerson;
+  };
+
+  const handleBack = async () => {
+    if (assetMultiSelectManager.selectionActive) {
+      assetMultiSelectManager.clear();
+      return;
+    }
+
+    await goto(`/spaces/${space.id}/people`);
+  };
+
+  const handleRemoveAssets = async (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+    setPerson({ ...person, assetCount: Math.max(0, person.assetCount - assetIds.length) });
+    await invalidateAll();
+  };
+
+  async function closeMergeFlow() {
+    setAction(null);
+    if (data.action === 'merge') {
+      await goto(`/spaces/${space.id}/people/${person.id}`, { replaceState: true });
+    }
+  }
+
+  async function handleMergeComplete(updatedPerson: SharedSpacePersonResponseDto) {
+    setPerson(updatedPerson);
+    setAction(null);
+    await invalidateAll();
+  }
+
+  async function openBirthDateModal() {
+    await modalManager.show(PersonEditBirthDateModal, {
+      birthDate: person.birthDate,
+      onSave: async (birthDate) => {
+        try {
+          const updatedPerson = await updateSpacePerson({
+            id: space.id,
+            personId: person.id,
+            sharedSpacePersonUpdateDto: { birthDate },
+          });
+          setPerson({ ...person, ...updatedPerson, birthDate: updatedPerson.birthDate ?? birthDate });
+          toastManager.success($t('date_of_birth_saved'));
+          return true;
+        } catch (error) {
+          handleError(error, $t('errors.unable_to_save_date_of_birth'));
+          return false;
+        }
+      },
+    });
+  }
+
+  const actionItems = $derived.by(() => {
+    const items: ActionItem[] = [];
+
+    if (isEditor) {
+      items.push(
+        {
+          title: $t('set_date_of_birth'),
+          icon: mdiCalendarEditOutline,
+          onAction: () => void openBirthDateModal(),
+        },
+        {
+          title: $t('merge_people'),
+          icon: mdiAccountMultipleCheckOutline,
+          onAction: () => setAction('merge'),
+        },
+      );
+    }
+
+    return items;
+  });
+</script>
+
+<main class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)">
+  {#key person.id}
+    <Timeline
+      enableRouting={true}
+      bind:timelineManager
+      {options}
+      assetInteraction={assetMultiSelectManager}
+      onEscape={handleBack}
+      spaceId={space.id}
+    >
+      <div class="relative w-fit p-4 pt-12 sm:px-6">
+        <section class="flex w-64 place-items-center border-black sm:w-96">
+          {#if isEditor}
+            <button
+              type="button"
+              class="relative flex items-center justify-center text-start"
+              aria-label={$t('edit_name')}
+              onclick={startEditingName}
+            >
+              <ImageThumbnail
+                circle
+                shadow
+                url={thumbnailUrl}
+                altText={person.name}
+                widthStyle="3.375rem"
+                heightStyle="3.375rem"
+              />
+            </button>
+          {:else}
+            <div class="relative flex items-center justify-center">
+              <ImageThumbnail
+                circle
+                shadow
+                url={thumbnailUrl}
+                altText={person.name}
+                widthStyle="3.375rem"
+                heightStyle="3.375rem"
+              />
+            </div>
+          {/if}
+          <div class="flex flex-col justify-center px-4 text-start text-primary">
+            {#if isEditingName}
+              <input
+                bind:this={nameInput}
+                bind:value={editedName}
+                class="w-40 rounded-lg bg-gray-100 px-2 py-1 font-medium text-primary outline-hidden focus:ring-2 focus:ring-immich-primary dark:bg-immich-dark-gray dark:focus:ring-immich-dark-primary sm:w-72"
+                placeholder={$t('add_a_name')}
+                aria-label={$t('edit_name')}
+                onblur={() => void saveName()}
+                onkeydown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.currentTarget.blur();
+                  }
+                  if (event.key === 'Escape') {
+                    cancelEditingName();
+                  }
+                }}
+              />
+            {:else if isEditor}
+              <button
+                type="button"
+                class="w-40 truncate text-start font-medium sm:w-72"
+                aria-label={$t('edit_name')}
+                onclick={startEditingName}
+              >
+                {person.name || $t('add_a_name')}
+              </button>
+            {:else}
+              <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
+            {/if}
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              {$t('assets_count', { values: { count: person.assetCount } })}
+            </p>
+            {#if person.birthDate}
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {$t('person_birthdate', {
+                  values: {
+                    date: DateTime.fromISO(person.birthDate).toLocaleString(
+                      {
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    ),
+                  },
+                })}
+              </p>
+            {/if}
+          </div>
+        </section>
+      </div>
+
+      {#snippet empty()}
+        <div class="mx-auto max-w-md py-16 text-center">
+          <p class="text-gray-500 dark:text-gray-400">{$t('spaces_no_person_assets')}</p>
+        </div>
+      {/snippet}
+    </Timeline>
+  {/key}
+</main>
+
+<header>
+  {#if assetMultiSelectManager.selectionActive}
+    <AssetSelectControlBar>
+      <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+      {#if isEditor}
+        <RemoveFromSpaceAction spaceId={space.id} onRemove={handleRemoveAssets} />
+      {/if}
+      {#if assetMultiSelectManager.isAllUserOwned}
+        <FavoriteAction
+          removeFavorite={assetMultiSelectManager.isAllFavorite}
+          onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
+        />
+      {/if}
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
+        <DownloadAction menuItem filename="{person.name || space.name || 'immich'}.zip" />
+        {#if assetMultiSelectManager.isAllUserOwned}
+          <ChangeDate menuItem />
+          <ChangeDescription menuItem />
+          <ChangeLocation menuItem />
+          <ArchiveAction
+            menuItem
+            unarchive={assetMultiSelectManager.isAllArchived}
+            onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
+          />
+        {/if}
+        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  {:else}
+    <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={handleBack}>
+      {#snippet trailing()}
+        {#if isEditor && action !== 'merge'}
+          <ContextMenuButton items={actionItems} aria-label={$t('show_person_options')} />
+        {/if}
+      {/snippet}
+    </ControlAppBar>
+  {/if}
+</header>
+
+{#if isEditor && action === 'merge'}
+  <PeopleMergeSelector
+    {person}
+    getDisplayName={getMergeDisplayName}
+    getThumbnailUrl={getThumbUrl}
+    loadPeople={loadMergePeople}
+    {mergePeople}
+    onBack={() => void closeMergeFlow()}
+    onMerge={(mergedPerson) => void handleMergeComplete(mergedPerson)}
+    showSimilaritySort={false}
+    loadErrorMessage={$t('spaces_error_loading_people')}
+    mergeErrorMessage={$t('spaces_error_merging_people')}
+  />
+{/if}

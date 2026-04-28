@@ -7,15 +7,26 @@
   import { t } from 'svelte-i18n';
 
   type Props = {
-    person: PersonResponseDto;
+    person?: PersonResponseDto;
+    birthDate?: string | null;
+    onSave?: (birthDate: string) => Promise<boolean | void>;
     onClose: () => void;
   };
 
-  let { person, onClose }: Props = $props();
-  let birthDate = $derived(person.birthDate ?? '');
+  let { person, birthDate: initialBirthDate = null, onSave, onClose }: Props = $props();
+  let birthDate = $derived(person?.birthDate ?? initialBirthDate ?? '');
+  const hasBirthDate = $derived(Boolean(person?.birthDate ?? initialBirthDate));
 
-  const onSubmit = async () => {
-    const success = await handleUpdatePersonBirthDate(person, birthDate);
+  const onSubmit = async (event: SubmitEvent) => {
+    const submittedBirthDate =
+      event.currentTarget instanceof HTMLFormElement
+        ? String(new FormData(event.currentTarget).get('birthDate') ?? birthDate)
+        : birthDate;
+    birthDate = submittedBirthDate;
+
+    const success = onSave
+      ? await onSave(submittedBirthDate)
+      : person && (await handleUpdatePersonBirthDate(person, submittedBirthDate));
     if (success) {
       onClose();
     }
@@ -35,7 +46,7 @@
       bind:value={birthDate}
       max={todayFormatted}
     />
-    {#if person.birthDate}
+    {#if hasBirthDate}
       <div class="flex justify-end">
         <Button shape="round" color="secondary" size="small" onclick={() => (birthDate = '')}>
           {$t('clear')}

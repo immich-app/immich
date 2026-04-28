@@ -32,10 +32,10 @@ describe('SpacePeopleStrip', () => {
     expect(screen.getByTestId('person-thumb-p2')).toBeInTheDocument();
   });
 
-  it('should display alias if present, otherwise name', () => {
+  it('should display canonical name when alias is present', () => {
     const people = [makePerson({ id: 'p1', name: 'Alice Johnson', alias: 'Mom' })];
     render(SpacePeopleStrip, { people, spaceId: 'space-1' });
-    expect(screen.getByTestId('person-label-p1')).toHaveTextContent('Mom');
+    expect(screen.getByTestId('person-label-p1')).toHaveTextContent('Alice Johnson');
   });
 
   it('should display name when no alias', () => {
@@ -76,11 +76,10 @@ describe('SpacePeopleStrip', () => {
     expect(screen.getByTestId('person-thumb-p3')).toBeInTheDocument();
   });
 
-  it('should keep people with alias even if name is empty', () => {
+  it('should exclude people with alias when canonical name is empty', () => {
     const people = [makePerson({ id: 'p1', name: '', alias: 'Mom' })];
     render(SpacePeopleStrip, { people, spaceId: 'space-1' });
-    expect(screen.getByTestId('person-thumb-p1')).toBeInTheDocument();
-    expect(screen.getByTestId('person-label-p1')).toHaveTextContent('Mom');
+    expect(screen.queryByTestId('person-thumb-p1')).not.toBeInTheDocument();
   });
 
   it('should show selected state with ring when person is in selectedPersonIds', () => {

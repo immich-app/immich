@@ -15,13 +15,13 @@
   let { people, spaceId, selectedPersonIds = [], onPersonClick }: Props = $props();
 
   const namedPeople = $derived(
-    [...people].filter((p) => !p.isHidden && (p.alias || p.name)).sort((a, b) => b.assetCount - a.assetCount),
+    [...people].filter((p) => !p.isHidden && p.name).sort((a, b) => b.assetCount - a.assetCount),
   );
 
   const SEE_ALL_THRESHOLD = 6;
 
   const getDisplayName = (person: SharedSpacePersonResponseDto): string => {
-    return person.alias || person.name || '';
+    return person.name || '';
   };
 
   const getThumbUrl = (person: SharedSpacePersonResponseDto): string => {
