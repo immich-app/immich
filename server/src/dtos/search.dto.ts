@@ -3,6 +3,7 @@ import { Place } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema } from 'src/dtos/album.dto';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
+import { TimeBucketsResponseSchema } from 'src/dtos/time-bucket.dto';
 import { AssetOrder, AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/enum';
 import { emptyStringToNull, IsNotSiblingOf, isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
@@ -92,6 +93,29 @@ const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
   page: z.number().min(1).optional().describe('Page number'),
   withSharedSpaces: z.boolean().optional().describe('Include shared spaces the user is a member of'),
 }).meta({ id: 'SmartSearchDto' });
+
+const SmartSearchFacetsSchema = BaseSearchSchema.pick({
+  type: true,
+  isFavorite: true,
+  takenBefore: true,
+  takenAfter: true,
+  city: true,
+  country: true,
+  make: true,
+  model: true,
+  personIds: true,
+  tagIds: true,
+  rating: true,
+  spaceId: true,
+  spacePersonIds: true,
+})
+  .extend({
+    query: z.string().trim().optional().describe('Natural language search query'),
+    queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
+    language: z.string().optional().describe('Search language code'),
+    withSharedSpaces: z.boolean().optional().describe('Include shared spaces the user is a member of'),
+  })
+  .meta({ id: 'SmartSearchFacetsDto' });
 
 const SearchPlacesSchema = z
   .object({
@@ -208,6 +232,24 @@ const FilterSuggestionsResponseSchema = z
   })
   .meta({ id: 'FilterSuggestionsResponseDto' });
 
+const SmartSearchFacetsResponseSchema = z
+  .object({
+    total: z.int().nonnegative().describe('Exact count after applying all active smart-search filters'),
+    timeBuckets: z
+      .array(TimeBucketsResponseSchema)
+      .describe('Available monthly buckets for the smart-search result set'),
+    countries: z.array(z.string()).describe('Available countries'),
+    cities: z.array(z.string()).describe('Available cities for the current smart-search country scope'),
+    cameraMakes: z.array(z.string()).describe('Available camera makes'),
+    cameraModels: z.array(z.string()).describe('Available camera models for the current smart-search make scope'),
+    tags: z.array(FilterSuggestionsTagSchema).describe('Available tags'),
+    people: z.array(FilterSuggestionsPersonSchema).describe('Available people'),
+    ratings: z.array(z.number()).describe('Available ratings'),
+    mediaTypes: z.array(AssetTypeSchema).describe('Available media types'),
+    hasUnnamedPeople: z.boolean().describe('Whether unnamed people exist in the filtered smart-search set'),
+  })
+  .meta({ id: 'SmartSearchFacetsResponseDto' });
+
 const FilterSuggestionsRequestBaseSchema = z.object({
   personIds: z
     .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(z.uuidv4()))
@@ -242,6 +284,8 @@ export class LargeAssetSearchDto extends createZodDto(LargeAssetSearchSchema) {}
 export class MetadataSearchDto extends createZodDto(MetadataSearchSchema) {}
 export class StatisticsSearchDto extends createZodDto(StatisticsSearchSchema) {}
 export class SmartSearchDto extends createZodDto(SmartSearchSchema) {}
+export class SmartSearchFacetsDto extends createZodDto(SmartSearchFacetsSchema) {}
+export class SmartSearchFacetsResponseDto extends createZodDto(SmartSearchFacetsResponseSchema) {}
 export class SearchPlacesDto extends createZodDto(SearchPlacesSchema) {}
 export class SearchPeopleDto extends createZodDto(SearchPeopleSchema) {}
 export class PlacesResponseDto extends createZodDto(PlacesResponseSchema) {}

@@ -18,6 +18,8 @@ import {
   SearchStatisticsResponseDto,
   SearchSuggestionRequestDto,
   SmartSearchDto,
+  SmartSearchFacetsDto,
+  SmartSearchFacetsResponseDto,
   StatisticsSearchDto,
   TagSuggestionRequestDto,
   TagSuggestionResponseDto,
@@ -89,6 +91,18 @@ export class SearchController {
   })
   searchSmart(@Auth() auth: AuthDto, @Body() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
+  }
+
+  @Post('smart/facets')
+  @Authenticated({ permission: Permission.AssetRead })
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Smart asset search facets',
+    description: 'Retrieve filter facets and timeline buckets for the full smart-search result set.',
+    history: new HistoryBuilder().added('v1'),
+  })
+  searchSmartFacets(@Auth() auth: AuthDto, @Body() dto: SmartSearchFacetsDto): Promise<SmartSearchFacetsResponseDto> {
+    return this.service.searchSmartFacets(auth, dto);
   }
 
   @Get('explore')

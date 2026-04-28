@@ -331,6 +331,8 @@ part 'model/shared_space_role.dart';
 part 'model/shared_space_update_dto.dart';
 part 'model/sign_up_dto.dart';
 part 'model/smart_search_dto.dart';
+part 'model/smart_search_facets_dto.dart';
+part 'model/smart_search_facets_response_dto.dart';
 part 'model/source_type.dart';
 part 'model/stack_create_dto.dart';
 part 'model/stack_response_dto.dart';

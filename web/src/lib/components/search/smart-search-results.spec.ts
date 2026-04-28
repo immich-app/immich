@@ -24,6 +24,7 @@ const baseProps = {
   filters: baseFilters,
   isShared: false,
   withSharedSpaces: true,
+  language: 'en',
 };
 
 const mockEmptyResult = { assets: { items: [], nextPage: null } };
@@ -76,6 +77,23 @@ describe('SmartSearchResults', () => {
     expect(searchSmartMock).toHaveBeenCalledTimes(2);
     expect(searchSmartMock).toHaveBeenLastCalledWith(
       expect.objectContaining({ smartSearchDto: expect.objectContaining({ city: 'Berlin' }) }),
+    );
+  });
+
+  it('forwards language and refetches when language changes', async () => {
+    const { rerender } = render(SmartSearchResults, { props: baseProps });
+    await vi.advanceTimersByTimeAsync(SEARCH_FILTER_DEBOUNCE_MS);
+
+    expect(searchSmartMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ smartSearchDto: expect.objectContaining({ language: 'en' }) }),
+    );
+
+    await rerender({ ...baseProps, language: 'de' });
+    await vi.advanceTimersByTimeAsync(SEARCH_FILTER_DEBOUNCE_MS);
+
+    expect(searchSmartMock).toHaveBeenCalledTimes(2);
+    expect(searchSmartMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ smartSearchDto: expect.objectContaining({ language: 'de' }) }),
     );
   });
 
@@ -223,6 +241,20 @@ describe('SmartSearchResults', () => {
     expect(searchSmartMock).toHaveBeenCalledWith(
       expect.objectContaining({ smartSearchDto: expect.objectContaining({ withSharedSpaces: true }) }),
     );
+  });
+
+  it('forwards route-provided exact total to the result grid', async () => {
+    searchSmartMock.mockResolvedValueOnce({
+      assets: {
+        items: [{ id: 'asset-1', originalFileName: 'photo.jpg' }],
+        nextPage: '2',
+      },
+    });
+
+    const { getByTestId } = render(SmartSearchResults, { props: { ...baseProps, total: 42 } });
+    await vi.advanceTimersByTimeAsync(SEARCH_FILTER_DEBOUNCE_MS);
+
+    expect(getByTestId('result-count')).toHaveTextContent('42 results');
   });
 
   // Test 57 — render assertion for isShared on the dumb grid

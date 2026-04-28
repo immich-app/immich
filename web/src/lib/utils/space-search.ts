@@ -1,16 +1,29 @@
 import { buildFilterContext, type FilterState } from '$lib/components/filter-panel/filter-panel';
-import { AssetOrder, AssetTypeEnum, type SmartSearchDto } from '@immich/sdk';
+import { createUrl } from '$lib/utils';
+import {
+  AssetOrder,
+  AssetTypeEnum,
+  type SmartSearchDto,
+  type SmartSearchFacetsDto,
+  type SmartSearchFacetsResponseDto,
+} from '@immich/sdk';
 
 export const SEARCH_FILTER_DEBOUNCE_MS = 250;
 
-export function buildSmartSearchParams(args: {
+type SmartSearchParamsArgs = {
   query: string;
   filters: FilterState;
   spaceId?: string;
   withSharedSpaces?: boolean;
-}): SmartSearchDto {
-  const { query, filters, spaceId, withSharedSpaces } = args;
+  language?: string;
+};
+
+export function buildSmartSearchParams(args: SmartSearchParamsArgs): SmartSearchDto {
+  const { query, filters, spaceId, withSharedSpaces, language } = args;
   const params: SmartSearchDto = { query };
+  if (language) {
+    params.language = language;
+  }
 
   if (spaceId) {
     params.spaceId = spaceId;
@@ -66,4 +79,52 @@ export function buildSmartSearchParams(args: {
   }
 
   return params;
+}
+
+export function buildSmartSearchFacetsParams(args: SmartSearchParamsArgs): SmartSearchFacetsDto {
+  const { order: _, ...params } = buildSmartSearchParams(args);
+  return params;
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJson(item)).join(',')}]`;
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`)
+      .join(',')}}`;
+  }
+
+  return JSON.stringify(value);
+}
+
+export function buildSmartSearchFacetKey(args: SmartSearchParamsArgs): string {
+  return stableJson(buildSmartSearchFacetsParams(args));
+}
+
+export function mapSmartSearchFacetsToFilterSuggestions(
+  facets: SmartSearchFacetsResponseDto,
+  options: { spaceId?: string } = {},
+) {
+  return {
+    countries: facets.countries,
+    cities: facets.cities,
+    cameraMakes: facets.cameraMakes,
+    cameraModels: facets.cameraModels,
+    tags: facets.tags.map((tag) => ({ id: tag.id, name: tag.value })),
+    people: facets.people.map((person) => ({
+      id: person.id,
+      name: person.name,
+      thumbnailUrl: options.spaceId
+        ? createUrl(`/shared-spaces/${options.spaceId}/people/${person.id}/thumbnail`)
+        : createUrl(`/people/${person.id}/thumbnail`),
+    })),
+    ratings: facets.ratings,
+    mediaTypes: facets.mediaTypes,
+    hasUnnamedPeople: facets.hasUnnamedPeople,
+  };
 }

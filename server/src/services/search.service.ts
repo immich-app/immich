@@ -18,6 +18,8 @@ import {
   SearchSuggestionRequestDto,
   SearchSuggestionType,
   SmartSearchDto,
+  SmartSearchFacetsDto,
+  SmartSearchFacetsResponseDto,
   StatisticsSearchDto,
   TagSuggestionRequestDto,
   TagSuggestionResponseDto,
@@ -34,6 +36,19 @@ import { isSmartSearchEnabled } from 'src/utils/misc';
 // module load so toggling requires a server restart (keeps the hot path free
 // of env reads).
 const searchTimingEnabled = process.env.GALLERY_SEARCH_TIMING === 'true';
+
+type ResolvedSmartSearch = {
+  options: Omit<SmartSearchDto, 'page' | 'size' | 'order'> & {
+    embedding: string;
+    userIds: string[];
+    timelineSpaceIds?: string[];
+    maxDistance?: number;
+    orderDirection?: SmartSearchDto['order'];
+  };
+  embeddingSource: 'cache' | 'ml' | 'asset';
+  encodeMs: number;
+  timelineSpaceCount: number;
+};
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -127,98 +142,53 @@ export class SearchService extends BaseService {
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
     const t0 = performance.now();
-    if (dto.visibility === AssetVisibility.Locked) {
-      requireElevatedPermission(auth);
-    }
-
-    if (dto.spaceId && dto.withSharedSpaces) {
-      throw new BadRequestException('Cannot use both spaceId and withSharedSpaces');
-    }
-
-    if (dto.spaceId) {
-      await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
-    }
-
-    if (dto.spacePersonIds?.length && !dto.spaceId) {
-      throw new BadRequestException('spacePersonIds requires spaceId');
-    }
-
-    // Cached read — the uncached path runs class-transformer + class-validator over
-    // the full nested SystemConfigDto, which is ~1-3s per call on slower CPUs and
-    // dominates smart-search latency. Cache invalidates on ConfigUpdate.
-    const { machineLearning } = await this.getConfig({ withCache: true });
-    if (!isSmartSearchEnabled(machineLearning)) {
-      throw new BadRequestException('Smart search is not enabled');
-    }
-
-    const userIds = this.getUserIdsToSearch(auth);
-    const tSetup = performance.now();
-
-    let embedding;
-    let encodeMs = 0;
-    let embeddingSource: 'cache' | 'ml' | 'asset' = 'cache';
-    if (dto.query) {
-      const key = machineLearning.clip.modelName + dto.query + dto.language;
-      embedding = this.embeddingCache.get(key);
-      if (!embedding) {
-        embeddingSource = 'ml';
-        const tEncodeStart = performance.now();
-        embedding = await this.machineLearningRepository.encodeText(dto.query, {
-          modelName: machineLearning.clip.modelName,
-          language: dto.language,
-        });
-        encodeMs = performance.now() - tEncodeStart;
-        this.embeddingCache.set(key, embedding);
-      }
-    } else if (dto.queryAssetId) {
-      embeddingSource = 'asset';
-      await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.queryAssetId] });
-      const assetEmbedding = await this.searchRepository.getEmbedding(dto.queryAssetId);
-      if (!assetEmbedding) {
-        throw new BadRequestException(`Asset ${dto.queryAssetId} has no embedding`);
-      }
-      embedding = assetEmbedding;
-    } else {
-      throw new BadRequestException('Either `query` or `queryAssetId` must be set');
-    }
-    const tEmbedding = performance.now();
+    const { options, embeddingSource, encodeMs, timelineSpaceCount } = await this.resolveSmartSearch(auth, dto, {
+      includeOrder: true,
+    });
+    const tResolved = performance.now();
     const page = dto.page ?? 1;
     const size = dto.size || 100;
 
-    let timelineSpaceIds: string[] | undefined;
-    if (dto.withSharedSpaces) {
-      const spaceRows = await this.sharedSpaceRepository.getSpaceIdsForTimeline(auth.user.id);
-      if (spaceRows.length > 0) {
-        timelineSpaceIds = spaceRows.map((row) => row.spaceId);
-      }
-    }
-    const tSpaces = performance.now();
-
-    const { hasNextPage, items } = await this.searchRepository.searchSmart(
-      { page, size },
-      {
-        ...dto,
-        timelineSpaceIds,
-        userIds: await userIds,
-        embedding,
-        orderDirection: dto.order,
-        maxDistance: machineLearning.clip.maxDistance,
-      },
-    );
+    const { hasNextPage, items } = await this.searchRepository.searchSmart({ page, size }, options);
     const tDb = performance.now();
 
     if (searchTimingEnabled) {
       this.logger.log(
         `searchSmart total=${(tDb - t0).toFixed(0)}ms ` +
-          `setup=${(tSetup - t0).toFixed(0)}ms ` +
-          `embedding=${(tEmbedding - tSetup).toFixed(0)}ms(src=${embeddingSource}${embeddingSource === 'ml' ? `,encode=${encodeMs.toFixed(0)}ms` : ''}) ` +
-          `spaces=${(tSpaces - tEmbedding).toFixed(0)}ms(count=${timelineSpaceIds?.length ?? 0}) ` +
-          `db=${(tDb - tSpaces).toFixed(0)}ms(rows=${items.length}) ` +
+          `resolve=${(tResolved - t0).toFixed(0)}ms(src=${embeddingSource}${
+            embeddingSource === 'ml' ? `,encode=${encodeMs.toFixed(0)}ms` : ''
+          },spaces=${timelineSpaceCount}) ` +
+          `db=${(tDb - tResolved).toFixed(0)}ms(rows=${items.length}) ` +
           `query="${dto.query?.slice(0, 60) ?? ''}" size=${size}`,
       );
     }
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+  }
+
+  async searchSmartFacets(auth: AuthDto, dto: SmartSearchFacetsDto): Promise<SmartSearchFacetsResponseDto> {
+    const t0 = performance.now();
+    const { options, embeddingSource, encodeMs, timelineSpaceCount } = await this.resolveSmartSearch(auth, dto, {
+      includeOrder: false,
+    });
+    const tResolved = performance.now();
+
+    const result = await this.searchRepository.getSmartSearchFacets(options);
+    const tDb = performance.now();
+
+    if (searchTimingEnabled) {
+      this.logger.log(
+        `searchSmartFacets total=${(tDb - t0).toFixed(0)}ms ` +
+          `resolve=${(tResolved - t0).toFixed(0)}ms(src=${embeddingSource}${
+            embeddingSource === 'ml' ? `,encode=${encodeMs.toFixed(0)}ms` : ''
+          }) ` +
+          `spaces=${timelineSpaceCount} ` +
+          `db=${(tDb - tResolved).toFixed(0)}ms(total=${result.total}) ` +
+          `query="${dto.query?.slice(0, 60) ?? ''}"`,
+      );
+    }
+
+    return { ...result, people: result.people.toSorted((a, b) => a.name.localeCompare(b.name)) };
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
@@ -344,6 +314,91 @@ export class SearchService extends BaseService {
         return Promise.resolve([]);
       }
     }
+  }
+
+  private async resolveSmartSearch(
+    auth: AuthDto,
+    dto: SmartSearchDto | SmartSearchFacetsDto,
+    options: { includeOrder: boolean },
+  ): Promise<ResolvedSmartSearch> {
+    if ('visibility' in dto && dto.visibility === AssetVisibility.Locked) {
+      requireElevatedPermission(auth);
+    }
+
+    if (dto.spaceId && dto.withSharedSpaces) {
+      throw new BadRequestException('Cannot use both spaceId and withSharedSpaces');
+    }
+
+    if (dto.spaceId) {
+      await this.requireAccess({ auth, permission: Permission.SharedSpaceRead, ids: [dto.spaceId] });
+    }
+
+    if (dto.spacePersonIds?.length && !dto.spaceId) {
+      throw new BadRequestException('spacePersonIds requires spaceId');
+    }
+
+    // Cached read — the uncached path runs class-transformer + class-validator over
+    // the full nested SystemConfigDto, which is ~1-3s per call on slower CPUs and
+    // dominates smart-search latency. Cache invalidates on ConfigUpdate.
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    if (!isSmartSearchEnabled(machineLearning)) {
+      throw new BadRequestException('Smart search is not enabled');
+    }
+
+    let embedding: string | undefined;
+    let encodeMs = 0;
+    let embeddingSource: 'cache' | 'ml' | 'asset' = 'cache';
+    if (dto.query) {
+      const key = machineLearning.clip.modelName + dto.query + dto.language;
+      embedding = this.embeddingCache.get(key);
+      if (!embedding) {
+        embeddingSource = 'ml';
+        const tEncodeStart = performance.now();
+        embedding = await this.machineLearningRepository.encodeText(dto.query, {
+          modelName: machineLearning.clip.modelName,
+          language: dto.language,
+        });
+        encodeMs = performance.now() - tEncodeStart;
+        this.embeddingCache.set(key, embedding);
+      }
+    } else if (dto.queryAssetId) {
+      embeddingSource = 'asset';
+      await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.queryAssetId] });
+      const assetEmbedding = await this.searchRepository.getEmbedding(dto.queryAssetId);
+      if (!assetEmbedding) {
+        throw new BadRequestException(`Asset ${dto.queryAssetId} has no embedding`);
+      }
+      embedding = assetEmbedding;
+    } else {
+      throw new BadRequestException('Either `query` or `queryAssetId` must be set');
+    }
+
+    let timelineSpaceIds: string[] | undefined;
+    if (dto.withSharedSpaces) {
+      const spaceRows = await this.sharedSpaceRepository.getSpaceIdsForTimeline(auth.user.id);
+      if (spaceRows.length > 0) {
+        timelineSpaceIds = spaceRows.map((row) => row.spaceId);
+      }
+    }
+
+    const resolvedOptions = {
+      ...dto,
+      timelineSpaceIds,
+      userIds: await this.getUserIdsToSearch(auth),
+      embedding,
+      maxDistance: machineLearning.clip.maxDistance,
+    };
+
+    if (options.includeOrder) {
+      Object.assign(resolvedOptions, { orderDirection: 'order' in dto ? dto.order : undefined });
+    }
+
+    return {
+      options: resolvedOptions,
+      embeddingSource,
+      encodeMs,
+      timelineSpaceCount: timelineSpaceIds?.length ?? 0,
+    };
   }
 
   private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {

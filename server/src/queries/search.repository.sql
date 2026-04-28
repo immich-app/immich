@@ -145,6 +145,512 @@ offset
   $14
 commit
 
+-- SearchRepository.getSmartSearchFacets
+begin
+set
+  local vchordrq.probes = 1
+drop table if exists smart_search_facet_candidates
+create temporary table smart_search_facet_candidates on
+commit
+drop as (
+  select
+    "asset"."id"
+  from
+    "asset"
+    inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+  where
+    "asset"."visibility" = $1
+    and (
+      "asset"."ownerId" = any ($2::uuid[])
+      or exists (
+        select
+        from
+          "shared_space_asset"
+        where
+          "shared_space_asset"."assetId" = "asset"."id"
+          and "shared_space_asset"."spaceId" = any ($3::uuid[])
+      )
+      or exists (
+        select
+        from
+          "shared_space_library"
+        where
+          "shared_space_library"."libraryId" = "asset"."libraryId"
+          and "shared_space_library"."spaceId" = any ($4::uuid[])
+      )
+    )
+    and "asset"."deletedAt" is null
+    and (smart_search.embedding <=> $5) <= $6
+    and "smart_search"."embedding" is not null
+)
+create index smart_search_facet_candidates_asset_id_idx on smart_search_facet_candidates ("id")
+select
+  count(*) as "count"
+from
+  (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset"."type" = $5
+      and "asset_exif"."country" = $6
+      and "asset_exif"."make" = $7
+      and "asset_exif"."rating" >= $8
+  ) as "filtered"
+with
+  "asset" as (
+    select
+      date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "timeBucket"
+    from
+      "asset"
+    where
+      "asset"."id" in (
+        select
+          "asset"."id"
+        from
+          "asset"
+          inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+          inner join (
+            select
+              "assetId"
+            from
+              "tag_asset"
+              inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+            where
+              "tag_closure"."id_ancestor" = any ($1::uuid[])
+            group by
+              "assetId"
+            having
+              count(distinct "tag_closure"."id_ancestor") >= $2
+          ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+        where
+          "asset"."id" in (
+            select
+              "candidates"."id"
+            from
+              smart_search_facet_candidates as "candidates"
+          )
+          and "asset"."type" = $3
+          and "asset_exif"."country" = $4
+          and "asset_exif"."make" = $5
+          and "asset_exif"."rating" >= $6
+      )
+  )
+select
+  ("timeBucket" AT TIME ZONE 'UTC')::date::text as "timeBucket",
+  count(*) as "count"
+from
+  "asset"
+group by
+  "timeBucket"
+order by
+  "timeBucket" desc
+select distinct
+  "country"
+from
+  "asset_exif"
+where
+  "assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset"."type" = $5
+      and "asset_exif"."make" = $6
+      and "asset_exif"."rating" >= $7
+  )
+  and "country" is not null
+  and "country" != $8
+order by
+  "country"
+select distinct
+  "city"
+from
+  "asset_exif"
+where
+  "assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset"."type" = $5
+      and "asset_exif"."country" = $6
+      and "asset_exif"."make" = $7
+      and "asset_exif"."rating" >= $8
+  )
+  and "city" is not null
+  and "city" != $9
+order by
+  "city"
+select distinct
+  "make"
+from
+  "asset_exif"
+where
+  "assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset"."type" = $5
+      and "asset_exif"."country" = $6
+      and "asset_exif"."rating" >= $7
+  )
+  and "make" is not null
+  and "make" != $8
+order by
+  "make"
+select distinct
+  "model"
+from
+  "asset_exif"
+where
+  "assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset"."type" = $5
+      and "asset_exif"."country" = $6
+      and "asset_exif"."make" = $7
+      and "asset_exif"."rating" >= $8
+  )
+  and "model" is not null
+  and "model" != $9
+order by
+  "model"
+select distinct
+  "tag"."id",
+  "tag"."value"
+from
+  "tag"
+  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+where
+  "tag_asset"."assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $1
+      and "asset"."fileCreatedAt" <= $2
+      and "asset"."type" = $3
+      and "asset_exif"."country" = $4
+      and "asset_exif"."make" = $5
+      and "asset_exif"."rating" >= $6
+  )
+order by
+  "tag"."value"
+select
+  "person"."id",
+  "person"."name"
+from
+  "person"
+where
+  "person"."name" != $1
+  and "person"."isHidden" = $2
+  and exists (
+    select
+    from
+      "asset_face"
+    where
+      "asset_face"."personId" = "person"."id"
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+      and "asset_face"."assetId" in (
+        select
+          "asset"."id"
+        from
+          "asset"
+          inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+          inner join (
+            select
+              "assetId"
+            from
+              "tag_asset"
+              inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+            where
+              "tag_closure"."id_ancestor" = any ($3::uuid[])
+            group by
+              "assetId"
+            having
+              count(distinct "tag_closure"."id_ancestor") >= $4
+          ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+        where
+          "asset"."id" in (
+            select
+              "candidates"."id"
+            from
+              smart_search_facet_candidates as "candidates"
+          )
+          and "asset"."fileCreatedAt" >= $5
+          and "asset"."fileCreatedAt" <= $6
+          and "asset"."type" = $7
+          and "asset_exif"."country" = $8
+          and "asset_exif"."make" = $9
+          and "asset_exif"."rating" >= $10
+      )
+  )
+order by
+  "person"."name"
+select
+  1 as "exists"
+from
+  "person"
+where
+  (
+    "person"."name" = $1
+    or "person"."name" is null
+  )
+  and "person"."isHidden" = $2
+  and exists (
+    select
+    from
+      "asset_face"
+    where
+      "asset_face"."personId" = "person"."id"
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+      and "asset_face"."assetId" in (
+        select
+          "asset"."id"
+        from
+          "asset"
+          inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+          inner join (
+            select
+              "assetId"
+            from
+              "tag_asset"
+              inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+            where
+              "tag_closure"."id_ancestor" = any ($3::uuid[])
+            group by
+              "assetId"
+            having
+              count(distinct "tag_closure"."id_ancestor") >= $4
+          ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+        where
+          "asset"."id" in (
+            select
+              "candidates"."id"
+            from
+              smart_search_facet_candidates as "candidates"
+          )
+          and "asset"."fileCreatedAt" >= $5
+          and "asset"."fileCreatedAt" <= $6
+          and "asset"."type" = $7
+          and "asset_exif"."country" = $8
+          and "asset_exif"."make" = $9
+          and "asset_exif"."rating" >= $10
+      )
+  )
+limit
+  $11
+select distinct
+  "rating"
+from
+  "asset_exif"
+where
+  "assetId" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset"."type" = $5
+      and "asset_exif"."country" = $6
+      and "asset_exif"."make" = $7
+  )
+  and "rating" is not null
+  and "rating" > $8
+order by
+  "rating"
+select distinct
+  "type"
+from
+  "asset"
+where
+  "id" in (
+    select
+      "asset"."id"
+    from
+      "asset"
+      inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+      inner join (
+        select
+          "assetId"
+        from
+          "tag_asset"
+          inner join "tag_closure" on "tag_asset"."tagId" = "tag_closure"."id_descendant"
+        where
+          "tag_closure"."id_ancestor" = any ($1::uuid[])
+        group by
+          "assetId"
+        having
+          count(distinct "tag_closure"."id_ancestor") >= $2
+      ) as "has_tags" on "has_tags"."assetId" = "asset"."id"
+    where
+      "asset"."id" in (
+        select
+          "candidates"."id"
+        from
+          smart_search_facet_candidates as "candidates"
+      )
+      and "asset"."fileCreatedAt" >= $3
+      and "asset"."fileCreatedAt" <= $4
+      and "asset_exif"."country" = $5
+      and "asset_exif"."make" = $6
+      and "asset_exif"."rating" >= $7
+  )
+order by
+  "type"
+commit
+
 -- SearchRepository.searchFaces
 begin
 set

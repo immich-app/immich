@@ -10,11 +10,22 @@
     filters: FilterState;
     spaceId?: string;
     withSharedSpaces?: boolean;
+    language?: string;
     isShared: boolean;
     isLoading?: boolean;
+    total?: number;
   }
 
-  let { searchQuery, filters, spaceId, withSharedSpaces, isShared, isLoading = $bindable(false) }: Props = $props();
+  let {
+    searchQuery,
+    filters,
+    spaceId,
+    withSharedSpaces,
+    language,
+    isShared,
+    isLoading = $bindable(false),
+    total,
+  }: Props = $props();
 
   let searchResults = $state<AssetResponseDto[]>([]);
   let hasMoreResults = $state(false);
@@ -35,7 +46,7 @@
     try {
       const { assets } = await searchSmart({
         smartSearchDto: {
-          ...buildSmartSearchParams({ query, filters, spaceId, withSharedSpaces }),
+          ...buildSmartSearchParams({ query, filters, spaceId, withSharedSpaces, language }),
           page,
           size: 100,
         },
@@ -89,6 +100,7 @@
       filters.selectedMonth,
       filters.sortOrder,
       filters.isFavorite,
+      language,
     ];
 
     if (!searchQuery.trim()) {
@@ -116,4 +128,5 @@
   {spaceId}
   {isShared}
   sortMode={filters.sortOrder}
+  {total}
 />

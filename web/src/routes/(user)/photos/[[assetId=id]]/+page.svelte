@@ -41,6 +41,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
+  import { lang } from '$lib/stores/preferences.store';
   import { createUrl, getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import { buildSearchablePageUrl, getSearchablePageState } from '$lib/utils/searchable-page-search';
   import {
@@ -51,9 +52,21 @@
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { buildPhotosTimelineOptions, handlePhotosRemoveFilter } from '$lib/utils/photos-filter-options';
+  import {
+    buildSmartSearchFacetKey,
+    buildSmartSearchFacetsParams,
+    mapSmartSearchFacetsToFilterSuggestions,
+  } from '$lib/utils/space-search';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetTypeEnum, getFilterSuggestions, getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import {
+    AssetTypeEnum,
+    getFilterSuggestions,
+    getSearchSuggestions,
+    searchSmartFacets,
+    SearchSuggestionType,
+    type SmartSearchFacetsResponseDto,
+  } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { untrack } from 'svelte';
@@ -75,66 +88,207 @@
   const options = $derived(buildPhotosTimelineOptions(filters));
   let personNames = new SvelteMap<string, string>();
   let tagNames = new SvelteMap<string, string>();
+  let smartFacets = $state<SmartSearchFacetsResponseDto>();
+  let smartFacetKey = $state('');
+  let smartFacetInFlight:
+    | {
+        key: string;
+        controller: AbortController;
+        promise: Promise<SmartSearchFacetsResponseDto | undefined>;
+      }
+    | undefined;
+
+  const timelineBuckets = $derived(
+    timelineManager?.months?.map((m) => ({
+      timeBucket: `${m.yearMonth.year}-${String(m.yearMonth.month).padStart(2, '0')}-01T00:00:00.000Z`,
+      count: m.assetsCount,
+    })) ?? [],
+  );
+  const smartFacetBuckets = $derived(showSearchResults ? (smartFacets?.timeBuckets ?? []) : timelineBuckets);
+  const smartFacetTotal = $derived(showSearchResults ? smartFacets?.total : undefined);
+
+  const emptyFilterSuggestions = () => ({
+    countries: [],
+    cities: [],
+    cameraMakes: [],
+    cameraModels: [],
+    tags: [],
+    people: [],
+    ratings: [],
+    mediaTypes: [],
+    hasUnnamedPeople: false,
+  });
+
+  const loadPhotoFilterSuggestions = async (nextFilters: FilterState) => {
+    const context = buildFilterContext(nextFilters);
+    const response = await getFilterSuggestions({
+      personIds: nextFilters.personIds.length > 0 ? nextFilters.personIds : undefined,
+      country: nextFilters.country,
+      city: nextFilters.city,
+      make: nextFilters.make,
+      model: nextFilters.model,
+      tagIds: nextFilters.tagIds.length > 0 ? nextFilters.tagIds : undefined,
+      rating: nextFilters.rating,
+      mediaType:
+        nextFilters.mediaType === 'all'
+          ? undefined
+          : nextFilters.mediaType === 'image'
+            ? AssetTypeEnum.Image
+            : AssetTypeEnum.Video,
+      isFavorite: nextFilters.isFavorite,
+      takenAfter: context?.takenAfter,
+      takenBefore: context?.takenBefore,
+      ...(nextFilters.isFavorite === undefined ? { withSharedSpaces: true } : {}),
+    });
+    const mappedPeople = response.people.map((p) => ({
+      id: p.id,
+      name: p.name,
+      thumbnailUrl: createUrl(`/people/${p.id}/thumbnail`),
+    }));
+    for (const p of response.people) {
+      personNames.set(p.id, p.name);
+    }
+    for (const t of response.tags) {
+      tagNames.set(t.id, t.value);
+    }
+    return {
+      countries: response.countries,
+      cameraMakes: response.cameraMakes,
+      tags: response.tags.map((t) => ({ id: t.id, name: t.value })),
+      people: mappedPeople,
+      ratings: response.ratings,
+      mediaTypes: response.mediaTypes,
+      hasUnnamedPeople: response.hasUnnamedPeople,
+    };
+  };
+
+  async function loadPhotoSmartFacets(nextFilters: FilterState): Promise<SmartSearchFacetsResponseDto | undefined> {
+    const query = committedQuery.trim();
+    if (!query) {
+      return undefined;
+    }
+
+    const withSharedSpaces = nextFilters.isFavorite === undefined;
+    const key = buildSmartSearchFacetKey({ query, filters: nextFilters, withSharedSpaces, language: $lang });
+    if (smartFacets && smartFacetKey === key) {
+      return smartFacets;
+    }
+    if (smartFacetInFlight?.key === key) {
+      return smartFacetInFlight.promise;
+    }
+
+    smartFacetInFlight?.controller.abort();
+    const controller = new AbortController();
+
+    const promise = searchSmartFacets(
+      {
+        smartSearchFacetsDto: buildSmartSearchFacetsParams({
+          query,
+          filters: nextFilters,
+          withSharedSpaces,
+          language: $lang,
+        }),
+      },
+      { signal: controller.signal },
+    )
+      .then((result) => {
+        if (smartFacetInFlight?.key === key && !controller.signal.aborted) {
+          smartFacets = result;
+          smartFacetKey = key;
+        }
+        return result;
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch smart search facets:', error);
+        }
+        return smartFacets;
+      })
+      .finally(() => {
+        if (smartFacetInFlight?.key === key) {
+          smartFacetInFlight = undefined;
+        }
+      });
+
+    smartFacetInFlight = { key, controller, promise };
+    return promise;
+  }
+
+  const normalProviders: NonNullable<FilterPanelConfig['providers']> = {
+    cities: (country, context) =>
+      getSearchSuggestions({
+        $type: SearchSuggestionType.City,
+        country,
+        ...context,
+        ...(context?.isFavorite === undefined ? { withSharedSpaces: true } : {}),
+      }),
+    cameraModels: (make, context) =>
+      getSearchSuggestions({
+        $type: SearchSuggestionType.CameraModel,
+        make,
+        ...context,
+        ...(context?.isFavorite === undefined ? { withSharedSpaces: true } : {}),
+      }),
+  };
 
   const filterConfig: FilterPanelConfig = {
     sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'],
-    suggestionsProvider: async (filters: FilterState) => {
-      const context = buildFilterContext(filters);
-      const response = await getFilterSuggestions({
-        personIds: filters.personIds.length > 0 ? filters.personIds : undefined,
-        country: filters.country,
-        city: filters.city,
-        make: filters.make,
-        model: filters.model,
-        tagIds: filters.tagIds.length > 0 ? filters.tagIds : undefined,
-        rating: filters.rating,
-        mediaType:
-          filters.mediaType === 'all'
-            ? undefined
-            : filters.mediaType === 'image'
-              ? AssetTypeEnum.Image
-              : AssetTypeEnum.Video,
-        isFavorite: filters.isFavorite,
-        takenAfter: context?.takenAfter,
-        takenBefore: context?.takenBefore,
-        ...(filters.isFavorite === undefined ? { withSharedSpaces: true } : {}),
-      });
-      const mappedPeople = response.people.map((p) => ({
-        id: p.id,
-        name: p.name,
-        thumbnailUrl: createUrl(`/people/${p.id}/thumbnail`),
-      }));
-      for (const p of response.people) {
+    suggestionsProvider: async (nextFilters: FilterState) => {
+      if (!showSearchResults) {
+        return loadPhotoFilterSuggestions(nextFilters);
+      }
+
+      const facets = await loadPhotoSmartFacets(nextFilters);
+      if (!facets) {
+        return emptyFilterSuggestions();
+      }
+
+      for (const p of facets.people) {
         personNames.set(p.id, p.name);
       }
-      for (const t of response.tags) {
+      for (const t of facets.tags) {
         tagNames.set(t.id, t.value);
       }
-      return {
-        countries: response.countries,
-        cameraMakes: response.cameraMakes,
-        tags: response.tags.map((t) => ({ id: t.id, name: t.value })),
-        people: mappedPeople,
-        ratings: response.ratings,
-        mediaTypes: response.mediaTypes,
-        hasUnnamedPeople: response.hasUnnamedPeople,
-      };
+      return mapSmartSearchFacetsToFilterSuggestions(facets);
     },
     providers: {
-      cities: (country, context) =>
-        getSearchSuggestions({
-          $type: SearchSuggestionType.City,
-          country,
-          ...context,
-          ...(context?.isFavorite === undefined ? { withSharedSpaces: true } : {}),
-        }),
-      cameraModels: (make, context) =>
-        getSearchSuggestions({
-          $type: SearchSuggestionType.CameraModel,
-          make,
-          ...context,
-          ...(context?.isFavorite === undefined ? { withSharedSpaces: true } : {}),
-        }),
+      ...normalProviders,
+      cities: async (country, context) => {
+        if (!showSearchResults) {
+          return normalProviders.cities?.(country, context) ?? [];
+        }
+        const query = committedQuery.trim();
+        if (!query) {
+          return [];
+        }
+        const facets = await searchSmartFacets({
+          smartSearchFacetsDto: buildSmartSearchFacetsParams({
+            query,
+            filters: { ...filters, country },
+            withSharedSpaces: filters.isFavorite === undefined,
+            language: $lang,
+          }),
+        });
+        return facets.cities;
+      },
+      cameraModels: async (make, context) => {
+        if (!showSearchResults) {
+          return normalProviders.cameraModels?.(make, context) ?? [];
+        }
+        const query = committedQuery.trim();
+        if (!query) {
+          return [];
+        }
+        const facets = await searchSmartFacets({
+          smartSearchFacetsDto: buildSmartSearchFacetsParams({
+            query,
+            filters: { ...filters, make },
+            withSharedSpaces: filters.isFavorite === undefined,
+            language: $lang,
+          }),
+        });
+        return facets.cameraModels;
+      },
     },
   };
 
@@ -213,10 +367,17 @@
       return;
     }
 
+    const queryChanged = nextSearchState.query !== committedQuery;
     untrack(() => {
       committedQuery = nextSearchState.query;
       isLoading = false;
       filters = { ...filters, sortOrder: nextSearchState.sortOrder };
+      if (queryChanged) {
+        smartFacetInFlight?.controller.abort();
+        smartFacets = undefined;
+        smartFacetKey = '';
+        smartFacetInFlight = undefined;
+      }
       lastHandledSearchState = nextToken;
     });
   });
@@ -234,23 +395,22 @@
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
   <div class="flex h-full">
-    <FilterPanel
-      bind:filters
-      config={filterConfig}
-      timeBuckets={timelineManager?.months?.map((m) => ({
-        timeBucket: `${m.yearMonth.year}-${String(m.yearMonth.month).padStart(2, '0')}-01T00:00:00.000Z`,
-        count: m.assetsCount,
-      })) ?? []}
-      storageKey="gallery-filter-visible-sections-photos"
-      hidden={isTimelineEmpty}
-    />
+    {#key showSearchResults ? `photos-search-${committedQuery.trim()}:${$lang}` : 'photos-browse'}
+      <FilterPanel
+        bind:filters
+        config={filterConfig}
+        timeBuckets={smartFacetBuckets}
+        storageKey="gallery-filter-visible-sections-photos"
+        hidden={isTimelineEmpty}
+      />
+    {/key}
     <div class="flex flex-1 flex-col overflow-hidden pl-4">
       {#if hasActiveFilters}
         <ActiveFiltersBar
           {filters}
           searchQuery={committedQuery}
           onClearSearch={clearSearch}
-          resultCount={showSearchResults ? undefined : totalAssetCount}
+          resultCount={showSearchResults ? smartFacetTotal : totalAssetCount}
           {personNames}
           {tagNames}
           onRemoveFilter={(type, id) => {
@@ -266,8 +426,10 @@
           bind:isLoading
           searchQuery={committedQuery}
           {filters}
+          language={$lang}
           isShared={false}
           withSharedSpaces={filters.isFavorite === undefined}
+          total={smartFacetTotal}
         />
       {:else}
         <Timeline

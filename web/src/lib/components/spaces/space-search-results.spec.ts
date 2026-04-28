@@ -70,6 +70,22 @@ describe('SpaceSearchResults', () => {
     expect(screen.getByTestId('result-count')).toHaveTextContent('100+');
   });
 
+  it('should show route-provided exact total without plus when available', () => {
+    render(SpaceSearchResults, {
+      props: {
+        results: mockAssets,
+        isLoading: false,
+        hasMore: true,
+        totalLoaded: 3,
+        total: 42,
+        onLoadMore: vi.fn(),
+        sortMode: 'relevance',
+      },
+    });
+    expect(screen.getByTestId('result-count')).toHaveTextContent('42 results');
+    expect(screen.getByTestId('result-count').textContent).not.toContain('+');
+  });
+
   it('should show exact count when no more pages', () => {
     render(SpaceSearchResults, {
       props: {

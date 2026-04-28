@@ -23,7 +23,9 @@ export interface TagOption {
 
 export interface FilterSuggestionsResponse {
   countries: string[];
+  cities?: string[];
   cameraMakes: string[];
+  cameraModels?: string[];
   tags: TagOption[];
   people: PersonOption[];
   ratings: number[];

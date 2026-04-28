@@ -698,6 +698,10 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
+        case 'SmartSearchFacetsDto':
+          return SmartSearchFacetsDto.fromJson(value);
+        case 'SmartSearchFacetsResponseDto':
+          return SmartSearchFacetsResponseDto.fromJson(value);
         case 'SourceType':
           return SourceTypeTypeTransformer().decode(value);
         case 'StackCreateDto':

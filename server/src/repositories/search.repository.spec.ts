@@ -51,6 +51,15 @@ const compileFilteredSpacePeopleQuery = (sut: SearchRepository, options: Record<
     )
     .compile().sql;
 
+const buildFacetCandidateSql = (sut: SearchRepository, options: Record<string, unknown>) =>
+  (sut as any).buildSmartFacetCandidateQuery(offlineKysely(), options).compile().sql;
+
+const buildFacetFilteredIdsSql = (
+  sut: SearchRepository,
+  options: Record<string, unknown>,
+  exclude?: 'time' | 'people' | 'location' | 'city' | 'camera' | 'cameraModel' | 'tags' | 'rating' | 'media',
+) => (sut as any).buildSmartFacetFilteredAssetIds(offlineKysely(), options, exclude).compile().sql;
+
 const FAILURE_MESSAGE =
   'Do not add any secondary ORDER BY key to the inner searchSmart query. ' +
   'See comment at src/repositories/search.repository.ts (above the orderBy call). ' +
@@ -94,6 +103,121 @@ describe(SearchRepository.name, () => {
     userIds: ['00000000-0000-0000-0000-000000000000'],
     maxDistance: 0.5,
   };
+
+  describe('smart facets query shape', () => {
+    it('builds one unordered candidate query from smart_search and does not page-limit facets', () => {
+      const sql = buildFacetCandidateSql(sut, {
+        ...baseOptions,
+        city: 'Berlin',
+        personIds: ['00000000-0000-0000-0000-000000000001'],
+        tagIds: ['00000000-0000-0000-0000-000000000002'],
+        takenAfter: new Date('2024-01-01T00:00:00.000Z'),
+        orderDirection: AssetOrder.Desc,
+      });
+
+      expect(sql).toContain('"smart_search"');
+      expect(sql).toMatch(/smart_search\.embedding\s*<=>/i);
+      expect(sql).not.toMatch(/\border by\b/i);
+      expect(sql).not.toMatch(/\blimit\b/i);
+      expect(sql).not.toContain('"asset_exif"."city"');
+      expect(sql).not.toContain('"tag_asset"');
+      expect(sql).not.toContain('"asset_face"');
+    });
+
+    it('time bucket filtering excludes only takenAfter and takenBefore', () => {
+      const sql = buildFacetFilteredIdsSql(
+        sut,
+        {
+          ...baseOptions,
+          takenAfter: new Date('2024-01-01T00:00:00.000Z'),
+          takenBefore: new Date('2025-01-01T00:00:00.000Z'),
+          country: 'Germany',
+          rating: 4,
+        },
+        'time',
+      );
+
+      expect(sql).not.toMatch(/"asset"\."fileCreatedAt"\s*>?=/i);
+      expect(sql).not.toMatch(/"asset"\."fileCreatedAt"\s*</i);
+      expect(sql).toContain('"asset_exif"."country"');
+      expect(sql).toMatch(/"asset_exif"\."rating"\s*>=\s*\$\d+/i);
+    });
+
+    it('people filtering excludes global and space people filters', () => {
+      const sql = buildFacetFilteredIdsSql(
+        sut,
+        {
+          ...baseOptions,
+          personIds: ['00000000-0000-0000-0000-000000000001'],
+          spacePersonIds: ['00000000-0000-0000-0000-000000000002'],
+          country: 'Germany',
+        },
+        'people',
+      );
+
+      expect(sql).not.toContain('"asset_face"."personId"');
+      expect(sql).not.toContain('"shared_space_person_face"."personId"');
+      expect(sql).toContain('"asset_exif"."country"');
+    });
+
+    it('location, camera, tags, rating, and media each exclude only their own group', () => {
+      const locationSql = buildFacetFilteredIdsSql(
+        sut,
+        { ...baseOptions, country: 'Germany', city: 'Berlin' },
+        'location',
+      );
+      const citySql = buildFacetFilteredIdsSql(sut, { ...baseOptions, country: 'Germany', city: 'Berlin' }, 'city');
+      const cameraSql = buildFacetFilteredIdsSql(sut, { ...baseOptions, make: 'Sony', model: 'A7' }, 'camera');
+      const modelSql = buildFacetFilteredIdsSql(sut, { ...baseOptions, make: 'Sony', model: 'A7' }, 'cameraModel');
+      const tagsSql = buildFacetFilteredIdsSql(
+        sut,
+        { ...baseOptions, tagIds: ['00000000-0000-0000-0000-000000000001'] },
+        'tags',
+      );
+      const ratingSql = buildFacetFilteredIdsSql(sut, { ...baseOptions, rating: 5 }, 'rating');
+      const mediaSql = buildFacetFilteredIdsSql(sut, { ...baseOptions, type: 'IMAGE' }, 'media');
+
+      expect(locationSql).not.toContain('"asset_exif"."country"');
+      expect(locationSql).not.toContain('"asset_exif"."city"');
+      expect(citySql).toContain('"asset_exif"."country"');
+      expect(citySql).not.toContain('"asset_exif"."city"');
+      expect(cameraSql).not.toContain('"asset_exif"."make"');
+      expect(cameraSql).not.toContain('"asset_exif"."model"');
+      expect(modelSql).toContain('"asset_exif"."make"');
+      expect(modelSql).not.toContain('"asset_exif"."model"');
+      expect(tagsSql).not.toContain('"tag_asset"');
+      expect(ratingSql).not.toMatch(/"asset_exif"\."rating"\s*>=/i);
+      expect(mediaSql).not.toContain('"asset"."type" =');
+    });
+
+    it('rating null filters for unrated assets instead of using minimum rating comparison', () => {
+      const sql = buildFacetFilteredIdsSql(sut, { ...baseOptions, rating: null });
+
+      expect(sql).toMatch(/"asset_exif"\."rating"\s+is\s+null/i);
+      expect(sql).not.toMatch(/"asset_exif"\."rating"\s*>=/i);
+    });
+
+    it('total filtering keeps current smart-search rating, person, and tag semantics', () => {
+      const sql = buildFacetFilteredIdsSql(sut, {
+        ...baseOptions,
+        rating: 4,
+        personIds: ['00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002'],
+        tagIds: ['00000000-0000-0000-0000-000000000003'],
+      });
+
+      expect(sql).toMatch(/"asset_exif"\."rating"\s*>=\s*\$\d+/i);
+      expect(sql).toContain('"asset_face"');
+      expect(sql).toContain('"tag_asset"');
+    });
+
+    it('candidate query omits the distance threshold when maxDistance is disabled', () => {
+      const sql = buildFacetCandidateSql(sut, { ...baseOptions, maxDistance: 0 });
+
+      expect(sql).toContain('"smart_search"."embedding" is not null');
+      expect(sql).not.toMatch(/smart_search\.embedding\s*<=>/i);
+      expect(sql).not.toMatch(/\(smart_search\.embedding <=> \$\d+\)\s*<=/i);
+    });
+  });
 
   describe('searchSmart query shape', () => {
     it('applies rating as an inclusive threshold when combined with other filters', () => {

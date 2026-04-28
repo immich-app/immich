@@ -7,10 +7,21 @@
     filters?: FilterState;
     withSharedSpaces?: boolean;
     spaceId?: string;
+    language?: string;
+    total?: number;
     [key: string]: unknown;
   }
 
-  let { isLoading = $bindable(false), searchQuery = '', filters, withSharedSpaces, spaceId, ...rest }: Props = $props();
+  let {
+    isLoading = $bindable(false),
+    searchQuery = '',
+    filters,
+    withSharedSpaces,
+    spaceId,
+    language = '',
+    total,
+    ...rest
+  }: Props = $props();
 </script>
 
 <div
@@ -22,4 +33,7 @@
   data-is-favorite={String(filters?.isFavorite)}
   data-with-shared-spaces={String(withSharedSpaces)}
   data-space-id={spaceId ?? ''}
+  data-country={filters?.country ?? ''}
+  data-language={language}
+  data-total={total ?? ''}
 ></div>

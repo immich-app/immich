@@ -227,6 +227,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | Search places
 *SearchApi* | [**searchRandom**](doc//SearchApi.md#searchrandom) | **POST** /search/random | Search random assets
 *SearchApi* | [**searchSmart**](doc//SearchApi.md#searchsmart) | **POST** /search/smart | Smart asset search
+*SearchApi* | [**searchSmartFacets**](doc//SearchApi.md#searchsmartfacets) | **POST** /search/smart/facets | Smart asset search facets
 *ServerApi* | [**deleteServerLicense**](doc//ServerApi.md#deleteserverlicense) | **DELETE** /server/license | Delete server product key
 *ServerApi* | [**getAboutInfo**](doc//ServerApi.md#getaboutinfo) | **GET** /server/about | Get server information
 *ServerApi* | [**getApkLinks**](doc//ServerApi.md#getapklinks) | **GET** /server/apk-links | Get APK links
@@ -622,6 +623,8 @@ Class | Method | HTTP request | Description
  - [SharedSpaceUpdateDto](doc//SharedSpaceUpdateDto.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
+ - [SmartSearchFacetsDto](doc//SmartSearchFacetsDto.md)
+ - [SmartSearchFacetsResponseDto](doc//SmartSearchFacetsResponseDto.md)
  - [SourceType](doc//SourceType.md)
  - [StackCreateDto](doc//StackCreateDto.md)
  - [StackResponseDto](doc//StackResponseDto.md)

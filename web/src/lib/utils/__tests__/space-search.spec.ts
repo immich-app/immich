@@ -1,5 +1,11 @@
 import type { FilterState } from '$lib/components/filter-panel/filter-panel';
-import { buildSmartSearchParams, SEARCH_FILTER_DEBOUNCE_MS } from '$lib/utils/space-search';
+import {
+  buildSmartSearchFacetKey,
+  buildSmartSearchFacetsParams,
+  buildSmartSearchParams,
+  mapSmartSearchFacetsToFilterSuggestions,
+  SEARCH_FILTER_DEBOUNCE_MS,
+} from '$lib/utils/space-search';
 import { AssetOrder, AssetTypeEnum } from '@immich/sdk';
 import { describe, expect, it } from 'vitest';
 
@@ -59,6 +65,11 @@ describe('buildSmartSearchParams', () => {
       const result = buildSmartSearchParams({ query: 'beach', filters: baseFilters });
       expect(result.personIds).toBeUndefined();
       expect(result.spacePersonIds).toBeUndefined();
+    });
+
+    it('sets language when provided', () => {
+      const result = buildSmartSearchParams({ query: 'beach', filters: baseFilters, language: 'de' });
+      expect(result.language).toBe('de');
     });
 
     it('sets type for mediaType image', () => {
@@ -213,6 +224,123 @@ describe('buildSmartSearchParams', () => {
       expect(result.country).toBeUndefined();
       expect(result.make).toBeUndefined();
       expect(result.model).toBeUndefined();
+    });
+  });
+});
+
+describe('buildSmartSearchFacetsParams', () => {
+  it('uses the same filters as smart search but strips sort order', () => {
+    const result = buildSmartSearchFacetsParams({
+      query: 'beach',
+      filters: { ...baseFilters, sortOrder: 'asc', rating: 4, mediaType: 'image' },
+      withSharedSpaces: true,
+      language: 'de',
+    });
+
+    expect(result).toEqual({
+      query: 'beach',
+      withSharedSpaces: true,
+      language: 'de',
+      rating: 4,
+      type: AssetTypeEnum.Image,
+    });
+    expect(result).not.toHaveProperty('order');
+    expect(result).not.toHaveProperty('page');
+    expect(result).not.toHaveProperty('size');
+  });
+
+  it('maps space people to spacePersonIds and omits withSharedSpaces for spaces', () => {
+    const result = buildSmartSearchFacetsParams({
+      query: 'beach',
+      filters: { ...baseFilters, personIds: ['space-person-1'] },
+      spaceId: 'space-1',
+      withSharedSpaces: true,
+    });
+
+    expect(result).toMatchObject({ spaceId: 'space-1', spacePersonIds: ['space-person-1'] });
+    expect(result.personIds).toBeUndefined();
+    expect(result.withSharedSpaces).toBeUndefined();
+  });
+
+  it('uses the same key for sort-only changes', () => {
+    const relevanceKey = buildSmartSearchFacetKey({
+      query: 'beach',
+      filters: { ...baseFilters, sortOrder: 'relevance' },
+      withSharedSpaces: true,
+    });
+    const ascendingKey = buildSmartSearchFacetKey({
+      query: 'beach',
+      filters: { ...baseFilters, sortOrder: 'asc' },
+      withSharedSpaces: true,
+    });
+
+    expect(ascendingKey).toBe(relevanceKey);
+  });
+
+  it('changes the key for facet-affecting filters', () => {
+    const baseKey = buildSmartSearchFacetKey({ query: 'beach', filters: baseFilters, withSharedSpaces: true });
+    const countryKey = buildSmartSearchFacetKey({
+      query: 'beach',
+      filters: { ...baseFilters, country: 'Germany' },
+      withSharedSpaces: true,
+    });
+
+    expect(countryKey).not.toBe(baseKey);
+  });
+
+  it('changes the key when language changes', () => {
+    const englishKey = buildSmartSearchFacetKey({
+      query: 'beach',
+      filters: baseFilters,
+      withSharedSpaces: true,
+      language: 'en',
+    });
+    const germanKey = buildSmartSearchFacetKey({
+      query: 'beach',
+      filters: baseFilters,
+      withSharedSpaces: true,
+      language: 'de',
+    });
+
+    expect(germanKey).not.toBe(englishKey);
+  });
+});
+
+describe('mapSmartSearchFacetsToFilterSuggestions', () => {
+  it('maps SDK facet response to FilterPanel suggestions and thumbnail URLs', () => {
+    const result = mapSmartSearchFacetsToFilterSuggestions(
+      {
+        total: 2,
+        timeBuckets: [{ timeBucket: '2024-01-01', count: 2 }],
+        countries: ['Germany'],
+        cities: ['Berlin'],
+        cameraMakes: ['Sony'],
+        cameraModels: ['A7'],
+        tags: [{ id: 'tag-1', value: 'Travel' }],
+        people: [{ id: 'person-1', name: 'Ada' }],
+        ratings: [4],
+        mediaTypes: [AssetTypeEnum.Image],
+        hasUnnamedPeople: true,
+      },
+      { spaceId: 'space-1' },
+    );
+
+    expect(result).toEqual({
+      countries: ['Germany'],
+      cities: ['Berlin'],
+      cameraMakes: ['Sony'],
+      cameraModels: ['A7'],
+      tags: [{ id: 'tag-1', name: 'Travel' }],
+      people: [
+        {
+          id: 'person-1',
+          name: 'Ada',
+          thumbnailUrl: '/api/shared-spaces/space-1/people/person-1/thumbnail',
+        },
+      ],
+      ratings: [4],
+      mediaTypes: [AssetTypeEnum.Image],
+      hasUnnamedPeople: true,
     });
   });
 });

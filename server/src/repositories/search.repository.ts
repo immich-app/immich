@@ -7,7 +7,16 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, asUuid, searchAssetBuilder, withExifInner } from 'src/utils/database';
+import {
+  anyUuid,
+  asUuid,
+  hasAnySpacePerson,
+  hasPeople,
+  hasTags,
+  searchAssetBuilder,
+  truncatedDate,
+  withExifInner,
+} from 'src/utils/database';
 import { without } from 'src/utils/filter-suggestions';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -145,6 +154,33 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchOcrOptions &
   SearchSpaceOptions &
   SearchOrderOptions;
+
+export type SmartSearchFacetsOptions = Omit<SmartSearchOptions, 'orderDirection'>;
+
+type SmartFacetExclude =
+  | 'time'
+  | 'people'
+  | 'location'
+  | 'city'
+  | 'camera'
+  | 'cameraModel'
+  | 'tags'
+  | 'rating'
+  | 'media';
+
+export interface SmartSearchFacetsResult {
+  total: number;
+  timeBuckets: Array<{ timeBucket: string; count: number }>;
+  countries: string[];
+  cities: string[];
+  cameraMakes: string[];
+  cameraModels: string[];
+  tags: FilterSuggestionsResult['tags'];
+  people: FilterSuggestionsResult['people'];
+  ratings: number[];
+  mediaTypes: AssetType[];
+  hasUnnamedPeople: boolean;
+}
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
@@ -430,6 +466,348 @@ export class SearchRepository {
       const items = await outer.execute();
       return paginationHelper(items, pagination.size);
     });
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        embedding: DummyValue.VECTOR,
+        userIds: [DummyValue.UUID],
+        timelineSpaceIds: [DummyValue.UUID, DummyValue.UUID],
+        maxDistance: 0.75,
+        country: DummyValue.STRING,
+        make: DummyValue.STRING,
+        tagIds: [DummyValue.UUID],
+        rating: 4,
+        type: AssetType.Image,
+        takenAfter: DummyValue.DATE,
+        takenBefore: DummyValue.DATE,
+      },
+    ],
+  })
+  async getSmartSearchFacets(options: SmartSearchFacetsOptions): Promise<SmartSearchFacetsResult> {
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
+      await this.createSmartFacetCandidates(trx, options);
+
+      const total = await this.getSmartFacetTotal(trx, options);
+      const timeBuckets = await this.getSmartFacetTimeBuckets(trx, options);
+      const countries = await this.getSmartFacetCountries(trx, options);
+      const cities = await this.getSmartFacetCities(trx, options);
+      const cameraMakes = await this.getSmartFacetCameraMakes(trx, options);
+      const cameraModels = await this.getSmartFacetCameraModels(trx, options);
+      const tags = await this.getSmartFacetTags(trx, options);
+      const peopleResult = await this.getSmartFacetPeople(trx, options);
+      const ratings = await this.getSmartFacetRatings(trx, options);
+      const mediaTypes = await this.getSmartFacetMediaTypes(trx, options);
+
+      return {
+        total,
+        timeBuckets,
+        countries,
+        cities,
+        cameraMakes,
+        cameraModels,
+        tags,
+        people: peopleResult.people,
+        ratings,
+        mediaTypes,
+        hasUnnamedPeople: peopleResult.hasUnnamedPeople,
+      };
+    });
+  }
+
+  private buildSmartFacetCandidateQuery(kysely: Kysely<DB>, options: SmartSearchFacetsOptions) {
+    const hasDistanceThreshold = isActiveDistanceThreshold(options.maxDistance);
+
+    return searchAssetBuilder(kysely, {
+      ...without(
+        options,
+        'city',
+        'country',
+        'make',
+        'model',
+        'rating',
+        'type',
+        'isFavorite',
+        'takenAfter',
+        'takenBefore',
+        'personIds',
+        'personMatchAny',
+        'spacePersonIds',
+        'tagIds',
+        'tagMatchAny',
+      ),
+      ratingIsMinimum: true,
+    })
+      .select('asset.id')
+      .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+      .$if(hasDistanceThreshold, (qb) =>
+        qb.where(sql<SqlBool>`(smart_search.embedding <=> ${options.embedding}) <= ${options.maxDistance!}`),
+      )
+      .where('smart_search.embedding', 'is not', null);
+  }
+
+  private async createSmartFacetCandidates(trx: Kysely<DB>, options: SmartSearchFacetsOptions) {
+    await sql`drop table if exists smart_search_facet_candidates`.execute(trx);
+    await sql`
+      create temporary table smart_search_facet_candidates on commit drop as
+      ${this.buildSmartFacetCandidateQuery(trx, options)}
+    `.execute(trx);
+    await sql`create index smart_search_facet_candidates_asset_id_idx on smart_search_facet_candidates ("id")`.execute(
+      trx,
+    );
+  }
+
+  private buildSmartFacetFilteredAssetIds(
+    kysely: Kysely<DB>,
+    options: SmartSearchFacetsOptions,
+    exclude?: SmartFacetExclude,
+  ) {
+    const appliesCountry = exclude !== 'location' && options.country !== undefined;
+    const appliesCity = exclude !== 'location' && exclude !== 'city' && options.city !== undefined;
+    const appliesMake = exclude !== 'camera' && options.make !== undefined;
+    const appliesModel = exclude !== 'camera' && exclude !== 'cameraModel' && options.model !== undefined;
+    const appliesRating = exclude !== 'rating' && options.rating !== undefined;
+    const needsExifJoin = !!(appliesCountry || appliesCity || appliesMake || appliesModel || appliesRating);
+
+    return kysely
+      .selectFrom('asset')
+      .select('asset.id')
+      .where(
+        'asset.id',
+        'in',
+        kysely.selectFrom(sql<{ id: string }>`smart_search_facet_candidates`.as('candidates')).select('candidates.id'),
+      )
+      .$if(exclude !== 'time' && !!options.takenAfter, (qb) =>
+        qb.where('asset.fileCreatedAt', '>=', options.takenAfter!),
+      )
+      .$if(exclude !== 'time' && !!options.takenBefore, (qb) =>
+        qb.where('asset.fileCreatedAt', '<=', options.takenBefore!),
+      )
+      .$if(exclude !== 'media' && !!options.type, (qb) => qb.where('asset.type', '=', options.type!))
+      .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+      .$if(needsExifJoin, (qb) =>
+        qb
+          .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+          .$if(appliesCountry, (qb) =>
+            qb.where('asset_exif.country', options.country === null ? 'is' : '=', options.country!),
+          )
+          .$if(appliesCity, (qb) => qb.where('asset_exif.city', options.city === null ? 'is' : '=', options.city!))
+          .$if(appliesMake, (qb) => qb.where('asset_exif.make', options.make === null ? 'is' : '=', options.make!))
+          .$if(appliesModel, (qb) => qb.where('asset_exif.model', options.model === null ? 'is' : '=', options.model!))
+          .$if(appliesRating, (qb) =>
+            options.rating === null
+              ? qb.where('asset_exif.rating', 'is', null)
+              : qb.where('asset_exif.rating', '>=', options.rating!),
+          ),
+      )
+      .$if(exclude !== 'people' && !!options.personIds?.length, (qb) => hasPeople(qb, options.personIds!))
+      .$if(exclude !== 'people' && !!options.spacePersonIds?.length, (qb) =>
+        hasAnySpacePerson(qb, options.spacePersonIds!),
+      )
+      .$if(exclude !== 'tags' && !!options.tagIds?.length, (qb) => hasTags(qb, options.tagIds!))
+      .$if(exclude !== 'tags' && options.tagIds === null, (qb) =>
+        qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetId', '=', 'asset.id')))),
+      );
+  }
+
+  private async getSmartFacetTotal(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<number> {
+    const row = await trx
+      .selectFrom(this.buildSmartFacetFilteredAssetIds(trx, options).as('filtered'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow();
+    return Number(row.count);
+  }
+
+  private async getSmartFacetTimeBuckets(
+    trx: Kysely<DB>,
+    options: SmartSearchFacetsOptions,
+  ): Promise<Array<{ timeBucket: string; count: number }>> {
+    return trx
+      .with('asset', (qb) =>
+        qb
+          .selectFrom('asset')
+          .select(truncatedDate<Date>().as('timeBucket'))
+          .where('asset.id', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'time')),
+      )
+      .selectFrom('asset')
+      .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .groupBy('timeBucket')
+      .orderBy('timeBucket', 'desc')
+      .execute() as Promise<Array<{ timeBucket: string; count: number }>>;
+  }
+
+  private async getSmartFacetCountries(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<string[]> {
+    const rows = await trx
+      .selectFrom('asset_exif')
+      .select('country')
+      .distinct()
+      .where('assetId', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'location'))
+      .where('country', 'is not', null)
+      .where('country', '!=', '')
+      .orderBy('country')
+      .execute();
+    return rows.map((row) => row.country!);
+  }
+
+  private async getSmartFacetCities(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<string[]> {
+    const rows = await trx
+      .selectFrom('asset_exif')
+      .select('city')
+      .distinct()
+      .where('assetId', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'city'))
+      .where('city', 'is not', null)
+      .where('city', '!=', '')
+      .orderBy('city')
+      .execute();
+    return rows.map((row) => row.city!);
+  }
+
+  private async getSmartFacetCameraMakes(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<string[]> {
+    const rows = await trx
+      .selectFrom('asset_exif')
+      .select('make')
+      .distinct()
+      .where('assetId', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'camera'))
+      .where('make', 'is not', null)
+      .where('make', '!=', '')
+      .orderBy('make')
+      .execute();
+    return rows.map((row) => row.make!);
+  }
+
+  private async getSmartFacetCameraModels(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<string[]> {
+    const rows = await trx
+      .selectFrom('asset_exif')
+      .select('model')
+      .distinct()
+      .where('assetId', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'cameraModel'))
+      .where('model', 'is not', null)
+      .where('model', '!=', '')
+      .orderBy('model')
+      .execute();
+    return rows.map((row) => row.model!);
+  }
+
+  private async getSmartFacetTags(
+    trx: Kysely<DB>,
+    options: SmartSearchFacetsOptions,
+  ): Promise<Array<{ id: string; value: string }>> {
+    return trx
+      .selectFrom('tag')
+      .select(['tag.id', 'tag.value'])
+      .distinct()
+      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+      .where('tag_asset.assetId', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'tags'))
+      .orderBy('tag.value')
+      .execute();
+  }
+
+  private async getSmartFacetPeople(
+    trx: Kysely<DB>,
+    options: SmartSearchFacetsOptions,
+  ): Promise<{ people: Array<{ id: string; name: string }>; hasUnnamedPeople: boolean }> {
+    const filteredIds = this.buildSmartFacetFilteredAssetIds(trx, options, 'people');
+
+    if (options.spaceId) {
+      const spacePeople = await trx
+        .selectFrom('shared_space_person')
+        .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
+        .leftJoin('person', 'person.id', 'asset_face.personId')
+        .select(['shared_space_person.id', 'shared_space_person.name'])
+        .select('person.name as personalName')
+        .where('shared_space_person.spaceId', '=', asUuid(options.spaceId))
+        .where('shared_space_person.isHidden', '=', false)
+        .where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('shared_space_person_face')
+              .innerJoin('asset_face as af', 'af.id', 'shared_space_person_face.assetFaceId')
+              .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
+              .where('af.deletedAt', 'is', null)
+              .where('af.isVisible', 'is', true)
+              .where('af.assetId', 'in', filteredIds),
+          ),
+        )
+        .orderBy('shared_space_person.name')
+        .execute();
+
+      const people = spacePeople
+        .map((person) => ({
+          id: person.id,
+          name: person.name || person.personalName || '',
+        }))
+        .filter((person) => person.name !== '')
+        .toSorted((a, b) => a.name.localeCompare(b.name));
+
+      const hasUnnamedPeople = spacePeople.some((person) => !person.name && !person.personalName);
+
+      return { people, hasUnnamedPeople };
+    }
+
+    const people = await trx
+      .selectFrom('person')
+      .select(['person.id', 'person.name'])
+      .where('person.name', '!=', '')
+      .where('person.isHidden', '=', false)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.personId', '=', 'person.id')
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true)
+            .where('asset_face.assetId', 'in', filteredIds),
+        ),
+      )
+      .orderBy('person.name')
+      .execute();
+
+    const unnamed = await trx
+      .selectFrom('person')
+      .select(sql`1`.as('exists'))
+      .where((eb) => eb.or([eb('person.name', '=', ''), eb('person.name', 'is', null)]))
+      .where('person.isHidden', '=', false)
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.personId', '=', 'person.id')
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true)
+            .where('asset_face.assetId', 'in', filteredIds),
+        ),
+      )
+      .limit(1)
+      .executeTakeFirst();
+
+    return { people, hasUnnamedPeople: !!unnamed };
+  }
+
+  private async getSmartFacetRatings(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<number[]> {
+    const rows = await trx
+      .selectFrom('asset_exif')
+      .select('rating')
+      .distinct()
+      .where('assetId', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'rating'))
+      .where('rating', 'is not', null)
+      .where('rating', '>', 0)
+      .orderBy('rating')
+      .execute();
+    return rows.map((row) => row.rating!);
+  }
+
+  private async getSmartFacetMediaTypes(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<AssetType[]> {
+    const rows = await trx
+      .selectFrom('asset')
+      .select('type')
+      .distinct()
+      .where('id', 'in', this.buildSmartFacetFilteredAssetIds(trx, options, 'media'))
+      .orderBy('type')
+      .execute();
+    return rows.map((row) => row.type);
   }
 
   @GenerateSql({

@@ -1011,6 +1011,160 @@ describe(SearchService.name, () => {
     });
   });
 
+  describe('searchSmartFacets', () => {
+    const facetsResult = {
+      total: 3,
+      timeBuckets: [{ timeBucket: '2024-01-01', count: 3 }],
+      countries: ['Germany'],
+      cities: ['Berlin'],
+      cameraMakes: ['Sony'],
+      cameraModels: ['A7'],
+      tags: [{ id: newUuid(), value: 'Travel' }],
+      people: [
+        { id: newUuid(), name: 'Zoe' },
+        { id: newUuid(), name: 'Ada' },
+      ],
+      ratings: [4, 5],
+      mediaTypes: [AssetType.Image],
+      hasUnnamedPeople: false,
+    };
+
+    beforeEach(() => {
+      mocks.search.getSmartSearchFacets.mockResolvedValue(facetsResult);
+      mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
+      clearConfigCache();
+    });
+
+    it('raises BadRequestException when smart search is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { clip: { enabled: false } } });
+
+      await expect(sut.searchSmartFacets(authStub.user1, { query: 'test' })).rejects.toThrow(
+        'Smart search is not enabled',
+      );
+    });
+
+    it('encodes text queries using the configured CLIP model and language', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { clip: { modelName: 'ViT-B-16-SigLIP__webli', maxDistance: 0.75 } },
+      });
+
+      await sut.searchSmartFacets(authStub.user1, { query: 'test', language: 'de' });
+
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith('test', {
+        modelName: 'ViT-B-16-SigLIP__webli',
+        language: 'de',
+      });
+      expect(mocks.search.getSmartSearchFacets).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: 'test',
+          embedding: '[1, 2, 3]',
+          userIds: [authStub.user1.user.id],
+          maxDistance: 0.75,
+        }),
+      );
+    });
+
+    it('reuses the text embedding cache across result and facet calls', async () => {
+      mocks.search.searchSmart.mockResolvedValue({ hasNextPage: false, items: [] });
+
+      await sut.searchSmart(authStub.user1, { query: 'test' });
+      await sut.searchSmartFacets(authStub.user1, { query: 'test' });
+
+      expect(mocks.machineLearning.encodeText).toHaveBeenCalledTimes(1);
+    });
+
+    it('searches by queryAssetId after checking asset access', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.search.getEmbedding.mockResolvedValue('[4, 5, 6]');
+
+      await sut.searchSmartFacets(authStub.user1, { queryAssetId: assetId });
+
+      expect(mocks.machineLearning.encodeText).not.toHaveBeenCalled();
+      expect(mocks.search.getEmbedding).toHaveBeenCalledWith(assetId);
+      expect(mocks.search.getSmartSearchFacets).toHaveBeenCalledWith(
+        expect.objectContaining({ queryAssetId: assetId, embedding: '[4, 5, 6]' }),
+      );
+    });
+
+    it('throws when queryAssetId has no embedding', async () => {
+      const assetId = newUuid();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.search.getEmbedding.mockResolvedValue(null);
+
+      await expect(sut.searchSmartFacets(authStub.user1, { queryAssetId: assetId })).rejects.toThrow(
+        `Asset ${assetId} has no embedding`,
+      );
+    });
+
+    it('throws when neither query nor queryAssetId is set', async () => {
+      await expect(sut.searchSmartFacets(authStub.user1, {})).rejects.toThrow(
+        'Either `query` or `queryAssetId` must be set',
+      );
+    });
+
+    it('rejects spaceId mixed with withSharedSpaces', async () => {
+      await expect(
+        sut.searchSmartFacets(authStub.user1, { query: 'test', spaceId: newUuid(), withSharedSpaces: true }),
+      ).rejects.toThrow('Cannot use both spaceId and withSharedSpaces');
+    });
+
+    it('checks shared space access and passes space filters through', async () => {
+      const spaceId = newUuid();
+      const spacePersonIds = [newUuid()];
+      mocks.access.sharedSpace.checkMemberAccess.mockResolvedValue(new Set([spaceId]));
+
+      await sut.searchSmartFacets(authStub.user1, { query: 'test', spaceId, spacePersonIds });
+
+      expect(mocks.access.sharedSpace.checkMemberAccess).toHaveBeenCalledWith(
+        authStub.user1.user.id,
+        new Set([spaceId]),
+      );
+      expect(mocks.search.getSmartSearchFacets).toHaveBeenCalledWith(
+        expect.objectContaining({ spaceId, spacePersonIds }),
+      );
+    });
+
+    it('rejects spacePersonIds without spaceId', async () => {
+      await expect(
+        sut.searchSmartFacets(authStub.user1, { query: 'test', spacePersonIds: [newUuid()] }),
+      ).rejects.toThrow('spacePersonIds requires spaceId');
+    });
+
+    it('passes timeline shared spaces when withSharedSpaces is true', async () => {
+      const spaceId1 = newUuid();
+      const spaceId2 = newUuid();
+      mocks.sharedSpace.getSpaceIdsForTimeline.mockResolvedValue([{ spaceId: spaceId1 }, { spaceId: spaceId2 }]);
+
+      await sut.searchSmartFacets(authStub.user1, { query: 'test', withSharedSpaces: true });
+
+      expect(mocks.sharedSpace.getSpaceIdsForTimeline).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(mocks.search.getSmartSearchFacets).toHaveBeenCalledWith(
+        expect.objectContaining({ timelineSpaceIds: [spaceId1, spaceId2] }),
+      );
+    });
+
+    it('does not pass orderDirection to the facets repository call', async () => {
+      await sut.searchSmartFacets(authStub.user1, { query: 'test' });
+
+      expect(mocks.search.getSmartSearchFacets).toHaveBeenCalledWith(
+        expect.not.objectContaining({ orderDirection: expect.anything() }),
+      );
+    });
+
+    it('passes rating null through for unrated smart facet filters', async () => {
+      await sut.searchSmartFacets(authStub.user1, { query: 'test', rating: null });
+
+      expect(mocks.search.getSmartSearchFacets).toHaveBeenCalledWith(expect.objectContaining({ rating: null }));
+    });
+
+    it('sorts people by name before returning the response', async () => {
+      const result = await sut.searchSmartFacets(authStub.user1, { query: 'test' });
+
+      expect(result.people.map((person) => person.name)).toEqual(['Ada', 'Zoe']);
+    });
+  });
+
   describe('searchMetadata', () => {
     it('should search metadata with default pagination', async () => {
       mocks.search.searchMetadata.mockResolvedValue({ hasNextPage: false, items: [] });

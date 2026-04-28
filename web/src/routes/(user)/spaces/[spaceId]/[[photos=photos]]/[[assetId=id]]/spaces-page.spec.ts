@@ -1,8 +1,9 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { lang } from '$lib/stores/preferences.store';
 import type { SharedSpaceMemberResponseDto, SharedSpaceResponseDto } from '@immich/sdk';
-import { AssetVisibility, SharedSpaceRole } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, SharedSpaceRole } from '@immich/sdk';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import type { Component } from 'svelte';
@@ -74,7 +75,7 @@ vi.mock('$lib/components/OnEvents.svelte', async () => {
 });
 
 vi.mock('$lib/components/filter-panel/filter-panel.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/filter-panel-favorites.stub.svelte');
+  const { default: MockComponent } = await import('@test-data/mocks/bindable-filter-panel.stub.svelte');
   return { default: MockComponent };
 });
 
@@ -220,11 +221,35 @@ describe('Spaces page search URL state', () => {
     mockAssetMultiSelectManager.selectionActive = false;
     mockAssetMultiSelectManager.assets = [];
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos');
+    lang.set('de');
     vi.mocked(sdkMock.markSpaceViewed).mockResolvedValue(void 0 as never);
     sdkMock.addAssets.mockResolvedValue(void 0 as never);
     sdkMock.getSpace.mockResolvedValue(makeSpace());
     sdkMock.getSpaceActivities.mockResolvedValue([]);
     sdkMock.getSpacePeople.mockResolvedValue([]);
+    sdkMock.getFilterSuggestions.mockResolvedValue({
+      people: [],
+      countries: [],
+      cameraMakes: [],
+      tags: [],
+      ratings: [],
+      mediaTypes: [],
+      hasUnnamedPeople: false,
+    });
+    sdkMock.searchSmartFacets.mockResolvedValue({
+      total: 7,
+      timeBuckets: [{ timeBucket: '2024-03-01', count: 7 }],
+      countries: ['Norway'],
+      cities: ['Bergen'],
+      cameraMakes: ['Fuji'],
+      cameraModels: ['X-T5'],
+      tags: [{ id: 'tag-1', value: 'Hike' }],
+      people: [{ id: 'space-person-1', name: 'Ada' }],
+      ratings: [5],
+      mediaTypes: [AssetTypeEnum.Image],
+      hasUnnamedPeople: false,
+    });
+    sdkMock.getSearchSuggestions.mockResolvedValue([]);
   });
 
   it('renders search results from q without a local search input', () => {
@@ -258,16 +283,139 @@ describe('Spaces page search URL state', () => {
     );
   });
 
-  it('narrows space search results to favorites within the space when selected', async () => {
+  it('narrows space search results and facets to favorites within the space when selected', async () => {
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
 
     renderPage();
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(1));
     await fireEvent.click(screen.getByTestId('select-favorites-filter'));
 
     await waitFor(() => {
       expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-is-favorite', 'true');
       expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-space-id', 'space-1');
+      expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(2);
     });
+    expect(sdkMock.searchSmartFacets.mock.calls[1][0].smartSearchFacetsDto).toMatchObject({
+      query: 'beach',
+      isFavorite: true,
+      spaceId: 'space-1',
+    });
+    expect(sdkMock.searchSmartFacets.mock.calls[1][0].smartSearchFacetsDto).not.toHaveProperty('withSharedSpaces');
+  });
+
+  it('fetches smart facets with spaceId for committed space search', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+
+    renderPage();
+
+    await vi.waitFor(() => {
+      expect(sdkMock.searchSmartFacets).toHaveBeenCalledWith(
+        {
+          smartSearchFacetsDto: expect.objectContaining({
+            query: 'beach',
+            language: 'de',
+            spaceId: 'space-1',
+          }),
+        },
+        expect.objectContaining({ signal: expect.any(Object) }),
+      );
+    });
+    await vi.waitFor(() => expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-total', '7'));
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-language', 'de');
+  });
+
+  it('does not include withSharedSpaces or order in the space facets payload', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach&sort=asc');
+
+    renderPage();
+
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalled());
+    const dto = sdkMock.searchSmartFacets.mock.calls[0][0].smartSearchFacetsDto;
+    expect(dto).not.toHaveProperty('withSharedSpaces');
+    expect(dto).not.toHaveProperty('order');
+  });
+
+  it('does not fetch smart facets when the committed space query is whitespace only', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=%20%20');
+
+    renderPage();
+
+    expect(screen.queryByTestId('smart-search-results')).not.toBeInTheDocument();
+    expect(sdkMock.searchSmartFacets).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(sdkMock.getFilterSuggestions).toHaveBeenCalled());
+  });
+
+  it('does not refetch space smart facets for sort-only filter changes', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+
+    renderPage();
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(1));
+
+    await fireEvent.click(screen.getByTestId('filter-panel-set-sort-asc'));
+
+    await waitFor(() => expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'asc'));
+    expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses smart facet timeBuckets in space search mode', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+
+    renderPage();
+
+    await vi.waitFor(() => {
+      expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+        'data-time-buckets',
+        JSON.stringify([{ timeBucket: '2024-03-01', count: 7 }]),
+      );
+    });
+  });
+
+  it('preserves previous space facet total and buckets when a later facet fetch fails', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+    renderPage();
+    await vi.waitFor(() => expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-total', '7'));
+
+    sdkMock.searchSmartFacets.mockRejectedValueOnce(new Error('facets failed'));
+    await fireEvent.click(screen.getByTestId('filter-panel-set-country'));
+
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-total', '7');
+    expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+      'data-time-buckets',
+      JSON.stringify([{ timeBucket: '2024-03-01', count: 7 }]),
+    );
+  });
+
+  it('refetches space smart facets when an active filter changes', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+    renderPage();
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(1));
+
+    await fireEvent.click(screen.getByTestId('filter-panel-set-country'));
+
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(2));
+    expect(sdkMock.searchSmartFacets.mock.calls[1][0].smartSearchFacetsDto).toMatchObject({
+      query: 'beach',
+      country: 'Germany',
+      spaceId: 'space-1',
+    });
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-country', 'Germany');
+  });
+
+  it('refetches space smart facets when the search language changes', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach');
+    renderPage();
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(1));
+
+    lang.set('fr');
+
+    await vi.waitFor(() => expect(sdkMock.searchSmartFacets).toHaveBeenCalledTimes(2));
+    expect(sdkMock.searchSmartFacets.mock.calls[1][0].smartSearchFacetsDto).toMatchObject({
+      query: 'beach',
+      language: 'fr',
+      spaceId: 'space-1',
+    });
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-language', 'fr');
   });
 
   it('space cmdk add-photos command enters select-assets mode for writable users', async () => {

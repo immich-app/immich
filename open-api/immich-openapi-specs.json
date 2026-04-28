@@ -10192,6 +10192,57 @@
         "x-immich-state": "Stable"
       }
     },
+    "/search/smart/facets": {
+      "post": {
+        "description": "Retrieve filter facets and timeline buckets for the full smart-search result set.",
+        "operationId": "searchSmartFacets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmartSearchFacetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartSearchFacetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Smart asset search facets",
+        "tags": [
+          "Search"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.read"
+      }
+    },
     "/search/statistics": {
       "post": {
         "description": "Retrieve statistical data about assets based on search criteria, such as the total matching count.",
@@ -26274,6 +26325,218 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "SmartSearchFacetsDto": {
+        "properties": {
+          "city": {
+            "description": "Filter by city name",
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "description": "Filter by country name",
+            "nullable": true,
+            "type": "string"
+          },
+          "isFavorite": {
+            "description": "Filter by favorite status",
+            "type": "boolean"
+          },
+          "language": {
+            "description": "Search language code",
+            "type": "string"
+          },
+          "make": {
+            "description": "Filter by camera make",
+            "nullable": true,
+            "type": "string"
+          },
+          "model": {
+            "description": "Filter by camera model",
+            "nullable": true,
+            "type": "string"
+          },
+          "personIds": {
+            "description": "Filter by person IDs",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "query": {
+            "description": "Natural language search query",
+            "type": "string"
+          },
+          "queryAssetId": {
+            "description": "Asset ID to use as search reference",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "rating": {
+            "description": "Filter by rating [1-5], or null for unrated",
+            "maximum": 5,
+            "minimum": -1,
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
+          "spaceId": {
+            "description": "Shared space ID to filter by",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "spacePersonIds": {
+            "description": "Shared space person IDs to filter by",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagIds": {
+            "description": "Filter by tag IDs",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "takenAfter": {
+            "description": "Filter by taken date (after)",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "takenBefore": {
+            "description": "Filter by taken date (before)",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "withSharedSpaces": {
+            "description": "Include shared spaces the user is a member of",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SmartSearchFacetsResponseDto": {
+        "properties": {
+          "cameraMakes": {
+            "description": "Available camera makes",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "cameraModels": {
+            "description": "Available camera models for the current smart-search make scope",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "cities": {
+            "description": "Available cities for the current smart-search country scope",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "countries": {
+            "description": "Available countries",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hasUnnamedPeople": {
+            "description": "Whether unnamed people exist in the filtered smart-search set",
+            "type": "boolean"
+          },
+          "mediaTypes": {
+            "description": "Available media types",
+            "items": {
+              "$ref": "#/components/schemas/AssetTypeEnum"
+            },
+            "type": "array"
+          },
+          "people": {
+            "description": "Available people",
+            "items": {
+              "$ref": "#/components/schemas/FilterSuggestionsPersonDto"
+            },
+            "type": "array"
+          },
+          "ratings": {
+            "description": "Available ratings",
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "tags": {
+            "description": "Available tags",
+            "items": {
+              "$ref": "#/components/schemas/FilterSuggestionsTagDto"
+            },
+            "type": "array"
+          },
+          "timeBuckets": {
+            "description": "Available monthly buckets for the smart-search result set",
+            "items": {
+              "$ref": "#/components/schemas/TimeBucketsResponseDto"
+            },
+            "type": "array"
+          },
+          "total": {
+            "description": "Exact count after applying all active smart-search filters",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cameraMakes",
+          "cameraModels",
+          "cities",
+          "countries",
+          "hasUnnamedPeople",
+          "mediaTypes",
+          "people",
+          "ratings",
+          "tags",
+          "timeBuckets",
+          "total"
+        ],
         "type": "object"
       },
       "SourceType": {

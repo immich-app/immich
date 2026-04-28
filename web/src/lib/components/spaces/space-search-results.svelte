@@ -19,9 +19,10 @@
     spaceId?: string;
     isShared: boolean;
     sortMode: 'relevance' | 'asc' | 'desc';
+    total?: number;
   }
 
-  let { results, isLoading, hasMore, totalLoaded, onLoadMore, spaceId, isShared, sortMode }: Props = $props();
+  let { results, isLoading, hasMore, totalLoaded, onLoadMore, spaceId, isShared, sortMode, total }: Props = $props();
 
   let isViewerOpen = $state(false);
   let sentinelElement: HTMLElement | undefined = $state();
@@ -104,6 +105,8 @@
   };
 
   let dateGroups = $derived(sortMode === 'relevance' ? [] : groupByMonth(results));
+  const resultCount = $derived(total ?? totalLoaded);
+  const hasExactTotal = $derived(total !== undefined);
 </script>
 
 <section bind:this={scrollContainer} class="immich-scrollbar flex-1 overflow-y-auto px-4 py-4">
@@ -118,7 +121,9 @@
   {:else}
     <div class="mb-4 flex items-center gap-2">
       <span class="text-sm text-gray-500 dark:text-gray-400" data-testid="result-count">
-        {#if sortMode === 'relevance'}
+        {#if hasExactTotal}
+          {resultCount} result{resultCount === 1 ? '' : 's'}
+        {:else if sortMode === 'relevance'}
           {totalLoaded}{hasMore ? '+' : ''} result{totalLoaded === 1 && !hasMore ? '' : 's'}
         {:else}
           {totalLoaded}{hasMore ? ' of up to 500' : ''} result{totalLoaded === 1 && !hasMore ? '' : 's'}

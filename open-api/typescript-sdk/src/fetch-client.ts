@@ -1946,6 +1946,83 @@ export type SmartSearchDto = {
     /** Include shared spaces the user is a member of */
     withSharedSpaces?: boolean;
 };
+export type SmartSearchFacetsDto = {
+    /** Filter by city name */
+    city?: string | null;
+    /** Filter by country name */
+    country?: string | null;
+    /** Filter by favorite status */
+    isFavorite?: boolean;
+    /** Search language code */
+    language?: string;
+    /** Filter by camera make */
+    make?: string | null;
+    /** Filter by camera model */
+    model?: string | null;
+    /** Filter by person IDs */
+    personIds?: string[];
+    /** Natural language search query */
+    query?: string;
+    /** Asset ID to use as search reference */
+    queryAssetId?: string;
+    /** Filter by rating [1-5], or null for unrated */
+    rating?: number | null;
+    /** Shared space ID to filter by */
+    spaceId?: string;
+    /** Shared space person IDs to filter by */
+    spacePersonIds?: string[];
+    /** Filter by tag IDs */
+    tagIds?: string[] | null;
+    /** Filter by taken date (after) */
+    takenAfter?: string;
+    /** Filter by taken date (before) */
+    takenBefore?: string;
+    "type"?: AssetTypeEnum;
+    /** Include shared spaces the user is a member of */
+    withSharedSpaces?: boolean;
+};
+export type FilterSuggestionsPersonDto = {
+    /** Person ID */
+    id: string;
+    /** Person name */
+    name: string;
+};
+export type FilterSuggestionsTagDto = {
+    /** Tag ID */
+    id: string;
+    /** Tag value/name */
+    value: string;
+};
+export type TimeBucketsResponseDto = {
+    /** Number of assets in this time bucket */
+    count: number;
+    /** Time bucket identifier in YYYY-MM-DD format representing the start of the time period */
+    timeBucket: string;
+};
+export type SmartSearchFacetsResponseDto = {
+    /** Available camera makes */
+    cameraMakes: string[];
+    /** Available camera models for the current smart-search make scope */
+    cameraModels: string[];
+    /** Available cities for the current smart-search country scope */
+    cities: string[];
+    /** Available countries */
+    countries: string[];
+    /** Whether unnamed people exist in the filtered smart-search set */
+    hasUnnamedPeople: boolean;
+    /** Available media types */
+    mediaTypes: AssetTypeEnum[];
+    /** Available people */
+    people: FilterSuggestionsPersonDto[];
+    /** Available ratings */
+    ratings: number[];
+    /** Available tags */
+    tags: FilterSuggestionsTagDto[];
+    /** Available monthly buckets for the smart-search result set */
+    timeBuckets: TimeBucketsResponseDto[];
+    /** Exact count after applying all active smart-search filters */
+    total: number;
+};
 export type StatisticsSearchDto = {
     /** Filter by album IDs */
     albumIds?: string[];
@@ -2009,18 +2086,6 @@ export type StatisticsSearchDto = {
 export type SearchStatisticsResponseDto = {
     /** Total number of matching assets */
     total: number;
-};
-export type FilterSuggestionsPersonDto = {
-    /** Person ID */
-    id: string;
-    /** Person name */
-    name: string;
-};
-export type FilterSuggestionsTagDto = {
-    /** Tag ID */
-    id: string;
-    /** Tag value/name */
-    value: string;
 };
 export type FilterSuggestionsResponseDto = {
     /** Available camera makes */
@@ -3072,12 +3137,6 @@ export type TimeBucketAssetResponseDto = {
     thumbhash: (string | null)[];
     /** Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED) */
     visibility: AssetVisibility[];
-};
-export type TimeBucketsResponseDto = {
-    /** Number of assets in this time bucket */
-    count: number;
-    /** Time bucket identifier in YYYY-MM-DD format representing the start of the time period */
-    timeBucket: string;
 };
 export type TrashResponseDto = {
     /** Number of items in trash */
@@ -6062,6 +6121,21 @@ export function searchSmart({ smartSearchDto }: {
         ...opts,
         method: "POST",
         body: smartSearchDto
+    })));
+}
+/**
+ * Smart asset search facets
+ */
+export function searchSmartFacets({ smartSearchFacetsDto }: {
+    smartSearchFacetsDto: SmartSearchFacetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SmartSearchFacetsResponseDto;
+    }>("/search/smart/facets", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: smartSearchFacetsDto
     })));
 }
 /**
