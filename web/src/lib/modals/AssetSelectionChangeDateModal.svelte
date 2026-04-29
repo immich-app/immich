@@ -37,23 +37,23 @@
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
 
-  // sort the dates to get the first and last range when doing a change by offset
-  let assetDates = $derived(
-    assets
-      .map((asset) => DateTime.fromObject(asset.localDateTime, { zone: asset.localOffsetHours ? 'local' : 'UTC' }))
-      .sort((a, b) => a.toMillis() - b.toMillis()),
-  );
+  // get the first and last date range when doing a change by offset
+  const dateRange = $derived.by(() => {
+    let first = undefined;
+    let last = undefined;
+    for (const asset of assets) {
+      const date = DateTime.fromObject(asset.localDateTime, { zone: asset.localOffsetHours ? 'local' : 'UTC' });
+      if (!first || first.toMillis() > date.toMillis()) {
+        first = date;
+      }
+      if (!last || last.toMillis() < date.toMillis()) {
+        last = date;
+      }
+    }
 
-  let firstDate = $derived.by(() => {
-    let base = assetDates.at(0);
-    let date = showRelative && base ? calcNewDate(base, selectedDuration, selectedOption?.value) : base;
-    return getFullDateFormat(date);
-  });
-
-  let lastDate = $derived.by(() => {
-    let base = assetDates.at(-1);
-    let date = showRelative && base ? calcNewDate(base, selectedDuration, selectedOption?.value) : base;
-    return getFullDateFormat(date);
+    first = showRelative && first ? calcNewDate(first, selectedDuration, selectedOption?.value) : first;
+    last = showRelative && last ? calcNewDate(last, selectedDuration, selectedOption?.value) : last;
+    return { first: getFullDateFormat(first), last: getFullDateFormat(last) };
   });
 
   const onSubmit = async () => {
@@ -120,10 +120,10 @@
   {#if showRelative}
     <Label for="datetime" class="block mt-2 mb-1">{$t('new_date_range')}</Label>
     {#if assets.length > 1}
-      <Text size="small">{$t('first')}: {firstDate}</Text>
-      <Text size="small">{$t('last')}: {lastDate}</Text>
+      <Text size="small">{$t('first')}: {dateRange.first}</Text>
+      <Text size="small">{$t('last')}: {dateRange.last}</Text>
     {:else}
-      <Text size="small">{firstDate}</Text>
+      <Text size="small">{dateRange.first}</Text>
     {/if}
   {/if}
 </FormModal>
