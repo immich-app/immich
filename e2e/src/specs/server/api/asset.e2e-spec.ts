@@ -313,7 +313,7 @@ describe('/asset', () => {
         const { status } = await request(app)
           .get(`/assets/${asset.id}`)
           .set('Authorization', `Bearer ${user2.accessToken}`);
-        expect(status).toBe(400);
+        expect(status).toBe(403);
       });
 
       it('disallows viewing trashed assets', async () => {
@@ -323,7 +323,7 @@ describe('/asset', () => {
         const { status } = await request(app)
           .get(`/assets/${asset.id}`)
           .set('Authorization', `Bearer ${user2.accessToken}`);
-        expect(status).toBe(400);
+        expect(status).toBe(403);
       });
     });
   });
@@ -657,7 +657,7 @@ describe('/asset', () => {
         const { status } = await request(app)
           .get(`/assets/${assetId}`)
           .set('Authorization', `Bearer ${admin.accessToken}`);
-        expect(status).toBe(400);
+        expect(status).toBe(403);
       }
     });
 

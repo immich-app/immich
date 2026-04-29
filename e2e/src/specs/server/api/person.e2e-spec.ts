@@ -208,8 +208,8 @@ describe('/people', () => {
         .get(`/people/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.noPermission);
     });
 
     it('should return person information', async () => {
@@ -228,8 +228,8 @@ describe('/people', () => {
         .get(`/people/${uuidDto.notFound}/statistics`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.noPermission);
     });
 
     it('should return the correct number of assets', async () => {
