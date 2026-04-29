@@ -244,15 +244,19 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final isAscending = albumData.order == AlbumAssetOrder.asc;
 
-    final query = _db.remoteAssetEntity.select().addColumns([_db.localAssetEntity.id]).join([
+    // Correlated subquery picks the first matching local asset by checksum,
+    // avoiding fan-out when the same photo exists in multiple device albums (#23273).
+    final localId = subqueryExpression<String>(
+      _db.localAssetEntity.selectOnly()
+        ..addColumns([_db.localAssetEntity.id])
+        ..where(_db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum))
+        ..limit(1),
+    );
+
+    final query = _db.remoteAssetEntity.select().addColumns([localId]).join([
       innerJoin(
         _db.remoteAlbumAssetEntity,
         _db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-        useColumns: false,
-      ),
-      leftOuterJoin(
-        _db.localAssetEntity,
-        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
         useColumns: false,
       ),
     ])..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId));
@@ -265,9 +269,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     query.limit(count, offset: offset);
 
-    return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(localId: row.read(_db.localAssetEntity.id)))
-        .get();
+    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto(localId: row.read(localId))).get();
   }
 
   TimelineQuery fromAssets(List<BaseAsset> assets, TimelineOrigin origin) => (
