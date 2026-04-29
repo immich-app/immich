@@ -136,7 +136,7 @@ export class UserService extends BaseService {
   async getProfileImage(id: string): Promise<ImmichFileResponse> {
     const user = await this.findOrFail(id, {});
     if (!user.profileImagePath) {
-      throw new NotFoundException('User does not have a profile image');
+      throw new NotFoundException('Not found');
     }
 
     return new ImmichFileResponse({

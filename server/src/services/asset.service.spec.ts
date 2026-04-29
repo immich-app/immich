@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
@@ -136,14 +136,14 @@ describe(AssetService.name, () => {
     });
 
     it('should throw an error for no access', async () => {
-      await expect(sut.get(authStub.admin, AssetFactory.create().id)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.get(authStub.admin, AssetFactory.create().id)).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(mocks.asset.getById).not.toHaveBeenCalled();
     });
 
     it('should throw an error for an invalid shared link', async () => {
       await expect(sut.get(authStub.adminSharedLink, AssetFactory.create().id)).rejects.toBeInstanceOf(
-        BadRequestException,
+        ForbiddenException,
       );
 
       expect(mocks.access.asset.checkOwnerAccess).not.toHaveBeenCalled();
@@ -162,7 +162,7 @@ describe(AssetService.name, () => {
     it('should require asset write access for the id', async () => {
       await expect(
         sut.update(authStub.admin, 'asset-1', { visibility: AssetVisibility.Timeline }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
@@ -357,7 +357,7 @@ describe(AssetService.name, () => {
   describe('updateAll', () => {
     it('should require asset write access for all ids', async () => {
       const auth = AuthFactory.create();
-      await expect(sut.updateAll(auth, { ids: ['asset-1'] })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.updateAll(auth, { ids: ['asset-1'] })).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should update all assets', async () => {
@@ -461,7 +461,7 @@ describe(AssetService.name, () => {
         sut.deleteAll(authStub.user1, {
           ids: ['asset-1'],
         }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should force delete a batch of assets', async () => {
@@ -612,7 +612,7 @@ describe(AssetService.name, () => {
     it('should require asset read permission', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
 
-      await expect(sut.getOcr(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(mocks.ocr.getByAssetId).not.toHaveBeenCalled();
     });
@@ -736,7 +736,7 @@ describe(AssetService.name, () => {
             },
           ],
         }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
     });

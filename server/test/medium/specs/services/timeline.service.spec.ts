@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -90,8 +90,8 @@ describe(TimelineService.name, () => {
       const { sut } = setup();
       const auth = factory.auth({ sharedLink: {} });
       const response = sut.getTimeBuckets(auth, {});
-      await expect(response).rejects.toBeInstanceOf(BadRequestException);
-      await expect(response).rejects.toThrow('Not found or no timeline.read access');
+      await expect(response).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(response).rejects.toThrow('Access denied');
     });
   });
 

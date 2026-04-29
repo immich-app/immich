@@ -61,7 +61,7 @@ describe('/stacks', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ assetIds: [asset.id, user2Asset.id] });
 
-      expect(status).toBe(400);
+      expect(status).toBe(403);
       expect(body).toEqual(errorDto.noPermission);
     });
 

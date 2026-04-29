@@ -598,7 +598,7 @@ describe(AssetService.name, () => {
       const auth = factory.auth({ user });
       const { asset } = await ctx.newAsset({ ownerId: user2.id });
 
-      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Not found or no asset.read access');
+      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Access denied');
     });
 
     it('should work', async () => {
@@ -649,7 +649,7 @@ describe(AssetService.name, () => {
       const auth = factory.auth({ user });
       const { asset } = await ctx.newAsset({ ownerId: user2.id });
 
-      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Not found or no asset.read access');
+      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Access denied');
     });
 
     it('should work', async () => {
@@ -875,7 +875,7 @@ describe(AssetService.name, () => {
 
       await expect(
         sut.editAsset(auth, asset.id, { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] }),
-      ).rejects.toThrow('Not found or no asset.edit.create access');
+      ).rejects.toThrow('Access denied');
     });
 
     it('should work', async () => {
