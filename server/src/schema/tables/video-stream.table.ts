@@ -9,6 +9,8 @@ import {
   Table,
   Timestamp,
 } from '@immich/sql-tools';
+import { VideoSegmentCodec } from 'src/enum';
+import { video_stream_variant_codec_enum } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('video_stream_session')
@@ -26,7 +28,7 @@ export class VideoStreamSessionTable {
   createdAt!: Generated<Timestamp>;
 }
 
-@Index({ columns: ['sessionId', 'codec', 'resolution', 'bitrate'], unique: true })
+@Index({ columns: ['sessionId', 'bitrate', 'resolution', 'videoCodec'], unique: true })
 @Table('video_stream_variant')
 export class VideoStreamVariantTable {
   @PrimaryGeneratedColumn()
@@ -41,11 +43,11 @@ export class VideoStreamVariantTable {
   @Column({ type: 'integer' })
   bitrate!: number;
 
+  @Column({ enum: video_stream_variant_codec_enum })
+  codec!: VideoSegmentCodec;
+
   @Column({ type: 'smallint' })
   resolution!: number;
-
-  @Column({ type: 'text' })
-  codec!: string;
 }
 
 @Table('video_stream_segment')
