@@ -25,17 +25,17 @@ export class VideoStreamRepository {
     await this.db.insertInto('video_stream_segment').values(segment).execute();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING] })
+  @GenerateSql({ params: [DummyValue.UUID] })
   getSession(id: string) {
     return this.db.selectFrom('video_stream_session').selectAll().where('id', '=', id).executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING] })
+  @GenerateSql({ params: [DummyValue.UUID] })
   getVariant(id: string) {
     return this.db.selectFrom('video_stream_variant').selectAll().where('id', '=', id).executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING, DummyValue.NUMBER] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   getSegment(variantId: string, index: number) {
     return this.db
       .selectFrom('video_stream_segment')

@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
-  Unique,
 } from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
