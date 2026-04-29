@@ -28,6 +28,7 @@ const clipConfig = { modelName: 'ViT-B-32__openai', enabled: true, maxDistance: 
 
 describe(MachineLearningRepository.name, () => {
   let sut: MachineLearningRepository;
+  let originalCloseConnections: string | undefined;
 
   const mlUrl = 'http://ml-server:3003';
 
@@ -56,17 +57,27 @@ describe(MachineLearningRepository.name, () => {
     sut.setup(baseConfig);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    sut = new MachineLearningRepository(
+  const createSut = () =>
+    new MachineLearningRepository(
       // eslint-disable-next-line no-sparse-arrays
       automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
     );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    originalCloseConnections = process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS;
+    delete process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS;
+    sut = createSut();
     setupConfig();
   });
 
   afterEach(() => {
     sut.teardown();
+    if (originalCloseConnections === undefined) {
+      delete process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS;
+    } else {
+      process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS = originalCloseConnections;
+    }
   });
 
   describe('getFormData', () => {
@@ -340,6 +351,28 @@ describe(MachineLearningRepository.name, () => {
       await expect(sut.ping()).resolves.toEqual({ ok: true });
     });
 
+    it('keeps the HTTP connection reusable for /ping requests by default', async () => {
+      mockFetch.mockResolvedValue({ ok: true, headers: new Headers() });
+
+      await sut.ping();
+
+      const [, init] = mockFetch.mock.calls[0] as [URL, RequestInit];
+      expect(new Headers(init.headers).get('Connection')).toBeNull();
+    });
+
+    it('closes the HTTP connection after /ping requests when configured', async () => {
+      sut.teardown();
+      process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS = 'true';
+      sut = createSut();
+      setupConfig();
+      mockFetch.mockResolvedValue({ ok: true, headers: new Headers() });
+
+      await sut.ping();
+
+      const [, init] = mockFetch.mock.calls[0] as [URL, RequestInit];
+      expect(new Headers(init.headers).get('Connection')).toBe('close');
+    });
+
     it('returns { ok: false } on timeout/abort', async () => {
       mockFetch.mockImplementation(
         (_url: URL, init: RequestInit) =>
@@ -416,6 +449,30 @@ describe(MachineLearningRepository.name, () => {
   });
 
   describe('predict()', () => {
+    it('keeps the HTTP connection reusable for /predict requests by default', async () => {
+      mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ [ModelTask.SEARCH]: 'embedding' }) });
+
+      const predictFn = (sut as unknown as { predict: (...args: unknown[]) => Promise<unknown> }).predict.bind(sut);
+      await predictFn({ text: 'hello' }, { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName: 'clip' } } });
+
+      const [, init] = mockFetch.mock.calls[0] as [URL, RequestInit];
+      expect(new Headers(init.headers).get('Connection')).toBeNull();
+    });
+
+    it('closes the HTTP connection after /predict requests when configured', async () => {
+      sut.teardown();
+      process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS = 'true';
+      sut = createSut();
+      setupConfig();
+      mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ [ModelTask.SEARCH]: 'embedding' }) });
+
+      const predictFn = (sut as unknown as { predict: (...args: unknown[]) => Promise<unknown> }).predict.bind(sut);
+      await predictFn({ text: 'hello' }, { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName: 'clip' } } });
+
+      const [, init] = mockFetch.mock.calls[0] as [URL, RequestInit];
+      expect(new Headers(init.headers).get('Connection')).toBe('close');
+    });
+
     it('propagates AbortError when caller-supplied timeoutMs elapses', async () => {
       mockFetch.mockImplementation(
         (_url: URL, init: RequestInit) =>

@@ -59,6 +59,8 @@ Do note that this will mean that Smart Search and Face Detection jobs will fail 
 
 While several URLs can be provided in the settings, they are tried sequentially; there is no attempt to distribute load across multiple containers. It is recommended to use a dedicated load balancer for such use-cases and specify it as the only URL. Among other things, it may enable the use of different APIs on the same server by running multiple containers with different configurations. For example, one might run an OpenVINO container in addition to a CUDA container, or run a standard release container to maximize both CPU and GPU utilization.
 
+If your load balancer distributes traffic per connection, long-lived HTTP connections from the server can still make traffic uneven. Set `IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS=true` on the server container to close each machine learning HTTP request after completion, which gives the load balancer a new connection to place for each request. The default is `false`, which preserves HTTP connection reuse.
+
 :::tip
 The machine learning container can be shared among several Gallery instances regardless of the models a particular instance uses. However, using different models will lead to higher peak memory usage.
 :::

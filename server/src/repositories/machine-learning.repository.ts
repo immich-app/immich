@@ -32,6 +32,7 @@ export enum ModelType {
 export type ModelPayload = { imagePath: string } | { text: string };
 
 type ModelOptions = { modelName: string };
+const CLOSE_CONNECTION_HEADERS = { Connection: 'close' };
 
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
 export type OcrOptions = ModelOptions & {
@@ -117,9 +118,14 @@ export class MachineLearningRepository {
   // per-predict fetch/json durations for text encoding (the smart-search hot
   // path). Captured once at module load; restart to toggle.
   private readonly timingEnabled = process.env.GALLERY_SEARCH_TIMING === 'true';
+  private readonly closeConnections = process.env.IMMICH_MACHINE_LEARNING_CLOSE_CONNECTIONS === 'true';
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MachineLearningRepository.name);
+  }
+
+  private get connectionHeaders() {
+    return this.closeConnections ? CLOSE_CONNECTION_HEADERS : undefined;
   }
 
   setup(config: MachineLearningConfig) {
@@ -160,6 +166,7 @@ export class MachineLearningRepository {
     let healthy = false;
     try {
       const response = await fetch(new URL('/ping', url), {
+        headers: this.connectionHeaders,
         signal: AbortSignal.timeout(this.config.availabilityChecks.timeout),
       });
       if (response.ok) {
@@ -203,7 +210,12 @@ export class MachineLearningRepository {
     ]) {
       try {
         const tFetch = performance.now();
-        const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData, signal });
+        const response = await fetch(new URL('/predict', url), {
+          method: 'POST',
+          body: formData,
+          headers: this.connectionHeaders,
+          signal,
+        });
         const fetchMs = performance.now() - tFetch;
         if (response.ok) {
           this.setHealthy(url, true);
@@ -285,7 +297,10 @@ export class MachineLearningRepository {
       return { ok: false };
     }
     try {
-      const response = await fetch(new URL('/ping', url), { signal: AbortSignal.timeout(2000) });
+      const response = await fetch(new URL('/ping', url), {
+        headers: this.connectionHeaders,
+        signal: AbortSignal.timeout(2000),
+      });
       return { ok: response.ok };
     } catch {
       return { ok: false };
