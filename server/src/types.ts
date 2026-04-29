@@ -394,10 +394,6 @@ export interface ExtensionVersion {
   installedVersion: string | null;
 }
 
-export interface VectorUpdateResult {
-  restartRequired: boolean;
-}
-
 export interface ImmichFile extends Express.Multer.File {
   uuid: string;
   /** sha1 hash of file */

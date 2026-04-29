@@ -607,7 +607,6 @@ export enum DatabaseExtension {
   Cube = 'cube',
   EarthDistance = 'earthdistance',
   Vector = 'vector',
-  Vectors = 'vectors',
   VectorChord = 'vchord',
 }
 
