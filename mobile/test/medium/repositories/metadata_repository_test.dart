@@ -32,7 +32,7 @@ void main() {
     });
 
     test('systemConfig returns key defaults when DB is empty', () {
-      expect(sut.systemConfig.log.level, LogLevel.info);
+      expect(sut.systemConfig.logLevel, LogLevel.info);
     });
   });
 
@@ -46,7 +46,7 @@ void main() {
       await sut.write(.themeMode, ThemeMode.light);
       await sut.write(.logLevel, LogLevel.severe);
       expect(sut.appConfig.theme.mode, ThemeMode.light);
-      expect(sut.systemConfig.log.level, LogLevel.severe);
+      expect(sut.systemConfig.logLevel, LogLevel.severe);
     });
   });
 
@@ -60,21 +60,6 @@ void main() {
 
       final rows = await ctx.db.select(ctx.db.metadataEntity).get();
       expect(rows, isEmpty);
-    });
-  });
-
-  group('clearDomain', () {
-    test('clears every key in the domain and leaves other domains alone', () async {
-      await sut.write(.themeMode, ThemeMode.dark);
-      await sut.write(.logLevel, LogLevel.severe);
-
-      await sut.clearDomain(.appConfig);
-
-      expect(sut.appConfig.theme.mode, ThemeMode.system);
-      expect(sut.systemConfig.log.level, LogLevel.severe);
-
-      final remainingKeys = (await ctx.db.select(ctx.db.metadataEntity).get()).map((r) => r.key);
-      expect(remainingKeys, [MetadataKey.logLevel.key]);
     });
   });
 
@@ -145,7 +130,7 @@ void main() {
     });
 
     test('watchSystemConfig emits the new value after a write', () async {
-      final expectation = expectLater(sut.watchSystemConfig().map((c) => c.log.level), emitsThrough(LogLevel.warning));
+      final expectation = expectLater(sut.watchSystemConfig().map((c) => c.logLevel), emitsThrough(LogLevel.warning));
       await sut.write(MetadataKey.logLevel, LogLevel.warning);
       await expectation;
     });

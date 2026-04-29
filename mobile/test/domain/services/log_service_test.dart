@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/config/log_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
@@ -40,9 +39,7 @@ void main() {
     registerFallbackValue(LogLevel.info);
 
     when(() => mockLogRepo.truncate(limit: any(named: 'limit'))).thenAnswer((_) async => {});
-    when(
-      () => mockMetadataRepository.systemConfig,
-    ).thenReturn(const SystemConfig(log: LogConfig(level: LogLevel.fine)));
+    when(() => mockMetadataRepository.systemConfig).thenReturn(const SystemConfig(logLevel: LogLevel.fine));
     when(() => mockMetadataRepository.write<LogLevel>(MetadataKey.logLevel, any())).thenAnswer((_) async {});
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);

@@ -56,7 +56,7 @@ class LogService {
   }) async {
     final instance = LogService._(logRepository, metadataRepository, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
-    final level = instance._metadataRepository.systemConfig.log.level;
+    final level = instance._metadataRepository.systemConfig.logLevel;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level.index) ?? Level.INFO;
     return instance;
   }

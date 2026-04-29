@@ -1,18 +1,18 @@
-import 'package:immich_mobile/domain/models/config/log_config.dart';
+import 'package:immich_mobile/domain/models/log.model.dart';
 
 class SystemConfig {
-  final LogConfig log;
+  final LogLevel logLevel;
 
-  const SystemConfig({this.log = const .new()});
+  const SystemConfig({this.logLevel = .info});
 
-  SystemConfig copyWith({LogConfig? log}) => .new(log: log ?? this.log);
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || (other is SystemConfig && other.log == log);
+  SystemConfig copyWith({LogLevel? logLevel}) => SystemConfig(logLevel: logLevel ?? this.logLevel);
 
   @override
-  int get hashCode => log.hashCode;
+  bool operator ==(Object other) => identical(this, other) || (other is SystemConfig && other.logLevel == logLevel);
 
   @override
-  String toString() => 'SystemConfig(log: $log)';
+  int get hashCode => logLevel.hashCode;
+
+  @override
+  String toString() => 'SystemConfig(logLevel: $logLevel)';
 }

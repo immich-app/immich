@@ -1,18 +1,15 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -29,7 +26,6 @@ final authServiceProvider = Provider(
     ref.watch(networkServiceProvider),
     ref.watch(backgroundSyncProvider),
     ref.watch(appSettingsServiceProvider),
-    ref.watch(metadataProvider),
   ),
 );
 
@@ -40,7 +36,6 @@ class AuthService {
   final NetworkService _networkService;
   final BackgroundSyncManager _backgroundSyncManager;
   final AppSettingsService _appSettingsService;
-  final MetadataRepository _metadataRepository;
   final _log = Logger("AuthService");
 
   AuthService(
@@ -50,7 +45,6 @@ class AuthService {
     this._networkService,
     this._backgroundSyncManager,
     this._appSettingsService,
-    this._metadataRepository,
   );
 
   /// Validates the provided server URL by resolving and setting the endpoint.
@@ -134,7 +128,6 @@ class AuthService {
       Store.delete(StoreKey.preferredWifiName),
       Store.delete(StoreKey.localEndpoint),
       Store.delete(StoreKey.externalEndpointList),
-      _metadataRepository.clearDomain(MetadataDomain.appConfig),
     ]);
   }
 

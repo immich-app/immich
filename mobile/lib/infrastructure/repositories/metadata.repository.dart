@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/config/log_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
@@ -80,17 +79,9 @@ class MetadataRepository extends DriftDatabaseRepository {
     await (_db.delete(_db.metadataEntity)..where((t) => t.key.equals(key.key))).go();
   }
 
-  Future<void> clearDomain(MetadataDomain domain) async {
-    for (final k in MetadataKey.values.where((k) => k.domain == domain)) {
-      _cache[k] = k.defaultValue;
-    }
-
-    await (_db.delete(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'))).go();
-  }
-
   AppConfig get appConfig => AppConfig(theme: ThemeConfig(mode: _read(MetadataKey.themeMode)));
 
-  SystemConfig get systemConfig => SystemConfig(log: LogConfig(level: _read(MetadataKey.logLevel)));
+  SystemConfig get systemConfig => SystemConfig(logLevel: _read(MetadataKey.logLevel));
 
   Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).map((_) => appConfig).distinct();
 
