@@ -32,7 +32,8 @@ JNIEXPORT void JNICALL
 Java_app_alextran_immich_NativeBuffer_copy(
         JNIEnv *env, jclass clazz, jobject buffer, jlong destAddress, jint offset, jint length) {
     void *src = (*env)->GetDirectBufferAddress(env, buffer);
-    if (src != NULL) {
+    jlong capacity = (*env)->GetDirectBufferCapacity(env, buffer);
+    if (src != NULL && offset >= 0 && length >= 0 && (jlong) offset + length <= capacity) {
         memcpy((void *) destAddress, (char *) src + offset, length);
     }
 }
