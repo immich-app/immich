@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
@@ -40,7 +42,7 @@ class MetadataRepository extends DriftDatabaseRepository {
     final rows = await _db.select(_db.metadataEntity).get();
     for (final row in rows) {
       final key = MetadataKey.fromKey(row.key);
-      if (key != null) _cache[key] = _decode(key, row.value);
+      if (key != null) _cache[key] = decode(key, row.value);
     }
   }
 
@@ -52,21 +54,23 @@ class MetadataRepository extends DriftDatabaseRepository {
     await _db
         .into(_db.metadataEntity)
         .insertOnConflictUpdate(
-          MetadataEntityCompanion.insert(key: key.key, value: _encode(value), updatedAt: Value(DateTime.now())),
+          MetadataEntityCompanion.insert(key: key.key, value: encode(value), updatedAt: Value(DateTime.now())),
         );
     _cache[key] = value;
   }
 
-  String _encode<T extends Object>(T value) => switch (value) {
+  @visibleForTesting
+  static String encode<T extends Object>(T value) => switch (value) {
     Enum() => value.name,
     DateTime() => value.toIso8601String(),
     _ => throw ArgumentError('Unsupported metadata value type: ${value.runtimeType}'),
   };
 
-  T _decode<T extends Object>(MetadataKey<T> key, String raw) {
+  @visibleForTesting
+  static T decode<T extends Object>(MetadataKey<T> key, String raw) {
     final enumValues = key.enumValues;
     if (enumValues != null) {
-      return enumValues.where((v) => (v as Enum).name == raw).firstOrNull ?? key.defaultValue;
+      return enumValues.firstWhereOrNull((v) => (v as Enum).name == raw) ?? key.defaultValue;
     }
     return switch (key.defaultValue) {
       DateTime() => (DateTime.tryParse(raw) ?? key.defaultValue) as T,
@@ -96,6 +100,6 @@ class MetadataRepository extends DriftDatabaseRepository {
   void _updateCacheForRow(MetadataEntityData row) {
     final key = MetadataKey.fromKey(row.key);
     if (key == null) return;
-    _cache[key] = _decode(key, row.value);
+    _cache[key] = decode(key, row.value);
   }
 }
