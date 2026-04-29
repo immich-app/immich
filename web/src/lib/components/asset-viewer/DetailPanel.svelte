@@ -11,7 +11,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -24,26 +24,15 @@
     type AssetResponseDto,
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, Text } from '@immich/ui';
-  import {
-    mdiCamera,
-    mdiCameraIris,
-    mdiClose,
-    mdiEye,
-    mdiEyeOff,
-    mdiImageOutline,
-    mdiInformationOutline,
-    mdiPencil,
-    mdiPlus,
-  } from '@mdi/js';
-  import { DateTime } from 'luxon';
+  import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
-  import ImageThumbnail from '../assets/thumbnail/ImageThumbnail.svelte';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
+  import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -53,8 +42,6 @@
   let { asset, currentAlbum = null }: Props = $props();
 
   let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
-  let people = $derived(asset.people || []);
-  let unassignedFaces = $derived(asset.unassignedFaces || []);
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -162,110 +149,7 @@
 
     <DetailPanelDescription {asset} {isOwner} />
     <DetailPanelRating {asset} {isOwner} />
-
-    {#if !authManager.isSharedLink && isOwner}
-      <section class="px-4 pt-4 text-sm">
-        <div class="flex h-10 w-full items-center justify-between">
-          <Text size="small" color="muted">{$t('people')}</Text>
-          <div class="flex gap-2 items-center">
-            {#if people.some((person) => person.isHidden)}
-              <IconButton
-                aria-label={$t('show_hidden_people')}
-                icon={assetViewerManager.isShowingHiddenPeople ? mdiEyeOff : mdiEye}
-                size="medium"
-                shape="round"
-                color="secondary"
-                variant="ghost"
-                onclick={() => assetViewerManager.toggleHiddenPeople()}
-              />
-            {/if}
-            <IconButton
-              aria-label={$t('tag_people')}
-              icon={mdiPlus}
-              size="medium"
-              shape="round"
-              color="secondary"
-              variant="ghost"
-              onclick={() => assetViewerManager.toggleFaceEditMode()}
-            />
-
-            {#if people.length > 0 || unassignedFaces.length > 0}
-              <IconButton
-                aria-label={$t('edit_people')}
-                icon={mdiPencil}
-                size="medium"
-                shape="round"
-                color="secondary"
-                variant="ghost"
-                onclick={() => assetViewerManager.openEditFacesPanel()}
-              />
-            {/if}
-          </div>
-        </div>
-
-        <div class="mt-2 flex flex-wrap gap-2">
-          {#each people as person, index (person.id)}
-            {#if assetViewerManager.isShowingHiddenPeople || !person.isHidden}
-              {@const isHighlighted = people[index].faces.some((f) =>
-                assetViewerManager.highlightedFaces.some((b) => b.id === f.id),
-              )}
-              <a
-                class="group w-22 outline-none"
-                href={Route.viewPerson(person, { previousRoute })}
-                onfocus={() => assetViewerManager.setHighlightedFaces(people[index].faces)}
-                onblur={() => assetViewerManager.clearHighlightedFaces()}
-                onpointerenter={() => assetViewerManager.setHighlightedFaces(people[index].faces)}
-                onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
-              >
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    hidden={person.isHidden}
-                    highlighted={isHighlighted}
-                    class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-                {#if person.birthDate}
-                  {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
-                  {@const ageInMonths = Math.floor(
-                    DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
-                  )}
-                  {#if age >= 0}
-                    <p
-                      class="font-light"
-                      title={personBirthDate.toLocaleString(
-                        {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        },
-                        { locale: $locale },
-                      )}
-                    >
-                      {#if ageInMonths <= 11}
-                        {$t('age_months', { values: { months: ageInMonths } })}
-                      {:else if ageInMonths > 12 && ageInMonths <= 23}
-                        {$t('age_year_months', { values: { months: ageInMonths - 12 } })}
-                      {:else}
-                        {$t('age_years', { values: { years: age } })}
-                      {/if}
-                    </p>
-                  {/if}
-                {/if}
-              </a>
-            {/if}
-          {/each}
-        </div>
-      </section>
-    {/if}
+    <DetailPanelPeople {asset} {isOwner} {previousRoute} />
 
     <div class="px-4 py-4">
       {#if asset.exifInfo}

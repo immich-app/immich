@@ -86,7 +86,7 @@
     </div>
   </UserPageLayout>
   <Portal target="body">
-    {#if assetViewerManager.isViewing}
+    {#if assetViewerManager.isViewing && !isTimelinePanelVisible}
       {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           cursor={{ current: assetViewerManager.asset! }}

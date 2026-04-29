@@ -49,7 +49,7 @@ describe(SearchController.name, () => {
     });
 
     it('should reject an invalid size', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ size: -1.5 });
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ size: -1 });
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(['[size] Too small: expected number to be >=1']));
     });
