@@ -119,13 +119,14 @@ FROM prod-${DEVICE} AS prod
 ARG DEVICE
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 tzdata $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -s "/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2" /usr/lib/libmimalloc.so.2
 
+ARG TZ=UTC
 WORKDIR /usr/src
 ENV TRANSFORMERS_CACHE=/cache \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -134,7 +135,10 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE} \
     VIRTUAL_ENV=/opt/venv \
-    MACHINE_LEARNING_CACHE_FOLDER=/cache
+    MACHINE_LEARNING_CACHE_FOLDER=/cache \
+    TZ=${TZ}
+
+RUN cp /usr/share/zoneinfo/${TZ:-UTC} /etc/localtime
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \
