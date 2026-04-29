@@ -28,7 +28,7 @@ export class VideoStreamSessionTable {
   createdAt!: Generated<Timestamp>;
 }
 
-@Index({ columns: ['sessionId', 'bitrate', 'resolution', 'videoCodec'], unique: true })
+@Index({ columns: ['sessionId', 'bitrate', 'resolution', 'codec'], unique: true })
 @Table('video_stream_variant')
 export class VideoStreamVariantTable {
   @PrimaryGeneratedColumn()
