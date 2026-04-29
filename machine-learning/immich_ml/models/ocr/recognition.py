@@ -61,6 +61,7 @@ class TextRecognizer(InferenceModel):
         self.model = RapidTextRecognizer(
             OcrOptions(
                 session=session.session,
+                model_root_dir=self.model_path.parent,
                 rec_batch_num=max_batch_size if max_batch_size else 6,
                 rec_img_shape=(3, 48, 320),
                 lang_type=self.language,
