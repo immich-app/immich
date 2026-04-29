@@ -49,7 +49,7 @@ export class UserService extends BaseService {
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== user.id) {
-        throw new BadRequestException('Email already in use by another account');
+        throw new BadRequestException('Email is not available');
       }
     }
 
