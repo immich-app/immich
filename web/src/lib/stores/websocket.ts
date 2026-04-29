@@ -1,11 +1,3 @@
-import { page } from '$app/state';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { Route } from '$lib/route';
-import { maintenanceStore } from '$lib/stores/maintenance.store';
-import { notificationManager } from '$lib/stores/notification-manager.svelte';
-import type { ReleaseEvent } from '$lib/types';
-import { createEventEmitter } from '$lib/utils/eventemitter';
 import {
   MaintenanceAction,
   type AssetResponseDto,
@@ -17,6 +9,14 @@ import {
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
+import { page } from '$app/state';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
+import { maintenanceStore } from '$lib/stores/maintenance.store';
+import { notificationManager } from '$lib/stores/notification-manager.svelte';
+import type { ReleaseEvent } from '$lib/types';
+import { createEventEmitter } from '$lib/utils/eventemitter';
 
 interface AppRestartEvent {
   isMaintenanceMode: boolean;
@@ -80,6 +80,8 @@ websocket
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => eventManager.emit('SessionDelete'))
   .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
+  .on('on_asset_delete', (asset) => eventManager.emit('AssetsDelete', [asset]))
+  .on('on_asset_trash', (assets) => eventManager.emit('AssetsDelete', assets))
   .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))
   .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
   .on('on_notification', () => notificationManager.refresh())

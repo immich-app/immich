@@ -27,5 +27,6 @@
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "noErrorTruncation": true
   },
+  "include": ["src", "test"],
   "exclude": ["dist", "node_modules", "upload"]
 }

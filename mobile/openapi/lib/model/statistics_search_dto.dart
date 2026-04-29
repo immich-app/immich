@@ -150,7 +150,7 @@ class StatisticsSearchDto {
 
   /// Filter by rating [1-5], or null for unrated
   ///
-  /// Minimum value: 1
+  /// Minimum value: 0
   /// Maximum value: 5
   int? rating;
 

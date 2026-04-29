@@ -215,13 +215,14 @@ class MetadataSearchDto {
   /// Page number
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? page;
+  int? page;
 
   /// Filter by person IDs
   List<String> personIds;
@@ -237,7 +238,7 @@ class MetadataSearchDto {
 
   /// Filter by rating [1-5], or null for unrated
   ///
-  /// Minimum value: 1
+  /// Minimum value: 0
   /// Maximum value: 5
   int? rating;
 
@@ -251,7 +252,7 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? size;
+  int? size;
 
   /// Filter by state/province name
   String? state;
@@ -724,13 +725,13 @@ class MetadataSearchDto {
         order: AssetOrder.fromJson(json[r'order']),
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
-        page: num.parse('${json[r'page']}'),
+        page: mapValueOfType<int>(json, r'page'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         previewPath: mapValueOfType<String>(json, r'previewPath'),
         rating: mapValueOfType<int>(json, r'rating'),
-        size: num.parse('${json[r'size']}'),
+        size: mapValueOfType<int>(json, r'size'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)

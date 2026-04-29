@@ -178,7 +178,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
           val duration = if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0L
-          else c.getLong(durationColumn) / 1000
+          else c.getLong(durationColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 

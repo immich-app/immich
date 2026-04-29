@@ -50,8 +50,8 @@ const SanitizedAssetResponseSchema = z
     duration: z.string().nullable().describe('Video/gif duration in hh:mm:ss.SSS format (null for static images)'),
     livePhotoVideoId: z.string().nullish().describe('Live photo video ID'),
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
-    width: z.number().min(0).nullable().describe('Asset width'),
-    height: z.number().min(0).nullable().describe('Asset height'),
+    width: z.int().min(0).nullable().describe('Asset width'),
+    height: z.int().min(0).nullable().describe('Asset height'),
   })
   .meta({ id: 'SanitizedAssetResponseDto' });
 

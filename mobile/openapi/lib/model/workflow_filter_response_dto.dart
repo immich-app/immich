@@ -26,7 +26,10 @@ class WorkflowFilterResponseDto {
   String id;
 
   /// Filter order
-  num order;
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int order;
 
   /// Plugin filter ID
   String pluginFilterId;
@@ -79,7 +82,7 @@ class WorkflowFilterResponseDto {
       return WorkflowFilterResponseDto(
         filterConfig: mapCastOfType<String, Object>(json, r'filterConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: num.parse('${json[r'order']}'),
+        order: mapValueOfType<int>(json, r'order')!,
         pluginFilterId: mapValueOfType<String>(json, r'pluginFilterId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

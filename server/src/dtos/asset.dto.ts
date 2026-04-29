@@ -40,7 +40,7 @@ const UpdateAssetBaseSchema = z
 const AssetBulkUpdateBaseSchema = UpdateAssetBaseSchema.extend({
   ids: z.array(z.uuidv4()).describe('Asset IDs to update'),
   duplicateId: z.string().nullish().describe('Duplicate ID'),
-  dateTimeRelative: z.number().optional().describe('Relative time offset in seconds'),
+  dateTimeRelative: z.int().optional().describe('Relative time offset in seconds'),
   timeZone: z.string().optional().describe('Time zone (IANA timezone)'),
 });
 

@@ -26,7 +26,10 @@ class WorkflowActionResponseDto {
   String id;
 
   /// Action order
-  num order;
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int order;
 
   /// Plugin action ID
   String pluginActionId;
@@ -79,7 +82,7 @@ class WorkflowActionResponseDto {
       return WorkflowActionResponseDto(
         actionConfig: mapCastOfType<String, Object>(json, r'actionConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: num.parse('${json[r'order']}'),
+        order: mapValueOfType<int>(json, r'order')!,
         pluginActionId: mapValueOfType<String>(json, r'pluginActionId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

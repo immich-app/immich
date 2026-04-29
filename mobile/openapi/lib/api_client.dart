@@ -614,8 +614,6 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerStorageResponseDto':
           return ServerStorageResponseDto.fromJson(value);
-        case 'ServerThemeDto':
-          return ServerThemeDto.fromJson(value);
         case 'ServerVersionHistoryResponseDto':
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
@@ -680,6 +678,8 @@ class ApiClient {
           return SyncAlbumUserV1.fromJson(value);
         case 'SyncAlbumV1':
           return SyncAlbumV1.fromJson(value);
+        case 'SyncAlbumV2':
+          return SyncAlbumV2.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
         case 'SyncAssetEditDeleteV1':

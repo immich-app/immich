@@ -54,6 +54,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   var _dynamicSpawning = false;
   var _isolatesCount = numberOfProcessors;
 
+  @visibleForTesting
+  UnmodifiableListView<Worker> get pool => UnmodifiableListView(_pool);
+
   @override
   Future<void> init({int? isolatesCount, bool? dynamicSpawning}) async {
     if (_pool.isNotEmpty) {
@@ -76,7 +79,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   Future<void> dispose() async {
     _queue.clear();
     for (final worker in _pool) {
-      worker.kill();
+      if (worker.initialized || worker.initializing) {
+        worker.kill();
+      }
     }
     _pool.clear();
     super.dispose();
@@ -157,9 +162,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     _nextTaskId++;
     late final Task<R> task;
     final completer = Completer<R>();
-    if (execution is Execute<R>) {
-      task = TaskRegular<R>(id: id, workPriority: priority, execution: execution, completer: completer);
-    } else if (execution is ExecuteWithPort<R>) {
+    if (execution is ExecuteWithPort<R>) {
       task = TaskWithPort<R>(
         id: id,
         workPriority: priority,
@@ -177,6 +180,8 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
         completer: completer,
         onMessage: onMessage!,
       );
+    } else if (execution is Execute<R>) {
+      task = TaskRegular<R>(id: id, workPriority: priority, execution: execution, completer: completer);
     }
     _queue.add(task);
     _schedule();
@@ -199,7 +204,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     if (_pool.every((worker) => worker.taskId != null)) {
       return;
     }
-    if (_dynamicSpawning) {
+    if (_dynamicSpawning && _queue.isNotEmpty) {
       final freeWorker = _pool.firstWhereOrNull(
         (worker) => worker.taskId == null && !worker.initialized && !worker.initializing,
       );
@@ -221,7 +226,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
         .work(task)
         .then(
           (value) {
-            //could be completed already by cancel and it is normal.
+            //might be completed by cancel and it is normal.
             //Assuming that worker finished with error and cleaned gracefully
             task.complete(value, null, null);
           },

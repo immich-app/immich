@@ -1,9 +1,9 @@
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import type { RouteId } from '$app/types';
 import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 import { Route } from '$lib/route';
-import { get } from 'svelte/store';
 
 export type AssetGridRouteSearchParams = {
   at: string | null | undefined;

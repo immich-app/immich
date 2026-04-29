@@ -35,8 +35,9 @@ const BaseSearchSchema = z.object({
   albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs'),
   rating: z
     .int()
-    .min(1)
+    .min(0)
     .max(5)
+    .transform((value) => (value === 0 ? null : value))
     .nullish()
     .describe('Filter by rating [1-5], or null for unrated')
     .meta({
@@ -53,7 +54,7 @@ const BaseSearchSchema = z.object({
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
   withDeleted: z.boolean().optional().describe('Include deleted assets'),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
-  size: z.number().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.int().min(1).max(1000).optional().describe('Number of results to return'),
 });
 
 const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
@@ -63,7 +64,7 @@ const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
 
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   minFileSize: z.coerce.number().int().min(0).optional().describe('Minimum file size in bytes'),
-  size: z.coerce.number().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.coerce.number().int().min(1).max(1000).optional().describe('Number of results to return'),
 }).meta({ id: 'LargeAssetSearchDto' });
 
 const MetadataSearchSchema = RandomSearchSchema.extend({
@@ -76,7 +77,7 @@ const MetadataSearchSchema = RandomSearchSchema.extend({
   thumbnailPath: z.string().optional().describe('Filter by thumbnail file path'),
   encodedVideoPath: z.string().optional().describe('Filter by encoded video file path'),
   order: AssetOrderSchema.default(AssetOrder.Desc).optional().describe('Sort order'),
-  page: z.number().min(1).optional().describe('Page number'),
+  page: z.int().min(1).optional().describe('Page number'),
 }).meta({ id: 'MetadataSearchDto' });
 
 const StatisticsSearchSchema = BaseSearchSchema.extend({
@@ -87,7 +88,7 @@ const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
   query: z.string().trim().optional().describe('Natural language search query'),
   queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
   language: z.string().optional().describe('Search language code'),
-  page: z.number().min(1).optional().describe('Page number'),
+  page: z.int().min(1).optional().describe('Page number'),
 }).meta({ id: 'SmartSearchDto' });
 
 const SearchPlacesSchema = z

@@ -126,6 +126,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**lockAuthSession**](doc//AuthenticationApi.md#lockauthsession) | **POST** /auth/session/lock | Lock auth session
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | Login
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | Logout
+*AuthenticationApi* | [**logoutOAuth**](doc//AuthenticationApi.md#logoutoauth) | **POST** /oauth/backchannel-logout | Backchannel OAuth logout
 *AuthenticationApi* | [**redirectOAuthToMobile**](doc//AuthenticationApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | Redirect OAuth to mobile
 *AuthenticationApi* | [**resetPinCode**](doc//AuthenticationApi.md#resetpincode) | **DELETE** /auth/pin-code | Reset pin code
 *AuthenticationApi* | [**setupPinCode**](doc//AuthenticationApi.md#setuppincode) | **POST** /auth/pin-code | Setup pin code
@@ -231,7 +232,6 @@ Class | Method | HTTP request | Description
 *ServerApi* | [**getServerVersion**](doc//ServerApi.md#getserverversion) | **GET** /server/version | Get server version
 *ServerApi* | [**getStorage**](doc//ServerApi.md#getstorage) | **GET** /server/storage | Get storage
 *ServerApi* | [**getSupportedMediaTypes**](doc//ServerApi.md#getsupportedmediatypes) | **GET** /server/media-types | Get supported media types
-*ServerApi* | [**getTheme**](doc//ServerApi.md#gettheme) | **GET** /server/theme | Get theme
 *ServerApi* | [**getVersionCheck**](doc//ServerApi.md#getversioncheck) | **GET** /server/version-check | Get version check status
 *ServerApi* | [**getVersionHistory**](doc//ServerApi.md#getversionhistory) | **GET** /server/version-history | Get version history
 *ServerApi* | [**pingServer**](doc//ServerApi.md#pingserver) | **GET** /server/ping | Ping
@@ -536,7 +536,6 @@ Class | Method | HTTP request | Description
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerStorageResponseDto](doc//ServerStorageResponseDto.md)
- - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionHistoryResponseDto](doc//ServerVersionHistoryResponseDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
  - [SessionCreateDto](doc//SessionCreateDto.md)
@@ -569,6 +568,7 @@ Class | Method | HTTP request | Description
  - [SyncAlbumUserDeleteV1](doc//SyncAlbumUserDeleteV1.md)
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
+ - [SyncAlbumV2](doc//SyncAlbumV2.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
  - [SyncAssetEditDeleteV1](doc//SyncAssetEditDeleteV1.md)
  - [SyncAssetEditV1](doc//SyncAssetEditV1.md)

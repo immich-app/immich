@@ -419,8 +419,8 @@ void main() {
         'album-b': [mergedAsset],
       };
       when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
-        final Iterable<String> requestedChecksums = invocation.positionalArguments.first as Iterable<String>;
-        expect(requestedChecksums.toSet(), equals({'checksum-local', 'checksum-merged', 'checksum-remote-only'}));
+        final Iterable<String> requestedRemoteIds = invocation.positionalArguments.first as Iterable<String>;
+        expect(requestedRemoteIds.toSet(), equals({'remote-1', 'remote-2', 'remote-3'}));
         return assetsByAlbum;
       });
 
@@ -482,12 +482,18 @@ void main() {
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
     });
 
-    test("does not request local deletions for permanent remote delete events", () async {
+    test("requests local deletions lookup by remote ids for permanent remote delete events", () async {
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
+        final Iterable<String> requestedRemoteIds = invocation.positionalArguments.first as Iterable<String>;
+        expect(requestedRemoteIds.toSet(), equals({'remote-asset'}));
+        return {};
+      });
+
       final events = [SyncStreamStub.assetDeleteV1];
 
       await simulateEvents(events);
 
-      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any()));
+      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
     });

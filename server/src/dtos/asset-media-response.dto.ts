@@ -3,7 +3,6 @@ import z from 'zod';
 
 export enum AssetMediaStatus {
   CREATED = 'created',
-  REPLACED = 'replaced',
   DUPLICATE = 'duplicate',
 }
 
