@@ -14,10 +14,10 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE TABLE "video_stream_variant" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "sessionId" uuid NOT NULL,
-  "codec" text NOT NULL,
-  "resolution" smallint NOT NULL,
-  "bitrate" integer NOT NULL,
   "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
+  "bitrate" integer NOT NULL,
+  "resolution" smallint NOT NULL,
+  "codec" text NOT NULL,
   CONSTRAINT "video_stream_variant_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "video_stream_session" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "video_stream_variant_pkey" PRIMARY KEY ("id")
 );`.execute(db);

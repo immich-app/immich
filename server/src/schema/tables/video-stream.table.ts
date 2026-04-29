@@ -35,17 +35,17 @@ export class VideoStreamVariantTable {
   @ForeignKeyColumn(() => VideoStreamSessionTable, { onDelete: 'CASCADE', index: false })
   sessionId!: string;
 
-  @Column({ type: 'text' })
-  codec!: string;
-
-  @Column({ type: 'smallint' })
-  resolution!: number;
+  @CreateDateColumn()
+  createdAt!: Generated<Timestamp>;
 
   @Column({ type: 'integer' })
   bitrate!: number;
 
-  @CreateDateColumn()
-  createdAt!: Generated<Timestamp>;
+  @Column({ type: 'smallint' })
+  resolution!: number;
+
+  @Column({ type: 'text' })
+  codec!: string;
 }
 
 @Table('video_stream_segment')
