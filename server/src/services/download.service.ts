@@ -113,6 +113,10 @@ export class DownloadService extends BaseService {
       }
 
       zip.addFile(realpath, filename);
+      // download tracking
+      this.downloadStatsRepository
+        .log({ assetId, userId: auth.user.id })
+        .catch((error) => this.logger.warn(`Failed to log download: ${error}`));
     }
 
     void zip.finalize();

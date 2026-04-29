@@ -30,3 +30,7 @@ vite.config.js.timestamp-*
 .devcontainer/.env*
 *.tsbuildinfo
 *.tsbuildInfo
+LISEZMOI-FORK-STATS.md
+0001-feat-page-stats.patch
+PUSH-VERS-GITHUB.ps1
+LANCER-LE-PUSH.bat

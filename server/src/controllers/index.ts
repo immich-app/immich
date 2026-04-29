@@ -26,6 +26,7 @@ import { SearchController } from 'src/controllers/search.controller';
 import { ServerController } from 'src/controllers/server.controller';
 import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
+import { StatsController } from 'src/controllers/stats.controller';
 import { StackController } from 'src/controllers/stack.controller';
 import { SyncController } from 'src/controllers/sync.controller';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
@@ -67,6 +68,7 @@ export const controllers = [
   ServerController,
   SessionController,
   SharedLinkController,
+  StatsController,
   StackController,
   SyncController,
   SystemConfigController,

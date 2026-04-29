@@ -14,6 +14,7 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiChartBar,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -61,6 +62,8 @@
     icon={mdiAccountMultipleOutline}
     activeIcon={mdiAccountMultiple}
   />
+
+  <NavbarItem title={$t('statistics')} href={Route.statistics()} icon={mdiChartBar} />
 
   <NavbarGroup title={$t('library')} size="tiny" />
 

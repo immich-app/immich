@@ -989,6 +989,7 @@ export enum ApiTag {
   Server = 'Server',
   Sessions = 'Sessions',
   SharedLinks = 'Shared links',
+  Stats = 'Stats',
   Stacks = 'Stacks',
   Sync = 'Sync',
   SystemConfig = 'System config',

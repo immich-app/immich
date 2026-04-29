@@ -174,6 +174,11 @@ export class AssetMediaService extends BaseService {
 
     const path = editedPath ?? originalPath!;
 
+    // download tracking
+    this.downloadStatsRepository
+      .log({ assetId: id, userId: auth.user.id })
+      .catch((error) => this.logger.warn(`Failed to log download: ${error}`));
+
     return new ImmichFileResponse({
       path,
       fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),

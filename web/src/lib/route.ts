@@ -68,6 +68,9 @@ export const Route = {
 
   // explore
   explore: () => '/explore',
+
+  // stats
+  statistics: () => '/stats',
   places: () => '/places',
 
   // folders
