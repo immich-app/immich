@@ -351,7 +351,7 @@ describe(`/oauth`, () => {
         const callbackParams = await loginWithOAuth('oauth-no-auto-register');
         const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest('User does not exist and auto registering is disabled.'));
+        expect(body).toEqual(errorDto.badRequest('OAuth authentication failed'));
       });
 
       it('should link to an existing user by email', async () => {

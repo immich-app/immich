@@ -322,7 +322,7 @@ export class AuthService extends BaseService {
       const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
         if (emailUser.oauthId) {
-          throw new BadRequestException('User already exists, but is linked to another account.');
+          throw new BadRequestException('OAuth authentication failed');
         }
         user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
@@ -334,7 +334,7 @@ export class AuthService extends BaseService {
         this.logger.warn(
           `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
         );
-        throw new BadRequestException(`User does not exist and auto registering is disabled.`);
+        throw new BadRequestException('OAuth authentication failed');
       }
 
       if (!normalizedEmail) {
