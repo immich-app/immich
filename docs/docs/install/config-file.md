@@ -193,6 +193,7 @@ The default configuration looks like this:
     "defaultStorageQuota": null,
     "enabled": false,
     "issuerUrl": "",
+    "endSessionEndpoint": "",
     "mobileOverrideEnabled": false,
     "mobileRedirectUri": "",
     "profileSigningAlgorithm": "none",

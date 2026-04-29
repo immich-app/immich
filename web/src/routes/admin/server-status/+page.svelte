@@ -1,6 +1,6 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import ServerStatisticsPanel from '$lib/components/server-statistics/ServerStatisticsPanel.svelte';
+  import ServerStatisticsPanel from './ServerStatisticsPanel.svelte';
   import { getServerStatistics, type ServerStatsResponseDto } from '@immich/sdk';
   import { Container } from '@immich/ui';
   import { onMount } from 'svelte';

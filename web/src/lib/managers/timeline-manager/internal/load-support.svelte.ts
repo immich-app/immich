@@ -1,6 +1,6 @@
+import { getTimeBucket } from '@immich/sdk';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { toISOYearMonthUTC } from '$lib/utils/timeline-util';
-import { getTimeBucket } from '@immich/sdk';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { TimelineManagerOptions } from '../types';
@@ -25,7 +25,7 @@ export async function loadFromTimeBuckets(
     { signal },
   );
 
-  if (!bucketResponse) {
+  if (!bucketResponse || signal.aborted) {
     return;
   }
 
@@ -38,7 +38,7 @@ export async function loadFromTimeBuckets(
       },
       { signal },
     );
-    if (!albumAssets) {
+    if (!albumAssets || signal.aborted) {
       return;
     }
     for (const id of albumAssets.id) {

@@ -138,13 +138,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    endSessionEndpoint: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
     roleClaim: 'immich_role',
@@ -305,6 +308,15 @@ describe(SystemConfigService.name, () => {
           },
         },
       });
+    });
+
+    it('should reject an invalid issuer URL', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ oauth: { issuerUrl: 'accounts.google.com' } }));
+
+      await expect(sut.getSystemConfig()).rejects.toThrow(
+        '[oauth.issuerUrl] Issuer URL must be an empty string or a valid URL',
+      );
     });
 
     it('should reject invalid cron expressions', async () => {

@@ -42,7 +42,7 @@ jobs:
         run: 'mise run //deployment:tf destroy -- -refresh=false'
 
       - name: Comment
-        uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3.2.0
+        uses: actions-cool/maintain-one-comment@909842216bc8e8658364c572ec52100f4c2cc50a # v3.3.0
         with:
           token: ${{ steps.token.outputs.token }}
           number: ${{ github.event.number }}

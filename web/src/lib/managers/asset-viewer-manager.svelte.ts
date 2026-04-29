@@ -1,12 +1,22 @@
+import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+import type { ZoomImageWheelState } from '@zoom-image/core';
+import { cubicOut } from 'svelte/easing';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
 import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
-import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-import type { ZoomImageWheelState } from '@zoom-image/core';
-import { cubicOut } from 'svelte/easing';
+
+export interface Faces {
+  id: string;
+  imageHeight: number;
+  imageWidth: number;
+  boundingBoxX1: number;
+  boundingBoxX2: number;
+  boundingBoxY1: number;
+  boundingBoxY2: number;
+}
 
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
 const isShowAssetPath = new PersistedLocalStorage<boolean>('asset-viewer-show-path', false);
@@ -23,6 +33,7 @@ export type Events = {
   Zoom: [];
   ZoomChange: [ZoomImageWheelState];
   Copy: [];
+  FaceEditModeChange: [boolean];
 };
 
 class AssetViewerManager extends BaseEventManager<Events> {
@@ -47,6 +58,8 @@ class AssetViewerManager extends BaseEventManager<Events> {
   #isEditFacesPanelOpen = $state(false);
   #viewingAssetStoreState = $state<AssetResponseDto>();
   #viewState = $state<boolean>(false);
+  #highlightedFaces = $state<Faces[]>([]);
+  #showingHiddenPeople = $state(false);
   gridScrollTarget = $state<AssetGridRouteSearchParams | null | undefined>();
 
   get asset() {
@@ -185,9 +198,13 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   toggleFaceEditMode() {
     this.#isFaceEditMode = !this.#isFaceEditMode;
+    this.emit('FaceEditModeChange', this.#isFaceEditMode);
   }
 
   closeFaceEditMode() {
+    if (this.#isFaceEditMode) {
+      this.emit('FaceEditModeChange', false);
+    }
     this.#isFaceEditMode = false;
   }
 
@@ -203,6 +220,30 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.closeEditor();
     this.closeFaceEditMode();
     this.closeEditFacesPanel();
+  }
+
+  get highlightedFaces() {
+    return this.#highlightedFaces;
+  }
+
+  setHighlightedFaces(faces: Faces[]) {
+    this.#highlightedFaces = faces;
+  }
+
+  clearHighlightedFaces() {
+    this.#highlightedFaces = [];
+  }
+
+  get isShowingHiddenPeople() {
+    return this.#showingHiddenPeople;
+  }
+
+  toggleHiddenPeople() {
+    this.#showingHiddenPeople = !this.#showingHiddenPeople;
+  }
+
+  hideHiddenPeople() {
+    this.#showingHiddenPeople = false;
   }
 
   setAsset(asset: AssetResponseDto) {

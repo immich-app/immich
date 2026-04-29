@@ -113,20 +113,34 @@ describe(UserService.name, () => {
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
     });
 
-    it('should delete the previous profile image', async () => {
+    it('should throw BadRequestException and clean up raw upload when thumbnail processing fails', async () => {
+      const file = { path: '/profile/path' } as Express.Multer.File;
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.media.generateThumbnail.mockRejectedValue(new Error('not an image'));
+
+      await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
+    });
+
+    it('should delete the raw upload and the previous profile image', async () => {
       const user = UserFactory.create({ profileImagePath: '/path/to/profile.jpg' });
       const file = { path: '/profile/path' } as Express.Multer.File;
-      const files = [user.profileImagePath];
 
       mocks.user.get.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([
+        [{ name: JobName.FileDelete, data: { files: [file.path, user.profileImagePath] } }],
+      ]);
     });
 
-    it('should not delete the profile image if it has not been set', async () => {
+    it('should delete only the raw upload if no previous profile image is set', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
 
       mocks.user.get.mockResolvedValue(userStub.admin);
@@ -134,7 +148,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files: [file.path] } }]]);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
@@ -191,6 +205,19 @@ describe(UserService.name, () => {
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith(user.id, {});
+    });
+
+    it('should return the profile picture with the content-type matching the stored file', async () => {
+      const user = UserFactory.create({ profileImagePath: '/path/to/profile.webp' });
+      mocks.user.get.mockResolvedValue(user);
+
+      await expect(sut.getProfileImage(user.id)).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/path/to/profile.webp',
+          contentType: 'image/webp',
+          cacheControl: CacheControl.None,
+        }),
+      );
     });
   });
 

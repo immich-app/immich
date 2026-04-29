@@ -1,11 +1,3 @@
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { addAssetsToAlbums } from '$lib/services/album.service';
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { UploadState } from '$lib/types';
-import { uploadRequest } from '$lib/utils';
-import { ExecutorQueue } from '$lib/utils/executor-queue';
-import { asQueryString } from '$lib/utils/shared-links';
 import {
   AssetMediaStatus,
   AssetUploadAction,
@@ -18,6 +10,14 @@ import { toastManager } from '@immich/ui';
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { uploadManager } from '$lib/managers/upload-manager.svelte';
+import { addAssetsToAlbums } from '$lib/services/album.service';
+import { uploadAssetsStore } from '$lib/stores/upload';
+import { UploadState } from '$lib/types';
+import { uploadRequest } from '$lib/utils';
+import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { asQueryString } from '$lib/utils/shared-links';
 import { handleError } from './handle-error';
 
 export const addDummyItems = () => {
@@ -127,6 +127,30 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
+function hashFile(file: File): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const worker = new Worker(new URL('$lib/workers/hash-file.ts', import.meta.url), { type: 'module' });
+
+    worker.addEventListener('message', ({ data }: MessageEvent<{ result?: string; error?: string }>) => {
+      worker.terminate();
+
+      if (data.error) {
+        reject(new Error(data.error));
+      } else {
+        resolve(data.result!);
+      }
+    });
+
+    worker.addEventListener('error', (event) => {
+      worker.terminate();
+
+      reject(new Error(event.message));
+    });
+
+    worker.postMessage(file);
+  });
+}
+
 type FileUploaderParams = {
   assetFile: File;
   albumId?: string;
@@ -155,7 +179,6 @@ async function fileUploader({
       fileCreatedAt,
       fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',
-      duration: '0:00:00.000000',
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
@@ -166,15 +189,11 @@ async function fileUploader({
     }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
-    if (crypto?.subtle?.digest && !authManager.isSharedLink) {
+    if (!authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
-        const bytes = await assetFile.arrayBuffer();
-        const hash = await crypto.subtle.digest('SHA-1', bytes);
-        const checksum = Array.from(new Uint8Array(hash))
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
+        const checksum = await hashFile(assetFile);
 
         const {
           results: [checkUploadResult],

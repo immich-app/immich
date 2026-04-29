@@ -703,11 +703,11 @@ class _DeleteConfirmationDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(false),
+          onPressed: () => ContextHelper(context).pop(false),
           child: Text('cancel'.t(context: context)),
         ),
         ElevatedButton(
-          onPressed: () => context.pop(true),
+          onPressed: () => ContextHelper(context).pop(true),
           style: ElevatedButton.styleFrom(
             backgroundColor: context.colorScheme.error,
             foregroundColor: context.colorScheme.onError,
@@ -747,7 +747,7 @@ class _DeleteSuccessDialog extends StatelessWidget {
       ),
       actions: [
         ElevatedButton(
-          onPressed: () => context.pop(),
+          onPressed: () => ContextHelper(context).pop(),
           child: Text('done'.t(context: context)),
         ),
       ],

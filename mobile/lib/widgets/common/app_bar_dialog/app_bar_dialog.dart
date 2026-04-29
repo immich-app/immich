@@ -50,7 +50,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           alignment: Alignment.centerLeft,
           children: [
             IconButton(
-              onPressed: () => context.pop(),
+              onPressed: () => ContextHelper(context).pop(),
               icon: Icon(Icons.close, size: 20, color: context.colorScheme.onSurfaceVariant),
             ),
             Align(
@@ -179,7 +179,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           children: [
             InkWell(
               onTap: () {
-                context.pop();
+                ContextHelper(context).pop();
                 launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication);
               },
               child: Text("documentation", style: context.textTheme.bodySmall).tr(),
@@ -187,7 +187,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             const SizedBox(width: 20, child: Text("•", textAlign: TextAlign.center)),
             InkWell(
               onTap: () {
-                context.pop();
+                ContextHelper(context).pop();
                 launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication);
               },
               child: Text("profile_drawer_github", style: context.textTheme.bodySmall).tr(),
@@ -195,7 +195,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             const SizedBox(width: 20, child: Text("•", textAlign: TextAlign.center)),
             InkWell(
               onTap: () async {
-                context.pop();
+                ContextHelper(context).pop();
                 final packageInfo = await PackageInfo.fromPlatform();
                 showLicensePage(
                   context: context,
@@ -235,7 +235,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     return Dismissible(
       behavior: HitTestBehavior.translucent,
       direction: DismissDirection.down,
-      onDismissed: (_) => context.pop(),
+      onDismissed: (_) => ContextHelper(context).pop(),
       key: const Key('app_bar_dialog'),
       child: Dialog(
         clipBehavior: Clip.hardEdge,

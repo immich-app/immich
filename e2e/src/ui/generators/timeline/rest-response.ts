@@ -3,6 +3,7 @@
  */
 
 import {
+  AlbumUserRole,
   AssetTypeEnum,
   AssetVisibility,
   UserAvatarColor,
@@ -332,7 +333,7 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     isArchived: false,
     isTrashed: asset.isTrashed,
     visibility: asset.visibility,
-    duration: asset.duration || '0:00:00.00000',
+    duration: asset.duration,
     exifInfo,
     livePhotoVideoId: asset.livePhotoVideoId,
     tags: [],
@@ -420,9 +421,7 @@ export function getAlbum(
     albumThumbnailAssetId: album.thumbnailAssetId,
     createdAt: album.createdAt,
     updatedAt: album.updatedAt,
-    ownerId: albumOwner.id,
-    owner: albumOwner,
-    albumUsers: [], // Empty array for non-shared album
+    albumUsers: [{ user: albumOwner, role: AlbumUserRole.Owner }],
     shared: false,
     hasSharedLink: false,
     isActivityEnabled: true,

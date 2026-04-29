@@ -33,12 +33,6 @@ export interface ReverseGeocodeResult {
   city: string | null;
 }
 
-export interface MapMarker extends ReverseGeocodeResult {
-  id: string;
-  lat: number;
-  lon: number;
-}
-
 interface MapDB extends DB {
   geodata_places_tmp: GeodataPlacesTable;
   naturalearth_countries_tmp: NaturalEarthCountriesTable;

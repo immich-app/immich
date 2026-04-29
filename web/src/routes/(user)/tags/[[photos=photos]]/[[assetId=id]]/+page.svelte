@@ -1,12 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
-  import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
-  import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
-  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import Breadcrumbs from '$lib/components/shared-components/tree/Breadcrumbs.svelte';
+  import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
+  import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
+  import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';

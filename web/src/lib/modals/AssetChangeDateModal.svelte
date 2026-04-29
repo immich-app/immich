@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/combobox.svelte';
+  import Combobox from '$lib/components/shared-components/Combobox.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getPreferredTimeZone, getTimezones, toIsoDate } from '$lib/modals/timezone-utils';
