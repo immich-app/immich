@@ -282,8 +282,7 @@ jobs:
             fi
           else
             # Build only, no TestFlight upload for non-main branches
-            # bundle exec fastlane gha_build_only
-            bundle exec fastlane gha_testflight_dev
+            bundle exec fastlane gha_build_only
           fi
 
       - name: Clean up keychain
