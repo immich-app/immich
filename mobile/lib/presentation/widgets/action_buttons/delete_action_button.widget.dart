@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -57,12 +59,20 @@ class DeleteActionButton extends ConsumerWidget {
       if (confirm != true) return;
     }
 
-    if (source == ActionSource.viewer) {
-      EventStream.shared.emit(const ViewerReloadAssetEvent());
-    }
+    final currentAsset = ref.read(assetViewerProvider).currentAsset;
+    final stackIndex = ref.read(assetViewerProvider).stackIndex;
 
     final result = await ref.read(actionProvider.notifier).trashRemoteAndDeleteLocal(source);
     ref.read(multiSelectProvider.notifier).reset();
+
+    if (source == ActionSource.viewer && result.success) {
+      final shouldRefreshStack = currentAsset is RemoteAsset && currentAsset.stackId != null;
+      EventStream.shared.emit(
+        shouldRefreshStack
+            ? ViewerStackAssetDeletedEvent(deletedHeroTag: currentAsset.heroTag, stackIndex: stackIndex)
+            : const ViewerReloadAssetEvent(),
+      );
+    }
 
     final successMessage = 'delete_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 

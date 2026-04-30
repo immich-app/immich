@@ -11,6 +11,10 @@ class StackChildrenNotifier extends AutoDisposeFamilyAsyncNotifier<List<RemoteAs
 
     return ref.watch(assetServiceProvider).getStack(asset);
   }
+
+  void setStack(List<RemoteAsset> stack) {
+    state = AsyncData(stack);
+  }
 }
 
 final stackChildrenNotifier = AsyncNotifierProvider.autoDispose

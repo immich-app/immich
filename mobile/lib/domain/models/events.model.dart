@@ -24,6 +24,13 @@ class ViewerReloadAssetEvent extends Event {
   const ViewerReloadAssetEvent();
 }
 
+class ViewerStackAssetDeletedEvent extends Event {
+  final String deletedHeroTag;
+  final int stackIndex;
+
+  const ViewerStackAssetDeletedEvent({required this.deletedHeroTag, required this.stackIndex});
+}
+
 // Multi-Select Events
 class MultiSelectToggleEvent extends Event {
   final bool isEnabled;
