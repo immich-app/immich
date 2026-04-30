@@ -69,7 +69,7 @@ class SyncApiRepository {
           SyncRequestType.peopleV1,
           if (serverVersion < const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetFacesV1,
           if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetFacesV2,
-          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetOcrV1,
+          SyncRequestType.assetOcrV1,
         ],
         reset: shouldReset,
       ).toJson(),

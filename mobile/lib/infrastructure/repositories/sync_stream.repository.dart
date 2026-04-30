@@ -804,7 +804,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       await _db.batch((batch) {
         for (final assetOcr in data) {
           final companion = AssetOcrEntityCompanion(
-            id: Value(assetOcr.id),
             assetId: Value(assetOcr.assetId),
             recognizedText: Value(assetOcr.text),
             x1: Value(assetOcr.x1),

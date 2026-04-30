@@ -90,7 +90,7 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
 
   void setAsset(BaseAsset asset) {
     if (asset == state.currentAsset) return;
-    state = state.copyWith(currentAsset: asset, stackIndex: 0);
+    state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
   }
 
   void setOpacity(double opacity) {

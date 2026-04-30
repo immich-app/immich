@@ -1,13 +1,15 @@
 import 'package:immich_mobile/domain/models/ocr.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:drift/drift.dart';
 
 class OcrRepository extends DriftDatabaseRepository {
   final Drift _db;
   const OcrRepository(this._db) : super(_db);
 
-  Future<List<Ocr>?> get(String assetId) async {
-    final query = _db.select(_db.assetOcrEntity)..where((row) => row.assetId.equals(assetId));
+  Future<List<Ocr>> get(String assetId) async {
+    final query = _db.select(_db.assetOcrEntity)
+      ..where((row) => row.assetId.equals(assetId) & row.isVisible.equals(true));
 
     final result = await query.get();
     return result.map((e) => e.toDto()).toList();

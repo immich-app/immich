@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/ocr.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -185,7 +187,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
                               Offset(x4 - minX, y4 - minY),
                             ],
                             isSelected: isSelected,
-                            context: context,
+                            colorScheme: context.themeData.colorScheme,
                           ),
                           size: Size(maxX - minX, maxY - minY),
                         ),
@@ -243,19 +245,19 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
 class _OcrBoxPainter extends CustomPainter {
   final List<Offset> points;
   final bool isSelected;
-  final BuildContext context;
+  final ColorScheme colorScheme;
 
-  const _OcrBoxPainter({required this.points, required this.isSelected, required this.context});
+  const _OcrBoxPainter({required this.points, required this.isSelected, required this.colorScheme});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isSelected ? Colors.blue : Colors.lightBlue
+      ..color = isSelected ? colorScheme.primary : colorScheme.secondary
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
     final fillPaint = Paint()
-      ..color = (isSelected ? Colors.blue : Colors.lightBlue).withValues(alpha: 0.1)
+      ..color = (isSelected ? colorScheme.primary : colorScheme.secondary).withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
     final path = Path()
@@ -271,6 +273,6 @@ class _OcrBoxPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_OcrBoxPainter oldDelegate) {
-    return oldDelegate.isSelected != isSelected || oldDelegate.points != points;
+    return oldDelegate.isSelected != isSelected || listEquals(oldDelegate.points, points);
   }
 }
