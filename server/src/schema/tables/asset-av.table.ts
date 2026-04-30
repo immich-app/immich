@@ -1,8 +1,6 @@
 import { Column, ForeignKeyColumn, Table } from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
-const smallint = 'smallint' as 'integer';
-
 @Table('asset_audio')
 export class AssetAudioTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', primary: true })
@@ -11,10 +9,10 @@ export class AssetAudioTable {
   @Column({ type: 'integer' })
   bitrate!: number;
 
-  @Column({ type: smallint })
+  @Column({ type: 'smallint' })
   index!: number;
 
-  @Column({ type: smallint, nullable: true })
+  @Column({ type: 'smallint', nullable: true })
   profile!: number | null;
 
   @Column({ type: 'text' })
@@ -35,31 +33,31 @@ export class AssetVideoTable {
   @Column({ type: 'integer' })
   timeBase!: number;
 
-  @Column({ type: smallint })
+  @Column({ type: 'smallint' })
   index!: number;
 
-  @Column({ type: smallint, nullable: true })
+  @Column({ type: 'smallint', nullable: true })
   profile!: number | null;
 
-  @Column({ type: smallint, nullable: true })
+  @Column({ type: 'smallint', nullable: true })
   level!: number | null;
 
-  @Column({ type: smallint })
+  @Column({ type: 'smallint' })
   colorPrimaries!: number;
 
-  @Column({ type: smallint })
+  @Column({ type: 'smallint' })
   colorTransfer!: number;
 
-  @Column({ type: smallint })
+  @Column({ type: 'smallint' })
   colorMatrix!: number;
 
-  @Column({ type: smallint, nullable: true })
+  @Column({ type: 'smallint', nullable: true })
   dvProfile!: number | null;
 
-  @Column({ type: smallint, nullable: true })
+  @Column({ type: 'smallint', nullable: true })
   dvLevel!: number | null;
 
-  @Column({ type: smallint, nullable: true })
+  @Column({ type: 'smallint', nullable: true })
   dvBlSignalCompatibilityId!: number | null;
 
   @Column({ type: 'text' })
