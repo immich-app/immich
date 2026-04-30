@@ -40,24 +40,21 @@ Future<void> _migrateTo25() async {
 }
 
 Future<void> _migrateTo26(Drift drift) async {
-  const int themeModeKey = 102;
-  const int logLevelKey = 115;
-
   final repo = MetadataRepository.instance;
   final migrated = <int>[];
 
-  final themeMode = await _readLegacyStoreString(drift, themeModeKey);
+  final themeMode = await _readLegacyStoreString(drift, StoreKey.legacyThemeMode.id);
   if (themeMode != null) {
     final mode = ThemeMode.values.firstWhere((m) => m.name == themeMode, orElse: () => ThemeMode.system);
     await repo.write(MetadataKey.themeMode, mode);
-    migrated.add(themeModeKey);
+    migrated.add(StoreKey.legacyThemeMode.id);
   }
 
-  final logLevelIndex = await _readLegacyStoreInt(drift, logLevelKey);
+  final logLevelIndex = await _readLegacyStoreInt(drift, StoreKey.legacyLogLevel.id);
   if (logLevelIndex != null) {
     final logLevel = LogLevel.values.elementAtOrNull(logLevelIndex) ?? LogLevel.info;
     await LogService.I.setLogLevel(logLevel);
-    migrated.add(logLevelKey);
+    migrated.add(StoreKey.legacyLogLevel.id);
   }
 
   await _deleteLegacyStoreRows(drift, migrated);

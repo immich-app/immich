@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
-import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -24,6 +23,12 @@ class MetadataRepository extends DriftDatabaseRepository {
     return instance;
   }
 
+  AppConfig _appConfig = const .new();
+  AppConfig get appConfig => _appConfig;
+
+  SystemConfig _systemConfig = const .new();
+  SystemConfig get systemConfig => _systemConfig;
+
   static Future<MetadataRepository> ensureInitialized(Drift db) async {
     if (_instance == null) {
       final instance = MetadataRepository._(db);
@@ -35,16 +40,12 @@ class MetadataRepository extends DriftDatabaseRepository {
 
   static Future<void> refresh() async {
     instance._cache.clear();
+    instance._appConfig = const .new();
+    instance._systemConfig = const .new();
     await instance._hydrate();
   }
 
-  Future<void> _hydrate() async {
-    final rows = await _db.select(_db.metadataEntity).get();
-    for (final row in rows) {
-      final key = MetadataKey.fromKey(row.key);
-      if (key != null) _cache[key] = decode(key, row.value);
-    }
-  }
+  Future<void> _hydrate() async => _hydrateCache(await _db.select(_db.metadataEntity).get());
 
   T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
 
@@ -56,7 +57,7 @@ class MetadataRepository extends DriftDatabaseRepository {
         .insertOnConflictUpdate(
           MetadataEntityCompanion.insert(key: key.key, value: encode(value), updatedAt: Value(DateTime.now())),
         );
-    _cache[key] = value;
+    _updateCache(key, value);
   }
 
   @visibleForTesting
@@ -79,27 +80,36 @@ class MetadataRepository extends DriftDatabaseRepository {
   }
 
   Future<void> delete<T extends Object>(MetadataKey<T> key) async {
-    _cache[key] = key.defaultValue;
     await (_db.delete(_db.metadataEntity)..where((t) => t.key.equals(key.key))).go();
+    _updateCache(key, key.defaultValue);
   }
 
-  AppConfig get appConfig => AppConfig(theme: ThemeConfig(mode: _read(MetadataKey.themeMode)));
+  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).map((_) => appConfig).distinct();
 
-  SystemConfig get systemConfig => SystemConfig(logLevel: _read(MetadataKey.logLevel));
-
-  Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).map((_) => appConfig).distinct();
-
-  Stream<SystemConfig> watchSystemConfig() =>
-      _watchDomain(MetadataDomain.systemConfig).map((_) => systemConfig).distinct();
+  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).map((_) => systemConfig).distinct();
 
   Stream<void> _watchDomain(MetadataDomain domain) {
     final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));
-    return query.watch().map((rows) => rows.forEach(_updateCacheForRow));
+    return query.watch().map(_hydrateCache);
   }
 
-  void _updateCacheForRow(MetadataEntityData row) {
-    final key = MetadataKey.fromKey(row.key);
-    if (key == null) return;
-    _cache[key] = decode(key, row.value);
+  void _hydrateCache(List<MetadataEntityData> rows) {
+    final keyMap = MetadataKey.asKeyMap();
+    for (final row in rows) {
+      final key = keyMap[row.key];
+      if (key == null) continue;
+      _updateCache(key, decode(key, row.value));
+    }
+  }
+
+  void _updateCache<T extends Object>(MetadataKey<T> key, T value) {
+    if (_cache[key] == value) return;
+    _cache[key] = value;
+    switch (key.domain) {
+      case .appConfig:
+        _appConfig = .new(theme: .new(mode: _read(.themeMode)));
+      case .systemConfig:
+        _systemConfig = .new(logLevel: _read(.logLevel));
+    }
   }
 }

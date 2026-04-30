@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 
 enum MetadataDomain {
-  appConfig('app-config'),
-  systemConfig('system-config');
+  appConfig('config.app'),
+  systemConfig('config.system');
 
   final String prefix;
   const MetadataDomain(this.prefix);
@@ -22,10 +22,5 @@ enum MetadataKey<T extends Object> {
 
   String get key => '${domain.prefix}.$name';
 
-  static MetadataKey<Object>? fromKey(String key) {
-    for (final m in MetadataKey.values) {
-      if (m.key == key) return m;
-    }
-    return null;
-  }
+  static Map<String, MetadataKey<Object>> asKeyMap() => {for (var value in MetadataKey.values) value.key: value};
 }
