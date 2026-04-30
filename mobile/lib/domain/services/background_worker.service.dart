@@ -108,7 +108,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   Future<void> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
-    await _backgroundLoop(
+    return _backgroundLoop(
       hashTimeout: hashTimeout,
       backupTimeout: backupTimeout,
       debugLabel: 'Android background upload',
@@ -119,7 +119,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
     final hashTimeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
-    await _backgroundLoop(hashTimeout: hashTimeout, backupTimeout: backupTimeout, debugLabel: 'iOS background upload');
+    return _backgroundLoop(hashTimeout: hashTimeout, backupTimeout: backupTimeout, debugLabel: 'iOS background upload');
   }
 
   Future<void> _backgroundLoop({
@@ -138,17 +138,19 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       }
 
       final backupFuture = _handleBackup();
+      Timer? cancelTimer;
       if (backupTimeout != null) {
-        await backupFuture.timeout(
-          backupTimeout,
-          onTimeout: () {
-            if (!_cancellationToken.isCompleted) {
-              _cancellationToken.complete();
-            }
-          },
-        );
-      } else {
+        cancelTimer = Timer(backupTimeout, () {
+          if (!_cancellationToken.isCompleted) {
+            _logger.warning("$debugLabel timed out after ${backupTimeout.inMinutes}m, cancelling backup");
+            _cancellationToken.complete();
+          }
+        });
+      }
+      try {
         await backupFuture;
+      } finally {
+        cancelTimer?.cancel();
       }
     } catch (error, stack) {
       _logger.severe("Failed to complete $debugLabel", error, stack);
@@ -187,7 +189,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
 
       _logger.info("Cleaning up background worker");
-      _cancellationToken.complete();
+      if (!_cancellationToken.isCompleted) {
+        _cancellationToken.complete();
+      }
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
         workerManagerPatch.dispose().catchError((_) async {
