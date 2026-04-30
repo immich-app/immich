@@ -27,7 +27,8 @@ const TimeBucketQueryBaseSchema = z
       'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
     ),
     withCoordinates: stringToBool.optional().describe('Include location data in the response'),
-    withSharedAlbums: z.boolean().optional().describe('Include assets from shared albums'),
+    // TODO: Remove this after #12614 is resolved
+    withSharedAlbums: z.boolean().optional().describe('Include assets from shared albums (do not use!)'),
     key: z.string().optional(),
     slug: z.string().optional(),
     bbox: z

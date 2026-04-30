@@ -678,6 +678,7 @@ export class AssetRepository {
             qb.where((eb) =>
               eb.or([
                 eb('asset.ownerId', '=', anyUuid(options.userIds!)),
+                // TODO: Rework, this is inefficient, temporary solution until #12614 is resolved
                 ...(options.withSharedAlbums
                   ? [
                       eb.exists(
