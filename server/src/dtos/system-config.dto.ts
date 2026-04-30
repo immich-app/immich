@@ -51,7 +51,7 @@ const DatabaseBackupSchema = z
   .object({
     enabled: configBool.describe('Enabled'),
     cronExpression: cronExpressionSchema,
-    keepLastAmount: z.number().min(1).describe('Keep last amount'),
+    keepLastAmount: z.int().min(1).describe('Keep last amount'),
   })
   .meta({ id: 'DatabaseBackupConfig' });
 
@@ -130,8 +130,8 @@ const SystemConfigLoggingSchema = z
 const MachineLearningAvailabilityChecksSchema = z
   .object({
     enabled: configBool.describe('Enabled'),
-    timeout: z.number(),
-    interval: z.number(),
+    timeout: z.int(),
+    interval: z.int(),
   })
   .meta({ id: 'MachineLearningAvailabilityChecksDto' });
 
@@ -180,7 +180,7 @@ const SystemConfigOAuthSchema = z
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethodSchema,
     timeout: z.int().min(1).describe('Timeout'),
     allowInsecureRequests: configBool.describe('Allow insecure requests'),
-    defaultStorageQuota: z.number().min(0).nullable().describe('Default storage quota'),
+    defaultStorageQuota: z.int().min(0).nullable().describe('Default storage quota'),
     enabled: configBool.describe('Enabled'),
     issuerUrl: z
       .string()
@@ -254,7 +254,7 @@ const SystemConfigSmtpTransportSchema = z
   .object({
     ignoreCert: configBool.describe('Whether to ignore SSL certificate errors'),
     host: z.string().describe('SMTP server hostname'),
-    port: z.number().min(0).max(65_535).describe('SMTP server port'),
+    port: z.int().min(0).max(65_535).describe('SMTP server port'),
     secure: configBool.describe('Whether to use secure connection (TLS/SSL)'),
     username: z.string().describe('SMTP username'),
     password: z.string().describe('SMTP password'),

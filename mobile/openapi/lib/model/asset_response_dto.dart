@@ -80,7 +80,8 @@ class AssetResponseDto {
   /// Asset height
   ///
   /// Minimum value: 0
-  num? height;
+  /// Maximum value: 9007199254740991
+  int? height;
 
   /// Asset ID
   String id;
@@ -165,7 +166,8 @@ class AssetResponseDto {
   /// Asset width
   ///
   /// Minimum value: 0
-  num? width;
+  /// Maximum value: 9007199254740991
+  int? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
@@ -346,9 +348,7 @@ class AssetResponseDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
-        height: json[r'height'] == null
-            ? null
-            : num.parse('${json[r'height']}'),
+        height: mapValueOfType<int>(json, r'height'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isEdited: mapValueOfType<bool>(json, r'isEdited')!,
@@ -372,9 +372,7 @@ class AssetResponseDto {
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
-        width: json[r'width'] == null
-            ? null
-            : num.parse('${json[r'width']}'),
+        width: mapValueOfType<int>(json, r'width'),
       );
     }
     return null;

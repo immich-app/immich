@@ -46,7 +46,7 @@ const WorkflowFilterResponseSchema = z
     workflowId: z.string().describe('Workflow ID'),
     pluginFilterId: z.string().describe('Plugin filter ID'),
     filterConfig: FilterConfigSchema.nullable(),
-    order: z.number().describe('Filter order'),
+    order: z.int().describe('Filter order'),
   })
   .meta({ id: 'WorkflowFilterResponseDto' });
 
@@ -56,7 +56,7 @@ const WorkflowActionResponseSchema = z
     workflowId: z.string().describe('Workflow ID'),
     pluginActionId: z.string().describe('Plugin action ID'),
     actionConfig: ActionConfigSchema.nullable(),
-    order: z.number().describe('Action order'),
+    order: z.int().describe('Action order'),
   })
   .meta({ id: 'WorkflowActionResponseDto' });
 

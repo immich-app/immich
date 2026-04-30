@@ -22,7 +22,7 @@ export enum ImmichHeader {
   SharedLinkKey = 'x-immich-share-key',
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
-  Cid = 'x-immich-cid',
+  CorrelationId = 'X-Correlation-ID',
 }
 
 export enum ImmichQuery {
@@ -444,6 +444,12 @@ export enum VideoCodec {
 }
 
 export const VideoCodecSchema = z.enum(VideoCodec).describe('Target video codec').meta({ id: 'VideoCodec' });
+
+export enum VideoSegmentCodec {
+  Av1 = 'av1',
+  Hevc = 'hevc',
+  H264 = 'h264',
+}
 
 export enum AudioCodec {
   Mp3 = 'mp3',

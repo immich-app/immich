@@ -53,6 +53,7 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
@@ -109,6 +110,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   TrashRepository,
   UserRepository,
   VersionHistoryRepository,
+  VideoStreamRepository,
   ViewRepository,
   WebsocketRepository,
   WorkflowRepository,
@@ -167,6 +169,7 @@ export class BaseService {
     protected trashRepository: TrashRepository,
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
+    protected videoStreamRepository: VideoStreamRepository,
     protected viewRepository: ViewRepository,
     protected websocketRepository: WebsocketRepository,
     protected workflowRepository: WorkflowRepository,
