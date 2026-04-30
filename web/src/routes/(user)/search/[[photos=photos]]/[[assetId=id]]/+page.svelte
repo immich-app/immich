@@ -42,7 +42,7 @@
     type SmartSearchDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -234,6 +234,11 @@
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
+
+  function removeFilter(key: keyof SearchTerms) {
+    const { [key]: _, ...rest } = terms;
+    void goto(Route.search(rest as SearchTerms));
+  }
 </script>
 
 <svelte:window bind:scrollY />
@@ -249,14 +254,13 @@
       {@const value = terms[searchKey]}
       <div class="flex place-content-center place-items-center items-stretch text-xs">
         <div
-          class="flex items-center justify-center bg-immich-primary px-4 py-2 text-white dark:bg-immich-dark-primary dark:text-black
-          {value === true ? 'rounded-full' : 'rounded-s-full'}"
+          class="flex items-center justify-center bg-immich-primary px-4 py-2 text-white dark:bg-immich-dark-primary dark:text-black"
         >
           {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
         </div>
 
         {#if value !== true}
-          <div class="rounded-e-full bg-gray-300 px-4 py-2 dark:bg-gray-800 dark:text-white">
+          <div class="bg-gray-300 px-4 py-2 dark:bg-gray-800 dark:text-white">
             {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
             {:else if searchKey === 'personIds' && Array.isArray(value)}
@@ -276,6 +280,15 @@
             {/if}
           </div>
         {/if}
+
+        <button
+          type="button"
+          class="flex items-center justify-center bg-immich-primary/90 dark:bg-immich-dark-primary/90 text-white dark:text-black rounded-e-full py-2 px-2 hover:bg-immich-primary/70 dark:hover:bg-immich-dark-primary/70 transition-colors"
+          aria-label={$t('remove_filter')}
+          onclick={() => removeFilter(searchKey as keyof SearchTerms)}
+        >
+          <Icon icon={mdiClose} size="14" />
+        </button>
       </div>
     {/each}
   </section>
