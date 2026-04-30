@@ -14,7 +14,6 @@ export const ErrorMessages = {
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
-export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -24,15 +23,10 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',
   earthdistance: 'earthdistance',
   vector: 'pgvector',
-  vectors: 'pgvecto.rs',
   vchord: 'VectorChord',
 } as const;
 
-export const VECTOR_EXTENSIONS = [
-  DatabaseExtension.VectorChord,
-  DatabaseExtension.Vectors,
-  DatabaseExtension.Vector,
-] as const;
+export const VECTOR_EXTENSIONS = [DatabaseExtension.VectorChord, DatabaseExtension.Vector] as const;
 
 export const VECTOR_INDEX_TABLES = {
   [VectorIndex.Clip]: 'smart_search',

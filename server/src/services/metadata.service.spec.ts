@@ -999,7 +999,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: asset.id,
-          duration: '00:00:06.210',
+          duration: 6210,
         }),
       );
     });
@@ -1067,7 +1067,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: asset.id,
-          duration: '168:00:00.000',
+          duration: 604_800_000,
         }),
       );
     });
@@ -1080,7 +1080,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: asset.id });
 
       expect(mocks.metadata.readTags).toHaveBeenCalledTimes(1);
-      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:02:03.000' }));
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: 123_000 }));
     });
 
     it('should prefer Duration from exif over sidecar', async () => {
@@ -1092,7 +1092,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: asset.id });
 
       expect(mocks.metadata.readTags).toHaveBeenCalledTimes(2);
-      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:02:03.000' }));
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: 123_000 }));
     });
 
     it('should ignore all Duration tags for definitely static images', async () => {
@@ -1121,7 +1121,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: asset.id });
 
       expect(mocks.metadata.readTags).toHaveBeenCalledTimes(1);
-      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:07:36.000' }));
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: 456_000 }));
     });
 
     it('should trim whitespace from description', async () => {
