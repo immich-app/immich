@@ -105,11 +105,10 @@ class _TrashKebabMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = context.themeData;
     return MenuAnchor(
       consumeOutsideTap: true,
       style: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(theme.scaffoldBackgroundColor),
+        backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
         surfaceTintColor: const WidgetStatePropertyAll(Colors.grey),
         elevation: const WidgetStatePropertyAll(4),
         shape: const WidgetStatePropertyAll(
