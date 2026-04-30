@@ -123,7 +123,7 @@ describe(SharedLinkService.name, () => {
     it('should not allow non-owners to create album shared links', async () => {
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.Album, assetIds: [], albumId: 'album-1' }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should not allow individual shared links with no assets', async () => {
@@ -135,7 +135,7 @@ describe(SharedLinkService.name, () => {
     it('should require asset ownership to make an individual shared link', async () => {
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.Individual, assetIds: ['asset-1'] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should create an album shared link', async () => {

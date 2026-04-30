@@ -1,4 +1,4 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { AuthSharedLink } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserRole, Permission } from 'src/enum';
@@ -37,7 +37,7 @@ export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
 export const requireAccess = async (access: AccessRepository, request: AccessRequest) => {
   const allowedIds = await checkAccess(access, request);
   if (!setIsEqual(new Set(request.ids), allowedIds)) {
-    throw new BadRequestException(`Not found or no ${request.permission} access`);
+    throw new ForbiddenException(`Not found or no ${request.permission} access`);
   }
 };
 

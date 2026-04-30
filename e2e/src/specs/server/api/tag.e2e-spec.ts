@@ -512,7 +512,7 @@ describe('/tags', () => {
         .send({ ids: [userAsset.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no tag.asset access'));
+      expect(body).toEqual(errorDto.noPermission);
     });
 
     it('should add duplicate assets only once', async () => {
