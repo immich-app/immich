@@ -36,9 +36,7 @@ export const VECTOR_INDEX_TABLES = {
 export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 
 export const SALT_ROUNDS = 10;
-// Syntactically valid bcrypt hash (cost 10) used as a dummy in login() so that
-// bcrypt.compareSync always runs even when the email is not registered, preventing
-// timing-based user enumeration.
+// Syntactically valid bcrypt hash used in login() preventing timing-based user enumeration.
 export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde';
 
 export const IWorker = 'IWorker';
