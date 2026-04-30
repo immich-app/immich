@@ -95,18 +95,10 @@
   };
 
   const setProgressDuration = (asset: TimelineAsset) => {
-    if (asset.isVideo) {
-      const timeParts = asset.duration!.split(':').map(Number);
-      const durationInMilliseconds = (timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]) * 1000;
-      progressBarController = new Tween<number>(0, {
-        duration: (from: number, to: number) => (to ? durationInMilliseconds * (to - from) : 0),
-      });
-    } else {
-      progressBarController = new Tween<number>(0, {
-        duration: (from: number, to: number) =>
-          to ? authManager.preferences.memories.duration * 1000 * (to - from) : 0,
-      });
-    }
+    progressBarController = new Tween<number>(0, {
+      duration: (from: number, to: number) =>
+        to ? (asset.isVideo ? asset.duration! : authManager.preferences.memories.duration * 1000) * (to - from) : 0,
+    });
   };
 
   const handleNextAsset = () => handleNavigate(current?.next?.asset);

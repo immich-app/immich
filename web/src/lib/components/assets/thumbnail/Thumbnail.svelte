@@ -5,7 +5,6 @@
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { timeToSeconds } from '$lib/utils/date-time';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -274,7 +273,7 @@
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             curve={selected}
-            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
+            durationInSeconds={asset.duration ? asset.duration / 1000 : 0}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>

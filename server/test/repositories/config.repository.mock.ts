@@ -3,7 +3,7 @@ import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
 import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-const envData: EnvData = {
+export const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
   logFormat: LogFormat.Console,
@@ -30,9 +30,8 @@ const envData: EnvData = {
       username: 'postgres',
       password: 'postgres',
     },
-
     skipMigrations: false,
-    vectorExtension: DatabaseExtension.Vectors,
+    vectorExtension: DatabaseExtension.VectorChord,
   },
 
   helmet: {

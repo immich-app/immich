@@ -96,9 +96,9 @@
     return { id: randomAsset.id };
   };
 
-  const handleClose = async (asset: { id: string }) => {
+  const handleClose = async (assetId: string) => {
     invisible = true;
-    assetViewerManager.gridScrollTarget = { at: asset.id };
+    assetViewerManager.gridScrollTarget = { at: assetId };
     await navigate({
       targetRoute: 'current',
       assetId: null,
@@ -117,7 +117,7 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     (await navigateToAsset(assetCursor?.nextAsset)) ||
       (await navigateToAsset(assetCursor?.previousAsset)) ||
-      (await handleClose(assetCursor.current));
+      (await handleClose(assetCursor.current.id));
   };
 
   const handlePreAction = async (action: Action) => {
@@ -136,7 +136,7 @@
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await navigateToAsset(assetCursor?.nextAsset)) ||
           (await navigateToAsset(assetCursor?.previousAsset)) ||
-          (await handleClose(action.asset));
+          (await handleClose(action.asset.id));
 
         break;
       }

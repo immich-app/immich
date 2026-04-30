@@ -4,7 +4,6 @@
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
@@ -239,15 +238,15 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
-          {@const isHighlighted = $boundingBoxesArray.some((b) => b.id === face.id)}
+          {@const isHighlighted = assetViewerManager.highlightedFaces.some((b) => b.id === face.id)}
           <div class="relative h-29 w-24">
             <div
               role="button"
               tabindex={index}
               class="absolute start-0 top-0 h-22.5 w-22.5 cursor-default"
-              onfocus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              onmouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              onmouseleave={() => ($boundingBoxesArray = [])}
+              onfocus={() => assetViewerManager.setHighlightedFaces([peopleWithFaces[index]])}
+              onpointerenter={() => assetViewerManager.setHighlightedFaces([peopleWithFaces[index]])}
+              onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
             >
               <div class="relative">
                 {#if selectedPersonToCreate[face.id]}
