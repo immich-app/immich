@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
@@ -460,7 +459,7 @@ describe(AssetMediaService.name, () => {
 
   describe('downloadOriginal', () => {
     it('should require the asset.download permission', async () => {
-      await expect(sut.downloadOriginal(authStub.admin, 'asset-1', {})).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
@@ -568,7 +567,7 @@ describe(AssetMediaService.name, () => {
 
   describe('viewThumbnail', () => {
     it('should require asset.view permissions', async () => {
-      await expect(sut.viewThumbnail(authStub.admin, 'id', {})).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.viewThumbnail(authStub.admin, 'id', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']), undefined);
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
@@ -711,7 +710,7 @@ describe(AssetMediaService.name, () => {
 
   describe('playbackVideo', () => {
     it('should require asset.view permissions', async () => {
-      await expect(sut.playbackVideo(authStub.admin, 'id')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.playbackVideo(authStub.admin, 'id')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']), undefined);
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));

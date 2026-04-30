@@ -324,7 +324,7 @@ describe('/activities', () => {
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no activity.delete access'));
     });
 
     it('should let a non-owner remove their own comment', async () => {

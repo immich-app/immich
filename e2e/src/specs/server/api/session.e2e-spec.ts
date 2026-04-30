@@ -53,7 +53,7 @@ describe('/sessions', () => {
         .delete(`/sessions/${uuidDto.notFound}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no authDevice.delete access'));
     });
 
     it('should logout a device', async () => {

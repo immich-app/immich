@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AlbumUserRole, AssetOrder, UserMetadataKey } from 'src/enum';
 import { AlbumService } from 'src/services/album.service';
@@ -323,7 +323,7 @@ describe(AlbumService.name, () => {
         sut.update(AuthFactory.create(), 'invalid-id', {
           albumName: 'Album',
         }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
@@ -334,7 +334,7 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(
         sut.update(AuthFactory.create(owner), album.id, { albumName: 'new album name' }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should require a valid thumbnail asset id', async () => {
@@ -376,7 +376,7 @@ describe(AlbumService.name, () => {
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set());
 
-      await expect(sut.delete(AuthFactory.create(owner), album.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(AuthFactory.create(owner), album.id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.album.delete).not.toHaveBeenCalled();
     });
@@ -387,7 +387,7 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set());
 
-      await expect(sut.delete(AuthFactory.create(owner), album.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(AuthFactory.create(owner), album.id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.album.delete).not.toHaveBeenCalled();
     });
@@ -412,7 +412,7 @@ describe(AlbumService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(
         sut.addUsers(AuthFactory.create(user), album.id, { albumUsers: [{ userId: newUuid() }] }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
 
@@ -512,7 +512,7 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
       await expect(sut.removeUser(AuthFactory.create(user1), album.id, user2.id)).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.albumUser.delete).not.toHaveBeenCalled();
@@ -655,7 +655,7 @@ describe(AlbumService.name, () => {
 
     it('should throw an error for no access', async () => {
       const auth = AuthFactory.create();
-      await expect(sut.get(auth, 'album-123')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.get(auth, 'album-123')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set(['album-123']));
       expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
@@ -764,7 +764,7 @@ describe(AlbumService.name, () => {
 
       await expect(
         sut.addAssets(AuthFactory.create(user), album.id, { ids: [asset1.id, asset2.id, asset3.id] }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
@@ -833,7 +833,7 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
 
       await expect(sut.addAssets(AuthFactory.create(user), album.id, { ids: [asset.id] })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalled();
@@ -847,7 +847,7 @@ describe(AlbumService.name, () => {
 
       await expect(
         sut.addAssets(AuthFactory.from().sharedLink({ allowUpload: true }).build(), album.id, { ids: [asset.id] }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalled();
     });

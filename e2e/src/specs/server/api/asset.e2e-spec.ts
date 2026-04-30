@@ -610,7 +610,7 @@ describe('/asset', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
     });
 
     it('should move an asset to trash', async () => {

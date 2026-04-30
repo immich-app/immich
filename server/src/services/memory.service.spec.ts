@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { MemoryService } from 'src/services/memory.service';
 import { OnThisDayData } from 'src/types';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -53,7 +53,7 @@ describe(MemoryService.name, () => {
 
   describe('get', () => {
     it('should throw an error when no access', async () => {
-      await expect(sut.get(factory.auth(), 'not-found')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.get(factory.auth(), 'not-found')).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should throw an error when the memory is not found', async () => {
@@ -151,7 +151,7 @@ describe(MemoryService.name, () => {
   describe('update', () => {
     it('should require access', async () => {
       await expect(sut.update(factory.auth(), 'not-found', { isSaved: true })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.memory.update).not.toHaveBeenCalled();
@@ -171,7 +171,7 @@ describe(MemoryService.name, () => {
 
   describe('remove', () => {
     it('should require access', async () => {
-      await expect(sut.remove(factory.auth(), newUuid())).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.remove(factory.auth(), newUuid())).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.memory.delete).not.toHaveBeenCalled();
     });
@@ -193,7 +193,7 @@ describe(MemoryService.name, () => {
       const [memoryId, assetId] = newUuids();
 
       await expect(sut.addAssets(factory.auth(), memoryId, { ids: [assetId] })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.memory.addAssetIds).not.toHaveBeenCalled();
@@ -251,7 +251,7 @@ describe(MemoryService.name, () => {
   describe('removeAssets', () => {
     it('should require memory access', async () => {
       await expect(sut.removeAssets(factory.auth(), 'not-found', { ids: ['asset1'] })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.memory.removeAssetIds).not.toHaveBeenCalled();

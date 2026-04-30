@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { JobName, JobStatus } from 'src/enum';
 import { TrashService } from 'src/services/trash.service';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -29,7 +29,7 @@ describe(TrashService.name, () => {
         sut.restoreAssets(authStub.user1, {
           ids: ['asset-1'],
         }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should handle an empty list', async () => {

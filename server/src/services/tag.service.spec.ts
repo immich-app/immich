@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { JobStatus } from 'src/enum';
 import { TagService } from 'src/services/tag.service';
@@ -45,7 +45,7 @@ describe(TagService.name, () => {
     it('should throw an error for no parent tag access', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(sut.create(authStub.admin, { name: 'tag', parentId: 'tag-parent' })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
       expect(mocks.tag.create).not.toHaveBeenCalled();
     });
@@ -105,7 +105,7 @@ describe(TagService.name, () => {
     it('should throw an error for no update permission', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(sut.update(authStub.admin, 'tag-1', { color: '#000000' })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
       expect(mocks.tag.update).not.toHaveBeenCalled();
     });
@@ -165,7 +165,7 @@ describe(TagService.name, () => {
   describe('remove', () => {
     it('should throw an error for an invalid id', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set());
-      await expect(sut.remove(authStub.admin, 'tag-1')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.remove(authStub.admin, 'tag-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.tag.delete).not.toHaveBeenCalled();
     });
 

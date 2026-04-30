@@ -481,7 +481,7 @@ describe('/albums', () => {
         .send({ ids: [asset.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no albumAsset.create access'));
     });
 
     it('should add duplicate assets only once', async () => {
@@ -527,7 +527,7 @@ describe('/albums', () => {
         .send({ albumName: 'New album name' });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.update access'));
     });
 
     it('should be able to update as an editor', async () => {
@@ -615,7 +615,7 @@ describe('/albums', () => {
         .send({ ids: [user1Asset1.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no albumAsset.delete access'));
     });
 
     it('should remove duplicate assets only once', async () => {
@@ -729,7 +729,7 @@ describe('/albums', () => {
         .send({ role: AlbumUserRole.Editor });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(body).toEqual(errorDto.badRequest('Not found or no album.share access'));
     });
   });
 });
