@@ -30,7 +30,7 @@
 
   let { sharedLink }: Props = $props();
 
-  const album = sharedLink.album as AlbumResponseDto;
+  const album = $derived(sharedLink.album as AlbumResponseDto);
 
   let { slideshowState, slideshowNavigation } = slideshowStore;
 

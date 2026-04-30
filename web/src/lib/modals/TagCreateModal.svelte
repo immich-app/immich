@@ -12,6 +12,7 @@
 
   const { onClose, baseTag }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let tagValue = $state(baseTag?.path ? `${baseTag.path}/` : '');
 
   const onSubmit = async () => {

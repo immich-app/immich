@@ -53,7 +53,8 @@
   let activityHeight: number = $state(0);
   let chatHeight: number = $state(0);
   let divHeight = $derived(innerHeight - activityHeight);
-  let previousAssetId: string | undefined = $state(assetId);
+  // svelte-ignore state_referenced_locally
+  let previousAssetId = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
   const isAlbumOwner = $derived(albumUsers[0].user.id === authManager.user.id);

@@ -15,16 +15,16 @@
 
   let { data }: Props = $props();
 
-  const sharedLink = $state(data.sharedLink);
+  const sharedLink = $derived(data.sharedLink);
 
-  let description = $state(sharedLink.description ?? '');
-  let allowDownload = $state(sharedLink.allowDownload);
-  let allowUpload = $state(sharedLink.allowUpload);
-  let showMetadata = $state(sharedLink.showMetadata);
-  let password = $state(sharedLink.password ?? '');
-  let slug = $state(sharedLink.slug ?? '');
-  let shareType = sharedLink.album ? SharedLinkType.Album : SharedLinkType.Individual;
-  let expiresAt = $state(sharedLink.expiresAt);
+  let description = $derived(sharedLink.description ?? '');
+  let allowDownload = $derived(sharedLink.allowDownload);
+  let allowUpload = $derived(sharedLink.allowUpload);
+  let showMetadata = $derived(sharedLink.showMetadata);
+  let password = $derived(sharedLink.password ?? '');
+  let slug = $derived(sharedLink.slug ?? '');
+  let shareType = $derived(sharedLink.album ? SharedLinkType.Album : SharedLinkType.Individual);
+  let expiresAt = $derived(sharedLink.expiresAt);
 
   const onClose = async () => {
     await goto(Route.sharedLinks());

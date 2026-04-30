@@ -14,6 +14,7 @@
 
   const { tag, onClose }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let tagColor = $state(tag.color ?? '');
 
   const onSubmit = async () => {

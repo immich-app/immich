@@ -63,11 +63,16 @@
 
   let { data }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   const triggers = data.triggers;
+  // svelte-ignore state_referenced_locally
   const filters = data.plugins.flatMap((plugin) => plugin.filters);
+  // svelte-ignore state_referenced_locally
   const actions = data.plugins.flatMap((plugin) => plugin.actions);
 
+  // svelte-ignore state_referenced_locally
   let previousWorkflow = data.workflow;
+  // svelte-ignore state_referenced_locally
   let editWorkflow = $state(data.workflow);
 
   let viewMode: 'visual' | 'json' = $state('visual');

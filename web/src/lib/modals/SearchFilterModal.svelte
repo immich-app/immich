@@ -95,6 +95,7 @@
     };
   };
 
+  // svelte-ignore state_referenced_locally
   let filter: SearchFilter = $state(asFilter(searchQuery));
 
   const resetForm = () => {

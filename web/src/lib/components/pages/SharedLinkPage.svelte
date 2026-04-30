@@ -31,6 +31,7 @@
 
   const { data }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let { sharedLink, passwordRequired, key, slug, meta } = $state(data);
   let { title, description } = $state(meta);
   let isOwned = $derived(authManager.authenticated && authManager.user.id === sharedLink?.userId);

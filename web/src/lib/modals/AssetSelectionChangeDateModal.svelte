@@ -23,6 +23,7 @@
 
   let showRelative = $state(false);
   let selectedDuration = $state(0);
+  // svelte-ignore state_referenced_locally
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
   const timezones = $derived(getTimezones(selectedDate));
   // svelte-ignore state_referenced_locally

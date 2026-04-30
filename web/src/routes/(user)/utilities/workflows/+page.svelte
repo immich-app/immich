@@ -37,12 +37,13 @@
 
   let { data }: Props = $props();
 
-  let workflows = $state<WorkflowResponseDto[]>(data.workflows);
+  let workflows = $derived<WorkflowResponseDto[]>(data.workflows);
 
   const expandedWorkflows = new SvelteSet<string>();
   const pluginFilterLookup = new SvelteMap<string, PluginFilterResponseDto>();
   const pluginActionLookup = new SvelteMap<string, PluginFilterResponseDto>();
 
+  // svelte-ignore state_referenced_locally
   for (const plugin of data.plugins) {
     for (const filter of plugin.filters ?? []) {
       pluginFilterLookup.set(filter.id, { ...filter });

@@ -37,7 +37,7 @@
     await play();
   };
 
-  let progress = setDuration(duration);
+  let progress = $derived(setDuration(duration));
 
   $effect(() => {
     handlePromiseError(onChange(duration));

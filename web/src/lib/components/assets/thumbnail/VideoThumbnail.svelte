@@ -29,7 +29,7 @@
     class: className,
   }: Props = $props();
 
-  let remainingSeconds = $state(durationInSeconds);
+  let remainingSeconds = $derived(durationInSeconds);
   let loading = $state(true);
   let error = $state(false);
   let player: HTMLVideoElement | undefined = $state();

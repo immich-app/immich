@@ -13,7 +13,9 @@
 
   let { album, onClose }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let albumName = $state(album.albumName);
+  // svelte-ignore state_referenced_locally
   let description = $state(album.description);
 
   const onSubmit = async () => {

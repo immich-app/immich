@@ -45,8 +45,11 @@
     return { lat: latitude, lng: longitude };
   });
 
-  let point = $state<LatLng | undefined>(initialPoint ?? assetPoint);
+  // svelte-ignore state_referenced_locally
+  let point = $state(initialPoint ?? assetPoint);
+  // svelte-ignore state_referenced_locally
   let zoom = $state(point ? 12.5 : 1);
+  // svelte-ignore state_referenced_locally
   let center = $state(point ?? geolocationManager.lastPoint);
 
   $effect(() => {

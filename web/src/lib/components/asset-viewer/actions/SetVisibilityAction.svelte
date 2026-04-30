@@ -16,7 +16,7 @@
   }
 
   let { asset, onAction, preAction }: Props = $props();
-  const isLocked = asset.visibility === AssetVisibility.Locked;
+  const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   const toggleLockedVisibility = async () => {
     const isConfirmed = await modalManager.showDialog({

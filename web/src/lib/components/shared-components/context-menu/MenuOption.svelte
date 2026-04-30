@@ -36,12 +36,15 @@
     onClick();
   };
 
-  if (shortcut && !shortcutLabel) {
-    shortcutLabel = computeShortcutLabel(shortcut);
-  }
-  const bindShortcutIfSet = shortcut
-    ? (n: HTMLElement) => bindShortcut(n, { shortcut, onShortcut: onClick })
-    : () => {};
+  $effect(() => {
+    if (shortcut && !shortcutLabel) {
+      shortcutLabel = computeShortcutLabel(shortcut);
+    }
+  });
+
+  const bindShortcutIfSet = $derived(
+    shortcut ? (n: HTMLElement) => bindShortcut(n, { shortcut, onShortcut: onClick }) : () => {},
+  );
 </script>
 
 <svelte:document use:bindShortcutIfSet />

@@ -32,7 +32,7 @@
 
   let { children, data }: Props = $props();
 
-  let users: UserAdminResponseDto[] = $state(data.users);
+  let users: UserAdminResponseDto[] = $derived(data.users);
 
   const onUpdate = async (user: UserAdminResponseDto) => {
     const index = users.findIndex(({ id }) => id === user.id);

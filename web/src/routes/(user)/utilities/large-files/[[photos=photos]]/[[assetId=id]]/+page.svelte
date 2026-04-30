@@ -18,7 +18,7 @@
 
   let { data }: Props = $props();
 
-  let assets = $state(data.assets);
+  let assets = $derived(data.assets);
   let asset = $derived(data.asset);
 
   $effect(() => {

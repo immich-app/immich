@@ -20,9 +20,11 @@
 
   let { initialDate = DateTime.now(), initialTimeZone, timezoneInput = true, asset, onClose }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
   const timezones = $derived(getTimezones(selectedDate));
 
+  // svelte-ignore state_referenced_locally
   let selectedOption = $state(getPreferredTimeZone(initialDate, initialTimeZone, getTimezones(selectedDate)));
 
   const onSubmit = async () => {

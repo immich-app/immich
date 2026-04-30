@@ -36,7 +36,7 @@
   let searchName = $state('');
   let newName = $state('');
   let currentPage = $state(1);
-  let nextPage = $state(data.people.hasNextPage ? 2 : null);
+  let nextPage = $derived(data.people.hasNextPage ? 2 : null);
   let personMerge1 = $state<PersonResponseDto>();
   let personMerge2 = $state<PersonResponseDto>();
   let potentialMergePeople: PersonResponseDto[] = $state([]);

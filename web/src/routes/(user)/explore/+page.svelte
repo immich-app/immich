@@ -24,7 +24,7 @@
   };
 
   let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
-  let people = $state(data.response.people);
+  let people = $derived(data.response.people);
 
   let hasPeople = $derived(data.response.total > 0);
 

@@ -18,7 +18,7 @@
 
   let props: Props = $props();
 
-  let backups = $state(props.backups ?? []);
+  let backups = $derived(props.backups ?? []);
 
   async function reloadBackups() {
     const result = await listDatabaseBackups();

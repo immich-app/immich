@@ -15,7 +15,7 @@
   const { data }: Props = $props();
 
   let ownerId: string = $state(authManager.user.id);
-  const users = $state(data.allUsers);
+  const users = $derived(data.allUsers);
 
   const onClose = async () => {
     await goto(Route.libraries());

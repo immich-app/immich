@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -14,7 +15,6 @@
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import FaceThumbnail from './FaceThumbnail.svelte';
   import PeopleList from './PeopleList.svelte';
 
@@ -39,11 +39,9 @@
 
   let peopleToNotShow = $derived(selectedPerson ? [personAssets, selectedPerson] : [personAssets]);
 
-  const selectedPeople: AssetFaceUpdateItem[] = [];
-
-  for (const assetId of assetIds) {
-    selectedPeople.push({ assetId, personId: personAssets.id });
-  }
+  const selectedPeople = $derived<AssetFaceUpdateItem[]>(
+    assetIds.map((assetId) => ({ assetId, personId: personAssets.id })),
+  );
 
   onMount(async () => {
     const data = await getAllPeople({ withHidden: false });

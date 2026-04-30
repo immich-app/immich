@@ -12,6 +12,7 @@
   };
 
   let { settings: initialValues, onClose }: Props = $props();
+  // svelte-ignore state_referenced_locally
   let settings = $state(initialValues);
 
   let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);

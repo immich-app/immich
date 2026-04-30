@@ -13,7 +13,7 @@
 
   const { node, getLink, title, icon }: Props = $props();
 
-  const rootLink = getLink('');
+  const rootLink = $derived(getLink(''));
   const isRoot = $derived(node.parent === null);
   const parentLink = $derived(getLink(node.parent ? node.parent.path : ''));
   const parents = $derived(node.parents);

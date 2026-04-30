@@ -122,7 +122,9 @@
     }
   });
 
+  // svelte-ignore state_referenced_locally
   const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
+  // svelte-ignore state_referenced_locally
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
 
   const handleOpenDateModal = async () => {

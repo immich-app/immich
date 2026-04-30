@@ -13,8 +13,8 @@
 
   let { data }: Props = $props();
 
-  const library = $state(data.library);
-  let name = $state(library.name);
+  const library = $derived(data.library);
+  let name = $derived(library.name);
 
   const onClose = async () => {
     await goto(Route.viewLibrary(library));
