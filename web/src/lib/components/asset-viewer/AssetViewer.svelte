@@ -67,7 +67,7 @@
     preAction?: PreAction;
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onClose?: (asset: AssetResponseDto) => void;
+    onClose?: (assetId: string) => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
@@ -179,7 +179,7 @@
   });
 
   const closeViewer = () => {
-    onClose?.(asset);
+    onClose?.(asset.id);
   };
 
   const closeEditor = async () => {
@@ -474,7 +474,7 @@
         onAction={handleAction}
         {onUndoDelete}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        onClose={onClose ? () => onClose(asset) : undefined}
+        onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {onRemoveFromAlbum}
         {playOriginalVideo}
         {setPlayOriginalVideo}
