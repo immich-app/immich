@@ -25,12 +25,12 @@
 </script>
 
 {#if showVideo}
-  <div class="h-full w-full bg-pink-9000" transition:fade={{ duration: assetViewerFadeDuration }}>
+  <div class="bg-pink-9000 size-full" transition:fade={{ duration: assetViewerFadeDuration }}>
     <video
       bind:this={videoPlayer}
       autoplay={$autoPlayVideo}
       playsinline
-      class="h-full w-full rounded-2xl object-contain transition-all"
+      class="size-full rounded-2xl object-contain transition-all"
       src={getAssetPlaybackUrl({ id: asset.id })}
       poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
       draggable="false"

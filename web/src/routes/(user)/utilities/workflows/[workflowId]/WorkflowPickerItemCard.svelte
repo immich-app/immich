@@ -22,13 +22,13 @@
           <img
             src={getAssetMediaUrl({ id: item.albumThumbnailAssetId })}
             alt={item.albumName}
-            class="h-12 w-12 rounded-lg object-cover"
+            class="size-12 rounded-lg object-cover"
           />
         {:else}
-          <div class="h-12 w-12 rounded-lg"></div>
+          <div class="size-12 rounded-lg"></div>
         {/if}
       {:else if !isAlbum && 'name' in item}
-        <img src={getPeopleThumbnailUrl(item)} alt={item.name} class="h-12 w-12 rounded-full object-cover" />
+        <img src={getPeopleThumbnailUrl(item)} alt={item.name} class="size-12 rounded-full object-cover" />
       {/if}
     </div>
     <div class="min-w-0 flex-1">

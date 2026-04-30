@@ -364,34 +364,34 @@
 
 <div
   id="face-editor-data"
-  class="absolute inset-s-0 top-0 z-5 h-full w-full overflow-hidden"
+  class="absolute inset-s-0 top-0 z-5 size-full overflow-hidden"
   data-overlay-interactive
   data-face-left={faceBoxPosition.left}
   data-face-top={faceBoxPosition.top}
   data-face-width={faceBoxPosition.width}
   data-face-height={faceBoxPosition.height}
 >
-  <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 inset-s-0"></canvas>
+  <canvas bind:this={canvasEl} id="face-editor" class="absolute inset-s-0 top-0"></canvas>
 
   <div
     id="face-selector"
     bind:this={faceSelectorEl}
-    class="absolute top-[calc(50%-250px)] inset-s-[calc(50%-125px)] max-w-62.5 w-62.5 bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800 transition-[top,left] duration-200 ease-out"
+    class="absolute inset-s-[calc(50%-125px)] top-[calc(50%-250px)] w-62.5 max-w-62.5 rounded-xl border border-gray-200 bg-white px-2 py-4 backdrop-blur-sm transition-[top,left] duration-200 ease-out dark:border-gray-800 dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
-    <div class="my-3 relative">
+    <div class="relative my-3">
       <Input placeholder={$t('search_people')} bind:value={searchTerm} bind:ref={searchInputEl} size="tiny" />
     </div>
 
-    <div bind:this={scrollableListEl} class="h-62.5 overflow-y-auto mt-2">
+    <div bind:this={scrollableListEl} class="mt-2 h-62.5 overflow-y-auto">
       {#if filteredCandidates.length > 0}
         <div class="mt-2 rounded-lg">
           {#each filteredCandidates as person (person.id)}
             <button
               onclick={() => tagFace(person)}
               type="button"
-              class="w-full flex place-items-center gap-2 rounded-lg ps-1 pe-4 py-2 hover:bg-immich-primary/25"
+              class="flex w-full place-items-center gap-2 rounded-lg py-2 ps-1 pe-4 hover:bg-immich-primary/25"
             >
               <ImageThumbnail
                 curve

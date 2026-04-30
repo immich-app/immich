@@ -36,16 +36,16 @@
 <Modal title={$t('add_partner')} {onClose} size="small">
   <ModalBody>
     {#await loadUsers()}
-      <div class="w-full flex place-items-center place-content-center">
+      <div class="flex w-full place-content-center place-items-center">
         <LoadingSpinner />
       </div>
     {:then _}
       {#if availableUsers.length > 0}
-        <div class="immich-scrollbar max-h-75 overflow-y-auto gap-2 flex flex-col">
+        <div class="flex max-h-75 flex-col gap-2 overflow-y-auto immich-scrollbar">
           {#each availableUsers as user (user.id)}
             <ListButton onclick={() => selectUser(user)} selected={selectedUsers.includes(user)}>
               <UserAvatar {user} size="md" />
-              <div class="text-start grow">
+              <div class="grow text-start">
                 <Text fontWeight="medium">{user.name}</Text>
                 <Text size="tiny" color="muted">{user.email}</Text>
               </div>

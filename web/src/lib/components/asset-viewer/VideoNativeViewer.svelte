@@ -124,12 +124,12 @@
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
-    class="flex h-full select-none place-content-center place-items-center"
+    class="flex h-full place-content-center place-items-center select-none"
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
   >
     {#if castManager.isCasting}
-      <div class="place-content-center h-full place-items-center">
+      <div class="h-full place-content-center place-items-center">
         <VideoRemoteViewer
           poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}

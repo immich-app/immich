@@ -64,13 +64,13 @@
 <OnEvents {onAssetsDelete} />
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
-  <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
     {#if assets && assets.length > 0}
       {#each assets as asset (asset.id)}
         <LargeAssetData {asset} {onViewAsset} />
       {/each}
     {:else}
-      <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
+      <p class="flex place-content-center place-items-center text-center text-lg dark:text-white">
         {$t('no_assets_to_show')}
       </p>
     {/if}

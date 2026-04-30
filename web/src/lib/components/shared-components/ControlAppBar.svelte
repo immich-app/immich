@@ -66,12 +66,12 @@
       !multiRow && 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]',
       'justify-between lg:grid-cols-[25%_50%_25%]',
       appBarBorder,
-      'mx-2 my-2 place-items-center rounded-lg p-2 max-md:p-0 transition-all',
+      'm-2 place-items-center rounded-lg p-2 transition-all max-md:p-0',
       tailwindClasses,
       forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-subtle dark:bg-immich-dark-gray',
     ]}
   >
-    <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg {forceDark ? 'dark' : ''}">
+    <div class="flex place-items-center justify-self-start sm:gap-6 dark:text-immich-dark-fg {forceDark ? 'dark' : ''}">
       {#if showBackButton}
         <IconButton
           aria-label={$t('close')}
@@ -90,7 +90,7 @@
       {@render children?.()}
     </div>
 
-    <div class="max-[350px]:me-0 max-[350px]:gap-0 me-4 flex place-items-center gap-1 justify-self-end">
+    <div class="me-4 flex place-items-center gap-1 justify-self-end max-[350px]:me-0 max-[350px]:gap-0">
       {@render trailing?.()}
     </div>
   </nav>

@@ -81,7 +81,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="font-medium text-primary text-sm min-h-6" for={label}>{label}</label>
+    <label class="min-h-6 text-sm font-medium text-primary" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -97,7 +97,7 @@
   </div>
 
   {#if description}
-    <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
+    <p class="pb-2 text-sm immich-form-label" id="{label}-desc">
       {description}
     </p>
   {:else}
@@ -105,11 +105,11 @@
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
-    <div class="flex place-items-center place-content-center gap-2">
+    <div class="flex place-content-center place-items-center gap-2">
       {#if inputType === SettingInputFieldType.COLOR}
         <input
           bind:this={input}
-          class="immich-form-input w-full pb-2 rounded-none me-1"
+          class="me-1 immich-form-input w-full rounded-none pb-2"
           aria-describedby={description ? `${label}-desc` : undefined}
           aria-labelledby="{label}-label"
           id={label}
@@ -128,7 +128,7 @@
 
       <input
         bind:this={input}
-        class="immich-form-input w-full pb-2 min-w-[50px]"
+        class="immich-form-input w-full min-w-[50px] pb-2"
         class:color-picker={inputType === SettingInputFieldType.COLOR}
         aria-describedby={description ? `${label}-desc` : undefined}
         aria-labelledby="{label}-label"

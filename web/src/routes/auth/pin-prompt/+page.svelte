@@ -40,7 +40,7 @@
 
 <AuthPageLayout withHeader={false}>
   <div class="flex items-center justify-center">
-    <div class="w-96 flex flex-col gap-6 items-center justify-center">
+    <div class="flex w-96 flex-col items-center justify-center gap-6">
       {#if hasPinCode}
         {#if isVerified}
           <div in:fade={{ duration: 200 }}>
@@ -59,7 +59,7 @@
         <div class="text-primary">
           <Icon icon={mdiLockSmart} size="64" />
         </div>
-        <p class="text-center text-sm mb-4" style="text-wrap: pretty;">
+        <p class="mb-4 text-center text-sm" style="text-wrap: pretty;">
           {$t('new_pin_code_subtitle')}
         </p>
         <PinCodeCreateForm showLabel={false} onCreated={() => (hasPinCode = true)} />
