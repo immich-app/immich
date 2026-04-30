@@ -46,7 +46,7 @@ describe('/memories', () => {
       const { status, body } = await request(app)
         .get(`/memories/${userMemory.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
@@ -65,7 +65,7 @@ describe('/memories', () => {
         .put(`/memories/${userMemory.id}`)
         .send({ isSaved: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
@@ -91,7 +91,7 @@ describe('/memories', () => {
         .put(`/memories/${userMemory.id}/assets`)
         .send({ ids: [userAsset1.id] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
@@ -126,7 +126,7 @@ describe('/memories', () => {
         .delete(`/memories/${userMemory.id}/assets`)
         .send({ ids: [userAsset1.id] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
@@ -160,7 +160,7 @@ describe('/memories', () => {
       const { status, body } = await request(app)
         .delete(`/memories/${userMemory.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { StackService } from 'src/services/stack.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
@@ -43,7 +43,7 @@ describe(StackService.name, () => {
       const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
 
       await expect(sut.create(auth, { assetIds: [primaryAsset.id, asset.id] })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalled();
@@ -77,7 +77,7 @@ describe(StackService.name, () => {
 
   describe('get', () => {
     it('should require stack.read permissions', async () => {
-      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).not.toHaveBeenCalled();
@@ -115,7 +115,7 @@ describe(StackService.name, () => {
 
   describe('update', () => {
     it('should require stack.update permissions', async () => {
-      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.stack.getById).not.toHaveBeenCalled();
       expect(mocks.stack.update).not.toHaveBeenCalled();
@@ -179,7 +179,7 @@ describe(StackService.name, () => {
 
   describe('delete', () => {
     it('should require stack.delete permissions', async () => {
-      await expect(sut.delete(AuthFactory.create(), 'stack-id')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(AuthFactory.create(), 'stack-id')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.stack.delete).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
@@ -203,7 +203,7 @@ describe(StackService.name, () => {
 
   describe('deleteAll', () => {
     it('should require stack.delete permissions', async () => {
-      await expect(sut.deleteAll(authStub.admin, { ids: ['stack-id'] })).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.deleteAll(authStub.admin, { ids: ['stack-id'] })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.stack.deleteAll).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe(StackService.name, () => {
   describe('removeAsset', () => {
     it('should require stack.update permissions', async () => {
       await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: 'asset-id' })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.stack.getForAssetRemoval).not.toHaveBeenCalled();

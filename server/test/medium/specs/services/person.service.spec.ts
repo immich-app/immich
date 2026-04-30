@@ -35,7 +35,7 @@ describe(PersonService.name, () => {
       const { sut } = setup();
       const auth = factory.auth();
       const personId = factory.uuid();
-      await expect(sut.delete(auth, personId)).rejects.toThrow('Access denied');
+      await expect(sut.delete(auth, personId)).rejects.toThrow('Not found or no person.delete access');
     });
 
     it('should delete the person', async () => {
@@ -60,7 +60,7 @@ describe(PersonService.name, () => {
       const { sut } = setup();
       const auth = factory.auth();
       const personId = factory.uuid();
-      await expect(sut.deleteAll(auth, { ids: [personId] })).rejects.toThrow('Access denied');
+      await expect(sut.deleteAll(auth, { ids: [personId] })).rejects.toThrow('Not found or no person.delete access');
     });
 
     it('should delete the person', async () => {

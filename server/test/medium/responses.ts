@@ -7,9 +7,9 @@ export const errorDto = {
   forbidden: {
     message: expect.any(String),
   },
-  missingPermission: {
-    message: 'Access denied',
-  },
+  missingPermission: (permission: string) => ({
+    message: `Missing required permission: ${permission}`,
+  }),
   wrongPassword: {
     message: 'Wrong password',
   },
@@ -26,7 +26,7 @@ export const errorDto = {
     message: message ?? expect.anything(),
   }),
   noPermission: {
-    message: 'Access denied',
+    message: expect.stringContaining('Not found or no'),
   },
   incorrectLogin: {
     message: 'Incorrect email or password',

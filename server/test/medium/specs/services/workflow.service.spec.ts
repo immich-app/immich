@@ -724,7 +724,7 @@ describe(WorkflowService.name, () => {
 
       await sut.delete(auth, workflow.id);
 
-      await expect(sut.get(auth, workflow.id)).rejects.toThrow('Access denied');
+      await expect(sut.get(auth, workflow.id)).rejects.toThrow('Not found or no workflow.read access');
     });
 
     it('should delete workflow with filters and actions', async () => {
@@ -743,7 +743,7 @@ describe(WorkflowService.name, () => {
 
       await sut.delete(auth, workflow.id);
 
-      await expect(sut.get(auth, workflow.id)).rejects.toThrow('Access denied');
+      await expect(sut.get(auth, workflow.id)).rejects.toThrow('Not found or no workflow.read access');
     });
 
     it('should throw error when deleting non-existent workflow', async () => {

@@ -28,7 +28,7 @@ describe('/api-keys', () => {
       const { secret } = await create(user.accessToken, [Permission.ApiKeyRead]);
       const { status, body } = await request(app).post('/api-keys').set('x-api-key', secret).send({ name: 'API Key' });
       expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission);
+      expect(body).toEqual(errorDto.missingPermission('apiKey.create'));
     });
 
     it('should work with apiKey.create', async () => {

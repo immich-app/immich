@@ -216,7 +216,7 @@ export class AssetMediaService extends BaseService {
     }
 
     if (!path) {
-      throw new NotFoundException('Not found');
+      throw new NotFoundException('Asset media not found');
     }
 
     const fileNameBase =
@@ -237,7 +237,7 @@ export class AssetMediaService extends BaseService {
     const asset = await this.assetRepository.getForVideo(id);
 
     if (!asset) {
-      throw new NotFoundException('Not found');
+      throw new NotFoundException('Asset not found or asset is not a video');
     }
 
     const filepath = asset.encodedVideoPath || asset.originalPath;

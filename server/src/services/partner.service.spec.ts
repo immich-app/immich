@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { PartnerDirection } from 'src/repositories/partner.repository';
 import { PartnerService } from 'src/services/partner.service';
 import { AuthFactory } from 'test/factories/auth.factory';
@@ -109,7 +109,7 @@ describe(PartnerService.name, () => {
       const user2 = UserFactory.create();
       const auth = AuthFactory.create();
 
-      await expect(sut.update(auth, user2.id, { inTimeline: false })).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.update(auth, user2.id, { inTimeline: false })).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should update partner', async () => {

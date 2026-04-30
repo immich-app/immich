@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { ReactionType } from 'src/dtos/activity.dto';
 import { ActivityService } from 'src/services/activity.service';
 import { ActivityFactory } from 'test/factories/activity.factory';
@@ -78,7 +78,7 @@ describe(ActivityService.name, () => {
 
       await expect(
         sut.create(AuthFactory.create(), { albumId, assetId, type: ReactionType.COMMENT, comment: 'comment' }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should create a comment', async () => {
@@ -113,7 +113,7 @@ describe(ActivityService.name, () => {
 
       await expect(
         sut.create(AuthFactory.create(), { albumId, assetId, type: ReactionType.COMMENT, comment: 'comment' }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should create a like', async () => {
@@ -145,7 +145,7 @@ describe(ActivityService.name, () => {
 
   describe('delete', () => {
     it('should require access', async () => {
-      await expect(sut.delete(AuthFactory.create(), newUuid())).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(AuthFactory.create(), newUuid())).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.activity.delete).not.toHaveBeenCalled();
     });

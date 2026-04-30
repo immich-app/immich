@@ -59,7 +59,7 @@ export class PersonService extends BaseService {
     if (closestPersonId) {
       const person = await this.personRepository.getById(closestPersonId);
       if (!person?.faceAssetId) {
-        throw new NotFoundException('Not found');
+        throw new NotFoundException('Person not found');
       }
       closestFaceAssetId = person.faceAssetId;
     }
@@ -637,7 +637,7 @@ export class PersonService extends BaseService {
     ]);
 
     if (!asset) {
-      throw new NotFoundException('Not found');
+      throw new NotFoundException('Asset not found');
     }
 
     const edits = asset.edits || [];

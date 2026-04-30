@@ -598,7 +598,7 @@ describe(AuthService.name, () => {
       });
 
       await expect(result).rejects.toBeInstanceOf(ForbiddenException);
-      await expect(result).rejects.toThrow('Access denied');
+      await expect(result).rejects.toThrow('Missing required permission: asset.read');
     });
 
     it('should default to requiring the all permission when omitted', async () => {
@@ -613,7 +613,7 @@ describe(AuthService.name, () => {
         metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
       });
       await expect(result).rejects.toBeInstanceOf(ForbiddenException);
-      await expect(result).rejects.toThrow('Access denied');
+      await expect(result).rejects.toThrow('Missing required permission: all');
     });
 
     it('should not require any permission when metadata is set to `false`', async () => {

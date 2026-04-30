@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
@@ -95,7 +95,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
       mocks.person.getById.mockResolvedValue(person);
-      await expect(sut.getById(auth, person.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.getById(auth, person.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
 
@@ -124,7 +124,7 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.getById.mockResolvedValue(person);
-      await expect(sut.getThumbnail(auth, person.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.getThumbnail(auth, person.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
@@ -172,7 +172,7 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.getById.mockResolvedValue(person);
-      await expect(sut.update(auth, person.id, { name: 'Person 1' })).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.update(auth, person.id, { name: 'Person 1' })).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
@@ -180,7 +180,7 @@ describe(PersonService.name, () => {
     it('should throw an error when personId is invalid', async () => {
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
@@ -286,7 +286,7 @@ describe(PersonService.name, () => {
       mocks.person.getById.mockResolvedValue(person);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
 
-      await expect(sut.update(auth, person.id, { featureFaceAssetId: '-1' })).rejects.toThrow(ForbiddenException);
+      await expect(sut.update(auth, person.id, { featureFaceAssetId: '-1' })).rejects.toThrow(BadRequestException);
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
@@ -312,7 +312,7 @@ describe(PersonService.name, () => {
         sut.reassignFaces(AuthFactory.create(), 'person-id', {
           data: [{ personId: 'asset-face-1', assetId: '' }],
         }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.job.queue).not.toHaveBeenCalledWith();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
     });
@@ -371,7 +371,7 @@ describe(PersonService.name, () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
       mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
       await expect(sut.getFacesById(AuthFactory.create(), { id: face.assetId })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
     });
   });
@@ -507,7 +507,7 @@ describe(PersonService.name, () => {
         sut.reassignFacesById(AuthFactory.create(), person.id, {
           id: face.id,
         }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.job.queue).not.toHaveBeenCalledWith();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
@@ -1189,7 +1189,7 @@ describe(PersonService.name, () => {
       mocks.person.getById.mockResolvedValueOnce(mergePerson);
 
       await expect(sut.mergePerson(auth, person.id, { ids: [mergePerson.id] })).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
 
       expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
@@ -1313,7 +1313,7 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.getById.mockResolvedValue(person);
-      await expect(sut.getStatistics(auth, person.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.getStatistics(auth, person.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
   });

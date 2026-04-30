@@ -235,7 +235,7 @@ export class AuthService extends BaseService {
       requestedPermission !== false &&
       !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })
     ) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
     return authDto;

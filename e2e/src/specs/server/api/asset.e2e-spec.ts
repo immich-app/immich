@@ -157,7 +157,7 @@ describe('/asset', () => {
       const { status, body } = await request(app)
         .get(`/assets/${user2Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
@@ -385,7 +385,7 @@ describe('/asset', () => {
         .put(`/assets/${user2Assets[0].id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({});
-      expect(status).toBe(403);
+      expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
 
@@ -609,8 +609,8 @@ describe('/asset', () => {
         .send({ ids: [uuidDto.notFound] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.noPermission);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
     });
 
     it('should move an asset to trash', async () => {
