@@ -188,39 +188,9 @@ jobs:
           VERSION_NAME: ${{ steps.build-meta.outputs.version_name }}
           VERSION_CODE: ${{ steps.build-meta.outputs.version_code }}
         run: |
-          build_appbundle() {
-            flutter build appbundle --release \
-              --build-name="$VERSION_NAME" \
-              --build-number="$VERSION_CODE"
-          }
-
-          attempt=1
-          max_attempts=3
-
-          while true; do
-            log_file="$(mktemp)"
-
-            set +e
-            build_appbundle 2>&1 | tee "$log_file"
-            status=${PIPESTATUS[0]}
-            set -e
-
-            if [ "$status" -eq 0 ]; then
-              rm -f "$log_file"
-              break
-            fi
-
-            if ! grep -q "Hash of downloaded file libsqlite3" "$log_file" || [ "$attempt" -ge "$max_attempts" ]; then
-              rm -f "$log_file"
-              exit "$status"
-            fi
-
-            rm -f "$log_file"
-            echo "::warning::sqlite3 native asset download failed hash verification; retrying app bundle build ($attempt/$max_attempts)."
-            rm -rf .dart_tool/hooks_runner/shared/sqlite3 .dart_tool/hooks_runner/sqlite3 .dart_tool/flutter_build
-            sleep $((attempt * 15))
-            attempt=$((attempt + 1))
-          done
+          flutter build appbundle --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE"
 
       - name: Publish Android App Bundle artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
