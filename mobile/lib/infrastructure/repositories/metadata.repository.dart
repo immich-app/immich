@@ -84,13 +84,16 @@ class MetadataRepository extends DriftDatabaseRepository {
     _updateCache(key, key.defaultValue);
   }
 
-  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).map((_) => appConfig).distinct();
+  Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).distinct();
 
-  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).map((_) => systemConfig).distinct();
+  Stream<SystemConfig> watchSystemConfig() => _watchDomain(MetadataDomain.systemConfig).distinct();
 
-  Stream<void> _watchDomain(MetadataDomain domain) {
+  Stream<T> _watchDomain<T extends Object>(MetadataDomain<T> domain) {
     final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));
-    return query.watch().map(_hydrateCache);
+    return query.watch().map((rows) {
+      _hydrateCache(rows);
+      return domain.config(this);
+    });
   }
 
   void _hydrateCache(List<MetadataEntityData> rows) {
@@ -105,11 +108,22 @@ class MetadataRepository extends DriftDatabaseRepository {
   void _updateCache<T extends Object>(MetadataKey<T> key, T value) {
     if (_cache[key] == value) return;
     _cache[key] = value;
-    switch (key.domain) {
+    key.domain.rebuild(this);
+  }
+}
+
+extension<T extends Object> on MetadataDomain<T> {
+  T config(MetadataRepository repo) => switch (this) {
+    .appConfig => repo._appConfig as T,
+    .systemConfig => repo._systemConfig as T,
+  };
+
+  void rebuild(MetadataRepository repo) {
+    switch (this) {
       case .appConfig:
-        _appConfig = .new(theme: .new(mode: _read(.themeMode)));
+        repo._appConfig = .new(theme: .new(mode: repo._read(.themeMode)));
       case .systemConfig:
-        _systemConfig = .new(logLevel: _read(.logLevel));
+        repo._systemConfig = .new(logLevel: repo._read(.logLevel));
     }
   }
 }

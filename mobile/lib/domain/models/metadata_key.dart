@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 
-enum MetadataDomain {
-  appConfig('config.app'),
-  systemConfig('config.system');
+enum MetadataDomain<T extends Object> {
+  appConfig<AppConfig>('config.app'),
+  systemConfig<SystemConfig>('config.system');
 
   final String prefix;
   const MetadataDomain(this.prefix);
