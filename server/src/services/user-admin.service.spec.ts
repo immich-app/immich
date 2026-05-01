@@ -224,20 +224,23 @@ describe(UserAdminService.name, () => {
 
     it('should sync usage when quota size changes', async () => {
       mocks.user.update.mockResolvedValue({ ...userStub.user1, quotaSizeInBytes: 1024 } as any);
+      (mocks.user as any).setUsage = vi.fn().mockResolvedValue(void 0);
+      mocks.storage.getFolderSize.mockResolvedValue(0);
 
       await sut.update(authStub.admin, userStub.user1.id, { quotaSizeInBytes: 1024 });
 
-      expect(mocks.user.syncUsage).toHaveBeenCalledWith(userStub.user1.id);
+      expect((mocks.user as any).setUsage).toHaveBeenCalledWith(userStub.user1.id, 0);
     });
 
     it('should not sync usage when quota size does not change', async () => {
       const user = factory.userAdmin({ quotaSizeInBytes: 1024 });
+      (mocks.user as any).setUsage = vi.fn().mockResolvedValue(void 0);
       mocks.user.get.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue(user);
 
       await sut.update(authStub.admin, user.id, { quotaSizeInBytes: 1024 });
 
-      expect(mocks.user.syncUsage).not.toHaveBeenCalled();
+      expect((mocks.user as any).setUsage).not.toHaveBeenCalled();
     });
 
     it('should hash password when provided', async () => {

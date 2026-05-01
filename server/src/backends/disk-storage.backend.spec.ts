@@ -130,4 +130,19 @@ describe('DiskStorageBackend', () => {
       expect(existsSync(join(testDir, 'thumbs/user-a/thumb.webp'))).toBe(true);
     });
   });
+
+  describe('getPrefixUsage', () => {
+    it('should sum files recursively under the prefix', async () => {
+      await mkdir(join(testDir, 'thumbs/user-a/aa'), { recursive: true });
+      await writeFile(join(testDir, 'thumbs/user-a/aa/one.webp'), 'one');
+      await mkdir(join(testDir, 'thumbs/user-a/bb'), { recursive: true });
+      await writeFile(join(testDir, 'thumbs/user-a/bb/two.webp'), 'two!!');
+
+      await expect(backend.getPrefixUsage('thumbs/user-a/')).resolves.toBe(8);
+    });
+
+    it('should return zero for a missing prefix', async () => {
+      await expect(backend.getPrefixUsage('thumbs/ghost/')).resolves.toBe(0);
+    });
+  });
 });

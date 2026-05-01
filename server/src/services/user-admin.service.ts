@@ -58,7 +58,7 @@ export class UserAdminService extends BaseService {
     }
 
     if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
-      await this.userRepository.syncUsage(id);
+      await this.syncUsage(id);
     }
 
     if (dto.email) {

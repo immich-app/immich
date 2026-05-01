@@ -246,4 +246,39 @@ describe('S3StorageBackend', () => {
       expect(mockSend.mock.calls.filter(([cmd]) => cmd._type === 'DeleteObjectsCommand')).toEqual([]);
     });
   });
+
+  describe('getPrefixUsage', () => {
+    it('should sum object sizes across all pages', async () => {
+      mockSend
+        .mockResolvedValueOnce({
+          Contents: [{ Size: 10 }, { Size: 20 }],
+          IsTruncated: true,
+          NextContinuationToken: 'token-page-2',
+        })
+        .mockResolvedValueOnce({
+          Contents: [{ Size: 30 }, {}],
+          IsTruncated: false,
+        });
+
+      await expect(backend.getPrefixUsage('thumbs/user-a/')).resolves.toBe(60);
+
+      const listInputs = mockSend.mock.calls
+        .filter(([cmd]) => cmd._type === 'ListObjectsV2Command')
+        .map(([cmd]) => cmd.input);
+      expect(listInputs).toEqual([
+        expect.objectContaining({ Bucket: 'test-bucket', Prefix: 'thumbs/user-a/' }),
+        expect.objectContaining({
+          Bucket: 'test-bucket',
+          Prefix: 'thumbs/user-a/',
+          ContinuationToken: 'token-page-2',
+        }),
+      ]);
+    });
+
+    it('should return zero when the prefix matches nothing', async () => {
+      mockSend.mockResolvedValueOnce({ Contents: undefined, IsTruncated: false });
+
+      await expect(backend.getPrefixUsage('profile/ghost/')).resolves.toBe(0);
+    });
+  });
 });

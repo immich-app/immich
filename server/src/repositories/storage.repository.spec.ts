@@ -1,4 +1,7 @@
 import mockfs from 'mock-fs';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -205,6 +208,30 @@ describe(StorageRepository.name, () => {
         expect(actual.toSorted()).toEqual(expected.toSorted());
       });
     }
+  });
+
+  describe('getFolderSize', () => {
+    it('sums nested file sizes recursively', async () => {
+      mockfs.restore();
+      const testDir = join(tmpdir(), `immich-storage-repo-${Date.now()}`);
+      try {
+        await mkdir(join(testDir, 'aa'), { recursive: true });
+        await writeFile(join(testDir, 'aa/one.jpg'), 'one');
+        await mkdir(join(testDir, 'bb'), { recursive: true });
+        await writeFile(join(testDir, 'bb/two.jpg'), 'two!!');
+        await mkdir(join(testDir, 'empty'), { recursive: true });
+
+        await expect(sut.getFolderSize(testDir)).resolves.toBe(8);
+      } finally {
+        await rm(testDir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns zero when the folder does not exist', async () => {
+      mockfs({});
+
+      await expect(sut.getFolderSize('/data/upload/missing')).resolves.toBe(0);
+    });
   });
 
   describe('createZipStream', () => {

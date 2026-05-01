@@ -243,6 +243,31 @@ export class StorageRepository {
     };
   }
 
+  async getFolderSize(folder: string): Promise<number> {
+    let total = 0;
+    let dir;
+    try {
+      dir = await fs.opendir(folder);
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        return 0;
+      }
+      throw error;
+    }
+
+    for await (const entry of dir) {
+      const entryPath = path.join(folder, entry.name);
+      if (entry.isDirectory()) {
+        total += await this.getFolderSize(entryPath);
+      } else if (entry.isFile()) {
+        const entryStat = await fs.stat(entryPath);
+        total += entryStat.size;
+      }
+    }
+
+    return total;
+  }
+
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
     const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
     if (pathsToCrawl.length === 0) {

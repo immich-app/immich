@@ -112,6 +112,22 @@ export class S3StorageBackend implements StorageBackend {
     } while (continuationToken);
   }
 
+  async getPrefixUsage(prefix: string): Promise<number> {
+    let total = 0;
+    let continuationToken: string | undefined;
+    do {
+      const page = await this.client.send(
+        new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: continuationToken }),
+      );
+      for (const object of page.Contents ?? []) {
+        total += object.Size ?? 0;
+      }
+      continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    return total;
+  }
+
   async getServeStrategy(key: string, contentType: string): Promise<ServeStrategy> {
     if (this.serveMode === 'proxy') {
       const { stream, length } = await this.get(key);

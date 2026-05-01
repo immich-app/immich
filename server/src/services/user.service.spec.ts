@@ -885,13 +885,75 @@ describe(UserService.name, () => {
   });
 
   describe('handleUserSyncUsage', () => {
-    it('should sync usage', async () => {
+    afterEach(() => {
+      (StorageService as any).s3Backend = undefined;
+    });
+
+    it('should sync usage from S3 prefixes and existing disk folders', async () => {
+      const user = factory.userAdmin({ id: 'user-id', storageLabel: 'storage-label' });
+      const s3Backend = {
+        getPrefixUsage: vi
+          .fn()
+          .mockResolvedValueOnce(100)
+          .mockResolvedValueOnce(200)
+          .mockResolvedValueOnce(300)
+          .mockResolvedValueOnce(400),
+      };
+      (StorageService as any).s3Backend = s3Backend;
+      (mocks.user as any).setUsage = vi.fn().mockResolvedValue(void 0);
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.storage.getFolderSize
+        .mockResolvedValueOnce(10)
+        .mockResolvedValueOnce(20)
+        .mockResolvedValueOnce(30)
+        .mockResolvedValueOnce(40)
+        .mockResolvedValueOnce(50);
+
       await sut.handleUserSyncUsage();
 
-      expect(mocks.user.syncUsage).toHaveBeenCalledTimes(1);
+      expect(mocks.storage.getFolderSize.mock.calls).toEqual([
+        ['/data/library/storage-label'],
+        ['/data/upload/user-id'],
+        ['/data/profile/user-id'],
+        ['/data/thumbs/user-id'],
+        ['/data/encoded-video/user-id'],
+      ]);
+      expect(s3Backend.getPrefixUsage.mock.calls).toEqual([
+        ['upload/user-id/'],
+        ['profile/user-id/'],
+        ['thumbs/user-id/'],
+        ['encoded-video/user-id/'],
+      ]);
+      expect((mocks.user as any).setUsage).toHaveBeenCalledWith(user.id, 1150);
+    });
+
+    it('should sync disk usage from all managed user folders', async () => {
+      const user = factory.userAdmin({ id: 'user-id', storageLabel: 'storage-label' });
+      (mocks.user as any).setUsage = vi.fn().mockResolvedValue(void 0);
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.storage.getFolderSize
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(200)
+        .mockResolvedValueOnce(300)
+        .mockResolvedValueOnce(400)
+        .mockResolvedValueOnce(500);
+
+      await sut.handleUserSyncUsage();
+
+      expect(mocks.storage.getFolderSize.mock.calls).toEqual([
+        ['/data/library/storage-label'],
+        ['/data/upload/user-id'],
+        ['/data/profile/user-id'],
+        ['/data/thumbs/user-id'],
+        ['/data/encoded-video/user-id'],
+      ]);
+      expect((mocks.user as any).setUsage).toHaveBeenCalledWith(user.id, 1500);
     });
 
     it('should return JobStatus.Success', async () => {
+      (mocks.user as any).setUsage = vi.fn().mockResolvedValue(void 0);
+      mocks.user.getList.mockResolvedValue([]);
+
       const result = await sut.handleUserSyncUsage();
 
       expect(result).toBe(JobStatus.Success);

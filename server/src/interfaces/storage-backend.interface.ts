@@ -21,6 +21,9 @@ export interface StorageBackend {
   /** Delete all objects/files under the given key prefix. Idempotent. No-op if nothing matches. */
   deletePrefix(prefix: string): Promise<void>;
 
+  /** Return the total size in bytes for all objects/files under the given key prefix. */
+  getPrefixUsage(prefix: string): Promise<number>;
+
   /** Determine how to serve this file to a client */
   getServeStrategy(key: string, contentType: string): Promise<ServeStrategy>;
 

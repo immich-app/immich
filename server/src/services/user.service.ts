@@ -245,7 +245,7 @@ export class UserService extends BaseService {
 
   @OnJob({ name: JobName.UserSyncUsage, queue: QueueName.BackgroundTask })
   async handleUserSyncUsage(): Promise<JobStatus> {
-    await this.userRepository.syncUsage();
+    await this.syncUsage();
     return JobStatus.Success;
   }
 

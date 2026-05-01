@@ -6,7 +6,7 @@ import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
-import { CacheControl } from 'src/enum';
+import { CacheControl, StorageFolder } from 'src/enum';
 import { ServeStrategy } from 'src/interfaces/storage-backend.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -286,6 +286,48 @@ export class BaseService {
     const backend = StorageService.resolveBackendForKey(filePath);
     const { tempPath, cleanup } = await backend.downloadToTemp(filePath);
     return { localPath: tempPath, cleanup };
+  }
+
+  protected async syncUsage(id?: string): Promise<void> {
+    const users = id
+      ? [await this.userRepository.get(id, { withDeleted: false })].filter((user): user is UserAdmin => !!user)
+      : await this.userRepository.getList({ withDeleted: false });
+
+    for (const user of users) {
+      await this.userRepository.setUsage(user.id, await this.getPhysicalUsage(user));
+    }
+  }
+
+  private async getPhysicalUsage(user: Pick<UserAdmin, 'id' | 'storageLabel'>): Promise<number> {
+    let total = await this.getDiskUsage(user);
+
+    // lazy import to avoid circular dependency (StorageService extends BaseService)
+    const { StorageService } = await import('./storage.service.js');
+    const s3 = StorageService.getS3Backend();
+    if (s3) {
+      const prefixes = [
+        StorageFolder.Upload,
+        StorageFolder.Profile,
+        StorageFolder.Thumbnails,
+        StorageFolder.EncodedVideo,
+      ].map((folder) => `${folder}/${user.id}/`);
+      const usage = await Promise.all(prefixes.map((prefix) => s3.getPrefixUsage(prefix)));
+      total += usage.reduce((total, value) => total + value, 0);
+    }
+
+    return total;
+  }
+
+  private async getDiskUsage(user: Pick<UserAdmin, 'id' | 'storageLabel'>): Promise<number> {
+    const folders = [
+      StorageCore.getLibraryFolder(user),
+      StorageCore.getFolderLocation(StorageFolder.Upload, user.id),
+      StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
+      StorageCore.getFolderLocation(StorageFolder.Thumbnails, user.id),
+      StorageCore.getFolderLocation(StorageFolder.EncodedVideo, user.id),
+    ];
+    const usage = await Promise.all(folders.map((folder) => this.storageRepository.getFolderSize(folder)));
+    return usage.reduce((total, value) => total + value, 0);
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {

@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from 'node:fs';
-import { access, mkdir, rm, stat, unlink, writeFile } from 'node:fs/promises';
+import { access, mkdir, opendir, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -54,6 +54,10 @@ export class DiskStorageBackend implements StorageBackend {
     await rm(this.resolvePath(prefix), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 
+  async getPrefixUsage(prefix: string): Promise<number> {
+    return this.getFolderSize(this.resolvePath(prefix));
+  }
+
   getServeStrategy(key: string, _contentType: string): Promise<ServeStrategy> {
     return Promise.resolve({ type: 'file', path: this.resolvePath(key) });
   }
@@ -63,5 +67,30 @@ export class DiskStorageBackend implements StorageBackend {
       tempPath: this.resolvePath(key),
       cleanup: () => Promise.resolve(),
     });
+  }
+
+  private async getFolderSize(folder: string): Promise<number> {
+    let total = 0;
+    let dir;
+    try {
+      dir = await opendir(folder);
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        return 0;
+      }
+      throw error;
+    }
+
+    for await (const entry of dir) {
+      const entryPath = join(folder, entry.name);
+      if (entry.isDirectory()) {
+        total += await this.getFolderSize(entryPath);
+      } else if (entry.isFile()) {
+        const entryStat = await stat(entryPath);
+        total += entryStat.size;
+      }
+    }
+
+    return total;
   }
 }

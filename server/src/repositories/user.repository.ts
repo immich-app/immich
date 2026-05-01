@@ -306,23 +306,13 @@ export class UserRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async syncUsage(id?: string) {
-    const query = this.db
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
+  async setUsage(id: string, usage: number): Promise<void> {
+    await this.db
       .updateTable('user')
-      .set({
-        quotaUsageInBytes: (eb) =>
-          eb
-            .selectFrom('asset')
-            .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
-            .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('asset_exif.fileSizeInByte'), eb.lit(0)).as('usage'))
-            .where('asset.libraryId', 'is', null)
-            .where('asset.ownerId', '=', eb.ref('user.id')),
-        updatedAt: new Date(),
-      })
+      .set({ quotaUsageInBytes: usage, updatedAt: new Date() })
+      .where('id', '=', asUuid(id))
       .where('user.deletedAt', 'is', null)
-      .$if(id != undefined, (eb) => eb.where('user.id', '=', asUuid(id!)));
-
-    await query.execute();
+      .execute();
   }
 }

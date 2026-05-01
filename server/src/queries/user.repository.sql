@@ -380,20 +380,11 @@ where
   "id" = $3::uuid
   and "user"."deletedAt" is null
 
--- UserRepository.syncUsage
+-- UserRepository.setUsage
 update "user"
 set
-  "quotaUsageInBytes" = (
-    select
-      coalesce(sum("asset_exif"."fileSizeInByte"), 0) as "usage"
-    from
-      "asset"
-      left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
-    where
-      "asset"."libraryId" is null
-      and "asset"."ownerId" = "user"."id"
-  ),
-  "updatedAt" = $1
+  "quotaUsageInBytes" = $1,
+  "updatedAt" = $2
 where
-  "user"."deletedAt" is null
-  and "user"."id" = $2::uuid
+  "id" = $3::uuid
+  and "user"."deletedAt" is null
