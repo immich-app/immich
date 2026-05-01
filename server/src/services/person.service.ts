@@ -164,7 +164,7 @@ export class PersonService extends BaseService {
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichMediaResponse> {
-    await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
+    await this.requireThumbnailAccess(auth, id);
     const person = await this.personRepository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
@@ -175,6 +175,19 @@ export class PersonService extends BaseService {
       mimeTypes.lookup(person.thumbnailPath),
       CacheControl.PrivateWithoutCache,
     );
+  }
+
+  private async requireThumbnailAccess(auth: AuthDto, id: string) {
+    const ids = new Set([id]);
+    const isOwner = await this.accessRepository.person.checkOwnerAccess(auth.user.id, ids);
+    if (isOwner.has(id)) {
+      return;
+    }
+
+    const isShared = await this.accessRepository.person.checkSharedSpaceAccess(auth.user.id, ids);
+    if (!isShared.has(id)) {
+      throw new BadRequestException('Not found or no person.read access');
+    }
   }
 
   async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {

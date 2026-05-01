@@ -594,6 +594,54 @@ class PersonAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
+  async checkSharedSpaceAccess(userId: string, personIds: Set<string>) {
+    if (personIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('person')
+      .select('person.id')
+      .where('person.id', 'in', [...personIds])
+      .where((eb) =>
+        eb.exists(
+          eb
+            .selectFrom('asset_face')
+            .innerJoin('asset', (join) =>
+              join
+                .onRef('asset.id', '=', 'asset_face.assetId')
+                .on('asset.deletedAt', 'is', null)
+                .on('asset.visibility', '=', AssetVisibility.Timeline),
+            )
+            .whereRef('asset_face.personId', '=', 'person.id')
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true)
+            .where((eb) =>
+              eb.or([
+                eb.exists(
+                  eb
+                    .selectFrom('shared_space_asset')
+                    .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_asset.spaceId')
+                    .whereRef('shared_space_asset.assetId', '=', 'asset.id')
+                    .where('shared_space_member.userId', '=', userId),
+                ),
+                eb.exists(
+                  eb
+                    .selectFrom('shared_space_library')
+                    .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_library.spaceId')
+                    .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
+                    .where('shared_space_member.userId', '=', userId),
+                ),
+              ]),
+            ),
+        ),
+      )
+      .execute()
+      .then((persons) => new Set(persons.map((person) => person.id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>) {
     if (assetFaceIds.size === 0) {
       return new Set<string>();

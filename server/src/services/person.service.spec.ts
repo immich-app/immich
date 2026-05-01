@@ -179,6 +179,25 @@ describe(PersonService.name, () => {
       );
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
+
+    it('should serve the thumbnail when the person is visible through a shared space', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.person.getById.mockResolvedValue(person);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.person.checkSharedSpaceAccess.mockResolvedValue(new Set([person.id]));
+
+      await expect(sut.getThumbnail(auth, person.id)).resolves.toEqual(
+        new ImmichFileResponse({
+          path: person.thumbnailPath,
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithoutCache,
+        }),
+      );
+      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
+      expect(mocks.access.person.checkSharedSpaceAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
+    });
   });
 
   describe('update', () => {

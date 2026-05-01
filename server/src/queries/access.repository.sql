@@ -316,6 +316,46 @@ where
   "person"."id" in ($1)
   and "person"."ownerId" = $2
 
+-- AccessRepository.person.checkSharedSpaceAccess
+select
+  "person"."id"
+from
+  "person"
+where
+  "person"."id" in ($1)
+  and exists (
+    select
+    from
+      "asset_face"
+      inner join "asset" on "asset"."id" = "asset_face"."assetId"
+      and "asset"."deletedAt" is null
+      and "asset"."visibility" = $2
+    where
+      "asset_face"."personId" = "person"."id"
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+      and (
+        exists (
+          select
+          from
+            "shared_space_asset"
+            inner join "shared_space_member" on "shared_space_member"."spaceId" = "shared_space_asset"."spaceId"
+          where
+            "shared_space_asset"."assetId" = "asset"."id"
+            and "shared_space_member"."userId" = $3
+        )
+        or exists (
+          select
+          from
+            "shared_space_library"
+            inner join "shared_space_member" on "shared_space_member"."spaceId" = "shared_space_library"."spaceId"
+          where
+            "shared_space_library"."libraryId" = "asset"."libraryId"
+            and "shared_space_member"."userId" = $4
+        )
+      )
+  )
+
 -- AccessRepository.person.checkFaceOwnerAccess
 select
   "asset_face"."id"
