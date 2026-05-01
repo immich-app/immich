@@ -21,22 +21,6 @@
   const { asset, isOwner, previousRoute }: Props = $props();
 
   const people = $derived(Array.from(faceManager.people));
-  const facesByPersonId = $derived.by(() => {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const map = new Map<string, typeof faceManager.data>();
-    for (const face of faceManager.data) {
-      if (!face.person) {
-        continue;
-      }
-      const existing = map.get(face.person.id);
-      if (existing) {
-        existing.push(face);
-      } else {
-        map.set(face.person.id, [face]);
-      }
-    }
-    return map;
-  });
   const visiblePeople = $derived(
     people
       .filter((p) => assetViewerManager.isShowingHiddenPeople || !p.isHidden)
@@ -114,10 +98,8 @@
 
     <div class="mt-2 grid {visiblePeople.length <= 6 ? 'grid-cols-3 gap-3' : 'grid-cols-4 gap-2'}">
       {#each visiblePeople as person (person.id)}
-        {@const personFaces = facesByPersonId.get(person.id) ?? []}
-        {@const isHighlighted = personFaces.some((f) =>
-          assetViewerManager.highlightedFaces.some((b) => b.id === f.id),
-        )}
+        {@const personFaces = faceManager.facesByPersonId.get(person.id) ?? []}
+        {@const isHighlighted = personFaces.some((f) => assetViewerManager.highlightedFaces.some((b) => b.id === f.id))}
         <a
           class="group outline-none"
           href={Route.viewPerson(person, { previousRoute })}

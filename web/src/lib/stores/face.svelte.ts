@@ -1,15 +1,15 @@
+import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
-import type { Faces } from '$lib/stores/people.store';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import type { AssetFaceResponseDto, PersonResponseDto } from '@immich/sdk';
-import { SvelteSet } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 class FaceManager {
   #data = $state<AssetFaceResponseDto[]>([]);
   #faceLoader = new CancellableTask();
   #cleared = false;
 
-  readonly faceNameMap = $derived.by(() => {
+  readonly faceNames = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
 
@@ -33,6 +33,22 @@ class FaceManager {
     }
 
     return people;
+  });
+
+  readonly facesByPersonId = $derived.by(() => {
+    const map = new SvelteMap<string, AssetFaceResponseDto[]>();
+    for (const face of faceManager.data) {
+      if (!face.person) {
+        continue;
+      }
+      const existing = map.get(face.person.id);
+      if (existing) {
+        existing.push(face);
+      } else {
+        map.set(face.person.id, [face]);
+      }
+    }
+    return map;
   });
 
   get data() {
