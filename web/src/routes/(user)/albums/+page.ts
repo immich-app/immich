@@ -5,7 +5,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  const sharedAlbums = await getAllAlbums({ shared: true });
+  const sharedAlbums = await getAllAlbums({ isShared: true });
   const albums = await getAllAlbums({});
   const $t = await getFormatter();
 

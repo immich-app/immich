@@ -183,6 +183,54 @@ export class AlbumRepository {
     );
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { isShared: true, isOwned: true }] })
+  getAll(ownerId: string, { isShared, isOwned }: { isShared?: boolean; isOwned?: boolean }) {
+    if (isShared === false && isOwned === false) {
+      return [];
+    }
+
+    return this.db
+      .with('album_user', (db) => db.selectFrom('album_user').selectAll())
+      .selectFrom('album')
+      .selectAll('album')
+      .$if(isShared === undefined && isOwned === undefined, (qb) =>
+        qb.where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', ownerId),
+          ),
+        ),
+      )
+      .$if(isShared !== undefined, (qb) =>
+        qb.where((eb) => {
+          const query = eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)),
+          );
+          return isShared ? query : eb.not(query);
+        }),
+      )
+      .$if(isOwned !== undefined, (qb) =>
+        qb.where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', ownerId)
+              .where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)),
+          ),
+        ),
+      )
+      .select(withAlbumUsers(ownerId))
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getOwned(ownerId: string) {
     return this.db

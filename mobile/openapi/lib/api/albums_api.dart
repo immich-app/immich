@@ -508,9 +508,12 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
-  /// * [bool] shared:
-  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
-  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
+  /// * [bool] isOwned:
+  ///   Filter by owned status
+  ///
+  /// * [bool] isShared:
+  ///   Filter by shared status
+  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? isOwned, bool? isShared, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
 
@@ -524,8 +527,11 @@ class AlbumsApi {
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
-    if (shared != null) {
-      queryParams.addAll(_queryParams('', 'shared', shared));
+    if (isOwned != null) {
+      queryParams.addAll(_queryParams('', 'isOwned', isOwned));
+    }
+    if (isShared != null) {
+      queryParams.addAll(_queryParams('', 'isShared', isShared));
     }
 
     const contentTypes = <String>[];
@@ -551,10 +557,13 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
-  /// * [bool] shared:
-  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
-  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
-    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
+  /// * [bool] isOwned:
+  ///   Filter by owned status
+  ///
+  /// * [bool] isShared:
+  ///   Filter by shared status
+  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? isOwned, bool? isShared, }) async {
+    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, isOwned: isOwned, isShared: isShared, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

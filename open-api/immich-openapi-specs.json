@@ -1649,10 +1649,19 @@
             }
           },
           {
-            "name": "shared",
+            "name": "isOwned",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
+            "description": "Filter by owned status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isShared",
+            "required": false,
+            "in": "query",
+            "description": "Filter by shared status",
             "schema": {
               "type": "boolean"
             }

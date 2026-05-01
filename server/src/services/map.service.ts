@@ -13,15 +13,9 @@ export class MapService extends BaseService {
       userIds.push(...partnerIds);
     }
 
-    // TODO convert to SQL join
-    const albumIds: string[] = [];
-    if (options.withSharedAlbums) {
-      const [ownedAlbums, sharedAlbums] = await Promise.all([
-        this.albumRepository.getOwned(auth.user.id),
-        this.albumRepository.getShared(auth.user.id),
-      ]);
-      albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
-    }
+    const albumIds: string[] = (
+      options.withSharedAlbums ? await this.albumRepository.getAll(auth.user.id, {}) : []
+    ).map(({ id }) => id);
 
     return this.mapRepository.getMapMarkers(userIds, albumIds, options);
   }
