@@ -111,6 +111,27 @@ describe(MemoryService.name, () => {
     });
   });
 
+  describe('search', () => {
+    it('should return memories containing assets visible through a shared space', async () => {
+      const { sut, ctx } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      const { asset } = await ctx.newAsset({ ownerId: owner.id });
+      const { memory } = await ctx.newMemory({ ownerId: owner.id });
+      await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id });
+
+      await expect(sut.search(factory.auth({ user: member }), {})).resolves.toEqual([
+        expect.objectContaining({
+          id: memory.id,
+          assets: [expect.objectContaining({ id: asset.id })],
+        }),
+      ]);
+    });
+  });
+
   describe('onMemoryCreate', () => {
     it('should work on an empty database', async () => {
       const { sut } = setup();

@@ -183,12 +183,23 @@ export class MemoryService extends BaseService {
   }
 
   async search(auth: AuthDto, dto: MemorySearchDto) {
-    const memories = await this.memoryRepository.search(auth.user.id, dto);
-    return memories.map((memory) => mapMemory(memory, auth));
+    const memories = await this.memoryRepository.searchAccessible(auth.user.id, dto);
+    const assetIds = memories.flatMap((memory) => memory.assets.map((asset) => asset.id));
+    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetView, ids: assetIds });
+
+    return memories.map((memory) =>
+      mapMemory(
+        {
+          ...memory,
+          assets: memory.assets.filter((asset) => allowedAssetIds.has(asset.id)),
+        },
+        auth,
+      ),
+    );
   }
 
   statistics(auth: AuthDto, dto: MemorySearchDto) {
-    return this.memoryRepository.statistics(auth.user.id, dto);
+    return this.memoryRepository.statisticsAccessible(auth.user.id, dto);
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {

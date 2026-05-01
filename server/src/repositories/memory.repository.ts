@@ -34,6 +34,10 @@ export class MemoryRepository implements IBulkAsset {
   }
 
   searchBuilder(ownerId: string, dto: MemorySearchDto) {
+    return this.baseSearchBuilder(dto).where('ownerId', '=', ownerId);
+  }
+
+  private baseSearchBuilder(dto: MemorySearchDto) {
     return this.db
       .selectFrom('memory')
       .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
@@ -43,8 +47,53 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
-      .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
-      .where('ownerId', '=', ownerId);
+      .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null);
+  }
+
+  private accessibleSearchBuilder(userId: string, dto: MemorySearchDto) {
+    return this.baseSearchBuilder(dto).where((eb) =>
+      eb.or([
+        eb('memory.ownerId', '=', userId),
+        eb.exists(
+          eb
+            .selectFrom('memory_asset')
+            .innerJoin('asset', 'asset.id', 'memory_asset.assetId')
+            .select('memory_asset.assetId')
+            .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+            .where('asset.deletedAt', 'is', null)
+            .where((eb) =>
+              eb.or([
+                eb('asset.ownerId', '=', userId),
+                eb.exists(
+                  eb
+                    .selectFrom('partner')
+                    .select('partner.sharedById')
+                    .where('partner.sharedWithId', '=', userId)
+                    .whereRef('partner.sharedById', '=', 'asset.ownerId'),
+                ),
+                eb.exists(
+                  eb
+                    .selectFrom('shared_space_asset')
+                    .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_asset.spaceId')
+                    .select('shared_space_asset.assetId')
+                    .where('shared_space_member.userId', '=', userId)
+                    .whereRef('shared_space_asset.assetId', '=', 'asset.id'),
+                ),
+                eb.exists(
+                  eb
+                    .selectFrom('shared_space_library')
+                    .innerJoin('shared_space_member', 'shared_space_member.spaceId', 'shared_space_library.spaceId')
+                    .select('shared_space_library.libraryId')
+                    .where('shared_space_member.userId', '=', userId)
+                    .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
+                    .where('asset.isOffline', '=', false),
+                ),
+              ]),
+            ),
+        ),
+      ]),
+    );
   }
 
   @GenerateSql(
@@ -57,12 +106,42 @@ export class MemoryRepository implements IBulkAsset {
       .executeTakeFirstOrThrow();
   }
 
+  statisticsAccessible(userId: string, dto: MemorySearchDto) {
+    return this.accessibleSearchBuilder(userId, dto)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
     return this.searchBuilder(ownerId, dto)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset')
+            .selectAll('asset')
+            .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetId')
+            .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+            .orderBy('asset.localDateTime', 'asc')
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+            .where('asset.deletedAt', 'is', null),
+        ).as('assets'),
+      )
+      .selectAll('memory')
+      .$call((qb) =>
+        dto.order === AssetOrderWithRandom.Random
+          ? qb.orderBy(sql`RANDOM()`)
+          : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
+      )
+      .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
+      .execute();
+  }
+
+  searchAccessible(userId: string, dto: MemorySearchDto) {
+    return this.accessibleSearchBuilder(userId, dto)
       .select((eb) =>
         jsonArrayFrom(
           eb

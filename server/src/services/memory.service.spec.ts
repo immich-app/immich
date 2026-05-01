@@ -17,6 +17,7 @@ describe(MemoryService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(MemoryService));
     mocks.memory.search.mockResolvedValue([]);
+    mocks.memory.searchAccessible.mockResolvedValue([]);
   });
 
   it('should be defined', () => {
@@ -497,7 +498,8 @@ describe(MemoryService.name, () => {
       const memory1 = MemoryFactory.from({ ownerId: userId }).asset(asset).build();
       const memory2 = MemoryFactory.create({ ownerId: userId });
 
-      mocks.memory.search.mockResolvedValue([getForMemory(memory1), getForMemory(memory2)]);
+      mocks.memory.searchAccessible.mockResolvedValue([getForMemory(memory1), getForMemory(memory2)]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
 
       await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toEqual(
         expect.arrayContaining([
@@ -508,7 +510,7 @@ describe(MemoryService.name, () => {
     });
 
     it('should map ', async () => {
-      mocks.memory.search.mockResolvedValue([]);
+      mocks.memory.searchAccessible.mockResolvedValue([]);
 
       await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
     });
@@ -516,11 +518,27 @@ describe(MemoryService.name, () => {
     it('should pass search dto to repository', async () => {
       const auth = factory.auth();
       const dto = { type: MemoryType.OnThisDay, isSaved: true };
-      mocks.memory.search.mockResolvedValue([]);
+      mocks.memory.searchAccessible.mockResolvedValue([]);
 
       await sut.search(auth, dto);
 
-      expect(mocks.memory.search).toHaveBeenCalledWith(auth.user.id, dto);
+      expect(mocks.memory.searchAccessible).toHaveBeenCalledWith(auth.user.id, dto);
+    });
+
+    it('should only return assets the user can access', async () => {
+      const [userId] = newUuids();
+      const visibleAsset = AssetFactory.create();
+      const hiddenAsset = AssetFactory.create();
+      const memory = MemoryFactory.from({ ownerId: userId }).asset(visibleAsset).asset(hiddenAsset).build();
+      mocks.memory.searchAccessible.mockResolvedValue([getForMemory(memory)]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([visibleAsset.id]));
+
+      await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toEqual([
+        expect.objectContaining({
+          id: memory.id,
+          assets: [expect.objectContaining({ id: visibleAsset.id })],
+        }),
+      ]);
     });
 
     it('should expose server-owned title and subtitle for rule memories', async () => {
@@ -536,7 +554,7 @@ describe(MemoryService.name, () => {
         } satisfies RuleMemoryData,
       });
 
-      mocks.memory.search.mockResolvedValue([getForMemory(memory)]);
+      mocks.memory.searchAccessible.mockResolvedValue([getForMemory(memory)]);
 
       await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toEqual([
         expect.objectContaining({
@@ -554,12 +572,12 @@ describe(MemoryService.name, () => {
       const auth = factory.auth();
       const dto = { type: MemoryType.OnThisDay };
       const stats = { total: 5 };
-      mocks.memory.statistics.mockResolvedValue(stats as any);
+      mocks.memory.statisticsAccessible.mockResolvedValue(stats as any);
 
       const result = await sut.statistics(auth, dto);
 
       expect(result).toEqual(stats);
-      expect(mocks.memory.statistics).toHaveBeenCalledWith(auth.user.id, dto);
+      expect(mocks.memory.statisticsAccessible).toHaveBeenCalledWith(auth.user.id, dto);
     });
   });
 
