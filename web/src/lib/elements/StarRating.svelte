@@ -58,7 +58,7 @@
 
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <fieldset
-  class="text-primary w-fit cursor-default"
+  class="w-fit cursor-default text-primary"
   onmouseleave={() => setHoverRating(null)}
   use:focusOutside={{ onFocusOut: reset }}
   use:shortcuts={[

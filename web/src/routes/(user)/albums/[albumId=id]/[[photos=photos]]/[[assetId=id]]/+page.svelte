@@ -339,7 +339,7 @@
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <div class="relative w-full shrink">
-    <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
+    <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
@@ -416,13 +416,13 @@
           {/if}
 
           {#if album.assetCount === 0}
-            <section id="empty-album" class=" mt-50 flex place-content-center place-items-center">
+            <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
               <div class="w-75">
-                <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
+                <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
                 <button
                   type="button"
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
                 >
                   <span class="text-primary">
                     <Icon icon={mdiPlus} size="24" />
@@ -436,7 +436,7 @@
       </Timeline>
 
       {#if showActivityStatus}
-        <div class="absolute z-2 bottom-0 end-0 mb-6 me-12">
+        <div class="absolute inset-e-0 bottom-0 z-2 me-12 mb-6">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
@@ -617,7 +617,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        class="z-2 w-90 overflow-y-auto transition-all md:w-115 dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer disabled={!album.isActivityEnabled} albumUsers={album.albumUsers} albumId={album.id} />

@@ -1198,6 +1198,19 @@ class TestLoad:
         mock_model.model_format = ModelFormat.ONNX
 
 
+@pytest.mark.parametrize("size", [(0, 100), (100, 0), (0, 0)])
+def test_predict_rejects_empty_image(size: tuple[int, int], deployed_app: TestClient) -> None:
+    with mock.patch("immich_ml.main.decode_pil", return_value=Image.new("RGB", size)):
+        response = deployed_app.post(
+            "http://localhost:3003/predict",
+            data={"entries": json.dumps({"clip": {"visual": {"modelName": "ViT-B-32__openai"}}})},
+            files={"image": b"fake image bytes"},
+        )
+
+    assert response.status_code == 400
+    assert "zero" in response.json()["detail"].lower()
+
+
 def test_root_endpoint(deployed_app: TestClient) -> None:
     response = deployed_app.get("http://localhost:3003")
 

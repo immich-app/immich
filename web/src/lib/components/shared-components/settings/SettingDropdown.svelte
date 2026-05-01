@@ -29,7 +29,7 @@
 <div class="flex place-items-center justify-between">
   <div>
     <div class="flex h-6.5 place-items-center gap-1">
-      <label class="font-medium text-sm" for={title}>
+      <label class="text-sm font-medium" for={title}>
         {title}
       </label>
       {#if isEdited}

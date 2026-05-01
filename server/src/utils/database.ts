@@ -427,16 +427,6 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
         sampling_factor = 1024
         $$)`;
     }
-    case DatabaseExtension.Vectors: {
-      return `
-        CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
-        USING vectors (embedding vector_cos_ops) WITH (options = $$
-        optimizing.optimizing_threads = 4
-        [indexing.hnsw]
-        m = 16
-        ef_construction = 300
-        $$)`;
-    }
     case DatabaseExtension.Vector: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}

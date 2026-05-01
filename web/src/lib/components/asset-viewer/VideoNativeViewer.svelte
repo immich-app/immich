@@ -6,7 +6,6 @@
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { autoPlayVideo, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { timeToSeconds } from '$lib/utils/date-time';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner } from '@immich/ui';
   import {
@@ -75,7 +74,6 @@
       ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
       : getAssetPlaybackUrl({ id: assetId, cacheKey }),
   );
-  const duration = $derived(timeToSeconds(asset.duration!));
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
   let hasFocused = $state(false);
@@ -151,12 +149,12 @@
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
-    class="flex h-full select-none place-content-center place-items-center"
+    class="flex h-full place-content-center place-items-center select-none"
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
   >
     {#if castManager.isCasting}
-      <div class="place-content-center h-full place-items-center">
+      <div class="h-full place-content-center place-items-center">
         <VideoRemoteViewer
           poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
@@ -169,9 +167,9 @@
       <media-controller
         dir="ltr"
         nohotkeys
-        class="h-full max-w-full dark"
+        class="dark h-full max-w-full"
         style:aspect-ratio={aspectRatio}
-        defaultduration={duration}
+        defaultduration={asset.duration! / 1000}
       >
         <video
           bind:this={videoPlayer}
@@ -196,9 +194,9 @@
         ></video>
 
         {#if extendedControls}
-          <media-settings-menu hidden anchor="auto" class="border-light-300 rounded-xl border shadow-sm w-3xs">
+          <media-settings-menu hidden anchor="auto" class="w-3xs rounded-xl border border-light-300 shadow-sm">
             <Icon slot="checked-indicator" icon={mdiCheck} class="m-2" />
-            <media-settings-menu-item class="rounded-lg p-1 ps-2 mx-1">
+            <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
               {$t('playback_speed')}
               <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />
               <media-playback-rate-menu slot="submenu" hidden rates="0.5 1 1.5 2">
@@ -209,21 +207,21 @@
           </media-settings-menu>
         {/if}
 
-        <div class="flex flex-col justify-end w-full h-32 px-4 bg-linear-to-b to-black/80">
-          <media-control-bar part="bottom" class="flex w-full h-10 gap-2">
-            <media-play-button class="rounded-full p-2 shrink-0 outline-none">
+        <div class="flex h-32 w-full flex-col justify-end bg-linear-to-b to-black/80 px-4">
+          <media-control-bar part="bottom" class="flex h-10 w-full gap-2">
+            <media-play-button class="shrink-0 rounded-full p-2 outline-none">
               <Icon slot="play" icon={mdiPlay} />
               <Icon slot="pause" icon={mdiPause} />
             </media-play-button>
             <media-time-display showduration class="rounded-lg p-2 outline-none"></media-time-display>
 
-            <span class="flex-grow"></span>
+            <span class="grow"></span>
 
             <div
-              class="volume-wrapper rounded-full shrink-0 bg-light-100/0 hover:bg-light-100 transition-colors duration-400"
+              class="volume-wrapper shrink-0 rounded-full bg-light-100/0 transition-colors duration-400 hover:bg-light-100"
             >
               <media-volume-range class="h-full bg-none outline-none"></media-volume-range>
-              <media-mute-button class="p-2 bg-none outline-none">
+              <media-mute-button class="bg-none p-2 outline-none">
                 <Icon slot="off" icon={mdiVolumeMute} />
                 <Icon slot="low" icon={mdiVolumeLow} />
                 <Icon slot="medium" icon={mdiVolumeMedium} />
@@ -232,14 +230,14 @@
             </div>
 
             {#if extendedControls}
-              <media-fullscreen-button class="rounded-full p-2 shrink-0 outline-none">
+              <media-fullscreen-button class="shrink-0 rounded-full p-2 outline-none">
                 <Icon slot="enter" icon={mdiFullscreen} />
                 <Icon slot="exit" icon={mdiFullscreenExit} />
               </media-fullscreen-button>
-              <media-settings-menu-button class="rounded-full p-2 shrink-0 outline-none"></media-settings-menu-button>
+              <media-settings-menu-button class="shrink-0 rounded-full p-2 outline-none"></media-settings-menu-button>
             {/if}
           </media-control-bar>
-          <media-time-range class="w-full h-8 px-2 pb-3 rounded-lg outline-none"></media-time-range>
+          <media-time-range class="h-8 w-full rounded-lg px-2 pb-3 outline-none"></media-time-range>
         </div>
       </media-controller>
 

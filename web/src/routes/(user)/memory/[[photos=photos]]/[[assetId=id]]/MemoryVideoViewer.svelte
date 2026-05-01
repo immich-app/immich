@@ -24,8 +24,8 @@
 </script>
 
 {#if showVideo}
-  <div class="h-full w-full bg-pink-9000" transition:fade={{ duration: assetViewerFadeDuration }}>
-    <media-controller id="memory-video" nohotkeys class="h-full w-full rounded-2xl object-contain transition-all">
+  <div class="bg-pink-9000 size-full" transition:fade={{ duration: assetViewerFadeDuration }}>
+    <media-controller id="memory-video" nohotkeys class="size-full rounded-2xl object-contain transition-all">
       <!-- svelte-ignore a11y_media_has_caption -->
       <video
         bind:this={videoPlayer}
@@ -33,7 +33,7 @@
         autoplay={$autoPlayVideo}
         playsinline
         disablepictureinpicture
-        class="h-full w-full"
+        class="size-full"
         src={getAssetPlaybackUrl({ id: asset.id })}
         poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
         draggable="false"

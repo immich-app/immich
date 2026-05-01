@@ -387,7 +387,7 @@
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
-              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+              class="absolute bottom-0 w-full overflow-clip bg-slate-50/75 bg-linear-to-t p-1 text-center font-mono text-xs font-semibold text-ellipsis whitespace-pre-wrap dark:bg-slate-800/75"
             >
               {asset.originalFileName}
             </div>

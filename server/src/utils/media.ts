@@ -423,7 +423,7 @@ export class ThumbnailConfig extends BaseConfig {
 
     if (metadataOverrides.length > 0) {
       // workaround for https://fftrac-bg.ffmpeg.org/ticket/11020
-      options.push('-bsf:v', `${videoStream.codecName}_metadata=${metadataOverrides.join(':')}`);
+      options.push(`-bsf:${videoStream.index}`, `${videoStream.codecName}_metadata=${metadataOverrides.join(':')}`);
     }
 
     return options;

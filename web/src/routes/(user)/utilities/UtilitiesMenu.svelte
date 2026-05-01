@@ -20,24 +20,24 @@
   ];
 </script>
 
-<div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
+<div class="rounded-3xl border border-gray-300 pt-1 pb-6 dark:border-immich-dark-gray dark:text-white">
   <Text size="tiny" color="muted" fontWeight="medium" class="p-4">{$t('organize_your_library')}</Text>
 
   {#each links as link (link.href)}
-    <a href={link.href} class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4">
+    <a href={link.href} class="flex w-full items-center gap-4 p-4 hover:bg-gray-100 dark:hover:bg-immich-dark-gray">
       <span><Icon icon={link.icon} class="text-primary" size="24" /> </span>
       {link.label}
     </a>
   {/each}
 </div>
 <br />
-<div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
+<div class="rounded-3xl border border-gray-300 pt-1 pb-6 dark:border-immich-dark-gray dark:text-white">
   <Text size="tiny" color="muted" fontWeight="medium" class="p-4">{$t('download')}</Text>
 
   <button
     type="button"
     onclick={() => modalManager.show(ObtainiumConfigModal, {})}
-    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+    class="flex w-full items-center gap-4 p-4 hover:bg-gray-100 dark:hover:bg-immich-dark-gray"
   >
     <span>
       <Icon icon={mdiLinkEdit} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
@@ -47,7 +47,7 @@
   <button
     type="button"
     onclick={() => modalManager.show(AppDownloadModal, {})}
-    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+    class="flex w-full items-center gap-4 p-4 hover:bg-gray-100 dark:hover:bg-immich-dark-gray"
   >
     <span>
       <Icon icon={mdiCellphoneArrowDownVariant} class="text-immich-primary dark:text-immich-dark-primary" size="24" />

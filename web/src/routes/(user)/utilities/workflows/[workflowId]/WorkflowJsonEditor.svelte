@@ -66,7 +66,7 @@
     </CardHeader>
     <CardBody>
       <VStack gap={2}>
-        <div class="w-full h-[600px] rounded-lg overflow-hidden border {editorClass}">
+        <div class="h-[600px] w-full overflow-hidden rounded-lg border {editorClass}">
           <JSONEditor {content} onChange={handleChange} mainMenuBar={false} mode={Mode.text} />
         </div>
       </VStack>

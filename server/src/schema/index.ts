@@ -76,6 +76,11 @@ import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.ta
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
+import {
+  VideoStreamSegmentTable,
+  VideoStreamSessionTable,
+  VideoStreamVariantTable,
+} from 'src/schema/tables/video-stream.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
@@ -133,6 +138,9 @@ export class ImmichDatabase {
     UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
+    VideoStreamSessionTable,
+    VideoStreamVariantTable,
+    VideoStreamSegmentTable,
     PluginTable,
     PluginFilterTable,
     PluginActionTable,
@@ -246,6 +254,10 @@ export interface DB {
   user_metadata_audit: UserMetadataAuditTable;
 
   version_history: VersionHistoryTable;
+
+  video_stream_session: VideoStreamSessionTable;
+  video_stream_variant: VideoStreamVariantTable;
+  video_stream_segment: VideoStreamSegmentTable;
 
   plugin: PluginTable;
   plugin_filter: PluginFilterTable;

@@ -101,7 +101,7 @@ export class JobService extends BaseService {
         const edits = await this.assetEditRepository.getWithSyncInfo(item.data.id);
 
         if (asset) {
-          this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, {
+          this.websocketRepository.clientSend('AssetEditReadyV2', asset.ownerId, {
             asset: {
               id: asset.id,
               ownerId: asset.ownerId,
@@ -156,7 +156,7 @@ export class JobService extends BaseService {
           this.websocketRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
           if (asset.exifInfo) {
             const exif = asset.exifInfo;
-            this.websocketRepository.clientSend('AssetUploadReadyV1', asset.ownerId, {
+            this.websocketRepository.clientSend('AssetUploadReadyV2', asset.ownerId, {
               // TODO remove `on_upload_success` and then modify the query to select only the required fields)
               asset: {
                 id: asset.id,

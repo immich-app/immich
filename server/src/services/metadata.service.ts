@@ -1001,18 +1001,10 @@ export class MetadataService extends BaseService {
     return bitsPerSample;
   }
 
-  private getDuration(tags: ImmichTags): string | null {
+  private getDuration(tags: ImmichTags): number | null {
     const duration = tags.Duration;
-
-    if (typeof duration === 'string') {
-      return duration;
-    }
-
-    if (typeof duration === 'number') {
-      return Duration.fromObject({ seconds: duration }).toFormat('hh:mm:ss.SSS');
-    }
-
-    return null;
+    const seconds = typeof duration === 'number' ? duration : Number.parseFloat(duration as string);
+    return Number.isFinite(seconds) ? Math.round(Duration.fromObject({ seconds }).toMillis()) : null;
   }
 
   private async getVideoTags(originalPath: string) {
