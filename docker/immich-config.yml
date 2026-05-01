@@ -1,4 +1,4 @@
-# server:
-# Server-wide upload quota in GB.
-# Set to null or remove this key to disable.
-# uploadQuotaGb: 1
+server:
+  # Server-wide upload quota in GB.
+  # Set to null or remove this key to disable.
+  uploadQuotaGb: 16

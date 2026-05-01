@@ -1,5 +1,14 @@
 {
   "storage_calculation_notice_button_text": "Gode nyheder!",
   "storage_calculation_notice_info": "Gode nyheder! Miniaturer og kodede videoer, som tidligere brugte plads, er nu udeladt fra lagerberegningen. Det giver dig mere plads til at gemme dine fotos og videoer.",
-  "storage_calculation_notice_title": "Lagerberegning er aendret"
+  "storage_calculation_notice_title": "Lagerberegning er aendret",
+  "admin": {
+    "plans": "Planer",
+    "plans_storage_overview": "Oversigt over lager",
+    "storage_available": "Tilgængelig lagerplads",
+    "storage_usage_with_available": "{used} brugt, {available} tilgængelig",
+    "storage_used": "Brugt lagerplads",
+    "upgrade_plan": "Opgrader plan",
+    "manage_subscription": "Administrer abonnement"
+  }
 }
