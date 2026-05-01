@@ -44,7 +44,7 @@ vi.mock('@immich/ui', async (importOriginal) => {
     ...original,
     ContextMenuButton: MockContextMenuButton,
     modalManager: { show: vi.fn(), showDialog: vi.fn() },
-    toastManager: { success: vi.fn() },
+    toastManager: { primary: vi.fn(), success: vi.fn() },
   };
 });
 
@@ -235,5 +235,20 @@ describe('Spaces person detail page', () => {
       birthDate: string | null;
     };
     expect(reopenedModalProps.birthDate).toBe('1990-06-15');
+  });
+
+  it('hides a space person from the detail page action menu', async () => {
+    const person = makePerson({ isHidden: false });
+    sdkMock.updateSpacePerson.mockResolvedValue({ ...person, isHidden: true });
+    renderPage({ person });
+
+    await userEvent.click(screen.getByText('hide_person'));
+
+    expect(sdkMock.updateSpacePerson).toHaveBeenCalledWith({
+      id: 'space-1',
+      personId: 'person-1',
+      sharedSpacePersonUpdateDto: { isHidden: true },
+    });
+    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/people');
   });
 });

@@ -31,7 +31,13 @@
     type SharedSpacePersonResponseDto,
   } from '@immich/sdk';
   import { ContextMenuButton, modalManager, toastManager, type ActionItem } from '@immich/ui';
-  import { mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiCalendarEditOutline, mdiDotsVertical } from '@mdi/js';
+  import {
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiCalendarEditOutline,
+    mdiDotsVertical,
+    mdiEyeOffOutline,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -195,6 +201,20 @@
     });
   }
 
+  async function handleHidePerson() {
+    try {
+      await updateSpacePerson({
+        id: space.id,
+        personId: person.id,
+        sharedSpacePersonUpdateDto: { isHidden: true },
+      });
+      toastManager.primary($t('changed_visibility_successfully'));
+      await goto(`/spaces/${space.id}/people`);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_hide_person'));
+    }
+  }
+
   const actionItems = $derived.by(() => {
     const items: ActionItem[] = [];
 
@@ -204,6 +224,12 @@
           title: $t('set_date_of_birth'),
           icon: mdiCalendarEditOutline,
           onAction: () => void openBirthDateModal(),
+        },
+        {
+          title: $t('hide_person'),
+          icon: mdiEyeOffOutline,
+          $if: () => !person.isHidden,
+          onAction: () => void handleHidePerson(),
         },
         {
           title: $t('merge_people'),
