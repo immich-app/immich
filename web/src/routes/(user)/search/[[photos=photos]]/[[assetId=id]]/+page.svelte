@@ -285,7 +285,7 @@
           type="button"
           class="flex items-center justify-center bg-immich-primary/90 dark:bg-immich-dark-primary/90 text-white dark:text-black rounded-e-full py-2 px-2 hover:bg-immich-primary/70 dark:hover:bg-immich-dark-primary/70 transition-colors"
           aria-label={$t('remove_filter')}
-          onclick={() => removeFilter(searchKey as keyof SearchTerms)}
+          onclick={() => removeFilter(searchKey)}
         >
           <Icon icon={mdiClose} size="14" />
         </button>
