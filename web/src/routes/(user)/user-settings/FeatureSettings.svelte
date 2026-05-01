@@ -21,7 +21,7 @@
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
   let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
-  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? 1);
+  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? 3);
 
   // Ratings
   let ratingsEnabled = $state(authManager.preferences.ratings?.enabled ?? false);
