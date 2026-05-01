@@ -1,6 +1,4 @@
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
@@ -55,28 +53,9 @@ class MetadataRepository extends DriftDatabaseRepository {
     await _db
         .into(_db.metadataEntity)
         .insertOnConflictUpdate(
-          MetadataEntityCompanion.insert(key: key.key, value: encode(value), updatedAt: Value(DateTime.now())),
+          MetadataEntityCompanion.insert(key: key.key, value: key.encode(value), updatedAt: Value(DateTime.now())),
         );
     _updateCache(key, value);
-  }
-
-  @visibleForTesting
-  static String encode<T extends Object>(T value) => switch (value) {
-    Enum() => value.name,
-    DateTime() => value.toIso8601String(),
-    _ => throw ArgumentError('Unsupported metadata value type: ${value.runtimeType}'),
-  };
-
-  @visibleForTesting
-  static T decode<T extends Object>(MetadataKey<T> key, String raw) {
-    final enumValues = key.enumValues;
-    if (enumValues != null) {
-      return enumValues.firstWhereOrNull((v) => (v as Enum).name == raw) ?? key.defaultValue;
-    }
-    return switch (key.defaultValue) {
-      DateTime() => (DateTime.tryParse(raw) ?? key.defaultValue) as T,
-      _ => throw ArgumentError('Unsupported metadata value type: ${key.defaultValue.runtimeType}'),
-    };
   }
 
   Future<void> delete<T extends Object>(MetadataKey<T> key) async {
@@ -101,7 +80,7 @@ class MetadataRepository extends DriftDatabaseRepository {
     for (final row in rows) {
       final key = keyMap[row.key];
       if (key == null) continue;
-      _updateCache(key, decode(key, row.value));
+      _updateCache(key, key.decode(row.value));
     }
   }
 
