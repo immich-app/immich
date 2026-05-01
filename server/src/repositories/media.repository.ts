@@ -278,7 +278,7 @@ export class MediaRepository {
             profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined),
             level: this.parseOptionalInt(stream.level),
             frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
-            frameRate: this.parseFrameRate(stream.r_frame_rate ?? stream.avg_frame_rate),
+            frameRate: this.parseFrameRate(stream.avg_frame_rate ?? stream.r_frame_rate),
             timeBase: this.parseRational(stream.time_base)?.den,
             rotation: this.parseInt(stream.rotation),
             bitrate: this.parseInt(stream.bit_rate),
