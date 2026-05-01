@@ -61,9 +61,9 @@
   actions={[Scan, Edit, Delete]}
 >
   <Container size="large" center>
-    <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
+    <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
       <Heading tag="h1" size="large" class="col-span-full my-4">{library.name}</Heading>
-      <div class="flex flex-col lg:flex-row gap-4 col-span-full">
+      <div class="col-span-full flex flex-col gap-4 lg:flex-row">
         <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} valuePromise={photosPromise} />
         <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
         <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} valuePromise={usagePromise} />
@@ -86,7 +86,7 @@
                   <td>
                     <Code>{folder}</Code>
                   </td>
-                  <td class="flex gap-2 justify-end">
+                  <td class="flex justify-end gap-2">
                     <TableButton action={Edit} />
                     <TableButton action={Delete} />
                   </td>
@@ -106,7 +106,7 @@
                 <td>
                   <Code>{exclusionPattern}</Code>
                 </td>
-                <td class="flex gap-2 justify-end">
+                <td class="flex justify-end gap-2">
                   <TableButton action={Edit} />
                   <TableButton action={Delete} />
                 </td>

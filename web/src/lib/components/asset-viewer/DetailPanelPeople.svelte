@@ -60,7 +60,7 @@
   <section class="px-4 pt-4 text-sm">
     <div class="flex h-10 w-full items-center justify-between">
       <Text size="small" color="muted">{$t('people')}</Text>
-      <div class="flex gap-2 items-center">
+      <div class="flex items-center gap-2">
         {#if people.some((person) => person.isHidden)}
           <IconButton
             aria-label={$t('show_hidden_people')}
@@ -118,7 +118,7 @@
             widthStyle="100%"
             hidden={person.isHidden}
             highlighted={isHighlighted}
-            class="group-focus-visible:outline-2 outline-offset-2 outline-immich-primary dark:outline-immich-dark-primary"
+            class="outline-offset-2 outline-immich-primary group-focus-visible:outline-2 dark:outline-immich-dark-primary"
           />
           <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
           {#if person.birthDate && person.formattedAge}

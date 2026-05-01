@@ -10,6 +10,6 @@
 
 <PurchaseInfo />
 
-<div class="mb-6 mt-2">
+<div class="mt-2 mb-6">
   <ServerStatus />
 </div>

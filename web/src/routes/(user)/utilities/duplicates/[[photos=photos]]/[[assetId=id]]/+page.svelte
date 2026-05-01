@@ -265,14 +265,14 @@
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
-        <div class="max-w-5xl mx-auto mb-16">
-          <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
+        <div class="mx-auto mb-16 max-w-5xl">
+          <div class="mb-4 flex w-full place-content-center place-items-center items-center justify-between sm:px-6">
             <div class="flex text-xs text-black">
               <Button
                 size="small"
                 leadingIcon={mdiPageFirst}
                 color="primary"
-                class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
+                class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleFirst}
                 disabled={duplicatesIndex === 0}
               >
@@ -282,14 +282,14 @@
                 size="small"
                 leadingIcon={mdiChevronLeft}
                 color="primary"
-                class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
+                class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handlePrevious}
                 disabled={duplicatesIndex === 0}
               >
                 {$t('previous')}
               </Button>
             </div>
-            <p class="border px-3 md:px-6 py-1 dark:bg-subtle rounded-lg text-xs md:text-sm">
+            <p class="rounded-lg border px-3 py-1 text-xs md:px-6 md:text-sm dark:bg-subtle">
               {duplicatesIndex + 1} / {duplicates.length.toLocaleString($locale)}
             </p>
             <div class="flex text-xs text-black">
@@ -297,7 +297,7 @@
                 size="small"
                 trailingIcon={mdiChevronRight}
                 color="primary"
-                class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
+                class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
                 onclick={handleNext}
                 disabled={duplicatesIndex === duplicates.length - 1}
               >
@@ -307,7 +307,7 @@
                 size="small"
                 trailingIcon={mdiPageLast}
                 color="primary"
-                class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
+                class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
                 onclick={handleLast}
                 disabled={duplicatesIndex === duplicates.length - 1}
               >
@@ -318,7 +318,7 @@
         </div>
       {/key}
     {:else}
-      <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
+      <p class="flex place-content-center place-items-center text-center text-lg dark:text-white">
         {$t('no_duplicates_found')}
       </p>
     {/if}

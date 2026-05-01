@@ -52,10 +52,10 @@
   };
 
   const styles = tv({
-    base: 'flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all',
+    base: 'flex flex-col items-center rounded-3xl border-2 p-2 transition-all hover:bg-subtle dark:hover:bg-immich-dark-primary/20',
     variants: {
       selected: {
-        true: 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white',
+        true: 'border-slate-400 bg-slate-200 dark:border-slate-500 dark:bg-slate-800 dark:text-white',
         false: 'border-transparent',
       },
     },
@@ -63,7 +63,7 @@
 </script>
 
 {#await peoplePromise}
-  <div id="spinner" class="flex h-54 items-center justify-center -mb-4">
+  <div id="spinner" class="-mb-4 flex h-54 items-center justify-center">
     <LoadingSpinner size="large" />
   </div>
 {:then people}
@@ -72,14 +72,14 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
-      <div class="flex items-center w-full justify-between gap-6">
+    <div id="people-selection" class="-mb-4 max-h-60 overflow-y-auto immich-scrollbar">
+      <div class="flex w-full items-center justify-between gap-6">
         <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <SingleGridRow
-        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar space-between"
+        class="space-between mt-2 grid grid-auto-fill-20 gap-1 overflow-y-auto immich-scrollbar"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
@@ -95,13 +95,13 @@
       </SingleGridRow>
 
       {#if showAllPeople || people.length > peopleList.length}
-        <div class="flex justify-center mt-2">
+        <div class="mt-2 flex justify-center">
           <Button
             color="primary"
             variant="ghost"
             shape="round"
             leadingIcon={showAllPeople ? mdiClose : mdiArrowRight}
-            class="flex gap-2 place-items-center"
+            class="flex place-items-center gap-2"
             onclick={() => (showAllPeople = !showAllPeople)}
           >
             {showAllPeople ? $t('collapse') : $t('see_all_people')}

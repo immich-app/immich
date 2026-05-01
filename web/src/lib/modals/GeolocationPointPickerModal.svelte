@@ -143,8 +143,8 @@
   onClose={handleConfirm}
 >
   {#snippet prompt()}
-    <div class="flex flex-col w-full h-full gap-2">
-      <div class="relative w-64 sm:w-96 z-1" use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}>
+    <div class="flex size-full flex-col gap-2">
+      <div class="relative z-1 w-64 sm:w-96" use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}>
         {#if suggestionContainer}
           <div use:listNavigation={suggestionContainer}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
@@ -161,7 +161,7 @@
         {/if}
 
         <div
-          class="absolute w-full bg-gray-200 dark:bg-gray-700 rounded-b-lg"
+          class="absolute w-full rounded-b-lg bg-gray-200 dark:bg-gray-700"
           id="suggestion"
           bind:this={suggestionContainer}
         >
@@ -169,10 +169,10 @@
             {#each suggestedPlaces as place (place.latitude + place.longitude)}
               <button
                 type="button"
-                class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-12 place-items-center px-5 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] last:rounded-b-lg last:border-b"
+                class="flex h-12 w-full place-items-center border-t border-gray-400 px-5 last:rounded-b-lg last:border-b hover:bg-gray-300 focus:bg-gray-300 dark:border-immich-dark-gray hover:dark:bg-[#232932] focus:dark:bg-[#232932]"
                 onclick={() => handleUseSuggested(place.latitude, place.longitude)}
               >
-                <p class="text-sm text-gray-700 dark:text-gray-100 truncate">
+                <p class="truncate text-sm text-gray-700 dark:text-gray-100">
                   {getLocation(place.name, place.admin1name, place.admin2name)}
                 </p>
               </button>
@@ -182,11 +182,11 @@
       </div>
 
       <span>{$t('pick_a_location')}</span>
-      <div class="h-125 min-h-75 w-full z-0">
+      <div class="z-0 h-125 min-h-75 w-full">
         {#await import('$lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
-            <div class="flex items-center justify-center h-full w-full">
+            <div class="flex size-full items-center justify-center">
               <LoadingSpinner />
             </div>
           {/await}
@@ -216,7 +216,7 @@
         {/await}
       </div>
 
-      <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
+      <div class="mt-4 grid gap-4 text-start text-sm sm:grid-cols-2">
         <CoordinatesInput lat={point?.lat} lng={point?.lng} {onUpdate} />
       </div>
     </div>

@@ -16,7 +16,7 @@
   let { isLiked, numberOfComments, numberOfLikes, disabled, onFavorite }: Props = $props();
 </script>
 
-<div class="flex p-1 items-center justify-center rounded-full gap-1 bg-subtle/70 border">
+<div class="flex items-center justify-center gap-1 rounded-full border bg-subtle/70 p-1">
   <Button
     {disabled}
     onclick={onFavorite}

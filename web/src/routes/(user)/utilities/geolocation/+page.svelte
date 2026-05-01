@@ -134,16 +134,16 @@
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
-    <div class="flex gap-2 justify-end place-items-center">
-      <Text class="hidden md:block mr-4" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
-      <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
-        <Text class="hidden md:inline-block font-mono mr-5 ml-2" color="muted" size="tiny">
+    <div class="flex place-items-center justify-end gap-2">
+      <Text class="mr-4 hidden md:block" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
+      <div class="flex place-content-center place-items-center rounded-2xl border bg-primary/10 px-2 py-1">
+        <Text class="mr-5 ml-2 hidden font-mono md:inline-block" color="muted" size="tiny">
           {$t('selected_gps_coordinates')}
         </Text>
         <Text
           title="latitude, longitude"
-          class="rounded-3xl font-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
-            ? 'bg-primary/90 text-light font-semibold scale-105'
+          class="rounded-3xl px-2 py-1 font-mono text-sm text-primary transition-all duration-100 ease-in-out {locationUpdated
+            ? 'scale-105 bg-primary/90 font-semibold text-light'
             : ''}"
         >
           {#if point}
@@ -182,7 +182,7 @@
   {/snippet}
 
   {#if isLoading}
-    <div class="h-full w-full flex items-center justify-center">
+    <div class="flex size-full items-center justify-center">
       <LoadingSpinner size="giant" />
     </div>
   {/if}
@@ -200,17 +200,17 @@
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
-        <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
+        <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
           {asset.city || $t('gps')}
         </div>
       {:else}
-        <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-danger text-light">
+        <div class="absolute inset-e-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
           {$t('gps_missing')}
         </div>
       {/if}
     {/snippet}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} class="mt-10 mx-auto" />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} class="mx-auto mt-10" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

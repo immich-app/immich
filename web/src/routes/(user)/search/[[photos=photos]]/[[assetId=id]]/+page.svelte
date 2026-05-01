@@ -243,20 +243,20 @@
 {#if terms}
   <section
     id="search-chips"
-    class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
+    class="mt-24 flex w-full flex-wrap place-content-center place-items-center gap-5 px-24 text-center"
   >
     {#each getObjectKeys(terms) as searchKey (searchKey)}
       {@const value = terms[searchKey]}
       <div class="flex place-content-center place-items-center items-stretch text-xs">
         <div
-          class="flex items-center justify-center bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
+          class="flex items-center justify-center bg-immich-primary px-4 py-2 text-white dark:bg-immich-dark-primary dark:text-black
           {value === true ? 'rounded-full' : 'rounded-s-full'}"
         >
           {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
         </div>
 
         {#if value !== true}
-          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
+          <div class="rounded-e-full bg-gray-300 px-4 py-2 dark:bg-gray-800 dark:text-white">
             {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
             {:else if searchKey === 'personIds' && Array.isArray(value)}
@@ -282,7 +282,7 @@
 {/if}
 
 <section
-  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4 max-h-screen"
+  class="m-4 mb-12 max-h-screen bg-immich-bg dark:bg-immich-dark-bg"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
@@ -309,7 +309,7 @@
     {/if}
 
     {#if isLoading}
-      <div class="flex justify-center py-16 items-center">
+      <div class="flex items-center justify-center py-16">
         <LoadingSpinner size="giant" />
       </div>
     {/if}
@@ -317,7 +317,7 @@
 
   <section>
     {#if assetMultiSelectManager.selectionActive}
-      <div class="fixed top-0 start-0 w-full z-2">
+      <div class="fixed inset-s-0 top-0 z-2 w-full">
         <AssetSelectControlBar>
           {@const Actions = getAssetBulkActions($t)}
           <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
@@ -368,7 +368,7 @@
         </AssetSelectControlBar>
       </div>
     {:else}
-      <div class="fixed top-0 start-0 w-full z-2">
+      <div class="fixed inset-s-0 top-0 z-2 w-full">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="absolute bg-light"></div>
           <div class="w-full flex-1 ps-4">

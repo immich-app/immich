@@ -647,7 +647,7 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-bsf:v',
+            '-bsf:0',
             'hevc_metadata=colour_primaries=1:matrix_coefficients=1:transfer_characteristics=1',
           ]),
           outputOptions: expect.any(Array),

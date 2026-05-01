@@ -327,7 +327,7 @@
 />
 
 {#if assetMultiSelectManager.selectionActive}
-  <div class="sticky top-0 z-1 dark">
+  <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar forceDark>
       {@const Actions = getAssetBulkActions($t)}
       <CreateSharedLink />
@@ -381,7 +381,7 @@
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <div class="w-12.5 dark">
+        <div class="dark w-12.5">
           <IconButton
             shape="round"
             variant="ghost"
@@ -394,8 +394,8 @@
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
-            <span class="absolute start-0 h-0.5 w-full bg-gray-500"></span>
-            <span class="absolute start-0 h-0.5 bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
+            <span class="absolute inset-s-0 h-0.5 w-full bg-gray-500"></span>
+            <span class="absolute inset-s-0 h-0.5 bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
@@ -406,7 +406,7 @@
         </div>
 
         {#if currentTimelineAssets.some((asset) => asset.type === AssetTypeEnum.Video)}
-          <div class="w-12.5 dark">
+          <div class="dark w-12.5">
             <IconButton
               shape="round"
               variant="ghost"
@@ -422,7 +422,7 @@
 
     {#if galleryInView}
       <div
-        class="fixed top-10 start-1/2 -translate-x-1/2 transition-opacity dark z-1"
+        class="dark fixed inset-s-1/2 top-10 z-1 -translate-x-1/2 transition-opacity"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -444,26 +444,26 @@
     <!-- Viewer -->
     <section class="overflow-hidden pt-32 md:pt-20" bind:clientHeight={viewerHeight}>
       <div
-        class="ms-[-100%] box-border flex h-[calc(100vh-224px)] md:h-[calc(100vh-180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
+        class="ms-[-100%] box-border flex h-[calc(100vh-224px)] w-[300%] items-center justify-center gap-10 overflow-hidden md:h-[calc(100vh-180px)]"
       >
         <!-- PREVIOUS MEMORY -->
         <div class="h-1/2 w-[20vw] rounded-2xl {current.previousMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
           <button
             type="button"
-            class="relative h-full w-full rounded-2xl"
+            class="relative size-full rounded-2xl"
             disabled={!current.previousMemory}
             onclick={handlePreviousMemory}
           >
             {#if current.previousMemory && current.previousMemory.assets.length > 0}
               <img
-                class="h-full w-full rounded-2xl object-cover"
+                class="size-full rounded-2xl object-cover"
                 src={getAssetMediaUrl({ id: current.previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('previous_memory')}
                 draggable="false"
               />
             {:else}
               <enhanced:img
-                class="h-full w-full rounded-2xl object-cover"
+                class="size-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
                 alt={$t('previous_memory')}
@@ -472,8 +472,8 @@
             {/if}
 
             {#if current.previousMemory}
-              <div class="absolute bottom-4 end-4 text-start text-white">
-                <p class="uppercase text-xs font-semibold text-gray-200">{$t('previous')}</p>
+              <div class="absolute inset-e-4 bottom-4 text-start text-white">
+                <p class="text-xs font-semibold text-gray-200 uppercase">{$t('previous')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
             {/if}
@@ -484,7 +484,7 @@
         <div
           class="main-view relative flex h-full w-[70vw] place-content-center place-items-center rounded-2xl bg-black"
         >
-          <div class="relative h-full w-full rounded-2xl bg-black">
+          <div class="relative size-full rounded-2xl bg-black">
             {#key current.asset.id}
               {#if current.asset.isVideo}
                 <MemoryVideoViewer
@@ -499,7 +499,7 @@
             {/key}
 
             <div
-              class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2 dark"
+              class="dark absolute inset-e-0 bottom-0 flex h-full flex-col items-end justify-between gap-2 p-2 transition-all"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
@@ -511,7 +511,7 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="w-12 h-12"
+                  class="size-12"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
@@ -556,7 +556,7 @@
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
-              <div class="absolute top-1/2 start-0 ms-4 dark">
+              <div class="dark absolute inset-s-0 top-1/2 ms-4">
                 <IconButton
                   shape="round"
                   aria-label={$t('previous_memory')}
@@ -570,7 +570,7 @@
             {/if}
 
             {#if current.next}
-              <div class="absolute top-1/2 end-0 me-4 dark">
+              <div class="dark absolute inset-e-0 top-1/2 me-4">
                 <IconButton
                   shape="round"
                   aria-label={$t('next_memory')}
@@ -583,7 +583,7 @@
               </div>
             {/if}
 
-            <div class="absolute start-8 top-4 text-sm font-medium text-white">
+            <div class="absolute inset-s-8 top-4 text-sm font-medium text-white">
               <p>
                 {fromISODateTimeUTC(current.memory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL, {
                   locale: $locale,
@@ -603,20 +603,20 @@
         <div class="h-1/2 w-[20vw] rounded-2xl {current.nextMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
           <button
             type="button"
-            class="relative h-full w-full rounded-2xl"
+            class="relative size-full rounded-2xl"
             onclick={handleNextMemory}
             disabled={!current.nextMemory}
           >
             {#if current.nextMemory && current.nextMemory.assets.length > 0}
               <img
-                class="h-full w-full rounded-2xl object-cover"
+                class="size-full rounded-2xl object-cover"
                 src={getAssetMediaUrl({ id: current.nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('next_memory')}
                 draggable="false"
               />
             {:else}
               <enhanced:img
-                class="h-full w-full rounded-2xl object-cover"
+                class="size-full rounded-2xl object-cover"
                 src="$lib/assets/no-thumbnail.png"
                 sizes="min(271px,186px)"
                 alt={$t('next_memory')}
@@ -625,8 +625,8 @@
             {/if}
 
             {#if current.nextMemory}
-              <div class="absolute bottom-4 start-4 text-start text-white">
-                <p class="uppercase text-xs font-semibold text-gray-200">{$t('up_next')}</p>
+              <div class="absolute inset-s-4 bottom-4 text-start text-white">
+                <p class="text-xs font-semibold text-gray-200 uppercase">{$t('up_next')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
             {/if}
@@ -641,7 +641,7 @@
   <!-- GALLERY VIEWER -->
   <section class="bg-immich-dark-gray p-4">
     <div
-      class="sticky mb-10 flex place-content-center place-items-center transition-all dark"
+      class="dark sticky mb-10 flex place-content-center place-items-center transition-all"
       class:opacity-0={galleryInView}
       class:opacity-100={!galleryInView}
     >

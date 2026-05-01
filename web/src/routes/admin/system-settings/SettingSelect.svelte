@@ -40,7 +40,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex h-6.5 place-items-center gap-1">
-    <label class="font-medium text-primary text-sm" for="{name}-select">{label}</label>
+    <label class="text-sm font-medium text-primary" for="{name}-select">{label}</label>
 
     {#if isEdited}
       <div
@@ -53,7 +53,7 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-sm" id="{name}-desc">
+    <p class="pb-2 text-sm immich-form-label" id="{name}-desc">
       {desc}
     </p>
   {/if}
@@ -63,12 +63,12 @@
       icon={mdiChevronDown}
       size="1.2em"
       aria-hidden
-      class="pointer-events-none end-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
+      class="pointer-events-none relative inset-e-1 col-start-1 row-start-1 self-center justify-self-end {disabled
         ? 'text-immich-bg'
         : 'text-immich-fg dark:text-immich-bg'}"
     />
     <select
-      class="immich-form-input w-full appearance-none row-start-1 col-start-1 pe-6!"
+      class="col-start-1 row-start-1 immich-form-input w-full appearance-none pe-6!"
       {disabled}
       aria-describedby={desc ? `${name}-desc` : undefined}
       {name}
