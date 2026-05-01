@@ -11,7 +11,7 @@
 <p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="design/gallery-logo-stacked-dark.svg">
-  <img src="design/gallery-logo-stacked-light.svg" width="390" title="Gallery Logo">
+  <img src="design/gallery-logo-stacked-light.svg" width="390" alt="Noodle Gallery logo" title="Noodle Gallery Logo">
 </picture>
 </p>
 <h3 align="center">High performance self-hosted photo and video management solution</h3>
