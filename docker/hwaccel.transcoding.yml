@@ -10,16 +10,10 @@ services:
   cpu: {}
 
   nvenc:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities:
-                - gpu
-                - compute
-                - video
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
 
   quicksync:
     devices:

@@ -13,7 +13,7 @@ services:
     volumes:
       - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset (not always required depending on the driver)
       - /usr/lib/libmali.so:/usr/lib/libmali.so:ro # Mali driver for your chipset (always required)
-  
+
   rknn:
     security_opt:
       - systempaths=unconfined
@@ -24,14 +24,10 @@ services:
   cpu: {}
 
   cuda:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities:
-                - gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
   rocm:
     group_add:

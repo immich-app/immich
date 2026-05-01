@@ -113,6 +113,32 @@ immich-server:
 
 Once this is done, you can continue to step 3 of "Basic Setup".
 
+For NVIDIA NVENC, use the `nvenc` section from this file:
+
+```yaml
+runtime: nvidia
+environment:
+  - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+  - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+```
+
+You can add this to the `immich-server` service instead of extending from `hwaccel.transcoding.yml`:
+
+```yaml
+immich-server:
+  container_name: immich_server
+  image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+  # Note the lack of an `extends` section
+  runtime: nvidia
+  environment:
+    - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+  volumes:
+  ...
+```
+
+Once this is done, you can continue to step 3 of "Basic Setup".
+
 #### All-In-One - Unraid Setup
 
 ##### QSV
@@ -124,10 +150,11 @@ Once this is done, you can continue to step 3 of "Basic Setup".
 
 ##### NVENC
 
-1. In the container app, add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`all`
-2. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
-3. Restart the container app.
-4. Continue to step 4 of "Basic Setup".
+1. In the container app, add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`nvidia.com/gpu=all`
+2. Add this environmental variable as well: Key=`NVIDIA_DRIVER_CAPABILITIES` Value=`compute,utility,video`
+3. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
+4. Restart the container app.
+5. Continue to step 4 of "Basic Setup".
 
 ## Tips
 

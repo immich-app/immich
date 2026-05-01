@@ -101,17 +101,15 @@ You can also check the logs of the `immich-machine-learning` container. When a S
 
 Some platforms, including Unraid and Portainer, do not support multiple Compose files as of writing. As an alternative, you can "inline" the relevant contents of the [`hwaccel.ml.yml`][hw-file] file into the `immich-machine-learning` service directly.
 
+For NVIDIA on Docker Compose, use `runtime: nvidia` with `NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all`.
+
 For example, the `cuda` section in this file is:
 
 ```yaml
-deploy:
-  resources:
-    reservations:
-      devices:
-        - driver: nvidia
-          count: 1
-          capabilities:
-            - gpu
+runtime: nvidia
+environment:
+  - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+  - NVIDIA_DRIVER_CAPABILITIES=compute,utility
 ```
 
 You can add this to the `immich-machine-learning` service instead of extending from `hwaccel.ml.yml`:
@@ -122,14 +120,10 @@ immich-machine-learning:
   # Note the `-cuda` at the end
   image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-cuda
   # Note the lack of an `extends` section
-  deploy:
-    resources:
-      reservations:
-        devices:
-          - driver: nvidia
-            count: 1
-            capabilities:
-              - gpu
+  runtime: nvidia
+  environment:
+    - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
   volumes:
     - model-cache:/cache
   env_file:
