@@ -236,8 +236,8 @@
   }
 
   function removeFilter(key: keyof SearchTerms) {
-    const { [key]: _, ...rest } = terms;
-    void goto(Route.search(rest as SearchTerms));
+    delete terms[key];
+    void goto(Route.search(terms));
   }
 </script>
 
