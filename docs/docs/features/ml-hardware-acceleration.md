@@ -139,6 +139,23 @@ immich-machine-learning:
 
 Once this is done, you can redeploy the `immich-machine-learning` container.
 
+**NOTE**: If the standard NVIDIA Compose example does not work on your host, and you are using NVIDIA Container Toolkit `v1.12.0` or newer, you can use this CDI-style Docker Compose alternative instead:
+
+```yaml
+immich-machine-learning:
+  container_name: immich_machine_learning
+  image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-cuda
+  runtime: nvidia
+  environment:
+    - NVIDIA_VISIBLE_DEVICES=nvidia.com/gpu=all
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+  volumes:
+    - model-cache:/cache
+  env_file:
+    - .env
+  restart: always
+```
+
 #### Multi-GPU
 
 If you want to utilize multiple NVIDIA or Intel GPUs, you can set the `MACHINE_LEARNING_DEVICE_IDS` environmental variable to a comma-separated list of device IDs and set `MACHINE_LEARNING_WORKERS` to the number of listed devices. You can run a command such as `nvidia-smi -L` or `glxinfo -B` to see the currently available devices and their corresponding IDs.

@@ -129,6 +129,15 @@ Once this is done, you can continue to step 3 of "Basic Setup".
 3. Restart the container app.
 4. Continue to step 4 of "Basic Setup".
 
+
+If the standard NVIDIA Compose example in `hwaccel.transcoding.yml` does not work on your host, and you are using NVIDIA Container Toolkit `v1.12.0` or newer, use this CDI-style alternative in Unraid:
+
+1. Add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`nvidia.com/gpu=all`
+2. Add this environmental variable as well: Key=`NVIDIA_DRIVER_CAPABILITIES` Value=`compute,utility,video`
+3. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
+4. Restart the container app.
+5. Continue to step 4 of "Basic Setup".
+
 ## Tips
 
 - You may want to choose a slower preset than for software transcoding to maintain quality and efficiency
