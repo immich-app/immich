@@ -670,7 +670,6 @@
             {customThumbnailLayout}
             {singleSelect}
             {timelineMonth}
-            manager={timelineManager}
             onTimelineDaySelect={handleGroupSelect}
           >
             {#snippet thumbnail({ asset, position, timelineDay, groupIndex })}

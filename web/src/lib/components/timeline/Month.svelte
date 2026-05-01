@@ -5,7 +5,6 @@
   import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot, filterIsInOrNearViewport } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
@@ -28,7 +27,6 @@
     singleSelect: boolean;
     assetInteraction: AssetMultiSelectManager;
     timelineMonth: TimelineMonth;
-    manager: VirtualScrollManager;
     onTimelineDaySelect: (timelineDay: TimelineDay, assets: TimelineAsset[]) => void;
   };
   let {
@@ -37,14 +35,13 @@
     singleSelect,
     assetInteraction,
     timelineMonth,
-    manager,
     onTimelineDaySelect,
   }: Props = $props();
 
   let { isUploading } = uploadAssetsStore;
   let hoveredTimelineDay = $state<string | null>(null);
 
-  const transitionDuration = $derived(timelineMonth.timelineManager.suspendTransitions && !$isUploading ? 0 : 150);
+  const suspendTransitions = $derived(timelineMonth.timelineManager.suspendTransitions && !$isUploading);
 
   const getTimelineDayFullDate = (timelineDay: TimelineDay): string => {
     const { month, year } = timelineDay.timelineMonth.yearMonth;
@@ -61,10 +58,8 @@
   {@const isTimelineDaySelected = assetInteraction.selectedGroup.has(timelineDay.groupTitle)}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
-    class={[
-      { 'transition-all': !timelineMonth.timelineManager.suspendTransitions },
-      !timelineMonth.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
-    ]}
+    class:transition-all={!suspendTransitions}
+    class:delay-150={!suspendTransitions}
     data-group
     style:position="absolute"
     style:inset-inline-start={timelineDay.start + 'px'}
@@ -99,10 +94,10 @@
     </div>
 
     <AssetLayout
-      {manager}
       viewerAssets={timelineDay.viewerAssets}
       height={timelineDay.height}
       width={timelineDay.width}
+      {suspendTransitions}
       {customThumbnailLayout}
     >
       {#snippet thumbnail({ asset, position })}
