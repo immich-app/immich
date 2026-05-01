@@ -252,12 +252,15 @@ describe(MemoryService.name, () => {
       vi.setSystemTime(now.toJSDate());
       await sut.onMemoriesCreate();
 
-      const memories = await memoryRepo.search(user.id, {});
+      const defaultMemories = await memoryRepo.search(user.id, {});
+      expect(defaultMemories.length).toBe(0);
+
+      const memories = await memoryRepo.search(user.id, { for: now.plus({ days: 3 }).toJSDate() });
       expect(memories.length).toBe(1);
 
       await sut.onMemoriesCreate();
 
-      const memoriesAfter = await memoryRepo.search(user.id, {});
+      const memoriesAfter = await memoryRepo.search(user.id, { for: now.plus({ days: 3 }).toJSDate() });
       expect(memoriesAfter.length).toBe(1);
     });
 

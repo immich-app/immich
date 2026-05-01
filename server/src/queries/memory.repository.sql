@@ -6,8 +6,12 @@ select
 from
   "memory"
 where
-  "deletedAt" is null
-  and "ownerId" = $1
+  (
+    "showAt" is null
+    or "showAt" <= $1
+  )
+  and "deletedAt" is null
+  and "ownerId" = $2
 
 -- MemoryRepository.statistics (date filter)
 select
@@ -50,8 +54,12 @@ select
 from
   "memory"
 where
-  "deletedAt" is null
-  and "ownerId" = $1
+  (
+    "showAt" is null
+    or "showAt" <= $1
+  )
+  and "deletedAt" is null
+  and "ownerId" = $2
 order by
   "memoryAt" desc
 

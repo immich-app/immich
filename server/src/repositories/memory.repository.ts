@@ -38,14 +38,15 @@ export class MemoryRepository implements IBulkAsset {
   }
 
   private baseSearchBuilder(dto: MemorySearchDto) {
+    const visibleAt = dto.for ?? DateTime.now().toJSDate();
+
     return this.db
       .selectFrom('memory')
       .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
       .$if(dto.type !== undefined, (qb) => qb.where('type', '=', dto.type!))
+      .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', visibleAt)]))
       .$if(dto.for !== undefined, (qb) =>
-        qb
-          .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
-          .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
+        qb.where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null);
   }
