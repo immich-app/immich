@@ -48,9 +48,6 @@ class AssetCacheManager {
       AssetUpdate: (asset) => {
         this.invalidateAsset(asset.id);
       },
-      AssetFacesUpdated: (assetId) => {
-        this.#faceCache.clearKey({ id: assetId });
-      },
     });
   }
 

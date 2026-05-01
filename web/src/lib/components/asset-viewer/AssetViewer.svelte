@@ -312,7 +312,7 @@
     preAction?.(action);
   };
 
-  const handleAction = (action: Action) => {
+  const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
@@ -332,7 +332,9 @@
         break;
       }
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
-        eventManager.emit('AssetFacesUpdated', asset.id);
+        const assetInfo = await getAssetInfo({ id: asset.id });
+        cursor.current = { ...asset, people: assetInfo.people };
+        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
