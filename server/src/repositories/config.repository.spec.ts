@@ -323,8 +323,21 @@ describe('getEnv', () => {
       process.env.IMMICH_TELEMETRY_EXCLUDE = 'job';
       const { telemetry } = getEnv();
       expect(telemetry.metrics).toEqual(
-        new Set([ImmichTelemetry.Api, ImmichTelemetry.Host, ImmichTelemetry.Io, ImmichTelemetry.Repo]),
+        new Set([
+          ImmichTelemetry.Api,
+          ImmichTelemetry.App,
+          ImmichTelemetry.Host,
+          ImmichTelemetry.Io,
+          ImmichTelemetry.Repo,
+        ]),
       );
+    });
+
+    it('should run with telemetry app metrics enabled', () => {
+      process.env.IMMICH_TELEMETRY_INCLUDE = 'app';
+      const { telemetry } = getEnv();
+
+      expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.App]));
     });
 
     it('should run with specific telemetry metrics', () => {

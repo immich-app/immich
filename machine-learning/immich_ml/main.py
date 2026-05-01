@@ -11,10 +11,11 @@ from typing import Any, AsyncGenerator, Callable, Iterator
 from zipfile import BadZipFile
 
 import orjson
-from fastapi import Depends, FastAPI, File, Form, HTTPException
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Response
 from fastapi.responses import ORJSONResponse, PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
+from prometheus_client import CONTENT_TYPE_LATEST
 from pydantic import ValidationError
 from starlette.formparsers import MultiPartParser
 
@@ -22,6 +23,7 @@ from immich_ml.models import get_model_deps
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil
 
+from . import metrics
 from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache
 from .schemas import (
@@ -37,6 +39,8 @@ from .schemas import (
 )
 
 MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
+
+MODEL_CACHE_METRICS_INTERVAL_S = 15
 
 model_cache = ModelCache(revalidate=settings.model_ttl > 0)
 thread_pool: ThreadPoolExecutor | None = None
@@ -64,6 +68,8 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
             await preload_models(settings.preload)
+        if metrics.is_multiprocess_enabled():
+            asyncio.ensure_future(model_cache_metrics_task())
         yield
     finally:
         log.handlers.clear()
@@ -135,14 +141,17 @@ async def preload_models(preload: PreloadModelData) -> None:
 def update_state() -> Iterator[None]:
     global active_requests, last_called
     active_requests += 1
+    metrics.ACTIVE_REQUESTS.inc()
     last_called = time.time()
     try:
         yield
     finally:
         active_requests -= 1
+        metrics.ACTIVE_REQUESTS.dec()
 
 
 def get_entries(entries: str = Form()) -> InferenceEntries:
+    started = time.perf_counter()
     try:
         request: PipelineRequest = orjson.loads(entries)
         without_deps: list[InferenceEntry] = []
@@ -159,6 +168,7 @@ def get_entries(entries: str = Form()) -> InferenceEntries:
                 (with_deps if dep else without_deps).append(parsed)
         return without_deps, with_deps
     except (orjson.JSONDecodeError, ValidationError, KeyError, AttributeError) as e:
+        metrics.record_validation_error(started)
         log.error(f"Invalid request format: {e}")
         raise HTTPException(422, "Invalid request format.")
 
@@ -176,20 +186,42 @@ def ping() -> PlainTextResponse:
     return PlainTextResponse("pong")
 
 
+def refresh_model_cache_metrics() -> None:
+    cache_labels = [
+        (model.model_task.value, model.model_type.value)
+        for model in model_cache.cache._cache.values()
+        if isinstance(model, InferenceModel)
+    ]
+    metrics.set_model_cache_entries(cache_labels)
+
+
+@app.get("/metrics")
+def prometheus_metrics() -> Response:
+    refresh_model_cache_metrics()
+    return Response(metrics.render(), media_type=CONTENT_TYPE_LATEST)
+
+
 @app.post("/predict", dependencies=[Depends(update_state)])
 async def predict(
     entries: InferenceEntries = Depends(get_entries),
     image: bytes | None = File(default=None),
     text: str | None = Form(default=None),
 ) -> Any:
-    if image is not None:
-        inputs: Image | str = await run(lambda: decode_pil(image))
-    elif text is not None:
-        inputs = text
-    else:
-        raise HTTPException(400, "Either image or text must be provided")
-    response = await run_inference(inputs, entries)
-    return ORJSONResponse(response)
+    started = time.perf_counter()
+    metric_labels = metrics.labels_from_entries(entries)
+    try:
+        if image is not None:
+            inputs: Image | str = await run(lambda: decode_pil(image))
+        elif text is not None:
+            inputs = text
+        else:
+            raise HTTPException(400, "Either image or text must be provided")
+        response = await run_inference(inputs, entries)
+        metrics.record_predict(metric_labels, "success", started)
+        return ORJSONResponse(response)
+    except Exception:
+        metrics.record_predict(metric_labels, "error", started)
+        raise
 
 
 async def run_inference(payload: Image | str, entries: InferenceEntries) -> InferenceResponse:
@@ -250,12 +282,23 @@ async def load(model: InferenceModel) -> InferenceModel:
                 model.load()
         return model
 
+    started = time.perf_counter()
     try:
-        return await run(_load, model)
+        result = await run(_load, model)
+        metrics.record_model_load(model.model_task.value, model.model_type.value, "success", started)
+        return result
     except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
+        metrics.record_model_load(model.model_task.value, model.model_type.value, "error", started)
         log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
         model.clear_cache()
-        return await run(_load, model)
+        retry_started = time.perf_counter()
+        try:
+            result = await run(_load, model)
+            metrics.record_model_load(model.model_task.value, model.model_type.value, "success", retry_started)
+            return result
+        except Exception:
+            metrics.record_model_load(model.model_task.value, model.model_type.value, "error", retry_started)
+            raise
 
 
 async def idle_shutdown_task() -> None:
@@ -270,3 +313,9 @@ async def idle_shutdown_task() -> None:
             os.kill(os.getpid(), signal.SIGINT)
             break
         await asyncio.sleep(settings.model_ttl_poll_s)
+
+
+async def model_cache_metrics_task() -> None:
+    while True:
+        refresh_model_cache_metrics()
+        await asyncio.sleep(MODEL_CACHE_METRICS_INTERVAL_S)

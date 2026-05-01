@@ -19,6 +19,26 @@ type JobMapItem = {
   label: string;
 };
 
+export type QueueTelemetryStatus = 'active' | 'completed' | 'failed' | 'delayed' | 'waiting' | 'paused';
+export type QueueTelemetryStalenessStatus = 'waiting' | 'delayed' | 'failed';
+
+export interface QueueTelemetryJobCount {
+  queue: QueueName;
+  status: QueueTelemetryStatus;
+  count: number;
+}
+
+export interface QueueTelemetryOldestJobAge {
+  queue: QueueName;
+  status: QueueTelemetryStalenessStatus;
+  ageSeconds: number;
+}
+
+export interface QueueTelemetryMetrics {
+  counts: QueueTelemetryJobCount[];
+  oldestJobAges: QueueTelemetryOldestJobAge[];
+}
+
 @Injectable()
 export class JobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
@@ -150,6 +170,31 @@ export class JobRepository {
       'waiting',
       'paused',
     ) as unknown as Promise<JobCounts>;
+  }
+
+  async getTelemetryMetrics(now = Date.now()): Promise<QueueTelemetryMetrics> {
+    const countStatuses: QueueTelemetryStatus[] = ['active', 'completed', 'failed', 'delayed', 'waiting', 'paused'];
+    const stalenessStatuses: QueueTelemetryStalenessStatus[] = ['waiting', 'delayed', 'failed'];
+    const counts: QueueTelemetryJobCount[] = [];
+    const oldestJobAges: QueueTelemetryOldestJobAge[] = [];
+
+    for (const queue of Object.values(QueueName)) {
+      const queueCounts = await this.getJobCounts(queue);
+      for (const status of countStatuses) {
+        counts.push({ queue, status, count: Number(queueCounts[status] ?? 0) });
+      }
+
+      for (const status of stalenessStatuses) {
+        const [job] = await this.getQueue(queue).getJobs(status, 0, 0, true);
+        oldestJobAges.push({
+          queue,
+          status,
+          ageSeconds: job ? Math.max(0, Math.floor((now - job.timestamp) / 1000)) : 0,
+        });
+      }
+    }
+
+    return { counts, oldestJobAges };
   }
 
   private getQueueName(name: JobName) {

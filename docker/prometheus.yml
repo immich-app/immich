@@ -1,5 +1,5 @@
 global:
-  scrape_interval:     15s
+  scrape_interval: 15s
   evaluation_interval: 15s
 
 scrape_configs:
@@ -10,3 +10,8 @@ scrape_configs:
   - job_name: immich_microservices
     static_configs:
       - targets: ['immich-server:8082']
+
+  - job_name: immich_machine_learning
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['immich-machine-learning:3003']

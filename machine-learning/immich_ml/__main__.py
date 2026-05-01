@@ -5,11 +5,14 @@ from ipaddress import ip_address
 from pathlib import Path
 
 from .config import log, non_prefixed_settings, settings
+from .prometheus import prepare_prometheus_multiprocess_dir
 
 if source_ref := os.getenv("IMMICH_SOURCE_REF"):
     log.info(f"Initializing Immich ML [{source_ref}]")
 else:
     log.info("Initializing Immich ML")
+
+prepare_prometheus_multiprocess_dir()
 
 module_dir = Path(__file__).parent
 

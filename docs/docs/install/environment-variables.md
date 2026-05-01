@@ -224,10 +224,12 @@ For detailed setup instructions, see the [S3-Compatible Storage](/features/s3-st
 
 ## Prometheus
 
-| Variable                   | Description                                                                                                           | Default | Containers | Workers            |
-| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
-| `IMMICH_TELEMETRY_INCLUDE` | Collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`. Note: You can also specify `all` to enable all |         | server     | api, microservices |
-| `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`                                          |         | server     | api, microservices |
+| Variable                   | Description                                                                                                                                               | Default | Containers | Workers            |
+| :------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
+| `IMMICH_TELEMETRY_INCLUDE` | Collect these server telemetry groups. List of `host`, `api`, `app`, `io`, `repo`, `job`. Specify `all` to enable every server telemetry group.           |         | server     | api, microservices |
+| `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these server telemetry groups. List of `host`, `api`, `app`, `io`, `repo`, `job`. Exclusions are applied after `IMMICH_TELEMETRY_INCLUDE`. |         | server     | api, microservices |
+
+The monitoring dashboard expects the `api`, `app`, and `job` groups. Machine-learning metrics are exposed by the machine-learning service on `/metrics` port `3003` and are not controlled by these variables.
 
 ## Secrets
 

@@ -21,15 +21,55 @@ These metrics come in a variety of forms:
 - Histograms, where each observation is assigned to a certain number of "buckets". Example: response time, where each bucket is a number of milliseconds. This one is a bit more complicated.
   - Buckets in this case are _cumulative_; that is, an observation is placed not only into the smallest bucket that contains it, but also to all buckets larger than this. For example, if a histogram has three buckets for 1ms, 5ms and 10ms, an observation of 3ms will be bucketed into both 5ms and 10ms.
 
-The metrics in gallery are grouped into API (endpoint calls and response times), host (memory and CPU utilization), and IO (internal database queries, image processing, and so on). Each group of metrics can be enabled or disabled independently.
+The metrics in gallery are grouped into API (endpoint calls and response times), host (memory and CPU utilization), app (Gallery domain metrics), IO (internal database queries, image processing, and so on), repo, and job metrics. Each group of metrics can be enabled or disabled independently.
+
+### Gallery Metrics
+
+Gallery adds application metrics on top of the standard OpenTelemetry metrics:
+
+- Asset counts and storage by type.
+- Per-user asset and storage metrics labeled by `user_id` only.
+- Smart-search embedding coverage.
+- Face and person totals.
+- Trash and external-library totals.
+- Queue counts and oldest waiting, delayed, and failed job age.
+- Machine-learning request counts, latency histograms, active requests, model cache entries, and model load latency.
+
+Per-user metrics intentionally use `user_id` only. Names, emails, filenames, paths, search text, IP addresses, and request payloads are not exported as labels.
+
+The dashboard and examples use the Prometheus-exported metric names:
+
+| Metric                                   | Telemetry group  | Labels                         | Description                                                        |
+| :--------------------------------------- | :--------------- | :----------------------------- | :----------------------------------------------------------------- |
+| `immich_users_total`                     | `api`            | none                           | Total users.                                                       |
+| `immich_assets_total`                    | `app`            | `type`                         | Non-deleted timeline assets by type.                               |
+| `immich_assets_storage_bytes`            | `app`            | `type`                         | Total asset file bytes by type.                                    |
+| `immich_users_assets_total`              | `app`            | `user_id`, `type`              | Non-deleted timeline assets by user and type.                      |
+| `immich_users_storage_bytes`             | `app`            | `user_id`, `type`              | Asset file bytes by user and type.                                 |
+| `immich_search_embedding_coverage_ratio` | `app`            | none                           | Share of eligible image/video assets with smart-search embeddings. |
+| `immich_faces_total`                     | `app`            | none                           | Visible, non-deleted face count.                                   |
+| `immich_people_total`                    | `app`            | none                           | People with at least one visible, non-deleted face.                |
+| `immich_assets_trash_total`              | `app`            | none                           | Trashed asset count.                                               |
+| `immich_assets_external_total`           | `app`            | none                           | External-library asset count.                                      |
+| `immich_queues_jobs`                     | `job`            | `queue`, `status`              | Queue depth by queue and status.                                   |
+| `immich_queues_oldest_job_age_seconds`   | `job`            | `queue`, `status`              | Age of the oldest waiting, delayed, or failed job.                 |
+| `immich_ml_requests_total`               | machine learning | `task`, `type`, `status`       | Machine-learning `/predict` request count.                         |
+| `immich_ml_request_duration_ms`          | machine learning | `task`, `type`, `status`, `le` | Machine-learning `/predict` latency histogram.                     |
+| `immich_ml_active_requests`              | machine learning | none                           | In-flight machine-learning prediction requests.                    |
+| `immich_ml_model_cache_entries`          | machine learning | `task`, `type`                 | Loaded or cached model count.                                      |
+| `immich_ml_model_load_duration_ms`       | machine learning | `task`, `type`, `status`, `le` | Model load latency histogram.                                      |
 
 ### Configuration
 
-Gallery will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_TELEMETRY_INCLUDE=all` environmental variable to your `.env` file. Note that only the server container currently use this variable.
+Gallery will not expose server metrics endpoints by default. To enable them, add the `IMMICH_TELEMETRY_INCLUDE=all` environment variable to your `.env` file.
 
 :::tip
-`IMMICH_TELEMETRY_INCLUDE=all` enables all metrics. For a more granular configuration you can enumerate the telemetry metrics that should be included as a comma separated list (e.g. `IMMICH_TELEMETRY_INCLUDE=repo,api`). Alternatively, you can also exclude specific metrics with `IMMICH_TELEMETRY_EXCLUDE`. For more information refer to the [environment section](/install/environment-variables.md#prometheus).
+`IMMICH_TELEMETRY_INCLUDE=all` enables all server telemetry groups. For a more granular configuration, enumerate the telemetry groups that should be included as a comma separated list, for example `IMMICH_TELEMETRY_INCLUDE=api,app,job`.
+
+The starter dashboard expects `api`, `app`, and `job`. Add `host`, `io`, and `repo` if you also want the broader OpenTelemetry metrics. You can exclude specific server groups with `IMMICH_TELEMETRY_EXCLUDE`. For more information, refer to the [environment section](/install/environment-variables.md#prometheus).
 :::
+
+The machine-learning service exposes its own `/metrics` endpoint on port `3003`. It is not controlled by `IMMICH_TELEMETRY_INCLUDE`; Prometheus collects those metrics only when you configure the machine-learning scrape target.
 
 The next step is to configure a new or existing Prometheus instance to scrape this endpoint. The following steps assume that you do not have an existing Prometheus instance, but the steps will be similar either way.
 
@@ -63,17 +103,27 @@ The last piece is the [configuration file][prom-file]. This file defines (among 
 The provided file is just a starting point. There are a ton of ways to configure Prometheus, so feel free to experiment!
 :::
 
-After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the gallery server and microservices containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
+The provided configuration includes the machine-learning service as a separate scrape target:
+
+```yaml
+- job_name: immich_machine_learning
+  metrics_path: /metrics
+  static_configs:
+    - targets: ['immich-machine-learning:3003']
+```
+
+After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the gallery server, microservices, and machine-learning containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
 
 :::note
 To see exactly what metrics are made available, you can additionally add `8081:8081` (API metrics) and `8082:8082` (microservices metrics) to the immich_server container's ports.
 Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
+The machine-learning service exposes `/metrics` on its regular `3003` service port, so expose `3003:3003` on the immich_machine_learning container if you also want to inspect those metrics from the host.
 To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](/install/environment-variables/#general).
 :::
 
 ### Usage
 
-So after setting up Prometheus, how do you actually view the metrics? The simplest way is to use Prometheus directly. Visiting Prometheus will show you a web UI where you can search for and visualize metrics. You can also view the status of your data sources and configure settings, but this is beyond the scope of this guide.
+So after setting up Prometheus, how do you actually view the metrics? The simplest way is to use Prometheus directly. Visiting Prometheus will show you a web UI where you can search for and visualize metrics. Use **Status > Targets** to confirm that `immich_api`, `immich_microservices`, and `immich_machine_learning` are all `UP`.
 
 ## Grafana
 
@@ -102,15 +152,30 @@ volumes:
   grafana-data:
 ```
 
-After bringing down the services and back up again, you can now visit Grafana to view your metrics. On the first login, enter `admin` for both username and password and update your password. You can then go to the settings and add a data source with `http://immich-prometheus:9090` to point Grafana to your Prometheus instance.
+After bringing down the services and back up again, you can now visit Grafana to view your metrics. On the first login, enter `admin` for both username and password and update your password. You can then add a Prometheus data source with the URL `http://immich-prometheus:9090`.
+
+Gallery ships a starter dashboard at [`docker/grafana-dashboard.json`][dashboard-file]. In Grafana, open **Dashboards > New > Import**, upload the JSON file or paste its contents, and select your Prometheus data source when prompted.
 
 ### Usage
 
-You can make your first dashboard to get started. Don't forget to save it frequently, or you'll lose all your progress!
+The starter dashboard covers asset totals, storage, users, queue depth, queue staleness, smart-search embedding coverage, face/person counts, and machine-learning request/model metrics.
 
-You can then make a new panel, specifying Prometheus as the data source for it.
+You can edit the imported dashboard in Grafana and save your own copy. If you want repeatable setup instead of manual import, keep the dashboard JSON in your own configuration repository and provision it with [Grafana dashboard provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards).
 
--- TODO: add images and more details here
+### Troubleshooting
+
+If Prometheus or Grafana does not show data:
+
+- Run `docker compose up -d` after changing `.env`; a simple restart does not apply new environment variables.
+- In Prometheus, open **Status > Targets** and confirm the API, microservices, and machine-learning targets are `UP`.
+- Confirm the server container has `IMMICH_TELEMETRY_INCLUDE=all` or at least `IMMICH_TELEMETRY_INCLUDE=api,app,job`.
+- Confirm `./prometheus.yml` is in the same directory as your Compose file and is mounted into the Prometheus container.
+- If only machine-learning panels are empty, run a smart-search, facial-recognition, or classification task so the ML service has request and model activity to report.
+- If you exposed the metrics ports for inspection, check `http://localhost:8081/metrics`, `http://localhost:8082/metrics`, and `http://localhost:3003/metrics`.
+
+### Deferred Scope
+
+Phase 1 does not add auth/IP metrics, upload throughput, face/CLIP score distributions, duplicate metrics, video transcode quality metrics, DB bloat metrics, geocoding/OCR coverage, new memory metrics, cache hit/miss internals, or custom CPU/memory/GPU/network metrics beyond existing host and infrastructure exporters. Those need separate product and privacy decisions.
 
 ## Structured Logging
 
@@ -148,4 +213,5 @@ This format includes:
 
 For more information on log formats, see [`IMMICH_LOG_FORMAT`](/install/environment-variables.md#general).
 
-[prom-file]: https://github.com/open-noodle/gallery/releases/latest/download/prometheus.yml
+[dashboard-file]: https://raw.githubusercontent.com/open-noodle/gallery/main/docker/grafana-dashboard.json
+[prom-file]: https://raw.githubusercontent.com/open-noodle/gallery/main/docker/prometheus.yml

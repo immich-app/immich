@@ -23,9 +23,10 @@ const emptyCounts = (): JobCounts => ({
   paused: 0,
 });
 
-const setup = (counts: JobCounts[]) => {
+const setup = (counts: JobCounts[] = []) => {
   const queue = {
     getJobCounts: vi.fn().mockResolvedValue(emptyCounts()),
+    getJobs: vi.fn().mockResolvedValue([]),
     isPaused: vi.fn().mockResolvedValue(false),
   };
 
@@ -36,6 +37,7 @@ const setup = (counts: JobCounts[]) => {
   const moduleRef = { get: vi.fn().mockReturnValue(queue) } as unknown as ModuleRef;
   const logger = {
     setContext: vi.fn(),
+    error: vi.fn(),
     verbose: vi.fn(),
     warn: vi.fn(),
   } as unknown as LoggingRepository;
@@ -95,5 +97,42 @@ describe(JobRepository.name, () => {
     expect(logger.warn).toHaveBeenCalledWith(
       `Waiting for ${QueueName.FaceDetection} queue to finish (0 active, 0 waiting, 0 delayed, 1 paused); queue is paused`,
     );
+  });
+
+  it('returns queue counts and oldest job ages', async () => {
+    const { sut, queue } = setup();
+    const now = new Date('2026-04-25T12:00:00Z').getTime();
+    queue.getJobCounts.mockResolvedValue({
+      active: 1,
+      completed: 2,
+      failed: 3,
+      delayed: 4,
+      waiting: 5,
+      paused: 6,
+    });
+    queue.getJobs.mockResolvedValue([{ timestamp: now - 120_000 }]);
+
+    const result = await sut.getTelemetryMetrics(now);
+
+    expect(result.counts).toEqual(
+      expect.arrayContaining([
+        { queue: QueueName.ThumbnailGeneration, status: 'active', count: 1 },
+        { queue: QueueName.ThumbnailGeneration, status: 'completed', count: 2 },
+        { queue: QueueName.ThumbnailGeneration, status: 'failed', count: 3 },
+        { queue: QueueName.ThumbnailGeneration, status: 'delayed', count: 4 },
+        { queue: QueueName.ThumbnailGeneration, status: 'waiting', count: 5 },
+        { queue: QueueName.ThumbnailGeneration, status: 'paused', count: 6 },
+      ]),
+    );
+    expect(result.oldestJobAges).toEqual(
+      expect.arrayContaining([
+        { queue: QueueName.ThumbnailGeneration, status: 'waiting', ageSeconds: 120 },
+        { queue: QueueName.ThumbnailGeneration, status: 'delayed', ageSeconds: 120 },
+        { queue: QueueName.ThumbnailGeneration, status: 'failed', ageSeconds: 120 },
+      ]),
+    );
+    expect(queue.getJobs).toHaveBeenCalledWith('waiting', 0, 0, true);
+    expect(queue.getJobs).toHaveBeenCalledWith('delayed', 0, 0, true);
+    expect(queue.getJobs).toHaveBeenCalledWith('failed', 0, 0, true);
   });
 });

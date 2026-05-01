@@ -5,8 +5,8 @@ name: Release Candidate Build
 #   - does NOT create git tags (no VERSION, no vN, no `release`)
 #   - does NOT create a GitHub Release
 #   - does NOT publish to the version endpoint
-#   - does NOT touch ML at all — no ML build, no ML retag. Testers pin the server
-#     image via a compose override (see the workflow run summary for copy-paste YAML).
+#   - does NOT touch ML by default. If build_ml=true, it builds only the CPU ML image
+#     under the same RC tag. No ML release/latest/vN tags are moved.
 #
 # Dispatch it from the branch you want to build (or from any branch with `ref` set to
 # the target branch/tag/SHA).
@@ -22,6 +22,11 @@ on:
         description: 'Git ref (branch/tag/SHA) to build. Leave empty to use the ref this workflow was dispatched on.'
         required: false
         type: string
+      build_ml:
+        description: 'Also build the CPU machine-learning image under the same RC tag.'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ inputs.rc_tag }}
@@ -167,45 +172,174 @@ jobs:
           sources=$(printf "${IMAGE}@sha256:%s " *)
           docker buildx imagetools create -t "${IMAGE}:${RC_TAG}" ${sources}
 
+  build-ml:
+    name: Build ML (${{ matrix.platform }})
+    needs: validate
+    if: ${{ inputs.build_ml }}
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.ref }}
+          # Keep this aligned with the server RC build so apply-branding can stamp
+          # a valid semver into pyproject.toml without using the RC docker tag.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply branding
+        uses: ./.github/actions/apply-branding
+
+      - name: Prepare platform pair
+        id: prepare
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "platform-pair=${PLATFORM//\//-}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: machine-learning
+          file: machine-learning/Dockerfile
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            DEVICE=cpu
+            BUILD_ID=${{ github.run_id }}
+            BUILD_IMAGE=ghcr.io/open-noodle/gallery-ml
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}
+          outputs: type=image,"name=ghcr.io/open-noodle/gallery-ml",push-by-digest=true,name-resolution=short,push=true
+          cache-from: type=gha,scope=rc-ml-cpu-${{ steps.prepare.outputs.platform-pair }}
+          cache-to: type=gha,scope=rc-ml-cpu-${{ steps.prepare.outputs.platform-pair }},mode=max
+
+      - name: Export digest
+        run: | # zizmor: ignore[template-injection]
+          mkdir -p "${{ runner.temp }}/digests"
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: rc-ml-digests-${{ steps.prepare.outputs.platform-pair }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge-ml:
+    name: Merge ML Manifest
+    needs: [validate, build-ml]
+    if: ${{ inputs.build_ml }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: rc-ml-digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ghcr.io/open-noodle/gallery-ml
+          RC_TAG: ${{ inputs.rc_tag }}
+        run: |
+          sources=$(printf "${IMAGE}@sha256:%s " *)
+          docker buildx imagetools create -t "${IMAGE}:${RC_TAG}" ${sources}
+
   summary:
     name: RC Ready
-    needs: merge-server
+    needs: [merge-server, merge-ml]
+    if: ${{ always() && needs.merge-server.result == 'success' && (!inputs.build_ml || needs.merge-ml.result == 'success') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
       - name: Write summary
         env:
           RC_TAG: ${{ inputs.rc_tag }}
+          BUILD_ML: ${{ inputs.build_ml }}
         run: |
           {
             echo "## Release candidate ready"
             echo
             echo "**Tag:** \`${RC_TAG}\`"
             echo
-            echo "Only the server image was built. ML is untouched and continues to be pulled from its usual \`release\` tag."
+            if [[ "$BUILD_ML" == "true" ]]; then
+              echo "Server and CPU machine-learning images were built under this RC tag."
+            else
+              echo "Only the server image was built. ML is untouched and continues to be pulled from its usual \`release\` tag."
+            fi
             echo
             echo "### Tester instructions"
             echo
-            echo "In the directory containing your \`docker-compose.yml\`, create (or append to) a \`docker-compose.override.yml\` file so compose pins the server image to the RC while leaving everything else alone:"
+            echo "In the directory containing your \`docker-compose.yml\`, create (or append to) a \`docker-compose.override.yml\` file so compose pins the RC image tag:"
             echo
             echo '```yaml'
             echo "services:"
             echo "  immich-server:"
             echo "    image: ghcr.io/open-noodle/gallery-server:${RC_TAG}"
+            if [[ "$BUILD_ML" == "true" ]]; then
+              echo "  immich-machine-learning:"
+              echo "    image: ghcr.io/open-noodle/gallery-ml:${RC_TAG}"
+            fi
             echo '```'
             echo
             echo "Then:"
             echo
             echo '```bash'
-            echo "docker compose pull immich-server"
+            if [[ "$BUILD_ML" == "true" ]]; then
+              echo "docker compose pull immich-server immich-machine-learning"
+            else
+              echo "docker compose pull immich-server"
+            fi
             echo "docker compose up -d"
             echo '```'
             echo
-            echo "To roll back, delete the override file (or the \`immich-server\` block in it) and run \`docker compose up -d\` again."
+            echo "To roll back, delete the override file or RC image block(s), then run \`docker compose up -d\` again."
             echo
             echo "### Image published"
             echo
             echo "- \`ghcr.io/open-noodle/gallery-server:${RC_TAG}\` (linux/amd64 + linux/arm64)"
+            if [[ "$BUILD_ML" == "true" ]]; then
+              echo "- \`ghcr.io/open-noodle/gallery-ml:${RC_TAG}\` (CPU, linux/amd64 + linux/arm64)"
+            fi
             echo
-            echo "**No git tags, no GitHub release, no version endpoint updates, no ML changes.** To promote to a stable release, merge the corresponding PR to main."
+            echo "**No git tags, no GitHub release, no version endpoint updates, no release/latest/vN image tags.** To promote to a stable release, merge the corresponding PR to main."
           } >> "$GITHUB_STEP_SUMMARY"
