@@ -11,7 +11,7 @@
     toIsoDate,
     type ZoneOption,
   } from '$lib/modals/timezone-utils';
-  import { getOwnedAssetsObjects, getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
+  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { getFullDateFormat } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
@@ -68,8 +68,8 @@
           },
         });
 
-        let updatedAssets = getOwnedAssetsObjects(assets, authManager.user);
-        for (let asset of updatedAssets) {
+        const updatedAssets = assets.filter((a) => authManager.user && a.ownerId === authManager.user.id);
+        for (const asset of updatedAssets) {
           asset.localOffsetHours = selectedOption.offsetMinutes / 60;
         }
 
