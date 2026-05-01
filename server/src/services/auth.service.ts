@@ -322,7 +322,7 @@ export class AuthService extends BaseService {
       const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
         if (emailUser.oauthId) {
-          this.logger.debug('OAuth login conflict: email already linked to different account');          
+          this.logger.debug('OAuth login conflict: email already linked to different account');
           throw new BadRequestException('OAuth authentication failed');
         }
         user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
