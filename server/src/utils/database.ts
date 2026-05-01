@@ -153,21 +153,7 @@ export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video
   return jsonObjectFrom(
     eb
       .selectFrom(dummy)
-      .select([
-        'asset_video.formatName',
-        'asset_video.formatLongName',
-        // TODO: simplify after https://github.com/immich-app/immich/pull/28003
-        eb
-          .case()
-          .when('asset.duration', '~', sql<string>`'^\\d{2}:\\d{2}:\\d{2}\\.\\d{3}$'`)
-          .then(
-            sql<number>`substr(asset.duration, 1, 2)::int * 3600000 + substr(asset.duration, 4, 2)::int * 60000 + substr(asset.duration, 7, 2)::int * 1000 + substr(asset.duration, 10, 3)::int`,
-          )
-          .else(sql.lit(0))
-          .end()
-          .as('duration'),
-        'asset_video.bitrate',
-      ])
+      .select(['asset_video.formatName', 'asset_video.formatLongName', 'asset.duration', 'asset_video.bitrate'])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
   ).$castTo<VideoFormat | null>();
 }

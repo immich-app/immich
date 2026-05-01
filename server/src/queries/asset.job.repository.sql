@@ -286,10 +286,7 @@ select
         select
           "asset_video"."formatName",
           "asset_video"."formatLongName",
-          case
-            when "asset"."duration" ~ '^\d{2}:\d{2}:\d{2}\.\d{3}$' then substr(asset.duration, 1, 2)::int * 3600000 + substr(asset.duration, 4, 2)::int * 60000 + substr(asset.duration, 7, 2)::int * 1000 + substr(asset.duration, 10, 3)::int
-            else 0
-          end as "duration",
+          "asset"."duration",
           "asset_video"."bitrate"
         from
           (
@@ -681,10 +678,7 @@ select
         select
           "asset_video"."formatName",
           "asset_video"."formatLongName",
-          case
-            when "asset"."duration" ~ '^\d{2}:\d{2}:\d{2}\.\d{3}$' then substr(asset.duration, 1, 2)::int * 3600000 + substr(asset.duration, 4, 2)::int * 60000 + substr(asset.duration, 7, 2)::int * 1000 + substr(asset.duration, 10, 3)::int
-            else 0
-          end as "duration",
+          "asset"."duration",
           "asset_video"."bitrate"
         from
           (
