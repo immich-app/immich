@@ -1,18 +1,21 @@
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:logging/logging.dart';
 
-final localFileManagerServiceProvider = Provider<LocalFilesManagerService>((ref) => const LocalFilesManagerService());
+final localFileManagerServiceProvider = Provider<LocalFilesManagerService>(
+  (ref) => LocalFilesManagerService(ref.watch(nativeSyncApiProvider)),
+);
 
 class LocalFilesManagerService {
-  const LocalFilesManagerService();
+  const LocalFilesManagerService(this._nativeSyncApi);
 
   static final Logger _logger = Logger('LocalFilesManager');
-  static const MethodChannel _channel = MethodChannel('file_trash');
+  final NativeSyncApi _nativeSyncApi;
 
   Future<bool> moveToTrash(List<String> mediaUrls) async {
     try {
-      return await _channel.invokeMethod('moveToTrash', {'mediaUrls': mediaUrls});
+      return await _nativeSyncApi.moveToTrash(mediaUrls);
     } catch (e, s) {
       _logger.warning('Error moving file to trash', e, s);
       return false;
@@ -21,7 +24,7 @@ class LocalFilesManagerService {
 
   Future<bool> restoreFromTrash(String fileName, int type) async {
     try {
-      return await _channel.invokeMethod('restoreFromTrash', {'fileName': fileName, 'type': type});
+      return await _nativeSyncApi.restoreFromTrash(fileName: fileName, type: type);
     } catch (e, s) {
       _logger.warning('Error restore file from trash', e, s);
       return false;
@@ -30,7 +33,7 @@ class LocalFilesManagerService {
 
   Future<bool> restoreFromTrashById(String mediaId, int type) async {
     try {
-      return await _channel.invokeMethod('restoreFromTrash', {'mediaId': mediaId, 'type': type});
+      return await _nativeSyncApi.restoreFromTrash(mediaId: mediaId, type: type);
     } catch (e, s) {
       _logger.warning('Error restore file from trash by Id', e, s);
       return false;
@@ -39,7 +42,7 @@ class LocalFilesManagerService {
 
   Future<bool> requestManageMediaPermission() async {
     try {
-      return await _channel.invokeMethod('requestManageMediaPermission');
+      return await _nativeSyncApi.requestManageMediaPermission();
     } catch (e, s) {
       _logger.warning('Error requesting manage media permission', e, s);
       return false;
@@ -48,7 +51,7 @@ class LocalFilesManagerService {
 
   Future<bool> hasManageMediaPermission() async {
     try {
-      return await _channel.invokeMethod('hasManageMediaPermission');
+      return await _nativeSyncApi.hasManageMediaPermission();
     } catch (e, s) {
       _logger.warning('Error requesting manage media permission state', e, s);
       return false;
@@ -57,7 +60,7 @@ class LocalFilesManagerService {
 
   Future<bool> manageMediaPermission() async {
     try {
-      return await _channel.invokeMethod('manageMediaPermission');
+      return await _nativeSyncApi.requestManageMediaPermission();
     } catch (e, s) {
       _logger.warning('Error requesting manage media permission settings', e, s);
       return false;
