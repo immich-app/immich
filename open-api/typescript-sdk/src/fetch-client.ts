@@ -6874,9 +6874,10 @@ export function updateMember({ id, userId, sharedSpaceMemberUpdateDto }: {
 /**
  * Get people in a shared space
  */
-export function getSpacePeople({ id, limit, named, offset, takenAfter, takenBefore, withHidden }: {
+export function getSpacePeople({ id, limit, name, named, offset, takenAfter, takenBefore, withHidden }: {
     id: string;
     limit?: number;
+    name?: string;
     named?: boolean;
     offset?: number;
     takenAfter?: string;
@@ -6888,6 +6889,7 @@ export function getSpacePeople({ id, limit, named, offset, takenAfter, takenBefo
         data: SharedSpacePersonResponseDto[];
     }>(`/shared-spaces/${encodeURIComponent(id)}/people${QS.query(QS.explode({
         limit,
+        name,
         named,
         offset,
         takenAfter,

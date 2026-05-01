@@ -542,10 +542,17 @@ export class SharedSpaceRepository {
       limit?: number;
       offset?: number;
       named?: boolean;
+      name?: string;
       takenAfter?: Date;
       takenBefore?: Date;
     },
   ) {
+    const escapedName = options.name
+      ?.replaceAll('\\', String.raw`\\`)
+      .replaceAll('%', String.raw`\%`)
+      .replaceAll('_', String.raw`\_`);
+    const namePattern = escapedName ? `%${escapedName}%` : undefined;
+
     return this.db
       .selectFrom('shared_space_person')
       .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
@@ -561,6 +568,12 @@ export class SharedSpaceRepository {
             eb('shared_space_person.name', '!=', ''),
             eb.and([eb('person.name', 'is not', null), eb('person.name', '!=', '')]),
           ]),
+        ),
+      )
+      .$if(!!namePattern, (qb) =>
+        qb.where(
+          () =>
+            sql`COALESCE(NULLIF("shared_space_person"."name", ''), "person"."name", '') ILIKE ${namePattern} ESCAPE '\\'`,
         ),
       )
       .$if(!!options.takenAfter || !!options.takenBefore, (qb) =>

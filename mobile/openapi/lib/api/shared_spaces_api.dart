@@ -708,6 +708,9 @@ class SharedSpacesApi {
   /// * [int] limit:
   ///   Maximum number of people to return (sorted by asset count)
   ///
+  /// * [String] name:
+  ///   Search by person name
+  ///
   /// * [bool] named:
   ///
   /// * [int] offset:
@@ -718,7 +721,7 @@ class SharedSpacesApi {
   /// * [DateTime] takenBefore:
   ///
   /// * [bool] withHidden:
-  Future<Response> getSpacePeopleWithHttpInfo(String id, { int? limit, bool? named, int? offset, DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
+  Future<Response> getSpacePeopleWithHttpInfo(String id, { int? limit, String? name, bool? named, int? offset, DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-spaces/{id}/people'
       .replaceAll('{id}', id);
@@ -732,6 +735,9 @@ class SharedSpacesApi {
 
     if (limit != null) {
       queryParams.addAll(_queryParams('', 'limit', limit));
+    }
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
     }
     if (named != null) {
       queryParams.addAll(_queryParams('', 'named', named));
@@ -774,6 +780,9 @@ class SharedSpacesApi {
   /// * [int] limit:
   ///   Maximum number of people to return (sorted by asset count)
   ///
+  /// * [String] name:
+  ///   Search by person name
+  ///
   /// * [bool] named:
   ///
   /// * [int] offset:
@@ -784,8 +793,8 @@ class SharedSpacesApi {
   /// * [DateTime] takenBefore:
   ///
   /// * [bool] withHidden:
-  Future<List<SharedSpacePersonResponseDto>?> getSpacePeople(String id, { int? limit, bool? named, int? offset, DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
-    final response = await getSpacePeopleWithHttpInfo(id,  limit: limit, named: named, offset: offset, takenAfter: takenAfter, takenBefore: takenBefore, withHidden: withHidden, );
+  Future<List<SharedSpacePersonResponseDto>?> getSpacePeople(String id, { int? limit, String? name, bool? named, int? offset, DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
+    final response = await getSpacePeopleWithHttpInfo(id,  limit: limit, name: name, named: named, offset: offset, takenAfter: takenAfter, takenBefore: takenBefore, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

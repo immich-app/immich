@@ -1,5 +1,7 @@
 <script lang="ts">
   import { goto, invalidateAll } from '$app/navigation';
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { listNavigation } from '$lib/actions/list-navigation';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import PeopleMergeSelector from '$lib/components/people/people-merge-selector.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -18,6 +20,7 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import { createUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -30,7 +33,7 @@
     type SharedSpaceMemberResponseDto,
     type SharedSpacePersonResponseDto,
   } from '@immich/sdk';
-  import { ContextMenuButton, modalManager, toastManager, type ActionItem } from '@immich/ui';
+  import { ContextMenuButton, LoadingSpinner, modalManager, toastManager, type ActionItem } from '@immich/ui';
   import {
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
@@ -62,6 +65,11 @@
   let isEditingName = $state(false);
   let editedName = $state('');
   let nameInput = $state<HTMLInputElement>();
+  let suggestedPeople: SharedSpacePersonResponseDto[] = $state([]);
+  let isSearchingPeople = $state(false);
+  let suggestionContainer: HTMLElement | undefined = $state();
+  let abortController: AbortController | null = null;
+  let loadingTimeout: NodeJS.Timeout | null = null;
 
   let actionOverride = $state<string | null>();
   let actionOverrideKey = $state('');
@@ -96,13 +104,62 @@
       return;
     }
     editedName = person.name;
+    suggestedPeople = [];
     isEditingName = true;
     void tick().then(() => nameInput?.focus());
   };
 
+  const cancelPreviousSearch = () => {
+    abortController?.abort();
+    abortController = null;
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      loadingTimeout = null;
+    }
+    isSearchingPeople = false;
+  };
+
   const cancelEditingName = () => {
+    cancelPreviousSearch();
+    suggestedPeople = [];
     editedName = person.name;
     isEditingName = false;
+  };
+
+  const searchSpacePeople = async () => {
+    cancelPreviousSearch();
+    suggestedPeople = [];
+
+    if (editedName === '') {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
+    abortController = controller;
+    loadingTimeout = timeout;
+
+    try {
+      const people = await getSpacePeople(
+        { id: space.id, name: editedName, named: true, limit: 5 },
+        { signal: controller.signal },
+      );
+      suggestedPeople = people.filter((suggestedPerson) => suggestedPerson.id !== person.id);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+      handleError(error, $t('errors.cant_search_people'));
+    } finally {
+      if (loadingTimeout === timeout) {
+        clearTimeout(timeout);
+        loadingTimeout = null;
+      }
+      if (abortController === controller) {
+        abortController = null;
+        isSearchingPeople = false;
+      }
+    }
   };
 
   const saveName = async () => {
@@ -111,6 +168,8 @@
     }
 
     isEditingName = false;
+    cancelPreviousSearch();
+    suggestedPeople = [];
     if (editedName === person.name) {
       return;
     }
@@ -126,6 +185,31 @@
     } catch (error) {
       editedName = person.name;
       handleError(error, $t('errors.unable_to_save_name'));
+    }
+  };
+
+  const selectSuggestedPerson = async (suggestedPerson: SharedSpacePersonResponseDto) => {
+    cancelPreviousSearch();
+    suggestedPeople = [];
+
+    const isConfirm = await modalManager.showDialog({ prompt: $t('merge_people_prompt') });
+    if (!isConfirm) {
+      return;
+    }
+
+    try {
+      await mergeSpacePeople({
+        id: space.id,
+        personId: suggestedPerson.id,
+        sharedSpacePersonMergeDto: { ids: [person.id] },
+      });
+      toastManager.success($t('spaces_people_merged'));
+      await invalidateAll();
+      await goto(`/spaces/${space.id}/people/${suggestedPerson.id}`, { replaceState: true });
+    } catch (error) {
+      handleError(error, $t('cannot_merge_people'));
+    } finally {
+      isEditingName = false;
     }
   };
 
@@ -253,7 +337,14 @@
       onEscape={handleBack}
       spaceId={space.id}
     >
-      <div class="relative w-fit p-4 pt-12 sm:px-6">
+      <div
+        class="relative w-fit p-4 pt-12 sm:px-6"
+        use:clickOutside={{
+          onOutclick: () => void saveName(),
+          onEscape: cancelEditingName,
+        }}
+        use:listNavigation={suggestionContainer}
+      >
         <section class="flex w-64 place-items-center border-black sm:w-96">
           {#if isEditor}
             <button
@@ -291,10 +382,10 @@
                 class="w-40 rounded-lg bg-gray-100 px-2 py-1 font-medium text-primary outline-hidden focus:ring-2 focus:ring-immich-primary dark:bg-immich-dark-gray dark:focus:ring-immich-dark-primary sm:w-72"
                 placeholder={$t('add_a_name')}
                 aria-label={$t('edit_name')}
-                onblur={() => void saveName()}
+                oninput={() => void searchSpacePeople()}
                 onkeydown={(event) => {
                   if (event.key === 'Enter') {
-                    event.currentTarget.blur();
+                    void saveName();
                   }
                   if (event.key === 'Escape') {
                     cancelEditingName();
@@ -334,6 +425,43 @@
             {/if}
           </div>
         </section>
+        {#if isEditingName}
+          <div class="absolute z-1 w-64 sm:w-96">
+            {#if isSearchingPeople}
+              <div
+                class="flex h-14 place-items-center rounded-b-lg border border-gray-400 bg-gray-200 p-2 dark:border-immich-dark-gray dark:bg-gray-700"
+              >
+                <div class="flex w-full place-items-center">
+                  <LoadingSpinner />
+                </div>
+              </div>
+            {:else}
+              <div bind:this={suggestionContainer}>
+                {#each suggestedPeople as suggestedPerson, index (suggestedPerson.id)}
+                  <button
+                    type="button"
+                    class="flex h-14 w-full place-items-center border border-gray-200 bg-gray-100 p-2 hover:bg-gray-300 focus:bg-gray-300 dark:border-immich-dark-gray dark:bg-gray-700 hover:dark:bg-[#232932] focus:dark:bg-[#232932] {index ===
+                    suggestedPeople.length - 1
+                      ? 'rounded-b-lg border-b'
+                      : ''}"
+                    aria-label={suggestedPerson.name}
+                    onclick={() => void selectSuggestedPerson(suggestedPerson)}
+                  >
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={getThumbUrl(suggestedPerson)}
+                      altText={suggestedPerson.name}
+                      widthStyle="2rem"
+                      heightStyle="2rem"
+                    />
+                    <p class="ms-4 text-gray-700 dark:text-gray-100">{suggestedPerson.name}</p>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
       </div>
 
       {#snippet empty()}

@@ -11,7 +11,7 @@ import { modalManager } from '@immich/ui';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { Component } from 'svelte';
 import { load } from './+page';
@@ -207,6 +207,24 @@ describe('Spaces person detail page', () => {
       sharedSpacePersonUpdateDto: { name: 'Alice' },
     });
     expect(await screen.findByText('Alice')).toBeInTheDocument();
+  });
+
+  it('shows matching named space people while editing an unnamed person', async () => {
+    const person = makePerson({ id: 'person-1', name: '' });
+    const existingPerson = makePerson({ id: 'person-2', name: 'Alice Existing' });
+    sdkMock.getSpacePeople.mockResolvedValue([existingPerson]);
+    renderPage({ person });
+
+    await userEvent.click(screen.getByText('add_a_name'));
+    await userEvent.type(screen.getByPlaceholderText('add_a_name'), 'Ali');
+
+    await waitFor(() => {
+      expect(sdkMock.getSpacePeople).toHaveBeenCalledWith(
+        { id: 'space-1', name: 'Ali', named: true, limit: 5 },
+        expect.any(Object),
+      );
+    });
+    expect(await screen.findByRole('button', { name: 'Alice Existing' })).toBeInTheDocument();
   });
 
   it('updates birthdate from the detail page and reopens with the saved value', async () => {

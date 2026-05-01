@@ -661,6 +661,7 @@ export class SharedSpaceService extends BaseService {
       limit: query?.limit,
       offset: query?.offset,
       named: query?.named,
+      name: query?.name,
       takenAfter: query?.takenAfter,
       takenBefore: query?.takenBefore,
     });

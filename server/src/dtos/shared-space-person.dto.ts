@@ -16,6 +16,7 @@ const SpacePeopleQuerySchema = z
       .describe('Maximum number of people to return (sorted by asset count)'),
     offset: z.coerce.number().int().min(0).optional().describe('Number of people to skip'),
     named: stringToBool.optional(),
+    name: z.string().trim().min(1).max(100).optional().describe('Search by person name'),
   })
   .meta({ id: 'SpacePeopleQueryDto' });
 

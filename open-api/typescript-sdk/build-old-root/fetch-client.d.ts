@@ -5025,9 +5025,10 @@ export declare function updateMember({ id, userId, sharedSpaceMemberUpdateDto }:
 /**
  * Get people in a shared space
  */
-export declare function getSpacePeople({ id, limit, named, offset, takenAfter, takenBefore, withHidden }: {
+export declare function getSpacePeople({ id, limit, name, named, offset, takenAfter, takenBefore, withHidden }: {
     id: string;
     limit?: number;
+    name?: string;
     named?: boolean;
     offset?: number;
     takenAfter?: string;

@@ -3154,6 +3154,30 @@ describe(SharedSpaceService.name, () => {
       });
     });
 
+    it('should pass name search to repository', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([]);
+      mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
+
+      await sut.getSpacePeople(auth, spaceId, { name: 'Ali', limit: 5 } as never);
+
+      expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
+        withHidden: false,
+        petsEnabled: true,
+        limit: 5,
+        offset: undefined,
+        named: undefined,
+        name: 'Ali',
+        takenAfter: undefined,
+        takenBefore: undefined,
+      });
+    });
+
     it('should return integer counts from denormalized columns', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
