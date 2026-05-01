@@ -218,6 +218,7 @@ export class BaseService {
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
     const exists = await this.userRepository.getByEmail(dto.email);
     if (exists) {
+      this.logger.debug('User creation rejected: user already exists');
       throw new BadRequestException('Email is not available');
     }
 

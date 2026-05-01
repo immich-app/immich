@@ -107,6 +107,7 @@ export class AlbumService extends BaseService {
     for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
       if (!exists) {
+        this.logger.debug('Album creation failed: user not found');
         throw new BadRequestException('Invalid user');
       }
 
@@ -302,6 +303,7 @@ export class AlbumService extends BaseService {
 
       const user = await this.userRepository.get(userId, {});
       if (!user) {
+        this.logger.debug('Adding user to album failed: user not found');
         throw new BadRequestException('Invalid user');
       }
 
