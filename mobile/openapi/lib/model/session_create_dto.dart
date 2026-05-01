@@ -39,13 +39,14 @@ class SessionCreateDto {
   /// Session duration in seconds
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? duration;
+  int? duration;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SessionCreateDto &&
@@ -94,7 +95,7 @@ class SessionCreateDto {
       return SessionCreateDto(
         deviceOS: mapValueOfType<String>(json, r'deviceOS'),
         deviceType: mapValueOfType<String>(json, r'deviceType'),
-        duration: num.parse('${json[r'duration']}'),
+        duration: mapValueOfType<int>(json, r'duration'),
       );
     }
     return null;

@@ -1,14 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
-import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
+import _ from 'lodash';
 import { Duration } from 'luxon';
+import { execFile as execFileCb } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
+import {
+  AacProfile,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  Colorspace,
+  ColorTransfer,
+  DvProfile,
+  DvSignalCompatibility,
+  H264Profile,
+  HevcProfile,
+  LogLevel,
+  RawExtractedFormat,
+} from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
@@ -18,6 +34,7 @@ import {
   ProbeOptions,
   TranscodeCommand,
   VideoInfo,
+  VideoPacketInfo,
 } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
@@ -26,8 +43,13 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
+
+const execFile = promisify(execFileCb);
+
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
+
+const pascalCase = (str: string) => _.upperFirst(_.camelCase(str.toLowerCase()));
 
 type ProgressEvent = {
   frames: number;
@@ -244,6 +266,7 @@ export class MediaRepository {
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic)
+        .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => {
           const height = this.parseInt(stream.height);
           const dar = this.getDar(stream.display_aspect_ratio);
@@ -252,25 +275,95 @@ export class MediaRepository {
             height,
             width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
             codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
-            codecType: stream.codec_type,
+            profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined),
+            level: this.parseOptionalInt(stream.level),
             frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
+            frameRate: this.parseFrameRate(stream.avg_frame_rate ?? stream.r_frame_rate),
+            timeBase: this.parseRational(stream.time_base)?.den,
             rotation: this.parseInt(stream.rotation),
-            isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
             bitrate: this.parseInt(stream.bit_rate),
             pixelFormat: stream.pix_fmt || 'yuv420p',
-            colorPrimaries: stream.color_primaries,
-            colorSpace: stream.color_space,
-            colorTransfer: stream.color_transfer,
+            colorPrimaries: this.parseEnum(ColorPrimaries, stream.color_primaries) ?? ColorPrimaries.Unknown,
+            colorMatrix: this.parseEnum(ColorMatrix, stream.color_space) ?? ColorMatrix.Unknown,
+            colorTransfer: this.parseEnum(ColorTransfer, stream.color_transfer) ?? ColorTransfer.Unknown,
+            dvProfile: this.parseOptionalInt(stream.dv_profile) as DvProfile | undefined,
+            dvLevel: this.parseOptionalInt(stream.dv_level),
+            dvBlSignalCompatibilityId: this.parseOptionalInt(stream.dv_bl_signal_compatibility_id) as
+              | DvSignalCompatibility
+              | undefined,
           };
         }),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
+        .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
-          codecType: stream.codec_type,
           codecName: stream.codec_name,
+          profile:
+            stream.codec_name === 'aac' ? this.parseEnum(AacProfile, stream.profile as string | undefined) : undefined,
           bitrate: this.parseInt(stream.bit_rate),
         })),
+    };
+  }
+
+  /**
+   * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
+   * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
+   */
+  async probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
+    const { stdout } = await execFile('ffprobe', [
+      '-v',
+      'error',
+      '-select_streams',
+      String(streamIndex),
+      '-show_entries',
+      'packet=pts,duration,flags',
+      '-of',
+      'csv=p=0',
+      input,
+    ]);
+
+    let totalDuration = 0;
+    const keyframePts: number[] = [];
+    const keyframeAccDuration: number[] = [];
+    const keyframeOwnDuration: number[] = [];
+    const postDiscard: { pts: number; duration: number }[] = [];
+    for (const line of stdout.split('\n')) {
+      if (!line) {
+        continue;
+      }
+      const [ptsStr, durationStr, flags] = line.split(',');
+      const pts = Number.parseInt(ptsStr);
+      const duration = Number.parseInt(durationStr);
+      if (Number.isNaN(pts) || Number.isNaN(duration)) {
+        continue;
+      }
+      // Discarded packets don't contribute to packet count, but still contribute to video duration
+      totalDuration += duration;
+      if (flags[1] !== 'D') {
+        postDiscard.push({ pts, duration });
+      }
+      if (flags[0] === 'K') {
+        keyframePts.push(pts);
+        keyframeAccDuration.push(totalDuration);
+        // VFR content can have variable duration keyframes,
+        // so we need to track their duration separately for accurate segment boundaries.
+        // Non-keyframes are accounted for in totalDuration.
+        keyframeOwnDuration.push(duration);
+      }
+    }
+
+    if (postDiscard.length === 0) {
+      return null;
+    }
+
+    return {
+      totalDuration,
+      packetCount: postDiscard.length,
+      outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
+      keyframePts,
+      keyframeAccDuration,
+      keyframeOwnDuration,
     };
   }
 
@@ -356,6 +449,31 @@ export class MediaRepository {
     return Number.parseFloat(value as string) || 0;
   }
 
+  private parseOptionalInt(value: string | number | undefined): number | undefined {
+    const parsed = Number.parseInt(value as string);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+
+  private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
+    return value ? (enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) : undefined;
+  }
+
+  /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */
+  private parseRational(value: string | undefined): { num: number; den: number } | undefined {
+    if (!value) {
+      return;
+    }
+    const [num, den = 1] = value.split('/').map(Number);
+    if (num && den) {
+      return { num, den };
+    }
+  }
+
+  private parseFrameRate(value: string | undefined): number | undefined {
+    const r = this.parseRational(value);
+    return r ? r.num / r.den : undefined;
+  }
+
   private getDar(dar: string | undefined): number {
     if (dar) {
       const [darW, darH] = dar.split(':').map(Number);
@@ -365,5 +483,43 @@ export class MediaRepository {
     }
 
     return 0;
+  }
+
+  private parseVideoProfile(codec?: string, profile?: string) {
+    switch (codec) {
+      case 'h264': {
+        return this.parseEnum(H264Profile, profile);
+      }
+      case 'h265':
+      case 'hevc': {
+        return this.parseEnum(HevcProfile, profile);
+      }
+      case 'av1': {
+        return this.parseEnum(Av1Profile, profile);
+      }
+    }
+  }
+
+  private compareStreams(a: FfprobeStream, b: FfprobeStream): number {
+    const d = (b.disposition?.default ?? 0) - (a.disposition?.default ?? 0);
+    if (d !== 0) {
+      return d;
+    }
+    return this.parseInt(b.bit_rate) - this.parseInt(a.bit_rate);
+  }
+
+  private cfrOutputFrames(packets: { pts: number; duration: number }[], slotsPerTick: number) {
+    // Packets may be out of PTS order due to B-frames
+    packets.sort((a, b) => a.pts - b.pts);
+    const firstPts = packets[0].pts;
+    let outputFrames = 0;
+    let nextPts = 0;
+    for (const pkt of packets) {
+      const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
+      const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
+      outputFrames += nb;
+      nextPts += nb;
+    }
+    return outputFrames;
   }
 }

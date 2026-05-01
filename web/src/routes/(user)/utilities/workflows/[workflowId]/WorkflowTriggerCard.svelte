@@ -58,15 +58,15 @@
 <button
   type="button"
   {onclick}
-  class="group rounded-xl p-4 w-full text-left cursor-pointer border-2 {selected
+  class="group w-full cursor-pointer rounded-xl border-2 p-4 text-left {selected
     ? 'border-primary text-primary'
-    : 'border-light-100 hover:border-light-200 text-light-400 hover:text-light-700'}"
+    : 'border-light-100 text-light-400 hover:border-light-200 hover:text-light-700'}"
 >
   <div class="flex items-center gap-3">
     <div
       class="rounded-xl p-2 {selected
         ? 'bg-primary text-light'
-        : 'text-light-100 bg-light-300 group-hover:bg-light-500'}"
+        : 'bg-light-300 text-light-100 group-hover:bg-light-500'}"
     >
       <Icon icon={getTriggerIcon(trigger.type)} size="24" />
     </div>

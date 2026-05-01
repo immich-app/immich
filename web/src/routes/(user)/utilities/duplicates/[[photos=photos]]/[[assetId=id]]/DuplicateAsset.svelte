@@ -100,12 +100,12 @@
   }
 </script>
 
-<div class="min-w-60 transition-colors border rounded-lg flex-1">
+<div class="min-w-60 flex-1 rounded-lg border transition-colors">
   <div class="relative w-full">
     <button
       type="button"
       onclick={() => onSelectAsset(asset)}
-      class="block relative w-full"
+      class="relative block w-full"
       aria-pressed={isSelected}
       aria-label={$t('keep')}
     >
@@ -113,20 +113,20 @@
       <img
         src={getAssetMediaUrl({ id: asset.id })}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-60 object-cover w-full rounded-t-md"
+        class="h-60 w-full rounded-t-md object-cover"
         draggable="false"
       />
 
       <!-- FAVORITE ICON -->
       {#if asset.isFavorite}
-        <div class="absolute bottom-2 start-2">
+        <div class="absolute inset-s-2 bottom-2">
           <Icon icon={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
 
       <!-- OVERLAY CHIP -->
       <div
-        class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors {isSelected
+        class="absolute inset-e-3 bottom-1 rounded-xl px-4 py-1 text-xs transition-colors {isSelected
           ? 'bg-green-400/90'
           : 'bg-red-300/90'} text-black"
       >
@@ -134,14 +134,14 @@
       </div>
 
       <!-- EXTERNAL LIBRARY / STACK COUNT CHIP -->
-      <div class="absolute top-2 end-3">
+      <div class="absolute inset-e-3 top-2">
         {#if isFromExternalLibrary}
-          <div class="bg-immich-primary/90 px-2 py-1 rounded-xl text-xs text-white">
+          <div class="rounded-xl bg-immich-primary/90 px-2 py-1 text-xs text-white">
             {$t('external')}
           </div>
         {/if}
         {#if asset.stack?.assetCount}
-          <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
+          <div class="my-0.5 rounded-xl bg-immich-primary/90 px-2 py-1 text-xs text-white">
             <div class="flex items-center justify-center">
               <div class="me-1">{asset.stack.assetCount}</div>
               <Icon icon={mdiImageMultipleOutline} size="18" />
@@ -154,7 +154,7 @@
     <button
       type="button"
       onclick={() => onViewAsset(asset)}
-      class="absolute rounded-full top-1 start-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
+      class="absolute inset-s-1 top-1 rounded-full bg-black/35 p-2 text-gray-200 hover:bg-black/50 hover:text-white"
       title={$t('view')}
     >
       <Icon aria-label={$t('view')} icon={mdiMagnifyPlus} flipped size="18" />
@@ -162,7 +162,7 @@
   </div>
 
   <div
-    class="grid place-items-start gap-y-2 py-2 text-sm transition-colors rounded-b-lg {isSelected
+    class="grid place-items-start gap-y-2 rounded-b-lg py-2 text-sm transition-colors {isSelected
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >

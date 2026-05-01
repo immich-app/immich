@@ -37,12 +37,15 @@ class AssetBulkUpdateDto {
 
   /// Relative time offset in seconds
   ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? dateTimeRelative;
+  int? dateTimeRelative;
 
   /// Asset description
   ///
@@ -213,7 +216,7 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        dateTimeRelative: num.parse('${json[r'dateTimeRelative']}'),
+        dateTimeRelative: mapValueOfType<int>(json, r'dateTimeRelative'),
         description: mapValueOfType<String>(json, r'description'),
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         ids: json[r'ids'] is Iterable

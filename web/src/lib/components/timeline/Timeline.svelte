@@ -616,7 +616,7 @@
 <!-- Right margin MUST be equal to the width of scrubber -->
 <section
   id="asset-grid"
-  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  class={['h-full overflow-y-auto outline-none scrollbar-hidden', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}

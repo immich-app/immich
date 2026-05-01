@@ -22,22 +22,26 @@ class CropParameters {
   /// Height of the crop
   ///
   /// Minimum value: 1
-  num height;
+  /// Maximum value: 9007199254740991
+  int height;
 
   /// Width of the crop
   ///
   /// Minimum value: 1
-  num width;
+  /// Maximum value: 9007199254740991
+  int width;
 
   /// Top-Left X coordinate of crop
   ///
   /// Minimum value: 0
-  num x;
+  /// Maximum value: 9007199254740991
+  int x;
 
   /// Top-Left Y coordinate of crop
   ///
   /// Minimum value: 0
-  num y;
+  /// Maximum value: 9007199254740991
+  int y;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CropParameters &&
@@ -75,10 +79,10 @@ class CropParameters {
       final json = value.cast<String, dynamic>();
 
       return CropParameters(
-        height: num.parse('${json[r'height']}'),
-        width: num.parse('${json[r'width']}'),
-        x: num.parse('${json[r'x']}'),
-        y: num.parse('${json[r'y']}'),
+        height: mapValueOfType<int>(json, r'height')!,
+        width: mapValueOfType<int>(json, r'width')!,
+        x: mapValueOfType<int>(json, r'x')!,
+        y: mapValueOfType<int>(json, r'y')!,
       );
     }
     return null;

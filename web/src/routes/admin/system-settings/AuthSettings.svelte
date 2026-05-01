@@ -89,7 +89,7 @@
             {#if configToEdit.oauth.enabled}
               <hr />
 
-              <div class="flex items-center gap-2 justify-between">
+              <div class="flex items-center justify-between gap-2">
                 <Text size="small">{$t('admin.unlink_all_oauth_accounts_description')}</Text>
                 <Button size="small" onclick={handleUnlinkAllOAuthAccounts}
                   >{$t('admin.unlink_all_oauth_accounts')}</Button

@@ -10,7 +10,7 @@
   let { title, state }: Props = $props();
 </script>
 
-<div class="flex justify-between items-center">
+<div class="flex items-center justify-between">
   <Text class="text-sm" fontWeight="medium">{title}</Text>
   <Icon icon={state ? mdiCheck : mdiClose} class={state ? 'text-primary' : 'text-danger'} size="24" />
 </div>

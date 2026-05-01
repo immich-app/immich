@@ -246,8 +246,6 @@ export const factory = {
   date: newDate,
   responses: {
     badRequest: (message: any = null) => ({
-      error: 'Bad Request',
-      statusCode: 400,
       message: message ?? expect.anything(),
     }),
   },
