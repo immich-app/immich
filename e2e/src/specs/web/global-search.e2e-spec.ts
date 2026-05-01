@@ -1,6 +1,15 @@
 import type { LoginResponseDto } from '@immich/sdk';
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { utils } from 'src/utils';
+
+async function openGlobalSearchDropdown(page: Page) {
+  const trigger = page.getByTestId('cmdk-input-trigger');
+  await trigger.click();
+  const panel = page.locator('[data-cmdk-dropdown-panel]');
+  await expect(panel).toBeVisible();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  return { trigger, panel, input: trigger.getByRole('combobox') };
+}
 
 test.describe('global search palette', () => {
   let admin: LoginResponseDto;
@@ -57,15 +66,20 @@ test.describe('global search palette', () => {
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
-  test('clicking the trigger opens the palette', async ({ page }) => {
-    await page.getByTestId('cmdk-input-trigger').click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+  test('clicking the trigger opens the anchored dropdown', async ({ page }) => {
+    const { input } = await openGlobalSearchDropdown(page);
+    await expect(input).toBeFocused();
   });
 
-  test('desktop input trigger opens the palette', async ({ page }) => {
-    await expect(page.getByTestId('cmdk-input-trigger')).toBeVisible();
-    await page.getByTestId('cmdk-input-trigger').click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+  test('desktop input trigger keeps typed text in the navbar field', async ({ page }) => {
+    const trigger = page.getByTestId('cmdk-input-trigger');
+    await expect(trigger).toBeVisible();
+    const input = trigger.getByRole('combobox');
+    await input.fill('beach');
+
+    await expect(page.locator('[data-cmdk-dropdown-panel]')).toBeVisible();
+    await expect(input).toHaveValue('beach');
+    await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('maxlength on input is 256', async ({ page }) => {
@@ -75,9 +89,9 @@ test.describe('global search palette', () => {
   });
 
   test('focus returns to the trigger after the palette closes', async ({ page }) => {
-    const trigger = page.getByTestId('cmdk-input-trigger');
-    await trigger.focus();
-    await expect(trigger).toBeFocused();
+    const triggerInput = page.getByTestId('cmdk-input-trigger').getByRole('combobox');
+    await triggerInput.focus();
+    await expect(triggerInput).toBeFocused();
     await page.keyboard.press('Control+k');
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -86,7 +100,7 @@ test.describe('global search palette', () => {
     await expect(dialog).toBeHidden();
     // @immich/ui Modal / bits-ui Dialog restores focus to the element that had it
     // before the dialog opened. If this regresses, it's a keyboard-a11y issue.
-    await expect(trigger).toBeFocused();
+    await expect(triggerInput).toBeFocused();
   });
 
   test('Ctrl+/ cycles search mode via footer', async ({ page }) => {
@@ -183,7 +197,7 @@ test.describe('global search palette', () => {
   });
 
   test('query recents replay on /photos', async ({ page }) => {
-    await page.getByTestId('cmdk-input-trigger').click();
+    await page.keyboard.press('Control+k');
     let dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await dialog.getByRole('combobox').fill('beach');
@@ -192,7 +206,7 @@ test.describe('global search palette', () => {
 
     await page.goto('/photos');
     await page.getByTestId('cmdk-input-trigger').waitFor({ state: 'visible' });
-    await page.getByTestId('cmdk-input-trigger').click();
+    await page.keyboard.press('Control+k');
     dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     const recentGroup = dialog.getByRole('group', { name: /^recent$/i });

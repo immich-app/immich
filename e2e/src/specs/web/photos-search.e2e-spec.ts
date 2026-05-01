@@ -4,7 +4,7 @@ import { utils } from 'src/utils';
 
 async function submitGlobalSearch(page: import('@playwright/test').Page, query: string) {
   const mobileSearchButton = page.locator('#search-button');
-  await ((await mobileSearchButton.isVisible()) ? mobileSearchButton : page.getByTestId('cmdk-input-trigger')).click();
+  await ((await mobileSearchButton.isVisible()) ? mobileSearchButton.click() : page.keyboard.press('Control+k'));
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   const combobox = dialog.getByRole('combobox');
@@ -51,6 +51,29 @@ test.describe('Photos Search', () => {
     await gotoPhotos(context, page);
     await submitGlobalSearch(page, 'beach');
     await expect(page).toHaveURL(/\/photos\?q=beach/, { timeout: 10_000 });
+
+    await page.keyboard.press('Control+k');
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('combobox')).toHaveValue('');
+    await dialog.getByRole('combobox').press('Enter');
+    await expect(page).toHaveURL(/\/photos(?!\?q=)/, { timeout: 10_000 });
+  });
+
+  test('clearing the top search field and pressing Enter removes q=', async ({ context, page }) => {
+    await gotoPhotos(context, page, '/photos?q=mountain');
+
+    const trigger = page.getByTestId('cmdk-input-trigger');
+    const input = trigger.getByRole('combobox');
+    await expect(input).toHaveValue('mountain');
+
+    await trigger.click();
+    await expect(page.locator('[data-cmdk-dropdown-panel]')).toBeVisible();
+    await input.fill('');
+    await input.press('Enter');
+
+    await expect(page).toHaveURL(/\/photos(?!\?q=)/, { timeout: 10_000 });
+    await expect(page.getByTestId('search-chip')).not.toBeVisible();
   });
 
   test('navigating directly to /photos?q=... hides the timeline and shows search results area', async ({
@@ -69,8 +92,11 @@ test.describe('Photos Search', () => {
       timeout: 15_000,
     });
 
-    await page.getByTestId('cmdk-input-trigger').click();
-    await expect(page.getByRole('dialog').getByRole('combobox')).toHaveValue('mountain');
+    const trigger = page.getByTestId('cmdk-input-trigger');
+    await expect(trigger.getByRole('combobox')).toHaveValue('mountain');
+    await trigger.click();
+    await expect(page.locator('[data-cmdk-dropdown-panel]')).toBeVisible();
+    await expect(trigger.getByRole('combobox')).toHaveValue('mountain');
   });
 
   test('clearing the search via the X button returns to the timeline', async ({ context, page }) => {
@@ -177,7 +203,7 @@ test.describe('Photos Search', () => {
     await gotoPhotos(context, page);
 
     await expect(page.locator('#asset-grid img').first()).toBeVisible({ timeout: 15_000 });
-    await page.getByTestId('cmdk-input-trigger').click();
+    await page.keyboard.press('Control+k');
     const dialog = page.getByRole('dialog');
     const combobox = dialog.getByRole('combobox');
     await expect(combobox).toBeVisible();

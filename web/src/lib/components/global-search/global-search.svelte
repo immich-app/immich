@@ -3,6 +3,7 @@
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { Command } from 'bits-ui';
   import { t } from 'svelte-i18n';
+  import { clickOutside } from '$lib/actions/click-outside';
   import type { GlobalSearchManager, SearchMode } from '$lib/managers/global-search-manager.svelte';
   import GlobalSearchSection from './global-search-section.svelte';
   import GlobalSearchNavigationSections from './global-search-navigation-sections.svelte';
@@ -24,11 +25,17 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { NAVIGATION_ITEMS, type NavigationItem } from '$lib/managers/navigation-items';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { page } from '$app/state';
+  import { getSearchablePageState } from '$lib/utils/searchable-page-search';
 
   interface Props {
     manager: GlobalSearchManager;
+    variant?: 'modal' | 'dropdown';
   }
-  let { manager }: Props = $props();
+  let { manager, variant = 'modal' }: Props = $props();
+
+  const isApplePlatform = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
+  const hotkeyLabel = isApplePlatform ? '⌘K' : 'Ctrl+K';
 
   // Two-way sync with manager.query: the user types into the Command.Input (writes to
   // inputValue), and the manager can also update its own query internally (e.g. when
@@ -37,9 +44,16 @@
   // `$state` + `$effect` is flagged by svelte/prefer-writable-derived. The cleanest
   // Svelte 5 shape for a bi-directional mirror is to keep $state and push changes in
   // both directions via $effect. The rule's preferred pattern doesn't fit this case.
-  // eslint-disable-next-line svelte/prefer-writable-derived
   let inputValue = $state('');
+  const showDropdownPanel = $derived(manager.isOpen && manager.presentation === 'dropdown');
+  const closedDropdownSearchState = $derived.by(() =>
+    variant === 'dropdown' ? getSearchablePageState(page.url) : null,
+  );
   $effect(() => {
+    if (variant === 'dropdown' && !showDropdownPanel) {
+      inputValue = closedDropdownSearchState?.query ?? '';
+      return;
+    }
     inputValue = manager.query;
   });
   let selectedValue = $state<string>('');
@@ -58,6 +72,9 @@
   }
 
   $effect(() => {
+    if (variant === 'dropdown' && !showDropdownPanel) {
+      return;
+    }
     manager.setQuery(inputValue);
   });
 
@@ -238,7 +255,6 @@
     return { status: 'ok' as const, items, total: items.length };
   });
   const showPreview = $derived(mediaQueryManager.minLg);
-
   // Progress stripe: only show after a 200ms grace window. A clean setTimeout
   // pattern — the effect fires on every batchInFlight transition and the cleanup
   // cancels any pending stripe when the batch settles before the 200ms mark.
@@ -290,6 +306,16 @@
     return true;
   }
 
+  function isModalLauncherShortcut(e: KeyboardEvent) {
+    return e.key.toLowerCase() === 'k' && (isApplePlatform ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey);
+  }
+
+  function openDropdown() {
+    if (!showDropdownPanel) {
+      manager.open('dropdown');
+    }
+  }
+
   function onKeyDown(e: KeyboardEvent) {
     // Bare `?` opens the app-wide keyboard shortcuts modal. No modifiers — Ctrl/Alt/Meta
     // fall through so browser chords (e.g. a custom user-agent binding) still work.
@@ -313,8 +339,8 @@
       e.preventDefault();
       return;
     }
-    if (e.ctrlKey && e.key === 'k') {
-      manager.close();
+    if (isModalLauncherShortcut(e)) {
+      manager.toggle('modal');
       e.preventDefault();
       return;
     }
@@ -337,6 +363,11 @@
     // still editable.
     if ((e.key === 'Delete' || e.key === 'Backspace') && inputValue === '' && manager.activeItemId) {
       manager.removeRecent(manager.activeItemId);
+      e.preventDefault();
+      return;
+    }
+    if (e.key === 'Enter' && inputValue.trim() === '' && getSearchablePageState(page.url).query !== '') {
+      manager.activateSearch('');
       e.preventDefault();
       return;
     }
@@ -372,72 +403,69 @@
   }
 </script>
 
-<Modal
-  size="large"
-  closeOnEsc={false}
-  closeOnBackdropClick={true}
-  onClose={() => manager.close()}
-  class="motion-reduce:transition-none motion-reduce:transform-none !p-0"
->
-  <ModalBody class="!p-0">
-    <span class="sr-only" id="global-search-label">{$t('global_search')}</span>
+{#if variant === 'dropdown'}
+  <div
+    class="relative min-w-0 flex-1"
+    use:clickOutside={{
+      onOutclick: () => {
+        if (manager.presentation === 'dropdown') {
+          manager.close();
+        }
+      },
+      onEscape: () => {
+        if (manager.presentation === 'dropdown') {
+          manager.close();
+        }
+      },
+    }}
+  >
+    <span class="sr-only" id="global-search-dropdown-label">{$t('global_search')}</span>
     <Command.Root
       shouldFilter={false}
       vimBindings={false}
       loop
+      label={$t('cmdk_placeholder')}
       bind:value={() => selectedValue, syncSelectedValueFromBits}
-      aria-labelledby="global-search-label"
+      aria-labelledby="global-search-dropdown-label"
       onkeydown={onKeyDown}
-      class="flex h-full min-h-0 flex-col"
+      class="min-w-0"
     >
-      <div class="flex items-center border-b border-gray-200 dark:border-gray-700">
+      <div
+        data-testid="cmdk-input-trigger"
+        class="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-2xl border border-gray-300/80 bg-gray-100/90 px-3 text-left text-sm shadow-sm transition-all duration-150 focus-within:border-primary/50 focus-within:bg-white focus-within:shadow hover:border-primary/50 hover:bg-white hover:shadow md:h-11 dark:border-immich-dark-gray dark:bg-immich-dark-gray/70 dark:focus-within:border-primary/40 dark:focus-within:bg-immich-dark-gray dark:hover:border-primary/40 dark:hover:bg-immich-dark-gray"
+      >
+        <span
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-gray-500 shadow-sm dark:bg-immich-dark-bg dark:text-gray-300"
+        >
+          <Icon icon={mdiMagnify} size="1.05em" aria-hidden />
+        </span>
         <Command.Input
           bind:value={inputValue}
-          autofocus
+          aria-label={$t('cmdk_placeholder')}
           placeholder={$t('cmdk_placeholder')}
           maxlength={256}
+          onfocus={openDropdown}
           oninput={() => inputEditRevision++}
-          class="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm focus:outline-none"
+          class="min-w-0 flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder:text-gray-300"
         />
-        <IconButton
-          icon={mdiClose}
-          size="small"
-          variant="ghost"
-          shape="round"
-          color="secondary"
-          class="me-2"
-          onclick={clearOrClose}
-          aria-label={inputValue === '' ? $t('close') : $t('clear')}
-        />
-      </div>
-      {#if showProgressStripe}
-        <div
-          aria-hidden="true"
-          data-cmdk-progress
-          class="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent bg-[length:200%_100%] animate-cmdk-shimmer motion-reduce:animate-none"
-        ></div>
-      {/if}
-
-      <!-- Mobile (<sm): grow into the full-height Modal Card via flex-1 + min-h-0
-               so the palette fills the screen instead of leaving dead space below
-               the footer. The chain is Modal h-full → CardBody h-full → Command.Root
-               h-full → this row flex-1.
-           Desktop (sm+): Modal collapses to sm:h-min, so flex-1 has no basis.
-               Switch to a fixed `sm:h-[520px]` (with `sm:max-h-[80vh]` clamp for
-               short viewports) to give Command.List + the preview pane a definite
-               height so internal `overflow-y-auto` actually scrolls. -->
-      <!-- `min-w-0` on the left column is critical: flex children default to
-               `min-width: auto` (= content size), so without it the column refuses
-               to shrink below the widest row (long filenames) and the whole row
-               grows wider than the modal/viewport — pushing the fixed-width preview
-               pane off-screen. With min-w-0, flex-1 can shrink below content width
-               and the rows' `truncate` class ellipsizes long text. -->
-      <div class="flex flex-1 min-h-0 sm:h-[520px] sm:max-h-[80vh] sm:flex-none">
-        <div
-          class="flex min-h-0 min-w-0 flex-1 flex-col {showPreview
-            ? 'border-e border-gray-200 dark:border-gray-700'
-            : ''}"
+        <kbd
+          class="hidden shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-1 font-mono text-[11px] font-semibold tracking-wide text-gray-500 sm:inline-block dark:border-immich-dark-gray dark:bg-immich-dark-bg dark:text-gray-300"
+          >{hotkeyLabel}</kbd
         >
+      </div>
+
+      {#if showDropdownPanel}
+        <div
+          data-cmdk-dropdown-panel
+          class="absolute start-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200/90 bg-white/95 shadow-[0_18px_48px_rgba(15,23,42,0.18)] backdrop-blur-md dark:border-gray-700/90 dark:bg-immich-dark-bg/95"
+        >
+          {#if showProgressStripe}
+            <div
+              aria-hidden="true"
+              data-cmdk-progress
+              class="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent bg-[length:200%_100%] animate-cmdk-shimmer motion-reduce:animate-none"
+            ></div>
+          {/if}
           {#if manager.mode === 'smart' && !manager.mlHealthy && inputValue.trim() !== '' && manager.scope === 'all'}
             <div class="mx-3 mt-3 rounded-md bg-subtle/60 px-3 py-2 text-xs">
               {$t('cmdk_smart_unavailable')}
@@ -450,7 +478,7 @@
               </button>
             </div>
           {/if}
-          <Command.List class="flex-1 overflow-y-auto py-2">
+          <Command.List class="max-h-[min(520px,calc(100vh-8rem))] overflow-y-auto py-2">
             {#if inputValue.trim() === ''}
               {#if recentEntries.length > 0}
                 <Command.Group>
@@ -461,36 +489,14 @@
                   </Command.GroupHeading>
                   <Command.GroupItems>
                     {#each recentEntries as entry (entry.id)}
-                      <Command.Item
-                        value={entry.id}
-                        onSelect={() => manager.activateRecent(entry)}
-                        class="group relative"
-                      >
+                      <Command.Item value={entry.id} onSelect={() => manager.activateRecent(entry)} class="group">
                         <RecentRow {entry} />
-                        <!-- Per-row remove affordance. Hidden by default, surfaced on
-                             hover OR when the row is keyboard-selected (data-selected
-                             from bits-ui) so both input modes have a visible target.
-                             stopPropagation is load-bearing: without it, the surrounding
-                             Command.Item treats the click as a selection and triggers
-                             activateRecent, which would navigate before the removal UI
-                             update could render. -->
-                        <button
-                          type="button"
-                          aria-label={$t('cmdk_remove_from_recents')}
-                          class="absolute end-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-500 opacity-0 transition-opacity duration-[80ms] ease-out hover:bg-black/10 hover:text-gray-900 group-hover:opacity-100 group-data-[selected]:opacity-100 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
-                          onclick={(e) => {
-                            e.stopPropagation();
-                            manager.removeRecent(entry.id);
-                          }}
-                        >
-                          <Icon icon={mdiClose} size="1em" aria-hidden />
-                        </button>
                       </Command.Item>
                     {/each}
                   </Command.GroupItems>
                 </Command.Group>
               {:else if quickLinks.length > 0}
-                <Command.Group class="mb-4">
+                <Command.Group class="mb-2">
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -511,7 +517,7 @@
               {/if}
             {:else if manager.scope === 'all'}
               {#if manager.topSearchMatch}
-                <Command.Group class="mb-4" data-cmdk-top-result-search>
+                <Command.Group class="mb-2" data-cmdk-top-result-search>
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -533,7 +539,7 @@
                 </Command.Group>
               {/if}
               {#if manager.topCommandMatch}
-                <Command.Group class="mb-4" data-cmdk-top-result-commands>
+                <Command.Group class="mb-2" data-cmdk-top-result-commands>
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -553,7 +559,7 @@
                   </Command.GroupItems>
                 </Command.Group>
               {:else if manager.topNavigationMatch}
-                <Command.Group class="mb-4" data-cmdk-top-result-navigation>
+                <Command.Group class="mb-2" data-cmdk-top-result-navigation>
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -586,11 +592,6 @@
                   <PhotoRow item={item as never} />
                 {/snippet}
               </GlobalSearchSection>
-              <!-- Albums + Spaces sit between Photos and People per the v1.1 plan's
-                     declared section sequence. Headings use `cmdk_section_albums` /
-                     `cmdk_section_spaces` (Task 24). `isPending` wiring reads
-                     `manager.pendingActivation` so the row spinner affordance appears for
-                     the exact key being activated. -->
               <GlobalSearchSection
                 heading={$t('cmdk_section_albums')}
                 status={manager.sections.albums}
@@ -658,10 +659,6 @@
                 onActivate={(item) => manager.activate('nav', item)}
               />
             {:else if manager.scope === 'people'}
-              <!-- Scope `@` — only the People section. Other sections force-idled in
-                   runBatch so they wouldn't render anyway, but gating the render
-                   branch keeps the DOM free of other sections' headings and gives
-                   a11y a single contiguous result set. -->
               <GlobalSearchSection
                 heading={$t('cmdk_people_heading')}
                 status={manager.sections.people}
@@ -673,7 +670,6 @@
                 {/snippet}
               </GlobalSearchSection>
             {:else if manager.scope === 'tags'}
-              <!-- Scope `#` — only the Tags section. -->
               <GlobalSearchSection
                 heading={$t('cmdk_tags_heading')}
                 status={manager.sections.tags}
@@ -685,8 +681,6 @@
                 {/snippet}
               </GlobalSearchSection>
             {:else if manager.scope === 'collections'}
-              <!-- Scope `/` — Albums + Spaces. Matches the `ENTITY_KEYS_BY_SCOPE.collections`
-                   tuple order so the cursor-reconcile order stays aligned with DOM order. -->
               <GlobalSearchSection
                 heading={$t('cmdk_section_albums')}
                 status={manager.sections.albums}
@@ -714,9 +708,6 @@
                 {/snippet}
               </GlobalSearchSection>
             {:else if manager.scope === 'nav'}
-              <!-- Scope `>` — only NavigationSections. The navigation provider runs
-                   synchronously in setQuery (no debounce); under `>` it surfaces the
-                   whole catalog for bare `>` or filtered matches for `>foo`. -->
               <GlobalSearchCommandsSection
                 status={manager.sections.commands}
                 onActivate={(item) => manager.activate('command', item)}
@@ -727,16 +718,380 @@
               />
             {/if}
           </Command.List>
+          <div aria-live="polite" aria-atomic="true" class="sr-only">{manager.announcementText}</div>
         </div>
-        {#if showPreview}
-          <div data-cmdk-preview class="w-[280px] shrink-0 overflow-y-auto min-h-0">
-            <GlobalSearchPreview activeItem={manager.getActiveItem()} />
-          </div>
-        {/if}
-      </div>
-
-      <div aria-live="polite" aria-atomic="true" class="sr-only">{manager.announcementText}</div>
-      <GlobalSearchFooter {manager} />
+      {/if}
     </Command.Root>
-  </ModalBody>
-</Modal>
+  </div>
+{:else}
+  <Modal
+    size="large"
+    closeOnEsc={false}
+    closeOnBackdropClick={true}
+    onClose={() => manager.close()}
+    class="motion-reduce:transition-none motion-reduce:transform-none !p-0"
+  >
+    <ModalBody class="!p-0">
+      <span class="sr-only" id="global-search-label">{$t('global_search')}</span>
+      <Command.Root
+        shouldFilter={false}
+        vimBindings={false}
+        loop
+        label={$t('cmdk_placeholder')}
+        bind:value={() => selectedValue, syncSelectedValueFromBits}
+        aria-labelledby="global-search-label"
+        onkeydown={onKeyDown}
+        class="flex h-full min-h-0 flex-col"
+      >
+        <div class="flex items-center border-b border-gray-200 dark:border-gray-700">
+          <Command.Input
+            bind:value={inputValue}
+            autofocus
+            placeholder={$t('cmdk_placeholder')}
+            maxlength={256}
+            oninput={() => inputEditRevision++}
+            class="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm focus:outline-none"
+          />
+          <IconButton
+            icon={mdiClose}
+            size="small"
+            variant="ghost"
+            shape="round"
+            color="secondary"
+            class="me-2"
+            onclick={clearOrClose}
+            aria-label={inputValue === '' ? $t('close') : $t('clear')}
+          />
+        </div>
+        {#if showProgressStripe}
+          <div
+            aria-hidden="true"
+            data-cmdk-progress
+            class="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent bg-[length:200%_100%] animate-cmdk-shimmer motion-reduce:animate-none"
+          ></div>
+        {/if}
+
+        <!-- Mobile (<sm): grow into the full-height Modal Card via flex-1 + min-h-0
+               so the palette fills the screen instead of leaving dead space below
+               the footer. The chain is Modal h-full → CardBody h-full → Command.Root
+               h-full → this row flex-1.
+           Desktop (sm+): Modal collapses to sm:h-min, so flex-1 has no basis.
+               Switch to a fixed `sm:h-[520px]` (with `sm:max-h-[80vh]` clamp for
+               short viewports) to give Command.List + the preview pane a definite
+               height so internal `overflow-y-auto` actually scrolls. -->
+        <!-- `min-w-0` on the left column is critical: flex children default to
+               `min-width: auto` (= content size), so without it the column refuses
+               to shrink below the widest row (long filenames) and the whole row
+               grows wider than the modal/viewport — pushing the fixed-width preview
+               pane off-screen. With min-w-0, flex-1 can shrink below content width
+               and the rows' `truncate` class ellipsizes long text. -->
+        <div class="flex flex-1 min-h-0 sm:h-[520px] sm:max-h-[80vh] sm:flex-none">
+          <div
+            class="flex min-h-0 min-w-0 flex-1 flex-col {showPreview
+              ? 'border-e border-gray-200 dark:border-gray-700'
+              : ''}"
+          >
+            {#if manager.mode === 'smart' && !manager.mlHealthy && inputValue.trim() !== '' && manager.scope === 'all'}
+              <div class="mx-3 mt-3 rounded-md bg-subtle/60 px-3 py-2 text-xs">
+                {$t('cmdk_smart_unavailable')}
+                <button
+                  type="button"
+                  onclick={() => manager.setMode('metadata')}
+                  class="ml-2 text-primary transition-colors duration-[80ms] ease-out"
+                >
+                  {$t('cmdk_try_filename')}
+                </button>
+              </div>
+            {/if}
+            <Command.List class="flex-1 overflow-y-auto py-2">
+              {#if inputValue.trim() === ''}
+                {#if recentEntries.length > 0}
+                  <Command.Group>
+                    <Command.GroupHeading
+                      class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                    >
+                      {$t('cmdk_recent_heading')}
+                    </Command.GroupHeading>
+                    <Command.GroupItems>
+                      {#each recentEntries as entry (entry.id)}
+                        <Command.Item
+                          value={entry.id}
+                          onSelect={() => manager.activateRecent(entry)}
+                          class="group relative"
+                        >
+                          <RecentRow {entry} />
+                          <!-- Per-row remove affordance. Hidden by default, surfaced on
+                             hover OR when the row is keyboard-selected (data-selected
+                             from bits-ui) so both input modes have a visible target.
+                             stopPropagation is load-bearing: without it, the surrounding
+                             Command.Item treats the click as a selection and triggers
+                             activateRecent, which would navigate before the removal UI
+                             update could render. -->
+                          <button
+                            type="button"
+                            aria-label={$t('cmdk_remove_from_recents')}
+                            class="absolute end-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-500 opacity-0 transition-opacity duration-[80ms] ease-out hover:bg-black/10 hover:text-gray-900 group-hover:opacity-100 group-data-[selected]:opacity-100 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-100"
+                            onclick={(e) => {
+                              e.stopPropagation();
+                              manager.removeRecent(entry.id);
+                            }}
+                          >
+                            <Icon icon={mdiClose} size="1em" aria-hidden />
+                          </button>
+                        </Command.Item>
+                      {/each}
+                    </Command.GroupItems>
+                  </Command.Group>
+                {:else if quickLinks.length > 0}
+                  <Command.Group class="mb-4">
+                    <Command.GroupHeading
+                      class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                    >
+                      {$t('cmdk_quick_links')}
+                    </Command.GroupHeading>
+                    <Command.GroupItems>
+                      {#each quickLinks as item (item.id)}
+                        <Command.Item value={item.id} onSelect={() => manager.activate('nav', item)} class="group">
+                          <NavigationRow {item} />
+                        </Command.Item>
+                      {/each}
+                    </Command.GroupItems>
+                  </Command.Group>
+                {:else}
+                  <div class="p-6 text-center text-[13px] font-normal text-gray-500 dark:text-gray-400">
+                    {$t('cmdk_helper')}
+                  </div>
+                {/if}
+              {:else if manager.scope === 'all'}
+                {#if manager.topSearchMatch}
+                  <Command.Group class="mb-4" data-cmdk-top-result-search>
+                    <Command.GroupHeading
+                      class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                    >
+                      {$t('cmdk_top_result')}
+                    </Command.GroupHeading>
+                    <div class="px-1">
+                      <button
+                        type="button"
+                        onclick={() => manager.topSearchMatch && manager.activateSearch(manager.topSearchMatch.query)}
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-start {manager.activeItemId ===
+                        manager.topSearchMatch.id
+                          ? 'bg-primary/10'
+                          : ''}"
+                      >
+                        <Icon icon={mdiMagnify} />
+                        <span>{$t('cmdk_top_search_label', { values: { query: manager.topSearchMatch.query } })}</span>
+                      </button>
+                    </div>
+                  </Command.Group>
+                {/if}
+                {#if manager.topCommandMatch}
+                  <Command.Group class="mb-4" data-cmdk-top-result-commands>
+                    <Command.GroupHeading
+                      class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                    >
+                      {$t('cmdk_top_result')}
+                    </Command.GroupHeading>
+                    <Command.GroupItems>
+                      <Command.Item
+                        value={manager.topCommandMatch.id}
+                        onSelect={() => manager.topCommandMatch && manager.activate('command', manager.topCommandMatch)}
+                        class="group"
+                      >
+                        <CommandRow
+                          item={manager.topCommandMatch}
+                          pending={manager.topCommandMatch.id === manager.pendingConfirmId}
+                        />
+                      </Command.Item>
+                    </Command.GroupItems>
+                  </Command.Group>
+                {:else if manager.topNavigationMatch}
+                  <Command.Group class="mb-4" data-cmdk-top-result-navigation>
+                    <Command.GroupHeading
+                      class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                    >
+                      {$t('cmdk_top_result')}
+                    </Command.GroupHeading>
+                    <Command.GroupItems>
+                      <Command.Item
+                        value={manager.topNavigationMatch.id}
+                        onSelect={() =>
+                          manager.topNavigationMatch && manager.activate('nav', manager.topNavigationMatch)}
+                        class="group"
+                      >
+                        <NavigationRow item={manager.topNavigationMatch} />
+                      </Command.Item>
+                    </Command.GroupItems>
+                  </Command.Group>
+                {/if}
+                {#if manager.topCommandMatch}
+                  <GlobalSearchCommandsSection
+                    status={manager.sections.commands}
+                    onActivate={(item) => manager.activate('command', item)}
+                  />
+                {/if}
+                <GlobalSearchSection
+                  heading={$t('cmdk_photos_heading')}
+                  status={manager.sections.photos}
+                  idPrefix="photo"
+                  onActivate={(item) => manager.activate('photo', item)}
+                >
+                  {#snippet renderRow(item)}
+                    <PhotoRow item={item as never} />
+                  {/snippet}
+                </GlobalSearchSection>
+                <!-- Albums + Spaces sit between Photos and People per the v1.1 plan's
+                     declared section sequence. Headings use `cmdk_section_albums` /
+                     `cmdk_section_spaces` (Task 24). `isPending` wiring reads
+                     `manager.pendingActivation` so the row spinner affordance appears for
+                     the exact key being activated. -->
+                <GlobalSearchSection
+                  heading={$t('cmdk_section_albums')}
+                  status={manager.sections.albums}
+                  idPrefix="album"
+                  onActivate={(item) => void manager.activateAlbum((item as { id: string }).id)}
+                >
+                  {#snippet renderRow(item)}
+                    <AlbumRow
+                      item={item as never}
+                      isPending={manager.pendingActivation === `album:${(item as { id: string }).id}`}
+                    />
+                  {/snippet}
+                </GlobalSearchSection>
+                <GlobalSearchSection
+                  heading={$t('cmdk_section_spaces')}
+                  status={manager.sections.spaces}
+                  idPrefix="space"
+                  onActivate={(item) => void manager.activateSpace((item as { id: string }).id)}
+                >
+                  {#snippet renderRow(item)}
+                    <SpaceRow
+                      item={item as never}
+                      isPending={manager.pendingActivation === `space:${(item as { id: string }).id}`}
+                    />
+                  {/snippet}
+                </GlobalSearchSection>
+                <GlobalSearchSection
+                  heading={$t('cmdk_people_heading')}
+                  status={manager.sections.people}
+                  idPrefix="person"
+                  onActivate={(item) => manager.activate('person', item)}
+                >
+                  {#snippet renderRow(item)}
+                    <PersonRow item={item as never} />
+                  {/snippet}
+                </GlobalSearchSection>
+                <GlobalSearchSection
+                  heading={$t('cmdk_places_heading')}
+                  status={manager.sections.places}
+                  idPrefix="place"
+                  onActivate={(item) => manager.activate('place', item)}
+                >
+                  {#snippet renderRow(item)}
+                    <PlaceRow item={item as never} />
+                  {/snippet}
+                </GlobalSearchSection>
+                <GlobalSearchSection
+                  heading={$t('cmdk_tags_heading')}
+                  status={manager.sections.tags}
+                  idPrefix="tag"
+                  onActivate={(item) => manager.activate('tag', item)}
+                >
+                  {#snippet renderRow(item)}
+                    <TagRow item={item as never} />
+                  {/snippet}
+                </GlobalSearchSection>
+                {#if !manager.topCommandMatch}
+                  <GlobalSearchCommandsSection
+                    status={manager.sections.commands}
+                    onActivate={(item) => manager.activate('command', item)}
+                  />
+                {/if}
+                <GlobalSearchNavigationSections
+                  status={dedupedNavigationStatus}
+                  onActivate={(item) => manager.activate('nav', item)}
+                />
+              {:else if manager.scope === 'people'}
+                <!-- Scope `@` — only the People section. Other sections force-idled in
+                   runBatch so they wouldn't render anyway, but gating the render
+                   branch keeps the DOM free of other sections' headings and gives
+                   a11y a single contiguous result set. -->
+                <GlobalSearchSection
+                  heading={$t('cmdk_people_heading')}
+                  status={manager.sections.people}
+                  idPrefix="person"
+                  onActivate={(item) => manager.activate('person', item)}
+                >
+                  {#snippet renderRow(item)}
+                    <PersonRow item={item as never} />
+                  {/snippet}
+                </GlobalSearchSection>
+              {:else if manager.scope === 'tags'}
+                <!-- Scope `#` — only the Tags section. -->
+                <GlobalSearchSection
+                  heading={$t('cmdk_tags_heading')}
+                  status={manager.sections.tags}
+                  idPrefix="tag"
+                  onActivate={(item) => manager.activate('tag', item)}
+                >
+                  {#snippet renderRow(item)}
+                    <TagRow item={item as never} />
+                  {/snippet}
+                </GlobalSearchSection>
+              {:else if manager.scope === 'collections'}
+                <!-- Scope `/` — Albums + Spaces. Matches the `ENTITY_KEYS_BY_SCOPE.collections`
+                   tuple order so the cursor-reconcile order stays aligned with DOM order. -->
+                <GlobalSearchSection
+                  heading={$t('cmdk_section_albums')}
+                  status={manager.sections.albums}
+                  idPrefix="album"
+                  onActivate={(item) => void manager.activateAlbum((item as { id: string }).id)}
+                >
+                  {#snippet renderRow(item)}
+                    <AlbumRow
+                      item={item as never}
+                      isPending={manager.pendingActivation === `album:${(item as { id: string }).id}`}
+                    />
+                  {/snippet}
+                </GlobalSearchSection>
+                <GlobalSearchSection
+                  heading={$t('cmdk_section_spaces')}
+                  status={manager.sections.spaces}
+                  idPrefix="space"
+                  onActivate={(item) => void manager.activateSpace((item as { id: string }).id)}
+                >
+                  {#snippet renderRow(item)}
+                    <SpaceRow
+                      item={item as never}
+                      isPending={manager.pendingActivation === `space:${(item as { id: string }).id}`}
+                    />
+                  {/snippet}
+                </GlobalSearchSection>
+              {:else if manager.scope === 'nav'}
+                <!-- Scope `>` — only NavigationSections. The navigation provider runs
+                   synchronously in setQuery (no debounce); under `>` it surfaces the
+                   whole catalog for bare `>` or filtered matches for `>foo`. -->
+                <GlobalSearchCommandsSection
+                  status={manager.sections.commands}
+                  onActivate={(item) => manager.activate('command', item)}
+                />
+                <GlobalSearchNavigationSections
+                  status={manager.sections.navigation}
+                  onActivate={(item) => manager.activate('nav', item)}
+                />
+              {/if}
+            </Command.List>
+          </div>
+          {#if showPreview}
+            <div data-cmdk-preview class="w-[280px] shrink-0 overflow-y-auto min-h-0">
+              <GlobalSearchPreview activeItem={manager.getActiveItem()} />
+            </div>
+          {/if}
+        </div>
+
+        <div aria-live="polite" aria-atomic="true" class="sr-only">{manager.announcementText}</div>
+        <GlobalSearchFooter {manager} />
+      </Command.Root>
+    </ModalBody>
+  </Modal>
+{/if}

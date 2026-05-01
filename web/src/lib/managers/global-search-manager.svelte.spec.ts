@@ -204,6 +204,37 @@ describe('GlobalSearchManager (skeleton)', () => {
     expect(manager.isOpen).toBe(true);
   });
 
+  it('open() records the requested presentation', () => {
+    manager.open('dropdown');
+
+    expect(manager.isOpen).toBe(true);
+    expect(manager.presentation).toBe('dropdown');
+
+    manager.open('modal');
+    expect(manager.presentation).toBe('modal');
+  });
+
+  it('toggle() swaps presentation instead of closing when another surface is open', () => {
+    manager.open('dropdown');
+
+    manager.toggle('modal');
+
+    expect(manager.isOpen).toBe(true);
+    expect(manager.presentation).toBe('modal');
+
+    manager.toggle('modal');
+    expect(manager.isOpen).toBe(false);
+  });
+
+  it('close() resets presentation back to modal', () => {
+    manager.open('dropdown');
+
+    manager.close();
+
+    expect(manager.isOpen).toBe(false);
+    expect(manager.presentation).toBe('modal');
+  });
+
   it('open() hydrates the current searchable page query and sort', () => {
     mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
     manager.open();
@@ -211,6 +242,36 @@ describe('GlobalSearchManager (skeleton)', () => {
     expect(manager.isOpen).toBe(true);
     expect(manager.query).toBe('beach');
     expect(manager.searchSortOrder).toBe('asc');
+  });
+
+  it('open() clears the modal query once after activating a text search', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    m.open('modal');
+    m.activateSearch('beach');
+    m.close();
+    mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
+
+    m.open('modal');
+
+    expect(m.query).toBe('');
+    expect(m.searchSortOrder).toBe('relevance');
+  });
+
+  it('open() still hydrates the dropdown query after activating a text search', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    m.open('modal');
+    m.activateSearch('beach');
+    m.close();
+    mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
+
+    m.open('dropdown');
+
+    expect(m.query).toBe('beach');
+    expect(m.searchSortOrder).toBe('asc');
   });
 
   it('open() resets the search draft sort to relevance when the current searchable page has no query', () => {
@@ -1259,6 +1320,16 @@ describe('activate("command")', () => {
     m.activateSearch('beach');
 
     expect(goto).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach&sort=asc');
+  });
+
+  it('activateSearch with empty text clears the committed searchable-page query', () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos?q=mountain&sort=asc&view=grid');
+
+    m.activateSearch('');
+
+    expect(goto).toHaveBeenCalledWith('/photos?view=grid');
+    expect(getEntries()).toEqual([]);
   });
 
   it('activateSearch falls back to /photos and drops unrelated params', () => {

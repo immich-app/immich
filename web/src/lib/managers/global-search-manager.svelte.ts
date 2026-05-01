@@ -39,6 +39,7 @@ import { COMMAND_ITEMS, isAlmostExactCommandMatch, type CommandItem } from './co
 import { isAlmostExactNavMatch, NAVIGATION_ITEMS, type NavigationItem } from './navigation-items';
 
 export type SearchMode = 'smart' | 'metadata' | 'description' | 'ocr';
+export type SearchPresentation = 'modal' | 'dropdown';
 
 export type ProviderStatus<T = unknown> =
   | { status: 'idle' }
@@ -208,6 +209,7 @@ function loadSearchQueryType(): SearchMode {
 
 export class GlobalSearchManager {
   isOpen = $state(false);
+  presentation = $state<SearchPresentation>('modal');
   query = $state('');
   searchSortOrder = $state<SearchablePageSortOrder>('relevance');
   mode = $state<SearchMode>(loadSearchQueryType());
@@ -258,6 +260,8 @@ export class GlobalSearchManager {
    */
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   private commandInFlight: Set<string> = new Set();
+
+  private clearQueryOnNextModalOpen = false;
   /**
    * Id of the row currently showing the 200 ms "pending" affordance (subtle spinner
    * on the row) while its activation handler is resolving. Null when no activation is
@@ -574,10 +578,15 @@ export class GlobalSearchManager {
     return { status: 'ok', items: filtered.slice(0, topN), total: filtered.length };
   }
 
-  open() {
+  open(presentation: SearchPresentation = 'modal') {
     this.isOpen = true;
+    this.presentation = presentation;
     const currentPageSearchState = getSearchablePageState(page.url);
-    if (currentPageSearchState.isSearchable) {
+    if (presentation === 'modal' && this.clearQueryOnNextModalOpen) {
+      this.query = '';
+      this.searchSortOrder = 'relevance';
+      this.clearQueryOnNextModalOpen = false;
+    } else if (currentPageSearchState.isSearchable) {
       this.query = currentPageSearchState.query;
       this.searchSortOrder = currentPageSearchState.query ? currentPageSearchState.sortOrder : 'relevance';
     } else {
@@ -923,6 +932,7 @@ export class GlobalSearchManager {
   close() {
     this.cancelConfirm();
     this.isOpen = false;
+    this.presentation = 'modal';
     this.keepOpenOnNextNavigate = false;
     this.closeController.abort();
     if (this.debounceTimer !== null) {
@@ -963,11 +973,11 @@ export class GlobalSearchManager {
     return shouldKeepOpen;
   }
 
-  toggle() {
-    if (this.isOpen) {
+  toggle(presentation: SearchPresentation = 'modal') {
+    if (this.isOpen && this.presentation === presentation) {
       this.close();
     } else {
-      this.open();
+      this.open(presentation);
     }
   }
 
@@ -1241,6 +1251,13 @@ export class GlobalSearchManager {
   activateSearch(text: string): void {
     const trimmed = text.trim();
     if (!trimmed) {
+      const searchablePageUrl = buildSearchablePageUrl(page.url, '');
+      if (searchablePageUrl && searchablePageUrl !== page.url.pathname + page.url.search) {
+        this.query = '';
+        this.searchSortOrder = 'relevance';
+        this.clearQueryOnNextModalOpen = false;
+        void goto(searchablePageUrl);
+      }
       return;
     }
 
@@ -1250,6 +1267,7 @@ export class GlobalSearchManager {
       text: trimmed,
       lastUsed: Date.now(),
     });
+    this.clearQueryOnNextModalOpen = true;
     void goto(this.buildSearchDestination(trimmed));
   }
 

@@ -17,30 +17,113 @@ vi.mock('$app/state', () => ({ page: mockPage }));
 describe('global-search-input-trigger', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    globalSearchManager.close();
     mockPage.url = new URL('https://gallery.test/photos');
     mockPage.route.id = null;
     mockPage.params = {};
   });
 
-  it('opens cmdk on click and keyboard activation', async () => {
-    const openSpy = vi.spyOn(globalSearchManager, 'open').mockImplementation(() => {});
+  it('opens a dropdown from an editable search field', async () => {
+    const openSpy = vi.spyOn(globalSearchManager, 'open');
     const user = userEvent.setup();
 
     render(GlobalSearchInputTrigger);
 
-    const button = screen.getByTestId('cmdk-input-trigger');
-    await user.click(button);
-    button.focus();
+    const input = screen.getByRole('combobox', { name: 'cmdk_placeholder' });
+    await user.click(input);
+    await user.type(input, 'mountain');
+
+    expect(openSpy).toHaveBeenCalledWith('dropdown');
+    expect(input).toHaveValue('mountain');
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).not.toBeNull();
+  });
+
+  it('keeps the dropdown panel closed until the search field receives focus', async () => {
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).toBeNull();
+
+    await user.click(screen.getByRole('combobox', { name: 'cmdk_placeholder' }));
+
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).not.toBeNull();
+    expect(globalSearchManager.presentation).toBe('dropdown');
+  });
+
+  it('shows the committed page query while the search field is closed', () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=mountains');
+
+    render(GlobalSearchInputTrigger);
+
+    expect(screen.getByRole('combobox', { name: 'cmdk_placeholder' })).toHaveValue('mountains');
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).toBeNull();
+  });
+
+  it('pressing Enter after clearing the top search field clears the committed search', async () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=mountains');
+    const activateSearchSpy = vi.spyOn(globalSearchManager, 'activateSearch').mockImplementation(() => {});
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    const input = screen.getByRole('combobox', { name: 'cmdk_placeholder' });
+    expect(input).toHaveValue('mountains');
+
+    await user.click(input);
+    await user.clear(input);
     await user.keyboard('{Enter}');
 
-    expect(openSpy).toHaveBeenCalledTimes(2);
+    expect(activateSearchSpy).toHaveBeenCalledWith('');
+  });
+
+  it('closes the dropdown on outside click', async () => {
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    await user.click(screen.getByRole('combobox', { name: 'cmdk_placeholder' }));
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).not.toBeNull();
+
+    await user.click(document.body);
+
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).toBeNull();
+    expect(globalSearchManager.isOpen).toBe(false);
+  });
+
+  it('does not let the dropdown outside-click listener close the modal presentation', async () => {
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    globalSearchManager.open('modal');
+    await user.click(document.body);
+
+    expect(globalSearchManager.isOpen).toBe(true);
+    expect(globalSearchManager.presentation).toBe('modal');
+  });
+
+  it('switches from dropdown to modal presentation on the keyboard launcher shortcut', async () => {
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    const input = screen.getByRole('combobox', { name: 'cmdk_placeholder' });
+    await user.click(input);
+    expect(globalSearchManager.presentation).toBe('dropdown');
+
+    await user.keyboard('{Control>}k{/Control}');
+
+    expect(globalSearchManager.isOpen).toBe(true);
+    expect(globalSearchManager.presentation).toBe('modal');
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).toBeNull();
   });
 
   it('renders the placeholder and hotkey hint', () => {
     render(GlobalSearchInputTrigger);
 
     expect(screen.getByTestId('cmdk-input-trigger')).toBeInTheDocument();
-    expect(screen.getByText('cmdk_placeholder')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'cmdk_placeholder' })).toBeInTheDocument();
     expect(screen.getByText(/^(⌘K|Ctrl\+K)$/)).toBeInTheDocument();
   });
 

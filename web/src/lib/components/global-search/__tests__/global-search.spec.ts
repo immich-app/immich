@@ -519,6 +519,22 @@ describe('global-search root', () => {
     expect(activateSearchSpy).toHaveBeenCalledWith('beach');
   });
 
+  it('pressing Enter after clearing the modal input clears the committed search', async () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=mountain');
+    const m = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    m.open('modal');
+    render(GlobalSearch, { props: { manager: m } });
+
+    const input = screen.getByRole('combobox');
+    expect(input).toHaveValue('mountain');
+
+    await user.clear(input);
+    await user.keyboard('{Enter}');
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('');
+  });
+
   it('pressing Enter on an almost-exact command query activates the promoted command instead of search', async () => {
     const m = new GlobalSearchManager();
     const activateSpy = vi.spyOn(m, 'activate').mockImplementation(() => {});

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { utils } from 'src/utils';
 
 async function submitGlobalSearch(page: import('@playwright/test').Page, query: string) {
-  await page.getByTestId('cmdk-input-trigger').click();
+  await page.keyboard.press('Control+k');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   const combobox = dialog.getByRole('combobox');
@@ -64,8 +64,10 @@ test.describe('Spaces Search', () => {
     await page.goBack();
 
     await expect(page).toHaveURL(new RegExp(String.raw`/spaces/${space.id}/photos\?q=sunset$`));
-    await page.getByTestId('cmdk-input-trigger').click();
-    await expect(page.getByRole('dialog').getByRole('combobox')).toHaveValue('sunset');
+    const trigger = page.getByTestId('cmdk-input-trigger');
+    await trigger.click();
+    await expect(page.locator('[data-cmdk-dropdown-panel]')).toBeVisible();
+    await expect(trigger.getByRole('combobox')).toHaveValue('sunset');
   });
 
   test('clearing search via X removes q and returns to the timeline', async ({ context, page }) => {
