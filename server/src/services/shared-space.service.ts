@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { setImmediate } from 'node:timers/promises';
 import { SharedSpacePerson } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -54,6 +55,8 @@ const ROLE_HIERARCHY: Record<SharedSpaceRole, number> = {
 
 @Injectable()
 export class SharedSpaceService extends BaseService {
+  private sharedSpaceFaceMatchBatchSize = 1000;
+
   async create(auth: AuthDto, dto: SharedSpaceCreateDto): Promise<SharedSpaceResponseDto> {
     const space = await this.sharedSpaceRepository.create({
       name: dto.name,
@@ -949,24 +952,54 @@ export class SharedSpaceService extends BaseService {
 
   @OnJob({ name: JobName.SharedSpaceFaceMatchAll, queue: QueueName.FacialRecognition })
   async handleSharedSpaceFaceMatchAll({ spaceId }: JobOf<JobName.SharedSpaceFaceMatchAll>): Promise<JobStatus> {
-    const space = await this.sharedSpaceRepository.getById(spaceId);
-    if (!space || !space.faceRecognitionEnabled) {
+    const batchSize = this.sharedSpaceFaceMatchBatchSize;
+    let processedAny = false;
+    let afterAssetId: string | undefined;
+
+    const initialSpace = await this.sharedSpaceRepository.getById(spaceId);
+    if (!initialSpace || !initialSpace.faceRecognitionEnabled) {
       return JobStatus.Skipped;
     }
 
-    const assets = await this.sharedSpaceRepository.getAssetIdsInSpace(spaceId);
-    await this.jobRepository.queueAll(
-      assets.map(({ assetId }) => ({
-        name: JobName.SharedSpaceFaceMatch as const,
-        data: { spaceId, assetId },
-      })),
-    );
+    while (true) {
+      const currentSpace = await this.sharedSpaceRepository.getById(spaceId);
+      if (!currentSpace || !currentSpace.faceRecognitionEnabled) {
+        return JobStatus.Success;
+      }
 
-    // Queue dedup pass after all face matches complete
-    await this.jobRepository.queue({
-      name: JobName.SharedSpacePersonDedup,
-      data: { spaceId },
-    });
+      const assets = await this.sharedSpaceRepository.getAssetIdsInSpacePage(spaceId, {
+        limit: batchSize,
+        ...(afterAssetId ? { afterAssetId } : {}),
+      });
+
+      if (assets.length === 0) {
+        break;
+      }
+
+      for (const { assetId } of assets) {
+        await this.processSpaceFaceMatch(spaceId, assetId);
+        processedAny = true;
+      }
+
+      afterAssetId = assets.at(-1)?.assetId;
+      if (assets.length < batchSize) {
+        break;
+      }
+
+      await setImmediate();
+    }
+
+    if (processedAny) {
+      const finalSpace = await this.sharedSpaceRepository.getById(spaceId);
+      if (!finalSpace || !finalSpace.faceRecognitionEnabled) {
+        return JobStatus.Success;
+      }
+
+      await this.jobRepository.queue({
+        name: JobName.SharedSpacePersonDedup,
+        data: { spaceId },
+      });
+    }
 
     return JobStatus.Success;
   }

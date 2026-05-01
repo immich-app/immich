@@ -1,8 +1,10 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import DeferredPersonThumbnail from '$lib/components/people/deferred-person-thumbnail.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import type { VisibilityChange, VisibilityPerson, VisibilitySaveResult } from '$lib/components/people/people-types';
   import PeopleGrid from '$lib/components/people/people-grid.svelte';
+  import { ThumbnailLoadQueue } from '$lib/components/people/thumbnail-load-queue.svelte';
   import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -20,6 +22,8 @@
     personStyle?: string;
     hasMore?: boolean;
     loading?: boolean;
+    deferThumbnails?: boolean;
+    thumbnailConcurrency?: number;
     onClose: () => void;
     onUpdate: (people: VisibilityPerson[]) => void;
     loadNextPage?: () => void;
@@ -35,15 +39,29 @@
     personStyle = undefined,
     hasMore = false,
     loading = false,
+    deferThumbnails = false,
+    thumbnailConcurrency = 8,
     onClose,
     onUpdate,
     loadNextPage = () => {},
     saveVisibilityChanges,
   }: Props = $props();
 
+  const getThumbnailConcurrency = () => thumbnailConcurrency;
   let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
   let showLoadingSpinner = $state(false);
+  let currentThumbnailConcurrency = $state(getThumbnailConcurrency());
+  let thumbnailQueue = $state(new ThumbnailLoadQueue(getThumbnailConcurrency()));
   const overrides = new SvelteMap<string, boolean>();
+
+  $effect(() => {
+    if (thumbnailConcurrency === currentThumbnailConcurrency) {
+      return;
+    }
+
+    currentThumbnailConcurrency = thumbnailConcurrency;
+    thumbnailQueue = new ThumbnailLoadQueue(thumbnailConcurrency);
+  });
 
   const getNextVisibility = (current: ToggleVisibility) =>
     current === ToggleVisibility.SHOW_ALL
@@ -180,15 +198,29 @@
             : $t('hide_person')}
           data-testid="visibility-person-{person.id}"
         >
-          <ImageThumbnail
-            {hidden}
-            shadow
-            url={person.thumbnailUrl}
-            altText={person.displayName}
-            widthStyle="100%"
-            hiddenIconClass="text-white group-hover:text-black transition-colors"
-            preload={false}
-          />
+          {#if deferThumbnails}
+            <DeferredPersonThumbnail
+              queue={thumbnailQueue}
+              {hidden}
+              shadow
+              url={person.thumbnailUrl}
+              altText={person.displayName}
+              title={person.displayName}
+              widthStyle="100%"
+              hiddenIconClass="text-white group-hover:text-black transition-colors"
+            />
+          {:else}
+            <ImageThumbnail
+              {hidden}
+              shadow
+              url={person.thumbnailUrl}
+              altText={person.displayName}
+              title={person.displayName}
+              widthStyle="100%"
+              hiddenIconClass="text-white group-hover:text-black transition-colors"
+              preload={false}
+            />
+          {/if}
           {#if person.displayName}
             <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">
               {person.displayName}

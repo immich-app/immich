@@ -17,6 +17,30 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { ServeStrategy, StorageBackend } from 'src/interfaces/storage-backend.interface';
 
+class AsyncLimiter {
+  private active = 0;
+  private readonly queue: Array<() => void> = [];
+
+  constructor(private readonly max: number) {}
+
+  async acquire(): Promise<() => void> {
+    if (this.active >= this.max) {
+      await new Promise<void>((resolve) => this.queue.push(resolve));
+    }
+
+    this.active++;
+    let released = false;
+    return () => {
+      if (released) {
+        return;
+      }
+      released = true;
+      this.active--;
+      this.queue.shift()?.();
+    };
+  }
+}
+
 export interface S3StorageConfig {
   bucket: string;
   region: string;
@@ -25,6 +49,7 @@ export interface S3StorageConfig {
   secretAccessKey?: string;
   presignedUrlExpiry: number;
   serveMode: 'redirect' | 'proxy';
+  proxyReadConcurrency?: number;
 }
 
 export class S3StorageBackend implements StorageBackend {
@@ -32,11 +57,13 @@ export class S3StorageBackend implements StorageBackend {
   private bucket: string;
   private presignedUrlExpiry: number;
   private serveMode: 'redirect' | 'proxy';
+  private proxyReadLimiter: AsyncLimiter;
 
   constructor(config: S3StorageConfig) {
     this.bucket = config.bucket;
     this.presignedUrlExpiry = config.presignedUrlExpiry;
     this.serveMode = config.serveMode;
+    this.proxyReadLimiter = new AsyncLimiter(config.proxyReadConcurrency ?? 32);
 
     this.client = new S3Client({
       region: config.region,
@@ -128,10 +155,23 @@ export class S3StorageBackend implements StorageBackend {
     return total;
   }
 
+  private releaseWhenStreamCloses(stream: Readable, release: () => void) {
+    stream.once('end', release);
+    stream.once('error', release);
+    stream.once('close', release);
+    return stream;
+  }
+
   async getServeStrategy(key: string, contentType: string): Promise<ServeStrategy> {
     if (this.serveMode === 'proxy') {
-      const { stream, length } = await this.get(key);
-      return { type: 'stream', stream, length };
+      const release = await this.proxyReadLimiter.acquire();
+      try {
+        const { stream, length } = await this.get(key);
+        return { type: 'stream', stream: this.releaseWhenStreamCloses(stream, release), length };
+      } catch (error) {
+        release();
+        throw error;
+      }
     }
 
     const url = await getSignedUrl(

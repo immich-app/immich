@@ -819,6 +819,35 @@ from
 limit
   $6
 
+-- SharedSpaceRepository.getAssetIdsInSpacePage
+select
+  "combined"."id" as "assetId"
+from
+  (
+    select
+      "assetId" as "id"
+    from
+      "shared_space_asset"
+    where
+      "spaceId" = $1
+    union
+    select
+      "asset"."id"
+    from
+      "shared_space_library"
+      inner join "asset" on "asset"."libraryId" = "shared_space_library"."libraryId"
+    where
+      "shared_space_library"."spaceId" = $2
+      and "asset"."deletedAt" is null
+      and "asset"."isOffline" = $3
+  ) as "combined"
+where
+  "combined"."id" > $4
+order by
+  "combined"."id" asc
+limit
+  $5
+
 -- SharedSpaceRepository.getAssetIdsInSpace
 select
   "combined"."id" as "assetId"

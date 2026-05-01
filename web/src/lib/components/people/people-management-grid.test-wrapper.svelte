@@ -16,6 +16,8 @@
     onNameSubmit?: (name: string, person: Person) => void | Promise<void>;
     onAction?: (person: Person) => void;
     loadNextPage?: () => void;
+    deferThumbnails?: boolean;
+    thumbnailConcurrency?: number;
   }
 
   let {
@@ -25,6 +27,8 @@
     onNameSubmit = () => {},
     onAction = () => {},
     loadNextPage = () => {},
+    deferThumbnails = false,
+    thumbnailConcurrency = 8,
   }: Props = $props();
 
   const toManagedPerson = (person: Person): ManagedPerson => ({
@@ -37,7 +41,16 @@
   });
 </script>
 
-<PeopleManagementGrid {people} {toManagedPerson} {canEditNames} {canShowActions} {onNameSubmit} {loadNextPage}>
+<PeopleManagementGrid
+  {people}
+  {toManagedPerson}
+  {canEditNames}
+  {canShowActions}
+  {onNameSubmit}
+  {loadNextPage}
+  {deferThumbnails}
+  {thumbnailConcurrency}
+>
   {#snippet actions(person)}
     <button type="button" onclick={() => onAction(person)}>Actions</button>
   {/snippet}

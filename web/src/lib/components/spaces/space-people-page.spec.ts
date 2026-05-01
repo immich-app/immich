@@ -107,14 +107,33 @@ describe('Spaces people page', () => {
     sdkMock.getSpacePeople.mockResolvedValue([]);
   });
 
-  it('renders circular thumbnails for each person', () => {
+  it('renders circular thumbnails for each person', async () => {
+    let callback!: IntersectionObserverCallback;
+    class VisibleObserver {
+      observe = vi.fn((target: Element) => {
+        callback(
+          [{ isIntersecting: true, target } as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        );
+      });
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+      constructor(cb: IntersectionObserverCallback) {
+        callback = cb;
+      }
+    }
+    vi.stubGlobal('IntersectionObserver', VisibleObserver);
     const people = [makePerson({ id: 'p1', name: 'Alice' }), makePerson({ id: 'p2', name: 'Bob' })];
     const { baseElement } = renderPage({ people });
 
-    const images = baseElement.querySelectorAll('img');
-    const srcs = [...images].map((img) => img.getAttribute('src'));
-    expect(srcs.some((s) => s?.includes('p1/thumbnail'))).toBe(true);
-    expect(srcs.some((s) => s?.includes('p2/thumbnail'))).toBe(true);
+    await waitFor(() => {
+      const images = baseElement.querySelectorAll('img');
+      const srcs = [...images].map((img) => img.getAttribute('src'));
+      expect(srcs.some((s) => s?.includes('p1/thumbnail'))).toBe(true);
+      expect(srcs.some((s) => s?.includes('p2/thumbnail'))).toBe(true);
+    });
+
+    vi.unstubAllGlobals();
   });
 
   it('shows inline name input for editors', () => {

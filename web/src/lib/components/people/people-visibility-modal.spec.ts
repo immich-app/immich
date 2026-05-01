@@ -180,4 +180,31 @@ describe('PeopleVisibilityModal', () => {
       expect(handleError).toHaveBeenCalledWith(error, expect.stringContaining('errors.unable_to_change_visibility')),
     );
   });
+
+  it('does not assign thumbnail src for deferred offscreen visibility modal people', () => {
+    class NeverIntersectingObserver {
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+    }
+    vi.stubGlobal('IntersectionObserver', NeverIntersectingObserver);
+
+    render(PeopleVisibilityModalWrapper, {
+      props: {
+        people: [
+          makePerson({ id: 'p1', displayName: 'Alice', thumbnailUrl: '/api/people/p1/thumbnail' }),
+          makePerson({ id: 'p2', displayName: 'Bob', thumbnailUrl: '/api/people/p2/thumbnail' }),
+        ],
+        onClose,
+        onUpdate,
+        saveVisibilityChanges,
+        deferThumbnails: true,
+      },
+    });
+
+    expect(screen.getByTitle('Alice')).not.toHaveAttribute('src');
+    expect(screen.getByTitle('Bob')).not.toHaveAttribute('src');
+
+    vi.unstubAllGlobals();
+  });
 });

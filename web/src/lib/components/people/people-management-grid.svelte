@@ -3,6 +3,7 @@
   import PeopleGrid from '$lib/components/people/people-grid.svelte';
   import PersonTile from '$lib/components/people/person-tile.svelte';
   import type { ManagedPerson } from '$lib/components/people/people-types';
+  import { ThumbnailLoadQueue } from '$lib/components/people/thumbnail-load-queue.svelte';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -18,6 +19,8 @@
     loadNextPage: () => void;
     canEditNames?: boolean | ((person: T) => boolean);
     canShowActions?: boolean | ((person: T) => boolean);
+    deferThumbnails?: boolean;
+    thumbnailConcurrency?: number;
     onNameSubmit?: (name: string, person: T) => void | Promise<void>;
     actions?: Snippet<[T]>;
   }
@@ -34,11 +37,25 @@
     loadNextPage,
     canEditNames = false,
     canShowActions = true,
+    deferThumbnails = false,
+    thumbnailConcurrency = 8,
     onNameSubmit = () => {},
     actions,
   }: Props = $props();
 
+  const getThumbnailConcurrency = () => thumbnailConcurrency;
   let editingName = $state('');
+  let currentThumbnailConcurrency = $state(getThumbnailConcurrency());
+  let thumbnailQueue = $state(new ThumbnailLoadQueue(getThumbnailConcurrency()));
+
+  $effect(() => {
+    if (thumbnailConcurrency === currentThumbnailConcurrency) {
+      return;
+    }
+
+    currentThumbnailConcurrency = thumbnailConcurrency;
+    thumbnailQueue = new ThumbnailLoadQueue(thumbnailConcurrency);
+  });
 
   const isNameEditable = (person: T) => (typeof canEditNames === 'function' ? canEditNames(person) : canEditNames);
 
@@ -64,7 +81,12 @@
   {#snippet children(person)}
     {@const managedPerson = toManagedPerson(person)}
     <div class={cardClass}>
-      <PersonTile person={managedPerson} showActionMenu={shouldShowActions(person)}>
+      <PersonTile
+        person={managedPerson}
+        showActionMenu={shouldShowActions(person)}
+        deferThumbnail={deferThumbnails}
+        {thumbnailQueue}
+      >
         {#snippet actionMenu()}
           {@render actions?.(person)}
         {/snippet}

@@ -16,6 +16,8 @@
     hasMore?: boolean;
     loading?: boolean;
     loadNextPage?: () => void;
+    deferThumbnails?: boolean;
+    thumbnailConcurrency?: number;
   }
 
   let props: Props = $props();

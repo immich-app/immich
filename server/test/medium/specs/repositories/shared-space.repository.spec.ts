@@ -420,6 +420,82 @@ describe(SharedSpaceRepository.name, () => {
     });
   });
 
+  describe('getAssetIdsInSpacePage', () => {
+    it('returns direct and linked-library assets in stable id order with keyset pagination', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+
+      const { asset: directB } = await ctx.newAsset({
+        ownerId: user.id,
+        id: '00000000-0000-4000-a000-000000000020',
+      });
+      const { asset: directA } = await ctx.newAsset({
+        ownerId: user.id,
+        id: '00000000-0000-4000-a000-000000000010',
+      });
+      const { asset: libraryAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        libraryId: library.id,
+        id: '00000000-0000-4000-a000-000000000030',
+      });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: directB.id, addedById: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: directA.id, addedById: user.id });
+
+      const firstPage = await sut.getAssetIdsInSpacePage(space.id, { limit: 2 });
+      const secondPage = await sut.getAssetIdsInSpacePage(space.id, {
+        limit: 2,
+        afterAssetId: firstPage.at(-1)?.assetId,
+      });
+
+      expect(firstPage.map(({ assetId }) => assetId)).toEqual([directA.id, directB.id]);
+      expect(secondPage.map(({ assetId }) => assetId)).toEqual([libraryAsset.id]);
+    });
+
+    it('deduplicates assets reachable directly and through a linked library', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: user.id });
+
+      const page = await sut.getAssetIdsInSpacePage(space.id, { limit: 10 });
+
+      expect(page).toEqual([{ assetId: asset.id }]);
+    });
+
+    it('filters deleted and offline linked-library assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id });
+      await ctx.newAsset({ ownerId: user.id, libraryId: library.id, deletedAt: new Date() });
+      await ctx.newAsset({ ownerId: user.id, libraryId: library.id, isOffline: true });
+
+      const page = await sut.getAssetIdsInSpacePage(space.id, { limit: 10 });
+
+      expect(page).toEqual([{ assetId: visible.id }]);
+    });
+
+    it('returns an empty page after the last asset id', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: user.id });
+
+      const page = await sut.getAssetIdsInSpacePage(space.id, { limit: 10, afterAssetId: asset.id });
+
+      expect(page).toEqual([]);
+    });
+  });
+
   describe('getAssetCount', () => {
     it('should count non-deleted assets', async () => {
       const { ctx, sut } = setup();
@@ -538,11 +614,22 @@ describe(SharedSpaceRepository.name, () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { space } = await ctx.newSharedSpace({ createdById: user.id });
-      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id, thumbhash: Buffer.from('thumb1') });
-      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id, thumbhash: Buffer.from('thumb2') });
-      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id, thumbhash: Buffer.from('thumb3') });
+      const { asset: asset1 } = await ctx.newAsset({
+        ownerId: user.id,
+        thumbhash: Buffer.from('thumb1'),
+        fileCreatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      });
+      const { asset: asset2 } = await ctx.newAsset({
+        ownerId: user.id,
+        thumbhash: Buffer.from('thumb2'),
+        fileCreatedAt: new Date('2026-01-02T00:00:00.000Z'),
+      });
+      const { asset: asset3 } = await ctx.newAsset({
+        ownerId: user.id,
+        thumbhash: Buffer.from('thumb3'),
+        fileCreatedAt: new Date('2026-01-03T00:00:00.000Z'),
+      });
 
-      // Add assets with slight delay to ensure ordering
       await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset1.id });
       await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset2.id });
       await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset3.id });

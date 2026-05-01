@@ -266,6 +266,7 @@
         canEditNames={isEditor}
         canShowActions={isEditor}
         {onNameSubmit}
+        deferThumbnails
       >
         {#snippet actions(person)}
           <ButtonContextMenu

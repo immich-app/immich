@@ -146,6 +146,132 @@ describe('S3StorageBackend', () => {
       const strategy = await proxyBackend.getServeStrategy('key.jpg', 'image/jpeg');
       expect(strategy.type).toBe('stream');
     });
+
+    it('should limit concurrent proxied S3 reads', async () => {
+      const proxyBackend = new S3StorageBackend({
+        bucket: 'test-bucket',
+        region: 'us-east-1',
+        presignedUrlExpiry: 3600,
+        serveMode: 'proxy' as const,
+        proxyReadConcurrency: 1,
+      });
+      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
+      let firstResolve!: (value: unknown) => void;
+      proxyClient.send
+        .mockReturnValueOnce(
+          new Promise((resolve) => {
+            firstResolve = resolve;
+          }),
+        )
+        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
+
+      const first = proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
+      const second = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      await Promise.resolve();
+
+      expect(proxyClient.send).toHaveBeenCalledTimes(1);
+      firstResolve({ Body: Readable.from([Buffer.from('first')]), ContentLength: 5 });
+      const firstStrategy = await first;
+      expect(proxyClient.send).toHaveBeenCalledTimes(1);
+      if (firstStrategy.type === 'stream') {
+        firstStrategy.stream.destroy();
+      }
+      await second;
+
+      expect(proxyClient.send).toHaveBeenCalledTimes(2);
+      await expect(second).resolves.toMatchObject({ type: 'stream' });
+    });
+
+    it('should release a proxy read slot when the stream ends', async () => {
+      const proxyBackend = new S3StorageBackend({
+        bucket: 'test-bucket',
+        region: 'us-east-1',
+        presignedUrlExpiry: 3600,
+        serveMode: 'proxy' as const,
+        proxyReadConcurrency: 1,
+      });
+      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
+      proxyClient.send
+        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('first')]), ContentLength: 5 })
+        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
+
+      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
+      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      expect(proxyClient.send).toHaveBeenCalledTimes(1);
+      if (first.type === 'stream') {
+        for await (const _chunk of first.stream) {
+          // drain stream
+        }
+      }
+      const second = await secondPromise;
+
+      expect(second.type).toBe('stream');
+      expect(proxyClient.send).toHaveBeenCalledTimes(2);
+    });
+
+    it('should release a proxy read slot when stream creation fails', async () => {
+      const proxyBackend = new S3StorageBackend({
+        bucket: 'test-bucket',
+        region: 'us-east-1',
+        presignedUrlExpiry: 3600,
+        serveMode: 'proxy' as const,
+        proxyReadConcurrency: 1,
+      });
+      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
+      proxyClient.send.mockRejectedValueOnce(new Error('denied')).mockResolvedValueOnce({
+        Body: Readable.from([Buffer.from('second')]),
+        ContentLength: 6,
+      });
+
+      await expect(proxyBackend.getServeStrategy('first.jpg', 'image/jpeg')).rejects.toThrow('denied');
+      const second = await proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+
+      expect(second.type).toBe('stream');
+      expect(proxyClient.send).toHaveBeenCalledTimes(2);
+    });
+
+    it('should release a proxy read slot when the stream errors', async () => {
+      const proxyBackend = new S3StorageBackend({
+        bucket: 'test-bucket',
+        region: 'us-east-1',
+        presignedUrlExpiry: 3600,
+        serveMode: 'proxy' as const,
+        proxyReadConcurrency: 1,
+      });
+      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
+      const erroringStream = new Readable({
+        read() {
+          this.destroy(new Error('stream failed'));
+        },
+      });
+      proxyClient.send
+        .mockResolvedValueOnce({ Body: erroringStream, ContentLength: 5 })
+        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
+
+      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
+      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      if (first.type === 'stream') {
+        await expect(
+          (async () => {
+            for await (const _chunk of first.stream) {
+              // drain stream
+            }
+          })(),
+        ).rejects.toThrow('stream failed');
+      }
+      const second = await secondPromise;
+
+      expect(second.type).toBe('stream');
+      expect(proxyClient.send).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not acquire proxy read slots in redirect mode', async () => {
+      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', 'image/webp');
+
+      expect(strategy.type).toBe('redirect');
+      expect(mockSend).not.toHaveBeenCalled();
+      expect(getSignedUrl).toHaveBeenCalled();
+    });
   });
 
   describe('downloadToTemp', () => {

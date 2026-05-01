@@ -54,4 +54,5 @@
   {loading}
   loadNextPage={onLoadMore}
   {saveVisibilityChanges}
+  deferThumbnails
 />

@@ -1,7 +1,9 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
+  import DeferredPersonThumbnail from '$lib/components/people/deferred-person-thumbnail.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import type { ManagedPerson } from '$lib/components/people/people-types';
+  import type { ThumbnailLoadQueue } from '$lib/components/people/thumbnail-load-queue.svelte';
   import { Icon } from '@immich/ui';
   import { mdiHeart, mdiPaw } from '@mdi/js';
   import type { Snippet } from 'svelte';
@@ -10,11 +12,13 @@
   interface Props {
     person: ManagedPerson;
     showActionMenu?: boolean;
+    deferThumbnail?: boolean;
+    thumbnailQueue?: ThumbnailLoadQueue;
     actionMenu?: Snippet;
     footer?: Snippet;
   }
 
-  let { person, showActionMenu = true, actionMenu, footer }: Props = $props();
+  let { person, showActionMenu = true, deferThumbnail = false, thumbnailQueue, actionMenu, footer }: Props = $props();
   let showActions = $state(false);
   let groupElement: HTMLDivElement;
 
@@ -35,15 +39,27 @@
 >
   <a href={person.href} draggable="false" aria-label={person.displayName} onfocus={() => (showActions = true)}>
     <div class="w-full h-full rounded-xl brightness-95 filter">
-      <ImageThumbnail
-        shadow
-        url={person.thumbnailUrl}
-        altText={person.displayName}
-        title={person.displayName}
-        widthStyle="100%"
-        circle
-        preload={false}
-      />
+      {#if deferThumbnail && thumbnailQueue}
+        <DeferredPersonThumbnail
+          queue={thumbnailQueue}
+          shadow
+          url={person.thumbnailUrl}
+          altText={person.displayName}
+          title={person.displayName}
+          widthStyle="100%"
+          circle
+        />
+      {:else}
+        <ImageThumbnail
+          shadow
+          url={person.thumbnailUrl}
+          altText={person.displayName}
+          title={person.displayName}
+          widthStyle="100%"
+          circle
+          preload={false}
+        />
+      {/if}
       {#if person.isFavorite}
         <div class="absolute top-4 start-4" aria-label={$t('favorite')} title={$t('favorite')}>
           <Icon icon={mdiHeart} size="24" class="text-white" />
