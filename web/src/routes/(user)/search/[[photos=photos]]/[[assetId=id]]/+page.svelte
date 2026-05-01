@@ -283,7 +283,7 @@
 
         <button
           type="button"
-          class="flex items-center justify-center bg-immich-primary/90 dark:bg-immich-dark-primary/90 text-white dark:text-black rounded-e-full py-2 px-2 hover:bg-immich-primary/70 dark:hover:bg-immich-dark-primary/70 transition-colors"
+          class="flex items-center justify-center rounded-e-full bg-immich-primary/90 p-2 text-white transition-colors hover:bg-immich-primary/70 dark:bg-immich-dark-primary/90 dark:text-black dark:hover:bg-immich-dark-primary/70"
           aria-label={$t('remove_filter')}
           onclick={() => removeFilter(searchKey)}
         >
