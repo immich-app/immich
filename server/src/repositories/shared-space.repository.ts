@@ -582,6 +582,9 @@ export class SharedSpaceRepository {
              ELSE 1 END`,
       )
       .orderBy('shared_space_person.assetCount', 'desc')
+      .orderBy(sql`COALESCE(NULLIF(shared_space_person.name, ''), NULLIF(person.name, ''))`, (om) =>
+        om.asc().nullsLast(),
+      )
       .orderBy('shared_space_person.id')
       .$if(!!options.limit, (qb) => qb.limit(options.limit!))
       .$if(!!options.offset, (qb) => qb.offset(options.offset!))

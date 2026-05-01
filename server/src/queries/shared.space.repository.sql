@@ -421,6 +421,10 @@ order by
     ELSE 1
   END,
   "shared_space_person"."assetCount" desc,
+  COALESCE(
+    NULLIF(shared_space_person.name, ''),
+    NULLIF(person.name, '')
+  ) asc nulls last,
   "shared_space_person"."id"
 limit
   $3

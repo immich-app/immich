@@ -1052,6 +1052,74 @@ describe(SharedSpaceRepository.name, () => {
       expect(result[0].personalName).toBe('Global Name');
       expect(result[0].personalThumbnailPath).toBe('/path/to/thumbnail.jpg');
     });
+
+    it('should sort space persons tied on assetCount alphabetically by name', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+
+      const charlie = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Charlie',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 5,
+      });
+      const alice = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Alice',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 5,
+      });
+      const bob = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Bob',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 5,
+      });
+
+      const result = await sut.getPersonsBySpaceId(space.id, {});
+
+      expect(result.map((p) => p.id)).toEqual([alice.id, bob.id, charlie.id]);
+    });
+
+    it('should fall back to global person name when sorting tied space persons', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const { result: globalBob } = await ctx.newPerson({ ownerId: user.id, name: 'Bob' });
+      const { assetFace: bobFace } = await ctx.newAssetFace({ assetId: asset.id, personId: globalBob.id });
+
+      const charlie = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Charlie',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 5,
+      });
+      const bob = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: bobFace.id,
+        type: 'person',
+        assetCount: 5,
+      });
+      const alice = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Alice',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 5,
+      });
+
+      const result = await sut.getPersonsBySpaceId(space.id, {});
+
+      expect(result.map((p) => p.id)).toEqual([alice.id, bob.id, charlie.id]);
+    });
   });
 
   describe('getFilteredMapMarkers — space filter interaction', () => {
