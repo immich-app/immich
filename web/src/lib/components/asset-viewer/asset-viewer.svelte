@@ -186,7 +186,7 @@
 
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
-      const refreshedAsset = await getAssetInfo({ id: asset.id });
+      const refreshedAsset = await getAssetInfo({ id: asset.id, spaceId });
       onAssetChange?.(refreshedAsset);
       assetViewerManager.setAsset(refreshedAsset);
     }
@@ -315,7 +315,7 @@
         break;
       }
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
-        const assetInfo = await getAssetInfo({ id: asset.id });
+        const assetInfo = await getAssetInfo({ id: asset.id, spaceId });
         cursor.current = { ...asset, people: assetInfo.people };
         break;
       }

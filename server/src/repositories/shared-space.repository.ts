@@ -15,6 +15,17 @@ import { SharedSpacePersonTable } from 'src/schema/tables/shared-space-person.ta
 import { SharedSpaceTable } from 'src/schema/tables/shared-space.table';
 import { searchAssetBuilder } from 'src/utils/database';
 
+export type LinkedSpacePerson = {
+  id: string;
+  isHidden: boolean;
+  name?: string | null;
+  personalName?: string | null;
+  personalThumbnailPath?: string | null;
+  birthDate?: string | null;
+  updatedAt?: Date | string;
+  type?: string;
+};
+
 @Injectable()
 export class SharedSpaceRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -1140,23 +1151,58 @@ export class SharedSpaceRepository {
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async findSpacePersonsByLinkedPersonIds(spaceId: string, personIds: string[]) {
     if (personIds.length === 0) {
-      return new Map<string, { id: string; isHidden: boolean }>();
+      return new Map<string, LinkedSpacePerson>();
     }
 
     const results = await this.db
       .selectFrom('shared_space_person')
       .innerJoin('shared_space_person_face', 'shared_space_person_face.personId', 'shared_space_person.id')
       .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
-      .select(['shared_space_person.id', 'shared_space_person.isHidden', 'asset_face.personId'])
+      .leftJoin(
+        'asset_face as representative_face',
+        'representative_face.id',
+        'shared_space_person.representativeFaceId',
+      )
+      .leftJoin('person', 'person.id', 'representative_face.personId')
+      .select([
+        'shared_space_person.id',
+        'shared_space_person.name',
+        'shared_space_person.isHidden',
+        'shared_space_person.birthDate',
+        'shared_space_person.updatedAt',
+        'shared_space_person.type',
+        'person.name as personalName',
+        'person.thumbnailPath as personalThumbnailPath',
+        'asset_face.personId',
+      ])
       .where('shared_space_person.spaceId', '=', spaceId)
       .where('asset_face.personId', 'in', personIds)
-      .groupBy(['shared_space_person.id', 'shared_space_person.isHidden', 'asset_face.personId'])
+      .groupBy([
+        'shared_space_person.id',
+        'shared_space_person.name',
+        'shared_space_person.isHidden',
+        'shared_space_person.birthDate',
+        'shared_space_person.updatedAt',
+        'shared_space_person.type',
+        'person.name',
+        'person.thumbnailPath',
+        'asset_face.personId',
+      ])
       .execute();
 
-    const map = new Map<string, { id: string; isHidden: boolean }>();
+    const map = new Map<string, LinkedSpacePerson>();
     for (const row of results) {
       if (row.personId) {
-        map.set(row.personId, { id: row.id, isHidden: row.isHidden });
+        map.set(row.personId, {
+          id: row.id,
+          isHidden: row.isHidden,
+          name: row.name,
+          personalName: row.personalName,
+          personalThumbnailPath: row.personalThumbnailPath,
+          birthDate: row.birthDate,
+          updatedAt: row.updatedAt,
+          type: row.type,
+        });
       }
     }
     return map;

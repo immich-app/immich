@@ -14,6 +14,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { createUrl, getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
+  import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { getMapProviderLinks } from '$lib/utils/exif-utils';
@@ -116,6 +117,15 @@
 
   const getAssetFolderHref = (asset: AssetResponseDto) => Route.folders({ path: getParentPath(asset.originalPath) });
 
+  type AssetPerson = NonNullable<AssetResponseDto['people']>[number];
+
+  const getPersonFallbackThumbnailUrl = (person: AssetPerson) =>
+    effectiveSpaceId && person.spacePersonId
+      ? createUrl(`/shared-spaces/${effectiveSpaceId}/people/${person.spacePersonId}/thumbnail`, {
+          updatedAt: person.updatedAt,
+        })
+      : getPeopleThumbnailUrl(person);
+
   onDestroy(() => {
     assetViewerManager.closeEditFacesPanel();
   });
@@ -208,6 +218,7 @@
           {#each people as person, index (person.id)}
             {#if showingHiddenPeople || !person.isHidden}
               {@const isHighlighted = people[index].faces.some((f) => $boundingBoxesArray.some((b) => b.id === f.id))}
+              {@const fallbackThumbnailUrl = getPersonFallbackThumbnailUrl(person)}
               <a
                 class="group w-22 outline-none"
                 href={effectiveSpaceId && person.spacePersonId
@@ -219,22 +230,48 @@
                 onmouseleave={() => ($boundingBoxesArray = [])}
               >
                 <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={effectiveSpaceId && person.spacePersonId
-                      ? createUrl(`/shared-spaces/${effectiveSpaceId}/people/${person.spacePersonId}/thumbnail`, {
-                          updatedAt: person.updatedAt,
-                        })
-                      : getPeopleThumbnailUrl(person)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    hidden={person.isHidden}
-                    highlighted={isHighlighted}
-                    class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
-                  />
+                  {#if person.faces[0]}
+                    {#await zoomImageToBase64(person.faces[0], asset.id, asset.type, assetViewerManager.imgRef)}
+                      <ImageThumbnail
+                        curve
+                        shadow
+                        url={fallbackThumbnailUrl}
+                        altText={person.name}
+                        title={person.name}
+                        widthStyle="90px"
+                        heightStyle="90px"
+                        hidden={person.isHidden}
+                        highlighted={isHighlighted}
+                        class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
+                      />
+                    {:then faceThumbnailUrl}
+                      <ImageThumbnail
+                        curve
+                        shadow
+                        url={faceThumbnailUrl ?? fallbackThumbnailUrl}
+                        altText={person.name}
+                        title={person.name}
+                        widthStyle="90px"
+                        heightStyle="90px"
+                        hidden={person.isHidden}
+                        highlighted={isHighlighted}
+                        class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
+                      />
+                    {/await}
+                  {:else}
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={fallbackThumbnailUrl}
+                      altText={person.name}
+                      title={person.name}
+                      widthStyle="90px"
+                      heightStyle="90px"
+                      hidden={person.isHidden}
+                      highlighted={isHighlighted}
+                      class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
+                    />
+                  {/if}
                 </div>
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}

@@ -205,6 +205,55 @@ describe(AssetService.name, () => {
       expect((result as any).people[0].spacePersonId).toBe('space-person-1');
     });
 
+    it('should expose space person fields for people in explicit space context', async () => {
+      const asset = AssetFactory.from()
+        .exif()
+        .face({}, (f) =>
+          f.person({
+            id: 'person-1',
+            name: 'Global Person',
+            thumbnailPath: '/global-person-thumb.jpg',
+            birthDate: '1980-01-01' as any,
+          }),
+        )
+        .build();
+      mocks.access.asset.checkSpaceAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(asset as any);
+      mocks.sharedSpace.getMember.mockResolvedValue({ userId: authStub.admin.user.id } as any);
+      mocks.access.asset.checkSpaceAccessForSpace.mockResolvedValue(new Set([asset.id]));
+      mocks.sharedSpace.findSpacePersonsByLinkedPersonIds.mockResolvedValue(
+        new Map([
+          [
+            'person-1',
+            {
+              id: 'space-person-1',
+              isHidden: false,
+              name: 'Space Person',
+              personalName: 'Global Person',
+              personalThumbnailPath: '/linked-person-thumb.jpg',
+              birthDate: '1990-02-03',
+              updatedAt: new Date('2026-01-02T03:04:05.000Z'),
+              type: 'person',
+            },
+          ],
+        ]) as any,
+      );
+
+      const result = await sut.get(authStub.admin, asset.id, 'space-id');
+
+      expect((result as any).people[0]).toEqual(
+        expect.objectContaining({
+          id: 'person-1',
+          spacePersonId: 'space-person-1',
+          name: 'Space Person',
+          thumbnailPath: '/linked-person-thumb.jpg',
+          birthDate: '1990-02-03',
+          updatedAt: '2026-01-02T03:04:05.000Z',
+          type: 'person',
+        }),
+      );
+    });
+
     it('should map spacePersonId for asset owner in shared space context', async () => {
       const asset = AssetFactory.from({ ownerId: authStub.user1.user.id })
         .exif()

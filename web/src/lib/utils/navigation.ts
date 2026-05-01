@@ -25,8 +25,18 @@ export const isAssetViewerRoute = (
   target?: { route?: { id?: RouteId | null }; params?: Record<string, string> | null } | null,
 ) => !!(target?.route?.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
-export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {
-  return assetId ? assetCacheManager.getAsset({ id: assetId, slug, key }, false) : undefined;
+export function getAssetInfoFromParam({
+  assetId,
+  slug,
+  key,
+  spaceId,
+}: {
+  assetId?: string;
+  key?: string;
+  slug?: string;
+  spaceId?: string;
+}) {
+  return assetId ? assetCacheManager.getAsset({ id: assetId, slug, key, spaceId }, false) : undefined;
 }
 
 function currentUrlWithoutAsset() {

@@ -41,6 +41,7 @@ import {
   Permission,
   QueueName,
 } from 'src/enum';
+import type { LinkedSpacePerson } from 'src/repositories/shared-space.repository';
 import { BaseService } from 'src/services/base.service';
 import { StorageService } from 'src/services/storage.service';
 import { JobItem, JobOf } from 'src/types';
@@ -54,7 +55,7 @@ import {
   onBeforeUnlink,
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
-import { extractTimeZone } from 'src/utils/date';
+import { asDateString, extractTimeZone } from 'src/utils/date';
 import { formatSecondsToDuration, parseDurationToSeconds } from 'src/utils/duration';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
@@ -121,12 +122,7 @@ export class AssetService extends BaseService {
           spaceId,
           globalPersonIds,
         );
-        for (const person of data.people) {
-          const spacePerson = spacePersonMap.get(person.id);
-          if (spacePerson) {
-            person.spacePersonId = spacePerson.id;
-          }
-        }
+        this.applySpacePeople(data, spacePersonMap);
         data.people = data.people.filter((p) => p.spacePersonId && !spacePersonMap.get(p.id)?.isHidden);
       }
     } else if (data.ownerId !== auth.user.id) {
@@ -140,12 +136,7 @@ export class AssetService extends BaseService {
           spaceForAsset.spaceId,
           globalPersonIds,
         );
-        for (const person of data.people || []) {
-          const spacePerson = spacePersonMap.get(person.id);
-          if (spacePerson) {
-            person.spacePersonId = spacePerson.id;
-          }
-        }
+        this.applySpacePeople(data, spacePersonMap);
         data.people = (data.people || []).filter((p) => p.spacePersonId && !spacePersonMap.get(p.id)?.isHidden);
         data.resolvedSpaceId = spaceForAsset.spaceId;
       } else {
@@ -154,6 +145,39 @@ export class AssetService extends BaseService {
     }
 
     return data;
+  }
+
+  private applySpacePeople(data: AssetResponseDto, spacePersonMap: Map<string, LinkedSpacePerson>) {
+    for (const person of data.people || []) {
+      const spacePerson = spacePersonMap.get(person.id);
+      if (!spacePerson) {
+        continue;
+      }
+
+      person.spacePersonId = spacePerson.id;
+      person.isHidden = spacePerson.isHidden;
+
+      const name = spacePerson.name || spacePerson.personalName;
+      if (name !== undefined) {
+        person.name = name ?? '';
+      }
+
+      if (spacePerson.personalThumbnailPath !== undefined) {
+        person.thumbnailPath = spacePerson.personalThumbnailPath || '';
+      }
+
+      if (spacePerson.birthDate !== undefined) {
+        person.birthDate = spacePerson.birthDate ?? null;
+      }
+
+      if (spacePerson.updatedAt !== undefined) {
+        person.updatedAt = asDateString(spacePerson.updatedAt);
+      }
+
+      if (spacePerson.type) {
+        person.type = spacePerson.type;
+      }
+    }
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

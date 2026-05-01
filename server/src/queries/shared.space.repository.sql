@@ -904,18 +904,32 @@ limit
 -- SharedSpaceRepository.findSpacePersonsByLinkedPersonIds
 select
   "shared_space_person"."id",
+  "shared_space_person"."name",
   "shared_space_person"."isHidden",
+  "shared_space_person"."birthDate",
+  "shared_space_person"."updatedAt",
+  "shared_space_person"."type",
+  "person"."name" as "personalName",
+  "person"."thumbnailPath" as "personalThumbnailPath",
   "asset_face"."personId"
 from
   "shared_space_person"
   inner join "shared_space_person_face" on "shared_space_person_face"."personId" = "shared_space_person"."id"
   inner join "asset_face" on "asset_face"."id" = "shared_space_person_face"."assetFaceId"
+  left join "asset_face" as "representative_face" on "representative_face"."id" = "shared_space_person"."representativeFaceId"
+  left join "person" on "person"."id" = "representative_face"."personId"
 where
   "shared_space_person"."spaceId" = $1
   and "asset_face"."personId" in ($2)
 group by
   "shared_space_person"."id",
+  "shared_space_person"."name",
   "shared_space_person"."isHidden",
+  "shared_space_person"."birthDate",
+  "shared_space_person"."updatedAt",
+  "shared_space_person"."type",
+  "person"."name",
+  "person"."thumbnailPath",
   "asset_face"."personId"
 
 -- SharedSpaceRepository.findSpaceForAssetAndUser

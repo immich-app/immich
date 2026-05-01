@@ -6,9 +6,10 @@ import '@testing-library/jest-dom';
 import { screen, waitFor } from '@testing-library/svelte';
 import DetailPanel from './detail-panel.svelte';
 
-const { getAllAlbumsMock, getAssetInfoMock } = vi.hoisted(() => ({
+const { getAllAlbumsMock, getAssetInfoMock, zoomImageToBase64Mock } = vi.hoisted(() => ({
   getAllAlbumsMock: vi.fn(),
   getAssetInfoMock: vi.fn(),
+  zoomImageToBase64Mock: vi.fn(),
 }));
 
 vi.mock('@immich/sdk', async (importOriginal) => {
@@ -21,6 +22,10 @@ vi.mock('@immich/sdk', async (importOriginal) => {
 });
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn().mockResolvedValue(undefined) }));
+
+vi.mock('$lib/utils/people-utils', () => ({
+  zoomImageToBase64: zoomImageToBase64Mock,
+}));
 
 vi.mock('$lib/managers/auth-manager.svelte', () => ({
   authManager: {
@@ -116,9 +121,12 @@ describe('DetailPanel', () => {
     vi.clearAllMocks();
     getAllAlbumsMock.mockResolvedValue([]);
     getAssetInfoMock.mockResolvedValue(undefined);
+    zoomImageToBase64Mock.mockResolvedValue(null);
   });
 
-  it('uses the shared-space person thumbnail URL when spacePersonId is present', () => {
+  it('uses the detected face crop instead of the shared-space person thumbnail when spacePersonId is present', async () => {
+    zoomImageToBase64Mock.mockResolvedValue('data:image/jpeg;base64,current-face');
+
     const asset: AssetResponseDto = {
       id: 'asset-1',
       ownerId: 'owner-1',
@@ -153,7 +161,17 @@ describe('DetailPanel', () => {
           isHidden: false,
           birthDate: null,
           type: 'person',
-          faces: [],
+          faces: [
+            {
+              id: 'face-1',
+              imageWidth: 1000,
+              imageHeight: 800,
+              boundingBoxX1: 100,
+              boundingBoxY1: 200,
+              boundingBoxX2: 300,
+              boundingBoxY2: 400,
+            },
+          ],
           spacePersonId: 'space-person-1',
         },
       ],
@@ -166,8 +184,105 @@ describe('DetailPanel', () => {
       spaceId: 'space-1',
     });
 
-    const image = container.querySelector('img[src*="/shared-spaces/space-1/people/space-person-1/thumbnail"]');
-    expect(image).toBeTruthy();
+    await waitFor(() =>
+      expect(zoomImageToBase64Mock).toHaveBeenCalledWith(asset.people![0].faces[0], asset.id, asset.type, undefined),
+    );
+
+    const croppedFace = container.querySelector('img[src="data:image/jpeg;base64,current-face"]');
+    expect(croppedFace).toBeTruthy();
+    expect(container.querySelector('img[src*="/shared-spaces/space-1/people/space-person-1/thumbnail"]')).toBeNull();
+  });
+
+  it('renders distinct detected face crops when multiple people resolve to the same space person', async () => {
+    zoomImageToBase64Mock
+      .mockResolvedValueOnce('data:image/jpeg;base64,first-face')
+      .mockResolvedValueOnce('data:image/jpeg;base64,second-face');
+
+    const asset: AssetResponseDto = {
+      id: 'asset-1',
+      ownerId: 'owner-1',
+      libraryId: 'library-1',
+      type: AssetTypeEnum.Image,
+      originalPath: '/library/asset-1.jpg',
+      originalFileName: 'asset-1.jpg',
+      originalMimeType: 'image/jpeg',
+      thumbhash: 'thumbhash',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      fileCreatedAt: '2026-01-01T00:00:00.000Z',
+      fileModifiedAt: '2026-01-01T00:00:00.000Z',
+      localDateTime: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      isFavorite: false,
+      isArchived: false,
+      isTrashed: false,
+      duration: null,
+      checksum: 'checksum',
+      isOffline: false,
+      hasMetadata: false,
+      visibility: AssetVisibility.Timeline,
+      width: 1000,
+      height: 800,
+      isEdited: false,
+      people: [
+        {
+          id: 'global-person-1',
+          name: 'Alice',
+          thumbnailPath: '/ignored-1.jpg',
+          updatedAt: '2026-01-02T00:00:00.000Z',
+          isHidden: false,
+          birthDate: null,
+          type: 'person',
+          faces: [
+            {
+              id: 'face-1',
+              imageWidth: 1000,
+              imageHeight: 800,
+              boundingBoxX1: 100,
+              boundingBoxY1: 200,
+              boundingBoxX2: 300,
+              boundingBoxY2: 400,
+            },
+          ],
+          spacePersonId: 'space-person-1',
+        },
+        {
+          id: 'global-person-2',
+          name: 'Bob',
+          thumbnailPath: '/ignored-2.jpg',
+          updatedAt: '2026-01-03T00:00:00.000Z',
+          isHidden: false,
+          birthDate: null,
+          type: 'person',
+          faces: [
+            {
+              id: 'face-2',
+              imageWidth: 1000,
+              imageHeight: 800,
+              boundingBoxX1: 500,
+              boundingBoxY1: 200,
+              boundingBoxX2: 700,
+              boundingBoxY2: 400,
+            },
+          ],
+          spacePersonId: 'space-person-1',
+        },
+      ],
+      unassignedFaces: [],
+    };
+
+    const { container } = renderWithTooltips(DetailPanel, {
+      asset,
+      currentAlbum: null,
+      spaceId: 'space-1',
+    });
+
+    await waitFor(() => expect(zoomImageToBase64Mock).toHaveBeenCalledTimes(2));
+
+    expect(container.querySelector('img[src="data:image/jpeg;base64,first-face"]')).toBeTruthy();
+    expect(container.querySelector('img[src="data:image/jpeg;base64,second-face"]')).toBeTruthy();
+    expect(
+      container.querySelectorAll('img[src*="/shared-spaces/space-1/people/space-person-1/thumbnail"]'),
+    ).toHaveLength(0);
   });
 
   it('renders Google, Apple, and OpenStreetMap links in the image info panel map popup', async () => {
