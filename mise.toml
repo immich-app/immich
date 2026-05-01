@@ -26,6 +26,15 @@ version = "1.35.1"
 bin = "dcm"
 postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
 
+[tools."github:jellyfin/jellyfin-ffmpeg"]
+version = "7.1.3-6"
+
+[tools."github:jellyfin/jellyfin-ffmpeg".platforms]
+linux-x64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_linux64-gpl.tar.xz" }
+linux-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz" }
+macos-x64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz" }
+macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz" }
+
 [settings]
 experimental = true
 pin = true

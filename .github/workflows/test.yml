@@ -392,18 +392,8 @@ jobs:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Install ffmpeg
-        run: |
-          version=7.1.3-5
-          sha256=2df2f182a4b8361f26dcbaf711514d770cf51c6282ddbbf8e1eae584b7e55b4e
-          deb="jellyfin-ffmpeg7_${version}-noble_amd64.deb"
-          curl -fsSL -o "/tmp/${deb}" "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v${version}/${deb}"
-          echo "${sha256}  /tmp/${deb}" | sha256sum -c -
-          sudo apt-get update
-          sudo apt-get install -y "/tmp/${deb}"
-          sudo ln -sf /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/local/bin/ffmpeg
-          sudo ln -sf /usr/lib/jellyfin-ffmpeg/ffprobe /usr/local/bin/ffprobe
-          ffprobe -version | head -1
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@035e80a7d4355d5f087ffb95db9e4a0944c04e56 # use-mise-action-v1.1.3
       - name: Run pnpm install
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
       - name: Run medium tests
