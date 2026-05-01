@@ -3391,6 +3391,28 @@ describe(SharedSpaceService.name, () => {
       expect(result.name).toBe('Bob');
     });
 
+    it('should return birth date from linked personal person', async () => {
+      const auth = factory.auth();
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const birthDate = '1984-05-09';
+      const person = factory.sharedSpacePerson({ id: personId, spaceId, birthDate: null });
+      const space = factory.sharedSpace({ id: spaceId });
+
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
+      mocks.sharedSpace.getPersonById.mockResolvedValue({
+        ...person,
+        personalPersonId: newUuid(),
+        personalBirthDate: new Date(birthDate),
+      });
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
+
+      const result = await sut.getSpacePerson(auth, spaceId, personId);
+
+      expect(result.birthDate).toBe(birthDate);
+    });
+
     it('should read counts from person row without separate queries', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
@@ -3544,26 +3566,33 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personId, { name: 'New Name' });
     });
 
-    it('should update person birth date', async () => {
+    it('should update linked personal person birth date', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
       const personId = newUuid();
+      const personalPersonId = newUuid();
       const birthDate = '1984-05-09';
       const person = factory.sharedSpacePerson({ id: personId, spaceId });
       const updatedPerson = factory.sharedSpacePerson({ id: personId, spaceId, birthDate });
 
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Editor }));
-      mocks.sharedSpace.getPersonById
-        .mockResolvedValueOnce(person)
-        .mockResolvedValueOnce({ ...updatedPerson, personalName: null, personalThumbnailPath: null });
-      mocks.sharedSpace.updatePerson.mockResolvedValue(updatedPerson);
+      mocks.sharedSpace.getPersonById.mockResolvedValueOnce({ ...person, personalPersonId }).mockResolvedValueOnce({
+        ...updatedPerson,
+        birthDate: null,
+        personalPersonId,
+        personalBirthDate: new Date(birthDate),
+        personalName: null,
+        personalThumbnailPath: null,
+      });
+      mocks.person.update.mockResolvedValue(factory.person({ id: personalPersonId, birthDate: new Date(birthDate) }));
       mocks.sharedSpace.getAlias.mockResolvedValue(void 0);
       mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
 
       const result = await sut.updateSpacePerson(auth, spaceId, personId, { birthDate });
 
       expect(result.birthDate).toBe(birthDate);
-      expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personId, { birthDate });
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: personalPersonId, birthDate });
+      expect(mocks.sharedSpace.updatePerson).not.toHaveBeenCalled();
     });
 
     it('should reject representativeFaceId that does not belong to an asset in the space', async () => {

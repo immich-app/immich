@@ -404,8 +404,10 @@ where
 -- SharedSpaceRepository.getPersonsBySpaceId
 select
   "shared_space_person".*,
+  "person"."id" as "personalPersonId",
   "person"."name" as "personalName",
-  "person"."thumbnailPath" as "personalThumbnailPath"
+  "person"."thumbnailPath" as "personalThumbnailPath",
+  "person"."birthDate" as "personalBirthDate"
 from
   "shared_space_person"
   left join "asset_face" on "asset_face"."id" = "shared_space_person"."representativeFaceId"
@@ -432,8 +434,10 @@ limit
 -- SharedSpaceRepository.getPersonById
 select
   "shared_space_person".*,
+  "person"."id" as "personalPersonId",
   "person"."name" as "personalName",
-  "person"."thumbnailPath" as "personalThumbnailPath"
+  "person"."thumbnailPath" as "personalThumbnailPath",
+  "person"."birthDate" as "personalBirthDate"
 from
   "shared_space_person"
   left join "asset_face" on "asset_face"."id" = "shared_space_person"."representativeFaceId"

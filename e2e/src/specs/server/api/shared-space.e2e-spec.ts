@@ -1882,7 +1882,7 @@ describe('/shared-spaces', () => {
 
         it('updates, persists, lists, and clears birthDate', async () => {
           const scratch = await utils.createSpacePerson(spaceId, 'BirthDatePerson', owner.userId, spaceAssetId);
-          const expectedBirthDate = '1984-05-09T00:00:00.000Z';
+          const expectedBirthDate = '1984-05-09';
 
           const putRes = await request(app)
             .put(`/shared-spaces/${spaceId}/people/${scratch.spacePersonId}`)
@@ -1890,6 +1890,12 @@ describe('/shared-spaces', () => {
             .send({ birthDate: '1984-05-09' });
           expect(putRes.status).toBe(200);
           expect((putRes.body as { birthDate: string | null }).birthDate).toBe(expectedBirthDate);
+
+          const globalPerson = await request(app)
+            .get(`/people/${scratch.globalPersonId}`)
+            .set('Authorization', `Bearer ${owner.accessToken}`);
+          expect(globalPerson.status).toBe(200);
+          expect((globalPerson.body as { birthDate: string | null }).birthDate).toBe(expectedBirthDate);
 
           const direct = await request(app)
             .get(`/shared-spaces/${spaceId}/people/${scratch.spacePersonId}`)
@@ -1918,6 +1924,12 @@ describe('/shared-spaces', () => {
             .set('Authorization', `Bearer ${owner.accessToken}`);
           expect(directAfterClear.status).toBe(200);
           expect((directAfterClear.body as { birthDate: string | null }).birthDate).toBeNull();
+
+          const globalPersonAfterClear = await request(app)
+            .get(`/people/${scratch.globalPersonId}`)
+            .set('Authorization', `Bearer ${owner.accessToken}`);
+          expect(globalPersonAfterClear.status).toBe(200);
+          expect((globalPersonAfterClear.body as { birthDate: string | null }).birthDate).toBeNull();
         });
 
         it('non-existent personId returns 400', async () => {

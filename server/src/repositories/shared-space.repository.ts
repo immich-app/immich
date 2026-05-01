@@ -569,7 +569,12 @@ export class SharedSpaceRepository {
       .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
       .leftJoin('person', 'person.id', 'asset_face.personId')
       .selectAll('shared_space_person')
-      .select(['person.name as personalName', 'person.thumbnailPath as personalThumbnailPath'])
+      .select([
+        'person.id as personalPersonId',
+        'person.name as personalName',
+        'person.thumbnailPath as personalThumbnailPath',
+        'person.birthDate as personalBirthDate',
+      ])
       .where('shared_space_person.spaceId', '=', spaceId)
       .$if(!options.withHidden, (qb) => qb.where('shared_space_person.isHidden', '=', false))
       .$if(!options.petsEnabled, (qb) => qb.where('shared_space_person.type', '!=', 'pet'))
@@ -622,7 +627,12 @@ export class SharedSpaceRepository {
       .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
       .leftJoin('person', 'person.id', 'asset_face.personId')
       .selectAll('shared_space_person')
-      .select(['person.name as personalName', 'person.thumbnailPath as personalThumbnailPath'])
+      .select([
+        'person.id as personalPersonId',
+        'person.name as personalName',
+        'person.thumbnailPath as personalThumbnailPath',
+        'person.birthDate as personalBirthDate',
+      ])
       .where('shared_space_person.id', '=', id)
       .executeTakeFirst();
   }

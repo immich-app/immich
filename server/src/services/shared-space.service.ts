@@ -42,6 +42,7 @@ import {
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
+import { asBirthDateString } from 'src/utils/date';
 import { ImmichMediaResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -727,12 +728,31 @@ export class SharedSpaceService extends BaseService {
       }
     }
 
-    await this.sharedSpaceRepository.updatePerson(personId, {
+    const sharedPersonUpdates = {
       name: dto.name,
       isHidden: dto.isHidden,
-      birthDate: dto.birthDate,
       representativeFaceId: dto.representativeFaceId,
-    });
+    };
+
+    const hasSharedPersonUpdates = Object.values(sharedPersonUpdates).some((value) => value !== undefined);
+    if (hasSharedPersonUpdates) {
+      await this.sharedSpaceRepository.updatePerson(personId, sharedPersonUpdates);
+    }
+
+    let birthDatePerson = person;
+    if (dto.birthDate !== undefined) {
+      if (dto.representativeFaceId !== undefined && hasSharedPersonUpdates) {
+        const refreshed = await this.sharedSpaceRepository.getPersonById(personId);
+        if (!refreshed) {
+          throw new BadRequestException('Person not found');
+        }
+        birthDatePerson = refreshed;
+      }
+
+      await (birthDatePerson.personalPersonId
+        ? this.personRepository.update({ id: birthDatePerson.personalPersonId, birthDate: dto.birthDate })
+        : this.sharedSpaceRepository.updatePerson(personId, { birthDate: dto.birthDate }));
+    }
 
     const alias = await this.sharedSpaceRepository.getAlias(personId, auth.user.id);
 
@@ -1321,7 +1341,7 @@ export class SharedSpaceService extends BaseService {
       name: person.name || person.personalName || '',
       thumbnailPath: person.personalThumbnailPath || '',
       isHidden: person.isHidden,
-      birthDate: person.birthDate,
+      birthDate: person.personalPersonId ? asBirthDateString(person.personalBirthDate) : person.birthDate,
       representativeFaceId: person.representativeFaceId,
       faceCount: person.faceCount,
       assetCount: person.assetCount,
