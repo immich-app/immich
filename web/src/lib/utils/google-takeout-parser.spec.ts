@@ -14,6 +14,20 @@ import {
   type TakeoutMediaItem,
 } from '$lib/utils/google-takeout-parser';
 
+function makeMediaItem(path: string, overrides: Partial<TakeoutMediaItem> = {}): TakeoutMediaItem {
+  const name = path.slice(path.lastIndexOf('/') + 1);
+  const file = new File([], name);
+
+  return {
+    path,
+    name,
+    size: file.size,
+    lastModified: file.lastModified,
+    getFile: () => Promise.resolve(file),
+    ...overrides,
+  };
+}
+
 describe('parseGoogleTakeoutSidecar', () => {
   it('should parse a complete sidecar with all fields', () => {
     const json = JSON.stringify({
@@ -397,22 +411,22 @@ describe('derivePhotoRoots', () => {
 
   it('collects parts[1] from items with metadata under Takeout/', () => {
     const items = [
-      { path: 'Takeout/Google Photos/A/img.jpg', file: new File([], 'img.jpg'), metadata: validMeta },
-      { path: 'Takeout/Google Fotos/B/img.jpg', file: new File([], 'img.jpg'), metadata: validMeta },
+      makeMediaItem('Takeout/Google Photos/A/img.jpg', { metadata: validMeta }),
+      makeMediaItem('Takeout/Google Fotos/B/img.jpg', { metadata: validMeta }),
     ];
     expect(derivePhotoRoots(items)).toEqual(new Set(['Google Photos', 'Google Fotos']));
   });
 
   it('ignores items without metadata', () => {
     const items = [
-      { path: 'Takeout/Google Photos/A/img.jpg', file: new File([], 'img.jpg'), metadata: undefined },
-      { path: 'Takeout/Google Fotos/B/img.jpg', file: new File([], 'img.jpg'), metadata: validMeta },
+      makeMediaItem('Takeout/Google Photos/A/img.jpg', { metadata: undefined }),
+      makeMediaItem('Takeout/Google Fotos/B/img.jpg', { metadata: validMeta }),
     ];
     expect(derivePhotoRoots(items)).toEqual(new Set(['Google Fotos']));
   });
 
   it('ignores items not under Takeout/', () => {
-    const items = [{ path: 'Other/Google Photos/A/img.jpg', file: new File([], 'img.jpg'), metadata: validMeta }];
+    const items = [makeMediaItem('Other/Google Photos/A/img.jpg', { metadata: validMeta })];
     expect(derivePhotoRoots(items)).toEqual(new Set());
   });
 });
@@ -420,9 +434,9 @@ describe('derivePhotoRoots', () => {
 describe('detectAlbums', () => {
   it('should extract albums from folder structure', () => {
     const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/Google Photos/Summer Trip/IMG_001.jpg', file: new File([], 'IMG_001.jpg') },
-      { path: 'Takeout/Google Photos/Summer Trip/IMG_002.jpg', file: new File([], 'IMG_002.jpg') },
-      { path: 'Takeout/Google Photos/Birthday/IMG_003.jpg', file: new File([], 'IMG_003.jpg') },
+      makeMediaItem('Takeout/Google Photos/Summer Trip/IMG_001.jpg'),
+      makeMediaItem('Takeout/Google Photos/Summer Trip/IMG_002.jpg'),
+      makeMediaItem('Takeout/Google Photos/Birthday/IMG_003.jpg'),
     ];
 
     const albums = detectAlbums(items, new Set(['Google Photos']));
@@ -443,9 +457,7 @@ describe('detectAlbums', () => {
   });
 
   it('should mark auto-generated albums', () => {
-    const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/Google Photos/Photos from 2023/IMG_001.jpg', file: new File([], 'IMG_001.jpg') },
-    ];
+    const items: TakeoutMediaItem[] = [makeMediaItem('Takeout/Google Photos/Photos from 2023/IMG_001.jpg')];
 
     const albums = detectAlbums(items, new Set(['Google Photos']));
 
@@ -455,7 +467,7 @@ describe('detectAlbums', () => {
   });
 
   it('should return empty array for flat files', () => {
-    const items: TakeoutMediaItem[] = [{ path: 'IMG_001.jpg', file: new File([], 'IMG_001.jpg') }];
+    const items: TakeoutMediaItem[] = [makeMediaItem('IMG_001.jpg')];
 
     const albums = detectAlbums(items, new Set(['Google Photos']));
 
@@ -464,8 +476,8 @@ describe('detectAlbums', () => {
 
   it('detects albums under a localized Photos root', () => {
     const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/Google Fotos/Sommer/IMG_001.jpg', file: new File([], 'IMG_001.jpg') },
-      { path: 'Takeout/Google Fotos/Sommer/IMG_002.jpg', file: new File([], 'IMG_002.jpg') },
+      makeMediaItem('Takeout/Google Fotos/Sommer/IMG_001.jpg'),
+      makeMediaItem('Takeout/Google Fotos/Sommer/IMG_002.jpg'),
     ];
     const albums = detectAlbums(items, new Set(['Google Fotos']));
     expect(albums).toHaveLength(1);
@@ -474,8 +486,8 @@ describe('detectAlbums', () => {
 
   it('handles multiple Photos roots in one scan', () => {
     const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/Google Photos/A/img.jpg', file: new File([], 'img.jpg') },
-      { path: 'Takeout/Google Fotos/B/img.jpg', file: new File([], 'img.jpg') },
+      makeMediaItem('Takeout/Google Photos/A/img.jpg'),
+      makeMediaItem('Takeout/Google Fotos/B/img.jpg'),
     ];
     const albums = detectAlbums(items, new Set(['Google Photos', 'Google Fotos']));
     expect(albums.map((a) => a.name).sort()).toEqual(['A', 'B']);
@@ -483,8 +495,8 @@ describe('detectAlbums', () => {
 
   it('ignores items under paths NOT in photoRoots', () => {
     const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/YouTube/playlists/playlist.json', file: new File([], 'x.json') },
-      { path: 'Takeout/Google Fotos/Album/img.jpg', file: new File([], 'img.jpg') },
+      makeMediaItem('Takeout/YouTube/playlists/playlist.json'),
+      makeMediaItem('Takeout/Google Fotos/Album/img.jpg'),
     ];
     const albums = detectAlbums(items, new Set(['Google Fotos']));
     expect(albums).toHaveLength(1);
@@ -494,23 +506,21 @@ describe('detectAlbums', () => {
 
 describe('finalizeItemAlbumNames', () => {
   it('sets albumName from parts[2] when item is under a photo root', () => {
-    const items: TakeoutMediaItem[] = [{ path: 'Takeout/Google Fotos/Sommer/img.jpg', file: new File([], 'img.jpg') }];
+    const items: TakeoutMediaItem[] = [makeMediaItem('Takeout/Google Fotos/Sommer/img.jpg')];
     finalizeItemAlbumNames(items, new Set(['Google Fotos']));
     expect(items[0].albumName).toBe('Sommer');
   });
 
   it('forces albumName to undefined when item is NOT under a photo root', () => {
     const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/YouTube/playlists/playlist.json', file: new File([], 'x.json'), albumName: 'playlists' },
+      makeMediaItem('Takeout/YouTube/playlists/playlist.json', { albumName: 'playlists' }),
     ];
     finalizeItemAlbumNames(items, new Set(['Google Photos']));
     expect(items[0].albumName).toBeUndefined();
   });
 
   it('leaves albumName undefined for items loose in the Photos root (no album subfolder)', () => {
-    const items: TakeoutMediaItem[] = [
-      { path: 'Takeout/Google Fotos/img.jpg', file: new File([], 'img.jpg'), albumName: 'whatever' },
-    ];
+    const items: TakeoutMediaItem[] = [makeMediaItem('Takeout/Google Fotos/img.jpg', { albumName: 'whatever' })];
     finalizeItemAlbumNames(items, new Set(['Google Fotos']));
     expect(items[0].albumName).toBeUndefined();
   });

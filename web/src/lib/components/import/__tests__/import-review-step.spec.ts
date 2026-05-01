@@ -6,9 +6,13 @@ import userEvent from '@testing-library/user-event';
 import ImportReviewStep from '../import-review-step.svelte';
 
 function makeItem(overrides?: Partial<TakeoutMediaItem>): TakeoutMediaItem {
+  const file = new File(['x'], 'IMG_1234.jpg');
   return {
     path: 'Takeout/Google Photos/Vacation/IMG_1234.jpg',
-    file: new File(['x'], 'IMG_1234.jpg'),
+    name: file.name,
+    size: file.size,
+    lastModified: file.lastModified,
+    getFile: () => Promise.resolve(file),
     metadata: undefined,
     ...overrides,
   };

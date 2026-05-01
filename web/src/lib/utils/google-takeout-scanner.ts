@@ -72,10 +72,20 @@ function checkAbort(signal?: AbortSignal): void {
 
 interface ZipEntry {
   filename: string;
+  directory?: boolean;
+  uncompressedSize?: number;
+  lastModDate?: Date;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getData?: (...args: any[]) => Promise<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   arrayBuffer?: (options?: any) => Promise<ArrayBuffer>;
+}
+
+interface ZipMediaDescriptor {
+  path: string;
+  name: string;
+  size: number;
+  lastModified: number;
 }
 
 function isZipFile(file: File): boolean {
@@ -89,6 +99,41 @@ function isZipFile(file: File): boolean {
 function getFilePath(file: File): string {
   // Use webkitRelativePath if available (folder selection), otherwise just the name
   return (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+}
+
+function basename(path: string): string {
+  return path.slice(Math.max(0, path.lastIndexOf('/') + 1));
+}
+
+async function extractZipEntryFile(entry: ZipEntry, name: string, lastModified: number): Promise<File> {
+  if (entry.arrayBuffer) {
+    const buffer = await entry.arrayBuffer();
+    return new File([buffer], name, { lastModified });
+  }
+
+  if (entry.getData) {
+    const blob = (await entry.getData(new WritableStream())) as Blob;
+    return new File([blob], name, { type: blob.type || 'application/octet-stream', lastModified });
+  }
+
+  throw new Error(`Zip entry "${entry.filename}" cannot be extracted`);
+}
+
+async function getZipEntryFile(zipFile: File, entryPath: string, name: string, lastModified: number): Promise<File> {
+  const { BlobReader, ZipReader } = await import('@zip.js/zip.js');
+  const reader = new ZipReader(new BlobReader(zipFile));
+
+  try {
+    const entries: ZipEntry[] = await reader.getEntries();
+    const entry = entries.find((entry) => entry.filename === entryPath);
+    if (!entry) {
+      throw new Error(`Zip entry "${entryPath}" not found`);
+    }
+
+    return await extractZipEntryFile(entry, name, lastModified);
+  } finally {
+    await reader.close();
+  }
 }
 
 function trackItemStats(
@@ -132,15 +177,14 @@ async function scanZipFile(
 ): Promise<void> {
   const { BlobReader, ZipReader, configure } = await import('@zip.js/zip.js');
 
-  // Disable web workers to avoid stream lifecycle issues during SvelteKit navigation
-  configure({ useWebWorkers: false });
+  configure({ useWebWorkers: true });
 
   const reader = new ZipReader(new BlobReader(zipFile));
 
   // Single pass: read all entries once to avoid stream reuse errors.
   // Wrap in try/finally to ensure reader is always closed.
   const mediaPaths: string[] = [];
-  const mediaBlobs = new Map<string, Blob>();
+  const mediaDescriptors = new Map<string, ZipMediaDescriptor>();
   const sidecarTexts = new Map<string, string>();
 
   try {
@@ -165,25 +209,24 @@ async function scanZipFile(
 
       try {
         if (isMediaFile(entry.filename)) {
-          mediaPaths.push(entry.filename);
+          const name = basename(entry.filename);
+          const lastModified = entry.lastModDate?.getTime() ?? zipFile.lastModified;
 
-          // Update progress counters during extraction so the UI shows activity
+          mediaPaths.push(entry.filename);
+          mediaDescriptors.set(entry.filename, {
+            path: entry.filename,
+            name,
+            size: entry.uncompressedSize ?? 0,
+            lastModified,
+          });
+
+          // Update progress counters while scanning so the UI shows activity.
           progress.mediaCount++;
           const parts = entry.filename.split('/');
           if (parts[0] === 'Takeout' && parts.length >= 4) {
             progress.albumNames.add(parts[2]);
           }
           onProgress?.(progress);
-
-          // arrayBuffer() creates a fresh TransformStream per call, avoiding
-          // the BlobWriter stream lifecycle issues in browsers.
-          if (entry.arrayBuffer) {
-            const buffer = await entry.arrayBuffer();
-            mediaBlobs.set(entry.filename, new Blob([buffer]));
-          } else {
-            const blob = (await entry.getData!(new WritableStream())) as Blob;
-            mediaBlobs.set(entry.filename, blob);
-          }
         } else if (isSidecarFile(entry.filename)) {
           if (entry.arrayBuffer) {
             const buffer = await entry.arrayBuffer();
@@ -217,13 +260,11 @@ async function scanZipFile(
     }
   }
 
-  // Build items from extracted blobs.
-  // mediaCount and albumNames were already updated during extraction,
+  // Build items from media descriptors.
+  // mediaCount and albumNames were already updated during scanning,
   // so only track metadata-dependent stats here (location, date, favorites, archived).
-  for (const [path, blob] of mediaBlobs) {
-    const basename = path.slice(Math.max(0, path.lastIndexOf('/') + 1));
-    const file = new File([blob], basename, { type: blob.type || 'application/octet-stream' });
-    const metadata = metadataMap.get(path);
+  for (const descriptor of mediaDescriptors.values()) {
+    const metadata = metadataMap.get(descriptor.path);
 
     // Track metadata-dependent stats
     if (metadata?.latitude !== undefined && metadata?.longitude !== undefined) {
@@ -239,7 +280,15 @@ async function scanZipFile(
       progress.archived++;
     }
 
-    allItems.push({ path, file, metadata, albumName: undefined });
+    allItems.push({
+      path: descriptor.path,
+      name: descriptor.name,
+      size: descriptor.size,
+      lastModified: descriptor.lastModified,
+      getFile: () => getZipEntryFile(zipFile, descriptor.path, descriptor.name, descriptor.lastModified),
+      metadata,
+      albumName: undefined,
+    });
     onProgress?.(progress);
   }
 }
@@ -302,7 +351,10 @@ async function scanFolderFiles(
 
     const item: TakeoutMediaItem = {
       path: filePath,
-      file,
+      name: file.name,
+      size: file.size,
+      lastModified: file.lastModified,
+      getFile: () => Promise.resolve(file),
       metadata,
       albumName: undefined,
     };

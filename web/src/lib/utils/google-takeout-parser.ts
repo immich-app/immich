@@ -59,7 +59,10 @@ export interface TakeoutMetadata {
 
 export interface TakeoutMediaItem {
   path: string;
-  file: File;
+  name: string;
+  size: number;
+  lastModified: number;
+  getFile: () => Promise<File>;
   metadata?: TakeoutMetadata;
   albumName?: string;
 }

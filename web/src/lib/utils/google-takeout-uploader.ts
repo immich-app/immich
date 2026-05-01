@@ -28,19 +28,20 @@ async function computeSha1(file: File): Promise<string> {
 
 export async function uploadTakeoutItem(item: TakeoutMediaItem, options: ImportOptions): Promise<UploadResult> {
   try {
-    const deviceAssetId = 'takeout-' + item.file.name + '-' + item.file.lastModified;
+    const deviceAssetId = 'takeout-' + item.name + '-' + item.lastModified;
     const fileCreatedAt = item.metadata?.dateTaken
       ? item.metadata.dateTaken.toISOString()
-      : new Date(item.file.lastModified).toISOString();
+      : new Date(item.lastModified).toISOString();
+    const file = await item.getFile();
 
     // Duplicate check
     if (options.skipDuplicates && crypto?.subtle) {
       try {
-        const checksum = await computeSha1(item.file);
+        const checksum = await computeSha1(file);
         const {
           results: [checkResult],
         } = await checkBulkUpload({
-          assetBulkUploadCheckDto: { assets: [{ id: item.file.name, checksum }] },
+          assetBulkUploadCheckDto: { assets: [{ id: item.name, checksum }] },
         });
         if (checkResult.action === AssetUploadAction.Reject && checkResult.assetId) {
           return { assetId: checkResult.assetId, status: 'duplicate' };
@@ -58,7 +59,7 @@ export async function uploadTakeoutItem(item: TakeoutMediaItem, options: ImportO
     formData.append('fileModifiedAt', fileCreatedAt);
     formData.append('isFavorite', String(options.importFavorites && item.metadata?.isFavorite === true));
     formData.append('duration', '0:00:00.000000');
-    formData.append('assetData', new File([item.file], item.file.name));
+    formData.append('assetData', new File([file], item.name, { lastModified: item.lastModified }));
 
     // Upload
     const response = await uploadRequest<AssetMediaResponseDto>({

@@ -21,11 +21,16 @@ vi.mock('$lib/utils/album-utils', () => ({
 }));
 
 function makeItem(overrides: Partial<TakeoutMediaItem> = {}): TakeoutMediaItem {
-  const file = new File(['fake-image-data'], 'IMG_001.jpg', { type: 'image/jpeg' });
-  Object.defineProperty(file, 'lastModified', { value: 1_609_459_200_000 });
+  const file = new File(['fake-image-data'], 'IMG_001.jpg', {
+    type: 'image/jpeg',
+    lastModified: 1_609_459_200_000,
+  });
   return {
     path: 'Takeout/Google Photos/Trip/IMG_001.jpg',
-    file,
+    name: 'IMG_001.jpg',
+    size: file.size,
+    lastModified: 1_609_459_200_000,
+    getFile: vi.fn(() => Promise.resolve(file)),
     metadata: {
       title: 'IMG_001.jpg',
       description: 'A nice photo',
@@ -113,6 +118,86 @@ describe('uploadTakeoutItem', () => {
     const callArgs = utilsMock.uploadRequest.mock.calls[0][0];
     const formData = callArgs.data as FormData;
     expect(formData.get('isFavorite')).toBe('false');
+  });
+
+  it('loads the file through getFile once during upload', async () => {
+    utilsMock.uploadRequest.mockResolvedValue({
+      data: { id: 'asset-1', status: 'created' },
+      status: 201,
+    });
+
+    const getFile = vi.fn(() =>
+      Promise.resolve(new File(['lazy-bytes'], 'IMG_001.jpg', { lastModified: 1_609_459_200_000 })),
+    );
+    const item = makeItem({ getFile, size: 'lazy-bytes'.length });
+
+    await uploadTakeoutItem(item, { ...defaultOptions(), skipDuplicates: false });
+
+    expect(getFile).toHaveBeenCalledOnce();
+    const formData = utilsMock.uploadRequest.mock.calls[0][0].data as FormData;
+    const uploadedFile = formData.get('assetData') as File;
+    expect(uploadedFile.name).toBe('IMG_001.jpg');
+    expect(await uploadedFile.text()).toBe('lazy-bytes');
+  });
+
+  it('hashes lazy file bytes for duplicate checks at upload time', async () => {
+    vi.mocked(sdkMock.checkBulkUpload).mockResolvedValue({
+      results: [
+        {
+          id: 'IMG_001.jpg',
+          assetId: 'existing-asset-1',
+          action: AssetUploadAction.Reject,
+          reason: AssetRejectReason.Duplicate,
+        },
+      ],
+    });
+
+    const getFile = vi.fn(() =>
+      Promise.resolve(new File(['lazy-bytes'], 'IMG_001.jpg', { lastModified: 1_609_459_200_000 })),
+    );
+    const item = makeItem({ getFile, size: 'lazy-bytes'.length });
+
+    const result = await uploadTakeoutItem(item, defaultOptions());
+
+    expect(getFile).toHaveBeenCalledOnce();
+    expect(sdkMock.checkBulkUpload).toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: [{ id: 'IMG_001.jpg', checksum: 'b2953b8e364061cea5600e64ec5049d63f08efbe' }],
+      },
+    });
+    expect(result).toEqual({ assetId: 'existing-asset-1', status: 'duplicate' });
+    expect(utilsMock.uploadRequest).not.toHaveBeenCalled();
+  });
+
+  it('uses item name and lastModified metadata instead of file metadata', async () => {
+    utilsMock.uploadRequest.mockResolvedValue({
+      data: { id: 'asset-1', status: 'created' },
+      status: 201,
+    });
+
+    const file = new File(['bytes'], 'WRONG_NAME.jpg', { lastModified: 946_684_800_000 });
+    const item = makeItem({
+      name: 'IMG_FROM_ITEM.jpg',
+      lastModified: 1_609_459_200_000,
+      getFile: vi.fn(() => Promise.resolve(file)),
+      metadata: {
+        title: 'IMG_FROM_ITEM.jpg',
+        description: undefined,
+        dateTaken: undefined,
+        latitude: undefined,
+        longitude: undefined,
+        isFavorite: false,
+        isArchived: false,
+      },
+    });
+
+    await uploadTakeoutItem(item, { ...defaultOptions(), skipDuplicates: false });
+
+    const formData = utilsMock.uploadRequest.mock.calls[0][0].data as FormData;
+    const uploadedFile = formData.get('assetData') as File;
+    expect(formData.get('deviceAssetId')).toBe('takeout-IMG_FROM_ITEM.jpg-1609459200000');
+    expect(formData.get('fileCreatedAt')).toBe('2021-01-01T00:00:00.000Z');
+    expect(uploadedFile.name).toBe('IMG_FROM_ITEM.jpg');
   });
 
   it('calls updateAsset with GPS coordinates after upload', async () => {
@@ -234,6 +319,18 @@ describe('uploadTakeoutItem', () => {
 
     expect(result.status).toBe('error');
     expect(result.error).toContain('Network error');
+  });
+
+  it('returns an item error when lazy file loading fails', async () => {
+    const item = makeItem({
+      getFile: vi.fn(() => Promise.reject(new Error('Cannot extract zip entry'))),
+    });
+
+    const result = await uploadTakeoutItem(item, { ...defaultOptions(), skipDuplicates: false });
+
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Cannot extract zip entry');
+    expect(utilsMock.uploadRequest).not.toHaveBeenCalled();
   });
 });
 

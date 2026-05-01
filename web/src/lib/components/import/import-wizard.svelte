@@ -79,7 +79,7 @@
 
       manager.importProgress = {
         ...manager.importProgress,
-        currentFile: item.file.name,
+        currentFile: item.name,
       };
 
       const result = await uploadTakeoutItem(item, manager.options);
@@ -93,7 +93,7 @@
           assetIdMap.set(item.path, result.assetId);
         }
       } else {
-        manager.trackError(item.file.name, result.error ?? 'Unknown error');
+        manager.trackError(item.name, result.error ?? 'Unknown error');
       }
     }
 
