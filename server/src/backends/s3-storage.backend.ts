@@ -17,6 +17,9 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { ServeStrategy, StorageBackend } from 'src/interfaces/storage-backend.interface';
 
+const DEFAULT_PROXY_READ_CONCURRENCY = 32;
+const DEFAULT_PROXY_READ_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+
 class AsyncLimiter {
   private active = 0;
   private readonly queue: Array<() => void> = [];
@@ -50,6 +53,7 @@ export interface S3StorageConfig {
   presignedUrlExpiry: number;
   serveMode: 'redirect' | 'proxy';
   proxyReadConcurrency?: number;
+  proxyReadIdleTimeoutMs?: number;
 }
 
 export class S3StorageBackend implements StorageBackend {
@@ -58,12 +62,14 @@ export class S3StorageBackend implements StorageBackend {
   private presignedUrlExpiry: number;
   private serveMode: 'redirect' | 'proxy';
   private proxyReadLimiter: AsyncLimiter;
+  private proxyReadIdleTimeoutMs: number;
 
   constructor(config: S3StorageConfig) {
     this.bucket = config.bucket;
     this.presignedUrlExpiry = config.presignedUrlExpiry;
     this.serveMode = config.serveMode;
-    this.proxyReadLimiter = new AsyncLimiter(config.proxyReadConcurrency ?? 32);
+    this.proxyReadLimiter = new AsyncLimiter(config.proxyReadConcurrency ?? DEFAULT_PROXY_READ_CONCURRENCY);
+    this.proxyReadIdleTimeoutMs = Math.max(0, config.proxyReadIdleTimeoutMs ?? DEFAULT_PROXY_READ_IDLE_TIMEOUT_MS);
 
     this.client = new S3Client({
       region: config.region,
@@ -156,9 +162,55 @@ export class S3StorageBackend implements StorageBackend {
   }
 
   private releaseWhenStreamCloses(stream: Readable, release: () => void) {
-    stream.once('end', release);
-    stream.once('error', release);
-    stream.once('close', release);
+    let released = false;
+    let idleTimeout: ReturnType<typeof setTimeout> | undefined;
+    const originalEmit = stream.emit;
+
+    const clearIdleTimeout = () => {
+      if (idleTimeout) {
+        clearTimeout(idleTimeout);
+        idleTimeout = undefined;
+      }
+    };
+
+    const releaseOnce = () => {
+      if (released) {
+        return;
+      }
+      released = true;
+      clearIdleTimeout();
+      stream.emit = originalEmit;
+      release();
+    };
+
+    const resetIdleTimeout = () => {
+      if (this.proxyReadIdleTimeoutMs <= 0 || released) {
+        return;
+      }
+
+      clearIdleTimeout();
+      idleTimeout = setTimeout(() => {
+        try {
+          stream.destroy(new Error(`S3 proxy read timed out after ${this.proxyReadIdleTimeoutMs}ms of inactivity`));
+        } finally {
+          releaseOnce();
+        }
+      }, this.proxyReadIdleTimeoutMs);
+    };
+
+    // Observe data activity without adding a "data" listener, which would switch the stream into flowing mode
+    // before the HTTP response pipe is attached.
+    stream.emit = function (this: Readable, eventName: string | symbol, ...args: any[]) {
+      if (eventName === 'data' || eventName === 'readable') {
+        resetIdleTimeout();
+      }
+      return originalEmit.call(this, eventName, ...args);
+    } as typeof stream.emit;
+
+    stream.once('end', releaseOnce);
+    stream.once('error', releaseOnce);
+    stream.once('close', releaseOnce);
+    resetIdleTimeout();
     return stream;
   }
 

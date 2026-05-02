@@ -110,6 +110,13 @@ export const sendFile = async (
       if (file.fileName) {
         res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
       }
+      if (typeof res.once === 'function') {
+        res.once('close', () => {
+          if (!res.writableEnded && !file.stream.destroyed) {
+            file.stream.destroy();
+          }
+        });
+      }
       file.stream.pipe(res);
       return;
     }

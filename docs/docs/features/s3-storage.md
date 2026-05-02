@@ -25,16 +25,17 @@ Gallery supports two modes for serving files from S3:
 
 All S3 variables are set on the `immich-server` container.
 
-| Variable                         | Description                                                                           |   Default   | Required          |
-| :------------------------------- | :------------------------------------------------------------------------------------ | :---------: | :---------------- |
-| `IMMICH_STORAGE_BACKEND`         | Storage backend for new uploads (`disk` or `s3`)                                      |   `disk`    | Yes (set to `s3`) |
-| `IMMICH_S3_BUCKET`               | S3 bucket name                                                                        |             | Yes               |
-| `IMMICH_S3_REGION`               | AWS region (or region of your S3-compatible provider)                                 | `us-east-1` | No                |
-| `IMMICH_S3_ENDPOINT`             | Custom endpoint URL for S3-compatible services (e.g. MinIO, R2)                       |             | No<sup>\*1</sup>  |
-| `IMMICH_S3_ACCESS_KEY_ID`        | Access key ID                                                                         |             | No<sup>\*2</sup>  |
-| `IMMICH_S3_SECRET_ACCESS_KEY`    | Secret access key                                                                     |             | No<sup>\*2</sup>  |
-| `IMMICH_S3_PRESIGNED_URL_EXPIRY` | Presigned URL expiration time in seconds (only relevant for `redirect` mode)          |   `3600`    | No                |
-| `IMMICH_S3_SERVE_MODE`           | How to serve S3 assets: `redirect` (presigned URL) or `proxy` (stream through server) | `redirect`  | No                |
+| Variable                               | Description                                                                           |   Default   | Required          |
+| :------------------------------------- | :------------------------------------------------------------------------------------ | :---------: | :---------------- |
+| `IMMICH_STORAGE_BACKEND`               | Storage backend for new uploads (`disk` or `s3`)                                      |   `disk`    | Yes (set to `s3`) |
+| `IMMICH_S3_BUCKET`                     | S3 bucket name                                                                        |             | Yes               |
+| `IMMICH_S3_REGION`                     | AWS region (or region of your S3-compatible provider)                                 | `us-east-1` | No                |
+| `IMMICH_S3_ENDPOINT`                   | Custom endpoint URL for S3-compatible services (e.g. MinIO, R2)                       |             | No<sup>\*1</sup>  |
+| `IMMICH_S3_ACCESS_KEY_ID`              | Access key ID                                                                         |             | No<sup>\*2</sup>  |
+| `IMMICH_S3_SECRET_ACCESS_KEY`          | Secret access key                                                                     |             | No<sup>\*2</sup>  |
+| `IMMICH_S3_PRESIGNED_URL_EXPIRY`       | Presigned URL expiration time in seconds (only relevant for `redirect` mode)          |   `3600`    | No                |
+| `IMMICH_S3_SERVE_MODE`                 | How to serve S3 assets: `redirect` (presigned URL) or `proxy` (stream through server) | `redirect`  | No                |
+| `IMMICH_S3_PROXY_READ_IDLE_TIMEOUT_MS` | Idle timeout for proxied S3 reads in milliseconds; set to `0` to disable              |  `300000`   | No                |
 
 \*1: Required for non-AWS S3-compatible services (MinIO, R2, B2, etc.). Omit for AWS S3.
 
@@ -232,7 +233,7 @@ When a client requests an asset, `BaseService.serveFromBackend()` asks the resol
 | S3      | `redirect` | `ImmichRedirectResponse` | HTTP 302 to a presigned URL; client fetches from S3 |
 | S3      | `proxy`    | `ImmichStreamResponse`   | Server streams S3 data through to the client        |
 
-Presigned URLs expire after `IMMICH_S3_PRESIGNED_URL_EXPIRY` seconds (default 3600). The S3 backend uses `forcePathStyle: true` when a custom endpoint is configured, which is required for MinIO, DigitalOcean Spaces, and similar providers.
+Presigned URLs expire after `IMMICH_S3_PRESIGNED_URL_EXPIRY` seconds (default 3600). In `proxy` mode, inactive S3 reads are destroyed after `IMMICH_S3_PROXY_READ_IDLE_TIMEOUT_MS` milliseconds (default 300000) so a stuck stream cannot hold a proxy read slot forever. The S3 backend uses `forcePathStyle: true` when a custom endpoint is configured, which is required for MinIO, DigitalOcean Spaces, and similar providers.
 
 ### Upload Flow
 
