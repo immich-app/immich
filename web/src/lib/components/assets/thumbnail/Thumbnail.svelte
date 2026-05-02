@@ -101,10 +101,6 @@
     onClick?.($state.snapshot(asset));
   };
 
-  const openInNewTab = () => {
-    window.open(assetUrl, '_blank');
-  };
-
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       openInNewTab();
@@ -114,12 +110,6 @@
     e.stopPropagation();
     e.preventDefault();
     callClickHandlers();
-  };
-
-  const handleAuxClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    openInNewTab();
   };
 
   const onMouseEnter = () => {
@@ -238,7 +228,6 @@
     }
   }}
   onclick={handleClick}
-  onauxclick={handleAuxClick}
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
@@ -401,14 +390,13 @@
         {/if}
       </div>
 
-      <!-- lazy show the url on mouse over-->
+      <!-- lazy show the url on mouse over, and support "open in new tab" -->
       {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
         <a
           class="absolute inset-y-0 z-2 w-full"
           style:cursor="unset"
           href={assetUrl}
           onclick={(evt) => evt.preventDefault()}
-          onauxclick={(evt) => evt.preventDefault()}
           tabindex={-1}
           aria-label="Thumbnail URL"
         >

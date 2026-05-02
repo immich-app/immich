@@ -14,7 +14,6 @@
     textColor?: string;
     href?: string | null;
     onClick?: (() => void) | null;
-    onAuxClick?: (() => void) | null;
     shortcut?: Shortcut | null;
     shortcutLabel?: string;
   }
@@ -27,7 +26,6 @@
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
     href = null,
     onClick = null,
-    onAuxClick = null,
     shortcut = null,
     shortcutLabel = '',
   }: Props = $props();
@@ -46,15 +44,6 @@
     }
   };
 
-  const handleAuxClick = () => {
-    if (onAuxClick) {
-      onAuxClick();
-    }
-    if (href) {
-      window.open(href, '_blank');
-    }
-  };
-
   if (shortcut && !shortcutLabel) {
     shortcutLabel = computeShortcutLabel(shortcut);
   }
@@ -69,7 +58,6 @@
 <li
   {id}
   onclick={handleClick}
-  onauxclick={handleAuxClick}
   onmouseover={() => ($selectedIdStore = id)}
   class="w-full p-4 relative text-start text-sm font-medium {textColor} flex cursor-pointer items-center gap-2 border-gray-200 focus:ring-2 focus:outline-none focus:ring-inset {isActive
     ? activeColor
@@ -99,7 +87,6 @@
         style:cursor="unset"
         {href}
         onclick={(evt) => evt.preventDefault()}
-        onauxclick={(evt) => evt.preventDefault()}
         tabindex={-1}
         aria-label="Menu URL"
       >
