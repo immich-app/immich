@@ -139,6 +139,7 @@
     await updateAssetCount();
     await handleGoBack();
 
+    personName = person.name || '';
     data = { ...data, person };
   };
 
