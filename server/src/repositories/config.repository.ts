@@ -248,10 +248,6 @@ const getEnv = (): EnvData => {
       vectorExtension = DatabaseExtension.Vector;
       break;
     }
-    case 'pgvecto.rs': {
-      vectorExtension = DatabaseExtension.Vectors;
-      break;
-    }
     case 'vectorchord': {
       vectorExtension = DatabaseExtension.VectorChord;
       break;

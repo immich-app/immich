@@ -120,7 +120,7 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toMatchObject(errorDto.badRequest('Email already in use by another account'));
+      expect(body).toMatchObject(errorDto.badRequest('Email is not available'));
     });
 
     it('should update my email', async () => {

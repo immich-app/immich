@@ -66,9 +66,9 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="sm:ms-4 md:ms-8 flex flex-col">
+      <div class="flex flex-col sm:ms-4 md:ms-8">
         <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('albums_default_sort_order')} description={$t('albums_default_sort_order_description')}>
               <Select
                 options={[
@@ -82,7 +82,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={foldersEnabled} />
             </Field>
@@ -96,7 +96,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={memoriesEnabled} />
             </Field>
@@ -108,7 +108,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={peopleEnabled} />
             </Field>
@@ -122,7 +122,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={ratingsEnabled} />
             </Field>
@@ -130,7 +130,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="shared-links" title={$t('shared_links')} subtitle={$t('shared_links_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={sharedLinksEnabled} />
             </Field>
@@ -144,7 +144,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={tagsEnabled} />
             </Field>
@@ -158,14 +158,14 @@
         </SettingAccordion>
 
         <SettingAccordion key="cast" title={$t('cast')} subtitle={$t('cast_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
             </Field>
           </div>
         </SettingAccordion>
 
-        <div class="flex justify-end mt-4">
+        <div class="mt-4 flex justify-end">
           <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>

@@ -44,7 +44,7 @@
 </script>
 
 <!-- Search Places -->
-<div class="hidden md:block h-10 xl:w-60 2xl:w-80">
+<div class="hidden h-10 md:block xl:w-60 2xl:w-80">
   <SearchBar placeholder={$t('search_places')} bind:name={searchQuery} showLoadingSpinner={false} />
 </div>
 
@@ -65,7 +65,7 @@
 {#if getSelectedPlacesGroupOption($placesViewSettings) !== PlacesGroupBy.None}
   <span in:fly={{ x: -50, duration: 250 }}>
     <!-- Expand Countries Groups -->
-    <div class="hidden xl:flex gap-0">
+    <div class="hidden gap-0 xl:flex">
       <div class="block">
         <IconButton
           title={$t('expand_all')}

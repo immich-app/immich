@@ -47,7 +47,7 @@ const SanitizedAssetResponseSchema = z
       .describe(
         'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
       ),
-    duration: z.string().nullable().describe('Video/gif duration in hh:mm:ss.SSS format (null for static images)'),
+    duration: z.int32().min(0).nullable().describe('Video/gif duration in milliseconds (null for static images)'),
     livePhotoVideoId: z.string().nullish().describe('Live photo video ID'),
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
     width: z.int().min(0).nullable().describe('Asset width'),
@@ -136,7 +136,7 @@ export type MapAsset = {
   checksum: Buffer<ArrayBufferLike>;
   checksumAlgorithm: ChecksumAlgorithm;
   duplicateId: string | null;
-  duration: string | null;
+  duration: number | null;
   edits?: ShallowDehydrateObject<AssetEditActionItem>[];
   exifInfo?: ShallowDehydrateObject<Selectable<Exif>> | null;
   faces?: ShallowDehydrateObject<AssetFace>[];

@@ -63,7 +63,7 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <div class="sm:ms-8 flex flex-col gap-6">
+    <div class="flex flex-col gap-6 sm:ms-8">
       <Field label={$t('theme_selection')} description={$t('theme_selection_description')}>
         <Switch
           checked={themeManager.preference === ThemePreference.System}

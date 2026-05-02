@@ -57,8 +57,11 @@ class AssetResponseDto {
   /// Duplicate group ID
   String? duplicateId;
 
-  /// Video/gif duration in hh:mm:ss.SSS format (null for static images)
-  String? duration;
+  /// Video/gif duration in milliseconds (null for static images)
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 2147483647
+  int? duration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -343,7 +346,7 @@ class AssetResponseDto {
         checksum: mapValueOfType<String>(json, r'checksum')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        duration: mapValueOfType<String>(json, r'duration'),
+        duration: mapValueOfType<int>(json, r'duration'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,

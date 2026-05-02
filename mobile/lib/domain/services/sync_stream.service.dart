@@ -192,23 +192,23 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        await _runWithManageMediaPermission(
-          logContext: "Trashed Assets",
-          action: () async {
-            await _handleRemoteDeleted(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id));
-            await _applyRemoteRestoreToLocal();
-          },
-        );
+        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+          await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
+        }
+        return;
+      case SyncEntityType.assetV2:
+        final remoteSyncAssets = data.cast<SyncAssetV2>();
+        await _syncStreamRepository.updateAssetsV2(remoteSyncAssets);
+        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+          await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
+        }
         return;
       case SyncEntityType.assetDeleteV1:
-        await _runWithManageMediaPermission(
-          logContext: "Deleted Assets",
-          action: () async {
-            final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
-            await _handleRemoteDeleted(remoteSyncAssets.map((e) => e.assetId));
-          },
-        );
-        return _syncStreamRepository.deleteAssetsV1(data.cast());
+        final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
+        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+          await _syncAssetDeletion(remoteSyncAssets.map((e) => e.assetId).toList());
+        }
+        return _syncStreamRepository.deleteAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
       case SyncEntityType.assetEditV1:
@@ -221,8 +221,12 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAssetsMetadataV1(data.cast());
       case SyncEntityType.partnerAssetV1:
         return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'partner');
+      case SyncEntityType.partnerAssetV2:
+        return _syncStreamRepository.updateAssetsV2(data.cast(), debugLabel: 'partner');
       case SyncEntityType.partnerAssetBackfillV1:
         return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'partner backfill');
+      case SyncEntityType.partnerAssetBackfillV2:
+        return _syncStreamRepository.updateAssetsV2(data.cast(), debugLabel: 'partner backfill');
       case SyncEntityType.partnerAssetDeleteV1:
         return _syncStreamRepository.deleteAssetsV1(data.cast(), debugLabel: "partner");
       case SyncEntityType.partnerAssetExifV1:
@@ -243,10 +247,16 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAlbumUsersV1(data.cast());
       case SyncEntityType.albumAssetCreateV1:
         return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album asset create');
+      case SyncEntityType.albumAssetCreateV2:
+        return _syncStreamRepository.updateAssetsV2(data.cast(), debugLabel: 'album asset create');
       case SyncEntityType.albumAssetUpdateV1:
         return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album asset update');
+      case SyncEntityType.albumAssetUpdateV2:
+        return _syncStreamRepository.updateAssetsV2(data.cast(), debugLabel: 'album asset update');
       case SyncEntityType.albumAssetBackfillV1:
         return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album asset backfill');
+      case SyncEntityType.albumAssetBackfillV2:
+        return _syncStreamRepository.updateAssetsV2(data.cast(), debugLabel: 'album asset backfill');
       case SyncEntityType.albumAssetExifCreateV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album asset exif create');
       case SyncEntityType.albumAssetExifUpdateV1:
@@ -348,6 +358,47 @@ class SyncStreamService {
     }
   }
 
+  Future<void> handleWsAssetUploadReadyV2Batch(List<dynamic> batchData) async {
+    if (batchData.isEmpty) return;
+
+    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV2 events');
+
+    final List<SyncAssetV2> assets = [];
+    final List<SyncAssetExifV1> exifs = [];
+
+    try {
+      for (final data in batchData) {
+        if (data is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final payload = data;
+        final assetData = payload['asset'];
+        final exifData = payload['exif'];
+
+        if (assetData == null || exifData == null) {
+          continue;
+        }
+
+        final asset = SyncAssetV2.fromJson(assetData);
+        final exif = SyncAssetExifV1.fromJson(exifData);
+
+        if (asset != null && exif != null) {
+          assets.add(asset);
+          exifs.add(exif);
+        }
+      }
+
+      if (assets.isNotEmpty && exifs.isNotEmpty) {
+        await _syncStreamRepository.updateAssetsV2(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
+        _logger.info('Successfully processed ${assets.length} assets in batch');
+      }
+    } catch (error, stackTrace) {
+      _logger.severe("Error processing AssetUploadReadyV2 websocket batch events", error, stackTrace);
+    }
+  }
+
   Future<void> handleWsAssetEditReadyV1(dynamic data) async {
     _logger.info('Processing AssetEditReadyV1 event');
 
@@ -388,6 +439,41 @@ class SyncStreamService {
     }
   }
 
+  Future<void> handleWsAssetEditReadyV2(dynamic data) async {
+    _logger.info('Processing AssetEditReadyV2 event');
+
+    try {
+      if (data is! Map<String, dynamic>) {
+        throw ArgumentError("Invalid data format for AssetEditReadyV2 event");
+      }
+
+      final payload = data;
+
+      if (payload['asset'] == null) {
+        throw ArgumentError("Missing 'asset' field in AssetEditReadyV2 event data");
+      }
+
+      final asset = SyncAssetV2.fromJson(payload['asset']);
+      if (asset == null) {
+        throw ArgumentError("Failed to parse 'asset' field in AssetEditReadyV2 event data");
+      }
+
+      final assetEdits = (payload['edit'] as List<dynamic>)
+          .map((e) => SyncAssetEditV1.fromJson(e))
+          .whereType<SyncAssetEditV1>()
+          .toList();
+
+      await _syncStreamRepository.updateAssetsV2([asset], debugLabel: 'websocket-edit');
+      await _syncStreamRepository.replaceAssetEditsV1(asset.id, assetEdits, debugLabel: 'websocket-edit');
+
+      _logger.info(
+        'Successfully processed AssetEditReadyV2 event for asset ${asset.id} with ${assetEdits.length} edits',
+      );
+    } catch (error, stackTrace) {
+      _logger.severe("Error processing AssetEditReadyV2 websocket event", error, stackTrace);
+    }
+  }
+
   Future<void> _handleRemoteDeleted(Iterable<String> remoteIds) async {
     if (remoteIds.isEmpty) {
       return Future.value();
@@ -424,20 +510,22 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _runWithManageMediaPermission({
-    required String logContext,
-    required Future<void> Function() action,
-  }) async {
-    if (!CurrentPlatform.isAndroid || !Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+  Future<void> _syncAssetTrashStatus(List<String> remoteIds) async {
+    if (!(await _localFilesManager.hasManageMediaPermission())) {
+      _logger.warning("Syncing asset trash status cannot proceed because MANAGE_MEDIA permission is missing");
       return;
     }
 
-    final hasPermission = await _localFilesManager.hasManageMediaPermission();
-    if (!hasPermission) {
-      _logger.warning("sync $logContext cannot proceed because MANAGE_MEDIA permission is missing");
+    await _handleRemoteDeleted(remoteIds);
+    await _applyRemoteRestoreToLocal();
+  }
+
+  Future<void> _syncAssetDeletion(List<String> remoteIds) async {
+    if (!(await _localFilesManager.hasManageMediaPermission())) {
+      _logger.warning("Syncing asset deletion cannot proceed because MANAGE_MEDIA permission is missing");
       return;
     }
 
-    await action();
+    await _handleRemoteDeleted(remoteIds);
   }
 }

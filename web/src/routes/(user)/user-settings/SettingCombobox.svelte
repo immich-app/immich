@@ -43,7 +43,7 @@
   </div>
 
   <Text size="small" color="muted">{subtitle}</Text>
-  <div class="flex items-center mt-2 max-w-[300px]">
+  <div class="mt-2 flex max-w-[300px] items-center">
     <Combobox label={title} hideLabel={true} {selectedOption} {options} placeholder={comboboxPlaceholder} {onSelect} />
     {@render children?.()}
   </div>

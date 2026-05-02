@@ -30,7 +30,7 @@
   {/snippet}
 
   <div class="xl:hidden">
-    <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
+    <div class="h-14 w-fit py-2 dark:text-immich-dark-fg">
       <GroupTab
         label={$t('show_albums')}
         filters={Object.keys(AlbumFilter)}
@@ -52,7 +52,7 @@
     bind:albumGroupIds={albumGroups}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} class="mt-10 mx-auto" />
+      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} class="mx-auto mt-10" />
     {/snippet}
   </Albums>
 </UserPageLayout>

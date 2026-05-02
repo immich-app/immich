@@ -146,7 +146,7 @@
 <OnEvents {onWorkflowCreate} {onWorkflowUpdate} {onWorkflowDelete} />
 
 {#snippet chipItem(title: string)}
-  <span class="rounded-xl border border-gray-200/80 px-3 py-1.5 text-sm dark:border-gray-600 bg-light">
+  <span class="rounded-xl border border-gray-200/80 bg-light px-3 py-1.5 text-sm dark:border-gray-600">
     <span class="font-medium text-dark">{title}</span>
   </span>
 {/snippet}
@@ -160,14 +160,14 @@
           text={$t('workflows_help_text')}
           onClick={() => Create.onAction(Create)}
           src={emptyWorkflows}
-          class="mt-10 mx-auto"
+          class="mx-auto mt-10"
         />
       {:else}
         <div class="my-6 grid gap-6">
           {#each workflows as workflow (workflow.id)}
             <Card class="border border-light-200">
               <CardHeader
-                class={`flex flex-row px-8 py-6 gap-4 sm:items-center sm:gap-6 ${
+                class={`flex flex-row gap-4 px-8 py-6 sm:items-center sm:gap-6 ${
                   workflow.enabled
                     ? 'bg-linear-to-r from-green-50 to-white dark:from-green-800/50 dark:to-green-950/45'
                     : 'bg-neutral-50 dark:bg-neutral-900'
@@ -175,8 +175,7 @@
               >
                 <div class="flex-1">
                   <div class="flex items-center gap-3">
-                    <span
-                      class="rounded-full {workflow.enabled ? 'h-3 w-3 bg-success' : 'h-3 w-3 rounded-full bg-muted'}"
+                    <span class="rounded-full {workflow.enabled ? 'size-3 bg-success' : 'size-3 rounded-full bg-muted'}"
                     ></span>
                     <CardTitle>{workflow.name}</CardTitle>
                   </div>
@@ -186,7 +185,7 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                  <div class="text-right hidden sm:block">
+                  <div class="hidden text-right sm:block">
                     <Text size="tiny">{$t('created_at')}</Text>
                     <Text size="small" fontWeight="medium">
                       {formatTimestamp(workflow.createdAt)}
@@ -206,7 +205,7 @@
               <CardBody class="space-y-6">
                 <div class="grid gap-4 md:grid-cols-3">
                   <!-- Trigger Section -->
-                  <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
+                  <div class="rounded-2xl border border-light-200 bg-light-50 p-4">
                     <div class="mb-3">
                       <Text size="tiny" color="muted" fontWeight="medium">{$t('trigger')}</Text>
                     </div>
@@ -214,7 +213,7 @@
                   </div>
 
                   <!-- Filters Section -->
-                  <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
+                  <div class="rounded-2xl border border-light-200 bg-light-50 p-4">
                     <div class="mb-3">
                       <Text size="tiny" color="muted" fontWeight="medium">{$t('filters')}</Text>
                     </div>
@@ -232,7 +231,7 @@
                   </div>
 
                   <!-- Actions Section -->
-                  <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
+                  <div class="rounded-2xl border border-light-200 bg-light-50 p-4">
                     <div class="mb-3">
                       <Text size="tiny" color="muted" fontWeight="medium">{$t('actions')}</Text>
                     </div>
@@ -254,7 +253,7 @@
                 </div>
 
                 {#if expandedWorkflows.has(workflow.id)}
-                  <VStack gap={2} class="w-full rounded-2xl border bg-light-50 p-4 border-light-200 ">
+                  <VStack gap={2} class="w-full rounded-2xl border border-light-200 bg-light-50 p-4">
                     <CodeBlock code={getJson(workflow)} lineNumbers />
                     <Button
                       leadingIcon={mdiClose}

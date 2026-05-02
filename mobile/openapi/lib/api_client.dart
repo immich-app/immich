@@ -700,6 +700,8 @@ class ApiClient {
           return SyncAssetMetadataV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
+        case 'SyncAssetV2':
+          return SyncAssetV2.fromJson(value);
         case 'SyncAuthUserV1':
           return SyncAuthUserV1.fromJson(value);
         case 'SyncEntityType':

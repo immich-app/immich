@@ -15,6 +15,6 @@
 
 <div style="width: {width}px; height: {width}px">
   {#await promise then url}
-    <img src={url} {alt} class="h-full w-full" />
+    <img src={url} {alt} class="size-full" />
   {/await}
 </div>
