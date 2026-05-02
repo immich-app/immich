@@ -48,7 +48,6 @@ const resetEnv = () => {
     'IMMICH_S3_SECRET_ACCESS_KEY',
     'IMMICH_S3_PRESIGNED_URL_EXPIRY',
     'IMMICH_S3_SERVE_MODE',
-    'IMMICH_S3_PROXY_READ_IDLE_TIMEOUT_MS',
   ]) {
     delete process.env[env];
   }
@@ -363,7 +362,6 @@ describe('getEnv', () => {
       process.env.IMMICH_S3_SECRET_ACCESS_KEY = 'minioadmin';
       process.env.IMMICH_S3_PRESIGNED_URL_EXPIRY = '7200';
       process.env.IMMICH_S3_SERVE_MODE = 'proxy';
-      process.env.IMMICH_S3_PROXY_READ_IDLE_TIMEOUT_MS = '120000';
 
       const { storage } = getEnv();
 
@@ -376,7 +374,6 @@ describe('getEnv', () => {
         secretAccessKey: 'minioadmin',
         presignedUrlExpiry: 7200,
         serveMode: 'proxy',
-        proxyReadIdleTimeoutMs: 120_000,
       });
     });
 
@@ -394,7 +391,6 @@ describe('getEnv', () => {
         secretAccessKey: undefined,
         presignedUrlExpiry: 3600,
         serveMode: 'redirect',
-        proxyReadIdleTimeoutMs: 300_000,
       });
     });
   });

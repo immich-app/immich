@@ -1,5 +1,4 @@
 import { HttpException } from '@nestjs/common';
-import { EventEmitter } from 'node:events';
 import { Readable } from 'node:stream';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -117,74 +116,6 @@ describe('sendFile with ImmichMediaResponse', () => {
     );
 
     expect(res.header).toHaveBeenCalledWith('Content-Disposition', `inline; filename*=UTF-8''photo.jpg`);
-  });
-
-  it('should destroy an unfinished stream when the response closes early', async () => {
-    const stream = new Readable({
-      read() {
-        // keep the stream open until the client aborts
-      },
-    });
-    const destroy = vi.spyOn(stream, 'destroy');
-    const res = Object.assign(new EventEmitter(), {
-      set: vi.fn(),
-      header: vi.fn(),
-      headersSent: false,
-      writableEnded: false,
-    }) as any;
-    stream.pipe = vi.fn().mockReturnValue(res);
-    const next = vi.fn();
-
-    await sendFile(
-      res,
-      next,
-      () =>
-        new ImmichStreamResponse({
-          stream,
-          contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
-        }),
-      mockLogger,
-    );
-
-    res.emit('close');
-
-    expect(destroy).toHaveBeenCalledTimes(1);
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should not destroy a stream when the response closes after completion', async () => {
-    const stream = new Readable({
-      read() {
-        // keep the stream open so only response state controls this assertion
-      },
-    });
-    const destroy = vi.spyOn(stream, 'destroy');
-    const res = Object.assign(new EventEmitter(), {
-      set: vi.fn(),
-      header: vi.fn(),
-      headersSent: false,
-      writableEnded: true,
-    }) as any;
-    stream.pipe = vi.fn().mockReturnValue(res);
-    const next = vi.fn();
-
-    await sendFile(
-      res,
-      next,
-      () =>
-        new ImmichStreamResponse({
-          stream,
-          contentType: 'image/jpeg',
-          cacheControl: CacheControl.PrivateWithCache,
-        }),
-      mockLogger,
-    );
-
-    res.emit('close');
-
-    expect(destroy).not.toHaveBeenCalled();
-    expect(next).not.toHaveBeenCalled();
   });
 
   it('should set cache-control for redirect with None', async () => {

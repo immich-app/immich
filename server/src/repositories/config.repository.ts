@@ -123,7 +123,6 @@ export interface EnvData {
       secretAccessKey?: string;
       presignedUrlExpiry: number;
       serveMode: 'redirect' | 'proxy';
-      proxyReadIdleTimeoutMs: number;
     };
   };
 
@@ -386,7 +385,6 @@ const getEnv = (): EnvData => {
         secretAccessKey: dto.IMMICH_S3_SECRET_ACCESS_KEY,
         presignedUrlExpiry: dto.IMMICH_S3_PRESIGNED_URL_EXPIRY || 3600,
         serveMode: (dto.IMMICH_S3_SERVE_MODE as 'redirect' | 'proxy') || 'redirect',
-        proxyReadIdleTimeoutMs: dto.IMMICH_S3_PROXY_READ_IDLE_TIMEOUT_MS ?? 300_000,
       },
     },
 

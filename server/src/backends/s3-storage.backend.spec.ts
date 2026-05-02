@@ -31,12 +31,6 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { S3StorageBackend } from 'src/backends/s3-storage.backend';
 
-const flushPromises = async () => {
-  for (let index = 0; index < 5; index++) {
-    await Promise.resolve();
-  }
-};
-
 describe('S3StorageBackend', () => {
   let backend: S3StorageBackend;
   let mockSend: ReturnType<typeof vi.fn>;
@@ -53,9 +47,7 @@ describe('S3StorageBackend', () => {
   });
 
   afterEach(() => {
-    mockSend?.mockReset();
     vi.clearAllMocks();
-    vi.useRealTimers();
   });
 
   describe('put', () => {
@@ -271,190 +263,6 @@ describe('S3StorageBackend', () => {
 
       expect(second.type).toBe('stream');
       expect(proxyClient.send).toHaveBeenCalledTimes(2);
-    });
-
-    it('should destroy and release an idle proxy read after the configured timeout', async () => {
-      vi.useFakeTimers();
-      const proxyBackend = new S3StorageBackend({
-        bucket: 'test-bucket',
-        region: 'us-east-1',
-        presignedUrlExpiry: 3600,
-        serveMode: 'proxy' as const,
-        proxyReadConcurrency: 1,
-        proxyReadIdleTimeoutMs: 50,
-      });
-      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
-      const idleStream = new Readable({
-        read() {
-          // simulate a stuck S3 body that never emits end/error/close on its own
-        },
-      });
-      const destroy = vi.spyOn(idleStream, 'destroy');
-      proxyClient.send
-        .mockResolvedValueOnce({ Body: idleStream, ContentLength: 5 })
-        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
-
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
-      expect(first.type).toBe('stream');
-      expect(proxyClient.send).toHaveBeenCalledTimes(1);
-
-      await vi.advanceTimersByTimeAsync(49);
-      await expect(Promise.race([secondPromise.then(() => 'resolved'), Promise.resolve('pending')])).resolves.toBe(
-        'pending',
-      );
-
-      await vi.advanceTimersByTimeAsync(1);
-      await flushPromises();
-      expect(destroy).toHaveBeenCalledTimes(1);
-      expect(proxyClient.send).toHaveBeenCalledTimes(2);
-      await expect(secondPromise).resolves.toMatchObject({ type: 'stream' });
-    });
-
-    it('should reset the idle timeout when proxy stream data is emitted', async () => {
-      vi.useFakeTimers();
-      const proxyBackend = new S3StorageBackend({
-        bucket: 'test-bucket',
-        region: 'us-east-1',
-        presignedUrlExpiry: 3600,
-        serveMode: 'proxy' as const,
-        proxyReadConcurrency: 1,
-        proxyReadIdleTimeoutMs: 50,
-      });
-      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
-      const activeStream = new Readable({
-        read() {
-          // activity is emitted manually below to verify watchdog reset behavior
-        },
-      });
-      const destroy = vi.spyOn(activeStream, 'destroy');
-      proxyClient.send
-        .mockResolvedValueOnce({ Body: activeStream, ContentLength: 5 })
-        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
-
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
-      expect(first.type).toBe('stream');
-
-      await vi.advanceTimersByTimeAsync(40);
-      activeStream.emit('data', Buffer.from('still active'));
-      await vi.advanceTimersByTimeAsync(40);
-      await expect(Promise.race([secondPromise.then(() => 'resolved'), Promise.resolve('pending')])).resolves.toBe(
-        'pending',
-      );
-      expect(destroy).not.toHaveBeenCalled();
-
-      await vi.advanceTimersByTimeAsync(10);
-      await flushPromises();
-      expect(proxyClient.send).toHaveBeenCalledTimes(2);
-
-      await expect(secondPromise).resolves.toMatchObject({ type: 'stream' });
-      expect(destroy).toHaveBeenCalledTimes(1);
-    });
-
-    it('should clear the idle timeout when a proxy stream ends', async () => {
-      vi.useFakeTimers();
-      const proxyBackend = new S3StorageBackend({
-        bucket: 'test-bucket',
-        region: 'us-east-1',
-        presignedUrlExpiry: 3600,
-        serveMode: 'proxy' as const,
-        proxyReadConcurrency: 1,
-        proxyReadIdleTimeoutMs: 50,
-      });
-      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
-      const endingStream = new Readable({
-        read() {
-          // end is emitted manually below to isolate timeout cleanup
-        },
-      });
-      const destroy = vi.spyOn(endingStream, 'destroy');
-      proxyClient.send
-        .mockResolvedValueOnce({ Body: endingStream, ContentLength: 5 })
-        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
-
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
-      expect(first.type).toBe('stream');
-
-      endingStream.emit('end');
-      await flushPromises();
-      expect(proxyClient.send).toHaveBeenCalledTimes(2);
-
-      await vi.advanceTimersByTimeAsync(50);
-
-      expect(destroy).not.toHaveBeenCalled();
-      await expect(secondPromise).resolves.toMatchObject({ type: 'stream' });
-    });
-
-    it('should release only one queued proxy read when an idle stream times out', async () => {
-      vi.useFakeTimers();
-      const proxyBackend = new S3StorageBackend({
-        bucket: 'test-bucket',
-        region: 'us-east-1',
-        presignedUrlExpiry: 3600,
-        serveMode: 'proxy' as const,
-        proxyReadConcurrency: 1,
-        proxyReadIdleTimeoutMs: 50,
-      });
-      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
-      const idleStream = new Readable({
-        read() {
-          // simulate a stuck S3 body that will be destroyed by the watchdog
-        },
-      });
-      proxyClient.send
-        .mockResolvedValueOnce({ Body: idleStream, ContentLength: 5 })
-        .mockResolvedValueOnce({ Body: new Readable({ read() {} }), ContentLength: 6 })
-        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('third')]), ContentLength: 5 });
-
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
-      const thirdPromise = proxyBackend.getServeStrategy('third.jpg', 'image/jpeg');
-      expect(first.type).toBe('stream');
-      expect(proxyClient.send).toHaveBeenCalledTimes(1);
-
-      await vi.advanceTimersByTimeAsync(50);
-      await flushPromises();
-
-      expect(proxyClient.send).toHaveBeenCalledTimes(2);
-      await expect(secondPromise).resolves.toMatchObject({ type: 'stream' });
-      await expect(Promise.race([thirdPromise.then(() => 'resolved'), Promise.resolve('pending')])).resolves.toBe(
-        'pending',
-      );
-    });
-
-    it('should not arm an idle timeout when proxy read idle timeout is disabled', async () => {
-      vi.useFakeTimers();
-      const proxyBackend = new S3StorageBackend({
-        bucket: 'test-bucket',
-        region: 'us-east-1',
-        presignedUrlExpiry: 3600,
-        serveMode: 'proxy' as const,
-        proxyReadConcurrency: 1,
-        proxyReadIdleTimeoutMs: 0,
-      });
-      const proxyClient = (S3Client as unknown as ReturnType<typeof vi.fn>).mock.results.at(-1)?.value;
-      const idleStream = new Readable({
-        read() {
-          // keep the stream open until explicit cleanup
-        },
-      });
-      const destroy = vi.spyOn(idleStream, 'destroy');
-      proxyClient.send
-        .mockResolvedValueOnce({ Body: idleStream, ContentLength: 5 })
-        .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
-
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
-      expect(first.type).toBe('stream');
-
-      await vi.advanceTimersByTimeAsync(1000);
-
-      await expect(Promise.race([secondPromise.then(() => 'resolved'), Promise.resolve('pending')])).resolves.toBe(
-        'pending',
-      );
-      expect(destroy).not.toHaveBeenCalled();
     });
 
     it('should not acquire proxy read slots in redirect mode', async () => {
