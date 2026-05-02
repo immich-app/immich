@@ -103,7 +103,7 @@
 
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
-      openInNewTab();
+      window.open(currentUrlReplaceAssetId(asset.id), '_blank');
       return;
     }
 
