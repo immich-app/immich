@@ -1,4 +1,4 @@
-import type { Faces } from '$lib/stores/people.store';
+import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import type { Size } from '$lib/utils/container-utils';
 import { getBoundingBox } from '$lib/utils/people-utils';
 

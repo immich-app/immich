@@ -73,7 +73,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden bg-light p-2 dark:text-immich-dark-fg"
 >
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
@@ -123,7 +123,7 @@
         aria-label={$t('back')}
         onclick={onClose}
       />
-      <div class="w-full flex">
+      <div class="flex w-full">
         <SearchPeople
           type="input"
           bind:searchName
@@ -146,14 +146,14 @@
       />
     {/if}
   </div>
-  <div class="px-4 py-4 text-sm">
-    <h2 class="mb-8 mt-4">{$t('all_people')}</h2>
+  <div class="p-4 text-sm">
+    <h2 class="mt-4 mb-8">{$t('all_people')}</h2>
     {#if isShowLoadingPeople}
       <div class="flex w-full justify-center">
         <LoadingSpinner />
       </div>
     {:else}
-      <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
+      <div class="mt-4 flex flex-wrap gap-2 overflow-y-auto immich-scrollbar">
         {#each showPeople as person (person.id)}
           {#if !editedFace.person || person.id !== editedFace.person.id}
             <div class="w-fit">

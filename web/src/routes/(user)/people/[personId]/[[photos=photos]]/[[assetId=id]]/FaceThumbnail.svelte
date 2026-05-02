@@ -33,7 +33,7 @@
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}
 >
   <div
-    class="h-full w-full border-2 brightness-90 filter"
+    class="size-full border-2 brightness-90 filter"
     class:rounded-full={circle}
     class:rounded-lg={!circle}
     class:border-transparent={!border}
@@ -44,7 +44,7 @@
   </div>
 
   <div
-    class="absolute start-0 top-0 h-full w-full bg-immich-primary/30 opacity-0"
+    class="absolute inset-s-0 top-0 size-full bg-immich-primary/30 opacity-0"
     class:hover:opacity-100={selectable}
     class:rounded-full={circle}
     class:rounded-lg={!circle}
@@ -52,7 +52,7 @@
 
   {#if selected}
     <div
-      class="absolute start-0 top-0 h-full w-full bg-blue-500/80"
+      class="absolute inset-s-0 top-0 size-full bg-blue-500/80"
       class:rounded-full={circle}
       class:rounded-lg={!circle}
     ></div>
@@ -60,7 +60,7 @@
 
   {#if person.name}
     <span
-      class="w-100 text-white-shadow absolute bottom-2 start-0 w-full text-ellipsis px-1 text-center font-medium text-white hover:cursor-pointer"
+      class="text-white-shadow absolute inset-s-0 bottom-2 w-full px-1 text-center font-medium text-ellipsis text-white hover:cursor-pointer"
     >
       {person.name}
     </span>

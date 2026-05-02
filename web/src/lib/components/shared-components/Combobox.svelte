@@ -268,9 +268,9 @@
 </script>
 
 <svelte:window onresize={onPositionChange} />
-<Label class="block mb-1 {hideLabel ? 'sr-only' : ''} text-xs text-neutral-500 font-light" for={inputId}>{label}</Label>
+<Label class="mb-1 block {hideLabel ? 'sr-only' : ''} text-xs font-light text-neutral-500" for={inputId}>{label}</Label>
 <div
-  class="relative w-full dark:text-gray-300 text-gray-700 text-base"
+  class="relative w-full text-base text-gray-700 dark:text-gray-300"
   use:focusOutside={{ onFocusOut: deactivate }}
   use:shortcuts={[
     {
@@ -284,7 +284,7 @@
 >
   <div>
     {#if isActive}
-      <div class="absolute inset-y-0 start-0 flex items-center ps-3">
+      <div class="absolute inset-y-0 inset-s-0 flex items-center ps-3">
         <div class="dark:text-immich-dark-fg/75">
           <Icon icon={mdiMagnify} aria-hidden />
         </div>
@@ -300,11 +300,11 @@
       aria-expanded={isOpen}
       autocomplete="off"
       bind:this={input}
-      class:!ps-8={isActive}
-      class:!rounded-b-none={isOpen && dropdownDirection === 'bottom'}
-      class:!rounded-t-none={isOpen && dropdownDirection === 'top'}
+      class:ps-8!={isActive}
+      class:rounded-b-none!={isOpen && dropdownDirection === 'bottom'}
+      class:rounded-t-none!={isOpen && dropdownDirection === 'top'}
       class:cursor-pointer={!isActive}
-      class="immich-form-input text-sm w-full pe-12! transition-all"
+      class="immich-form-input w-full pe-12! text-sm transition-all"
       id={inputId}
       onfocus={activate}
       oninput={onInput}
@@ -355,7 +355,7 @@
     />
 
     <div
-      class="absolute end-0 top-0 h-full flex px-4 justify-center items-center content-between"
+      class="absolute inset-e-0 top-0 flex h-full content-between items-center justify-center px-4"
       class:pe-2={selectedOption}
       class:pointer-events-none={!selectedOption}
     >
@@ -379,10 +379,10 @@
     role="listbox"
     id={listboxId}
     in:fly={{ duration: 250 }}
-    class="fixed z-1 text-start text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900"
+    class="fixed z-1 w-full overflow-y-auto border-gray-300 bg-white text-start text-sm dark:border-gray-900 dark:bg-gray-800"
     class:rounded-b-xl={dropdownDirection === 'bottom'}
     class:rounded-t-xl={dropdownDirection === 'top'}
-    class:shadow={dropdownDirection === 'bottom'}
+    class:shadow-sm={dropdownDirection === 'bottom'}
     class:border={isOpen}
     style:top={position?.top}
     style:bottom={position?.bottom}
@@ -398,7 +398,7 @@
           role="option"
           aria-selected={selectedIndex === 0}
           aria-disabled={true}
-          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700"
+          class="w-full cursor-default px-4 py-2 text-start hover:bg-gray-200 aria-selected:bg-gray-200 dark:hover:bg-gray-700 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${0}`}
           onclick={closeDropdown}
         >
@@ -410,7 +410,7 @@
         <li
           aria-selected={index === selectedIndex}
           bind:this={optionRefs[index]}
-          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 wrap-break-words"
+          class="wrap-break-words w-full cursor-pointer px-4 py-2 text-start transition-all hover:bg-gray-200 aria-selected:bg-gray-200 dark:hover:bg-gray-700 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${index}`}
           onclick={() => handleSelect(option)}
           role="option"

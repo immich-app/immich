@@ -1,3 +1,5 @@
+import { NotNull } from 'kysely';
+import { ColorMatrix, ColorPrimaries, ColorTransfer, DvProfile, DvSignalCompatibility } from 'src/enum';
 import { AudioStreamInfo, VideoFormat, VideoInfo, VideoStreamInfo } from 'src/types';
 
 const probeStubDefaultFormat: VideoFormat = {
@@ -15,9 +17,12 @@ const probeStubDefaultVideoStream: VideoStreamInfo[] = [
     codecName: 'hevc',
     frameCount: 100,
     rotation: 0,
-    isHDR: false,
     bitrate: 0,
+    colorPrimaries: ColorPrimaries.Bt709,
+    colorTransfer: ColorTransfer.Bt709,
+    colorMatrix: ColorMatrix.Bt709,
     pixelFormat: 'yuv420p',
+    timeBase: 600,
   },
 ];
 
@@ -29,23 +34,13 @@ const probeStubDefault: VideoInfo = {
   audioStreams: probeStubDefaultAudioStream,
 };
 
-export const probeStub = {
+/** Fixtures in the shape `mediaRepository.probe()` returns (arrays of streams, raw ffprobe format). */
+export const videoInfoStub = {
   noVideoStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, videoStreams: [] }),
   noAudioStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, audioStreams: [] }),
   multipleVideoStreams: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [
-      {
-        index: 0,
-        height: 1080,
-        width: 400,
-        codecName: 'hevc',
-        frameCount: 1,
-        rotation: 0,
-        isHDR: false,
-        bitrate: 100,
-        pixelFormat: 'yuv420p',
-      },
       {
         index: 1,
         height: 1080,
@@ -53,9 +48,26 @@ export const probeStub = {
         codecName: 'hevc',
         frameCount: 2,
         rotation: 0,
-        isHDR: false,
         bitrate: 101,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
+      },
+      {
+        index: 0,
+        height: 1080,
+        width: 400,
+        codecName: 'hevc',
+        frameCount: 1,
+        rotation: 0,
+        bitrate: 100,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
+        pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
       {
         index: 2,
@@ -64,18 +76,21 @@ export const probeStub = {
         codecName: 'h7000',
         frameCount: 3,
         rotation: 0,
-        isHDR: false,
         bitrate: 99,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
     ],
   }),
   multipleAudioStreams: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [
-      { index: 0, codecName: 'mp3', bitrate: 100 },
-      { index: 1, codecName: 'mp3', bitrate: 101 },
       { index: 2, codecName: 'mp3', bitrate: 102 },
+      { index: 1, codecName: 'mp3', bitrate: 101 },
+      { index: 0, codecName: 'mp3', bitrate: 100 },
     ],
   }),
   noHeight: Object.freeze<VideoInfo>({
@@ -88,9 +103,12 @@ export const probeStub = {
         codecName: 'hevc',
         frameCount: 100,
         rotation: 0,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
     ],
   }),
@@ -104,9 +122,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 0,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
     ],
   }),
@@ -117,8 +138,10 @@ export const probeStub = {
   videoStreamMTS: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     format: {
-      ...probeStubDefaultFormat,
       formatName: 'mpegts',
+      formatLongName: 'MPEG-TS (MPEG-2 Transport Stream)',
+      duration: 0,
+      bitrate: 0,
     },
   }),
   videoStreamHDR: Object.freeze<VideoInfo>({
@@ -131,9 +154,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 0,
-        isHDR: true,
+        colorPrimaries: ColorPrimaries.Bt2020,
+        colorMatrix: ColorMatrix.Bt2020Nc,
+        colorTransfer: ColorTransfer.Smpte2084,
         bitrate: 0,
         pixelFormat: 'yuv420p10le',
+        timeBase: 600,
       },
     ],
   }),
@@ -147,9 +173,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 0,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p10le',
+        timeBase: 600,
       },
     ],
   }),
@@ -163,9 +192,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 0,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p10le',
+        timeBase: 600,
       },
     ],
   }),
@@ -179,9 +211,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 90,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
     ],
   }),
@@ -195,9 +230,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 0,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
     ],
   }),
@@ -211,9 +249,12 @@ export const probeStub = {
         codecName: 'h264',
         frameCount: 100,
         rotation: 0,
-        isHDR: false,
         bitrate: 0,
+        colorPrimaries: ColorPrimaries.Bt709,
+        colorTransfer: ColorTransfer.Bt709,
+        colorMatrix: ColorMatrix.Bt709,
         pixelFormat: 'yuv420p',
+        timeBase: 600,
       },
     ],
   }),
@@ -274,10 +315,95 @@ export const probeStub = {
     videoStreams: [
       {
         ...probeStubDefaultVideoStream[0],
-        colorPrimaries: 'reserved',
-        colorSpace: 'reserved',
-        colorTransfer: 'reserved',
+        colorPrimaries: ColorPrimaries.Reserved,
+        colorMatrix: ColorMatrix.Reserved,
+        colorTransfer: ColorTransfer.Reserved,
+      },
+    ],
+  }),
+  videoStreamHDR10: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 2160,
+        width: 3840,
+        codecName: 'hevc',
+        profile: 2,
+        level: 153,
+        frameCount: 1208,
+        frameRate: 59.94,
+        rotation: 0,
+        bitrate: 64_000_000,
+        pixelFormat: 'yuv420p10le',
+        colorPrimaries: ColorPrimaries.Bt2020,
+        colorMatrix: ColorMatrix.Bt2020Nc,
+        colorTransfer: ColorTransfer.Smpte2084,
+        timeBase: 600,
+      },
+    ],
+  }),
+  videoStreamDolbyVision: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 2160,
+        width: 3840,
+        codecName: 'hevc',
+        profile: 2,
+        level: 153,
+        frameCount: 1299,
+        frameRate: 59.94,
+        rotation: 0,
+        bitrate: 53_500_000,
+        pixelFormat: 'yuv420p10le',
+        colorPrimaries: ColorPrimaries.Bt2020,
+        colorMatrix: ColorMatrix.Bt2020Nc,
+        colorTransfer: ColorTransfer.AribStdB67,
+        dvProfile: DvProfile.Dvhe08,
+        dvLevel: 10,
+        dvBlSignalCompatibilityId: DvSignalCompatibility.Hlg,
+        timeBase: 600,
+      },
+    ],
+  }),
+  videoStreamWithProfileLevel: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        ...probeStubDefaultVideoStream[0],
+        codecName: 'h264',
+        profile: 100,
+        level: 40,
+      },
+    ],
+  }),
+  audioStreamAAC: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [
+      {
+        index: 1,
+        codecName: 'aac',
+        profile: 2,
+        bitrate: 128_000,
       },
     ],
   }),
 };
+
+interface SelectedStreams {
+  videoStream: VideoStreamInfo & { timeBase: NotNull };
+  audioStream: AudioStreamInfo | null;
+  format: VideoFormat;
+}
+
+const toSelectedStreams = (info: VideoInfo) => ({
+  videoStream: info.videoStreams[0] ?? null,
+  audioStream: info.audioStreams[0] ?? null,
+  format: info.format,
+});
+
+export const probeStub = Object.fromEntries(
+  Object.entries(videoInfoStub).map(([key, info]) => [key, toSelectedStreams(info)]),
+) as Record<keyof typeof videoInfoStub, SelectedStreams>;

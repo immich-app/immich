@@ -26,7 +26,7 @@
   );
 </script>
 
-<div class="w-40 sm:w-48 md:w-full h-14 flex gap-4 place-items-center">
+<div class="flex h-14 w-40 place-items-center gap-4 sm:w-48 md:w-full">
   <div class="md:w-96">
     <SearchPeople type="searchBar" placeholder={$t('search_people')} bind:searchName={name} bind:searchedPeopleLocal />
   </div>
@@ -47,7 +47,7 @@
 </div>
 
 <div
-  class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray mt-6"
+  class="mt-6 overflow-y-auto rounded-3xl bg-gray-200 p-10 immich-scrollbar dark:bg-immich-dark-gray"
   style:max-height={screenHeight - 400 + 'px'}
 >
   <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">

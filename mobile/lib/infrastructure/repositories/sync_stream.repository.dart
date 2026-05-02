@@ -220,6 +220,44 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> updateAssetsV2(Iterable<SyncAssetV2> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final asset in data) {
+          final companion = RemoteAssetEntityCompanion(
+            name: Value(asset.originalFileName),
+            type: Value(asset.type.toAssetType()),
+            createdAt: Value.absentIfNull(asset.fileCreatedAt),
+            updatedAt: Value.absentIfNull(asset.fileModifiedAt),
+            durationMs: Value(asset.duration),
+            checksum: Value(asset.checksum),
+            isFavorite: Value(asset.isFavorite),
+            ownerId: Value(asset.ownerId),
+            localDateTime: Value(asset.localDateTime),
+            thumbHash: Value(asset.thumbhash),
+            deletedAt: Value(asset.deletedAt),
+            visibility: Value(asset.visibility.toAssetVisibility()),
+            livePhotoVideoId: Value(asset.livePhotoVideoId),
+            stackId: Value(asset.stackId),
+            libraryId: Value(asset.libraryId),
+            width: Value(asset.width),
+            height: Value(asset.height),
+            isEdited: Value(asset.isEdited),
+          );
+
+          batch.insert(
+            _db.remoteAssetEntity,
+            companion.copyWith(id: Value(asset.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsV2 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {

@@ -24,7 +24,7 @@ describe(SyncEntityType.SyncCompleteV1, () => {
   it('should work', async () => {
     const { auth, ctx } = await setup();
 
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV2]);
   });
 
   it('should detect an old checkpoint and send back a reset', async () => {
@@ -39,7 +39,7 @@ describe(SyncEntityType.SyncCompleteV1, () => {
       },
     ]);
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AssetsV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.AssetsV2]);
     expect(response).toEqual([{ type: SyncEntityType.SyncResetV1, data: {}, ack: 'SyncResetV1|reset' }]);
   });
 
@@ -55,6 +55,6 @@ describe(SyncEntityType.SyncCompleteV1, () => {
       },
     ]);
 
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV2]);
   });
 });

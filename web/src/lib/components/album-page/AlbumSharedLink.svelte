@@ -34,7 +34,7 @@
   const { ViewQrCode, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
-<div class="flex justify-between items-center">
+<div class="flex items-center justify-between">
   <div class="flex flex-col gap-1">
     <Text size="small">{sharedLink.description || album.albumName}</Text>
     <Text size="tiny" color="muted">{getShareProperties()}</Text>

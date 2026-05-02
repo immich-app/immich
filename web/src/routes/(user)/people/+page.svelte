@@ -315,9 +315,9 @@
 >
   {#snippet buttons()}
     {#if people.length > 0}
-      <div class="flex gap-2 items-center justify-center">
+      <div class="flex items-center justify-center gap-2">
         <div class="hidden sm:block">
-          <div class="w-40 lg:w-80 h-10">
+          <div class="h-10 w-40 lg:w-80">
             <SearchPeople
               bind:this={searchPeopleElement}
               type="searchBar"
@@ -344,7 +344,7 @@
     <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
       {#snippet children({ person })}
         <div
-          class="p-2 rounded-xl hover:bg-gray-200 border-2 hover:border-immich-primary/50 hover:shadow-sm dark:hover:bg-immich-dark-primary/20 hover:dark:border-immich-dark-primary/25 border-transparent transition-all"
+          class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"
         >
           <PeopleCard
             {person}
@@ -355,7 +355,7 @@
 
           <input
             type="text"
-            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-primary"
+            class="mt-2 w-full rounded-2xl border-gray-100 bg-white py-2 text-center text-sm text-primary placeholder-gray-400 dark:border-gray-900 dark:bg-immich-dark-gray"
             value={person.name}
             placeholder={$t('add_a_name')}
             use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
@@ -370,7 +370,7 @@
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon icon={mdiAccountOff} size="3.5em" />
-        <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
+        <p class="mt-5 line-clamp-2 max-w-lg overflow-hidden text-3xl font-medium">
           {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
       </div>
@@ -381,7 +381,7 @@
 {#if selectHidden}
   <dialog
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="fixed inset-0 h-full w-full max-w-none max-h-none bg-light"
+    class="fixed inset-0 size-full max-h-none max-w-none bg-light"
     aria-labelledby="manage-visibility-title"
     {@attach (dialog) => dialog.showModal()}
   >
