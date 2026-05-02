@@ -59,7 +59,7 @@
   {id}
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
-  class="w-full p-4 relative text-start text-sm font-medium {textColor} flex cursor-pointer items-center gap-2 border-gray-200 focus:ring-2 focus:outline-none focus:ring-inset {isActive
+  class="relative w-full p-4 text-start text-sm font-medium {textColor} flex cursor-pointer items-center gap-2 border-gray-200 focus:ring-2 focus:outline-none focus:ring-inset {isActive
     ? activeColor
     : 'bg-slate-100'}"
   role="menuitem"
@@ -83,7 +83,7 @@
     {/if}
     {#if href !== null}
       <a
-        class="z-2 absolute w-full top-0 bottom-0 left-0"
+        class="absolute inset-y-0 left-0 z-2 w-full"
         style:cursor="unset"
         {href}
         onclick={(evt) => evt.preventDefault()}
