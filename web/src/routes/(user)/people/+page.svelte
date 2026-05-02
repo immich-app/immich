@@ -3,7 +3,6 @@
   import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import ManagePeopleVisibility from './ManagePeopleVisibility.svelte';
   import PeopleCard from './PeopleCard.svelte';
   import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
   import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
@@ -22,8 +21,6 @@
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { quintOut } from 'svelte/easing';
-  import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
 
   interface Props {
@@ -32,7 +29,6 @@
 
   let { data }: Props = $props();
 
-  let selectHidden = $state(false);
   let searchName = $state('');
   let newName = $state('');
   let currentPage = $state(1);
@@ -331,7 +327,7 @@
         </div>
         <Button
           leadingIcon={mdiEyeOutline}
-          onclick={() => (selectHidden = !selectHidden)}
+          onclick={() => goto('/people/manage')}
           size="small"
           variant="ghost"
           color="secondary">{$t('show_and_hide_people')}</Button
@@ -377,21 +373,3 @@
     </div>
   {/if}
 </UserPageLayout>
-
-{#if selectHidden}
-  <dialog
-    transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="fixed inset-0 size-full max-h-none max-w-none bg-light"
-    aria-labelledby="manage-visibility-title"
-    {@attach (dialog) => dialog.showModal()}
-  >
-    <ManagePeopleVisibility
-      {people}
-      totalPeopleCount={data.people.total}
-      titleId="manage-visibility-title"
-      onClose={() => (selectHidden = false)}
-      onUpdate={(updatedPeople) => (people = updatedPeople.slice())}
-      {loadNextPage}
-    />
-  </dialog>
-{/if}
