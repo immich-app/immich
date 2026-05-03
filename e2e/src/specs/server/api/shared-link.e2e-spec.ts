@@ -343,7 +343,7 @@ describe('/shared-links', () => {
       expect(status).toBe(400);
       expect(body).toEqual(
         errorDto.validationError([
-          { path: ['type'], message: expect.stringContaining('Invalid option: expected one of') },
+          { path: [], message: 'Invalid input: expected object, received undefined' },
         ]),
       );
     });
