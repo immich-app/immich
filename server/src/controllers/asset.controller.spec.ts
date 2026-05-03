@@ -196,7 +196,7 @@ describe(AssetController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/assets/123`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.validationError([{ message: 'Invalid input: expected object, received undefined' }]),
+        factory.responses.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
       );
     });
 

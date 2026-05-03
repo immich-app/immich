@@ -105,7 +105,7 @@ describe(PersonController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/people/123`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.validationError([{ message: 'Invalid input: expected object, received undefined' }]),
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
       );
     });
 

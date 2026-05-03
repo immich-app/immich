@@ -99,14 +99,14 @@ describe(MemoryController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/invalid`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.validationError([{ message: 'Invalid input: expected object, received undefined' }]),
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
       );
     });
 
     it('should require at least one field', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/${factory.uuid()}`).send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.validationError([{ message: 'At least one field must be provided' }]));
+      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'At least one field must be provided' }]));
     });
   });
 
