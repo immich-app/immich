@@ -4088,6 +4088,16 @@
         "operationId": "downloadAsset",
         "parameters": [
           {
+            "name": "download",
+            "required": false,
+            "in": "query",
+            "description": "Return original asset as an attachment download",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
             "name": "edited",
             "required": false,
             "in": "query",

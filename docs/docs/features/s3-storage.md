@@ -16,10 +16,10 @@ When S3 storage is enabled:
 
 Gallery supports two modes for serving files from S3:
 
-| Mode       | Behavior                                                                                          |
-| :--------- | :------------------------------------------------------------------------------------------------ |
-| `redirect` | Returns a temporary presigned URL — the client downloads directly from S3. Best for performance.  |
-| `proxy`    | The Gallery server streams the file from S3 to the client. Use when S3 is not directly reachable. |
+| Mode       | Behavior                                                                                                                          |
+| :--------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `redirect` | Returns a temporary presigned URL. The client downloads directly from S3. Recommended when the browser can reach the S3 endpoint. |
+| `proxy`    | The Gallery server streams the file from S3 to the client. Use only when S3 is not directly reachable by browsers.                |
 
 ## Environment Variables
 
@@ -112,14 +112,44 @@ IMMICH_S3_ENDPOINT=https://your-s3-endpoint.example.com
 
 Pick the mode that fits your setup:
 
-- **`redirect`** (default) — Best for performance. The client is redirected to a presigned URL and downloads directly from S3. Requires the client to be able to reach the S3 endpoint.
-- **`proxy`** — The Gallery server fetches the file from S3 and streams it to the client. Use this if your S3 endpoint is not reachable by clients (e.g. MinIO on an internal network).
+- **`redirect`** (default) — Recommended for browser-readable S3 endpoints. Gallery authorizes the API request and returns a short-lived presigned URL, so media bytes flow directly from S3 to the browser.
+- **`proxy`** — Compatibility mode for private-network S3 endpoints. Gallery streams every media byte through the API process, so it costs more server resources and is not the recommended mode for large scrolling grids.
 
 ```bash title=".env"
 IMMICH_S3_SERVE_MODE=proxy
 ```
 
-### 4. Restart Gallery
+### 4. Configure CORS For Redirect Mode
+
+Redirect mode keeps the bucket private, but browsers need CORS headers when Gallery draws S3 images to canvas for editing, face crops, and copy-to-clipboard.
+
+Use your real Gallery origins in `AllowedOrigins`:
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://gallery.example.com", "http://localhost:3000", "http://localhost:2283"],
+      "AllowedMethods": ["GET", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["Accept-Ranges", "Content-Length", "Content-Range", "Content-Type", "ETag"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
+```
+
+AWS CLI example:
+
+```bash
+aws s3api put-bucket-cors \
+  --bucket my-gallery-storage \
+  --cors-configuration '{"CORSRules":[{"AllowedOrigins":["https://gallery.example.com","http://localhost:3000","http://localhost:2283"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["*"],"ExposeHeaders":["Accept-Ranges","Content-Length","Content-Range","Content-Type","ETag"],"MaxAgeSeconds":3600}]}'
+```
+
+Do not use `"*"` for production origins if you introduce credentialed browser requests to S3. Gallery media images use anonymous CORS.
+
+### 5. Restart Gallery
 
 Recreate the containers to apply the new environment variables:
 
@@ -232,7 +262,9 @@ When a client requests an asset, `BaseService.serveFromBackend()` asks the resol
 | S3      | `redirect` | `ImmichRedirectResponse` | HTTP 302 to a presigned URL; client fetches from S3 |
 | S3      | `proxy`    | `ImmichStreamResponse`   | Server streams S3 data through to the client        |
 
-Presigned URLs expire after `IMMICH_S3_PRESIGNED_URL_EXPIRY` seconds (default 3600). The S3 backend uses `forcePathStyle: true` when a custom endpoint is configured, which is required for MinIO, DigitalOcean Spaces, and similar providers.
+Presigned URLs expire after `IMMICH_S3_PRESIGNED_URL_EXPIRY` seconds (default 3600). Gallery sends `Cache-Control: private, no-cache, no-transform` on redirect responses so browsers do not reuse an expired 302. The S3 backend signs content type and filename response overrides when they are available, so inline display and explicit downloads behave consistently after the browser follows the redirect.
+
+The S3 backend uses `forcePathStyle: true` when a custom endpoint is configured, which is required for MinIO, DigitalOcean Spaces, and similar providers.
 
 ### Upload Flow
 

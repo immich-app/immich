@@ -47,7 +47,7 @@ export function generateAsset(
   ownerId: string,
   rng: SeededRandom,
 ): MockTimelineAsset {
-  const from = DateTime.fromObject({ year, month, day }).setZone('UTC');
+  const from = DateTime.fromObject({ year, month, day }, { zone: 'UTC' });
   const to = from.endOf('day');
   const date = faker.date.between({ from: from.toJSDate(), to: to.toJSDate() });
   const isVideo = rng.next() < GENERATION_CONSTANTS.VIDEO_PROBABILITY;

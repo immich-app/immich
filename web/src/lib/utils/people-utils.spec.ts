@@ -1,6 +1,7 @@
 import type { Faces } from '$lib/stores/people.store';
 import type { Size } from '$lib/utils/container-utils';
-import { getBoundingBox } from '$lib/utils/people-utils';
+import { getBoundingBox, zoomImageToBase64 } from '$lib/utils/people-utils';
+import { AssetTypeEnum } from '@immich/sdk';
 
 const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
   id: 'face-1',
@@ -66,5 +67,82 @@ describe('getBoundingBox', () => {
 
     expect(boxes).toHaveLength(2);
     expect(boxes[0].left).toBeLessThan(boxes[1].left);
+  });
+});
+
+describe(zoomImageToBase64.name, () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('sets anonymous CORS before loading video thumbnails and face crop images', async () => {
+    const operations: Array<{ imageIndex: number; type: 'crossOrigin' | 'src'; value: string | null }> = [];
+    let imageCount = 0;
+
+    class TestImage extends EventTarget {
+      readonly imageIndex = imageCount++;
+      naturalWidth = 4000;
+      naturalHeight = 3000;
+      private source = '';
+
+      set crossOrigin(value: string | null) {
+        operations.push({ imageIndex: this.imageIndex, type: 'crossOrigin', value });
+      }
+
+      get crossOrigin() {
+        return 'anonymous';
+      }
+
+      set src(value: string) {
+        this.source = value;
+        operations.push({ imageIndex: this.imageIndex, type: 'src', value });
+      }
+
+      get src() {
+        return this.source;
+      }
+
+      override addEventListener(...args: Parameters<EventTarget['addEventListener']>) {
+        super.addEventListener(...args);
+
+        if (args[0] === 'load') {
+          queueMicrotask(() => this.dispatchEvent(new Event('load')));
+        }
+      }
+    }
+
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
+      if (tagName === 'canvas') {
+        return {
+          width: 0,
+          height: 0,
+          getContext: vi.fn(() => ({ drawImage: vi.fn() })),
+          toDataURL: vi.fn(() => 'data:image/png;base64,face'),
+        } as unknown as HTMLCanvasElement;
+      }
+
+      return originalCreateElement(tagName);
+    }) as typeof document.createElement);
+
+    vi.stubGlobal('Image', TestImage);
+
+    await expect(zoomImageToBase64(makeFace(), 'asset-1', AssetTypeEnum.Video, undefined)).resolves.toBe(
+      'data:image/png;base64,face',
+    );
+
+    for (const imageIndex of [0, 1]) {
+      const crossOriginIndex = operations.findIndex(
+        (operation) => operation.imageIndex === imageIndex && operation.type === 'crossOrigin',
+      );
+      const srcIndex = operations.findIndex(
+        (operation) => operation.imageIndex === imageIndex && operation.type === 'src',
+      );
+
+      expect(crossOriginIndex).toBeGreaterThanOrEqual(0);
+      expect(crossOriginIndex).toBeLessThan(srcIndex);
+      expect(operations[crossOriginIndex].value).toBe('anonymous');
+    }
   });
 });

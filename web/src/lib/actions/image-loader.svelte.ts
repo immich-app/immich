@@ -9,6 +9,7 @@ export function loadImage(src: string, onLoad: () => void, onError: () => void, 
   const img = document.createElement('img');
   img.addEventListener('load', handleLoad);
   img.addEventListener('error', handleError);
+  img.crossOrigin = 'anonymous';
 
   onStart?.();
   img.src = src;

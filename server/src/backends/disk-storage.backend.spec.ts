@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
+import { CacheControl } from 'src/enum';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('DiskStorageBackend', () => {
@@ -76,7 +77,10 @@ describe('DiskStorageBackend', () => {
 
   describe('getServeStrategy', () => {
     it('should always return file strategy with full path', async () => {
-      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', 'image/webp');
+      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', {
+        contentType: 'image/webp',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
       expect(strategy).toEqual({
         type: 'file',
         path: join(testDir, 'thumbs/user1/ab/cd/thumb.webp'),

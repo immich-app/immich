@@ -139,9 +139,6 @@ export const setupBrokenAssetMockApiRoutes = async (context: BrowserContext, moc
   });
 
   await context.route('**/api/assets/*/thumbnail?size=*', async (route, request) => {
-    if (!route.request().serviceWorker()) {
-      return route.continue();
-    }
     const pattern = /\/api\/assets\/(?<assetId>[^/]+)\/thumbnail\?size=(?<size>preview|thumbnail)/;
     const match = request.url().match(pattern);
     if (!match?.groups || !mockStack.assetMap.has(match.groups.assetId)) {

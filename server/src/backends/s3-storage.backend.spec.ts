@@ -27,9 +27,10 @@ vi.mock('@aws-sdk/lib-storage', () => ({
   })),
 }));
 
-import { S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { S3StorageBackend } from 'src/backends/s3-storage.backend';
+import { CacheControl } from 'src/enum';
 
 describe('S3StorageBackend', () => {
   let backend: S3StorageBackend;
@@ -118,12 +119,52 @@ describe('S3StorageBackend', () => {
 
   describe('getServeStrategy', () => {
     it('should return redirect with presigned URL when serveMode is redirect', async () => {
-      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', 'image/webp');
+      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', {
+        contentType: 'image/webp',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
       expect(strategy.type).toBe('redirect');
       if (strategy.type === 'redirect') {
         expect(strategy.url).toContain('X-Amz-Signature');
       }
       expect(getSignedUrl).toHaveBeenCalled();
+    });
+
+    it('should include response override metadata in redirect presigned URLs', async () => {
+      const strategy = await backend.getServeStrategy('upload/user1/photo.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+        fileName: 'Vacation Photo.jpg',
+        disposition: 'attachment',
+      });
+
+      expect(strategy.type).toBe('redirect');
+      expect(GetObjectCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Bucket: 'test-bucket',
+          Key: 'upload/user1/photo.jpg',
+          ResponseContentType: 'image/jpeg',
+          ResponseContentDisposition: `attachment; filename*=UTF-8''Vacation%20Photo.jpg`,
+        }),
+      );
+    });
+
+    it('should sign a high-cardinality redirect burst without opening S3 read streams', async () => {
+      const strategies = await Promise.all(
+        Array.from({ length: 200 }, (_, index) =>
+          backend.getServeStrategy(`thumbs/user1/aa/bb/thumb-${index}.webp`, {
+            contentType: 'image/webp',
+            cacheControl: CacheControl.PrivateWithCache,
+            fileName: `thumb-${index}.webp`,
+            disposition: 'inline',
+          }),
+        ),
+      );
+
+      expect(strategies).toHaveLength(200);
+      expect(strategies.every((strategy) => strategy.type === 'redirect')).toBe(true);
+      expect(mockSend).not.toHaveBeenCalled();
+      expect(getSignedUrl).toHaveBeenCalledTimes(200);
     });
 
     it('should return stream when serveMode is proxy', async () => {
@@ -143,7 +184,10 @@ describe('S3StorageBackend', () => {
         ContentLength: 7,
       });
 
-      const strategy = await proxyBackend.getServeStrategy('key.jpg', 'image/jpeg');
+      const strategy = await proxyBackend.getServeStrategy('key.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
       expect(strategy.type).toBe('stream');
     });
 
@@ -165,8 +209,14 @@ describe('S3StorageBackend', () => {
         )
         .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
 
-      const first = proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const second = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      const first = proxyBackend.getServeStrategy('first.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
+      const second = proxyBackend.getServeStrategy('second.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
       await Promise.resolve();
 
       expect(proxyClient.send).toHaveBeenCalledTimes(1);
@@ -195,8 +245,14 @@ describe('S3StorageBackend', () => {
         .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('first')]), ContentLength: 5 })
         .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
 
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      const first = await proxyBackend.getServeStrategy('first.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
+      const secondPromise = proxyBackend.getServeStrategy('second.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
       expect(proxyClient.send).toHaveBeenCalledTimes(1);
       if (first.type === 'stream') {
         for await (const _chunk of first.stream) {
@@ -223,8 +279,16 @@ describe('S3StorageBackend', () => {
         ContentLength: 6,
       });
 
-      await expect(proxyBackend.getServeStrategy('first.jpg', 'image/jpeg')).rejects.toThrow('denied');
-      const second = await proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      await expect(
+        proxyBackend.getServeStrategy('first.jpg', {
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      ).rejects.toThrow('denied');
+      const second = await proxyBackend.getServeStrategy('second.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
 
       expect(second.type).toBe('stream');
       expect(proxyClient.send).toHaveBeenCalledTimes(2);
@@ -248,8 +312,14 @@ describe('S3StorageBackend', () => {
         .mockResolvedValueOnce({ Body: erroringStream, ContentLength: 5 })
         .mockResolvedValueOnce({ Body: Readable.from([Buffer.from('second')]), ContentLength: 6 });
 
-      const first = await proxyBackend.getServeStrategy('first.jpg', 'image/jpeg');
-      const secondPromise = proxyBackend.getServeStrategy('second.jpg', 'image/jpeg');
+      const first = await proxyBackend.getServeStrategy('first.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
+      const secondPromise = proxyBackend.getServeStrategy('second.jpg', {
+        contentType: 'image/jpeg',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
       if (first.type === 'stream') {
         await expect(
           (async () => {
@@ -266,7 +336,10 @@ describe('S3StorageBackend', () => {
     });
 
     it('should not acquire proxy read slots in redirect mode', async () => {
-      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', 'image/webp');
+      const strategy = await backend.getServeStrategy('thumbs/user1/ab/cd/thumb.webp', {
+        contentType: 'image/webp',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
 
       expect(strategy.type).toBe('redirect');
       expect(mockSend).not.toHaveBeenCalled();

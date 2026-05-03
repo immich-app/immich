@@ -106,9 +106,6 @@ export const setupTimelineMockApiRoutes = async (
     }
 
     if (match.groups.size === 'preview') {
-      if (!route.request().serviceWorker()) {
-        return route.continue();
-      }
       const asset = getAsset(timelineRestData, match.groups.assetId);
       return route.fulfill({
         status: 200,
@@ -120,9 +117,6 @@ export const setupTimelineMockApiRoutes = async (
       });
     }
     if (match.groups.size === 'thumbnail') {
-      if (!route.request().serviceWorker()) {
-        return route.continue();
-      }
       const asset = getAsset(timelineRestData, match.groups.assetId);
       return route.fulfill({
         status: 200,

@@ -182,6 +182,7 @@ export class AssetMediaService extends BaseService {
       mimeTypes.lookup(path),
       CacheControl.PrivateWithCache,
       getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
+      dto.download ? 'attachment' : 'inline',
     );
   }
 

@@ -284,13 +284,16 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] download:
+  ///   Return original asset as an attachment download
+  ///
   /// * [bool] edited:
   ///   Return edited asset if available
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadAssetWithHttpInfo(String id, { bool? edited, String? key, String? slug, }) async {
+  Future<Response> downloadAssetWithHttpInfo(String id, { bool? download, bool? edited, String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
       .replaceAll('{id}', id);
@@ -302,6 +305,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (download != null) {
+      queryParams.addAll(_queryParams('', 'download', download));
+    }
     if (edited != null) {
       queryParams.addAll(_queryParams('', 'edited', edited));
     }
@@ -334,14 +340,17 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] download:
+  ///   Return original asset as an attachment download
+  ///
   /// * [bool] edited:
   ///   Return edited asset if available
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadAsset(String id, { bool? edited, String? key, String? slug, }) async {
-    final response = await downloadAssetWithHttpInfo(id,  edited: edited, key: key, slug: slug, );
+  Future<MultipartFile?> downloadAsset(String id, { bool? download, bool? edited, String? key, String? slug, }) async {
+    final response = await downloadAssetWithHttpInfo(id,  download: download, edited: edited, key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

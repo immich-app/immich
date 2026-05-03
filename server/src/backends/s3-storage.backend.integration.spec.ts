@@ -2,6 +2,7 @@ import { CreateBucketCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/cl
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { S3StorageBackend } from 'src/backends/s3-storage.backend';
+import { CacheControl } from 'src/enum';
 import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainers';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -100,7 +101,10 @@ describe.skipIf(!canRunDocker)('S3StorageBackend integration (MinIO)', () => {
 
   it('should return presigned URL in redirect mode', async () => {
     await backend.put('test/presigned.txt', Buffer.from('presigned data'));
-    const strategy = await backend.getServeStrategy('test/presigned.txt', 'text/plain');
+    const strategy = await backend.getServeStrategy('test/presigned.txt', {
+      contentType: 'text/plain',
+      cacheControl: CacheControl.PrivateWithCache,
+    });
     expect(strategy.type).toBe('redirect');
     if (strategy.type === 'redirect') {
       expect(strategy.url).toContain('test/presigned.txt');
@@ -156,7 +160,10 @@ describe.skipIf(!canRunDocker)('S3StorageBackend integration (MinIO)', () => {
     });
 
     await backend.put('test/proxy.txt', Buffer.from('proxy content'));
-    const strategy = await proxyBackend.getServeStrategy('test/proxy.txt', 'text/plain');
+    const strategy = await proxyBackend.getServeStrategy('test/proxy.txt', {
+      contentType: 'text/plain',
+      cacheControl: CacheControl.PrivateWithCache,
+    });
     expect(strategy.type).toBe('stream');
     if (strategy.type === 'stream') {
       const chunks: Buffer[] = [];

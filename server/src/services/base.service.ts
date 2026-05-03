@@ -72,7 +72,13 @@ import { UserTable } from 'src/schema/tables/user.table';
 import { GenerateThumbnailOptions, ImageDimensions } from 'src/types';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
-import { ImmichFileResponse, ImmichMediaResponse, ImmichRedirectResponse, ImmichStreamResponse } from 'src/utils/file';
+import {
+  ContentDisposition,
+  ImmichFileResponse,
+  ImmichMediaResponse,
+  ImmichRedirectResponse,
+  ImmichStreamResponse,
+} from 'src/utils/file';
 import { clamp } from 'src/utils/misc';
 
 type FaceThumbnailBounds = {
@@ -249,11 +255,18 @@ export class BaseService {
     contentType: string,
     cacheControl: CacheControl,
     fileName?: string,
+    disposition: ContentDisposition = 'inline',
   ): Promise<ImmichMediaResponse> {
     // lazy import to avoid circular dependency (StorageService extends BaseService)
     const { StorageService } = await import('./storage.service.js');
     const backend = StorageService.resolveBackendForKey(filePath);
-    const strategy: ServeStrategy = await backend.getServeStrategy(filePath, contentType);
+    const strategy: ServeStrategy = await backend.getServeStrategy(filePath, {
+      contentType,
+      cacheControl,
+      fileName,
+      disposition,
+    });
+    const responseDisposition = disposition === 'inline' ? undefined : disposition;
 
     switch (strategy.type) {
       case 'file': {
@@ -262,12 +275,13 @@ export class BaseService {
           contentType,
           cacheControl,
           fileName,
+          disposition: responseDisposition,
         });
       }
       case 'redirect': {
         return new ImmichRedirectResponse({
           url: strategy.url,
-          cacheControl,
+          cacheControl: CacheControl.PrivateWithoutCache,
         });
       }
       case 'stream': {
@@ -277,6 +291,7 @@ export class BaseService {
           length: strategy.length,
           cacheControl,
           fileName,
+          disposition: responseDisposition,
         });
       }
     }

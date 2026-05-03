@@ -39,6 +39,7 @@ export const zoomImageToBase64 = async (
   } else if (assetType === AssetTypeEnum.Video) {
     const data = getAssetMediaUrl({ id: assetId });
     const img: HTMLImageElement = new Image();
+    img.crossOrigin = 'anonymous';
     img.src = data;
 
     await new Promise<void>((resolve) => {
@@ -64,6 +65,7 @@ export const zoomImageToBase64 = async (
   const faceHeight = coordinates.y2 - coordinates.y1;
 
   const faceImage = new Image();
+  faceImage.crossOrigin = 'anonymous';
   faceImage.src = image.src;
 
   await new Promise((resolve) => {

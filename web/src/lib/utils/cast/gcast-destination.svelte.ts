@@ -10,6 +10,17 @@ enum SESSION_DISCOVERY_CAUSE {
   ACTIVE_SESSION,
 }
 
+export const getMediaContentType = async (mediaUrl: string): Promise<string> => {
+  const mediaResponse = await fetch(mediaUrl, { method: 'GET', headers: { Range: 'bytes=0-0' } });
+  const contentType = mediaResponse.headers.get('content-type');
+
+  if (!contentType) {
+    throw new Error('No content type found for media url');
+  }
+
+  return contentType;
+};
+
 export class GCastDestination implements ICastDestination {
   type = CastDestinationType.GCAST;
   isAvailable = $state<boolean>(false);
@@ -103,12 +114,7 @@ export class GCastDestination implements ICastDestination {
 
     // we need to send content type in the request
     // in the future we can swap this out for an API call to get image metadata
-    const assetHead = await fetch(mediaUrl, { method: 'HEAD' });
-    const contentType = assetHead.headers.get('content-type');
-
-    if (!contentType) {
-      throw new Error('No content type found for media url');
-    }
+    const contentType = await getMediaContentType(mediaUrl);
 
     // build the authenticated media request and send it to the cast device
     const authenticatedUrl = `${mediaUrl}&sessionKey=${sessionKey}`;

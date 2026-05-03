@@ -3,7 +3,7 @@ import { access, mkdir, opendir, rm, stat, unlink, writeFile } from 'node:fs/pro
 import { dirname, isAbsolute, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { ServeStrategy, StorageBackend } from 'src/interfaces/storage-backend.interface';
+import { ServeOptions, ServeStrategy, StorageBackend } from 'src/interfaces/storage-backend.interface';
 
 export class DiskStorageBackend implements StorageBackend {
   constructor(private mediaLocation: string) {}
@@ -58,7 +58,7 @@ export class DiskStorageBackend implements StorageBackend {
     return this.getFolderSize(this.resolvePath(prefix));
   }
 
-  getServeStrategy(key: string, _contentType: string): Promise<ServeStrategy> {
+  getServeStrategy(key: string, _options: ServeOptions): Promise<ServeStrategy> {
     return Promise.resolve({ type: 'file', path: this.resolvePath(key) });
   }
 

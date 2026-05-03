@@ -328,7 +328,16 @@ test.describe('Timeline', () => {
       const rng = new SeededRandom(6637);
       const selectedMonths = selectRandomMultiple(yearMonths, 20, rng);
       for (const month of selectedMonths) {
-        await page.locator(`[data-segment-year-month="${month}"]`).click({ force: true });
+        const segment = page.locator(`[data-segment-year-month="${month}"]`);
+        const scrubberBox = await page.locator('[data-id="scrubber"]').boundingBox();
+        const segmentBox = await segment.boundingBox();
+        if (!scrubberBox || !segmentBox) {
+          throw new Error(`Unable to find scrubber segment for ${month}`);
+        }
+        await page.mouse.move(scrubberBox.x + scrubberBox.width / 2, scrubberBox.y + scrubberBox.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(segmentBox.x + segmentBox.width / 2, segmentBox.y + segmentBox.height / 2, { steps: 5 });
+        await page.mouse.up();
         const matchingMonth = await poll(page, async () => {
           for (const thumb of await thumbnailUtils.locator(page).all()) {
             const box = await thumb.boundingBox();

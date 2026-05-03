@@ -18,6 +18,20 @@ describe('Image component', () => {
     expect(img!.getAttribute('src')).toBe('/test.jpg');
   });
 
+  it('loads images with anonymous CORS by default', () => {
+    const { baseElement } = render(Image, { src: '/test.jpg', alt: 'test' });
+    const img = baseElement.querySelector('img')!;
+
+    expect(img.getAttribute('crossorigin')).toBe('anonymous');
+  });
+
+  it('allows callers to override the CORS mode', () => {
+    const { baseElement } = render(Image, { src: '/test.jpg', alt: 'test', crossorigin: 'use-credentials' });
+    const img = baseElement.querySelector('img')!;
+
+    expect(img.getAttribute('crossorigin')).toBe('use-credentials');
+  });
+
   it('does not render an img element when src is undefined', () => {
     const { baseElement } = render(Image, { src: undefined });
     const img = baseElement.querySelector('img');

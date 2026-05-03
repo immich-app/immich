@@ -115,9 +115,6 @@ export const setupFaceEditorMockApiRoutes = async (
   });
 
   await context.route('**/api/people/*/thumbnail', async (route) => {
-    if (!route.request().serviceWorker()) {
-      return route.continue();
-    }
     return route.fulfill({
       status: 200,
       headers: { 'content-type': 'image/jpeg' },

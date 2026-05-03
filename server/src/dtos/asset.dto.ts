@@ -165,6 +165,7 @@ const AssetCopySchema = z
 const AssetDownloadOriginalSchema = z
   .object({
     edited: stringToBool.default(false).optional().describe('Return edited asset if available'),
+    download: stringToBool.default(false).optional().describe('Return original asset as an attachment download'),
   })
   .meta({ id: 'AssetDownloadOriginalDto' });
 

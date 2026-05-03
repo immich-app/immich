@@ -16,7 +16,7 @@ import { AssetMediaService } from 'src/services/asset-media.service';
 import { StorageService } from 'src/services/storage.service';
 import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
-import { ImmichFileResponse } from 'src/utils/file';
+import { ImmichFileResponse, ImmichRedirectResponse } from 'src/utils/file';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
@@ -511,6 +511,57 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    it('should mark explicit original downloads as attachments', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await expect(sut.downloadOriginal(authStub.admin, asset.id, { download: true })).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.originalPath,
+          fileName: asset.originalFileName,
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+          disposition: 'attachment',
+        }),
+      );
+    });
+
+    it('should create a safe redirect response for S3 originals', async () => {
+      const asset = AssetFactory.create({
+        originalPath: 'upload/admin/aa/bb/image.jpg',
+        originalFileName: 'image.jpg',
+      });
+      const s3Backend = {
+        getServeStrategy: vi.fn().mockResolvedValue({
+          type: 'redirect',
+          url: 'https://s3.example.com/image.jpg?X-Amz-Signature=abc',
+        }),
+      };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+      const previousS3Backend = (StorageService as any).s3Backend;
+      (StorageService as any).s3Backend = s3Backend;
+
+      try {
+        await expect(sut.downloadOriginal(authStub.admin, asset.id, {})).resolves.toEqual(
+          expect.objectContaining({
+            url: 'https://s3.example.com/image.jpg?X-Amz-Signature=abc',
+            cacheControl: CacheControl.PrivateWithoutCache,
+          }),
+        );
+        expect(s3Backend.getServeStrategy).toHaveBeenCalledWith('upload/admin/aa/bb/image.jpg', {
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+          fileName: 'image.jpg',
+          disposition: 'inline',
+        });
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+      }
+    });
+
     it('should download edited file by default when edits exist', async () => {
       const editedAsset = AssetFactory.from()
         .edit()
@@ -639,6 +690,52 @@ describe(AssetMediaService.name, () => {
           fileName: `IMG_${asset.id}_thumbnail.jpg`,
         }),
       );
+    });
+
+    it('should return safe redirects for a burst of S3 thumbnail loads without API streaming', async () => {
+      const asset = AssetFactory.from()
+        .file({ type: AssetFileType.Thumbnail, path: 'thumbs/admin/aa/bb/thumb.jpg' })
+        .build();
+      const path = asset.files[0].path;
+      const s3Backend = {
+        getServeStrategy: vi.fn().mockResolvedValue({
+          type: 'redirect',
+          url: 'https://s3.example.com/thumb.jpg?X-Amz-Signature=abc',
+        }),
+      };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path });
+      const previousS3Backend = (StorageService as any).s3Backend;
+      (StorageService as any).s3Backend = s3Backend;
+
+      try {
+        const results = await Promise.all(
+          Array.from({ length: 150 }, () =>
+            sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL }),
+          ),
+        );
+
+        expect(results).toHaveLength(150);
+        expect(results.every((result) => result instanceof ImmichRedirectResponse)).toBe(true);
+        for (const result of results) {
+          expect(result).toEqual(
+            expect.objectContaining({
+              url: 'https://s3.example.com/thumb.jpg?X-Amz-Signature=abc',
+              cacheControl: CacheControl.PrivateWithoutCache,
+            }),
+          );
+        }
+        expect(s3Backend.getServeStrategy).toHaveBeenCalledTimes(150);
+        expect(s3Backend.getServeStrategy).toHaveBeenNthCalledWith(1, path, {
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+          fileName: `IMG_${asset.id}_thumbnail.jpg`,
+          disposition: 'inline',
+        });
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+      }
     });
 
     it('should get preview file', async () => {

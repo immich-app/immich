@@ -1,4 +1,13 @@
 import { Readable } from 'node:stream';
+import { CacheControl } from 'src/enum';
+import type { ContentDisposition } from 'src/utils/file';
+
+export type ServeOptions = {
+  contentType: string;
+  cacheControl: CacheControl;
+  fileName?: string;
+  disposition?: ContentDisposition;
+};
 
 export type ServeStrategy =
   | { type: 'file'; path: string }
@@ -25,7 +34,7 @@ export interface StorageBackend {
   getPrefixUsage(prefix: string): Promise<number>;
 
   /** Determine how to serve this file to a client */
-  getServeStrategy(key: string, contentType: string): Promise<ServeStrategy>;
+  getServeStrategy(key: string, options: ServeOptions): Promise<ServeStrategy>;
 
   /**
    * Download content to a local temp file for processing by tools

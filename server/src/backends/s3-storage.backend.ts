@@ -2,6 +2,7 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  GetObjectCommandInput,
   HeadObjectCommand,
   ListObjectsV2Command,
   S3Client,
@@ -15,7 +16,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { ServeStrategy, StorageBackend } from 'src/interfaces/storage-backend.interface';
+import { ServeOptions, ServeStrategy, StorageBackend } from 'src/interfaces/storage-backend.interface';
+import { getContentDispositionHeader } from 'src/utils/file';
 
 class AsyncLimiter {
   private active = 0;
@@ -162,7 +164,7 @@ export class S3StorageBackend implements StorageBackend {
     return stream;
   }
 
-  async getServeStrategy(key: string, contentType: string): Promise<ServeStrategy> {
+  async getServeStrategy(key: string, options: ServeOptions): Promise<ServeStrategy> {
     if (this.serveMode === 'proxy') {
       const release = await this.proxyReadLimiter.acquire();
       try {
@@ -174,15 +176,21 @@ export class S3StorageBackend implements StorageBackend {
       }
     }
 
-    const url = await getSignedUrl(
-      this.client,
-      new GetObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        ResponseContentType: contentType,
-      }),
-      { expiresIn: this.presignedUrlExpiry },
-    );
+    const commandInput: GetObjectCommandInput = {
+      Bucket: this.bucket,
+      Key: key,
+      ResponseContentType: options.contentType,
+    };
+    if (options.fileName) {
+      commandInput.ResponseContentDisposition = getContentDispositionHeader(
+        options.disposition ?? 'inline',
+        options.fileName,
+      );
+    }
+
+    const url = await getSignedUrl(this.client, new GetObjectCommand(commandInput), {
+      expiresIn: this.presignedUrlExpiry,
+    });
 
     return { type: 'redirect', url };
   }

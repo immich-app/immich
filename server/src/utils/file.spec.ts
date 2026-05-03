@@ -240,6 +240,56 @@ describe('sendFile with ImmichMediaResponse', () => {
     expect(res.header).toHaveBeenCalledWith('Content-Disposition', `inline; filename*=UTF-8''my-photo.jpg`);
   });
 
+  it('should send file response with attachment disposition', async () => {
+    const res = {
+      set: vi.fn(),
+      header: vi.fn(),
+      headersSent: false,
+      sendFile: vi.fn((_path: string, _options: any, cb: (err?: Error) => void) => cb()),
+    } as any;
+    const next = vi.fn();
+
+    await sendFile(
+      res,
+      next,
+      () =>
+        new ImmichFileResponse({
+          path: '/tmp/test-file.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+          fileName: 'my photo.jpg',
+          disposition: 'attachment',
+        }),
+      mockLogger,
+    );
+
+    expect(res.header).toHaveBeenCalledWith('Content-Disposition', `attachment; filename*=UTF-8''my%20photo.jpg`);
+  });
+
+  it('should set expiry-safe cache-control for redirect responses', async () => {
+    const res = {
+      set: vi.fn(),
+      header: vi.fn(),
+      redirect: vi.fn(),
+      headersSent: false,
+    } as any;
+    const next = vi.fn();
+
+    await sendFile(
+      res,
+      next,
+      () =>
+        new ImmichRedirectResponse({
+          url: 'https://s3.example.com/signed-url',
+          cacheControl: CacheControl.PrivateWithoutCache,
+        }),
+      mockLogger,
+    );
+
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, no-cache, no-transform');
+    expect(res.redirect).toHaveBeenCalledWith('https://s3.example.com/signed-url');
+  });
+
   it('should reject file path with traversal segments', async () => {
     const res = {
       set: vi.fn(),

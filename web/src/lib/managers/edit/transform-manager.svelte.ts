@@ -189,6 +189,7 @@ class TransformManager implements EditToolManager {
     this.originalImageSize = { width: originalSize.width ?? 0, height: originalSize.height ?? 0 };
 
     this.imgElement = new Image();
+    this.imgElement.crossOrigin = 'anonymous';
 
     const imageURL = getAssetMediaUrl({
       id: asset.id,
