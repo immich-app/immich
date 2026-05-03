@@ -86,7 +86,7 @@
       ? AssetVisibility.Timeline
       : $mapSettings.includeArchived
         ? undefined
-        : AssetVisibility.Archive,
+        : AssetVisibility.Timeline,
     isFavorite: $mapSettings.onlyFavorites || undefined,
     withPartners: $mapSettings.withPartners || undefined,
     assetFilter: selectedClusterIds,
