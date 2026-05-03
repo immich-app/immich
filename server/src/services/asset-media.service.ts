@@ -116,25 +116,27 @@ export class AssetMediaService extends BaseService {
     return folder;
   }
 
-  async verifyUploadedFile(path: string, checksum: Buffer): Promise<void> {
+  async verifyUploadIntegrity(path: string, checksum: Buffer): Promise<void> {
     const { storage } = await this.getConfig({ withCache: true });
-    if (!storage.writeVerification) {
-      return;
+    if (storage.writeVerification) {
+      await this.verifyFileChecksum(path, checksum);
     }
+  }
 
+  async verifyFileChecksum(path: string, checksum: Buffer): Promise<void> {
     let onDiskHash: Buffer;
     try {
       onDiskHash = await this.cryptoRepository.hashFile(path);
     } catch {
-      this.logger.error('Upload write verification failed: could not re-read file after write', { path });
-      throw new InternalServerErrorException('Upload write verification failed: file could not be re-read after write');
+      this.logger.error('File checksum verification failed: could not generate file checksum', { path });
+      throw new InternalServerErrorException('File checksum verification failed: could not generate file checksum');
     }
 
     if (!onDiskHash.equals(checksum)) {
       const expected = checksum.toString('hex');
       const actual = onDiskHash.toString('hex');
-      this.logger.error('Upload write verification failed: hash mismatch', { path, expected, actual });
-      throw new InternalServerErrorException(`Upload write verification failed: expected ${expected}, got ${actual}`);
+      this.logger.error('File checksum verification failed: hash mismatch', { path, expected, actual });
+      throw new InternalServerErrorException(`File checksum verification failed: expected ${expected}, got ${actual}`);
     }
   }
 

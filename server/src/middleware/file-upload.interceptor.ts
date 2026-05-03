@@ -133,7 +133,7 @@ export class FileUploadInterceptor implements NestInterceptor {
         }
 
         this.assetService
-          .verifyUploadedFile(path, digest)
+          .verifyUploadIntegrity(path, digest)
           .then(() => callback(null, { path, size, checksum: digest }))
           .catch((verifyError) => {
             this.storageRepository.unlink(path).catch(() => {
