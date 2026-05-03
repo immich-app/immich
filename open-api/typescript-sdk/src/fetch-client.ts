@@ -3657,8 +3657,9 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, shared }: {
+export function getAllAlbums({ assetId, owned, shared }: {
     assetId?: string;
+    owned?: boolean;
     shared?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3666,6 +3667,7 @@ export function getAllAlbums({ assetId, shared }: {
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
+        owned,
         shared
     }))}`, {
         ...opts

@@ -201,6 +201,81 @@ export class AlbumRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAllAccessible(ownerId: string) {
+    return this.db
+      .selectFrom('album')
+      .selectAll('album')
+      .innerJoin('album_user', (join) =>
+        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', ownerId),
+      )
+      .where('album.deletedAt', 'is', null)
+      .where(({ exists, selectFrom }) =>
+        exists(
+          selectFrom('album_user as au')
+            .whereRef('au.albumId', '=', 'album.id')
+            .where('au.role', '=', sql.lit(AlbumUserRole.Owner)),
+        ),
+      )
+      .select(withAlbumUsers(ownerId))
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getSharedWithMe(ownerId: string) {
+    return this.db
+      .selectFrom('album')
+      .selectAll('album')
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album_user.albumId', '=', 'album.id')
+          .on('album_user.userId', '=', ownerId)
+          .on('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)),
+      )
+      .where('album.deletedAt', 'is', null)
+      .where(({ exists, selectFrom }) =>
+        exists(
+          selectFrom('album_user as au')
+            .whereRef('au.albumId', '=', 'album.id')
+            .where('au.role', '=', sql.lit(AlbumUserRole.Owner)),
+        ),
+      )
+      .select(withAlbumUsers(ownerId))
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getOwnedAndShared(ownerId: string) {
+    return this.db
+      .selectFrom('album')
+      .selectAll('album')
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album_user.albumId', '=', 'album.id')
+          .on('album_user.userId', '=', ownerId)
+          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner)),
+      )
+      .where('album.deletedAt', 'is', null)
+      .where(({ or, exists, selectFrom }) =>
+        or([
+          exists(
+            selectFrom('album_user as au')
+              .whereRef('au.albumId', '=', 'album.id')
+              .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
+          ),
+          exists(selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
+        ]),
+      )
+      .select(withAlbumUsers(ownerId))
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
   /**
    * Get albums shared with and shared by owner.
    */

@@ -188,7 +188,7 @@ describe('/albums', () => {
     it('should return the album collection including owned and shared', async () => {
       const { status, body } = await request(app).get('/albums').set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(4);
+      expect(body).toHaveLength(5);
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -218,6 +218,13 @@ describe('/albums', () => {
               { role: AlbumUserRole.Owner, user: expect.objectContaining({ id: user1.userId }) },
             ]),
             shared: false,
+          }),
+          expect.objectContaining({
+            albumName: user2SharedUser,
+            albumUsers: expect.arrayContaining([
+              { role: AlbumUserRole.Owner, user: expect.objectContaining({ id: user2.userId }) },
+            ]),
+            shared: true,
           }),
         ]),
       );
@@ -280,6 +287,63 @@ describe('/albums', () => {
           }),
         ]),
       );
+    });
+
+    it('should return only owned albums when filtered by owned=true', async () => {
+      const { status, body } = await request(app)
+        .get('/albums?owned=true')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toHaveLength(4);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ albumName: user1SharedEditorUser }),
+          expect.objectContaining({ albumName: user1SharedViewerUser }),
+          expect.objectContaining({ albumName: user1SharedLink }),
+          expect.objectContaining({ albumName: user1NotShared }),
+        ]),
+      );
+    });
+
+    it('should return only shared-with-me albums when filtered by owned=false', async () => {
+      const { status, body } = await request(app)
+        .get('/albums?owned=false')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toHaveLength(1);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            albumName: user2SharedUser,
+            albumUsers: expect.arrayContaining([
+              { role: AlbumUserRole.Owner, user: expect.objectContaining({ id: user2.userId }) },
+            ]),
+          }),
+        ]),
+      );
+    });
+
+    it('should return owned shared-out albums when filtered by owned=true&shared=true', async () => {
+      const { status, body } = await request(app)
+        .get('/albums?owned=true&shared=true')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toHaveLength(3);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ albumName: user1SharedEditorUser }),
+          expect.objectContaining({ albumName: user1SharedViewerUser }),
+          expect.objectContaining({ albumName: user1SharedLink }),
+        ]),
+      );
+    });
+
+    it('should return empty list when filtered by owned=false&shared=false', async () => {
+      const { status, body } = await request(app)
+        .get('/albums?owned=false&shared=false')
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toHaveLength(0);
     });
 
     it('should return the album collection filtered by assetId', async () => {

@@ -506,11 +506,14 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Filter albums containing this asset ID (ignores shared parameter)
+  ///   Filter albums containing this asset ID (ignores other parameters)
+  ///
+  /// * [bool] owned:
+  ///   Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter
   ///
   /// * [bool] shared:
-  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
-  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
+  ///   Filter by shared status: true = only shared, false = not shared, undefined = no filter
+  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? owned, bool? shared, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
 
@@ -523,6 +526,9 @@ class AlbumsApi {
 
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
+    if (owned != null) {
+      queryParams.addAll(_queryParams('', 'owned', owned));
     }
     if (shared != null) {
       queryParams.addAll(_queryParams('', 'shared', shared));
@@ -549,12 +555,15 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Filter albums containing this asset ID (ignores shared parameter)
+  ///   Filter albums containing this asset ID (ignores other parameters)
+  ///
+  /// * [bool] owned:
+  ///   Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter
   ///
   /// * [bool] shared:
-  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
-  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
-    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
+  ///   Filter by shared status: true = only shared, false = not shared, undefined = no filter
+  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? owned, bool? shared, }) async {
+    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, owned: owned, shared: shared, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
