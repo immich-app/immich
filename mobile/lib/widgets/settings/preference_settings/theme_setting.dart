@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
-import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/primary_color_setting.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
@@ -15,7 +14,7 @@ class ThemeSetting extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentTheme = useState(ref.read(immichThemeModeProvider));
+    final currentTheme = useState(ref.read(appConfigProvider.select((config) => config.theme.mode)));
     final isDarkTheme = useValueNotifier(currentTheme.value == ThemeMode.dark);
     final isSystemTheme = useValueNotifier(currentTheme.value == ThemeMode.system);
     final colorfulInterface = useValueNotifier(
@@ -23,13 +22,7 @@ class ThemeSetting extends HookConsumerWidget {
     );
 
     void onThemeChange(bool isDark) {
-      if (isDark) {
-        ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.dark;
-        currentTheme.value = ThemeMode.dark;
-      } else {
-        ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.light;
-        currentTheme.value = ThemeMode.light;
-      }
+      currentTheme.value = isDark ? ThemeMode.dark : ThemeMode.light;
       ref.read(metadataProvider).write(MetadataKey.themeMode, currentTheme.value);
     }
 
@@ -37,17 +30,14 @@ class ThemeSetting extends HookConsumerWidget {
       if (isSystem) {
         currentTheme.value = ThemeMode.system;
         isSystemTheme.value = true;
-        ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.system;
       } else {
         final currentSystemBrightness = context.platformBrightness;
         isSystemTheme.value = false;
         isDarkTheme.value = currentSystemBrightness == Brightness.dark;
         if (currentSystemBrightness == Brightness.light) {
           currentTheme.value = ThemeMode.light;
-          ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.light;
         } else if (currentSystemBrightness == Brightness.dark) {
           currentTheme.value = ThemeMode.dark;
-          ref.watch(immichThemeModeProvider.notifier).state = ThemeMode.dark;
         }
       }
       ref.read(metadataProvider).write(MetadataKey.themeMode, currentTheme.value);
