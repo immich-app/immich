@@ -28,6 +28,12 @@ class DriftBackupSettings extends ConsumerWidget {
     return SettingsSubPageScaffold(
       settings: [
         SettingGroupTitle(
+          title: "upload_priority".t(context: context),
+          icon: Icons.photo_library_outlined,
+        ),
+        const _PrioritizeImageUploadButton(),
+        const Divider(),
+        SettingGroupTitle(
           title: "network_requirements".t(context: context),
           icon: Icons.cell_tower,
         ),
@@ -231,6 +237,19 @@ class _UseWifiForUploadVideosButton extends ConsumerWidget {
       appSettingsEnum: AppSettingsEnum.useCellularForUploadVideos,
       titleKey: "videos",
       subtitleKey: "network_requirement_videos_upload",
+    );
+  }
+}
+
+class _PrioritizeImageUploadButton extends ConsumerWidget {
+  const _PrioritizeImageUploadButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const _SettingsSwitchTile(
+      appSettingsEnum: AppSettingsEnum.prioritizeImageUpload,
+      titleKey: "prioritize_image_upload",
+      subtitleKey: "prioritize_image_upload_description",
     );
   }
 }

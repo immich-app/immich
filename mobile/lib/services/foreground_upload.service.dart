@@ -74,7 +74,8 @@ class ForegroundUploadService {
   }
 
   Future<List<LocalAsset>> getBackupCandidates(String userId, {bool onlyHashed = true}) {
-    return _backupRepository.getCandidates(userId, onlyHashed: onlyHashed);
+    final prioritizeImages = _appSettingsService.getSetting(AppSettingsEnum.prioritizeImageUpload);
+    return _backupRepository.getCandidates(userId, onlyHashed: onlyHashed, prioritizeImages: prioritizeImages);
   }
 
   /// Bulk upload of backup candidates from selected albums
@@ -84,7 +85,8 @@ class ForegroundUploadService {
     UploadCallbacks callbacks = const UploadCallbacks(),
     bool useSequentialUpload = false,
   }) async {
-    final candidates = await _backupRepository.getCandidates(userId);
+    final prioritizeImages = _appSettingsService.getSetting(AppSettingsEnum.prioritizeImageUpload);
+    final candidates = await _backupRepository.getCandidates(userId, prioritizeImages: prioritizeImages);
     if (candidates.isEmpty) {
       return;
     }

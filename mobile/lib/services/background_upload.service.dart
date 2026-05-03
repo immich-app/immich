@@ -162,7 +162,8 @@ class BackgroundUploadService {
     await _storageRepository.clearCache();
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId);
+    final prioritizeImages = _appSettingsService.getSetting(AppSettingsEnum.prioritizeImageUpload);
+    final candidates = await _backupRepository.getCandidates(userId, prioritizeImages: prioritizeImages);
     if (candidates.isEmpty) {
       _logger.info("No new backup candidates found, finishing background upload");
       return;
