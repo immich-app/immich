@@ -6,8 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -35,7 +35,7 @@ class BootstrapErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext _) {
-    final immichTheme = defaultColorPreset.themeOfPreset;
+    final immichTheme = MetadataKey.primaryColor.defaultValue.themeOfPreset;
 
     return EasyLocalization(
       supportedLocales: locales.values.toList(),

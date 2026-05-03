@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
@@ -13,7 +14,11 @@ enum MetadataDomain<T extends Object> {
 }
 
 enum MetadataKey<T extends Object> {
+  // Theme
+  primaryColor<ImmichColorPreset>(.appConfig, 'theme.primaryColor', .indigo, _EnumCodec(ImmichColorPreset.values)),
   themeMode<ThemeMode>(.appConfig, 'theme.mode', .system, _EnumCodec(ThemeMode.values)),
+
+  // Log
   logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values));
 
   final MetadataDomain domain;

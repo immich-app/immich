@@ -1,11 +1,9 @@
-import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
   loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
-  primaryColor<String>(StoreKey.primaryColor, "primaryColor", defaultColorPresetName),
   dynamicTheme<bool>(StoreKey.dynamicTheme, "dynamicTheme", false),
   colorfulInterface<bool>(StoreKey.colorfulInterface, "colorfulInterface", true),
   tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),

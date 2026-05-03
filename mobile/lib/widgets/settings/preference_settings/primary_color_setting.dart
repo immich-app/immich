@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
@@ -18,16 +19,10 @@ class PrimaryColorSetting extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeProvider = ref.read(immichThemeProvider);
 
-    final primaryColorSetting = useAppSettingsState(AppSettingsEnum.primaryColor);
+    final currentPreset = ref.watch(appConfigProvider.select((config) => config.theme.primaryColor));
     final systemPrimaryColorSetting = useAppSettingsState(AppSettingsEnum.dynamicTheme);
 
-    final currentPreset = useValueNotifier(ref.read(immichThemePresetProvider));
     const tileSize = 55.0;
-
-    useValueChanged(
-      primaryColorSetting.value,
-      (_, __) => currentPreset.value = ImmichColorPreset.values.firstWhere((e) => e.name == primaryColorSetting.value),
-    );
 
     void popBottomSheet() {
       Future.delayed(const Duration(milliseconds: 200), () {
@@ -43,9 +38,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
     }
 
     onPrimaryColorChange(ImmichColorPreset colorPreset) {
-      primaryColorSetting.value = colorPreset.name;
-      ref.watch(immichThemePresetProvider.notifier).state = colorPreset;
-      ref.invalidate(immichThemeProvider);
+      ref.read(metadataProvider).write(MetadataKey.primaryColor, colorPreset);
 
       //turn off system color setting
       if (systemPrimaryColorSetting.value) {
@@ -140,7 +133,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                     topColor: theme.light.primary,
                     bottomColor: theme.dark.primary,
                     tileSize: tileSize,
-                    showSelector: currentPreset.value == preset && !systemPrimaryColorSetting.value,
+                    showSelector: currentPreset == preset && !systemPrimaryColorSetting.value,
                   ),
                 );
               }).toList(),

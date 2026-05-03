@@ -47,7 +47,7 @@ class MetadataRepository extends DriftDatabaseRepository {
 
   T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
 
-  Future<void> write<T extends Object>(MetadataKey<T> key, T value) async {
+  Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
     if (_read(key) == value) return;
 
     await _db
@@ -100,7 +100,9 @@ extension<T extends Object> on MetadataDomain<T> {
   void rebuild(MetadataRepository repo) {
     switch (this) {
       case .appConfig:
-        repo._appConfig = .new(theme: .new(mode: repo._read(.themeMode)));
+        repo._appConfig = .new(
+          theme: .new(mode: repo._read(.themeMode), primaryColor: repo._read(.primaryColor)),
+        );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));
     }

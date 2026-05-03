@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -55,6 +56,13 @@ Future<void> _migrateTo26(Drift drift) async {
     final logLevel = LogLevel.values.elementAtOrNull(logLevelIndex) ?? LogLevel.info;
     await LogService.I.setLogLevel(logLevel);
     migrated.add(StoreKey.legacyLogLevel.id);
+  }
+
+  final primaryColorIndex = await _readLegacyStoreInt(drift, StoreKey.legacyPrimaryColor.id);
+  if (primaryColorIndex != null) {
+    final primaryColor = ImmichColorPreset.values.elementAtOrNull(primaryColorIndex) ?? ImmichColorPreset.indigo;
+    await repo.write(MetadataKey.primaryColor, primaryColor);
+    migrated.add(StoreKey.legacyPrimaryColor.id);
   }
 
   await _deleteLegacyStoreRows(drift, migrated);
