@@ -4,7 +4,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
   loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
-  dynamicTheme<bool>(StoreKey.dynamicTheme, "dynamicTheme", false),
   colorfulInterface<bool>(StoreKey.colorfulInterface, "colorfulInterface", true),
   tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
   dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),

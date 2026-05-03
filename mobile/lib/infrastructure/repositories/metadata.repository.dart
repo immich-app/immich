@@ -101,7 +101,11 @@ extension<T extends Object> on MetadataDomain<T> {
     switch (this) {
       case .appConfig:
         repo._appConfig = .new(
-          theme: .new(mode: repo._read(.themeMode), primaryColor: repo._read(.primaryColor)),
+          theme: .new(
+            mode: repo._read(.themeMode),
+            primaryColor: repo._read(.primaryColor),
+            dynamicTheme: repo._read(.dynamicTheme),
+          ),
         );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));

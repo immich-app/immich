@@ -65,6 +65,13 @@ Future<void> _migrateTo26(Drift drift) async {
     migrated.add(StoreKey.legacyPrimaryColor.id);
   }
 
+  final dynamicTheme = await _readLegacyStoreInt(drift, StoreKey.legacyDynamicTheme.id);
+  if (dynamicTheme != null) {
+    final dynamicThemeValue = dynamicTheme != 0;
+    await repo.write(MetadataKey.dynamicTheme, dynamicThemeValue);
+    migrated.add(StoreKey.legacyDynamicTheme.id);
+  }
+
   await _deleteLegacyStoreRows(drift, migrated);
 }
 

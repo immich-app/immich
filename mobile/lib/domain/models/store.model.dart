@@ -49,7 +49,6 @@ enum StoreKey<T> {
   customHeaders<String>._(127),
 
   // theme settings
-  dynamicTheme<bool>._(129),
   colorfulInterface<bool>._(130),
 
   syncAlbums<bool>._(131),
@@ -95,6 +94,7 @@ enum StoreKey<T> {
 
   // Legacy keys that have been migrated to the new metadata store
   legacyPrimaryColor<String>._(128),
+  legacyDynamicTheme<bool>._(129),
   legacyThemeMode<String>._(102),
   legacyLogLevel<int>._(115);
 

@@ -14,9 +14,9 @@ final immichThemePresetProvider = StateProvider<ImmichColorPreset>(
   (ref) => ref.watch(appConfigProvider.select((config) => config.theme.primaryColor)),
 );
 
-final dynamicThemeSettingProvider = StateProvider<bool>((ref) {
-  return ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.dynamicTheme);
-});
+final dynamicThemeSettingProvider = StateProvider<bool>(
+  (ref) => ref.watch(appConfigProvider.select((config) => config.theme.dynamicTheme)),
+);
 
 final colorfulInterfaceSettingProvider = StateProvider<bool>((ref) {
   return ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.colorfulInterface);
