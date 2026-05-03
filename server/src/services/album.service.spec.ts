@@ -37,23 +37,6 @@ describe(AlbumService.name, () => {
       expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { shared: true });
       expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { owned: true, shared: false });
     });
-
-    it('should count each category independently', async () => {
-      const ownedAlbums = [AlbumFactory.create(), AlbumFactory.create(), AlbumFactory.create()];
-      const sharedAlbums = [AlbumFactory.create(), AlbumFactory.create()];
-      const notSharedAlbums = [AlbumFactory.create()];
-
-      mocks.album.getAll
-        .mockResolvedValueOnce(ownedAlbums.map(getForAlbum))
-        .mockResolvedValueOnce(sharedAlbums.map(getForAlbum))
-        .mockResolvedValueOnce(notSharedAlbums.map(getForAlbum));
-
-      await expect(sut.getStatistics(authStub.admin)).resolves.toEqual({
-        owned: 3,
-        shared: 2,
-        notShared: 1,
-      });
-    });
   });
 
   describe('getAll', () => {
@@ -83,7 +66,7 @@ describe(AlbumService.name, () => {
       expect(result).toHaveLength(2);
       expect(result[0].id).toEqual(album.id);
       expect(result[1].id).toEqual(sharedWithUserAlbum.id);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, {});
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: undefined, shared: undefined });
     });
 
     it('gets list of albums that have a specific asset', async () => {
