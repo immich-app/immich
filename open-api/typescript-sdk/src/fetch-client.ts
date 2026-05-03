@@ -2558,6 +2558,10 @@ export type SystemConfigServerDto = {
     /** Public users */
     publicUsers: boolean;
 };
+export type SystemConfigStorageDto = {
+    /** Verify file writes */
+    writeVerification: boolean;
+};
 export type SystemConfigStorageTemplateDto = {
     /** Enabled */
     enabled: boolean;
@@ -2608,6 +2612,7 @@ export type SystemConfigDto = {
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;
+    storage: SystemConfigStorageDto;
     storageTemplate: SystemConfigStorageTemplateDto;
     templates: SystemConfigTemplatesDto;
     theme: SystemConfigThemeDto;

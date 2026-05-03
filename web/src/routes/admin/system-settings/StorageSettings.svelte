@@ -14,7 +14,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
-      <div class="ms-4 mt-4 flex flex-col gap-4">
+      <div class="ms-4 mt-4">
         <SettingSwitch
           title={$t('admin.storage_write_verification')}
           subtitle={$t('admin.storage_write_verification_description')}
@@ -23,7 +23,9 @@
           isEdited={configToEdit.storage.writeVerification !== config.storage.writeVerification}
         />
 
-        <SettingButtonsRow bind:configToEdit keys={['storage']} {disabled} />
+        <div class="ms-4">
+          <SettingButtonsRow bind:configToEdit keys={['storage']} {disabled} />
+        </div>
       </div>
     </form>
   </div>
