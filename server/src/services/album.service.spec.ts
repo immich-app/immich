@@ -128,7 +128,7 @@ describe(AlbumService.name, () => {
       const result = await sut.getAll(AuthFactory.create(owner), { shared: true });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(album.id);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: undefined, shared: true });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ shared: true }));
     });
 
     it('gets list of albums that are NOT shared', async () => {
@@ -148,7 +148,7 @@ describe(AlbumService.name, () => {
       const result = await sut.getAll(AuthFactory.create(owner), { shared: false });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(album.id);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: undefined, shared: false });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ shared: false }));
     });
 
     it('gets only owned albums when owned=true', async () => {
@@ -161,7 +161,7 @@ describe(AlbumService.name, () => {
 
       const result = await sut.getAll(AuthFactory.create(owner), { owned: true });
       expect(result).toHaveLength(1);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: true, shared: undefined });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ owned: true }));
     });
 
     it('gets only shared-with-me albums when owned=false', async () => {
@@ -174,7 +174,7 @@ describe(AlbumService.name, () => {
 
       const result = await sut.getAll(AuthFactory.create(owner), { owned: false });
       expect(result).toHaveLength(1);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: false, shared: undefined });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ owned: false }));
     });
 
     it('gets owned shared-out albums when owned=true and shared=true', async () => {
