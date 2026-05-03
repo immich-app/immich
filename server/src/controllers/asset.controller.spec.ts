@@ -201,29 +201,48 @@ describe(AssetController.name, () => {
     });
 
     it('should reject invalid gps coordinates', async () => {
-      for (const test of [
-        { latitude: 12 },
-        { longitude: 12 },
-        { latitude: 12, longitude: 'abc' },
-        { latitude: 'abc', longitude: 12 },
-        { latitude: null, longitude: 12 },
-        { latitude: 12, longitude: null },
-        { latitude: 91, longitude: 12 },
-        { latitude: -91, longitude: 12 },
-        { latitude: 12, longitude: -181 },
-        { latitude: 12, longitude: 181 },
-      ]) {
+      for (const [test, errors] of [
+        [{ latitude: 12 }, [{ path: [], message: 'Latitude and longitude must be provided together' }]],
+        [{ longitude: 12 }, [{ path: [], message: 'Latitude and longitude must be provided together' }]],
+        [
+          { latitude: 12, longitude: 'abc' },
+          [{ path: ['longitude'], message: 'Invalid input: expected number, received string' }],
+        ],
+        [
+          { latitude: 'abc', longitude: 12 },
+          [{ path: ['latitude'], message: 'Invalid input: expected number, received string' }],
+        ],
+        [
+          { latitude: null, longitude: 12 },
+          [{ path: ['latitude'], message: 'Invalid input: expected number, received null' }],
+        ],
+        [
+          { latitude: 12, longitude: null },
+          [{ path: ['longitude'], message: 'Invalid input: expected number, received null' }],
+        ],
+        [{ latitude: 91, longitude: 12 }, [{ path: ['latitude'], message: 'Too big: expected number to be <=90' }]],
+        [{ latitude: -91, longitude: 12 }, [{ path: ['latitude'], message: 'Too small: expected number to be >=-90' }]],
+        [
+          { latitude: 12, longitude: -181 },
+          [{ path: ['longitude'], message: 'Too small: expected number to be >=-180' }],
+        ],
+        [{ latitude: 12, longitude: 181 }, [{ path: ['longitude'], message: 'Too big: expected number to be <=180' }]],
+      ] as const) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
-        expect(body).toEqual(factory.responses.badRequest());
+        expect(body).toEqual(factory.responses.validationError(errors));
       }
     });
 
     it('should reject invalid rating', async () => {
-      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: -2 }]) {
+      for (const [test, errors] of [
+        [{ rating: 7 }, [{ path: ['rating'], message: 'Too big: expected number to be <=5' }]],
+        [{ rating: 3.5 }, [{ path: ['rating'], message: 'Invalid input: expected int, received number' }]],
+        [{ rating: -2 }, [{ path: ['rating'], message: 'Too small: expected number to be >=-1' }]],
+      ] as const) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
-        expect(body).toEqual(factory.responses.badRequest());
+        expect(body).toEqual(factory.responses.validationError(errors));
       }
     });
 

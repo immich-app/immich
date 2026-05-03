@@ -28,19 +28,27 @@ describe(AuthController.name, () => {
     it('should require an email address', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ name, password });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received undefined' }]),
+      );
     });
 
     it('should require a password', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ name, email });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['password'], message: 'Invalid input: expected string, received undefined' },
+        ]),
+      );
     });
 
     it('should require a name', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ email, password });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['name'], message: 'Invalid input: expected string, received undefined' }]),
+      );
     });
 
     it('should require a valid email', async () => {
@@ -48,7 +56,9 @@ describe(AuthController.name, () => {
         .post('/auth/admin-sign-up')
         .send({ name, email: 'immich', password });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received string' }]),
+      );
     });
 
     it('should transform email to lower case', async () => {
