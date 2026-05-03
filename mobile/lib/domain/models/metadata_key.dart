@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
@@ -15,13 +18,25 @@ enum MetadataDomain<T extends Object> {
 
 enum MetadataKey<T extends Object> {
   // Theme
-  primaryColor<ImmichColorPreset>(.appConfig, 'theme.primaryColor', .indigo, _EnumCodec(ImmichColorPreset.values)),
+  themePrimaryColor<ImmichColorPreset>(.appConfig, 'theme.primaryColor', .indigo, _EnumCodec(ImmichColorPreset.values)),
   themeMode<ThemeMode>(.appConfig, 'theme.mode', .system, _EnumCodec(ThemeMode.values)),
-  dynamicTheme<bool>(.appConfig, 'theme.dynamicTheme', false),
-  colorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
+  themeDynamic<bool>(.appConfig, 'theme.dynamic', false),
+  themeColorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
 
   // Log
-  logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values));
+  logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values)),
+
+  // Cleanup
+  cleanupKeepFavorites<bool>(.appConfig, 'cleanup.keepFavorites', true),
+  cleanupKeepMediaType<AssetKeepType>(
+    .appConfig,
+    'cleanup.keepMediaType',
+    AssetKeepType.none,
+    _EnumCodec(AssetKeepType.values),
+  ),
+  cleanupKeepAlbumIds<List<String>>(.appConfig, 'cleanup.keepAlbumIds', [], _ListCodec(_PrimitiveCodec.string)),
+  cleanupCutoffDaysAgo<int>(.appConfig, 'cleanup.cutoffDaysAgo', -1),
+  cleanupDefaultsInitialized<bool>(.appConfig, 'cleanup.defaultsInitialized', false);
 
   final MetadataDomain domain;
   final String name;
@@ -86,6 +101,33 @@ final class _DateTimeCodec extends _MetadataCodec<DateTime> {
 
   @override
   DateTime? decode(String raw) => DateTime.tryParse(raw);
+}
+
+final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
+  final _MetadataCodec<T> _elementCodec;
+
+  const _ListCodec(this._elementCodec);
+
+  @override
+  String encode(List<T> value) => jsonEncode(value.map(_elementCodec.encode).toList());
+
+  @override
+  List<T>? decode(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return null;
+      final result = <T>[];
+      for (final item in decoded) {
+        if (item is! String) return null;
+        final element = _elementCodec.decode(item);
+        if (element == null) return null;
+        result.add(element);
+      }
+      return result;
+    } on FormatException {
+      return null;
+    }
+  }
 }
 
 final class _PrimitiveCodec<T extends Object> extends _MetadataCodec<T> {

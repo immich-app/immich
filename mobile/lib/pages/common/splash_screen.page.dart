@@ -35,7 +35,7 @@ class BootstrapErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext _) {
-    final immichTheme = MetadataKey.primaryColor.defaultValue.themeOfPreset;
+    final immichTheme = MetadataKey.themePrimaryColor.defaultValue.themeOfPreset;
 
     return EasyLocalization(
       supportedLocales: locales.values.toList(),

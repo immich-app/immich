@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
@@ -23,7 +22,7 @@ class ThemeSetting extends HookConsumerWidget {
 
     void onThemeChange(bool isDark) {
       currentTheme.value = isDark ? ThemeMode.dark : ThemeMode.light;
-      ref.read(metadataProvider).write(MetadataKey.themeMode, currentTheme.value);
+      ref.read(metadataProvider).write(.themeMode, currentTheme.value);
     }
 
     void onSystemThemeChange(bool isSystem) {
@@ -40,11 +39,11 @@ class ThemeSetting extends HookConsumerWidget {
           currentTheme.value = ThemeMode.dark;
         }
       }
-      ref.read(metadataProvider).write(MetadataKey.themeMode, currentTheme.value);
+      ref.read(metadataProvider).write(.themeMode, currentTheme.value);
     }
 
     void onSurfaceColorSettingChange(bool useColorfulInterface) {
-      ref.read(metadataProvider).write(MetadataKey.colorfulInterface, useColorfulInterface);
+      ref.read(metadataProvider).write(.themeColorfulInterface, useColorfulInterface);
       colorfulInterface.value = useColorfulInterface;
     }
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -43,9 +44,29 @@ Future<void> _migrateTo26(Drift drift) async {
   final migrator = _StoreMigrator(drift);
   await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
   await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, MetadataKey.logLevel, LogLevel.values);
-  await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, MetadataKey.primaryColor, ImmichColorPreset.values);
-  await migrator.migrateBool(StoreKey.legacyDynamicTheme, MetadataKey.dynamicTheme);
-  await migrator.migrateBool(StoreKey.legacyColorfulInterface, MetadataKey.colorfulInterface);
+  await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, MetadataKey.themePrimaryColor, ImmichColorPreset.values);
+  await migrator.migrateBool(StoreKey.legacyDynamicTheme, MetadataKey.themeDynamic);
+  await migrator.migrateBool(StoreKey.legacyColorfulInterface, MetadataKey.themeColorfulInterface);
+  final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
+  if (cleanupKeepAlbumIds != null) {
+    final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
+    await drift.metadataEntity.insertOnConflictUpdate(
+      MetadataEntityCompanion.insert(
+        key: MetadataKey.cleanupKeepAlbumIds.key,
+        value: MetadataKey.cleanupKeepAlbumIds.encode(ids),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await migrator.deleteLegacyStoreRows([StoreKey.legacyCleanupKeepAlbumIds.id]);
+  }
+  await migrator.migrateBool(StoreKey.legacyCleanupKeepFavorites, MetadataKey.cleanupKeepFavorites);
+  await migrator.migrateEnumIndex(
+    StoreKey.legacyCleanupKeepMediaType,
+    MetadataKey.cleanupKeepMediaType,
+    AssetKeepType.values,
+  );
+  await migrator.migrateInt(StoreKey.legacyCleanupCutoffDaysAgo, MetadataKey.cleanupCutoffDaysAgo);
+  await migrator.migrateBool(StoreKey.legacyCleanupDefaultsInitialized, MetadataKey.cleanupDefaultsInitialized);
   await migrator.complete();
 }
 
@@ -57,7 +78,7 @@ class _StoreMigrator {
   _StoreMigrator(this._db);
 
   Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, MetadataKey<T> newKey, List<T> values) async {
-    final index = await _readLegacyStoreInt(legacyKey.id);
+    final index = await readLegacyStoreInt(legacyKey.id);
     if (index == null) return;
 
     final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
@@ -70,7 +91,7 @@ class _StoreMigrator {
     MetadataKey<T> newKey,
     List<T> values,
   ) async {
-    final name = await _readLegacyStoreString(legacyKey.id);
+    final name = await readLegacyStoreString(legacyKey.id);
     if (name == null) return;
 
     final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
@@ -79,11 +100,19 @@ class _StoreMigrator {
   }
 
   Future<void> migrateBool(StoreKey<bool> legacyKey, MetadataKey<bool> newKey) async {
-    final intValue = await _readLegacyStoreInt(legacyKey.id);
+    final intValue = await readLegacyStoreInt(legacyKey.id);
     if (intValue == null) return;
 
     final boolValue = intValue != 0;
     _cache[newKey] = boolValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateInt(StoreKey<int> legacyKey, MetadataKey<int> newKey) async {
+    final intValue = await readLegacyStoreInt(legacyKey.id);
+    if (intValue == null) return;
+
+    _cache[newKey] = intValue;
     _migratedStoreIds.add(legacyKey.id);
   }
 
@@ -97,20 +126,20 @@ class _StoreMigrator {
         );
       }
     });
-    await _deleteLegacyStoreRows(_migratedStoreIds);
+    await deleteLegacyStoreRows(_migratedStoreIds);
   }
 
-  Future<String?> _readLegacyStoreString(int id) async {
+  Future<String?> readLegacyStoreString(int id) async {
     final row = await (_db.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.stringValue;
   }
 
-  Future<int?> _readLegacyStoreInt(int id) async {
+  Future<int?> readLegacyStoreInt(int id) async {
     final row = await (_db.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
     return row?.intValue;
   }
 
-  Future<void> _deleteLegacyStoreRows(List<int> ids) async {
+  Future<void> deleteLegacyStoreRows(List<int> ids) async {
     if (ids.isEmpty) return;
     await (_db.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
   }

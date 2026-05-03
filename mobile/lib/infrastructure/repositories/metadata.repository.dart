@@ -103,9 +103,16 @@ extension<T extends Object> on MetadataDomain<T> {
         repo._appConfig = .new(
           theme: .new(
             mode: repo._read(.themeMode),
-            primaryColor: repo._read(.primaryColor),
-            dynamicTheme: repo._read(.dynamicTheme),
-            colorfulInterface: repo._read(.colorfulInterface),
+            primaryColor: repo._read(.themePrimaryColor),
+            dynamicTheme: repo._read(.themeDynamic),
+            colorfulInterface: repo._read(.themeColorfulInterface),
+          ),
+          cleanup: .new(
+            keepFavorites: repo._read(.cleanupKeepFavorites),
+            keepMediaType: repo._read(.cleanupKeepMediaType),
+            keepAlbumIds: repo._read(.cleanupKeepAlbumIds),
+            cutoffDaysAgo: repo._read(.cleanupCutoffDaysAgo),
+            defaultsInitialized: repo._read(.cleanupDefaultsInitialized),
           ),
         );
       case .systemConfig:
