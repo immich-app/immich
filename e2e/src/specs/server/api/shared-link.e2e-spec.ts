@@ -342,9 +342,7 @@ describe('/shared-links', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.validationError([
-          { path: [], message: 'Invalid input: expected object, received undefined' },
-        ]),
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
       );
     });
 
