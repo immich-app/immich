@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
@@ -18,9 +16,9 @@ final dynamicThemeSettingProvider = StateProvider<bool>(
   (ref) => ref.watch(appConfigProvider.select((config) => config.theme.dynamicTheme)),
 );
 
-final colorfulInterfaceSettingProvider = StateProvider<bool>((ref) {
-  return ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.colorfulInterface);
-});
+final colorfulInterfaceSettingProvider = StateProvider<bool>(
+  (ref) => ref.watch(appConfigProvider.select((config) => config.theme.colorfulInterface)),
+);
 
 // Provider for current selected theme
 final immichThemeProvider = StateProvider<ImmichTheme>((ref) {

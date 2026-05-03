@@ -17,7 +17,8 @@ enum MetadataKey<T extends Object> {
   // Theme
   primaryColor<ImmichColorPreset>(.appConfig, 'theme.primaryColor', .indigo, _EnumCodec(ImmichColorPreset.values)),
   themeMode<ThemeMode>(.appConfig, 'theme.mode', .system, _EnumCodec(ThemeMode.values)),
-  dynamicTheme<bool>(.appConfig, 'dynamicTheme', false),
+  dynamicTheme<bool>(.appConfig, 'theme.dynamicTheme', false),
+  colorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
 
   // Log
   logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values));

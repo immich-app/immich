@@ -6,10 +6,9 @@ import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 
@@ -41,51 +40,78 @@ Future<void> _migrateTo25() async {
 }
 
 Future<void> _migrateTo26(Drift drift) async {
-  final repo = MetadataRepository.instance;
-  final migrated = <int>[];
-
-  final themeMode = await _readLegacyStoreString(drift, StoreKey.legacyThemeMode.id);
-  if (themeMode != null) {
-    final mode = ThemeMode.values.firstWhere((m) => m.name == themeMode, orElse: () => ThemeMode.system);
-    await repo.write(MetadataKey.themeMode, mode);
-    migrated.add(StoreKey.legacyThemeMode.id);
-  }
-
-  final logLevelIndex = await _readLegacyStoreInt(drift, StoreKey.legacyLogLevel.id);
-  if (logLevelIndex != null) {
-    final logLevel = LogLevel.values.elementAtOrNull(logLevelIndex) ?? LogLevel.info;
-    await LogService.I.setLogLevel(logLevel);
-    migrated.add(StoreKey.legacyLogLevel.id);
-  }
-
-  final primaryColorIndex = await _readLegacyStoreInt(drift, StoreKey.legacyPrimaryColor.id);
-  if (primaryColorIndex != null) {
-    final primaryColor = ImmichColorPreset.values.elementAtOrNull(primaryColorIndex) ?? ImmichColorPreset.indigo;
-    await repo.write(MetadataKey.primaryColor, primaryColor);
-    migrated.add(StoreKey.legacyPrimaryColor.id);
-  }
-
-  final dynamicTheme = await _readLegacyStoreInt(drift, StoreKey.legacyDynamicTheme.id);
-  if (dynamicTheme != null) {
-    final dynamicThemeValue = dynamicTheme != 0;
-    await repo.write(MetadataKey.dynamicTheme, dynamicThemeValue);
-    migrated.add(StoreKey.legacyDynamicTheme.id);
-  }
-
-  await _deleteLegacyStoreRows(drift, migrated);
+  final migrator = _StoreMigrator(drift);
+  await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
+  await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, MetadataKey.logLevel, LogLevel.values);
+  await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, MetadataKey.primaryColor, ImmichColorPreset.values);
+  await migrator.migrateBool(StoreKey.legacyDynamicTheme, MetadataKey.dynamicTheme);
+  await migrator.migrateBool(StoreKey.legacyColorfulInterface, MetadataKey.colorfulInterface);
+  await migrator.complete();
 }
 
-Future<String?> _readLegacyStoreString(Drift drift, int id) async {
-  final row = await (drift.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
-  return row?.stringValue;
-}
+class _StoreMigrator {
+  final Drift _db;
+  final Map<MetadataKey<Object>, Object> _cache = {};
+  final List<int> _migratedStoreIds = [];
 
-Future<int?> _readLegacyStoreInt(Drift drift, int id) async {
-  final row = await (drift.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
-  return row?.intValue;
-}
+  _StoreMigrator(this._db);
 
-Future<void> _deleteLegacyStoreRows(Drift drift, List<int> ids) async {
-  if (ids.isEmpty) return;
-  await (drift.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
+  Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, MetadataKey<T> newKey, List<T> values) async {
+    final index = await _readLegacyStoreInt(legacyKey.id);
+    if (index == null) return;
+
+    final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
+    _cache[newKey] = enumValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateEnumName<T extends Enum>(
+    StoreKey<String> legacyKey,
+    MetadataKey<T> newKey,
+    List<T> values,
+  ) async {
+    final name = await _readLegacyStoreString(legacyKey.id);
+    if (name == null) return;
+
+    final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
+    _cache[newKey] = enumValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateBool(StoreKey<bool> legacyKey, MetadataKey<bool> newKey) async {
+    final intValue = await _readLegacyStoreInt(legacyKey.id);
+    if (intValue == null) return;
+
+    final boolValue = intValue != 0;
+    _cache[newKey] = boolValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> complete() async {
+    await _db.batch((batch) {
+      for (final entry in _cache.entries) {
+        batch.insert(
+          _db.metadataEntity,
+          MetadataEntityCompanion(key: Value(entry.key.key), value: Value(entry.key.encode(entry.value))),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+    await _deleteLegacyStoreRows(_migratedStoreIds);
+  }
+
+  Future<String?> _readLegacyStoreString(int id) async {
+    final row = await (_db.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row?.stringValue;
+  }
+
+  Future<int?> _readLegacyStoreInt(int id) async {
+    final row = await (_db.storeEntity.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row?.intValue;
+  }
+
+  Future<void> _deleteLegacyStoreRows(List<int> ids) async {
+    if (ids.isEmpty) return;
+    await (_db.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
+  }
 }

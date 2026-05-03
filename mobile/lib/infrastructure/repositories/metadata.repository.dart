@@ -105,6 +105,7 @@ extension<T extends Object> on MetadataDomain<T> {
             mode: repo._read(.themeMode),
             primaryColor: repo._read(.primaryColor),
             dynamicTheme: repo._read(.dynamicTheme),
+            colorfulInterface: repo._read(.colorfulInterface),
           ),
         );
       case .systemConfig:
