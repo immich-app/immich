@@ -184,7 +184,7 @@ This protects against silent data corruption on storage backends with weak write
 
 **Default:** off.
 
-**Performance impact:** enabling verification adds a full sequential re-read of every newly uploaded file.
+**Performance impact:** enabling verification adds a full sequential re-read of the newly uploaded file.
 
 ## Storage Template
 
