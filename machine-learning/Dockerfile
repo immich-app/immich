@@ -134,8 +134,7 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE} \
     VIRTUAL_ENV=/opt/venv \
-    MACHINE_LEARNING_CACHE_FOLDER=/cache \
-    TZ=${TZ}
+    MACHINE_LEARNING_CACHE_FOLDER=/cache
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \
