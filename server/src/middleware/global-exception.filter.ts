@@ -47,10 +47,9 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
         }
       }
 
-      // remove fields that duplicate the HTTP response line
+      // remove fields injected by NestJS that duplicate the HTTP response line
       delete body['error'];
       delete body['statusCode'];
-      delete body['errors'];
       return { status, body };
     }
 
