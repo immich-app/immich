@@ -15,7 +15,7 @@ export class MapService extends BaseService {
 
     const albumIds: string[] = [];
     if (options.withSharedAlbums) {
-      const albums = await this.albumRepository.getAll(auth.user.id, {});
+      const albums = await this.albumRepository.getAll(auth.user.id, { select: ['id'] });
       albumIds.push(...albums.map((album) => album.id));
     }
 

@@ -13,7 +13,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserCreateDto } from 'src/dtos/album.dto';
+import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto';
 import { AlbumUserRole } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
@@ -194,11 +194,9 @@ export class AlbumRepository {
     );
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, {}] })
-  getAll(ownerId: string, { owned, shared }: { owned?: boolean; shared?: boolean }) {
+  private buildAlbumBaseQuery(ownerId: string, { owned, shared }: { owned?: boolean; shared?: boolean }) {
     return this.db
       .selectFrom('album')
-      .selectAll('album')
       .innerJoin('album_user', (join) =>
         join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', ownerId),
       )
@@ -213,7 +211,21 @@ export class AlbumRepository {
       .$if(owned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
       .$if(owned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
       .$if(shared === true, (qb) => qb.where(hasAlbumSharedStatus))
-      .$if(shared === false, (qb) => qb.where((eb) => eb.not(hasAlbumSharedStatus(eb))))
+      .$if(shared === false, (qb) => qb.where((eb) => eb.not(hasAlbumSharedStatus(eb))));
+  }
+
+  getAll(ownerId: string, options: { owned?: boolean; shared?: boolean; select: ['id'] }): Promise<Pick<Selectable<AlbumTable>, 'id'>[]>;
+  getAll(ownerId: string, options: { owned?: boolean; shared?: boolean }): Promise<MapAlbumDto[]>;
+  @GenerateSql({ params: [DummyValue.UUID, {}] }, { params: [DummyValue.UUID, { select: ['id'] }] })
+  getAll(ownerId: string, { owned, shared, select }: { owned?: boolean; shared?: boolean; select?: string[] }) {
+    if (select) {
+      return this.buildAlbumBaseQuery(ownerId, { owned, shared })
+        .select('album.id')
+        .orderBy('album.createdAt', 'desc')
+        .execute();
+    }
+    return this.buildAlbumBaseQuery(ownerId, { owned, shared })
+      .selectAll('album')
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')

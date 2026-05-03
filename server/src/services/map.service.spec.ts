@@ -82,15 +82,15 @@ describe(MapService.name, () => {
       };
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
-      mocks.album.getAll.mockResolvedValue([
-        getForAlbum(AlbumFactory.create()),
-        getForAlbum(AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build()),
-      ]);
+      const album1 = AlbumFactory.create();
+      const album2 = AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build();
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album1), getForAlbum(album2)]);
 
       const markers = await sut.getMapMarkers(auth, { withSharedAlbums: true });
 
       expect(markers).toHaveLength(1);
       expect(markers[0]).toEqual(marker);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(auth.user.id, { select: ['id'] });
     });
   });
 
