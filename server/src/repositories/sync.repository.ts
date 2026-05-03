@@ -170,7 +170,7 @@ class AlbumSync extends BaseSync {
     const userId = options.userId;
     return this.upsertQuery('album', options)
       .distinctOn(['album.id', 'album.updateId'])
-      .leftJoin('album_user as album_users', 'album.id', 'album_users.albumId')
+      .innerJoin('album_user as album_users', 'album.id', 'album_users.albumId')
       .where('album_users.userId', '=', userId)
       .select([
         'album.id',
@@ -180,7 +180,7 @@ class AlbumSync extends BaseSync {
         'album.updatedAt',
         'album.albumThumbnailAssetId as thumbnailAssetId',
         'album.isActivityEnabled',
-        'album.order',
+        'album_users.order as order',
         'album.updateId',
       ])
       .stream();

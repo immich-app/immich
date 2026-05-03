@@ -14,7 +14,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -82,6 +82,23 @@ const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =
       .where('album_user.userId', '=', ownerId),
   );
 
+const withOrder = (authUserId?: string) => (eb: ExpressionBuilder<DB, 'album'>) => {
+  const defaultOrder = sql<AssetOrder>`${AssetOrder.Desc}`;
+
+  return authUserId
+    ? eb.fn
+        .coalesce(
+          eb
+            .selectFrom('album_user')
+            .select('album_user.order')
+            .whereRef('album_user.albumId', '=', 'album.id')
+            .where('album_user.userId', '=', authUserId),
+          defaultOrder,
+        )
+        .as('order')
+    : defaultOrder.as('order');
+};
+
 @Injectable()
 export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -95,6 +112,7 @@ export class AlbumRepository {
       .where('album.id', '=', id)
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(authUserId))
+      .select(withOrder(authUserId))
       .select(withSharedLink)
       .$if(options.withAssets, (eb) => eb.select(withAssets))
       .$narrowType<{ assets: NotNull }>()
@@ -118,6 +136,7 @@ export class AlbumRepository {
       .where('album_asset.assetId', '=', assetId)
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(ownerId))
+      .select(withOrder(ownerId))
       .orderBy('album.createdAt', 'desc')
       .execute();
   }
@@ -195,6 +214,7 @@ export class AlbumRepository {
           .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner)),
       )
       .where('album.deletedAt', 'is', null)
+      .select('album_user.order as order')
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
@@ -239,6 +259,7 @@ export class AlbumRepository {
       )
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(ownerId))
+      .select(withOrder(ownerId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
       .execute();
@@ -271,6 +292,7 @@ export class AlbumRepository {
       .where(({ not, exists, selectFrom }) =>
         not(exists(selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id'))),
       )
+      .select('album_user.order as order')
       .select(withSharedLink)
       .select(withAlbumUsers(ownerId))
       .orderBy('album.createdAt', 'desc')
@@ -350,13 +372,13 @@ export class AlbumRepository {
     params: [
       { albumName: DummyValue.STRING },
       [],
-      [{ userId: DummyValue.UUID, role: AlbumUserRole.Owner }, DummyValue.UUID],
+      [{ userId: DummyValue.UUID, role: AlbumUserRole.Owner, order: AssetOrder.Desc }, DummyValue.UUID],
     ],
   })
   async create(
     album: Insertable<AlbumTable>,
     assetIds: string[],
-    albumUsers: AlbumUserCreateDto[],
+    albumUsers: (AlbumUserCreateDto & { order?: AssetOrder })[],
     authUserId: string,
   ) {
     if (!albumUsers.some((u) => u.role === AlbumUserRole.Owner)) {
@@ -365,12 +387,14 @@ export class AlbumRepository {
 
     const userIds = albumUsers.map((u) => u.userId);
     const roles = albumUsers.map((u) => u.role);
+    const orders = albumUsers.map((u) => u.order ?? AssetOrder.Desc);
 
     const result = await this.db
       .with('album', (db) => db.insertInto('album').values(album).returningAll())
       .with('album_user', (db) =>
         db
           .insertInto('album_user')
+          .columns(['albumId', 'userId', 'role', 'order'])
           .expression((eb) =>
             eb
               .selectFrom('album')
@@ -378,13 +402,15 @@ export class AlbumRepository {
                 ref('album.id').as('albumId'),
                 sql`unnest(${userIds}::uuid[])`.as('userId'),
                 sql`unnest(${roles}::album_user_role_enum[])`.as('role'),
+                sql`unnest(${orders}::varchar[])`.as('order'),
               ]),
           )
-          .returning(['album_user.albumId', 'album_user.userId', 'album_user.role']),
+          .returning(['album_user.albumId', 'album_user.userId', 'album_user.role', 'album_user.order']),
       )
       .with('album_asset', (db) =>
         db
           .insertInto('album_asset')
+          .columns(['albumId', 'assetId'])
           .expression((eb) =>
             eb
               .selectFrom('album')
@@ -396,6 +422,7 @@ export class AlbumRepository {
       .selectFrom('album')
       .selectAll('album')
       .select(withAlbumUsers(authUserId))
+      .select(withOrder(authUserId))
       .select(withAssets)
       .$narrowType<{ assets: NotNull }>()
       .executeTakeFirstOrThrow();
@@ -403,15 +430,27 @@ export class AlbumRepository {
     return result;
   }
 
-  update(id: string, album: Updateable<AlbumTable>, authUserId: string) {
-    return this.db
-      .updateTable('album')
-      .set(album)
-      .where('album.id', '=', id)
-      .returningAll('album')
-      .returning(withSharedLink)
-      .returning(withAlbumUsers(authUserId))
-      .executeTakeFirstOrThrow();
+  update(id: string, album: Updateable<AlbumTable>, authUserId: string, order?: AssetOrder) {
+    return this.db.transaction().execute(async (db) => {
+      if (order !== undefined) {
+        await db
+          .updateTable('album_user')
+          .set({ order })
+          .where('albumId', '=', id)
+          .where('userId', '=', authUserId)
+          .execute();
+      }
+
+      return db
+        .updateTable('album')
+        .set(album)
+        .where('album.id', '=', id)
+        .returningAll('album')
+        .returning(withSharedLink)
+        .returning(withAlbumUsers(authUserId))
+        .returning(withOrder(authUserId))
+        .executeTakeFirstOrThrow();
+    });
   }
 
   async delete(id: string): Promise<void> {

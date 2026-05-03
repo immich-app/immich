@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Album, columns } from 'src/database';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole, SharedLinkType } from 'src/enum';
+import { AlbumUserRole, AssetOrder, SharedLinkType } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -55,7 +55,15 @@ const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) => {
 const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
   return eb
     .selectFrom('album')
+    .leftJoin('album_user as album_order', (join) =>
+      join
+        .onRef('album_order.albumId', '=', 'album.id')
+        .onRef('album_order.userId', '=', 'shared_link.userId'),
+    )
     .selectAll('album')
+    .select((eb) =>
+      eb.fn.coalesce('album_order.order', sql<AssetOrder>`${AssetOrder.Desc}`).as('order'),
+    )
     .whereRef('album.id', '=', 'shared_link.albumId')
     .where('album.deletedAt', 'is', null);
 };
@@ -107,7 +115,7 @@ export class SharedLinkRepository {
                 .as('assets'),
             )
             .select((eb) => eb.fn.toJson('owner').as('owner'))
-            .groupBy(['album.id', sql`"owner".*`])
+            .groupBy(['album.id', 'album_order.order', sql`"owner".*`])
             .as('album'),
         (join) => join.onTrue(),
       )

@@ -3,6 +3,7 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
   AssetFileType,
+  AssetOrder,
   AssetType,
   AssetVisibility,
   ChecksumAlgorithm,
@@ -195,6 +196,7 @@ export type SharedLink = {
 };
 
 export type Album = Selectable<AlbumTable> & {
+  order: AssetOrder;
   assets: ShallowDehydrateObject<Selectable<AssetTable>>[];
 };
 

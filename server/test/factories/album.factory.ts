@@ -15,7 +15,7 @@ export class AlbumFactory {
   #albumUsers: AlbumUserFactory[] = [];
   #assets: AssetFactory[] = [];
 
-  private constructor(private readonly value: Selectable<AlbumTable>) {}
+  private constructor(private readonly value: Selectable<AlbumTable> & { order: AssetOrder }) {}
 
   static create(dto: AlbumLike = {}) {
     return AlbumFactory.from(dto).build();

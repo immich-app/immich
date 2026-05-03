@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { build } from 'test/factories/builder.factory';
@@ -24,6 +24,7 @@ export class AlbumUserFactory {
       albumId: newUuid(),
       userId: newUuid(),
       role: AlbumUserRole.Editor,
+      order: AssetOrder.Desc,
       createId: newUuidV7(),
       createdAt: newDate(),
       updateId: newUuidV7(),

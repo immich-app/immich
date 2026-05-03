@@ -124,16 +124,22 @@ export class AlbumService extends BaseService {
     const assetIds = [...allowedAssetIdsSet].map((id) => id);
 
     const userMetadata = await this.userRepository.getMetadata(auth.user.id);
+    const ownerOrder = getPreferences(userMetadata).albums.defaultAssetOrder;
+    const albumUsersWithOrder = await Promise.all(
+      albumUsers.map(async (albumUser) => {
+        const userMetadata = await this.userRepository.getMetadata(albumUser.userId);
+        return { ...albumUser, order: getPreferences(userMetadata).albums.defaultAssetOrder };
+      }),
+    );
 
     const album = await this.albumRepository.create(
       {
         albumName: dto.albumName,
         description: dto.description,
         albumThumbnailAssetId: assetIds[0] || null,
-        order: getPreferences(userMetadata).albums.defaultAssetOrder,
       },
       assetIds,
-      [{ userId: auth.user.id, role: AlbumUserRole.Owner }, ...albumUsers],
+      [{ userId: auth.user.id, role: AlbumUserRole.Owner, order: ownerOrder }, ...albumUsersWithOrder],
       auth.user.id,
     );
 
@@ -155,6 +161,7 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
+
     const updatedAlbum = await this.albumRepository.update(
       album.id,
       {
@@ -163,9 +170,9 @@ export class AlbumService extends BaseService {
         description: dto.description,
         albumThumbnailAssetId: dto.albumThumbnailAssetId,
         isActivityEnabled: dto.isActivityEnabled,
-        order: dto.order,
       },
       auth.user.id,
+      dto.order,
     );
 
     return mapAlbum({ ...updatedAlbum, assets: album.assets });
@@ -307,7 +314,10 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Invalid user');
       }
 
-      await this.albumUserRepository.create({ userId, albumId: id, role });
+      const userMetadata = await this.userRepository.getMetadata(userId);
+      const order = getPreferences(userMetadata).albums.defaultAssetOrder;
+
+      await this.albumUserRepository.create({ userId, albumId: id, role, order });
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
     }
 

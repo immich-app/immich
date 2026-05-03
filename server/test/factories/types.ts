@@ -1,4 +1,5 @@
 import { Selectable } from 'kysely';
+import { AssetOrder } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table';
@@ -23,7 +24,7 @@ export type AssetLike = Partial<Selectable<AssetTable>>;
 export type AssetExifLike = Partial<Selectable<AssetExifTable>>;
 export type AssetEditLike = Partial<Selectable<AssetEditTable>>;
 export type AssetFileLike = Partial<Selectable<AssetFileTable>>;
-export type AlbumLike = Partial<Selectable<AlbumTable>>;
+export type AlbumLike = Partial<Selectable<AlbumTable> & { order: AssetOrder }>;
 export type AlbumUserLike = Partial<Selectable<AlbumUserTable>>;
 export type SharedLinkLike = Partial<Selectable<SharedLinkTable>>;
 export type UserLike = Partial<Selectable<UserTable>>;

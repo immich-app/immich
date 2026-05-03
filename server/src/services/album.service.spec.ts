@@ -182,19 +182,19 @@ describe(AlbumService.name, () => {
         {
           albumName: 'test',
           description: 'description',
-          order: album.order,
           albumThumbnailAssetId: assetId,
         },
         [assetId],
         [
-          { userId: owner.id, role: AlbumUserRole.Owner },
-          { userId: albumUser.userId, role: AlbumUserRole.Editor },
+          { userId: owner.id, role: AlbumUserRole.Owner, order: AssetOrder.Desc },
+          { userId: albumUser.userId, role: AlbumUserRole.Editor, order: AssetOrder.Desc },
         ],
         owner.id,
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith(albumUser.userId, {});
       expect(mocks.user.getMetadata).toHaveBeenCalledWith(owner.id);
+      expect(mocks.user.getMetadata).toHaveBeenCalledWith(albumUser.userId);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(owner.id, new Set([assetId]), false);
       expect(mocks.event.emit).toHaveBeenCalledTimes(1);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
@@ -238,16 +238,19 @@ describe(AlbumService.name, () => {
         {
           albumName: album.albumName,
           description: album.description,
-          order: 'asc',
           albumThumbnailAssetId: assetId,
         },
         [assetId],
-        [{ userId: owner.id, role: AlbumUserRole.Owner }, albumUser],
+        [
+          { userId: owner.id, role: AlbumUserRole.Owner, order: 'asc' },
+          { ...albumUser, order: 'asc' },
+        ],
         owner.id,
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith(albumUser.userId, {});
       expect(mocks.user.getMetadata).toHaveBeenCalledWith(owner.id);
+      expect(mocks.user.getMetadata).toHaveBeenCalledWith(albumUser.userId);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(owner.id, new Set([assetId]), false);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: album.id,
@@ -290,11 +293,10 @@ describe(AlbumService.name, () => {
         {
           albumName: album.albumName,
           description: album.description,
-          order: 'desc',
           albumThumbnailAssetId: assetId,
         },
         [assetId],
-        [{ userId: owner.id, role: AlbumUserRole.Owner }],
+        [{ userId: owner.id, role: AlbumUserRole.Owner, order: 'desc' }],
         owner.id,
       );
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(owner.id, new Set([assetId, 'asset-2']), false);
@@ -364,9 +366,23 @@ describe(AlbumService.name, () => {
       expect(mocks.album.update).toHaveBeenCalledTimes(1);
       expect(mocks.album.update).toHaveBeenCalledWith(
         album.id,
-        { id: album.id, albumName: 'new album name' },
+        expect.objectContaining({ id: album.id, albumName: 'new album name' }),
         owner.id,
+        undefined,
       );
+    });
+
+    it('should update the album order for the auth user', async () => {
+      const album = AlbumFactory.create({ order: AssetOrder.Desc });
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.update.mockResolvedValue(getForAlbum({ ...album, order: AssetOrder.Asc }));
+
+      await sut.update(AuthFactory.create(owner), album.id, { order: AssetOrder.Asc });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(1);
+      expect(mocks.album.update).toHaveBeenCalledWith(album.id, { id: album.id }, owner.id, AssetOrder.Asc);
     });
   });
 
@@ -464,6 +480,7 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.album.update.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue(user);
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.albumUser.create.mockResolvedValue(AlbumUserFactory.from().album(album).user(user).build());
 
       await sut.addUsers(AuthFactory.create(owner), album.id, { albumUsers: [{ userId: user.id }] });
@@ -471,7 +488,9 @@ describe(AlbumService.name, () => {
       expect(mocks.albumUser.create).toHaveBeenCalledWith({
         userId: user.id,
         albumId: album.id,
+        order: AssetOrder.Desc,
       });
+      expect(mocks.user.getMetadata).toHaveBeenCalledWith(user.id);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: album.id,
         userId: user.id,
