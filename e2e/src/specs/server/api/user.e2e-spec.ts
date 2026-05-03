@@ -179,7 +179,7 @@ describe('/users', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['[download.archiveSize] Invalid input: expected int, received number']),
+        errorDto.validationError([{ path: ['download', 'archiveSize'], message: 'Invalid input: expected int, received number' }]),
       );
     });
 
@@ -207,7 +207,7 @@ describe('/users', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['[download.includeEmbeddedVideos] Invalid input: expected boolean, received number']),
+        errorDto.validationError([{ path: ['download', 'includeEmbeddedVideos'], message: 'Invalid input: expected boolean, received number' }]),
       );
     });
 

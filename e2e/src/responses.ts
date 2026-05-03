@@ -25,8 +25,15 @@ export const errorDto = {
   passwordRequired: {
     message: 'Password required',
   },
-  badRequest: (message: any = null) => ({
-    message: message ?? expect.anything(),
+  badRequest: (message: any = null) =>
+    expect.objectContaining({
+      message: message ?? expect.anything(),
+    }),
+  validationError: (errors?: Array<{ path?: (string | number)[]; message?: string }>) => ({
+    message: 'Validation failed',
+    errors: errors
+      ? expect.arrayContaining(errors.map((e) => expect.objectContaining(e)))
+      : expect.any(Array),
   }),
   noPermission: {
     message: expect.stringContaining('Not found or no'),
@@ -36,9 +43,6 @@ export const errorDto = {
   },
   alreadyHasAdmin: {
     message: 'The server already has an admin',
-  },
-  invalidEmail: {
-    message: ['email must be an email'],
   },
 };
 
