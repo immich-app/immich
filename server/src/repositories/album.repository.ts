@@ -82,6 +82,17 @@ const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =
       .where('album_user.userId', '=', ownerId),
   );
 
+const hasAlbumSharedStatus = (eb: ExpressionBuilder<DB, 'album'>) =>
+  eb.or([
+    eb.exists(
+      eb
+        .selectFrom('album_user as au')
+        .whereRef('au.albumId', '=', 'album.id')
+        .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
+    ),
+    eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
+  ]);
+
 @Injectable()
 export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -201,32 +212,8 @@ export class AlbumRepository {
       )
       .$if(owned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
       .$if(owned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
-      .$if(shared === true, (qb) =>
-        qb.where(({ or, exists, selectFrom }) =>
-          or([
-            exists(
-              selectFrom('album_user as au')
-                .whereRef('au.albumId', '=', 'album.id')
-                .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
-            ),
-            exists(selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
-          ]),
-        ),
-      )
-      .$if(shared === false, (qb) =>
-        qb.where(({ not, or, exists, selectFrom }) =>
-          not(
-            or([
-              exists(
-                selectFrom('album_user as au')
-                  .whereRef('au.albumId', '=', 'album.id')
-                  .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
-              ),
-              exists(selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
-            ]),
-          ),
-        ),
-      )
+      .$if(shared === true, (qb) => qb.where(hasAlbumSharedStatus))
+      .$if(shared === false, (qb) => qb.where((eb) => eb.not(hasAlbumSharedStatus(eb))))
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
