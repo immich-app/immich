@@ -345,6 +345,12 @@ const SystemConfigTrashSchema = z
   })
   .meta({ id: 'SystemConfigTrashDto' });
 
+const SystemConfigStorageSchema = z
+  .object({
+    writeVerification: configBool.describe('Verify file writes'),
+  })
+  .meta({ id: 'SystemConfigStorageDto' });
+
 const SystemConfigUserSchema = z
   .object({
     deleteDelay: z.int().min(1).describe('Delete delay'),
@@ -373,6 +379,7 @@ export const SystemConfigSchema = z
     notifications: SystemConfigNotificationsSchema,
     templates: SystemConfigTemplatesSchema,
     server: SystemConfigServerSchema,
+    storage: SystemConfigStorageSchema,
     user: SystemConfigUserSchema,
   })
   .describe('System configuration')

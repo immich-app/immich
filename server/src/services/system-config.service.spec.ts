@@ -226,6 +226,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
       albumUpdateTemplate: '',
     },
   },
+  storage: {
+    writeVerification: false,
+  },
 });
 
 describe(SystemConfigService.name, () => {

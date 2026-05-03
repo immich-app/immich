@@ -13,6 +13,7 @@
   import NightlyTasksSettings from './NightlyTasksSettings.svelte';
   import NotificationSettings from './NotificationSettings.svelte';
   import ServerSettings from './ServerSettings.svelte';
+  import StorageSettings from './StorageSettings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
   import ThemeSettings from './ThemeSettings.svelte';
   import TrashSettings from './TrashSettings.svelte';
@@ -41,6 +42,7 @@
     mdiPaletteOutline,
     mdiRobotOutline,
     mdiServerOutline,
+    mdiHarddisk,
     mdiSync,
     mdiTrashCanOutline,
     mdiUpdate,
@@ -146,6 +148,13 @@
       subtitle: $t('admin.server_settings_description'),
       key: 'server',
       icon: mdiServerOutline,
+    },
+    {
+      component: StorageSettings,
+      title: $t('admin.storage_settings'),
+      subtitle: $t('admin.storage_settings_description'),
+      key: 'storage',
+      icon: mdiHarddisk,
     },
     {
       component: StorageTemplateSettings,

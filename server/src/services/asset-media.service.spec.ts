@@ -859,4 +859,42 @@ describe(AssetMediaService.name, () => {
       });
     });
   });
+
+  describe('verifyUploadedFile', () => {
+    const path = '/data/upload/user-id/ra/nd/random-uuid.jpg';
+    const checksum = Buffer.from('checksum', 'utf8');
+
+    it('should skip verification when writeVerification is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: false } });
+
+      await expect(sut.verifyUploadedFile(path, checksum)).resolves.toBeUndefined();
+
+      expect(mocks.crypto.hashFile).not.toHaveBeenCalled();
+    });
+
+    it('should resolve when writeVerification is enabled and hashes match', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: true } });
+      mocks.crypto.hashFile.mockResolvedValue(checksum);
+
+      await expect(sut.verifyUploadedFile(path, checksum)).resolves.toBeUndefined();
+
+      expect(mocks.crypto.hashFile).toHaveBeenCalledWith(path);
+    });
+
+    it('should throw when writeVerification is enabled and hashes differ', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: true } });
+      mocks.crypto.hashFile.mockResolvedValue(Buffer.from('wrong-checksum', 'utf8'));
+
+      await expect(sut.verifyUploadedFile(path, checksum)).rejects.toThrow(InternalServerErrorException);
+    });
+
+    it('should throw a distinct error when the file cannot be re-read after write', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: true } });
+      mocks.crypto.hashFile.mockRejectedValue(new Error('ENOENT: no such file or directory'));
+
+      await expect(sut.verifyUploadedFile(path, checksum)).rejects.toThrow(
+        'Upload write verification failed: file could not be re-read after write',
+      );
+    });
+  });
 });

@@ -23991,6 +23991,9 @@
           "server": {
             "$ref": "#/components/schemas/SystemConfigServerDto"
           },
+          "storage": {
+            "$ref": "#/components/schemas/SystemConfigStorageDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -24024,6 +24027,7 @@
           "passwordLogin",
           "reverseGeocoding",
           "server",
+          "storage",
           "storageTemplate",
           "templates",
           "theme",
@@ -24738,6 +24742,18 @@
           "port",
           "secure",
           "username"
+        ],
+        "type": "object"
+      },
+      "SystemConfigStorageDto": {
+        "properties": {
+          "writeVerification": {
+            "description": "Verify file writes",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "writeVerification"
         ],
         "type": "object"
       },

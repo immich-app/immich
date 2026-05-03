@@ -187,6 +187,9 @@ export type SystemConfig = {
     loginPageMessage: string;
     publicUsers: boolean;
   };
+  storage: {
+    writeVerification: boolean;
+  };
   user: {
     deleteDelay: number;
   };
@@ -395,6 +398,9 @@ export const defaults = Object.freeze<SystemConfig>({
       albumInviteTemplate: '',
       albumUpdateTemplate: '',
     },
+  },
+  storage: {
+    writeVerification: false,
   },
   user: {
     deleteDelay: 7,

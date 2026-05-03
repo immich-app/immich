@@ -116,6 +116,28 @@ export class AssetMediaService extends BaseService {
     return folder;
   }
 
+  async verifyUploadedFile(path: string, checksum: Buffer): Promise<void> {
+    const { storage } = await this.getConfig({ withCache: true });
+    if (!storage.writeVerification) {
+      return;
+    }
+
+    let onDiskHash: Buffer;
+    try {
+      onDiskHash = await this.cryptoRepository.hashFile(path);
+    } catch {
+      this.logger.error('Upload write verification failed: could not re-read file after write', { path });
+      throw new InternalServerErrorException('Upload write verification failed: file could not be re-read after write');
+    }
+
+    if (!onDiskHash.equals(checksum)) {
+      const expected = checksum.toString('hex');
+      const actual = onDiskHash.toString('hex');
+      this.logger.error('Upload write verification failed: hash mismatch', { path, expected, actual });
+      throw new InternalServerErrorException(`Upload write verification failed: expected ${expected}, got ${actual}`);
+    }
+  }
+
   async onUploadError(request: AuthRequest, file: Express.Multer.File) {
     const uploadFilename = this.getUploadFilename(asUploadRequest(request, file));
     const uploadFolder = this.getUploadFolder(asUploadRequest(request, file));

@@ -174,6 +174,18 @@ Overrides the domain name in shared links and email notifications. The URL shoul
 
 The administrator can set a custom message on the login screen (the message will be displayed to all users).
 
+## Storage
+
+### Verify File Writes
+
+When enabled, Immich re-reads each uploaded asset from disk immediately after writing it and computes a SHA-1 hash of the on-disk bytes. If that hash does not match the hash computed from the incoming upload stream, the upload is rejected with an error and the user has the option to retry uploading the file.
+
+This protects against silent data corruption on storage backends with weak write semantics, such as CIFS/SMB-mounted volumes, NFS mounts, and some FUSE-based drivers, where the bytes that land on disk can silently differ from the bytes that were sent to the write call.
+
+**Default:** off.
+
+**Performance impact:** enabling verification adds a full sequential re-read of every newly uploaded file.
+
 ## Storage Template
 
 Immich supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).
