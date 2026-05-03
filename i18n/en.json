@@ -1665,6 +1665,8 @@
   "open_in_browser": "Open in browser",
   "open_in_map_view": "Open in map view",
   "open_in_openstreetmap": "Open in OpenStreetMap",
+  "show_asset_panel_on_map": "Show asset panel by default",
+  "show_photos_in_area": "Show photos in this area",
   "open_the_search_filters": "Open the search filters",
   "options": "Options",
   "or": "or",

@@ -38,6 +38,9 @@
     <Field label={$t('include_shared_albums')}>
       <Switch bind:checked={settings.withSharedAlbums} />
     </Field>
+    <Field label={$t('show_asset_panel_on_map')}>
+      <Switch bind:checked={settings.showAssetPanel} />
+    </Field>
 
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">

@@ -11,6 +11,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import { mapSettings } from '$lib/stores/preferences.store';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
@@ -23,9 +24,11 @@
   let selectedClusterIds = $state.raw(new Set<string>());
   let selectedClusterBBox = $state.raw<SelectionBBox>();
   let isTimelinePanelVisible = $state(false);
+  let isViewportMode = $state(false);
 
   function closeTimelinePanel() {
     isTimelinePanelVisible = false;
+    isViewportMode = false;
     selectedClusterBBox = undefined;
     selectedClusterIds = new Set();
   }
@@ -47,8 +50,17 @@
     selectedClusterIds = new Set(assetIds);
     selectedClusterBBox = bbox;
     isTimelinePanelVisible = true;
+    isViewportMode = false;
     assetViewerManager.showAssetViewer(false);
     handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+  }
+
+  function onViewportSelect(assetIds: string[], bbox: SelectionBBox) {
+    selectedClusterIds = new Set(assetIds);
+    selectedClusterBBox = bbox;
+    isTimelinePanelVisible = true;
+    isViewportMode = true;
+    assetViewerManager.showAssetViewer(false);
   }
 </script>
 
@@ -69,7 +81,15 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map hash onSelect={onViewAssets} {onClusterSelect} />
+          <Map
+            hash
+            onSelect={onViewAssets}
+            {onClusterSelect}
+            {onViewportSelect}
+            onViewportClose={closeTimelinePanel}
+            viewportGridActive={isViewportMode && isTimelinePanelVisible}
+            autoOpenPanel={$mapSettings.showAssetPanel}
+          />
         {/await}
       </div>
 
