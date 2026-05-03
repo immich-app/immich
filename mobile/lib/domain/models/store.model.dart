@@ -20,14 +20,10 @@ enum StoreKey<T> {
   sslClientCertData<String>._(15),
   sslClientPasswd<String>._(16),
   // user settings from [AppSettingsEnum] below:
-  loadPreview<bool>._(100),
   loadOriginal<bool>._(101),
   tilesPerRow<int>._(103),
-  dynamicLayout<bool>._(104),
   groupAssetsBy<int>._(105),
   uploadErrorNotificationGracePeriod<int>._(106),
-  backgroundBackupTotalProgress<bool>._(107),
-  backgroundBackupSingleProgress<bool>._(108),
   storageIndicator<bool>._(109),
   thumbnailCacheSize<int>._(110),
   imageCacheSize<int>._(111),
@@ -37,7 +33,6 @@ enum StoreKey<T> {
   preferRemoteImage<bool>._(116),
   loopVideo<bool>._(117),
   selfSignedCert<bool>._(120),
-  ignoreIcloudAssets<bool>._(122),
   selectedAlbumSortReverse<bool>._(123),
   enableHapticFeedback<bool>._(126),
   customHeaders<String>._(127),
@@ -64,17 +59,9 @@ enum StoreKey<T> {
   tapToNavigate<bool>._(141),
 
   // Experimental stuff
-  photoManagerCustomFilter<bool>._(1000),
-  betaPromptShown<bool>._(1001),
-  betaTimeline<bool>._(1002),
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
   useWifiForUploadPhotos<bool>._(1005),
-  needBetaMigration<bool>._(1006),
-  // TODO: Remove this after patching open-api
-  shouldResetSync<bool>._(1007),
-
-  // Free up space
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
