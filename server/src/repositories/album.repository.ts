@@ -214,7 +214,10 @@ export class AlbumRepository {
       .$if(shared === false, (qb) => qb.where((eb) => eb.not(hasAlbumSharedStatus(eb))));
   }
 
-  getAll(ownerId: string, options: { owned?: boolean; shared?: boolean; select: ['id'] }): Promise<Pick<Selectable<AlbumTable>, 'id'>[]>;
+  getAll(
+    ownerId: string,
+    options: { owned?: boolean; shared?: boolean; select: ['id'] },
+  ): Promise<Pick<Selectable<AlbumTable>, 'id'>[]>;
   getAll(ownerId: string, options: { owned?: boolean; shared?: boolean }): Promise<MapAlbumDto[]>;
   @GenerateSql({ params: [DummyValue.UUID, {}] }, { params: [DummyValue.UUID, { select: ['id'] }] })
   getAll(ownerId: string, { owned, shared, select }: { owned?: boolean; shared?: boolean; select?: string[] }) {
