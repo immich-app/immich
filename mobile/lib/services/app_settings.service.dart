@@ -3,14 +3,11 @@ import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
   loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
-  tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
-  groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),
   uploadErrorNotificationGracePeriod<int>(
     StoreKey.uploadErrorNotificationGracePeriod,
     "uploadErrorNotificationGracePeriod",
     2,
   ),
-  storageIndicator<bool>(StoreKey.storageIndicator, "storageIndicator", true),
   thumbnailCacheSize<int>(StoreKey.thumbnailCacheSize, "thumbnailCacheSize", 10000),
   imageCacheSize<int>(StoreKey.imageCacheSize, "imageCacheSize", 350),
   albumThumbnailCacheSize<int>(StoreKey.albumThumbnailCacheSize, "albumThumbnailCacheSize", 200),

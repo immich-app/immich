@@ -19,24 +19,17 @@ enum StoreKey<T> {
   backgroundBackup<bool>._(14),
   sslClientCertData<String>._(15),
   sslClientPasswd<String>._(16),
-  // user settings from [AppSettingsEnum] below:
-  loadOriginal<bool>._(101),
-  tilesPerRow<int>._(103),
-  groupAssetsBy<int>._(105),
   uploadErrorNotificationGracePeriod<int>._(106),
-  storageIndicator<bool>._(109),
   thumbnailCacheSize<int>._(110),
   imageCacheSize<int>._(111),
   albumThumbnailCacheSize<int>._(112),
   selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
   preferRemoteImage<bool>._(116),
-  loopVideo<bool>._(117),
   selfSignedCert<bool>._(120),
   selectedAlbumSortReverse<bool>._(123),
   enableHapticFeedback<bool>._(126),
   customHeaders<String>._(127),
-
   syncAlbums<bool>._(131),
 
   // Auto endpoint switching
@@ -45,17 +38,16 @@ enum StoreKey<T> {
   localEndpoint<String>._(134),
   externalEndpointList<String>._(135),
 
-  // Video settings
-  loadOriginalVideo<bool>._(136),
   manageLocalMediaAndroid<bool>._(137),
-
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
-
-  autoPlayVideo<bool>._(139),
   albumGridView<bool>._(140),
+  loadOriginal<bool>._(101),
 
   // Image viewer navigation settings
+  loopVideo<bool>._(117),
+  loadOriginalVideo<bool>._(136),
+  autoPlayVideo<bool>._(139),
   tapToNavigate<bool>._(141),
 
   // Experimental stuff
@@ -74,6 +66,9 @@ enum StoreKey<T> {
   legacyCleanupKeepAlbumIds<String>._(1010),
   legacyCleanupCutoffDaysAgo<int>._(1011),
   legacyCleanupDefaultsInitialized<bool>._(1012),
+  legacyTilesPerRow<int>._(103),
+  legacyGroupAssetsBy<int>._(105),
+  legacyStorageIndicator<bool>._(109),
   legacyMapRelativeDate<int>._(119),
   legacyMapShowFavoriteOnly<bool>._(118),
   legacyMapIncludeArchived<bool>._(121),

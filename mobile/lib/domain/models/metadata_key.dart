@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 
 enum MetadataDomain<T extends Object> {
   appConfig<AppConfig>('config.app'),
@@ -22,6 +23,16 @@ enum MetadataKey<T extends Object> {
   themeMode<ThemeMode>(.appConfig, 'theme.mode', .system, _EnumCodec(ThemeMode.values)),
   themeDynamic<bool>(.appConfig, 'theme.dynamic', false),
   themeColorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
+
+  // Timeline
+  timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
+  timelineGroupAssetsBy<GroupAssetsBy>(
+    .appConfig,
+    'timeline.groupAssetsBy',
+    GroupAssetsBy.day,
+    _EnumCodec(GroupAssetsBy.values),
+  ),
+  timelineStorageIndicator<bool>(.appConfig, 'timeline.storageIndicator', true),
 
   // Log
   logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values)),

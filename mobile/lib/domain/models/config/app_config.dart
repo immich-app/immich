@@ -1,25 +1,40 @@
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
+import 'package:immich_mobile/domain/models/config/timeline_config.dart';
 
 class AppConfig {
   final ThemeConfig theme;
   final CleanupConfig cleanup;
   final MapConfig map;
+  final TimelineConfig timeline;
 
-  const AppConfig({this.theme = const .new(), this.cleanup = const .new(), this.map = const .new()});
+  const AppConfig({
+    this.theme = const .new(),
+    this.cleanup = const .new(),
+    this.map = const .new(),
+    this.timeline = const .new(),
+  });
 
-  AppConfig copyWith({ThemeConfig? theme, CleanupConfig? cleanup, MapConfig? map}) =>
-      .new(theme: theme ?? this.theme, cleanup: cleanup ?? this.cleanup, map: map ?? this.map);
+  AppConfig copyWith({ThemeConfig? theme, CleanupConfig? cleanup, MapConfig? map, TimelineConfig? timeline}) => .new(
+    theme: theme ?? this.theme,
+    cleanup: cleanup ?? this.cleanup,
+    map: map ?? this.map,
+    timeline: timeline ?? this.timeline,
+  );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AppConfig && other.theme == theme && other.cleanup == cleanup && other.map == map);
+      (other is AppConfig &&
+          other.theme == theme &&
+          other.cleanup == cleanup &&
+          other.map == map &&
+          other.timeline == timeline);
 
   @override
-  int get hashCode => Object.hash(theme, cleanup, map);
+  int get hashCode => Object.hash(theme, cleanup, map, timeline);
 
   @override
-  String toString() => 'AppConfig(theme: $theme, cleanup: $cleanup, map: $map)';
+  String toString() => 'AppConfig(theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline)';
 }

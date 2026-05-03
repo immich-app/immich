@@ -16,14 +16,14 @@ class MapConfig {
   });
 
   MapConfig copyWith({
-    int? relativeDate,
-    bool? showFavoriteOnly,
+    int? relativeDays,
+    bool? favoritesOnly,
     bool? includeArchived,
     ThemeMode? themeMode,
     bool? withPartners,
   }) => MapConfig(
-    relativeDays: relativeDate ?? this.relativeDays,
-    favoritesOnly: showFavoriteOnly ?? this.favoritesOnly,
+    relativeDays: relativeDays ?? this.relativeDays,
+    favoritesOnly: favoritesOnly ?? this.favoritesOnly,
     includeArchived: includeArchived ?? this.includeArchived,
     themeMode: themeMode ?? this.themeMode,
     withPartners: withPartners ?? this.withPartners,
