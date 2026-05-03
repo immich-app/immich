@@ -82,8 +82,8 @@ describe(MapService.name, () => {
       };
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
-      mocks.album.getOwned.mockResolvedValue([getForAlbum(AlbumFactory.create())]);
-      mocks.album.getShared.mockResolvedValue([
+      mocks.album.getAll.mockResolvedValue([
+        getForAlbum(AlbumFactory.create()),
         getForAlbum(AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build()),
       ]);
 

@@ -8,7 +8,6 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   mapAlbum,
-  MapAlbumDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
@@ -26,9 +25,9 @@ import { getPreferences } from 'src/utils/preferences';
 export class AlbumService extends BaseService {
   async getStatistics(auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
     const [owned, shared, notShared] = await Promise.all([
-      this.albumRepository.getOwned(auth.user.id),
-      this.albumRepository.getShared(auth.user.id),
-      this.albumRepository.getNotShared(auth.user.id),
+      this.albumRepository.getAll(auth.user.id, { owned: true }),
+      this.albumRepository.getAll(auth.user.id, { shared: true }),
+      this.albumRepository.getAll(auth.user.id, { owned: true, shared: false }),
     ]);
 
     return {
@@ -44,26 +43,9 @@ export class AlbumService extends BaseService {
   ): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
-    let albums: MapAlbumDto[];
-    if (assetId) {
-      albums = await this.albumRepository.getByAssetId(ownerId, assetId);
-    } else if (owned === false && shared === false) {
-      albums = [];
-    } else if (owned === false) {
-      albums = await this.albumRepository.getSharedWithMe(ownerId);
-    } else if (shared === true) {
-      albums =
-        owned === true
-          ? await this.albumRepository.getOwnedAndShared(ownerId)
-          : await this.albumRepository.getShared(ownerId);
-    } else if (shared === false) {
-      albums = await this.albumRepository.getNotShared(ownerId);
-    } else {
-      albums =
-        owned === true
-          ? await this.albumRepository.getOwned(ownerId)
-          : await this.albumRepository.getAllAccessible(ownerId);
-    }
+    const albums = assetId
+      ? await this.albumRepository.getByAssetId(ownerId, assetId)
+      : await this.albumRepository.getAll(ownerId, { owned, shared });
 
     if (albums.length === 0) {
       return [];
