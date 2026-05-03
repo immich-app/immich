@@ -137,7 +137,6 @@ ENV TRANSFORMERS_CACHE=/cache \
     MACHINE_LEARNING_CACHE_FOLDER=/cache \
     TZ=${TZ}
 
-
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo "fs.suid_dumpable 0" >> /etc/sysctl.conf && \
