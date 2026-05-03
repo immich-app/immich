@@ -10,7 +10,7 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetVisibility, updatePartner } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, Switch } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Field, Switch, Text } from '@immich/ui';
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -42,7 +42,6 @@
       inTimeline = status;
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
-      inTimeline = !status;
     }
   };
 </script>
@@ -67,10 +66,12 @@
       </p>
     {/snippet}
     {#snippet trailing()}
-      <label class="flex items-center gap-2 text-sm whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-        {$t('show_in_timeline')}
+      <Field class="flex w-full place-content-center place-items-center gap-2">
+        <Text size="small">
+          {$t('show_in_timeline')}
+        </Text>
         <Switch bind:checked={inTimeline} onCheckedChange={handleToggleInTimeline} />
-      </label>
+      </Field>
     {/snippet}
   </ControlAppBar>
 {/if}
