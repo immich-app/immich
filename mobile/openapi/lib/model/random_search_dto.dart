@@ -46,6 +46,7 @@ class RandomSearchDto {
     this.withDeleted,
     this.withExif,
     this.withPeople,
+    this.withSharedSpaces,
     this.withStacked,
   });
 
@@ -278,6 +279,15 @@ class RandomSearchDto {
   ///
   bool? withPeople;
 
+  /// Include shared spaces the user is a member of
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? withSharedSpaces;
+
   /// Include stacked assets
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -322,6 +332,7 @@ class RandomSearchDto {
     other.withDeleted == withDeleted &&
     other.withExif == withExif &&
     other.withPeople == withPeople &&
+    other.withSharedSpaces == withSharedSpaces &&
     other.withStacked == withStacked;
 
   @override
@@ -360,10 +371,11 @@ class RandomSearchDto {
     (withDeleted == null ? 0 : withDeleted!.hashCode) +
     (withExif == null ? 0 : withExif!.hashCode) +
     (withPeople == null ? 0 : withPeople!.hashCode) +
+    (withSharedSpaces == null ? 0 : withSharedSpaces!.hashCode) +
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, size=$size, spaceId=$spaceId, spacePersonIds=$spacePersonIds, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, size=$size, spaceId=$spaceId, spacePersonIds=$spacePersonIds, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withSharedSpaces=$withSharedSpaces, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -536,6 +548,11 @@ class RandomSearchDto {
     } else {
     //  json[r'withPeople'] = null;
     }
+    if (this.withSharedSpaces != null) {
+      json[r'withSharedSpaces'] = this.withSharedSpaces;
+    } else {
+    //  json[r'withSharedSpaces'] = null;
+    }
     if (this.withStacked != null) {
       json[r'withStacked'] = this.withStacked;
     } else {
@@ -598,6 +615,7 @@ class RandomSearchDto {
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),
         withPeople: mapValueOfType<bool>(json, r'withPeople'),
+        withSharedSpaces: mapValueOfType<bool>(json, r'withSharedSpaces'),
         withStacked: mapValueOfType<bool>(json, r'withStacked'),
       );
     }

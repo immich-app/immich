@@ -31,6 +31,7 @@ class QueueName {
   static const smartSearch = QueueName._(r'smartSearch');
   static const duplicateDetection = QueueName._(r'duplicateDetection');
   static const backgroundTask = QueueName._(r'backgroundTask');
+  static const peopleBackfill = QueueName._(r'peopleBackfill');
   static const storageTemplateMigration = QueueName._(r'storageTemplateMigration');
   static const migration = QueueName._(r'migration');
   static const search = QueueName._(r'search');
@@ -55,6 +56,7 @@ class QueueName {
     smartSearch,
     duplicateDetection,
     backgroundTask,
+    peopleBackfill,
     storageTemplateMigration,
     migration,
     search,
@@ -114,6 +116,7 @@ class QueueNameTypeTransformer {
         case r'smartSearch': return QueueName.smartSearch;
         case r'duplicateDetection': return QueueName.duplicateDetection;
         case r'backgroundTask': return QueueName.backgroundTask;
+        case r'peopleBackfill': return QueueName.peopleBackfill;
         case r'storageTemplateMigration': return QueueName.storageTemplateMigration;
         case r'migration': return QueueName.migration;
         case r'search': return QueueName.search;

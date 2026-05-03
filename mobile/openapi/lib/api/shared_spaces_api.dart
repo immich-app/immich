@@ -811,6 +811,119 @@ class SharedSpacesApi {
     return null;
   }
 
+  /// Get people statistics in a shared space
+  ///
+  /// Retrieve people counts for a shared space.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [int] limit:
+  ///   Maximum number of people to return (sorted by asset count)
+  ///
+  /// * [String] name:
+  ///   Search by person name
+  ///
+  /// * [bool] named:
+  ///
+  /// * [int] offset:
+  ///   Number of people to skip
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  ///
+  /// * [bool] withHidden:
+  Future<Response> getSpacePeopleStatisticsWithHttpInfo(String id, { int? limit, String? name, bool? named, int? offset, DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/people/statistics'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (limit != null) {
+      queryParams.addAll(_queryParams('', 'limit', limit));
+    }
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
+    }
+    if (named != null) {
+      queryParams.addAll(_queryParams('', 'named', named));
+    }
+    if (offset != null) {
+      queryParams.addAll(_queryParams('', 'offset', offset));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get people statistics in a shared space
+  ///
+  /// Retrieve people counts for a shared space.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [int] limit:
+  ///   Maximum number of people to return (sorted by asset count)
+  ///
+  /// * [String] name:
+  ///   Search by person name
+  ///
+  /// * [bool] named:
+  ///
+  /// * [int] offset:
+  ///   Number of people to skip
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  ///
+  /// * [bool] withHidden:
+  Future<SharedSpacePeopleStatisticsResponseDto?> getSpacePeopleStatistics(String id, { int? limit, String? name, bool? named, int? offset, DateTime? takenAfter, DateTime? takenBefore, bool? withHidden, }) async {
+    final response = await getSpacePeopleStatisticsWithHttpInfo(id,  limit: limit, name: name, named: named, offset: offset, takenAfter: takenAfter, takenBefore: takenBefore, withHidden: withHidden, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedSpacePeopleStatisticsResponseDto',) as SharedSpacePeopleStatisticsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Get a person in a shared space
   ///
   /// Retrieve details of a specific person in a shared space.
@@ -934,6 +1047,154 @@ class SharedSpacesApi {
         .cast<String>()
         .toList(growable: false);
 
+    }
+    return null;
+  }
+
+  /// Get space person face thumbnail
+  ///
+  /// Retrieve an exact face-crop thumbnail for a person in a shared space.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] faceId (required):
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] personId (required):
+  Future<Response> getSpacePersonFaceThumbnailWithHttpInfo(String faceId, String id, String personId,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/people/{personId}/faces/{faceId}/thumbnail'
+      .replaceAll('{faceId}', faceId)
+      .replaceAll('{id}', id)
+      .replaceAll('{personId}', personId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get space person face thumbnail
+  ///
+  /// Retrieve an exact face-crop thumbnail for a person in a shared space.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] faceId (required):
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] personId (required):
+  Future<MultipartFile?> getSpacePersonFaceThumbnail(String faceId, String id, String personId,) async {
+    final response = await getSpacePersonFaceThumbnailWithHttpInfo(faceId, id, personId,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
+  }
+
+  /// Get space person faces
+  ///
+  /// Retrieve detected face crops for a person in a shared space.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] personId (required):
+  ///
+  /// * [int] page:
+  ///   Page number
+  ///
+  /// * [int] size:
+  ///   Number of faces per page
+  Future<Response> getSpacePersonFacesWithHttpInfo(String id, String personId, { int? page, int? size, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/people/{personId}/faces'
+      .replaceAll('{id}', id)
+      .replaceAll('{personId}', personId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get space person faces
+  ///
+  /// Retrieve detected face crops for a person in a shared space.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] personId (required):
+  ///
+  /// * [int] page:
+  ///   Page number
+  ///
+  /// * [int] size:
+  ///   Number of faces per page
+  Future<PersonFacePageResponseDto?> getSpacePersonFaces(String id, String personId, { int? page, int? size, }) async {
+    final response = await getSpacePersonFacesWithHttpInfo(id, personId,  page: page, size: size, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonFacePageResponseDto',) as PersonFacePageResponseDto;
+    
     }
     return null;
   }
@@ -1494,6 +1755,133 @@ class SharedSpacesApi {
     return null;
   }
 
+  /// Disable member person metadata contribution
+  ///
+  /// Disable person metadata contribution for another member. Members must re-enable it themselves.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] userId (required):
+  ///
+  /// * [SharedSpaceMemberMetadataContributionDto] sharedSpaceMemberMetadataContributionDto (required):
+  Future<Response> updateMemberMetadataContributionWithHttpInfo(String id, String userId, SharedSpaceMemberMetadataContributionDto sharedSpaceMemberMetadataContributionDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/members/{userId}/metadata-contribution'
+      .replaceAll('{id}', id)
+      .replaceAll('{userId}', userId);
+
+    // ignore: prefer_final_locals
+    Object? postBody = sharedSpaceMemberMetadataContributionDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PATCH',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Disable member person metadata contribution
+  ///
+  /// Disable person metadata contribution for another member. Members must re-enable it themselves.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] userId (required):
+  ///
+  /// * [SharedSpaceMemberMetadataContributionDto] sharedSpaceMemberMetadataContributionDto (required):
+  Future<SharedSpaceMemberResponseDto?> updateMemberMetadataContribution(String id, String userId, SharedSpaceMemberMetadataContributionDto sharedSpaceMemberMetadataContributionDto,) async {
+    final response = await updateMemberMetadataContributionWithHttpInfo(id, userId, sharedSpaceMemberMetadataContributionDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedSpaceMemberResponseDto',) as SharedSpaceMemberResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Update current member preferences
+  ///
+  /// Update timeline visibility and person metadata contribution for the current member.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [SharedSpaceMemberPreferencesDto] sharedSpaceMemberPreferencesDto (required):
+  Future<Response> updateMemberPreferencesWithHttpInfo(String id, SharedSpaceMemberPreferencesDto sharedSpaceMemberPreferencesDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/members/me/preferences'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = sharedSpaceMemberPreferencesDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PATCH',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Update current member preferences
+  ///
+  /// Update timeline visibility and person metadata contribution for the current member.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [SharedSpaceMemberPreferencesDto] sharedSpaceMemberPreferencesDto (required):
+  Future<SharedSpaceMemberResponseDto?> updateMemberPreferences(String id, SharedSpaceMemberPreferencesDto sharedSpaceMemberPreferencesDto,) async {
+    final response = await updateMemberPreferencesWithHttpInfo(id, sharedSpaceMemberPreferencesDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedSpaceMemberResponseDto',) as SharedSpaceMemberResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Update timeline visibility for current member
   ///
   /// Toggle whether this space's assets appear in the current user's personal timeline.
@@ -1669,6 +2057,72 @@ class SharedSpacesApi {
   /// * [SharedSpacePersonUpdateDto] sharedSpacePersonUpdateDto (required):
   Future<SharedSpacePersonResponseDto?> updateSpacePerson(String id, String personId, SharedSpacePersonUpdateDto sharedSpacePersonUpdateDto,) async {
     final response = await updateSpacePersonWithHttpInfo(id, personId, sharedSpacePersonUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedSpacePersonResponseDto',) as SharedSpacePersonResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Update space person representative face
+  ///
+  /// Update or clear the exact face crop used as the space person thumbnail.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] personId (required):
+  ///
+  /// * [SpaceRepresentativeFaceUpdateDto] spaceRepresentativeFaceUpdateDto (required):
+  Future<Response> updateSpacePersonRepresentativeFaceWithHttpInfo(String id, String personId, SpaceRepresentativeFaceUpdateDto spaceRepresentativeFaceUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-spaces/{id}/people/{personId}/representative-face'
+      .replaceAll('{id}', id)
+      .replaceAll('{personId}', personId);
+
+    // ignore: prefer_final_locals
+    Object? postBody = spaceRepresentativeFaceUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Update space person representative face
+  ///
+  /// Update or clear the exact face crop used as the space person thumbnail.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] personId (required):
+  ///
+  /// * [SpaceRepresentativeFaceUpdateDto] spaceRepresentativeFaceUpdateDto (required):
+  Future<SharedSpacePersonResponseDto?> updateSpacePersonRepresentativeFace(String id, String personId, SpaceRepresentativeFaceUpdateDto spaceRepresentativeFaceUpdateDto,) async {
+    final response = await updateSpacePersonRepresentativeFaceWithHttpInfo(id, personId, spaceRepresentativeFaceUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

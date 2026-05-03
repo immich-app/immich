@@ -16,10 +16,13 @@ class PersonWithFacesResponseDto {
     required this.birthDate,
     this.color,
     this.faces = const [],
+    this.filterId,
     required this.id,
     this.isFavorite,
     required this.isHidden,
     required this.name,
+    this.numberOfAssets,
+    this.primaryProfile,
     this.spacePersonId,
     this.species,
     required this.thumbnailPath,
@@ -41,6 +44,15 @@ class PersonWithFacesResponseDto {
 
   List<AssetFaceWithoutPersonResponseDto> faces;
 
+  /// Scoped identity filter token
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? filterId;
+
   /// Person ID
   String id;
 
@@ -58,6 +70,26 @@ class PersonWithFacesResponseDto {
 
   /// Person name
   String name;
+
+  /// Accessible asset count for this grouped person
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  int? numberOfAssets;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  ScopedPrimaryProfile? primaryProfile;
 
   /// Space person ID (when viewed through a space)
   ///
@@ -91,10 +123,13 @@ class PersonWithFacesResponseDto {
     other.birthDate == birthDate &&
     other.color == color &&
     _deepEquality.equals(other.faces, faces) &&
+    other.filterId == filterId &&
     other.id == id &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name &&
+    other.numberOfAssets == numberOfAssets &&
+    other.primaryProfile == primaryProfile &&
     other.spacePersonId == spacePersonId &&
     other.species == species &&
     other.thumbnailPath == thumbnailPath &&
@@ -107,10 +142,13 @@ class PersonWithFacesResponseDto {
     (birthDate == null ? 0 : birthDate!.hashCode) +
     (color == null ? 0 : color!.hashCode) +
     (faces.hashCode) +
+    (filterId == null ? 0 : filterId!.hashCode) +
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
+    (numberOfAssets == null ? 0 : numberOfAssets!.hashCode) +
+    (primaryProfile == null ? 0 : primaryProfile!.hashCode) +
     (spacePersonId == null ? 0 : spacePersonId!.hashCode) +
     (species == null ? 0 : species!.hashCode) +
     (thumbnailPath.hashCode) +
@@ -118,7 +156,7 @@ class PersonWithFacesResponseDto {
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, color=$color, faces=$faces, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, spacePersonId=$spacePersonId, species=$species, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, color=$color, faces=$faces, filterId=$filterId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, numberOfAssets=$numberOfAssets, primaryProfile=$primaryProfile, spacePersonId=$spacePersonId, species=$species, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -133,6 +171,11 @@ class PersonWithFacesResponseDto {
     //  json[r'color'] = null;
     }
       json[r'faces'] = this.faces;
+    if (this.filterId != null) {
+      json[r'filterId'] = this.filterId;
+    } else {
+    //  json[r'filterId'] = null;
+    }
       json[r'id'] = this.id;
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
@@ -141,6 +184,16 @@ class PersonWithFacesResponseDto {
     }
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
+    if (this.numberOfAssets != null) {
+      json[r'numberOfAssets'] = this.numberOfAssets;
+    } else {
+    //  json[r'numberOfAssets'] = null;
+    }
+    if (this.primaryProfile != null) {
+      json[r'primaryProfile'] = this.primaryProfile;
+    } else {
+    //  json[r'primaryProfile'] = null;
+    }
     if (this.spacePersonId != null) {
       json[r'spacePersonId'] = this.spacePersonId;
     } else {
@@ -173,10 +226,13 @@ class PersonWithFacesResponseDto {
         birthDate: mapDateTime(json, r'birthDate', r''),
         color: mapValueOfType<String>(json, r'color'),
         faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
+        filterId: mapValueOfType<String>(json, r'filterId'),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
+        numberOfAssets: mapValueOfType<int>(json, r'numberOfAssets'),
+        primaryProfile: ScopedPrimaryProfile.fromJson(json[r'primaryProfile']),
         spacePersonId: mapValueOfType<String>(json, r'spacePersonId'),
         species: mapValueOfType<String>(json, r'species'),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,

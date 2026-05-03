@@ -18,12 +18,15 @@ import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto';
+import { PersonFacePageQueryDto, PersonFacePageResponseDto } from 'src/dtos/person.dto';
 import {
+  SharedSpacePeopleStatisticsResponseDto,
   SharedSpacePersonAliasDto,
   SharedSpacePersonMergeDto,
   SharedSpacePersonResponseDto,
   SharedSpacePersonUpdateDto,
   SpacePeopleQueryDto,
+  SpaceRepresentativeFaceUpdateDto,
 } from 'src/dtos/shared-space-person.dto';
 import {
   SharedSpaceActivityQueryDto,
@@ -33,6 +36,8 @@ import {
   SharedSpaceCreateDto,
   SharedSpaceLibraryLinkDto,
   SharedSpaceMemberCreateDto,
+  SharedSpaceMemberMetadataContributionDto,
+  SharedSpaceMemberPreferencesDto,
   SharedSpaceMemberResponseDto,
   SharedSpaceMemberTimelineDto,
   SharedSpaceMemberUpdateDto,
@@ -157,6 +162,21 @@ export class SharedSpaceController {
     return this.service.updateMemberTimeline(auth, id, dto);
   }
 
+  @Patch(':id/members/me/preferences')
+  @Authenticated({ permission: Permission.SharedSpaceRead })
+  @Endpoint({
+    summary: 'Update current member preferences',
+    description: 'Update timeline visibility and person metadata contribution for the current member.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  updateMemberPreferences(
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Body() dto: SharedSpaceMemberPreferencesDto,
+  ): Promise<SharedSpaceMemberResponseDto> {
+    return this.service.updateMemberPreferences(auth, id, dto);
+  }
+
   @Patch(':id/view')
   @Authenticated({ permission: Permission.SharedSpaceRead })
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -183,6 +203,22 @@ export class SharedSpaceController {
     @Body() dto: SharedSpaceMemberUpdateDto,
   ): Promise<SharedSpaceMemberResponseDto> {
     return this.service.updateMember(auth, id, userId, dto);
+  }
+
+  @Patch(':id/members/:userId/metadata-contribution')
+  @Authenticated({ permission: Permission.SharedSpaceMemberUpdate })
+  @Endpoint({
+    summary: 'Disable member person metadata contribution',
+    description: 'Disable person metadata contribution for another member. Members must re-enable it themselves.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  updateMemberMetadataContribution(
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() dto: SharedSpaceMemberMetadataContributionDto,
+  ): Promise<SharedSpaceMemberResponseDto> {
+    return this.service.updateMemberMetadataContribution(auth, id, userId, dto);
   }
 
   @Delete(':id/members/:userId')
@@ -250,7 +286,11 @@ export class SharedSpaceController {
 
   @Get(':id/activities')
   @Authenticated({ permission: Permission.SharedSpaceRead })
-  @Endpoint({ operationId: 'getSpaceActivities', summary: 'Get space activity feed' })
+  @Endpoint({
+    operationId: 'getSpaceActivities',
+    summary: 'Get space activity feed',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
   getSpaceActivities(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -274,6 +314,21 @@ export class SharedSpaceController {
     return this.service.getSpacePeople(auth, id, query);
   }
 
+  @Get(':id/people/statistics')
+  @Authenticated({ permission: Permission.SharedSpaceRead })
+  @Endpoint({
+    summary: 'Get people statistics in a shared space',
+    description: 'Retrieve people counts for a shared space.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  getSpacePeopleStatistics(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() query: SpacePeopleQueryDto,
+  ): Promise<SharedSpacePeopleStatisticsResponseDto> {
+    return this.service.getSpacePeopleStatistics(auth, id, query);
+  }
+
   @Post(':id/people/deduplicate')
   @Authenticated({ permission: Permission.SharedSpaceUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -284,6 +339,57 @@ export class SharedSpaceController {
   })
   deduplicateSpacePeople(@Auth() auth: AuthDto, @Param('id') id: string): Promise<void> {
     return this.service.deduplicateSpacePeople(auth, id);
+  }
+
+  @Get(':id/people/:personId/faces')
+  @Authenticated({ permission: Permission.SharedSpaceRead })
+  @Endpoint({
+    summary: 'Get space person faces',
+    description: 'Retrieve detected face crops for a person in a shared space.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  getSpacePersonFaces(
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Param('personId') personId: string,
+    @Query() dto: PersonFacePageQueryDto,
+  ): Promise<PersonFacePageResponseDto> {
+    return this.service.getSpacePersonFaces(auth, id, personId, dto);
+  }
+
+  @Get(':id/people/:personId/faces/:faceId/thumbnail')
+  @FileResponse()
+  @Authenticated({ permission: Permission.SharedSpaceRead })
+  @Endpoint({
+    summary: 'Get space person face thumbnail',
+    description: 'Retrieve an exact face-crop thumbnail for a person in a shared space.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  async getSpacePersonFaceThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Param('personId') personId: string,
+    @Param('faceId') faceId: string,
+  ) {
+    await sendFile(res, next, () => this.service.getSpacePersonFaceThumbnail(auth, id, personId, faceId), this.logger);
+  }
+
+  @Put(':id/people/:personId/representative-face')
+  @Authenticated({ permission: Permission.SharedSpaceUpdate })
+  @Endpoint({
+    summary: 'Update space person representative face',
+    description: 'Update or clear the exact face crop used as the space person thumbnail.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  updateSpacePersonRepresentativeFace(
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Param('personId') personId: string,
+    @Body() dto: SpaceRepresentativeFaceUpdateDto,
+  ): Promise<SharedSpacePersonResponseDto> {
+    return this.service.updateSpacePersonRepresentativeFace(auth, id, personId, dto);
   }
 
   @Get(':id/people/:personId')

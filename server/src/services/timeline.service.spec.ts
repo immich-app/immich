@@ -236,6 +236,36 @@ describe(TimelineService.name, () => {
           }),
         );
       });
+
+      it('resolves scoped person tokens before requesting time buckets', async () => {
+        mocks.sharedSpace.getSpaceIdsForTimeline.mockResolvedValue([{ spaceId: 'space-1' }]);
+        mocks.faceIdentity.resolveScopedPersonTokens.mockResolvedValue({
+          identityIds: ['identity-1'],
+          legacyPersonIds: ['person-1'],
+          legacySpacePersonIds: ['space-person-1'],
+          hasInaccessibleToken: false,
+        });
+        mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+        await sut.getTimeBuckets(authStub.admin, {
+          personIds: ['space-person:space-person-1'],
+          withSharedSpaces: true,
+          visibility: AssetVisibility.Timeline,
+        });
+
+        expect(mocks.faceIdentity.resolveScopedPersonTokens).toHaveBeenCalledWith({
+          userId: authStub.admin.user.id,
+          tokens: ['space-person:space-person-1'],
+          scope: { withSharedSpaces: true, timelineSpaceIds: ['space-1'], spaceId: undefined },
+        });
+        expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+          expect.objectContaining({
+            identityIds: ['identity-1'],
+            personIds: ['person-1'],
+            spacePersonIds: ['space-person-1'],
+          }),
+        );
+      });
     });
   });
 

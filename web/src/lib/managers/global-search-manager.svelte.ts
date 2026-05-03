@@ -110,6 +110,18 @@ const PROVIDER_TIMEOUT_MS = 15_000;
 // cross-contaminate all five sections.
 const idle = Object.freeze({ status: 'idle' as const });
 
+function getPersonRoute(person: Pick<PersonResponseDto, 'id' | 'primaryProfile' | 'filterId'>): string {
+  if (person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId) {
+    if (person.filterId) {
+      return Route.search({ personIds: [person.filterId], withSharedSpaces: true });
+    }
+
+    return Route.viewSpacePerson(person.primaryProfile.spaceId, person.primaryProfile.id);
+  }
+
+  return Route.viewPerson({ id: person.primaryProfile?.id ?? person.id });
+}
+
 // Entity-section keys dispatched by runBatch per scope. Navigation is intentionally
 // absent — it flows through the synchronous `runNavigationProvider` off the debounce
 // path. Under a prefix scope, only the matching keys dispatch; all other entity
@@ -722,7 +734,7 @@ export class GlobalSearchManager {
     // the section in 'loading' forever until the palette closes.
     const signal = AbortSignal.any([this.closeSignal, AbortSignal.timeout(PROVIDER_TIMEOUT_MS)]);
     try {
-      const response = await getAllPeople({ size: 10 }, { signal });
+      const response = await getAllPeople({ size: 10, withSharedSpaces: true }, { signal });
       this.peopleSuggestionsCache = [...response.people].sort(personSuggestionsComparator);
     } catch (error: unknown) {
       // Distinguish three rejection modes:
@@ -1287,15 +1299,18 @@ export class GlobalSearchManager {
         break;
       }
       case 'person': {
-        const p = item as { id: string; name?: string };
-        addEntry({
-          kind: 'person',
-          id: `person:${p.id}`,
-          personId: p.id,
-          label: p.name ?? '',
-          lastUsed: now,
-        });
-        void goto(Route.viewPerson({ id: p.id }));
+        const p = item as PersonResponseDto;
+        if (p.primaryProfile?.type !== 'space-person') {
+          const personId = p.primaryProfile?.id ?? p.id;
+          addEntry({
+            kind: 'person',
+            id: `person:${personId}`,
+            personId,
+            label: p.name ?? '',
+            lastUsed: now,
+          });
+        }
+        void goto(getPersonRoute(p));
         break;
       }
       case 'place': {
@@ -2210,7 +2225,7 @@ export class GlobalSearchManager {
           return items.length === 0 ? { status: 'empty' } : { status: 'ok', items, total: items.length };
         }
         try {
-          const results = await searchPerson({ name: query, withHidden: false }, { signal });
+          const results = await searchPerson({ name: query, withHidden: false, withSharedSpaces: true }, { signal });
           return results.length === 0
             ? { status: 'empty' }
             : { status: 'ok', items: results.slice(0, 5), total: results.length };

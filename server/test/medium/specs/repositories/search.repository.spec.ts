@@ -114,7 +114,9 @@ describe(SearchRepository.name, () => {
       expect(result.cameraMakes).toEqual(['Canon', 'Sony']);
       expect(result.cameraModels).toEqual(['A7', 'R5']);
       expect(result.tags).toEqual([{ id: travel.id, value: 'Travel' }]);
-      expect(result.people).toEqual([{ id: person.id, name: 'Ada' }]);
+      expect(result.people).toEqual([
+        { id: person.id, name: 'Ada', primaryProfile: { type: 'user-person', id: person.id } },
+      ]);
       expect(result.ratings).toEqual([4, 5]);
       expect(result.mediaTypes).toEqual(['IMAGE', 'VIDEO']);
       expect(result.hasUnnamedPeople).toBe(false);
@@ -357,7 +359,9 @@ describe(SearchRepository.name, () => {
         maxDistance: 0,
       });
 
-      expect(result.people).toEqual([{ id: visiblePerson.id, name: 'Visible Ada' }]);
+      expect(result.people).toEqual([
+        { id: visiblePerson.id, name: 'Visible Ada', primaryProfile: { type: 'user-person', id: visiblePerson.id } },
+      ]);
       expect(result.hasUnnamedPeople).toBe(false);
     });
 
@@ -397,7 +401,13 @@ describe(SearchRepository.name, () => {
         spaceId: space.id,
       });
 
-      expect(result.people).toEqual([{ id: sharedPerson.id, name: 'Space Ada' }]);
+      expect(result.people).toEqual([
+        {
+          id: sharedPerson.id,
+          name: 'Space Ada',
+          primaryProfile: { type: 'space-person', id: sharedPerson.id, spaceId: space.id },
+        },
+      ]);
     });
 
     it('excludes hidden and deleted asset faces from shared-space people facets', async () => {
@@ -436,7 +446,13 @@ describe(SearchRepository.name, () => {
         spaceId: space.id,
       });
 
-      expect(result.people).toEqual([{ id: visiblePerson.id, name: 'Visible Space Ada' }]);
+      expect(result.people).toEqual([
+        {
+          id: visiblePerson.id,
+          name: 'Visible Space Ada',
+          primaryProfile: { type: 'space-person', id: visiblePerson.id, spaceId: space.id },
+        },
+      ]);
       expect(result.hasUnnamedPeople).toBe(false);
     });
   });

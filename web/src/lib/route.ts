@@ -100,7 +100,8 @@ export const Route = {
   people: () => '/people',
   viewPerson: ({ id }: { id: string }, params?: { previousRoute?: string; action?: 'merge' }) =>
     `/people/${id}` + asQueryString(params),
-  viewSpacePerson: (spaceId: string, personId: string) => `/spaces/${spaceId}/people/${personId}`,
+  viewSpacePerson: (spaceId: string, personId: string, params?: { previousRoute?: string; action?: 'merge' }) =>
+    `/spaces/${spaceId}/people/${personId}` + asQueryString(params),
 
   // photos
   photos: (params?: { at?: string }) => '/photos' + asQueryString(params),

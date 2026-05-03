@@ -43,6 +43,7 @@ class StatisticsSearchDto {
     this.updatedAfter,
     this.updatedBefore,
     this.visibility,
+    this.withSharedSpaces,
   });
 
   /// Filter by album IDs
@@ -244,6 +245,15 @@ class StatisticsSearchDto {
   ///
   AssetVisibility? visibility;
 
+  /// Include shared spaces the user is a member of
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? withSharedSpaces;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is StatisticsSearchDto &&
     _deepEquality.equals(other.albumIds, albumIds) &&
@@ -275,7 +285,8 @@ class StatisticsSearchDto {
     other.type == type &&
     other.updatedAfter == updatedAfter &&
     other.updatedBefore == updatedBefore &&
-    other.visibility == visibility;
+    other.visibility == visibility &&
+    other.withSharedSpaces == withSharedSpaces;
 
   @override
   int get hashCode =>
@@ -309,10 +320,11 @@ class StatisticsSearchDto {
     (type == null ? 0 : type!.hashCode) +
     (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
     (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (visibility == null ? 0 : visibility!.hashCode);
+    (visibility == null ? 0 : visibility!.hashCode) +
+    (withSharedSpaces == null ? 0 : withSharedSpaces!.hashCode);
 
   @override
-  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, spaceId=$spaceId, spacePersonIds=$spacePersonIds, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
+  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, spaceId=$spaceId, spacePersonIds=$spacePersonIds, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withSharedSpaces=$withSharedSpaces]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -470,6 +482,11 @@ class StatisticsSearchDto {
     } else {
     //  json[r'visibility'] = null;
     }
+    if (this.withSharedSpaces != null) {
+      json[r'withSharedSpaces'] = this.withSharedSpaces;
+    } else {
+    //  json[r'withSharedSpaces'] = null;
+    }
     return json;
   }
 
@@ -522,6 +539,7 @@ class StatisticsSearchDto {
         updatedAfter: mapDateTime(json, r'updatedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         updatedBefore: mapDateTime(json, r'updatedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
+        withSharedSpaces: mapValueOfType<bool>(json, r'withSharedSpaces'),
       );
     }
     return null;

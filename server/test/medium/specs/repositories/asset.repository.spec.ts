@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { AssetFileType, AssetOrder, AssetVisibility } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedSpaceRepository } from 'src/repositories/shared-space.repository';
 import { DB } from 'src/schema';
@@ -29,6 +30,41 @@ beforeAll(async () => {
 });
 
 describe(AssetRepository.name, () => {
+  describe('getForThumbnail', () => {
+    it('should fall back to the preview file when the thumbnail file is missing', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({
+        ownerId: user.id,
+        originalFileName: 'IMG_001.jpg',
+        originalPath: '/uploads/IMG_001.jpg',
+      });
+      await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+
+      await expect(sut.getForThumbnail(asset.id, AssetFileType.Thumbnail, true)).resolves.toMatchObject({
+        path: 'preview.jpg',
+      });
+    });
+
+    it('should prefer the requested thumbnail file when thumbnail and preview files exist', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({
+        ownerId: user.id,
+        originalFileName: 'IMG_002.jpg',
+        originalPath: '/uploads/IMG_002.jpg',
+      });
+      await Promise.all([
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Thumbnail, path: 'thumbnail.jpg' }),
+      ]);
+
+      await expect(sut.getForThumbnail(asset.id, AssetFileType.Thumbnail, true)).resolves.toMatchObject({
+        path: 'thumbnail.jpg',
+      });
+    });
+  });
+
   describe('getMemoryLocationClusters', () => {
     it('should group previewable timeline assets by country and city within the requested window', async () => {
       const { ctx, sut } = setup();
@@ -446,6 +482,47 @@ describe(AssetRepository.name, () => {
 
       const assets = JSON.parse(bucket.assets) as TimeBucketAssets;
       expect(assets.id.toSorted()).toEqual([assetVisible.id]);
+    });
+
+    it('should filter time bucket assets by face identity ids', async () => {
+      const { ctx, sut } = setup();
+      const faceIdentityRepository = ctx.get(FaceIdentityRepository);
+
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const bucketDate = new Date('2026-03-15T12:00:00.000Z');
+      const assetInput = {
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        fileCreatedAt: bucketDate,
+        localDateTime: bucketDate,
+      };
+
+      const { asset: matchingAsset } = await ctx.newAsset(assetInput);
+      const { asset: nonMatchingAsset } = await ctx.newAsset(assetInput);
+      await Promise.all([
+        ctx.newExif({ assetId: matchingAsset.id, timeZone: 'UTC' }),
+        ctx.newExif({ assetId: nonMatchingAsset.id, timeZone: 'UTC' }),
+      ]);
+
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice' });
+      const { assetFace } = await ctx.newAssetFace({ assetId: matchingAsset.id, personId: person.id, isVisible: true });
+      const identity = await faceIdentityRepository.ensurePersonIdentity(person.id);
+      await faceIdentityRepository.linkFace({ assetFaceId: assetFace.id, identityId: identity.id, source: 'manual' });
+
+      const bucket = await sut.getTimeBucket(
+        '2026-03-01',
+        {
+          userIds: [user.id],
+          identityIds: [identity.id],
+          visibility: AssetVisibility.Timeline,
+        },
+        auth,
+      );
+
+      const assets = JSON.parse(bucket.assets) as TimeBucketAssets;
+      expect(assets.id).toEqual([matchingAsset.id]);
     });
   });
 });

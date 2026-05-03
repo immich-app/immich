@@ -2,6 +2,7 @@ import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import {
+  RepresentativeFaceSource,
   SharedSpaceRole,
   type SharedSpaceMemberResponseDto,
   type SharedSpacePersonResponseDto,
@@ -63,6 +64,11 @@ vi.mock('$lib/components/people/people-merge-selector.svelte', async () => {
   return { default: MockComponent };
 });
 
+vi.mock('$lib/modals/RepresentativeFacePickerModal.svelte', async () => {
+  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
+  return { default: MockComponent };
+});
+
 function makeSpace(overrides: Partial<SharedSpaceResponseDto> = {}): SharedSpaceResponseDto {
   return {
     id: 'space-1',
@@ -106,10 +112,12 @@ function renderPage({
   members = [makeMember()],
   person = makePerson(),
   action = null,
+  previousRoute = null,
 }: {
   members?: SharedSpaceMemberResponseDto[];
   person?: SharedSpacePersonResponseDto;
   action?: string | null;
+  previousRoute?: string | null;
 } = {}) {
   const currentUser = userAdminFactory.build({ id: 'current-user-id' });
   authManager.setUser(currentUser);
@@ -121,6 +129,7 @@ function renderPage({
       members,
       person,
       action,
+      previousRoute,
       meta: { title: 'Alice - Test Space' },
     },
   };
@@ -158,6 +167,48 @@ describe('Spaces person detail page', () => {
     expect(sdkMock.getSpacePersonAssets).not.toHaveBeenCalled();
   });
 
+  it('loads a safe previous route for contextual back navigation', async () => {
+    const space = makeSpace();
+    const members = [makeMember()];
+    const person = makePerson();
+    sdkMock.getSpace.mockResolvedValue(space);
+    sdkMock.getMembers.mockResolvedValue(members);
+    sdkMock.getSpacePerson.mockResolvedValue(person);
+
+    const result = await load({
+      url: new URL('https://gallery.test/spaces/space-1/people/person-1?previousRoute=%2Fpeople'),
+      params: { spaceId: 'space-1', personId: 'person-1' },
+    } as never);
+
+    expect(result).toMatchObject({ previousRoute: '/people' });
+  });
+
+  it('ignores external previous routes', async () => {
+    const space = makeSpace();
+    const members = [makeMember()];
+    const person = makePerson();
+    sdkMock.getSpace.mockResolvedValue(space);
+    sdkMock.getMembers.mockResolvedValue(members);
+    sdkMock.getSpacePerson.mockResolvedValue(person);
+
+    const result = await load({
+      url: new URL(
+        'https://gallery.test/spaces/space-1/people/person-1?previousRoute=https%3A%2F%2Fevil.test%2Fpeople',
+      ),
+      params: { spaceId: 'space-1', personId: 'person-1' },
+    } as never);
+
+    expect(result).toMatchObject({ previousRoute: null });
+  });
+
+  it('returns to the previous route when opened from global people', async () => {
+    renderPage({ previousRoute: '/people' });
+
+    await userEvent.click(screen.getByLabelText('close'));
+
+    expect(gotoMock).toHaveBeenCalledWith('/people');
+  });
+
   it('uses the shared timeline surface for space person photos', () => {
     renderPage();
 
@@ -177,6 +228,79 @@ describe('Spaces person detail page', () => {
     expect(screen.queryByLabelText('show_person_options')).not.toBeInTheDocument();
     expect(screen.queryByText('set_date_of_birth')).not.toBeInTheDocument();
     expect(screen.queryByText('merge_people')).not.toBeInTheDocument();
+    expect(screen.queryByText('separate_from_grouped_person')).not.toBeInTheDocument();
+  });
+
+  it('opens the representative face picker for editors', async () => {
+    renderPage({ person: makePerson({ representativeFaceSource: RepresentativeFaceSource.Auto }) });
+
+    await userEvent.click(screen.getByText('select_representative_face'));
+
+    expect(modalManager.show).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        title: 'select_representative_face',
+        loadFaces: expect.any(Function),
+        updateFace: expect.any(Function),
+        resetFace: undefined,
+        canUpdate: true,
+      }),
+    );
+  });
+
+  it('does not show the representative face picker action for viewers', () => {
+    renderPage({ members: [makeMember({ role: SharedSpaceRole.Viewer })] });
+
+    expect(screen.queryByText('select_representative_face')).not.toBeInTheDocument();
+  });
+
+  it('passes a reset callback for manual space representative face overrides', async () => {
+    renderPage({ person: makePerson({ representativeFaceSource: RepresentativeFaceSource.Manual }) });
+
+    await userEvent.click(screen.getByText('select_representative_face'));
+
+    expect(modalManager.show).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ resetFace: expect.any(Function) }),
+    );
+  });
+
+  it('uses exact-face SDK calls for space representative face selection and reset', async () => {
+    const person = makePerson({ representativeFaceSource: RepresentativeFaceSource.Manual });
+    sdkMock.getSpacePersonFaces.mockResolvedValue({ faces: [], hasNextPage: false });
+    sdkMock.updateSpacePersonRepresentativeFace.mockResolvedValue({
+      ...person,
+      representativeFaceSource: RepresentativeFaceSource.Auto,
+    });
+    renderPage({ person });
+
+    await userEvent.click(screen.getByText('select_representative_face'));
+    const props = vi.mocked(modalManager.show).mock.calls[0][1] as unknown as {
+      loadFaces: (request: { page: number; size: number }) => Promise<unknown>;
+      updateFace: (faceId: string) => Promise<unknown>;
+      resetFace: () => Promise<unknown>;
+    };
+
+    await props.loadFaces({ page: 1, size: 50 });
+    await props.updateFace('face-1');
+    await props.resetFace();
+
+    expect(sdkMock.getSpacePersonFaces).toHaveBeenCalledWith({
+      id: 'space-1',
+      personId: 'person-1',
+      page: 1,
+      size: 50,
+    });
+    expect(sdkMock.updateSpacePersonRepresentativeFace).toHaveBeenCalledWith({
+      id: 'space-1',
+      personId: 'person-1',
+      spaceRepresentativeFaceUpdateDto: { assetFaceId: 'face-1' },
+    });
+    expect(sdkMock.updateSpacePersonRepresentativeFace).toHaveBeenCalledWith({
+      id: 'space-1',
+      personId: 'person-1',
+      spaceRepresentativeFaceUpdateDto: { assetFaceId: null },
+    });
   });
 
   it('ignores a forced merge action for viewers', () => {
@@ -189,6 +313,28 @@ describe('Spaces person detail page', () => {
     renderPage({ action: 'merge' });
 
     expect(screen.getByTestId('people-merge-selector')).toHaveAttribute('data-person-id', 'person-1');
+  });
+
+  it('uses same-person repair for a space person merged with a personal candidate', async () => {
+    renderPage({ action: 'merge' });
+
+    await userEvent.click(screen.getByTestId('merge-personal-candidate'));
+
+    expect(sdkMock.mergeScopedPeople).toHaveBeenCalledWith({
+      mergeScopedPeopleDto: {
+        target: { type: 'space-person', id: 'person-1', spaceId: 'space-1' },
+        sources: [{ type: 'person', id: 'person-candidate' }],
+      },
+    });
+    expect(sdkMock.mergeSpacePeople).not.toHaveBeenCalled();
+  });
+
+  it('searches merge candidates with shared spaces enabled', async () => {
+    renderPage({ action: 'merge' });
+
+    await userEvent.click(screen.getByTestId('search-merge-candidates'));
+
+    expect(sdkMock.searchPerson).toHaveBeenCalledWith({ name: 'Alice', withHidden: true, withSharedSpaces: true });
   });
 
   it('edits the space person name from the detail header', async () => {
@@ -268,5 +414,17 @@ describe('Spaces person detail page', () => {
       sharedSpacePersonUpdateDto: { isHidden: true },
     });
     expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/people');
+  });
+
+  it('detaches a space person for owner or editor members after confirmation', async () => {
+    vi.mocked(modalManager.showDialog).mockResolvedValue(true);
+    renderPage();
+
+    await userEvent.click(screen.getByText('separate_from_grouped_person'));
+
+    expect(sdkMock.detachScopedPerson).toHaveBeenCalledWith({
+      detachScopedPersonDto: { profile: { type: 'space-person', id: 'person-1', spaceId: 'space-1' } },
+    });
+    expect(invalidateAllMock).toHaveBeenCalled();
   });
 });

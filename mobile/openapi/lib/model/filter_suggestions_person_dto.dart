@@ -15,6 +15,7 @@ class FilterSuggestionsPersonDto {
   FilterSuggestionsPersonDto({
     required this.id,
     required this.name,
+    this.primaryProfile,
   });
 
   /// Person ID
@@ -23,24 +24,39 @@ class FilterSuggestionsPersonDto {
   /// Person name
   String name;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  ScopedPrimaryProfile? primaryProfile;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is FilterSuggestionsPersonDto &&
     other.id == id &&
-    other.name == name;
+    other.name == name &&
+    other.primaryProfile == primaryProfile;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
-    (name.hashCode);
+    (name.hashCode) +
+    (primaryProfile == null ? 0 : primaryProfile!.hashCode);
 
   @override
-  String toString() => 'FilterSuggestionsPersonDto[id=$id, name=$name]';
+  String toString() => 'FilterSuggestionsPersonDto[id=$id, name=$name, primaryProfile=$primaryProfile]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+    if (this.primaryProfile != null) {
+      json[r'primaryProfile'] = this.primaryProfile;
+    } else {
+    //  json[r'primaryProfile'] = null;
+    }
     return json;
   }
 
@@ -55,6 +71,7 @@ class FilterSuggestionsPersonDto {
       return FilterSuggestionsPersonDto(
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        primaryProfile: ScopedPrimaryProfile.fromJson(json[r'primaryProfile']),
       );
     }
     return null;

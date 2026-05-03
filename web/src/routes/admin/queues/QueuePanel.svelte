@@ -71,6 +71,9 @@
       missingText: $t('missing'),
       disabled: !featureFlags.facialRecognition,
     },
+    [QueueName.PeopleBackfill]: {
+      missingText: $t('start'),
+    },
     [QueueName.Ocr]: {
       allText: $t('all'),
       missingText: $t('missing'),

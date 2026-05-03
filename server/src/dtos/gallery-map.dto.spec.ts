@@ -19,6 +19,13 @@ describe('FilteredMapMarkerDto', () => {
       expect(result.data?.personIds).toEqual(ids);
     });
 
+    it('should accept scoped shared-space person tokens', () => {
+      const result = parse({ personIds: 'space-person:7e57d004-2b97-4e7a-b45f-5387367791cd' });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.personIds).toEqual(['space-person:7e57d004-2b97-4e7a-b45f-5387367791cd']);
+    });
+
     it('should leave undefined when not provided and pass validation', () => {
       const result = parse({});
       expect(result.success).toBe(true);

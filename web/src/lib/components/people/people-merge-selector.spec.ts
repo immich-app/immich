@@ -40,6 +40,7 @@ describe('PeopleMergeSelector', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     Element.prototype.animate = getAnimateMock();
+    Element.prototype.getAnimations = vi.fn().mockReturnValue([]);
     vi.mocked(modalManager.showDialog).mockResolvedValue(true);
   });
 
@@ -71,7 +72,7 @@ describe('PeopleMergeSelector', () => {
     expect(onMerge).toHaveBeenCalledWith(target);
   });
 
-  it('swaps merge direction when the current target is unnamed and a named candidate is selected', async () => {
+  it('auto-promotes a named candidate without triggering the manual swap callback', async () => {
     const unnamed = { id: 'p1', name: '' };
     const named = { id: 'p2', name: 'Alice' };
     const loadPeople = vi.fn().mockResolvedValue([unnamed, named]);
@@ -91,12 +92,35 @@ describe('PeopleMergeSelector', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Alice' }));
 
-    await waitFor(() => expect(onSwapPerson).toHaveBeenCalledWith(named));
+    expect(onSwapPerson).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole('button', { name: 'merge' }));
 
     await waitFor(() => {
       expect(mergePeople).toHaveBeenCalledWith(named, [unnamed]);
     });
+  });
+
+  it('calls the manual swap callback when the swap direction button is clicked', async () => {
+    const target = { id: 'p1', name: 'Alice' };
+    const candidate = { id: 'p2', name: 'Bob' };
+    const loadPeople = vi.fn().mockResolvedValue([target, candidate]);
+    const onSwapPerson = vi.fn();
+
+    renderSelector({
+      person: target,
+      getDisplayName,
+      getThumbnailUrl,
+      loadPeople,
+      mergePeople: vi.fn(),
+      onBack: vi.fn(),
+      onMerge: vi.fn(),
+      onSwapPerson,
+    });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Bob' }));
+    await userEvent.click(screen.getByRole('button', { name: 'swap_merge_direction' }));
+
+    expect(onSwapPerson).toHaveBeenCalledWith(candidate);
   });
 
   it('reloads candidates with similarity sorting when enabled', async () => {

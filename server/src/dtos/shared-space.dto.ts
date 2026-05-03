@@ -54,6 +54,7 @@ const SharedSpaceMemberResponseSchema = z
     profileChangedAt: z.string().optional().describe('Profile change date'),
     avatarColor: z.string().optional().describe('Avatar color'),
     showInTimeline: z.boolean().describe('Show space assets in timeline'),
+    sharePersonMetadata: z.boolean().describe('Share person names and birth dates with this space'),
     contributionCount: z.number().optional().describe('Number of photos contributed by this member'),
     lastActiveAt: z.string().nullable().optional().describe('Last time this member added a photo'),
     recentAssetId: z.string().nullable().optional().describe('Most recently added asset ID by this member'),
@@ -107,6 +108,19 @@ const SharedSpaceMemberTimelineSchema = z
   })
   .meta({ id: 'SharedSpaceMemberTimelineDto' });
 
+const SharedSpaceMemberPreferencesSchema = z
+  .object({
+    showInTimeline: z.boolean().optional().describe('Show space assets in personal timeline'),
+    sharePersonMetadata: z.boolean().optional().describe('Share person names and birth dates with this space'),
+  })
+  .meta({ id: 'SharedSpaceMemberPreferencesDto' });
+
+const SharedSpaceMemberMetadataContributionSchema = z
+  .object({
+    sharePersonMetadata: z.literal(false).describe('Disable person metadata contribution for this member'),
+  })
+  .meta({ id: 'SharedSpaceMemberMetadataContributionDto' });
+
 const SharedSpaceLibraryLinkSchema = z
   .object({
     libraryId: z.uuidv4().describe('Library ID'),
@@ -156,6 +170,10 @@ export class SharedSpaceMemberResponseDto extends createZodDto(SharedSpaceMember
 export class SharedSpaceLinkedLibraryDto extends createZodDto(SharedSpaceLinkedLibrarySchema) {}
 export class SharedSpaceResponseDto extends createZodDto(SharedSpaceResponseSchema) {}
 export class SharedSpaceMemberTimelineDto extends createZodDto(SharedSpaceMemberTimelineSchema) {}
+export class SharedSpaceMemberPreferencesDto extends createZodDto(SharedSpaceMemberPreferencesSchema) {}
+export class SharedSpaceMemberMetadataContributionDto extends createZodDto(
+  SharedSpaceMemberMetadataContributionSchema,
+) {}
 export class SharedSpaceLibraryLinkDto extends createZodDto(SharedSpaceLibraryLinkSchema) {}
 export class SharedSpaceAssetAddDto extends createZodDto(SharedSpaceAssetAddSchema) {}
 export class SharedSpaceAssetRemoveDto extends createZodDto(SharedSpaceAssetRemoveSchema) {}

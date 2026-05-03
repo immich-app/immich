@@ -34,6 +34,14 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.DatabaseBackup };
     }
 
+    case ManualJobName.FaceIdentityBackfill: {
+      return { name: JobName.FaceIdentityBackfill, data: {} };
+    }
+
+    case ManualJobName.SharedSpacePersonMetadataBackfill: {
+      return { name: JobName.SharedSpacePersonMetadataBackfill, data: {} };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }

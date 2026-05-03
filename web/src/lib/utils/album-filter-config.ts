@@ -3,7 +3,7 @@ import {
   type FilterPanelConfig,
   type FilterState,
 } from '$lib/components/filter-panel/filter-panel';
-import { createUrl } from '$lib/utils';
+import { getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
 import { AssetTypeEnum, getFilterSuggestions, getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
 
 const sections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'] as const;
@@ -16,7 +16,7 @@ function mapSuggestions(response: Awaited<ReturnType<typeof getFilterSuggestions
     people: response.people.map((person) => ({
       id: person.id,
       name: person.name,
-      thumbnailUrl: createUrl(`/people/${person.id}/thumbnail`),
+      thumbnailUrl: getPhotosPersonFilterThumbnailUrl(person),
     })),
     ratings: response.ratings,
     mediaTypes: response.mediaTypes,

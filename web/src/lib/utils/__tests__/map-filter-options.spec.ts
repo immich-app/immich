@@ -63,6 +63,18 @@ describe('buildMapTimeBucketOptions', () => {
     });
   });
 
+  it('uses space-scoped person filters for space map time bucket requests', () => {
+    const filters = {
+      ...createFilterState(),
+      personIds: ['space-person-1'],
+    };
+
+    expect(buildMapTimeBucketOptions(filters, 'space-123')).toEqual({
+      spaceId: 'space-123',
+      spacePersonIds: ['space-person-1'],
+    });
+  });
+
   it('includes custom dates in map time bucket options', () => {
     const filters = { ...createFilterState(), dateBefore: '2024-12-31' };
 

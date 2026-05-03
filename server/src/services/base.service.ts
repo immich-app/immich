@@ -1,12 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { isAbsolute } from 'node:path';
+import { createReadStream } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { isAbsolute, join } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
-import { SALT_ROUNDS } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { UserAdmin } from 'src/database';
-import { CacheControl, StorageFolder } from 'src/enum';
+import { AssetFace, UserAdmin } from 'src/database';
+import { AssetEditAction, type CropParameters } from 'src/dtos/editing.dto';
+import { AssetFileType, CacheControl, ImageFormat, StorageFolder } from 'src/enum';
 import { ServeStrategy } from 'src/interfaces/storage-backend.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -26,6 +30,7 @@ import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -64,9 +69,18 @@ import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { UserTable } from 'src/schema/tables/user.table';
+import { GenerateThumbnailOptions, ImageDimensions } from 'src/types';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 import { ImmichFileResponse, ImmichMediaResponse, ImmichRedirectResponse, ImmichStreamResponse } from 'src/utils/file';
+import { clamp } from 'src/utils/misc';
+
+type FaceThumbnailBounds = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
 
 export const BASE_SERVICE_DEPENDENCIES = [
   LoggingRepository,
@@ -88,6 +102,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   DuplicateRepository,
   EmailRepository,
   EventRepository,
+  FaceIdentityRepository,
   JobRepository,
   LibraryRepository,
   MachineLearningRepository,
@@ -150,6 +165,7 @@ export class BaseService {
     protected duplicateRepository: DuplicateRepository,
     protected emailRepository: EmailRepository,
     protected eventRepository: EventRepository,
+    protected faceIdentityRepository: FaceIdentityRepository,
     protected jobRepository: JobRepository,
     protected libraryRepository: LibraryRepository,
     protected machineLearningRepository: MachineLearningRepository,
@@ -286,6 +302,162 @@ export class BaseService {
     const backend = StorageService.resolveBackendForKey(filePath);
     const { tempPath, cleanup } = await backend.downloadToTemp(filePath);
     return { localPath: tempPath, cleanup };
+  }
+
+  protected async getFaceThumbnailSource(assetId: string): Promise<string | null> {
+    const preview = await this.assetRepository.getForThumbnail(assetId, AssetFileType.Preview, false);
+    if (preview.path) {
+      return preview.path;
+    }
+
+    const thumbnail = await this.assetRepository.getForThumbnail(assetId, AssetFileType.Thumbnail, false);
+    return thumbnail.path ?? null;
+  }
+
+  protected async generateFaceThumbnailResponse(face: AssetFace, sourcePath: string): Promise<ImmichMediaResponse> {
+    const { image } = await this.getConfig({ withCache: true });
+    const source = await this.ensureLocalFile(sourcePath);
+    const tempDir = await mkdtemp(join(tmpdir(), 'gallery-face-thumbnail-'));
+    const outputPath = join(tempDir, 'thumbnail.jpeg');
+
+    try {
+      const { data: decodedImage, info } = await this.mediaRepository.decodeImage(source.localPath, {
+        colorspace: image.colorspace,
+        processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
+      });
+
+      const thumbnailOptions: GenerateThumbnailOptions = {
+        colorspace: image.colorspace,
+        format: ImageFormat.Jpeg,
+        raw: info,
+        quality: image.thumbnail.quality,
+        progressive: false,
+        processInvalidImages: false,
+        size: FACE_THUMBNAIL_SIZE,
+        edits: [
+          {
+            action: AssetEditAction.Crop,
+            parameters: this.getFaceThumbnailCrop(
+              {
+                old: { width: face.imageWidth, height: face.imageHeight },
+                new: { width: info.width, height: info.height },
+              },
+              {
+                x1: face.boundingBoxX1,
+                y1: face.boundingBoxY1,
+                x2: face.boundingBoxX2,
+                y2: face.boundingBoxY2,
+              },
+            ),
+          },
+        ],
+      };
+
+      await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, outputPath);
+    } catch (error) {
+      await rm(tempDir, { recursive: true, force: true });
+      throw error;
+    } finally {
+      await source.cleanup();
+    }
+
+    const cleanup = () => {
+      void rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    };
+    const stream = createReadStream(outputPath);
+    stream.once('close', cleanup);
+    stream.once('error', cleanup);
+
+    return new ImmichStreamResponse({
+      stream,
+      contentType: 'image/jpeg',
+      cacheControl: CacheControl.PrivateWithoutCache,
+    });
+  }
+
+  private getFaceThumbnailCrop(
+    dims: { old: ImageDimensions; new: ImageDimensions },
+    { x1, y1, x2, y2 }: FaceThumbnailBounds,
+  ): CropParameters {
+    if (
+      !this.hasPositiveDimensions(dims.old) ||
+      !this.hasPositiveDimensions(dims.new) ||
+      ![x1, y1, x2, y2].every((value) => Number.isFinite(value)) ||
+      x2 <= x1 ||
+      y2 <= y1
+    ) {
+      return this.getCenteredFaceThumbnailCrop(dims.new);
+    }
+
+    const clampedX1 = clamp(x1, 0, dims.old.width);
+    const clampedY1 = clamp(y1, 0, dims.old.height);
+    const clampedX2 = clamp(x2, 0, dims.old.width);
+    const clampedY2 = clamp(y2, 0, dims.old.height);
+
+    const widthScale = dims.new.width / dims.old.width;
+    const heightScale = dims.new.height / dims.old.height;
+
+    const halfWidth = (widthScale * (clampedX2 - clampedX1)) / 2;
+    const halfHeight = (heightScale * (clampedY2 - clampedY1)) / 2;
+
+    const middleX = Math.round(widthScale * clampedX1 + halfWidth);
+    const middleY = Math.round(heightScale * clampedY1 + halfHeight);
+    const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
+    const newHalfSize = Math.min(
+      middleX - Math.max(0, middleX - targetHalfSize),
+      middleY - Math.max(0, middleY - targetHalfSize),
+      Math.min(dims.new.width - 1, middleX + targetHalfSize) - middleX,
+      Math.min(dims.new.height - 1, middleY + targetHalfSize) - middleY,
+    );
+
+    const crop = {
+      x: middleX - newHalfSize,
+      y: middleY - newHalfSize,
+      width: newHalfSize * 2,
+      height: newHalfSize * 2,
+    };
+
+    return this.hasValidCrop(crop) ? crop : this.getCenteredFaceThumbnailCrop(dims.new);
+  }
+
+  private hasPositiveDimensions(dimensions: ImageDimensions) {
+    return (
+      Number.isFinite(dimensions.width) &&
+      dimensions.width > 0 &&
+      Number.isFinite(dimensions.height) &&
+      dimensions.height > 0
+    );
+  }
+
+  private hasValidCrop(crop: CropParameters) {
+    return (
+      Number.isFinite(crop.x) &&
+      crop.x >= 0 &&
+      Number.isFinite(crop.y) &&
+      crop.y >= 0 &&
+      Number.isFinite(crop.width) &&
+      crop.width > 0 &&
+      Number.isFinite(crop.height) &&
+      crop.height > 0
+    );
+  }
+
+  private getCenteredFaceThumbnailCrop(dimensions: ImageDimensions): CropParameters {
+    const width = this.toPositiveInteger(dimensions.width, FACE_THUMBNAIL_SIZE);
+    const height = this.toPositiveInteger(dimensions.height, FACE_THUMBNAIL_SIZE);
+    const size = Math.min(width, height);
+
+    return {
+      x: Math.floor((width - size) / 2),
+      y: Math.floor((height - size) / 2),
+      width: size,
+      height: size,
+    };
+  }
+
+  private toPositiveInteger(value: number, fallback: number) {
+    const rounded = Math.floor(value);
+    return Number.isFinite(rounded) && rounded > 0 ? rounded : fallback;
   }
 
   protected async syncUsage(id?: string): Promise<void> {

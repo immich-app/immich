@@ -141,7 +141,7 @@ class SqlGenerator {
         queries.push({ params: [] });
       }
 
-      for (const { name, params, stream } of queries) {
+      for (const { name, params, stream, sortQueries } of queries) {
         let queryLabel = `${label}.${key}`;
         if (name) {
           queryLabel += ` (${name})`;
@@ -168,11 +168,25 @@ class SqlGenerator {
           continue;
         }
 
-        data.push([`-- ${queryLabel}`, ...this.sqlLogger.queries].join('\n'));
+        const recordedQueries = this.sortRecordedQueries(sortQueries, this.sqlLogger.queries);
+        data.push([`-- ${queryLabel}`, ...recordedQueries].join('\n'));
       }
     }
 
     return data;
+  }
+
+  private sortRecordedQueries(sortQueries: boolean | string[] | undefined, queries: string[]) {
+    if (Array.isArray(sortQueries)) {
+      const getIndex = (query: string) => {
+        const index = sortQueries.findIndex((pattern) => query.includes(pattern));
+        return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+      };
+
+      return queries.toSorted((a, b) => getIndex(a) - getIndex(b) || a.localeCompare(b));
+    }
+
+    return sortQueries ? queries.toSorted() : queries;
   }
 
   private async write() {

@@ -17,10 +17,17 @@
   import { getPersonActions } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { createUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
-  import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
+  import {
+    getAllPeople,
+    getPerson,
+    searchPerson,
+    updatePerson,
+    updateSpacePerson,
+    type PersonResponseDto,
+  } from '@immich/sdk';
   import { Button, Icon, modalManager, toastManager } from '@immich/ui';
   import {
     mdiAccountMultipleCheckOutline,
@@ -86,7 +93,7 @@
           handlePromiseError(
             Promise.all(
               Array.from({ length: pagesToLoad }).map((_, i) => {
-                return getAllPeople({ withHidden: true, page: startingPage + i });
+                return getAllPeople({ withHidden: true, withSharedSpaces: true, page: startingPage + i });
               }),
             ).then((pages) => {
               for (const page of pages) {
@@ -110,7 +117,11 @@
     }
 
     try {
-      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
+      const { people: newPeople, hasNextPage } = await getAllPeople({
+        withHidden: true,
+        withSharedSpaces: true,
+        page: nextPage,
+      });
       people = people.concat(newPeople);
       if (nextPage !== null) {
         currentPage = nextPage;
@@ -141,7 +152,7 @@
     });
 
     if (!response) {
-      await updateName(personMerge1.id, newName);
+      await updateName(personMerge1, newName);
       return;
     }
 
@@ -229,16 +240,38 @@
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
+  const getPersonHref = (person: PersonResponseDto) =>
+    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
+      ? Route.viewSpacePerson(person.primaryProfile.spaceId, person.primaryProfile.id, {
+          previousRoute: Route.people(),
+        })
+      : Route.viewPerson({ ...person, id: person.primaryProfile?.id ?? person.id }, { previousRoute: Route.people() });
+
+  const getPersonThumbnail = (person: PersonResponseDto) =>
+    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
+      ? createUrl(`/shared-spaces/${person.primaryProfile.spaceId}/people/${person.primaryProfile.id}/thumbnail`, {
+          updatedAt: person.updatedAt,
+        })
+      : getPeopleThumbnailUrl({ ...person, id: person.primaryProfile?.id ?? person.id });
+
+  const isPersonalPrimary = (person: PersonResponseDto) =>
+    !person.primaryProfile || person.primaryProfile.type === 'user-person';
+  const isSpacePrimary = (person: PersonResponseDto) =>
+    person.primaryProfile?.type === 'space-person' && !!person.primaryProfile.spaceId;
+  const canEditName = (person: PersonResponseDto) => isPersonalPrimary(person) || isSpacePrimary(person);
+
   const toManagedPerson = (person: PersonResponseDto): ManagedPerson => ({
     id: person.id,
     displayName: person.name,
     canonicalName: person.name,
-    thumbnailUrl: getPeopleThumbnailUrl(person),
-    href: Route.viewPerson(person, { previousRoute: Route.people() }),
+    thumbnailUrl: getPersonThumbnail(person),
+    href: getPersonHref(person),
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     type: person.type,
     species: person.species,
+    assetCount: person.numberOfAssets,
+    canEditPersonalProfile: isPersonalPrimary(person),
   });
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
@@ -249,8 +282,13 @@
         return;
       }
 
+      if (!isPersonalPrimary(targetPerson)) {
+        await updateName(targetPerson, name);
+        return;
+      }
+
       if (name === '') {
-        await updateName(targetPerson.id, '');
+        await updateName(targetPerson, '');
         return;
       }
 
@@ -270,13 +308,41 @@
         await handleMerge();
         return;
       }
-      await updateName(targetPerson.id, name);
+      await updateName(targetPerson, name);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
     }
   };
 
-  const updateName = async (id: string, name: string) => {
+  const updateName = async (targetPerson: PersonResponseDto, name: string) => {
+    const spaceId =
+      targetPerson.primaryProfile?.type === 'space-person' ? targetPerson.primaryProfile.spaceId : undefined;
+
+    if (spaceId) {
+      const updatedPerson = await updateSpacePerson({
+        id: spaceId,
+        personId: targetPerson.primaryProfile?.id ?? targetPerson.id,
+        sharedSpacePersonUpdateDto: { name },
+      });
+
+      people = people.map((person: PersonResponseDto) =>
+        person.id === targetPerson.id
+          ? {
+              ...person,
+              name: updatedPerson.name,
+              birthDate: updatedPerson.birthDate ?? person.birthDate,
+              isHidden: updatedPerson.isHidden,
+              updatedAt: updatedPerson.updatedAt,
+              type: updatedPerson.type ?? person.type,
+              numberOfAssets: updatedPerson.assetCount,
+            }
+          : person,
+      );
+      newName = '';
+      return;
+    }
+
+    const id = targetPerson.primaryProfile?.id ?? targetPerson.id;
     const updatedPerson = await updatePerson({
       id,
       personUpdateDto: { name },
@@ -339,6 +405,7 @@
               placeholder={$t('search_people')}
               onReset={onResetSearchBar}
               onSearch={handleSearch}
+              withSharedSpaces={true}
               bind:searchName
               bind:searchedPeopleLocal
             />
@@ -361,7 +428,8 @@
       {toManagedPerson}
       hasNextPage={!!nextPage && !searchName}
       {loadNextPage}
-      canEditNames
+      canEditNames={canEditName}
+      canShowActions={isPersonalPrimary}
       onNameSubmit={onNameChangeSubmit}
     >
       {#snippet actions(person)}

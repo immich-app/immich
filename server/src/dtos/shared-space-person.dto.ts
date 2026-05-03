@@ -38,6 +38,12 @@ const SharedSpacePersonAliasSchema = z
   })
   .meta({ id: 'SharedSpacePersonAliasDto' });
 
+const SpaceRepresentativeFaceUpdateSchema = z
+  .object({
+    assetFaceId: z.uuidv4().nullable().describe('Asset face ID used as the space representative face'),
+  })
+  .meta({ id: 'SpaceRepresentativeFaceUpdateDto' });
+
 const SharedSpacePersonMergeSchema = z
   .object({
     ids: z.array(z.uuidv4()).describe('Person IDs to merge into target'),
@@ -53,6 +59,7 @@ const SharedSpacePersonResponseSchema = z
     isHidden: z.boolean().describe('Is hidden'),
     birthDate: z.string().nullable().optional().describe('Person date of birth').meta({ format: 'date' }),
     representativeFaceId: z.string().nullable().optional().describe('Representative face ID'),
+    representativeFaceSource: z.enum(['auto', 'manual']).describe('Representative face source'),
     faceCount: z.number().describe('Number of faces assigned to this person'),
     assetCount: z.number().describe('Number of unique assets with this person'),
     alias: z.string().nullable().optional().describe('User-specific alias for this person'),
@@ -62,8 +69,17 @@ const SharedSpacePersonResponseSchema = z
   })
   .meta({ id: 'SharedSpacePersonResponseDto' });
 
+const SharedSpacePeopleStatisticsResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of people'),
+    hidden: z.int().min(0).describe('Number of hidden people'),
+  })
+  .meta({ id: 'SharedSpacePeopleStatisticsResponseDto' });
+
 export class SpacePeopleQueryDto extends createZodDto(SpacePeopleQuerySchema) {}
 export class SharedSpacePersonUpdateDto extends createZodDto(SharedSpacePersonUpdateSchema) {}
 export class SharedSpacePersonAliasDto extends createZodDto(SharedSpacePersonAliasSchema) {}
+export class SpaceRepresentativeFaceUpdateDto extends createZodDto(SpaceRepresentativeFaceUpdateSchema) {}
 export class SharedSpacePersonMergeDto extends createZodDto(SharedSpacePersonMergeSchema) {}
 export class SharedSpacePersonResponseDto extends createZodDto(SharedSpacePersonResponseSchema) {}
+export class SharedSpacePeopleStatisticsResponseDto extends createZodDto(SharedSpacePeopleStatisticsResponseSchema) {}

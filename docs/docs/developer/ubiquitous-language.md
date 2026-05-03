@@ -73,21 +73,29 @@ This document names the major Gallery concepts so discussions can start from pro
 
 ## People and recognition
 
-| Term                     | Definition                                                                                                      | Aliases to avoid            |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **Face**                 | A detected region on an asset that may be assigned to a person cluster.                                         | Detection, face box         |
-| **Personal Person**      | A user-owned person or pet cluster in the personal people catalog.                                              | Global Person, owner person |
-| **Space Person**         | A Shared Space-level person or pet cluster made from faces on assets in that space.                             | Shared person, space face   |
-| **Representative face**  | The face used as the display image source for a person cluster.                                                 | Thumbnail face              |
-| **Person thumbnail**     | The rendered thumbnail for a Personal Person or Space Person, normally derived from a representative face.      | Avatar, headshot            |
-| **Hidden person**        | A person cluster excluded from normal people lists and filters until explicitly requested.                      | Invisible person            |
-| **Favorite person**      | A Personal Person pinned ahead of other personal people.                                                        | Pinned person               |
-| **Person alias**         | A member-specific display override for a Space Person.                                                          | Nickname                    |
-| **Person name override** | The Space Person name that supersedes the linked Personal Person name inside that Shared Space.                 | Space name, renamed person  |
-| **Pet person**           | A person-like cluster whose type is pet and whose faces come from pet detection.                                | Pet, animal tag             |
-| **Face matching**        | The process that assigns faces to existing people or creates new people.                                        | Recognition, clustering     |
-| **Space face matching**  | The Shared Space process that maps already-assigned personal faces into Space People and bridges across owners. | Space recognition           |
-| **Person dedup pass**    | A background pass that merges duplicate person clusters when embeddings indicate the same real-world subject.   | Merge job                   |
+| Term                             | Definition                                                                                                                                                           | Aliases to avoid                |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **Face**                         | A detected region on an asset that may be assigned to a person cluster.                                                                                              | Detection, face box             |
+| **Personal Person**              | A user-owned person or pet cluster in the personal people catalog.                                                                                                   | Global Person, owner person     |
+| **Space Person**                 | A Shared Space-level person or pet cluster made from faces on assets in that space.                                                                                  | Shared person, space face       |
+| **Face Identity**                | The internal sameness key for one real person or pet across Personal People and Space People.                                                                        | Global Person, universal person |
+| **Identity-linked face**         | A visible `asset_face` row linked to one Face Identity through `face_identity_face`.                                                                                 | Global face                     |
+| **Scoped person profile**        | A user-scoped `person` or space-scoped `shared_space_person` row that carries display metadata inside one permission boundary.                                       | Person record                   |
+| **Metadata inheritance**         | Copying permitted fields, such as name and birth date, from a source scoped profile into a target Space Person.                                                      | Metadata sync                   |
+| **Metadata contribution**        | A Space member's setting-controlled ability to publish selected Personal Person fields into a Space Person.                                                          | Name sharing                    |
+| **Identity-grouped person**      | A `/people`, filter, or search result that represents one accessible Face Identity and is rendered only from accessible scoped profiles.                             | Global person row               |
+| **Scoped primary profile**       | The accessible Personal Person or Space Person profile used as the navigation and thumbnail target for an identity-grouped person.                                   | Primary person                  |
+| **Scoped identity filter token** | An opaque profile-scoped filter value such as `person:<id>` or `space-person:<id>` that resolves to an accessible Face Identity without exposing `face_identity.id`. | Identity id                     |
+| **Representative face**          | The face used as the display image source for a person cluster.                                                                                                      | Thumbnail face                  |
+| **Person thumbnail**             | The rendered thumbnail for a Personal Person or Space Person, normally derived from a representative face.                                                           | Avatar, headshot                |
+| **Hidden person**                | A person cluster excluded from normal people lists and filters until explicitly requested.                                                                           | Invisible person                |
+| **Favorite person**              | A Personal Person pinned ahead of other personal people.                                                                                                             | Pinned person                   |
+| **Person alias**                 | A member-specific display override for a Space Person.                                                                                                               | Nickname                        |
+| **Person name override**         | The Space Person name that supersedes the linked Personal Person name inside that Shared Space.                                                                      | Space name, renamed person      |
+| **Pet person**                   | A person-like cluster whose type is pet and whose faces come from pet detection.                                                                                     | Pet, animal tag                 |
+| **Face matching**                | The process that assigns faces to existing people or creates new people.                                                                                             | Recognition, clustering         |
+| **Space face matching**          | The Shared Space process that maps already-assigned personal faces into Space People and bridges across owners.                                                      | Space recognition               |
+| **Person dedup pass**            | A background pass that merges duplicate person clusters when embeddings indicate the same real-world subject.                                                        | Merge job                       |
 
 ## Search and filtering
 
@@ -151,11 +159,12 @@ This document names the major Gallery concepts so discussions can start from pro
 - A **Shared Space** has one or more **Space Members** and contains **Space Assets** by direct links, linked libraries, or both.
 - A **Space Member** has exactly one **Space Role** per **Shared Space**.
 - A **Linked Library** makes every eligible **Asset** in that **Library** visible as a **Library-linked space asset**.
-- A **Personal Person** belongs to one **User**; a **Space Person** belongs to one **Shared Space**.
-- A **Face** belongs to one **Asset**, may point to one **Personal Person**, and may be linked into one or more **Space People** through space-person face links.
-- A **Space Person** may display its own **Person name override**, fall back to the linked **Personal Person** name, and expose a member-specific **Person alias**.
-- A **Filter Surface** owns one **Filter state**; the page scope decides whether selected `personIds` mean **Personal People** or **Space People**.
-- A **Search Palette** query fans out to multiple **Search providers**; a **Page search** query stays inside one **Search scope**.
+- A **Personal Person** belongs to one **User**; a **Space Person** belongs to one **Shared Space**; both are **Scoped person profiles** that may point at a **Face Identity**.
+- A **Face** belongs to one **Asset**, may point to one **Personal Person**, may be an **Identity-linked face**, and may be linked into one or more **Space People** through space-person face links.
+- A **Space Person** carries space-visible metadata. It must not point directly at another user's **Personal Person**, but it may share a **Face Identity** and may receive permitted **Metadata inheritance**.
+- An **Identity-grouped person** is a read projection over accessible **Scoped person profiles**; it is not a new public person record.
+- A **Filter Surface** owns one **Filter state**; the page scope decides whether selected values mean **Personal People**, **Space People**, or **Scoped identity filter tokens**.
+- A **Search Palette** query fans out to multiple **Search providers**; a **Page search** query stays inside one **Search scope** and must render identity-grouped people only from accessible profile metadata.
 - A **Smart Search** result depends on the **Smart Search index**; a **Metadata Search** result depends on persisted asset fields.
 - A **Storage migration** creates a **Migration batch** and many per-file **Jobs**; rollback changes database paths but does not recreate deleted source files.
 - A **Duplicate group** resolution may copy metadata, tags, album membership, and editable space membership to kept **Assets** before trashing the rest.
@@ -163,7 +172,10 @@ This document names the major Gallery concepts so discussions can start from pro
 ## Recommended conversation patterns
 
 - Say "Does this affect **Personal People** or **Space People**?" before discussing person IDs.
+- Say "Is this a **Face Identity** link or a **Scoped person profile** metadata change?" before discussing global people dedupe.
+- Say "Can this viewer access the source **Scoped person profile**?" before discussing **Metadata inheritance**, thumbnails, counts, aliases, or search ranking.
 - Say "Which **Search scope** is this in?" before discussing search or filtering bugs.
+- Say "Is this filter value a **Scoped identity filter token** or a legacy person id?" before debugging identity-grouped filters.
 - Say "Is this a **Direct space asset** or **Library-linked space asset**?" before debugging Shared Space counts or permissions.
 - Say "Is this about **Timeline inclusion** or **Space membership**?" before debugging why space assets appear on Photos.
 - Say "Which **Storage backend** owns this path?" before debugging media serving or deletion.
@@ -171,18 +183,18 @@ This document names the major Gallery concepts so discussions can start from pro
 
 ## Implementation anchors
 
-| Area                    | Primary anchors                                                                                                                                                                                                             |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Architecture**        | `CLAUDE.md`, `docs/docs/developer/architecture.mdx`, `docs/docs/developer/directories.md`                                                                                                                                   |
-| **Assets and timeline** | `server/src/schema/tables/asset.table.ts`, `server/src/services/timeline.service.ts`, `server/src/repositories/asset.repository.ts`, `web/src/lib/managers/timeline-manager/`                                               |
-| **Filter Surface**      | `web/src/lib/components/filter-panel/filter-panel.ts`, `web/src/lib/components/filter-panel/filter-panel.svelte`, `server/src/services/search.service.ts`, `server/src/repositories/search.repository.ts`                   |
-| **Search Palette**      | `web/src/lib/managers/global-search-manager.svelte.ts`, `web/src/lib/components/global-search/`, `docs/docs/features/search-palette.md`                                                                                     |
-| **Shared Spaces**       | `server/src/services/shared-space.service.ts`, `server/src/repositories/shared-space.repository.ts`, `server/src/schema/tables/shared-space*.ts`, `web/src/routes/(user)/spaces/`, `web/src/lib/components/spaces/`         |
-| **People**              | `server/src/schema/tables/person.table.ts`, `server/src/schema/tables/asset-face.table.ts`, `server/src/schema/tables/shared-space-person*.ts`, `web/src/routes/(user)/people/`, `docs/docs/features/facial-recognition.md` |
-| **ML features**         | `server/src/services/smart-info.service.ts`, `server/src/services/classification.service.ts`, `server/src/services/pet-detection.service.ts`, `machine-learning/`, `docs/docs/features/searching.md`                        |
-| **Duplicates**          | `server/src/services/duplicate.service.ts`, `server/src/schema/tables/asset-duplicate-checksum.table.ts`, `docs/docs/features/duplicates-utility.md`, `docs/docs/features/video-duplicate-detection.md`                     |
-| **Storage**             | `server/src/services/storage.service.ts`, `server/src/repositories/storage.repository.ts`, `server/src/backends/`, `docs/docs/features/s3-storage.md`, `docs/docs/features/storage-migration.md`                            |
-| **Permissions**         | `server/src/middleware/auth.guard.ts`, `server/src/repositories/access.repository.ts`, `server/src/enum.ts`                                                                                                                 |
+| Area                    | Primary anchors                                                                                                                                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Architecture**        | `CLAUDE.md`, `docs/docs/developer/architecture.mdx`, `docs/docs/developer/directories.md`                                                                                                                                                                                 |
+| **Assets and timeline** | `server/src/schema/tables/asset.table.ts`, `server/src/services/timeline.service.ts`, `server/src/repositories/asset.repository.ts`, `web/src/lib/managers/timeline-manager/`                                                                                             |
+| **Filter Surface**      | `web/src/lib/components/filter-panel/filter-panel.ts`, `web/src/lib/components/filter-panel/filter-panel.svelte`, `server/src/services/search.service.ts`, `server/src/repositories/search.repository.ts`                                                                 |
+| **Search Palette**      | `web/src/lib/managers/global-search-manager.svelte.ts`, `web/src/lib/components/global-search/`, `docs/docs/features/search-palette.md`                                                                                                                                   |
+| **Shared Spaces**       | `server/src/services/shared-space.service.ts`, `server/src/repositories/shared-space.repository.ts`, `server/src/schema/tables/shared-space*.ts`, `web/src/routes/(user)/spaces/`, `web/src/lib/components/spaces/`                                                       |
+| **People**              | `server/src/schema/tables/person.table.ts`, `server/src/schema/tables/asset-face.table.ts`, `server/src/schema/tables/face-identity*.ts`, `server/src/schema/tables/shared-space-person*.ts`, `web/src/routes/(user)/people/`, `docs/docs/features/facial-recognition.md` |
+| **ML features**         | `server/src/services/smart-info.service.ts`, `server/src/services/classification.service.ts`, `server/src/services/pet-detection.service.ts`, `machine-learning/`, `docs/docs/features/searching.md`                                                                      |
+| **Duplicates**          | `server/src/services/duplicate.service.ts`, `server/src/schema/tables/asset-duplicate-checksum.table.ts`, `docs/docs/features/duplicates-utility.md`, `docs/docs/features/video-duplicate-detection.md`                                                                   |
+| **Storage**             | `server/src/services/storage.service.ts`, `server/src/repositories/storage.repository.ts`, `server/src/backends/`, `docs/docs/features/s3-storage.md`, `docs/docs/features/storage-migration.md`                                                                          |
+| **Permissions**         | `server/src/middleware/auth.guard.ts`, `server/src/repositories/access.repository.ts`, `server/src/enum.ts`                                                                                                                                                               |
 
 ## Example dialogue
 
@@ -201,7 +213,7 @@ This document names the major Gallery concepts so discussions can start from pro
 ## Flagged ambiguities
 
 - "People" is overloaded. Use **Personal People** for the user-owned people catalog and **Space People** for Shared Space people.
-- "Global people" appears in tests and comments, but it is not system-global; it usually means **Personal People** outside a space scope.
+- "Global people" appears in tests and comments, but it is not system-global. Use **Identity-grouped person** for an access-scoped deduped row and **Face Identity** for the internal sameness key.
 - "Space photos" is too vague. Use **Direct space assets** for assets explicitly added to a space and **Library-linked space assets** for assets included through a linked library.
 - "Library" can mean a user-facing external library, a personal photo collection, or a virtual shared collection. Use **Library**, **Personal timeline**, **Album**, or **Shared Space** depending on the boundary.
 - "Search" is overloaded. Use **Search Palette**, **Page search**, **Smart Search**, **Metadata Search**, or **Faceted suggestions**.

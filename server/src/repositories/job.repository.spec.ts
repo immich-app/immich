@@ -1,6 +1,6 @@
 import { ModuleRef } from '@nestjs/core';
 import { setTimeout } from 'node:timers/promises';
-import { QueueName } from 'src/enum';
+import { JobName, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
@@ -25,6 +25,8 @@ const emptyCounts = (): JobCounts => ({
 
 const setup = (counts: JobCounts[] = []) => {
   const queue = {
+    add: vi.fn().mockResolvedValue({}),
+    addBulk: vi.fn().mockResolvedValue([]),
     getJobCounts: vi.fn().mockResolvedValue(emptyCounts()),
     getJobs: vi.fn().mockResolvedValue([]),
     isPaused: vi.fn().mockResolvedValue(false),
@@ -45,6 +47,12 @@ const setup = (counts: JobCounts[] = []) => {
   const sut = new JobRepository(moduleRef, {} as ConfigRepository, {} as EventRepository, logger);
 
   return { sut, queue, logger };
+};
+
+const setHandlers = (sut: JobRepository, jobs: JobName[]) => {
+  (sut as unknown as { handlers: Record<JobName, { queueName: QueueName }> }).handlers = Object.fromEntries(
+    jobs.map((name) => [name, { queueName: QueueName.BackgroundTask }]),
+  ) as Record<JobName, { queueName: QueueName }>;
 };
 
 describe(JobRepository.name, () => {
@@ -134,5 +142,91 @@ describe(JobRepository.name, () => {
     expect(queue.getJobs).toHaveBeenCalledWith('waiting', 0, 0, true);
     expect(queue.getJobs).toHaveBeenCalledWith('delayed', 0, 0, true);
     expect(queue.getJobs).toHaveBeenCalledWith('failed', 0, 0, true);
+  });
+
+  it('uses stable job ids for root backfills and unique ids for cursor chunks', async () => {
+    const { sut, queue } = setup();
+    setHandlers(sut, [JobName.FaceIdentityBackfill, JobName.SharedSpacePersonMetadataBackfill]);
+
+    await sut.queueAll([
+      { name: JobName.FaceIdentityBackfill, data: {} },
+      { name: JobName.FaceIdentityBackfill, data: {} },
+      { name: JobName.FaceIdentityBackfill, data: { stage: 'person', cursor: 'person-cursor' } },
+      { name: JobName.FaceIdentityBackfill, data: { stage: 'space-person', cursor: 'space-cursor' } },
+      { name: JobName.SharedSpacePersonMetadataBackfill, data: {} },
+      { name: JobName.SharedSpacePersonMetadataBackfill, data: {} },
+      { name: JobName.SharedSpacePersonMetadataBackfill, data: { identityId: 'identity-1' } },
+      { name: JobName.SharedSpacePersonMetadataBackfill, data: { identityId: 'identity-1' } },
+      {
+        name: JobName.SharedSpacePersonMetadataBackfill,
+        data: { identityId: 'identity-1', cursor: 'cursor-1', limit: 1000 },
+      },
+      {
+        name: JobName.SharedSpacePersonMetadataBackfill,
+        data: { identityId: 'identity-1', cursor: 'cursor-2', limit: 1000 },
+      },
+    ]);
+
+    expect(queue.addBulk).not.toHaveBeenCalled();
+    for (const call of queue.add.mock.calls) {
+      const options = call[2];
+      expect(options?.jobId).not.toContain(':');
+    }
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      {},
+      {
+        jobId: 'face-identity-backfill/root',
+        removeOnFail: true,
+      },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      {},
+      {
+        jobId: 'face-identity-backfill/root',
+        removeOnFail: true,
+      },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      { stage: 'person', cursor: 'person-cursor' },
+      { jobId: 'face-identity-backfill/person/person-cursor', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      { stage: 'space-person', cursor: 'space-cursor' },
+      { jobId: 'face-identity-backfill/space-person/space-cursor', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpacePersonMetadataBackfill,
+      {},
+      { jobId: 'shared-space-person-metadata-backfill/all', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpacePersonMetadataBackfill,
+      {},
+      { jobId: 'shared-space-person-metadata-backfill/all', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpacePersonMetadataBackfill,
+      { identityId: 'identity-1' },
+      { jobId: 'shared-space-person-metadata-backfill/identity/identity-1', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpacePersonMetadataBackfill,
+      { identityId: 'identity-1' },
+      { jobId: 'shared-space-person-metadata-backfill/identity/identity-1', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpacePersonMetadataBackfill,
+      { identityId: 'identity-1', cursor: 'cursor-1', limit: 1000 },
+      { jobId: 'shared-space-person-metadata-backfill/identity/identity-1/cursor-1', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpacePersonMetadataBackfill,
+      { identityId: 'identity-1', cursor: 'cursor-2', limit: 1000 },
+      { jobId: 'shared-space-person-metadata-backfill/identity/identity-1/cursor-2', removeOnFail: true },
+    );
   });
 });

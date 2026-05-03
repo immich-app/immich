@@ -1,7 +1,7 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import type { PersonResponseDto } from '@immich/sdk';
+import { RepresentativeFaceSource, Type, type PersonResponseDto, type SharedSpacePersonResponseDto } from '@immich/sdk';
 import { personFactory } from '@test-data/factories/person-factory';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
@@ -54,6 +54,26 @@ function makePerson(overrides: Partial<PersonResponseDto> = {}): PersonResponseD
     updatedAt: '2026-01-02T00:00:00.000Z',
     ...overrides,
   });
+}
+
+function makeSpacePerson(overrides: Partial<SharedSpacePersonResponseDto> = {}): SharedSpacePersonResponseDto {
+  return {
+    id: 'space-person-1',
+    spaceId: 'space-1',
+    name: 'Shared Alice',
+    thumbnailPath: '',
+    isHidden: false,
+    birthDate: null,
+    representativeFaceId: null,
+    representativeFaceSource: RepresentativeFaceSource.Auto,
+    faceCount: 1,
+    assetCount: 4,
+    alias: null,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-02T00:00:00.000Z',
+    type: 'person',
+    ...overrides,
+  };
 }
 
 function renderPage(people: PersonResponseDto[] = [makePerson()]) {
@@ -138,5 +158,71 @@ describe('Global people page', () => {
     await user.click(screen.getByText('merge_people'));
 
     expect(gotoMock).toHaveBeenCalledWith('/people/p1?previousRoute=%2Fpeople&action=merge');
+  });
+
+  it('routes a space-primary person to the space person page', () => {
+    renderPage([
+      makePerson({
+        id: 'space-person-1',
+        name: 'Shared Alice',
+        isFavorite: undefined,
+        primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+        numberOfAssets: 4,
+      }),
+    ]);
+
+    expect(screen.getByRole('link', { name: 'Shared Alice' })).toHaveAttribute(
+      'href',
+      '/spaces/space-1/people/space-person-1?previousRoute=%2Fpeople',
+    );
+    expect(screen.getByTitle('Shared Alice').getAttribute('src')).toContain(
+      '/shared-spaces/space-1/people/space-person-1/thumbnail?updatedAt=2026-01-02T00%3A00%3A00.000Z',
+    );
+  });
+
+  it('saves space-primary person names inline through the space people API', async () => {
+    const person = makePerson({
+      id: 'space-person-1',
+      name: 'Shared Alice',
+      isFavorite: undefined,
+      primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+    });
+    sdkMock.updateSpacePerson.mockResolvedValue(makeSpacePerson({ name: 'Shared Alicia' }));
+    renderPage([person]);
+
+    const input = screen.getByDisplayValue('Shared Alice');
+    const user = userEvent.setup();
+
+    await user.click(input);
+    await user.clear(input);
+    await user.type(input, 'Shared Alicia');
+    await fireEvent.focusOut(input);
+
+    await waitFor(() => {
+      expect(sdkMock.updateSpacePerson).toHaveBeenCalledWith({
+        id: 'space-1',
+        personId: 'space-person-1',
+        sharedSpacePersonUpdateDto: { name: 'Shared Alicia' },
+      });
+    });
+    expect(sdkMock.updatePerson).not.toHaveBeenCalled();
+  });
+
+  it('keeps personal actions off shared-space-only rows', async () => {
+    const { baseElement } = renderPage([
+      makePerson({
+        id: 'space-person-1',
+        name: 'Shared Alice',
+        isFavorite: undefined,
+        primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+      }),
+    ]);
+
+    await fireEvent.mouseEnter(baseElement.querySelector('[role="group"]')!);
+
+    expect(screen.getByDisplayValue('Shared Alice')).toHaveAttribute('placeholder', 'add_a_name');
+    expect(screen.queryByLabelText('show_person_options')).not.toBeInTheDocument();
+    expect(screen.queryByText('to_favorite')).not.toBeInTheDocument();
+    expect(screen.queryByText('hide_person')).not.toBeInTheDocument();
   });
 });

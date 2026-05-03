@@ -15,9 +15,28 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import SpacePeoplePage from '../../../routes/(user)/spaces/[spaceId]/people/+page.svelte';
 
-const { gotoMock } = vi.hoisted(() => ({ gotoMock: vi.fn() }));
+const { gotoMock, pageStore } = vi.hoisted(() => {
+  let pageValue = {
+    url: new URL('http://localhost/spaces/space-1/people'),
+    route: { id: '/(user)/spaces/[spaceId]/people' },
+  };
+
+  return {
+    gotoMock: vi.fn(),
+    pageStore: {
+      setUrl: (url: string) => {
+        pageValue = { ...pageValue, url: new URL(url) };
+      },
+      subscribe: (run: (value: typeof pageValue) => void) => {
+        run(pageValue);
+        return () => {};
+      },
+    },
+  };
+});
 
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
+vi.mock('$app/stores', () => ({ page: pageStore }));
 
 vi.mock('@immich/ui', async (importOriginal) => {
   const original = await importOriginal<typeof import('@immich/ui')>();
@@ -76,11 +95,13 @@ function renderPage({
   space = makeSpace(),
   members = [makeMember()],
   people = [makePerson()],
+  peopleStatistics = { total: people.length, hidden: people.filter((person) => person.isHidden).length },
   userId = 'current-user-id',
 }: {
   space?: SharedSpaceResponseDto;
   members?: SharedSpaceMemberResponseDto[];
   people?: SharedSpacePersonResponseDto[];
+  peopleStatistics?: { total: number; hidden: number };
   userId?: string;
 } = {}) {
   const currentUser = userAdminFactory.build({ id: userId });
@@ -93,6 +114,7 @@ function renderPage({
         space,
         members,
         people,
+        peopleStatistics,
         meta: { title: `${space.name} - People` },
       },
     },
@@ -104,7 +126,39 @@ describe('Spaces people page', () => {
     vi.resetAllMocks();
     Element.prototype.animate = getAnimateMock();
     gotoMock.mockResolvedValue(undefined);
+    pageStore.setUrl('http://localhost/spaces/space-1/people');
     sdkMock.getSpacePeople.mockResolvedValue([]);
+    sdkMock.getSpacePeopleStatistics.mockResolvedValue({ total: 0, hidden: 0 });
+  });
+
+  it('shows the visible person count next to the heading', () => {
+    renderPage({
+      people: [makePerson({ id: 'p1' })],
+      peopleStatistics: { total: 12, hidden: 2 },
+    });
+
+    expect(screen.getByTestId('user-page-layout')).toHaveAttribute('data-description', '(10)');
+  });
+
+  it('searches people within the current space and updates the heading count', async () => {
+    const people = [makePerson({ id: 'p1', name: 'Alice' }), makePerson({ id: 'p2', name: 'Bob' })];
+    sdkMock.getSpacePeople.mockResolvedValue([people[0]]);
+    sdkMock.getSpacePeopleStatistics.mockResolvedValue({ total: 1, hidden: 0 });
+
+    renderPage({ people, peopleStatistics: { total: 2, hidden: 0 } });
+
+    await fireEvent.input(screen.getByPlaceholderText('search_people'), { target: { value: 'Ali' } });
+
+    await waitFor(() => {
+      expect(sdkMock.getSpacePeople).toHaveBeenCalledWith(
+        { id: 'space-1', name: 'Ali', limit: 100 },
+        expect.any(Object),
+      );
+    });
+    expect(sdkMock.getSpacePeopleStatistics).toHaveBeenCalledWith({ id: 'space-1', name: 'Ali' }, expect.any(Object));
+    expect(screen.getByDisplayValue('Alice')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Bob')).not.toBeInTheDocument();
+    expect(screen.getByTestId('user-page-layout')).toHaveAttribute('data-description', '(1)');
   });
 
   it('renders circular thumbnails for each person', async () => {

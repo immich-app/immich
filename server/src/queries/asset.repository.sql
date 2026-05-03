@@ -710,10 +710,14 @@ select
 from
   "asset"
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
-  and "asset_file"."type" = $1
+  and "asset_file"."type" in ($1)
 where
   "asset"."id" = $2
 order by
+  case
+    when asset_file.type = $3 then 0
+    else 1
+  end,
   "asset_file"."isEdited" desc
 
 -- AssetRepository.getForVideo

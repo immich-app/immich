@@ -196,5 +196,50 @@ describe(MapRepository.name, () => {
       const viaA = await sut.getMapMarkers([member.id], [], { timelineSpaceIds: [spaceA.id] });
       expect(viaA.find((r) => r.id === asset.id)).toBeDefined();
     });
+
+    it('timeline opt-in: album-linked direct space asset requires a timeline-enabled containing space', async () => {
+      const { ctx, sut } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id });
+      const { asset } = await ctx.newAsset({ ownerId: owner.id, visibility: AssetVisibility.Timeline });
+      await ctx.database.insertInto('asset_exif').values({ assetId: asset.id, latitude: 7, longitude: 7 }).execute();
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      const { album } = await ctx.newAlbum({ ownerId: member.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+      const hidden = await sut.getMapMarkers([member.id], [album.id]);
+      const visible = await sut.getMapMarkers([member.id], [album.id], { timelineSpaceIds: [space.id] });
+
+      expect(hidden.find((marker) => marker.id === asset.id)).toBeUndefined();
+      expect(visible.find((marker) => marker.id === asset.id)).toBeDefined();
+    });
+
+    it('timeline opt-in: album-linked library space asset requires a timeline-enabled containing space', async () => {
+      const { ctx, sut } = setup();
+      const { user: owner } = await ctx.newUser();
+      const { user: member } = await ctx.newUser();
+      const { library } = await ctx.newLibrary({ ownerId: owner.id });
+      const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: member.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+      const { asset } = await ctx.newAsset({
+        ownerId: owner.id,
+        libraryId: library.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      await ctx.database.insertInto('asset_exif').values({ assetId: asset.id, latitude: 8, longitude: 8 }).execute();
+      const { album } = await ctx.newAlbum({ ownerId: member.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+      const hidden = await sut.getMapMarkers([member.id], [album.id]);
+      const visible = await sut.getMapMarkers([member.id], [album.id], { timelineSpaceIds: [space.id] });
+
+      expect(hidden.find((marker) => marker.id === asset.id)).toBeUndefined();
+      expect(visible.find((marker) => marker.id === asset.id)).toBeDefined();
+    });
   });
 });

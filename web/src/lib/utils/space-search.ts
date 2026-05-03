@@ -1,5 +1,6 @@
 import { buildFilterContext, type FilterState } from '$lib/components/filter-panel/filter-panel';
 import { createUrl } from '$lib/utils';
+import { getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
 import {
   AssetOrder,
   AssetTypeEnum,
@@ -121,7 +122,7 @@ export function mapSmartSearchFacetsToFilterSuggestions(
       name: person.name,
       thumbnailUrl: options.spaceId
         ? createUrl(`/shared-spaces/${options.spaceId}/people/${person.id}/thumbnail`)
-        : createUrl(`/people/${person.id}/thumbnail`),
+        : getPhotosPersonFilterThumbnailUrl(person),
     })),
     ratings: facets.ratings,
     mediaTypes: facets.mediaTypes,

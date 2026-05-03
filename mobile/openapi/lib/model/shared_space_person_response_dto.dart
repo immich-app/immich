@@ -22,6 +22,7 @@ class SharedSpacePersonResponseDto {
     required this.isHidden,
     required this.name,
     this.representativeFaceId,
+    required this.representativeFaceSource,
     required this.spaceId,
     required this.thumbnailPath,
     this.type,
@@ -55,6 +56,9 @@ class SharedSpacePersonResponseDto {
   /// Representative face ID
   String? representativeFaceId;
 
+  /// Representative face source
+  SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum representativeFaceSource;
+
   /// Space ID
   String spaceId;
 
@@ -84,6 +88,7 @@ class SharedSpacePersonResponseDto {
     other.isHidden == isHidden &&
     other.name == name &&
     other.representativeFaceId == representativeFaceId &&
+    other.representativeFaceSource == representativeFaceSource &&
     other.spaceId == spaceId &&
     other.thumbnailPath == thumbnailPath &&
     other.type == type &&
@@ -101,13 +106,14 @@ class SharedSpacePersonResponseDto {
     (isHidden.hashCode) +
     (name.hashCode) +
     (representativeFaceId == null ? 0 : representativeFaceId!.hashCode) +
+    (representativeFaceSource.hashCode) +
     (spaceId.hashCode) +
     (thumbnailPath.hashCode) +
     (type == null ? 0 : type!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SharedSpacePersonResponseDto[alias=$alias, assetCount=$assetCount, birthDate=$birthDate, createdAt=$createdAt, faceCount=$faceCount, id=$id, isHidden=$isHidden, name=$name, representativeFaceId=$representativeFaceId, spaceId=$spaceId, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'SharedSpacePersonResponseDto[alias=$alias, assetCount=$assetCount, birthDate=$birthDate, createdAt=$createdAt, faceCount=$faceCount, id=$id, isHidden=$isHidden, name=$name, representativeFaceId=$representativeFaceId, representativeFaceSource=$representativeFaceSource, spaceId=$spaceId, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -132,6 +138,7 @@ class SharedSpacePersonResponseDto {
     } else {
     //  json[r'representativeFaceId'] = null;
     }
+      json[r'representativeFaceSource'] = this.representativeFaceSource;
       json[r'spaceId'] = this.spaceId;
       json[r'thumbnailPath'] = this.thumbnailPath;
     if (this.type != null) {
@@ -161,6 +168,7 @@ class SharedSpacePersonResponseDto {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         representativeFaceId: mapValueOfType<String>(json, r'representativeFaceId'),
+        representativeFaceSource: SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum.fromJson(json[r'representativeFaceSource'])!,
         spaceId: mapValueOfType<String>(json, r'spaceId')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
         type: mapValueOfType<String>(json, r'type'),
@@ -218,9 +226,84 @@ class SharedSpacePersonResponseDto {
     'id',
     'isHidden',
     'name',
+    'representativeFaceSource',
     'spaceId',
     'thumbnailPath',
     'updatedAt',
   };
 }
+
+/// Representative face source
+class SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum {
+  /// Instantiate a new enum with the provided [value].
+  const SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const auto = SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum._(r'auto');
+  static const manual = SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum._(r'manual');
+
+  /// List of all possible values in this [enum][SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum].
+  static const values = <SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum>[
+    auto,
+    manual,
+  ];
+
+  static SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum? fromJson(dynamic value) => SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer().decode(value);
+
+  static List<SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum] to String,
+/// and [decode] dynamic data back to [SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum].
+class SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer {
+  factory SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer() => _instance ??= const SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer._();
+
+  const SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer._();
+
+  String encode(SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'auto': return SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum.auto;
+        case r'manual': return SharedSpacePersonResponseDtoRepresentativeFaceSourceEnum.manual;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer] instance.
+  static SharedSpacePersonResponseDtoRepresentativeFaceSourceEnumTypeTransformer? _instance;
+}
+
 

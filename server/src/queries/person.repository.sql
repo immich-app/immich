@@ -140,6 +140,84 @@ where
   "asset_face"."id" = $1
   and "asset_face"."deletedAt" is null
 
+-- PersonRepository.getRepresentativeFaces
+select
+  "asset_face".*,
+  "asset"."fileCreatedAt",
+  "person"."faceAssetId" as "representativeFaceId"
+from
+  "person"
+  inner join "asset_face" on (
+    "asset_face"."personId" = "person"."id"
+    or exists (
+      select
+        "face_identity_face"."assetFaceId"
+      from
+        "face_identity_face"
+      where
+        "face_identity_face"."assetFaceId" = "asset_face"."id"
+        and "face_identity_face"."identityId" = "person"."identityId"
+    )
+  )
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+where
+  "person"."id" = $1
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" = $2
+  and "asset"."deletedAt" is null
+  and "asset"."isOffline" = $3
+  and not exists (
+    select
+      "face_identity_face"."assetFaceId"
+    from
+      "face_identity_face"
+    where
+      "face_identity_face"."assetFaceId" = "asset_face"."id"
+      and face_identity_face."identityId" IS DISTINCT FROM person."identityId"
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset_face"."id"
+limit
+  $4
+offset
+  $5
+
+-- PersonRepository.getRepresentativeFaceForUpdate
+select
+  "asset_face".*
+from
+  "person"
+  inner join "asset_face" on (
+    "asset_face"."personId" = "person"."id"
+    or exists (
+      select
+        "face_identity_face"."assetFaceId"
+      from
+        "face_identity_face"
+      where
+        "face_identity_face"."assetFaceId" = "asset_face"."id"
+        and "face_identity_face"."identityId" = "person"."identityId"
+    )
+  )
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+where
+  "person"."id" = $1
+  and "asset_face"."id" = $2
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" = $3
+  and "asset"."deletedAt" is null
+  and "asset"."isOffline" = $4
+  and not exists (
+    select
+      "face_identity_face"."assetFaceId"
+    from
+      "face_identity_face"
+    where
+      "face_identity_face"."assetFaceId" = "asset_face"."id"
+      and face_identity_face."identityId" IS DISTINCT FROM person."identityId"
+  )
+
 -- PersonRepository.getFaceForFacialRecognitionJob
 select
   "asset_face"."id",

@@ -26,6 +26,7 @@ const QueuesResponseLegacySchema = z
     [QueueName.StorageTemplateMigration]: QueueResponseLegacySchema,
     [QueueName.Migration]: QueueResponseLegacySchema,
     [QueueName.BackgroundTask]: QueueResponseLegacySchema,
+    [QueueName.PeopleBackfill]: QueueResponseLegacySchema,
     [QueueName.Search]: QueueResponseLegacySchema,
     [QueueName.DuplicateDetection]: QueueResponseLegacySchema,
     [QueueName.FaceDetection]: QueueResponseLegacySchema,

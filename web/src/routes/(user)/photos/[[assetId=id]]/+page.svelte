@@ -42,7 +42,7 @@
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { lang } from '$lib/stores/preferences.store';
-  import { createUrl, getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
+  import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import { buildSearchablePageUrl, getSearchablePageState } from '$lib/utils/searchable-page-search';
   import {
     updateStackedAssetInTimeline,
@@ -51,7 +51,11 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { buildPhotosTimelineOptions, handlePhotosRemoveFilter } from '$lib/utils/photos-filter-options';
+  import {
+    buildPhotosTimelineOptions,
+    getPhotosPersonFilterThumbnailUrl,
+    handlePhotosRemoveFilter,
+  } from '$lib/utils/photos-filter-options';
   import {
     buildSmartSearchFacetKey,
     buildSmartSearchFacetsParams,
@@ -143,7 +147,7 @@
     const mappedPeople = response.people.map((p) => ({
       id: p.id,
       name: p.name,
-      thumbnailUrl: createUrl(`/people/${p.id}/thumbnail`),
+      thumbnailUrl: getPhotosPersonFilterThumbnailUrl(p),
     }));
     for (const p of response.people) {
       personNames.set(p.id, p.name);

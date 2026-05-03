@@ -128,6 +128,7 @@ export interface GenerateSqlQueries {
   name?: string;
   params: unknown[];
   stream?: boolean;
+  sortQueries?: boolean | string[];
 }
 
 export const Telemetry = (options: { enabled?: boolean }) =>

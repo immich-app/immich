@@ -57,7 +57,12 @@ export function buildMapTimeBucketOptions(filters: FilterState, spaceId?: string
   const base = applyCommonMapFilters(
     spaceId ? { spaceId } : { visibility: AssetVisibility.Timeline, withSharedSpaces: true },
     filters,
+    !spaceId,
   );
+
+  if (spaceId && filters.personIds.length > 0) {
+    base.spacePersonIds = filters.personIds;
+  }
 
   if (filters.mediaType !== 'all') {
     base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;

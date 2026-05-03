@@ -326,7 +326,7 @@ describe(SearchService.name, () => {
       expect(result.people.map((p) => p.name)).toEqual(['Zelda', 'Alice']);
     });
 
-    it('should return favorite-backed space people before alphabetical matches', async () => {
+    it('should not leak owner favorite state into space people ordering', async () => {
       const { sut, ctx } = setup();
       const { user: owner } = await ctx.newUser();
       const { user: member } = await ctx.newUser();
@@ -375,7 +375,7 @@ describe(SearchService.name, () => {
       const auth = factory.auth({ user: { id: member.id } });
       const result = await sut.getFilterSuggestions(auth, { spaceId: space.id });
 
-      expect(result.people.map((p) => p.name)).toEqual(['Zelda Space', 'Alice Space']);
+      expect(result.people.map((p) => p.name)).toEqual(['Alice Space', 'Zelda Space']);
     });
   });
 });

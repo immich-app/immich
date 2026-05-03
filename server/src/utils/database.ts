@@ -11,6 +11,7 @@ import {
   SelectQueryBuilder,
   ShallowDehydrateObject,
   sql,
+  SqlBool,
 } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -187,6 +188,39 @@ export function hasAnyPerson<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personId
   );
 }
 
+export function hasFaceIdentities<O>(qb: SelectQueryBuilder<DB, 'asset', O>, identityIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_face')
+        .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+        .select('asset_face.assetId')
+        .where('face_identity_face.identityId', '=', anyUuid(identityIds))
+        .where('asset_face.deletedAt', 'is', null)
+        .where('asset_face.isVisible', 'is', true)
+        .groupBy('asset_face.assetId')
+        .having((eb) => eb.fn.count('face_identity_face.identityId').distinct(), '=', identityIds.length)
+        .as('has_face_identities'),
+    (join) => join.onRef('has_face_identities.assetId', '=', 'asset.id'),
+  );
+}
+
+export function hasAnyFaceIdentity<O>(qb: SelectQueryBuilder<DB, 'asset', O>, identityIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_face')
+        .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+        .select('asset_face.assetId')
+        .where('face_identity_face.identityId', '=', anyUuid(identityIds))
+        .where('asset_face.deletedAt', 'is', null)
+        .where('asset_face.isVisible', 'is', true)
+        .groupBy('asset_face.assetId')
+        .as('has_any_face_identity'),
+    (join) => join.onRef('has_any_face_identity.assetId', '=', 'asset.id'),
+  );
+}
+
 export function hasSpacePerson<O>(qb: SelectQueryBuilder<DB, 'asset', O>, spacePersonId: string) {
   return qb.where((eb) =>
     eb.exists(
@@ -358,6 +392,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('asset')
     .where('asset.visibility', '=', visibility)
+    .$if(!!options.forceEmptyResult, (qb) => qb.where(sql<SqlBool>`false`))
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.spaceId && !options.timelineSpaceIds, (qb) =>
       qb.where((eb) =>
@@ -406,6 +441,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.personIds && options.personIds.length > 0, (qb) =>
       options.personMatchAny ? hasAnyPerson(qb, options.personIds!) : hasPeople(qb, options.personIds!),
     )
+    .$if(!!options.identityIds && options.identityIds.length > 0, (qb) => hasFaceIdentities(qb, options.identityIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('asset.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('asset.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('asset.updatedAt', '<=', options.updatedBefore!))

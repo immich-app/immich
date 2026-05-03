@@ -100,6 +100,8 @@ export interface SearchOcrOptions {
 export interface SearchPeopleOptions {
   personIds?: string[];
   personMatchAny?: boolean;
+  identityIds?: string[];
+  forceEmptyResult?: boolean;
 }
 
 export interface SearchTagOptions {
@@ -151,6 +153,7 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
+  SearchAlbumOptions &
   SearchOcrOptions &
   SearchSpaceOptions &
   SearchOrderOptions;
@@ -215,6 +218,8 @@ export interface SuggestionScopeOptions {
 
 interface FilterSuggestionFilterOptions {
   personIds?: string[];
+  identityIds?: string[];
+  forceEmptyResult?: boolean;
   country?: string;
   city?: string;
   make?: string;
@@ -250,6 +255,12 @@ export interface GetCameraLensModelsOptions extends SuggestionScopeOptions {
 
 export interface FilterSuggestionsOptions extends SuggestionScopeOptions, FilterSuggestionFilterOptions {}
 
+type FilterSuggestionPerson = {
+  id: string;
+  name: string;
+  primaryProfile?: { type: 'user-person' | 'space-person'; id: string; spaceId?: string };
+};
+
 type AccessibleTagScopeOptions = Pick<
   SuggestionScopeOptions,
   'spaceId' | 'timelineSpaceIds' | 'takenAfter' | 'takenBefore'
@@ -259,7 +270,7 @@ export interface FilterSuggestionsResult {
   countries: string[];
   cameraMakes: string[];
   tags: Array<{ id: string; value: string }>;
-  people: Array<{ id: string; name: string }>;
+  people: FilterSuggestionPerson[];
   ratings: number[];
   mediaTypes: string[];
   hasUnnamedPeople: boolean;
@@ -284,18 +295,32 @@ export class SearchRepository {
       .then((row) => row?.embedding ?? null);
   }
 
-  @GenerateSql({
-    params: [
-      { page: 1, size: 100 },
-      {
-        takenAfter: DummyValue.DATE,
-        lensModel: DummyValue.STRING,
-        withStacked: true,
-        isFavorite: true,
-        userIds: [DummyValue.UUID],
-      },
-    ],
-  })
+  @GenerateSql(
+    {
+      params: [
+        { page: 1, size: 100 },
+        {
+          takenAfter: DummyValue.DATE,
+          lensModel: DummyValue.STRING,
+          withStacked: true,
+          isFavorite: true,
+          userIds: [DummyValue.UUID],
+        },
+      ],
+    },
+    {
+      name: 'identity-filter',
+      params: [
+        { page: 1, size: 100 },
+        {
+          userIds: [DummyValue.UUID],
+          timelineSpaceIds: [DummyValue.UUID],
+          identityIds: [DummyValue.UUID],
+          withStacked: true,
+        },
+      ],
+    },
+  )
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilder(this.db, options)
@@ -374,13 +399,15 @@ export class SearchRepository {
   ) {
     const hasDistanceThreshold = isActiveDistanceThreshold(options.maxDistance);
     const personIds = options.personIds?.filter(Boolean) ?? [];
+    const identityIds = options.identityIds?.filter(Boolean) ?? [];
 
     let baseQuery = searchAssetBuilder(kysely, {
-      ...without(options, 'personIds', 'personMatchAny'),
+      ...without(options, 'personIds', 'personMatchAny', 'identityIds', 'forceEmptyResult'),
       ratingIsMinimum: true,
     })
       .selectAll('asset')
       .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+      .$if(!!options.forceEmptyResult, (qb) => qb.where(sql<SqlBool>`false`))
       .$if(hasDistanceThreshold, (qb) =>
         qb.where(sql<SqlBool>`(smart_search.embedding <=> ${options.embedding}) <= ${options.maxDistance!}`),
       )
@@ -411,6 +438,24 @@ export class SearchRepository {
           ? hasVisiblePersonFace(personIds)
           : eb.and(personIds.map((personId) => hasVisiblePersonFace(personId)));
       });
+    }
+
+    if (identityIds.length > 0) {
+      baseQuery = baseQuery.where((eb) =>
+        eb.and(
+          identityIds.map((identityId) =>
+            eb.exists(
+              eb
+                .selectFrom('asset_face')
+                .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+                .whereRef('asset_face.assetId', '=', 'asset.id')
+                .where('asset_face.deletedAt', 'is', null)
+                .where('asset_face.isVisible', 'is', true)
+                .where('face_identity_face.identityId', '=', asUuid(identityId)),
+            ),
+          ),
+        ),
+      );
     }
 
     if (options.orderDirection) {
@@ -534,6 +579,8 @@ export class SearchRepository {
         'takenBefore',
         'personIds',
         'personMatchAny',
+        'identityIds',
+        'forceEmptyResult',
         'spacePersonIds',
         'tagIds',
         'tagMatchAny',
@@ -542,6 +589,7 @@ export class SearchRepository {
     })
       .select('asset.id')
       .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+      .$if(!!options.forceEmptyResult, (qb) => qb.where(sql<SqlBool>`false`))
       .$if(hasDistanceThreshold, (qb) =>
         qb.where(sql<SqlBool>`(smart_search.embedding <=> ${options.embedding}) <= ${options.maxDistance!}`),
       )
@@ -603,13 +651,31 @@ export class SearchRepository {
           ),
       )
       .$if(exclude !== 'people' && !!options.personIds?.length, (qb) => hasPeople(qb, options.personIds!))
+      .$if(exclude !== 'people' && !!options.identityIds?.length, (qb) =>
+        qb.where((eb) =>
+          eb.and(
+            options.identityIds!.map((identityId) =>
+              eb.exists(
+                eb
+                  .selectFrom('asset_face')
+                  .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+                  .whereRef('asset_face.assetId', '=', 'asset.id')
+                  .where('asset_face.deletedAt', 'is', null)
+                  .where('asset_face.isVisible', 'is', true)
+                  .where('face_identity_face.identityId', '=', asUuid(identityId)),
+              ),
+            ),
+          ),
+        ),
+      )
       .$if(exclude !== 'people' && !!options.spacePersonIds?.length, (qb) =>
         hasAnySpacePerson(qb, options.spacePersonIds!),
       )
       .$if(exclude !== 'tags' && !!options.tagIds?.length, (qb) => hasTags(qb, options.tagIds!))
       .$if(exclude !== 'tags' && options.tagIds === null, (qb) =>
         qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetId', '=', 'asset.id')))),
-      );
+      )
+      .$if(!!options.forceEmptyResult, (qb) => qb.where(sql<SqlBool>`false`));
   }
 
   private async getSmartFacetTotal(trx: Kysely<DB>, options: SmartSearchFacetsOptions): Promise<number> {
@@ -708,16 +774,13 @@ export class SearchRepository {
   private async getSmartFacetPeople(
     trx: Kysely<DB>,
     options: SmartSearchFacetsOptions,
-  ): Promise<{ people: Array<{ id: string; name: string }>; hasUnnamedPeople: boolean }> {
+  ): Promise<{ people: FilterSuggestionPerson[]; hasUnnamedPeople: boolean }> {
     const filteredIds = this.buildSmartFacetFilteredAssetIds(trx, options, 'people');
 
     if (options.spaceId) {
       const spacePeople = await trx
         .selectFrom('shared_space_person')
-        .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
-        .leftJoin('person', 'person.id', 'asset_face.personId')
         .select(['shared_space_person.id', 'shared_space_person.name'])
-        .select('person.name as personalName')
         .where('shared_space_person.spaceId', '=', asUuid(options.spaceId))
         .where('shared_space_person.isHidden', '=', false)
         .where((eb) =>
@@ -731,23 +794,29 @@ export class SearchRepository {
               .where('af.assetId', 'in', filteredIds),
           ),
         )
-        .orderBy('shared_space_person.name')
+        .orderBy(sql`nullif("shared_space_person"."name", '')`)
+        .orderBy('shared_space_person.id')
         .execute();
 
       const people = spacePeople
         .map((person) => ({
           id: person.id,
-          name: person.name || person.personalName || '',
+          name: person.name || '',
+          primaryProfile: { type: 'space-person' as const, id: person.id, spaceId: options.spaceId },
         }))
         .filter((person) => person.name !== '')
         .toSorted((a, b) => a.name.localeCompare(b.name));
 
-      const hasUnnamedPeople = spacePeople.some((person) => !person.name && !person.personalName);
+      const hasUnnamedPeople = spacePeople.some((person) => !person.name);
 
       return { people, hasUnnamedPeople };
     }
 
-    const people = await trx
+    if (options.timelineSpaceIds?.length) {
+      return this.getFilteredIdentityPeople(filteredIds, options.userIds[0], options.timelineSpaceIds, trx);
+    }
+
+    const peopleRows = await trx
       .selectFrom('person')
       .select(['person.id', 'person.name'])
       .where('person.name', '!=', '')
@@ -764,6 +833,10 @@ export class SearchRepository {
       )
       .orderBy('person.name')
       .execute();
+    const people = peopleRows.map((person) => ({
+      ...person,
+      primaryProfile: { type: 'user-person' as const, id: person.id },
+    }));
 
     const unnamed = await trx
       .selectFrom('person')
@@ -1061,12 +1134,31 @@ export class SearchRepository {
       .execute();
   }
 
+  @GenerateSql({
+    name: 'identity-filter-suggestions',
+    params: [
+      [DummyValue.UUID],
+      {
+        timelineSpaceIds: [DummyValue.UUID],
+        identityIds: [DummyValue.UUID],
+        takenAfter: DummyValue.DATE,
+      },
+    ],
+    sortQueries: [
+      'select distinct\n  "country"',
+      'select distinct\n  "make"',
+      'select distinct\n  "tag"."id"',
+      'WITH\n  filtered_assets',
+      'select distinct\n  "rating"',
+      'select distinct\n  "type"',
+    ],
+  })
   async getFilterSuggestions(userIds: string[], options: FilterSuggestionsOptions): Promise<FilterSuggestionsResult> {
     const [countries, cameraMakes, tags, peopleResult, ratings, mediaTypes] = await Promise.all([
       this.getFilteredCountries(userIds, without(options, 'country', 'city')),
       this.getFilteredCameraMakes(userIds, without(options, 'make', 'model')),
       this.getFilteredTags(userIds, without(options, 'tagIds')),
-      this.getFilteredPeople(userIds, without(options, 'personIds')),
+      this.getFilteredPeople(userIds, without(options, 'personIds', 'identityIds')),
       this.getFilteredRatings(userIds, without(options, 'rating')),
       this.getFilteredMediaTypes(userIds, without(options, 'mediaType')),
     ]);
@@ -1097,6 +1189,28 @@ export class SearchRepository {
               .where('album_asset.albumId', '=', asUuid(options!.albumId!)),
           ),
         ),
+      )
+      .$if(!!options?.albumId && !!options?.timelineSpaceIds?.length, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb('asset.ownerId', '=', anyUuid(userIds)),
+            eb.exists(
+              eb
+                .selectFrom('shared_space_asset')
+                .whereRef('shared_space_asset.assetId', '=', 'asset.id')
+                .where('shared_space_asset.spaceId', '=', anyUuid(options!.timelineSpaceIds!)),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('shared_space_library')
+                .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
+                .where('shared_space_library.spaceId', '=', anyUuid(options!.timelineSpaceIds!)),
+            ),
+          ]),
+        ),
+      )
+      .$if(!!options?.albumId && !options?.timelineSpaceIds?.length, (qb) =>
+        qb.where('asset.ownerId', '=', anyUuid(userIds)),
       )
       .$if(!options?.albumId && !options?.spaceId && !options?.timelineSpaceIds, (qb) =>
         qb.where('asset.ownerId', '=', anyUuid(userIds)),
@@ -1174,6 +1288,7 @@ export class SearchRepository {
       userIds,
       options,
     )
+      .$if(!!options.forceEmptyResult, (qb) => qb.where(sql<SqlBool>`false`))
       .$if(!!options.takenAfter, (qb) => qb.where('asset.fileCreatedAt', '>=', options.takenAfter!))
       .$if(!!options.takenBefore, (qb) => qb.where('asset.fileCreatedAt', '<', options.takenBefore!))
       .$if(needsExifJoin, (qb) =>
@@ -1205,6 +1320,23 @@ export class SearchRepository {
               .selectFrom('asset_face')
               .whereRef('asset_face.assetId', '=', 'asset.id')
               .where('asset_face.personId', '=', anyUuid(options.personIds!)),
+          ),
+        ),
+      )
+      .$if(!!options.identityIds?.length, (qb) =>
+        qb.where((eb) =>
+          eb.and(
+            options.identityIds!.map((identityId) =>
+              eb.exists(
+                eb
+                  .selectFrom('asset_face')
+                  .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+                  .whereRef('asset_face.assetId', '=', 'asset.id')
+                  .where('asset_face.deletedAt', 'is', null)
+                  .where('asset_face.isVisible', 'is', true)
+                  .where('face_identity_face.identityId', '=', asUuid(identityId)),
+              ),
+            ),
           ),
         ),
       )
@@ -1270,28 +1402,36 @@ export class SearchRepository {
   private async getFilteredPeople(
     userIds: string[],
     options: FilterSuggestionsOptions,
-  ): Promise<{ people: Array<{ id: string; name: string }>; hasUnnamedPeople: boolean }> {
+  ): Promise<{ people: FilterSuggestionPerson[]; hasUnnamedPeople: boolean }> {
     const filteredIds = this.buildFilteredAssetIds(userIds, options);
 
     // When spaceId is set, return shared_space_person records (space-specific IDs and names)
     if (options.spaceId) {
       const spacePeople = await this.buildFilteredSpacePeopleQuery(filteredIds, options.spaceId).execute();
 
-      // Use space person name, fallback to global person name
       const people = spacePeople
         .map((p) => ({
           id: p.id,
-          name: p.name || (p as any).personalName || '',
+          name: p.name || '',
+          primaryProfile: { type: 'space-person' as const, id: p.id, spaceId: options.spaceId },
         }))
         .filter((p) => p.name !== '');
 
-      const hasUnnamedPeople = spacePeople.some((p) => !p.name && !(p as any).personalName);
+      const hasUnnamedPeople = spacePeople.some((p) => !p.name);
 
       return { people, hasUnnamedPeople };
     }
 
+    if (options.timelineSpaceIds?.length) {
+      return this.getFilteredIdentityPeople(filteredIds, userIds[0], options.timelineSpaceIds);
+    }
+
     // Global: return person records
-    const people = await this.buildFilteredGlobalPeopleQuery(filteredIds).execute();
+    const peopleRows = await this.buildFilteredGlobalPeopleQuery(filteredIds).execute();
+    const people = peopleRows.map((person) => ({
+      ...person,
+      primaryProfile: { type: 'user-person' as const, id: person.id },
+    }));
 
     const unnamed = await this.db
       .selectFrom('person')
@@ -1314,10 +1454,7 @@ export class SearchRepository {
   private buildFilteredSpacePeopleQuery(filteredIds: SelectQueryBuilder<DB, 'asset', { id: string }>, spaceId: string) {
     return this.db
       .selectFrom('shared_space_person')
-      .leftJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
-      .leftJoin('person', 'person.id', 'asset_face.personId')
       .select(['shared_space_person.id', 'shared_space_person.name'])
-      .select(['person.name as personalName', 'person.isFavorite'])
       .where('shared_space_person.spaceId', '=', asUuid(spaceId))
       .where('shared_space_person.isHidden', '=', false)
       .where((eb) =>
@@ -1326,11 +1463,13 @@ export class SearchRepository {
             .selectFrom('shared_space_person_face')
             .innerJoin('asset_face as af', 'af.id', 'shared_space_person_face.assetFaceId')
             .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
+            .where('af.deletedAt', 'is', null)
+            .where('af.isVisible', 'is', true)
             .where('af.assetId', 'in', filteredIds),
         ),
       )
-      .orderBy(sql`coalesce("person"."isFavorite", false)`, 'desc')
-      .orderBy(sql`coalesce(nullif("shared_space_person"."name", ''), nullif("person"."name", ''), '')`);
+      .orderBy(sql`nullif("shared_space_person"."name", '')`)
+      .orderBy('shared_space_person.id');
   }
 
   private buildFilteredGlobalPeopleQuery(filteredIds: SelectQueryBuilder<DB, 'asset', { id: string }>) {
@@ -1349,6 +1488,112 @@ export class SearchRepository {
       )
       .orderBy('person.isFavorite', 'desc')
       .orderBy('person.name');
+  }
+
+  private async getFilteredIdentityPeople(
+    filteredIds: SelectQueryBuilder<DB, 'asset', { id: string }>,
+    userId: string,
+    timelineSpaceIds: string[],
+    db: Kysely<DB> = this.db,
+  ): Promise<{ people: FilterSuggestionPerson[]; hasUnnamedPeople: boolean }> {
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      profileType: 'user-person' | 'space-person';
+      profileId: string;
+      spaceId: string | null;
+    }>`
+      WITH filtered_assets AS (
+        ${filteredIds}
+      ),
+      identity_faces AS (
+        SELECT DISTINCT
+          face_identity_face."identityId"
+        FROM face_identity_face
+        INNER JOIN asset_face ON asset_face.id = face_identity_face."assetFaceId"
+        INNER JOIN filtered_assets ON filtered_assets.id = asset_face."assetId"
+        WHERE asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+      ),
+      profiles AS (
+        SELECT
+          'user-person'::text AS "profileType",
+          person.id AS "profileId",
+          NULL::uuid AS "spaceId",
+          person."identityId",
+          person.name,
+          person."isHidden",
+          person."updatedAt",
+          0 AS "profileRank"
+        FROM person
+        WHERE person."ownerId" = ${userId}
+          AND person."identityId" IS NOT NULL
+          AND EXISTS (SELECT 1 FROM identity_faces WHERE identity_faces."identityId" = person."identityId")
+        UNION ALL
+        SELECT
+          'space-person'::text AS "profileType",
+          shared_space_person.id AS "profileId",
+          shared_space_person."spaceId",
+          shared_space_person."identityId",
+          COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name,
+          shared_space_person."isHidden",
+          shared_space_person."updatedAt",
+          CASE WHEN NULLIF(shared_space_person_alias.alias, '') IS NULL THEN 2 ELSE 1 END AS "profileRank"
+        FROM shared_space_person
+        LEFT JOIN shared_space_person_alias
+          ON shared_space_person_alias."personId" = shared_space_person.id
+          AND shared_space_person_alias."userId" = ${userId}
+        WHERE shared_space_person."spaceId" = ${anyUuid(timelineSpaceIds)}
+          AND shared_space_person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1 FROM identity_faces WHERE identity_faces."identityId" = shared_space_person."identityId"
+          )
+      ),
+      ranked_profiles AS (
+        SELECT
+          profiles.*,
+          row_number() OVER (
+            PARTITION BY profiles."identityId"
+            ORDER BY
+              NULLIF(profiles.name, '') IS NULL,
+              profiles."profileRank",
+              lower(profiles.name),
+              profiles."updatedAt" DESC,
+              profiles."profileId"
+          ) AS rn
+        FROM profiles
+        WHERE profiles."isHidden" = false
+      )
+      SELECT
+        CASE
+          WHEN "profileType" = 'space-person' THEN 'space-person:' || "profileId"::text
+          ELSE 'person:' || "profileId"::text
+        END AS id,
+        name,
+        "profileType",
+        "profileId",
+        "spaceId"
+      FROM ranked_profiles
+      WHERE rn = 1
+      ORDER BY
+        NULLIF(name, '') IS NULL,
+        lower(name),
+        "profileId"
+    `.execute(db);
+
+    return {
+      people: result.rows
+        .map((row) => ({
+          id: row.id,
+          name: row.name ?? '',
+          primaryProfile:
+            row.profileType === 'space-person'
+              ? { type: row.profileType, id: row.profileId, spaceId: row.spaceId ?? undefined }
+              : { type: row.profileType, id: row.profileId },
+        }))
+        .filter((person) => person.name !== ''),
+      hasUnnamedPeople: result.rows.some((row) => !row.name),
+    };
   }
 
   private async getFilteredRatings(userIds: string[], options: FilterSuggestionsOptions): Promise<number[]> {

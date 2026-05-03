@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { createUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
@@ -8,7 +8,13 @@
   }
   let { item }: Props = $props();
 
-  const thumbUrl = $derived(getPeopleThumbnailUrl(item));
+  const thumbUrl = $derived(
+    item.primaryProfile?.type === 'space-person' && item.primaryProfile.spaceId
+      ? createUrl(`/shared-spaces/${item.primaryProfile.spaceId}/people/${item.primaryProfile.id}/thumbnail`, {
+          updatedAt: item.updatedAt,
+        })
+      : getPeopleThumbnailUrl({ ...item, id: item.primaryProfile?.id ?? item.id }),
+  );
   let failed = $state(false);
   // Reset the failure flag whenever the row swaps to a different person — the
   // component instance is re-used by bits-ui as the user scrolls the list.

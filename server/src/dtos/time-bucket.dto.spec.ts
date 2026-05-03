@@ -32,6 +32,14 @@ describe('TimeBucketDto', () => {
       expect(result.success).toBe(true);
       expect(result.data?.personIds).toEqual(['3fe388e4-2078-44d7-b36c-39d9dee3a657']);
     });
+
+    it('should accept scoped shared-space person tokens', () => {
+      const result = TimeBucketDto.schema.safeParse({
+        personIds: 'space-person:3fe388e4-2078-44d7-b36c-39d9dee3a657',
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.personIds).toEqual(['space-person:3fe388e4-2078-44d7-b36c-39d9dee3a657']);
+    });
   });
 
   describe('tagIds query param handling', () => {

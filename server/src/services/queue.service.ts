@@ -251,6 +251,10 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.AssetClassifyQueueAll, data: { force } });
       }
 
+      case QueueName.PeopleBackfill: {
+        return this.jobRepository.queue({ name: JobName.FaceIdentityBackfill, data: {} });
+      }
+
       case QueueName.StorageBackendMigration: {
         throw new BadRequestException('Use POST /storage-migration/start to begin a storage migration');
       }

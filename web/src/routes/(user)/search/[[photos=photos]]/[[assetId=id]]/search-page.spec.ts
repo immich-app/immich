@@ -12,9 +12,11 @@ const {
   mockAuthManager,
   mockFeatureFlagsManager,
   mockGlobalSearchManager,
+  mockGetPerson,
   mockPage,
   mockRegisterSelectionContext,
   mockSearchAssets,
+  mockSearchPerson,
   mockSearchSmart,
 } = vi.hoisted(() => ({
   mockAfterNavigate: vi.fn(),
@@ -36,6 +38,7 @@ const {
   mockGlobalSearchManager: {
     open: vi.fn(),
   },
+  mockGetPerson: vi.fn(),
   mockPage: {
     url: new URL('https://gallery.test/search'),
     route: { id: '/(user)/search/[[photos=photos]]/[[assetId=id]]' },
@@ -43,6 +46,7 @@ const {
   },
   mockRegisterSelectionContext: vi.fn(),
   mockSearchAssets: vi.fn(),
+  mockSearchPerson: vi.fn(),
   mockSearchSmart: vi.fn(),
 }));
 
@@ -178,9 +182,10 @@ vi.mock('@immich/sdk', async () => {
   const actual = await vi.importActual<typeof import('@immich/sdk')>('@immich/sdk');
   return {
     ...actual,
-    getPerson: vi.fn().mockResolvedValue({ name: 'Person' }),
+    getPerson: mockGetPerson,
     getTagById: vi.fn().mockResolvedValue({ value: 'Tag' }),
     searchAssets: mockSearchAssets,
+    searchPerson: mockSearchPerson,
     searchSmart: mockSearchSmart,
   };
 });
@@ -217,6 +222,8 @@ describe('Search page cmdk selection context', () => {
       albums: { items: [] },
       assets: { items: [makeAsset()], nextPage: null },
     });
+    mockGetPerson.mockResolvedValue({ name: 'Person' });
+    mockSearchPerson.mockResolvedValue([]);
     mockSearchSmart.mockResolvedValue({
       albums: { items: [] },
       assets: { items: [], nextPage: null },
@@ -249,5 +256,34 @@ describe('Search page cmdk selection context', () => {
     options.getOnArchive()(['asset-1'], AssetVisibility.Archive);
 
     await waitFor(() => expect(screen.queryByTestId('asset-row-asset-1')).not.toBeInTheDocument());
+  });
+
+  it('resolves scoped person filter chips from shared people search', async () => {
+    const query = encodeURIComponent(
+      JSON.stringify({ personIds: ['space-person:space-person-1'], withSharedSpaces: true }),
+    );
+    mockPage.url = new URL(`https://gallery.test/search?${QueryParameter.QUERY}=${query}`);
+    mockSearchPerson.mockResolvedValue([
+      {
+        id: 'space-person-1',
+        name: 'Pierre',
+        filterId: 'space-person:space-person-1',
+        primaryProfile: { type: 'space-person', id: 'space-person-1', spaceId: 'space-1' },
+      },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(mockSearchAssets).toHaveBeenCalledWith({
+        metadataSearchDto: expect.objectContaining({
+          personIds: ['space-person:space-person-1'],
+          withSharedSpaces: true,
+        }),
+      });
+    });
+    await waitFor(() => expect(screen.getByText('Pierre')).toBeInTheDocument());
+    expect(screen.queryByText('withSharedSpaces')).not.toBeInTheDocument();
+    expect(mockGetPerson).not.toHaveBeenCalledWith({ id: 'space-person:space-person-1' });
   });
 });

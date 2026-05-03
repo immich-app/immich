@@ -1,7 +1,12 @@
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { afterEach } from 'vitest';
 import PersonEditBirthDateModal from './PersonEditBirthDateModal.svelte';
+
+afterEach(async () => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+});
 
 describe('PersonEditBirthDateModal', () => {
   it('submits the current date input value without requiring blur first', async () => {

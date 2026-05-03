@@ -295,6 +295,13 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.FaceIdentityBackfill: {
+        const data = item.data as { stage?: string; cursor?: string };
+        if (data.cursor) {
+          return { jobId: `face-identity-backfill/${data.stage ?? 'person'}/${data.cursor}`, removeOnFail: true };
+        }
+        return { jobId: 'face-identity-backfill/root', removeOnFail: true };
+      }
       case JobName.VersionCheck: {
         return { jobId: JobName.VersionCheck };
       }
@@ -303,6 +310,14 @@ export class JobRepository {
       }
       case JobName.SharedSpacePersonDedup: {
         return { jobId: `space-dedup-${item.data.spaceId}` };
+      }
+      case JobName.SharedSpacePersonMetadataBackfill: {
+        const data = item.data as { identityId?: string; cursor?: string };
+        const scope = data.identityId ? `identity/${data.identityId}` : 'all';
+        if (data.cursor) {
+          return { jobId: `shared-space-person-metadata-backfill/${scope}/${data.cursor}`, removeOnFail: true };
+        }
+        return { jobId: `shared-space-person-metadata-backfill/${scope}`, removeOnFail: true };
       }
       default: {
         return null;

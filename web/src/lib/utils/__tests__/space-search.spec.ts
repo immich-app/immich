@@ -6,7 +6,7 @@ import {
   mapSmartSearchFacetsToFilterSuggestions,
   SEARCH_FILTER_DEBOUNCE_MS,
 } from '$lib/utils/space-search';
-import { AssetOrder, AssetTypeEnum } from '@immich/sdk';
+import { AssetOrder, AssetTypeEnum, Type } from '@immich/sdk';
 import { describe, expect, it } from 'vitest';
 
 const baseFilters: FilterState = {
@@ -342,6 +342,36 @@ describe('mapSmartSearchFacetsToFilterSuggestions', () => {
       mediaTypes: [AssetTypeEnum.Image],
       hasUnnamedPeople: true,
     });
+  });
+
+  it('maps global shared-space primary people to shared-space thumbnails', () => {
+    const result = mapSmartSearchFacetsToFilterSuggestions({
+      total: 1,
+      timeBuckets: [],
+      countries: [],
+      cities: [],
+      cameraMakes: [],
+      cameraModels: [],
+      tags: [],
+      people: [
+        {
+          id: 'space-person:space-person-1',
+          name: 'Ada',
+          primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+        },
+      ],
+      ratings: [],
+      mediaTypes: [],
+      hasUnnamedPeople: false,
+    });
+
+    expect(result.people).toEqual([
+      {
+        id: 'space-person:space-person-1',
+        name: 'Ada',
+        thumbnailUrl: '/api/shared-spaces/space-1/people/space-person-1/thumbnail',
+      },
+    ]);
   });
 });
 

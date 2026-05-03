@@ -41,6 +41,7 @@
     inputClass?: string;
     showLoadingSpinner?: boolean;
     placeholder?: string;
+    withSharedSpaces?: boolean;
     onReset?: () => void;
     onSearch?: () => void;
   }
@@ -54,6 +55,7 @@
     inputClass = 'w-full gap-2',
     showLoadingSpinner = $bindable(false),
     placeholder = $t('name_or_nickname'),
+    withSharedSpaces = false,
     onReset = () => {},
     onSearch = () => {},
   }: Props = $props();
@@ -83,7 +85,10 @@
     abortController = new AbortController();
     timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
     try {
-      const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
+      const data = await searchPerson(
+        { name: searchName, ...(withSharedSpaces ? { withSharedSpaces } : {}) },
+        { signal: abortController?.signal },
+      );
       searchedPeople = data;
       searchWord = searchName;
     } catch (error) {

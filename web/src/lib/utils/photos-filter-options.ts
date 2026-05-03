@@ -1,6 +1,7 @@
 import type { FilterState } from '$lib/components/filter-panel/filter-panel';
 import { buildFilterContext } from '$lib/components/filter-panel/filter-panel';
-import { AssetOrder, AssetTypeEnum, AssetVisibility } from '@immich/sdk';
+import { createUrl } from '$lib/utils';
+import { AssetOrder, AssetTypeEnum, AssetVisibility, type FilterSuggestionsPersonDto } from '@immich/sdk';
 
 export function buildPhotosTimelineOptions(filters: FilterState): Record<string, unknown> {
   const includeSharedTimelineAssets = filters.isFavorite === undefined;
@@ -50,6 +51,23 @@ export function buildPhotosTimelineOptions(filters: FilterState): Record<string,
   }
 
   return base;
+}
+
+export function getPhotosPersonFilterThumbnailUrl(
+  person: Pick<FilterSuggestionsPersonDto, 'id' | 'primaryProfile'>,
+): string {
+  const profile = person.primaryProfile;
+
+  if (profile?.type === 'space-person' && profile.spaceId) {
+    return createUrl(`/shared-spaces/${profile.spaceId}/people/${profile.id}/thumbnail`);
+  }
+
+  if (profile?.type === 'user-person') {
+    return createUrl(`/people/${profile.id}/thumbnail`);
+  }
+
+  const userPersonId = person.id.startsWith('person:') ? person.id.slice('person:'.length) : person.id;
+  return createUrl(`/people/${userPersonId}/thumbnail`);
 }
 
 export function handlePhotosRemoveFilter(filters: FilterState, type: string, id?: string): FilterState {

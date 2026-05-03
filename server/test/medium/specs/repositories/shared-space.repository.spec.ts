@@ -324,6 +324,30 @@ describe(SharedSpaceRepository.name, () => {
       expect(count).toBe(1);
     });
 
+    it('should skip hidden and locked assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive });
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Hidden });
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+
+      const count = await sut.bulkAddUserAssets(space.id, user.id);
+
+      expect(count).toBe(2);
+      const assets = await ctx.database
+        .selectFrom('shared_space_asset')
+        .innerJoin('asset', 'asset.id', 'shared_space_asset.assetId')
+        .select('asset.visibility')
+        .where('shared_space_asset.spaceId', '=', space.id)
+        .execute();
+      expect(assets.map(({ visibility }) => visibility).toSorted()).toEqual([
+        AssetVisibility.Archive,
+        AssetVisibility.Timeline,
+      ]);
+    });
+
     it('should not insert assets owned by other users', async () => {
       const { ctx, sut } = setup();
       const { user: owner } = await ctx.newUser();
@@ -483,6 +507,50 @@ describe(SharedSpaceRepository.name, () => {
       expect(page).toEqual([{ assetId: visible.id }]);
     });
 
+    it('filters hidden and locked assets from face-match pagination', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+
+      const { asset: directVisible } = await ctx.newAsset({
+        ownerId: user.id,
+        id: '00000000-0000-4000-a000-000000000011',
+        visibility: AssetVisibility.Timeline,
+      });
+      const { asset: directHidden } = await ctx.newAsset({
+        ownerId: user.id,
+        id: '00000000-0000-4000-a000-000000000012',
+        visibility: AssetVisibility.Hidden,
+      });
+      const { asset: directLocked } = await ctx.newAsset({
+        ownerId: user.id,
+        id: '00000000-0000-4000-a000-000000000013',
+        visibility: AssetVisibility.Locked,
+      });
+      const { asset: linkedVisible } = await ctx.newAsset({
+        ownerId: user.id,
+        libraryId: library.id,
+        id: '00000000-0000-4000-a000-000000000014',
+        visibility: AssetVisibility.Archive,
+      });
+      await ctx.newAsset({
+        ownerId: user.id,
+        libraryId: library.id,
+        id: '00000000-0000-4000-a000-000000000015',
+        visibility: AssetVisibility.Hidden,
+      });
+
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: directVisible.id, addedById: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: directHidden.id, addedById: user.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: directLocked.id, addedById: user.id });
+
+      const page = await sut.getAssetIdsInSpacePage(space.id, { limit: 10 });
+
+      expect(page.map(({ assetId }) => assetId)).toEqual([directVisible.id, linkedVisible.id]);
+    });
+
     it('returns an empty page after the last asset id', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
@@ -493,6 +561,78 @@ describe(SharedSpaceRepository.name, () => {
       const page = await sut.getAssetIdsInSpacePage(space.id, { limit: 10, afterAssetId: asset.id });
 
       expect(page).toEqual([]);
+    });
+  });
+
+  describe('space activity from direct asset links', () => {
+    it('should exclude hidden assets from member contribution and recent activity', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset: visibleAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      const { asset: hiddenAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Hidden,
+      });
+
+      const visibleAddedAt = new Date('2026-01-01T00:00:00.000Z');
+      const hiddenAddedAt = new Date('2026-01-02T00:00:00.000Z');
+      await ctx.database
+        .insertInto('shared_space_asset')
+        .values([
+          { spaceId: space.id, assetId: visibleAsset.id, addedById: user.id, addedAt: visibleAddedAt },
+          { spaceId: space.id, assetId: hiddenAsset.id, addedById: user.id, addedAt: hiddenAddedAt },
+        ])
+        .execute();
+
+      const [contribution] = await sut.getContributionCounts(space.id);
+      const [activity] = await sut.getMemberActivity(space.id);
+      const lastAddedAt = await sut.getLastAssetAddedAt(space.id);
+
+      expect(Number(contribution.count)).toBe(1);
+      expect(activity.recentAssetId).toBe(visibleAsset.id);
+      expect(activity.lastAddedAt).toEqual(visibleAddedAt);
+      expect(lastAddedAt).toEqual(visibleAddedAt);
+    });
+
+    it('should exclude hidden assets from last contributor', async () => {
+      const { ctx, sut } = setup();
+      const { user: visibleContributor } = await ctx.newUser({ name: 'Visible Contributor' });
+      const { user: hiddenContributor } = await ctx.newUser({ name: 'Hidden Contributor' });
+      const { space } = await ctx.newSharedSpace({ createdById: visibleContributor.id });
+      const { asset: visibleAsset } = await ctx.newAsset({
+        ownerId: visibleContributor.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      const { asset: hiddenAsset } = await ctx.newAsset({
+        ownerId: hiddenContributor.id,
+        visibility: AssetVisibility.Hidden,
+      });
+
+      await ctx.database
+        .insertInto('shared_space_asset')
+        .values([
+          {
+            spaceId: space.id,
+            assetId: visibleAsset.id,
+            addedById: visibleContributor.id,
+            addedAt: new Date('2026-01-01T00:00:00.000Z'),
+          },
+          {
+            spaceId: space.id,
+            assetId: hiddenAsset.id,
+            addedById: hiddenContributor.id,
+            addedAt: new Date('2026-01-02T00:00:00.000Z'),
+          },
+        ])
+        .execute();
+
+      const contributor = await sut.getLastContributor(space.id, new Date('2025-01-01T00:00:00.000Z'));
+
+      expect(contributor).toEqual({ id: visibleContributor.id, name: 'Visible Contributor' });
     });
   });
 
@@ -525,6 +665,51 @@ describe(SharedSpaceRepository.name, () => {
       const count = await sut.getAssetCount(space.id);
 
       expect(count).toBe(1);
+    });
+
+    it('should exclude hidden and locked assets from the visible asset count', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+
+      const { asset: timelineAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      const { asset: archivedAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Archive,
+      });
+      const { asset: hiddenAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Hidden,
+      });
+      const { asset: lockedAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Locked,
+      });
+      const { asset: linkedTimelineAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        libraryId: library.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      await ctx.newAsset({
+        ownerId: user.id,
+        libraryId: library.id,
+        visibility: AssetVisibility.Hidden,
+      });
+
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: timelineAsset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: archivedAsset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: hiddenAsset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: lockedAsset.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+
+      const count = await sut.getAssetCount(space.id);
+
+      expect(count).toBe(3);
+      expect(linkedTimelineAsset.id).toBeDefined();
     });
   });
 
@@ -680,6 +865,34 @@ describe(SharedSpaceRepository.name, () => {
 
       const since = new Date('2023-01-01T00:00:00.000Z');
       const count = await sut.getNewAssetCount(space.id, since);
+
+      expect(count).toBe(1);
+    });
+
+    it('should exclude hidden assets from new asset count', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      const { asset: timelineAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      const { asset: hiddenAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Hidden,
+      });
+      await ctx.newAsset({
+        ownerId: user.id,
+        libraryId: library.id,
+        visibility: AssetVisibility.Hidden,
+      });
+
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: timelineAsset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: hiddenAsset.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+
+      const count = await sut.getNewAssetCount(space.id, new Date('2023-01-01T00:00:00.000Z'));
 
       expect(count).toBe(1);
     });
@@ -1042,6 +1255,119 @@ describe(SharedSpaceRepository.name, () => {
   // ==========================================
 
   describe('getPersonsBySpaceId', () => {
+    describe('getPersonalThumbnailForSpacePerson', () => {
+      it('returns a linked personal thumbnail when its feature face asset is in the space', async () => {
+        const { ctx, sut } = setup();
+        const { user: owner } = await ctx.newUser();
+        const { user: viewer } = await ctx.newUser();
+        const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+        await ctx.newSharedSpaceMember({ spaceId: space.id, userId: viewer.id });
+        const { asset } = await ctx.newAsset({ ownerId: owner.id, visibility: AssetVisibility.Timeline });
+        await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: owner.id });
+        const identity = await ctx.database
+          .insertInto('face_identity')
+          .values({ type: 'person' })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+        const { result: person } = await ctx.newPerson({ ownerId: owner.id, thumbnailPath: '/owner-thumb.jpg' });
+        const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+        await ctx.database
+          .updateTable('person')
+          .set({ identityId: identity.id, faceAssetId: assetFace.id })
+          .where('id', '=', person.id)
+          .execute();
+
+        const result = await sut.getPersonalThumbnailForSpacePerson({
+          userId: viewer.id,
+          spaceId: space.id,
+          identityId: identity.id,
+        });
+
+        expect(result).toEqual({ personId: person.id, thumbnailPath: '/owner-thumb.jpg' });
+      });
+
+      it('does not return another user thumbnail when its feature face asset is outside the space', async () => {
+        const { ctx, sut } = setup();
+        const { user: owner } = await ctx.newUser();
+        const { user: viewer } = await ctx.newUser();
+        const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+        await ctx.newSharedSpaceMember({ spaceId: space.id, userId: viewer.id });
+        const { asset } = await ctx.newAsset({ ownerId: owner.id, visibility: AssetVisibility.Timeline });
+        const identity = await ctx.database
+          .insertInto('face_identity')
+          .values({ type: 'person' })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+        const { result: person } = await ctx.newPerson({ ownerId: owner.id, thumbnailPath: '/private-thumb.jpg' });
+        const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+        await ctx.database
+          .updateTable('person')
+          .set({ identityId: identity.id, faceAssetId: assetFace.id })
+          .where('id', '=', person.id)
+          .execute();
+
+        const result = await sut.getPersonalThumbnailForSpacePerson({
+          userId: viewer.id,
+          spaceId: space.id,
+          identityId: identity.id,
+        });
+
+        expect(result).toBeUndefined();
+      });
+
+      it('prefers the viewer-owned personal thumbnail', async () => {
+        const { ctx, sut } = setup();
+        const { user: owner } = await ctx.newUser();
+        const { user: viewer } = await ctx.newUser();
+        const { space } = await ctx.newSharedSpace({ createdById: owner.id });
+        await ctx.newSharedSpaceMember({ spaceId: space.id, userId: viewer.id });
+        const identity = await ctx.database
+          .insertInto('face_identity')
+          .values({ type: 'person' })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+
+        const { asset: ownerAsset } = await ctx.newAsset({ ownerId: owner.id, visibility: AssetVisibility.Timeline });
+        await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: ownerAsset.id, addedById: owner.id });
+        const { result: ownerPerson } = await ctx.newPerson({
+          ownerId: owner.id,
+          thumbnailPath: '/owner-thumb.jpg',
+        });
+        const { assetFace: ownerFace } = await ctx.newAssetFace({ assetId: ownerAsset.id, personId: ownerPerson.id });
+        await ctx.database
+          .updateTable('person')
+          .set({ identityId: identity.id, faceAssetId: ownerFace.id })
+          .where('id', '=', ownerPerson.id)
+          .execute();
+
+        const { asset: viewerAsset } = await ctx.newAsset({
+          ownerId: viewer.id,
+          visibility: AssetVisibility.Timeline,
+        });
+        const { result: viewerPerson } = await ctx.newPerson({
+          ownerId: viewer.id,
+          thumbnailPath: '/viewer-thumb.jpg',
+        });
+        const { assetFace: viewerFace } = await ctx.newAssetFace({
+          assetId: viewerAsset.id,
+          personId: viewerPerson.id,
+        });
+        await ctx.database
+          .updateTable('person')
+          .set({ identityId: identity.id, faceAssetId: viewerFace.id })
+          .where('id', '=', viewerPerson.id)
+          .execute();
+
+        const result = await sut.getPersonalThumbnailForSpacePerson({
+          userId: viewer.id,
+          spaceId: space.id,
+          identityId: identity.id,
+        });
+
+        expect(result).toEqual({ personId: viewerPerson.id, thumbnailPath: '/viewer-thumb.jpg' });
+      });
+    });
+
     it('should return space persons whose global person has no thumbnail', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
@@ -1113,7 +1439,7 @@ describe(SharedSpaceRepository.name, () => {
       expect(result[0].id).toBe(spacePerson.id);
     });
 
-    it('should fall back to global person name when space person has no name', async () => {
+    it('should not fall back to private global person metadata when space person has no name', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { space } = await ctx.newSharedSpace({ createdById: user.id });
@@ -1136,8 +1462,7 @@ describe(SharedSpaceRepository.name, () => {
       const result = await sut.getPersonsBySpaceId(space.id, {});
 
       expect(result).toHaveLength(1);
-      expect(result[0].personalName).toBe('Global Name');
-      expect(result[0].personalThumbnailPath).toBe('/path/to/thumbnail.jpg');
+      expect(result[0].name).toBe('');
     });
 
     it('should sort space persons tied on assetCount alphabetically by name', async () => {
@@ -1172,7 +1497,7 @@ describe(SharedSpaceRepository.name, () => {
       expect(result.map((p) => p.id)).toEqual([alice.id, bob.id, charlie.id]);
     });
 
-    it('should fall back to global person name when sorting tied space persons', async () => {
+    it('should sort unnamed space persons after named rows without private global fallback', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { space } = await ctx.newSharedSpace({ createdById: user.id });
@@ -1205,7 +1530,185 @@ describe(SharedSpaceRepository.name, () => {
 
       const result = await sut.getPersonsBySpaceId(space.id, {});
 
-      expect(result.map((p) => p.id)).toEqual([alice.id, bob.id, charlie.id]);
+      expect(result.map((p) => p.id)).toEqual([alice.id, charlie.id, bob.id]);
+    });
+  });
+
+  describe('countPersonsBySpaceId', () => {
+    it('should count total and hidden people with name and pet filters', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+
+      await sut.createPerson({ spaceId: space.id, name: 'Alice', representativeFaceId: null, type: 'person' });
+      await sut.createPerson({
+        spaceId: space.id,
+        name: 'Alicia',
+        representativeFaceId: null,
+        isHidden: true,
+        type: 'person',
+      });
+      await sut.createPerson({
+        spaceId: space.id,
+        name: 'Alice Pet',
+        representativeFaceId: null,
+        isHidden: true,
+        type: 'pet',
+      });
+      await sut.createPerson({ spaceId: space.id, name: 'Bob', representativeFaceId: null, type: 'person' });
+
+      const result = await sut.countPersonsBySpaceId(space.id, { name: 'Ali', petsEnabled: false });
+
+      expect(Number(result.total)).toBe(2);
+      expect(Number(result.hidden)).toBe(1);
+    });
+  });
+
+  describe('representative face picker queries', () => {
+    it('does not repair valid manual representative faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { result: faceId } = await ctx.newAssetFace({ assetId: asset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      const person = await sut.createPerson({
+        spaceId: space.id,
+        representativeFaceId: faceId,
+        representativeFaceSource: 'manual',
+        type: 'person',
+      });
+      await sut.addPersonFaces([{ personId: person.id, assetFaceId: faceId }]);
+
+      await sut.repairInvalidRepresentativeFaces(space.id);
+
+      await expect(sut.getPersonById(person.id)).resolves.toMatchObject({
+        representativeFaceId: faceId,
+        representativeFaceSource: 'manual',
+      });
+    });
+
+    it('requires representative picker faces to belong to assets in the space', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { result: faceId } = await ctx.newAssetFace({ assetId: asset.id });
+      const person = await sut.createPerson({ spaceId: space.id, type: 'person', representativeFaceId: faceId });
+      await sut.addPersonFaces([{ personId: person.id, assetFaceId: faceId }]);
+
+      await expect(
+        sut.getSpaceRepresentativeFaceForUpdate({ spaceId: space.id, personId: person.id, assetFaceId: faceId }),
+      ).resolves.toBeUndefined();
+
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+
+      await expect(
+        sut.getSpaceRepresentativeFaceForUpdate({ spaceId: space.id, personId: person.id, assetFaceId: faceId }),
+      ).resolves.toMatchObject({ id: faceId, assetId: asset.id });
+    });
+
+    it('includes library-backed space assets in the representative face list', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id, addedById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id });
+      const { result: faceId } = await ctx.newAssetFace({ assetId: asset.id });
+      const person = await sut.createPerson({ spaceId: space.id, type: 'person', representativeFaceId: faceId });
+      await sut.addPersonFaces([{ personId: person.id, assetFaceId: faceId }]);
+
+      const rows = await sut.getSpaceRepresentativeFaces({ spaceId: space.id, personId: person.id, take: 10, skip: 0 });
+
+      expect(rows).toEqual([expect.objectContaining({ id: faceId, assetId: asset.id })]);
+    });
+
+    const invalidators: Array<
+      [string, (ctx: any, faceId: string, assetId: string, spaceId: string, personId: string) => Promise<void>]
+    > = [
+      [
+        'hidden face',
+        async (ctx, faceId) => {
+          await ctx.database.updateTable('asset_face').set({ isVisible: false }).where('id', '=', faceId).execute();
+        },
+      ],
+      [
+        'deleted face',
+        async (ctx, faceId) => {
+          await ctx.database
+            .updateTable('asset_face')
+            .set({ deletedAt: new Date() })
+            .where('id', '=', faceId)
+            .execute();
+        },
+      ],
+      [
+        'offline asset',
+        async (ctx, _faceId, assetId) => {
+          await ctx.database.updateTable('asset').set({ isOffline: true }).where('id', '=', assetId).execute();
+        },
+      ],
+      [
+        'deleted asset',
+        async (ctx, _faceId, assetId) => {
+          await ctx.database.updateTable('asset').set({ deletedAt: new Date() }).where('id', '=', assetId).execute();
+        },
+      ],
+      [
+        'hidden asset',
+        async (ctx, _faceId, assetId) => {
+          await ctx.database
+            .updateTable('asset')
+            .set({ visibility: AssetVisibility.Hidden })
+            .where('id', '=', assetId)
+            .execute();
+        },
+      ],
+      [
+        'asset removed from space',
+        async (ctx, _faceId, assetId, spaceId) => {
+          await ctx.database
+            .deleteFrom('shared_space_asset')
+            .where('spaceId', '=', spaceId)
+            .where('assetId', '=', assetId)
+            .execute();
+        },
+      ],
+      [
+        'face no longer assigned to the space person',
+        async (ctx, faceId, _assetId, _spaceId, personId) => {
+          await ctx.database
+            .deleteFrom('shared_space_person_face')
+            .where('personId', '=', personId)
+            .where('assetFaceId', '=', faceId)
+            .execute();
+        },
+      ],
+    ];
+
+    it.each(invalidators)('clears invalid manual representative face when %s', async (_label, invalidate) => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { result: faceId } = await ctx.newAssetFace({ assetId: asset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      const person = await sut.createPerson({
+        spaceId: space.id,
+        representativeFaceId: faceId,
+        representativeFaceSource: 'manual',
+        type: 'person',
+      });
+      await sut.addPersonFaces([{ personId: person.id, assetFaceId: faceId }]);
+      await invalidate(ctx, faceId, asset.id, space.id, person.id);
+
+      await sut.repairInvalidRepresentativeFaces(space.id);
+
+      await expect(sut.getPersonById(person.id)).resolves.toMatchObject({
+        representativeFaceId: null,
+        representativeFaceSource: 'auto',
+      });
     });
   });
 

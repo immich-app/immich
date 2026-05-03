@@ -556,7 +556,7 @@ describe('real providers', () => {
     m.setQuery('alice');
     await vi.advanceTimersByTimeAsync(200);
     expect(searchPerson).toHaveBeenCalledWith(
-      { name: 'alice', withHidden: false },
+      { name: 'alice', withHidden: false, withSharedSpaces: true },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
@@ -954,6 +954,38 @@ describe('activate()', () => {
     expect(goto).toHaveBeenCalledWith('/people/p1');
     const entries = getEntries();
     expect(entries[0]).toMatchObject({ kind: 'person', personId: 'p1', label: 'Alice' });
+  });
+
+  it('activate("person", item) opens identity-backed space-primary people as shared timeline search', () => {
+    const m = new GlobalSearchManager();
+    m.open();
+    m.activate('person', {
+      id: 'space-person-1',
+      name: 'Alice',
+      primaryProfile: { type: 'space-person', id: 'space-person-1', spaceId: 'space-1' },
+      filterId: 'space-person:space-person-1',
+    });
+
+    const route = vi.mocked(goto).mock.calls[0][0] as string;
+    const url = new URL(route, 'https://gallery.test');
+    expect(url.pathname).toBe('/search');
+    expect(JSON.parse(url.searchParams.get('query') ?? '{}')).toEqual({
+      personIds: ['space-person:space-person-1'],
+      withSharedSpaces: true,
+    });
+    expect(getEntries()).toHaveLength(0);
+  });
+
+  it('activate("person", item) navigates legacy space-primary people to the space person route', () => {
+    const m = new GlobalSearchManager();
+    m.open();
+    m.activate('person', {
+      id: 'space-person-1',
+      name: 'Alice',
+      primaryProfile: { type: 'space-person', id: 'space-person-1', spaceId: 'space-1' },
+    });
+    expect(goto).toHaveBeenCalledWith('/spaces/space-1/people/space-person-1');
+    expect(getEntries()).toHaveLength(0);
   });
 
   it('activate("place", item) navigates to /map with hash and records recent entry', () => {
@@ -4485,32 +4517,20 @@ describe('prefix scoping — runBatch gating', () => {
 
   it('scope nav: ENTITY_KEYS_BY_SCOPE.nav === [] — no entity providers invoked', async () => {
     const m = new GlobalSearchManager();
-    const searchSmartSpy = vi.mocked(searchSmart);
-    const searchPersonSpy = vi.mocked(searchPerson);
-    const searchPlacesSpy = vi.mocked(searchPlaces);
-    const getAllTagsSpy = vi.mocked(getAllTags);
-    const getAlbumNamesSpy = vi.mocked(getAlbumNames);
-    const getAllSpacesSpy = vi.mocked(getAllSpaces);
-    for (const s of [
-      searchSmartSpy,
-      searchPersonSpy,
-      searchPlacesSpy,
-      getAllTagsSpy,
-      getAlbumNamesSpy,
-      getAllSpacesSpy,
-    ]) {
-      s.mockClear();
+    const providers = (m as unknown as { providers: Record<keyof Sections, Provider> }).providers;
+    const providerRuns = new Map<string, ReturnType<typeof vi.fn>>();
+    for (const key of ['photos', 'people', 'places', 'tags', 'albums', 'spaces'] as const) {
+      const run = vi.fn().mockResolvedValue({ status: 'empty' });
+      providerRuns.set(key, run);
+      providers[key].run = run;
     }
-    const searchSmartCallsBefore = searchSmartSpy.mock.calls.length;
-    const searchPersonCallsBefore = searchPersonSpy.mock.calls.length;
-    const searchPlacesCallsBefore = searchPlacesSpy.mock.calls.length;
 
     m.setQuery('>theme');
     await vi.advanceTimersByTimeAsync(150);
 
-    expect(searchSmartSpy).toHaveBeenCalledTimes(searchSmartCallsBefore);
-    expect(searchPersonSpy).toHaveBeenCalledTimes(searchPersonCallsBefore);
-    expect(searchPlacesSpy).toHaveBeenCalledTimes(searchPlacesCallsBefore);
+    for (const run of providerRuns.values()) {
+      expect(run).not.toHaveBeenCalled();
+    }
     // Navigation section populated via synchronous runNavigationProvider, not runBatch.
     expect(m.sections.navigation.status).toBe('ok');
   });
@@ -4537,7 +4557,10 @@ describe('prefix scoping — runBatch gating', () => {
     m.setQuery('@a');
     await vi.advanceTimersByTimeAsync(150);
 
-    expect(searchPersonSpy).toHaveBeenCalledWith({ name: 'a', withHidden: false }, expect.anything());
+    expect(searchPersonSpy).toHaveBeenCalledWith(
+      { name: 'a', withHidden: false, withSharedSpaces: true },
+      expect.anything(),
+    );
   });
 });
 
@@ -5019,7 +5042,8 @@ describe('prefix scoping — setQuery SWR scope behavior', () => {
     resolve!([{ id: 'a1', albumName: 'Trip' }] as never);
     await vi.runAllTimersAsync();
 
-    expect(getAlbumNamesSpy).toHaveBeenCalledTimes(1);
+    const callsForManager = getAlbumNamesSpy.mock.calls.filter(([options]) => options?.signal === m.closeSignal);
+    expect(callsForManager).toHaveLength(1);
   });
 });
 

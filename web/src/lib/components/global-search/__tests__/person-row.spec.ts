@@ -29,6 +29,20 @@ describe('person-row', () => {
     expect(img?.getAttribute('src')).toMatch(/\/api\/people\/p1\/thumbnail/);
   });
 
+  it('renders the shared-space person thumbnail for space-primary rows', () => {
+    const { container } = render(PersonRow, {
+      props: {
+        item: {
+          id: 'space-person-1',
+          name: 'Alice',
+          primaryProfile: { type: 'space-person', id: 'space-person-1', spaceId: 'space-1' },
+        } as never,
+      },
+    });
+    const img = container.querySelector('img');
+    expect(img?.getAttribute('src')).toMatch(/\/api\/shared-spaces\/space-1\/people\/space-person-1\/thumbnail/);
+  });
+
   it('swaps to placeholder div when the thumbnail image fails to load', async () => {
     const { container } = render(PersonRow, {
       props: { item: { id: 'p1', name: 'Alice' } as never },

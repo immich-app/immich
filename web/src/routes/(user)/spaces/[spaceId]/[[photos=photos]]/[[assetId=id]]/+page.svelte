@@ -70,6 +70,7 @@
     searchSmartFacets,
     SharedSpaceRole,
     SearchSuggestionType,
+    updateMemberPreferences,
     updateMemberTimeline,
     updateSpace,
     UserAvatarColor,
@@ -386,6 +387,7 @@
     currentMember?.role === SharedSpaceRole.Owner || currentMember?.role === SharedSpaceRole.Editor,
   );
   const showInTimeline = $derived(currentMember?.showInTimeline ?? true);
+  const sharePersonMetadata = $derived(currentMember?.sharePersonMetadata ?? true);
 
   registerSpaceContext(
     () => space,
@@ -630,6 +632,18 @@
     }
   };
 
+  const handleTogglePersonMetadataSharing = async () => {
+    try {
+      const updated = await updateMemberPreferences({
+        id: space.id,
+        sharedSpaceMemberPreferencesDto: { sharePersonMetadata: !sharePersonMetadata },
+      });
+      members = members.map((m) => (m.userId === updated.userId ? updated : m));
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_person_metadata_sharing'));
+    }
+  };
+
   const handleToggleFaceRecognition = async () => {
     try {
       const updated = await updateSpace({
@@ -836,6 +850,11 @@
             text={showInTimeline ? $t('spaces_hide_from_timeline') : $t('spaces_show_on_timeline')}
             icon={showInTimeline ? mdiEyeOutline : mdiEyeOffOutline}
             onClick={handleToggleTimeline}
+          />
+          <MenuOption
+            text={sharePersonMetadata ? $t('spaces_stop_sharing_person_metadata') : $t('spaces_share_person_metadata')}
+            icon={mdiFaceRecognition}
+            onClick={handleTogglePersonMetadataSharing}
           />
           {#if isEditor || authManager.user?.isAdmin}
             <hr class="my-1 border-gray-300" />

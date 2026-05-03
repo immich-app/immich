@@ -157,14 +157,12 @@ export class AssetService extends BaseService {
       person.spacePersonId = spacePerson.id;
       person.isHidden = spacePerson.isHidden;
 
-      const name = spacePerson.name || spacePerson.personalName;
+      const name = spacePerson.name;
       if (name !== undefined) {
         person.name = name ?? '';
       }
 
-      if (spacePerson.personalThumbnailPath !== undefined) {
-        person.thumbnailPath = spacePerson.personalThumbnailPath || '';
-      }
+      person.thumbnailPath = '';
 
       if (spacePerson.birthDate !== undefined) {
         person.birthDate = spacePerson.birthDate ?? null;

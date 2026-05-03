@@ -6,6 +6,7 @@ import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const makePerson = (overrides: Record<string, unknown> = {}) => ({
   id: 'person-id',
+  identityId: null,
   ownerId: 'owner-id',
   name: 'dog',
   type: 'pet',

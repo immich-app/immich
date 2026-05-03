@@ -1,5 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { QueryParameter, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import PeopleManagementGrid from '$lib/components/people/people-management-grid.svelte';
   import PeopleMergeSelector from '$lib/components/people/people-merge-selector.svelte';
@@ -9,14 +12,18 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
-  import { createUrl } from '$lib/utils';
+  import { locale } from '$lib/stores/preferences.store';
+  import { createUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { clearQueryParam } from '$lib/utils/navigation';
   import {
     getSpacePeople,
+    getSpacePeopleStatistics,
     mergeSpacePeople,
     SharedSpaceRole,
     updateSpacePerson,
     type SharedSpaceMemberResponseDto,
+    type SharedSpacePeopleStatisticsResponseDto,
     type SharedSpacePersonResponseDto,
     type SharedSpaceResponseDto,
   } from '@immich/sdk';
@@ -30,6 +37,7 @@
     mdiEyeOffOutline,
     mdiEyeOutline,
   } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { t } from 'svelte-i18n';
@@ -46,18 +54,25 @@
   const space: SharedSpaceResponseDto = $derived(data.space);
   const members: SharedSpaceMemberResponseDto[] = $derived(data.members);
   let people = $state<SharedSpacePersonResponseDto[]>([]);
+  let peopleStatistics = $state<SharedSpacePeopleStatisticsResponseDto>({ total: 0, hidden: 0 });
   let loadedSpaceId = $state('');
   let loading = $state(false);
   let hasMore = $state(false);
+  let searchName = $state('');
+  let showLoadingSpinner = $state(false);
+  let abortController: AbortController | null = null;
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   let selectHidden = $state(false);
   const visiblePeople = $derived(people.filter((p) => !p.isHidden));
+  const countVisiblePeople = $derived(peopleStatistics.total - peopleStatistics.hidden);
   let allPeople = $state<SharedSpacePersonResponseDto[]>([]);
   let mergingPerson = $state<SharedSpacePersonResponseDto>();
 
   $effect(() => {
     if (data.space.id !== loadedSpaceId) {
       people = data.people;
+      peopleStatistics = data.peopleStatistics;
       hasMore = data.people.length >= PAGE_SIZE;
       mergingPerson = undefined;
       loadedSpaceId = data.space.id;
@@ -67,6 +82,14 @@
   const currentMember = $derived(members.find((m) => m.userId === authManager.user.id));
   const isOwner = $derived(currentMember?.role === SharedSpaceRole.Owner);
   const isEditor = $derived(isOwner || currentMember?.role === SharedSpaceRole.Editor);
+
+  onMount(() => {
+    const searchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
+    if (searchedPeople) {
+      searchName = searchedPeople;
+      handlePromiseError(searchPeople(searchedPeople));
+    }
+  });
 
   const getThumbUrl = (person: SharedSpacePersonResponseDto): string => {
     return createUrl(`/shared-spaces/${space.id}/people/${person.id}/thumbnail`, { updatedAt: person.updatedAt });
@@ -84,13 +107,106 @@
     faceCount: person.faceCount,
   });
 
+  const getPeopleQuery = (query: { limit?: number; offset?: number; withHidden?: boolean } = {}) => {
+    const name = searchName.trim();
+    return { id: space.id, ...(name ? { name } : {}), ...query };
+  };
+
+  const getStatisticsQuery = () => {
+    const name = searchName.trim();
+    return { id: space.id, ...(name ? { name } : {}) };
+  };
+
+  const cancelSearchRequest = () => {
+    abortController?.abort();
+    abortController = null;
+    showLoadingSpinner = false;
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+      searchTimeout = null;
+    }
+  };
+
+  async function updateSearchQueryParam() {
+    const currentSearch = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE) ?? '';
+    if (currentSearch === searchName) {
+      return;
+    }
+
+    if (searchName) {
+      $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
+    } else {
+      $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
+    }
+
+    await goto($page.url, { keepFocus: true });
+  }
+
   async function refreshPeople() {
     try {
-      people = await getSpacePeople({ id: space.id, limit: PAGE_SIZE });
+      const [newPeople, newStatistics] = await Promise.all([
+        getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE })),
+        getSpacePeopleStatistics(getStatisticsQuery()),
+      ]);
+      people = newPeople;
+      peopleStatistics = newStatistics;
       hasMore = people.length >= PAGE_SIZE;
     } catch (error) {
       handleError(error, $t('spaces_error_loading_people'));
     }
+  }
+
+  async function searchPeople(name?: string) {
+    searchName = name ?? searchName;
+    await updateSearchQueryParam();
+
+    if (!searchName.trim()) {
+      cancelSearchRequest();
+      await refreshPeople();
+      return;
+    }
+
+    cancelSearchRequest();
+    const controller = new AbortController();
+    abortController = controller;
+    searchTimeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
+
+    try {
+      const [newPeople, newStatistics] = await Promise.all([
+        getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE }), { signal: controller.signal }),
+        getSpacePeopleStatistics(getStatisticsQuery(), { signal: controller.signal }),
+      ]);
+
+      if (abortController !== controller) {
+        return;
+      }
+
+      people = newPeople;
+      peopleStatistics = newStatistics;
+      hasMore = people.length >= PAGE_SIZE;
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+      handleError(error, $t('spaces_error_loading_people'));
+    } finally {
+      if (abortController === controller) {
+        abortController = null;
+        showLoadingSpinner = false;
+      }
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+        searchTimeout = null;
+      }
+    }
+  }
+
+  async function onResetSearchBar() {
+    searchName = '';
+    cancelSearchRequest();
+    await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
+    await refreshPeople();
   }
 
   async function loadMore() {
@@ -99,7 +215,7 @@
     }
     loading = true;
     try {
-      const more = await getSpacePeople({ id: space.id, limit: PAGE_SIZE, offset: people.length });
+      const more = await getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE, offset: people.length }));
       people = [...people, ...more];
       hasMore = more.length >= PAGE_SIZE;
     } catch (error) {
@@ -218,6 +334,7 @@
       if (idx !== -1) {
         people[idx] = { ...people[idx], isHidden: true };
       }
+      peopleStatistics = { ...peopleStatistics, hidden: peopleStatistics.hidden + 1 };
       toastManager.primary($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
@@ -225,7 +342,10 @@
   }
 </script>
 
-<UserPageLayout title={$t('spaces_people_title')}>
+<UserPageLayout
+  title={$t('spaces_people_title')}
+  description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+>
   {#snippet leading()}
     <IconButton
       variant="ghost"
@@ -237,10 +357,31 @@
     />
   {/snippet}
   {#snippet buttons()}
-    {#if isEditor}
-      <Button leadingIcon={mdiEyeOutline} onclick={openVisibilityModal} size="small" variant="ghost" color="secondary"
-        >{$t('show_and_hide_people')}</Button
-      >
+    {#if countVisiblePeople > 0 || searchName || (isEditor && peopleStatistics.total > 0)}
+      <div class="flex gap-2 items-center justify-center">
+        {#if countVisiblePeople > 0 || searchName}
+          <div class="hidden sm:block">
+            <div class="w-40 lg:w-80 h-10">
+              <SearchBar
+                bind:name={searchName}
+                {showLoadingSpinner}
+                placeholder={$t('search_people')}
+                onReset={() => void onResetSearchBar()}
+                onSearch={() => void searchPeople()}
+              />
+            </div>
+          </div>
+        {/if}
+        {#if isEditor && peopleStatistics.total > 0}
+          <Button
+            leadingIcon={mdiEyeOutline}
+            onclick={openVisibilityModal}
+            size="small"
+            variant="ghost"
+            color="secondary">{$t('show_and_hide_people')}</Button
+          >
+        {/if}
+      </div>
     {/if}
   {/snippet}
 
@@ -248,10 +389,14 @@
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon icon={mdiAccountGroupOutline} size="3.5em" />
-        <p class="mt-5 text-lg text-gray-500 dark:text-gray-400">{$t('spaces_no_people')}</p>
-        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
-          {$t('spaces_no_people_description')}
+        <p class="mt-5 text-lg text-gray-500 dark:text-gray-400">
+          {$t(searchName ? 'search_no_people_named' : 'spaces_no_people', { values: { name: searchName } })}
         </p>
+        {#if !searchName}
+          <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
+            {$t('spaces_no_people_description')}
+          </p>
+        {/if}
       </div>
     </div>
   {:else}

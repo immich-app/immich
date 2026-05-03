@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedSpaceRepository } from 'src/repositories/shared-space.repository';
 import { DB } from 'src/schema';
@@ -15,7 +16,7 @@ const setup = (db?: Kysely<DB>) => {
     real: [],
     mock: [LoggingRepository],
   });
-  return { ctx, sut: ctx.get(SharedSpaceRepository) };
+  return { ctx, sut: ctx.get(SharedSpaceRepository), faceIdentityRepository: ctx.get(FaceIdentityRepository) };
 };
 
 beforeAll(async () => {
@@ -416,6 +417,31 @@ describe('SharedSpaceRepository - face matching pipeline', () => {
       expect(persons).toHaveLength(1);
       expect(persons[0].faceCount).toBe(3);
       expect(persons[0].assetCount).toBe(3);
+    });
+
+    it('returns identity evidence for faces reachable only through a linked library', async () => {
+      const { ctx, sut, faceIdentityRepository } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { library } = await ctx.newLibrary({ ownerId: user.id });
+      await ctx.newSharedSpaceLibrary({ spaceId: space.id, libraryId: library.id });
+      const { result: person } = await ctx.newPerson({ ownerId: user.id, name: 'Linked Evidence' });
+      const identity = await faceIdentityRepository.ensurePersonIdentity(person.id);
+      const { asset } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id });
+      const faceId = await createFaceWithEmbedding(ctx, { assetId: asset.id, personId: person.id });
+      await faceIdentityRepository.linkFace({ assetFaceId: faceId, identityId: identity.id, source: 'owner-person' });
+      const spacePerson = await sut.createPerson({
+        spaceId: space.id,
+        identityId: identity.id,
+        name: '',
+        representativeFaceId: faceId,
+        type: 'person',
+      });
+      await sut.addPersonFaces([{ personId: spacePerson.id, assetFaceId: faceId }]);
+
+      const evidence = await sut.getIdentityEvidenceForSpacePerson(space.id, spacePerson.id, [identity.id]);
+
+      expect(evidence).toEqual([{ identityId: identity.id, type: 'person', supportingFaceCount: 1 }]);
     });
 
     it('Scenario 9: same global person across multiple assets shares one space person', async () => {

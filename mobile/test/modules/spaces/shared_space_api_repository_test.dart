@@ -173,6 +173,7 @@ void main() {
           email: 'alice@example.com',
           role: api.SharedSpaceRole.owner,
           joinedAt: '2024-01-01T00:00:00Z',
+          sharePersonMetadata: true,
           showInTimeline: true,
         ),
         api.SharedSpaceMemberResponseDto(
@@ -181,6 +182,7 @@ void main() {
           email: 'bob@example.com',
           role: api.SharedSpaceRole.editor,
           joinedAt: '2024-01-01T00:00:00Z',
+          sharePersonMetadata: true,
           showInTimeline: true,
         ),
       ];
@@ -204,6 +206,7 @@ void main() {
         email: 'bob@example.com',
         role: api.SharedSpaceRole.viewer,
         joinedAt: '2024-01-01T00:00:00Z',
+        sharePersonMetadata: true,
         showInTimeline: true,
       );
       when(
@@ -232,6 +235,7 @@ void main() {
         email: 'bob@example.com',
         role: api.SharedSpaceRole.editor,
         joinedAt: '2024-01-01T00:00:00Z',
+        sharePersonMetadata: true,
         showInTimeline: true,
       );
       when(
@@ -268,6 +272,7 @@ void main() {
         email: 'bob@example.com',
         role: api.SharedSpaceRole.editor,
         joinedAt: '2024-01-01T00:00:00Z',
+        sharePersonMetadata: true,
         showInTimeline: true,
       );
       when(
@@ -305,6 +310,7 @@ void main() {
         email: 'alice@example.com',
         role: api.SharedSpaceRole.viewer,
         joinedAt: '2024-01-01T00:00:00Z',
+        sharePersonMetadata: true,
         showInTimeline: true,
       );
       when(
@@ -338,6 +344,7 @@ void main() {
         email: 'alice@example.com',
         role: api.SharedSpaceRole.viewer,
         joinedAt: '2024-01-01T00:00:00Z',
+        sharePersonMetadata: true,
         showInTimeline: false,
       );
       when(

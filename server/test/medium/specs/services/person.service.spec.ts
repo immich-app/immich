@@ -6,6 +6,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -21,7 +22,14 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
+    real: [
+      AccessRepository,
+      DatabaseRepository,
+      FaceIdentityRepository,
+      PersonRepository,
+      AssetRepository,
+      AssetEditRepository,
+    ],
     mock: [JobRepository, LoggingRepository, StorageRepository],
   });
 };

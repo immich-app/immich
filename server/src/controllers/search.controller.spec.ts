@@ -344,6 +344,42 @@ describe(SearchController.name, () => {
           }),
         );
       });
+
+      it('accepts scoped person tokens for shared-space city suggestions', async () => {
+        const personId = '33333333-3333-4333-8333-333333333333';
+        ctx.authenticate.mockResolvedValue({});
+        service.getSearchSuggestions.mockResolvedValue(['Berlin']);
+
+        const { status, body } = await request(ctx.getHttpServer())
+          .get('/search/suggestions')
+          .query({
+            type: 'city',
+            withSharedSpaces: true,
+            personIds: `person:${personId}`,
+          });
+
+        expect(status).toBe(200);
+        expect(body).toEqual(['Berlin']);
+        expect(service.getSearchSuggestions).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            type: 'city',
+            withSharedSpaces: true,
+            personIds: [`person:${personId}`],
+          }),
+        );
+      });
+
+      it('rejects malformed scoped person tokens for search suggestions', async () => {
+        const { status, body } = await request(ctx.getHttpServer()).get('/search/suggestions').query({
+          type: 'city',
+          withSharedSpaces: true,
+          personIds: 'bad:token',
+        });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest([expect.stringContaining('[personIds.0]')]));
+      });
     });
 
     describe('GET /search/suggestions/filters', () => {
@@ -412,6 +448,42 @@ describe(SearchController.name, () => {
         expect(body).toEqual(
           errorDto.badRequest([expect.stringContaining('albumId cannot exist alongside withSharedSpaces')]),
         );
+      });
+
+      it('accepts scoped person tokens for shared-space filter suggestions', async () => {
+        const personId = '33333333-3333-4333-8333-333333333333';
+        ctx.authenticate.mockResolvedValue({});
+        service.getFilterSuggestions.mockResolvedValue({
+          countries: [],
+          cameraMakes: [],
+          tags: [],
+          people: [],
+          ratings: [],
+          mediaTypes: [],
+          hasUnnamedPeople: false,
+        });
+
+        const { status } = await request(ctx.getHttpServer())
+          .get('/search/suggestions/filters')
+          .query({
+            withSharedSpaces: true,
+            personIds: `space-person:${personId}`,
+          });
+
+        expect(status).toBe(200);
+        expect(service.getFilterSuggestions).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({ withSharedSpaces: true, personIds: [`space-person:${personId}`] }),
+        );
+      });
+
+      it('rejects malformed scoped person tokens for filter suggestions', async () => {
+        const { status, body } = await request(ctx.getHttpServer())
+          .get('/search/suggestions/filters')
+          .query({ withSharedSpaces: true, personIds: 'bad:token' });
+
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest([expect.stringContaining('[personIds.0]')]));
       });
     });
   });

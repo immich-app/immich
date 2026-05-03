@@ -11,6 +11,7 @@ const makeMember = (overrides: Partial<SharedSpaceMemberResponseDto> = {}): Shar
   role: SharedSpaceRole.Editor,
   joinedAt: '2026-01-01T00:00:00.000Z',
   showInTimeline: false,
+  sharePersonMetadata: true,
   ...overrides,
 });
 

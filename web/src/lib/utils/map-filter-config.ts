@@ -4,7 +4,14 @@ import {
   type FilterState,
 } from '$lib/components/filter-panel/filter-panel';
 import { createUrl } from '$lib/utils';
-import { AssetTypeEnum, getFilterSuggestions, getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+import { getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
+import {
+  AssetTypeEnum,
+  getFilterSuggestions,
+  getSearchSuggestions,
+  SearchSuggestionType,
+  type FilterSuggestionsPersonDto,
+} from '@immich/sdk';
 
 export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
   const sections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'] as const;
@@ -34,10 +41,12 @@ export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
       countries: response.countries,
       cameraMakes: response.cameraMakes,
       tags: response.tags.map((t: { id: string; value: string }) => ({ id: t.id, name: t.value })),
-      people: response.people.map((p: { id: string; name: string }) => ({
+      people: response.people.map((p: FilterSuggestionsPersonDto) => ({
         id: p.id,
         name: p.name,
-        thumbnailUrl: createUrl(`/people/${p.id}/thumbnail`),
+        thumbnailUrl: spaceId
+          ? createUrl(`/shared-spaces/${spaceId}/people/${p.primaryProfile?.id ?? p.id}/thumbnail`)
+          : getPhotosPersonFilterThumbnailUrl(p),
       })),
       ratings: response.ratings,
       mediaTypes: response.mediaTypes,

@@ -5,8 +5,8 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import { Route } from '$lib/route';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
+  import { createUrl, getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { AssetMediaSize, type PersonResponseDto, type SearchExploreResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -35,6 +35,20 @@
       }
     }
   };
+
+  const getPersonHref = (person: PersonResponseDto) =>
+    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
+      ? Route.viewSpacePerson(person.primaryProfile.spaceId, person.primaryProfile.id, {
+          previousRoute: Route.explore(),
+        })
+      : Route.viewPerson({ ...person, id: person.primaryProfile?.id ?? person.id });
+
+  const getPersonThumbnail = (person: PersonResponseDto) =>
+    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
+      ? createUrl(`/shared-spaces/${person.primaryProfile.spaceId}/people/${person.primaryProfile.id}/thumbnail`, {
+          updatedAt: person.updatedAt,
+        })
+      : getPeopleThumbnailUrl({ ...person, id: person.primaryProfile?.id ?? person.id });
 </script>
 
 <OnEvents {onPersonThumbnailReady} />
@@ -53,14 +67,8 @@
       <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
-            <a href={Route.viewPerson(person)} class="text-center relative">
-              <ImageThumbnail
-                circle
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                widthStyle="100%"
-              />
+            <a href={getPersonHref(person)} class="text-center relative">
+              <ImageThumbnail circle shadow url={getPersonThumbnail(person)} altText={person.name} widthStyle="100%" />
               {#if person.isFavorite}
                 <div class="absolute top-2 start-2">
                   <Icon icon={mdiHeart} size="24" class="text-white" />

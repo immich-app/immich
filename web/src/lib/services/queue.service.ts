@@ -205,6 +205,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       title: $t('admin.machine_learning_facial_recognition'),
       subtitle: $t('admin.facial_recognition_job_description'),
     },
+    [QueueName.PeopleBackfill]: {
+      icon: mdiTagFaces,
+      title: $t('admin.people_backfill_job'),
+      subtitle: $t('admin.people_backfill_job_description'),
+    },
     [QueueName.Ocr]: {
       icon: mdiOcr,
       title: $t('admin.machine_learning_ocr'),

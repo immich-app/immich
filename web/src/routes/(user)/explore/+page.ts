@@ -5,7 +5,10 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url);
-  const [items, response] = await Promise.all([getExploreData(), getAllPeople({ withHidden: false })]);
+  const [items, response] = await Promise.all([
+    getExploreData(),
+    getAllPeople({ withHidden: false, withSharedSpaces: true }),
+  ]);
   const $t = await getFormatter();
 
   return {

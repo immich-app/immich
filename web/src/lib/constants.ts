@@ -271,7 +271,6 @@ export type AlbumPageViewMode =
 
 export enum PersonPageViewMode {
   VIEW_ASSETS = 'view-assets',
-  SELECT_PERSON = 'select-person',
   MERGE_PEOPLE = 'merge-people',
   UNASSIGN_ASSETS = 'unassign-faces',
 }
@@ -318,6 +317,7 @@ export const ADMIN_VISIBLE_QUEUES = [
   QueueName.DuplicateDetection,
   QueueName.FaceDetection,
   QueueName.FacialRecognition,
+  QueueName.PeopleBackfill,
   QueueName.Ocr,
   QueueName.PetDetection,
   QueueName.Classification,

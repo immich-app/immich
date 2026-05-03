@@ -105,7 +105,7 @@ vi.mock('$lib/components/shared-components/control-app-bar.svelte', async () => 
 });
 
 vi.mock('$lib/components/shared-components/context-menu/button-context-menu.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
+  const { default: MockComponent } = await import('./mock-button-context-menu.test-wrapper.svelte');
   return { default: MockComponent };
 });
 
@@ -169,6 +169,7 @@ function makeMember(overrides: Partial<SharedSpaceMemberResponseDto> = {}): Shar
     name: 'Owner',
     role: SharedSpaceRole.Owner,
     showInTimeline: true,
+    sharePersonMetadata: true,
     joinedAt: '2026-01-01T00:00:00.000Z',
     contributionCount: 0,
     ...overrides,
@@ -224,6 +225,8 @@ describe('Spaces page search URL state', () => {
     lang.set('de');
     vi.mocked(sdkMock.markSpaceViewed).mockResolvedValue(void 0 as never);
     sdkMock.addAssets.mockResolvedValue(void 0 as never);
+    sdkMock.updateMemberPreferences.mockResolvedValue(makeMember({ sharePersonMetadata: false }));
+    sdkMock.updateMemberTimeline.mockResolvedValue(makeMember({ showInTimeline: false }));
     sdkMock.getSpace.mockResolvedValue(makeSpace());
     sdkMock.getSpaceActivities.mockResolvedValue([]);
     sdkMock.getSpacePeople.mockResolvedValue([]);
@@ -281,6 +284,30 @@ describe('Spaces page search URL state', () => {
       'data-sections',
       'timeline,people,location,camera,tags,rating,media,favorites',
     );
+  });
+
+  it('updates current member metadata sharing from the space menu', async () => {
+    renderPage();
+
+    await fireEvent.click(screen.getByText('spaces_stop_sharing_person_metadata'));
+
+    expect(sdkMock.updateMemberPreferences).toHaveBeenCalledWith({
+      id: 'space-1',
+      sharedSpaceMemberPreferencesDto: { sharePersonMetadata: false },
+    });
+    await waitFor(() => expect(screen.getByText('spaces_share_person_metadata')).toBeInTheDocument());
+  });
+
+  it('keeps timeline visibility on the legacy endpoint', async () => {
+    renderPage();
+
+    await fireEvent.click(screen.getByText('spaces_hide_from_timeline'));
+
+    expect(sdkMock.updateMemberTimeline).toHaveBeenCalledWith({
+      id: 'space-1',
+      sharedSpaceMemberTimelineDto: { showInTimeline: false },
+    });
+    await waitFor(() => expect(screen.getByText('spaces_show_on_timeline')).toBeInTheDocument());
   });
 
   it('narrows space search results and facets to favorites within the space when selected', async () => {

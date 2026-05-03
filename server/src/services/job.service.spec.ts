@@ -57,6 +57,18 @@ describe(JobService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.DatabaseBackup });
     });
 
+    it('should queue a FaceIdentityBackfill job', async () => {
+      await sut.create({ name: 'face-identity-backfill' as ManualJobName });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.FaceIdentityBackfill, data: {} });
+    });
+
+    it('should queue a SharedSpacePersonMetadataBackfill job', async () => {
+      await sut.create({ name: 'shared-space-person-metadata-backfill' as ManualJobName });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SharedSpacePersonMetadataBackfill, data: {} });
+    });
+
     it('should throw BadRequestException for an invalid job name', async () => {
       await expect(sut.create({ name: 'invalid-job' as ManualJobName })).rejects.toThrow(BadRequestException);
     });

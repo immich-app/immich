@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { createUrl, getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize, searchAssets, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
@@ -12,7 +12,13 @@
   let loaded = $state(false);
   let generation = 0;
 
-  const thumbUrl = $derived(getPeopleThumbnailUrl(person));
+  const thumbUrl = $derived(
+    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
+      ? createUrl(`/shared-spaces/${person.primaryProfile.spaceId}/people/${person.primaryProfile.id}/thumbnail`, {
+          updatedAt: person.updatedAt,
+        })
+      : getPeopleThumbnailUrl({ ...person, id: person.primaryProfile?.id ?? person.id }),
+  );
   let failed = $state(false);
   // Reset failure when the person changes (preview is re-used as the user
   // arrows through the People section).
@@ -23,7 +29,7 @@
 
   $effect(() => {
     const gen = ++generation;
-    const id = person.id;
+    const id = person.filterId ?? person.id;
     photos = [];
     loaded = false;
     const dwell = setTimeout(() => {
@@ -34,7 +40,7 @@
         const ctrl = new AbortController();
         try {
           const response = await searchAssets(
-            { metadataSearchDto: { personIds: [id], size: 4 } },
+            { metadataSearchDto: { personIds: [id], size: 4, withSharedSpaces: true } },
             { signal: ctrl.signal },
           );
           if (gen !== generation) {

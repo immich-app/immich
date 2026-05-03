@@ -362,6 +362,19 @@ describe(SearchRepository.name, () => {
       expect(countMatches(innerSql, /exists\s*\(select\b[\s\S]+?from\s+"asset_face"/gi)).toBe(1);
       expect(innerSql).toMatch(/"asset_face"\."personId"\s*=\s*any\(\$[\d]+::uuid\[\]\)/i);
     });
+
+    it('identityIds path filters through face_identity_face with correlated EXISTS', () => {
+      const { base } = buildQueries(
+        sut,
+        { page: 1, size: 100 },
+        { ...baseOptions, identityIds: ['00000000-0000-0000-0000-000000000001'] },
+      );
+      const innerSql = base.compile().sql;
+
+      expect(countOrderByExpressions(innerSql + ' limit', 'limit'), FAILURE_MESSAGE).toBe(1);
+      expect(innerSql).toContain('"face_identity_face"');
+      expect(innerSql).toMatch(/"face_identity_face"\."identityId"\s*=\s*\$\d+::uuid/i);
+    });
   });
 
   describe('filter suggestions query shape', () => {
@@ -378,19 +391,32 @@ describe(SearchRepository.name, () => {
       expect(sql).toMatch(/order by\s+"person"\."isFavorite"\s+desc,\s*"person"\."name"/i);
     });
 
-    it('orders space people suggestions by favorite first, then display name', () => {
+    it('orders space people suggestions by space-local display name without private fallbacks', () => {
       const sql = compileFilteredSpacePeopleQuery(sut, {
         spaceId: '11111111-1111-1111-1111-111111111111',
       });
 
-      expect(sql).toMatch(/order by\s+coalesce\("person"\."isFavorite", false\)\s+desc/i);
+      expect(sql).not.toContain('"person"."name"');
+      expect(sql).not.toContain('"person"."isFavorite"');
       expect(sql).toMatch(/nullif\("shared_space_person"\."name", ''\)/i);
-      expect(sql).toMatch(/nullif\("person"\."name", ''\)/i);
+    });
+
+    it('filters facet assets by resolved identity ids', () => {
+      const sql = compileFilteredAssetIds(sut, { identityIds: ['00000000-0000-0000-0000-000000000001'] });
+
+      expect(sql).toContain('"face_identity_face"');
+      expect(sql).toContain('"face_identity_face"."identityId"');
+    });
+
+    it('forceEmptyResult compiles to an impossible predicate', () => {
+      const sql = compileFilteredAssetIds(sut, { forceEmptyResult: true });
+
+      expect(sql).toContain('false');
     });
   });
 
   describe('album-scoped suggestions', () => {
-    it('buildFilteredAssetIds uses album_asset and does not fall back to ownerId scope', () => {
+    it('buildFilteredAssetIds intersects album_asset with viewer-owned assets when no timeline spaces are enabled', () => {
       const sql = compileFilteredAssetIds(sut, {
         albumId: '11111111-1111-1111-1111-111111111111',
         tagIds: ['22222222-2222-2222-2222-222222222222'],
@@ -399,10 +425,12 @@ describe(SearchRepository.name, () => {
       expect(sql).toContain('"album_asset"');
       expect(sql).toContain('"album_asset"."albumId"');
       expect(sql).toContain('"album_asset"."assetId" = "asset"."id"');
-      expect(sql).not.toContain('"asset"."ownerId" = any(');
+      expect(sql).toContain('"asset"."ownerId" = any(');
+      expect(sql).not.toContain('"shared_space_asset"');
+      expect(sql).not.toContain('"shared_space_library"');
     });
 
-    it('getExifField uses album_asset and does not fall back to ownerId scope', () => {
+    it('getExifField intersects album_asset with viewer-owned assets when no timeline spaces are enabled', () => {
       const sql = compileExifField(sut, 'country', {
         albumId: '11111111-1111-1111-1111-111111111111',
       });
@@ -410,7 +438,37 @@ describe(SearchRepository.name, () => {
       expect(sql).toContain('"album_asset"');
       expect(sql).toContain('"album_asset"."albumId"');
       expect(sql).toContain('"album_asset"."assetId" = "asset"."id"');
-      expect(sql).not.toContain('"ownerId" = any(');
+      expect(sql).toContain('"asset"."ownerId" = any(');
+      expect(sql).not.toContain('"shared_space_asset"');
+      expect(sql).not.toContain('"shared_space_library"');
+    });
+
+    it('buildFilteredAssetIds allows album assets from timeline-enabled direct and linked-library spaces', () => {
+      const sql = compileFilteredAssetIds(sut, {
+        albumId: '11111111-1111-1111-1111-111111111111',
+        timelineSpaceIds: ['33333333-3333-3333-3333-333333333333'],
+      });
+
+      expect(sql).toContain('"album_asset"');
+      expect(sql).toContain('"asset"."ownerId" = any(');
+      expect(sql).toContain('"shared_space_asset"');
+      expect(sql).toContain('"shared_space_asset"."spaceId"');
+      expect(sql).toContain('"shared_space_library"');
+      expect(sql).toContain('"shared_space_library"."spaceId"');
+    });
+
+    it('getExifField allows album assets from timeline-enabled direct and linked-library spaces', () => {
+      const sql = compileExifField(sut, 'country', {
+        albumId: '11111111-1111-1111-1111-111111111111',
+        timelineSpaceIds: ['33333333-3333-3333-3333-333333333333'],
+      });
+
+      expect(sql).toContain('"album_asset"');
+      expect(sql).toContain('"asset"."ownerId" = any(');
+      expect(sql).toContain('"shared_space_asset"');
+      expect(sql).toContain('"shared_space_asset"."spaceId"');
+      expect(sql).toContain('"shared_space_library"');
+      expect(sql).toContain('"shared_space_library"."spaceId"');
     });
   });
 

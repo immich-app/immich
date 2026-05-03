@@ -124,6 +124,7 @@ void main() {
           email: 'alice@test.com',
           role: api.SharedSpaceRole.owner,
           joinedAt: '2024-01-01T00:00:00Z',
+          sharePersonMetadata: true,
           showInTimeline: true,
         ),
         api.SharedSpaceMemberResponseDto(
@@ -132,6 +133,7 @@ void main() {
           email: 'bob@test.com',
           role: api.SharedSpaceRole.viewer,
           joinedAt: '2024-01-01T00:00:00Z',
+          sharePersonMetadata: true,
           showInTimeline: true,
         ),
       ];

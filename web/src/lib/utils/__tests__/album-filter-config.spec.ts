@@ -1,6 +1,6 @@
 import { createFilterState } from '$lib/components/filter-panel/filter-panel';
 import { buildAlbumAssetPickerFilterConfig, buildAlbumDetailFilterConfig } from '$lib/utils/album-filter-config';
-import { AssetTypeEnum, getFilterSuggestions, getSearchSuggestions } from '@immich/sdk';
+import { AssetTypeEnum, getFilterSuggestions, getSearchSuggestions, Type } from '@immich/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@immich/sdk', async (importOriginal) => {
@@ -88,6 +88,34 @@ describe('buildAlbumDetailFilterConfig', () => {
       2,
       expect.objectContaining({ albumId: 'album-1', make: 'Sony' }),
     );
+  });
+
+  it('uses shared-space person thumbnails for album people suggestions with a space primary profile', async () => {
+    vi.mocked(getFilterSuggestions).mockResolvedValueOnce({
+      countries: [],
+      cameraMakes: [],
+      tags: [],
+      people: [
+        {
+          id: 'space-person:space-person-1',
+          name: 'Space Person',
+          primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+        },
+      ],
+      ratings: [],
+      mediaTypes: [],
+      hasUnnamedPeople: false,
+    } as never);
+
+    const config = buildAlbumDetailFilterConfig('album-1');
+    const result = await config.suggestionsProvider!(createFilterState());
+
+    expect(result.people).toEqual([
+      expect.objectContaining({
+        id: 'space-person:space-person-1',
+        thumbnailUrl: '/api/shared-spaces/space-1/people/space-person-1/thumbnail',
+      }),
+    ]);
   });
 
   it('passes custom dates to album detail filter suggestions', async () => {

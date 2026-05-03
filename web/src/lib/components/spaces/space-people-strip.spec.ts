@@ -1,5 +1,5 @@
 import SpacePeopleStrip from '$lib/components/spaces/space-people-strip.svelte';
-import type { SharedSpacePersonResponseDto } from '@immich/sdk';
+import { RepresentativeFaceSource, type SharedSpacePersonResponseDto } from '@immich/sdk';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 
 const makePerson = (overrides: Partial<SharedSpacePersonResponseDto> = {}): SharedSpacePersonResponseDto => ({
@@ -12,6 +12,7 @@ const makePerson = (overrides: Partial<SharedSpacePersonResponseDto> = {}): Shar
   faceCount: 3,
   isHidden: false,
   representativeFaceId: 'face-1',
+  representativeFaceSource: RepresentativeFaceSource.Auto,
   birthDate: null,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',

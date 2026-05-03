@@ -15,10 +15,13 @@ class PersonResponseDto {
   PersonResponseDto({
     required this.birthDate,
     this.color,
+    this.filterId,
     required this.id,
     this.isFavorite,
     required this.isHidden,
     required this.name,
+    this.numberOfAssets,
+    this.primaryProfile,
     this.species,
     required this.thumbnailPath,
     this.type = 'person',
@@ -37,6 +40,15 @@ class PersonResponseDto {
   ///
   String? color;
 
+  /// Scoped identity filter token
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? filterId;
+
   /// Person ID
   String id;
 
@@ -54,6 +66,26 @@ class PersonResponseDto {
 
   /// Person name
   String name;
+
+  /// Accessible asset count for this grouped person
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  int? numberOfAssets;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  ScopedPrimaryProfile? primaryProfile;
 
   /// Pet species (e.g. dog, cat)
   String? species;
@@ -77,10 +109,13 @@ class PersonResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
     other.birthDate == birthDate &&
     other.color == color &&
+    other.filterId == filterId &&
     other.id == id &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name &&
+    other.numberOfAssets == numberOfAssets &&
+    other.primaryProfile == primaryProfile &&
     other.species == species &&
     other.thumbnailPath == thumbnailPath &&
     other.type == type &&
@@ -91,17 +126,20 @@ class PersonResponseDto {
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
     (color == null ? 0 : color!.hashCode) +
+    (filterId == null ? 0 : filterId!.hashCode) +
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
+    (numberOfAssets == null ? 0 : numberOfAssets!.hashCode) +
+    (primaryProfile == null ? 0 : primaryProfile!.hashCode) +
     (species == null ? 0 : species!.hashCode) +
     (thumbnailPath.hashCode) +
     (type.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, species=$species, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, filterId=$filterId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, numberOfAssets=$numberOfAssets, primaryProfile=$primaryProfile, species=$species, thumbnailPath=$thumbnailPath, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -115,6 +153,11 @@ class PersonResponseDto {
     } else {
     //  json[r'color'] = null;
     }
+    if (this.filterId != null) {
+      json[r'filterId'] = this.filterId;
+    } else {
+    //  json[r'filterId'] = null;
+    }
       json[r'id'] = this.id;
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
@@ -123,6 +166,16 @@ class PersonResponseDto {
     }
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
+    if (this.numberOfAssets != null) {
+      json[r'numberOfAssets'] = this.numberOfAssets;
+    } else {
+    //  json[r'numberOfAssets'] = null;
+    }
+    if (this.primaryProfile != null) {
+      json[r'primaryProfile'] = this.primaryProfile;
+    } else {
+    //  json[r'primaryProfile'] = null;
+    }
     if (this.species != null) {
       json[r'species'] = this.species;
     } else {
@@ -149,10 +202,13 @@ class PersonResponseDto {
       return PersonResponseDto(
         birthDate: mapDateTime(json, r'birthDate', r''),
         color: mapValueOfType<String>(json, r'color'),
+        filterId: mapValueOfType<String>(json, r'filterId'),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
+        numberOfAssets: mapValueOfType<int>(json, r'numberOfAssets'),
+        primaryProfile: ScopedPrimaryProfile.fromJson(json[r'primaryProfile']),
         species: mapValueOfType<String>(json, r'species'),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
         type: mapValueOfType<String>(json, r'type') ?? 'person',

@@ -1,0 +1,1607 @@
+import { Injectable } from '@nestjs/common';
+import { Insertable, Kysely, Selectable, sql } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import {
+  MergeScopedPeopleDto,
+  PeopleResponseDto,
+  PersonResponseDto,
+  ScopedPersonProfileRefDto,
+} from 'src/dtos/person.dto';
+import { AssetVisibility, SharedSpaceRole, SourceType } from 'src/enum';
+import { DB } from 'src/schema';
+import { FaceIdentityFaceSource, FaceIdentityFaceTable } from 'src/schema/tables/face-identity-face.table';
+import { FaceIdentityTable } from 'src/schema/tables/face-identity.table';
+import { asBirthDateString, asDateString } from 'src/utils/date';
+
+export type FaceIdentity = Selectable<FaceIdentityTable>;
+export type FaceIdentityFace = Selectable<FaceIdentityFaceTable>;
+
+export type LinkFaceInput = {
+  assetFaceId: string;
+  identityId: string;
+  source: FaceIdentityFaceSource;
+  confidence?: number | null;
+};
+
+export type BackfillResult = {
+  processed: number;
+  nextCursor?: string;
+};
+
+export type SpacePersonBackfillResult = BackfillResult & {
+  conflictCount: number;
+};
+
+export type MergeIdentitiesResult = {
+  personalProfileConflictCount: number;
+  spaceProfileConflictCount: number;
+};
+
+type AccessiblePeopleOptions = {
+  withHidden: boolean;
+  page: number;
+  size: number;
+  minimumFaceCount?: number;
+};
+
+type AccessiblePeopleSearchOptions = {
+  name: string;
+  withHidden?: boolean;
+  limit?: number;
+  minimumFaceCount?: number;
+};
+
+type ProfileKind = 'person' | 'space-person';
+type SpacePersonBackfillRow = {
+  id: string;
+  spaceId: string;
+  identityId: string | null;
+  representativeFaceId: string | null;
+  representativeFaceSource: string;
+  type: string;
+};
+
+type SpacePersonBackfillIdentityGroup = {
+  identityId: string;
+  type: string;
+  faceCount: number | string | bigint;
+  representativeFaceId: string;
+};
+
+export type ScopedPersonTokenResolution = {
+  identityIds: string[];
+  legacyPersonIds: string[];
+  legacySpacePersonIds: string[];
+  hasInaccessibleToken: boolean;
+};
+
+export type RepairRefsResolution =
+  | {
+      accessible: false;
+      reason: 'not-found-or-no-access' | 'incompatible-type';
+    }
+  | {
+      accessible: true;
+      targetIdentityId: string;
+      sourceIdentityIds: string[];
+      type: string;
+      allAttachedProfilesRepairable: boolean;
+      hasScopedProfileConflict: boolean;
+    };
+
+export type DetachRefResolution =
+  | {
+      accessible: false;
+      reason: 'not-found-or-no-access';
+    }
+  | {
+      accessible: true;
+      identityId: string;
+      type: string;
+      allBackingFacesRepairable: boolean;
+    };
+
+type RepairProfile = {
+  type: ProfileKind;
+  id: string;
+  spaceId: string | null;
+  identityId: string;
+  identityType: string;
+  representativeFaceId: string | null;
+};
+
+type AccessiblePeopleIdentityPageRow = {
+  identityId: string;
+  visibleAssetCount: string | number;
+};
+
+type AccessiblePeopleCountRow = {
+  total: string | number | null;
+  hidden: string | number | null;
+};
+
+type HydratedAccessiblePersonRow = {
+  profileType: 'user-person' | 'space-person';
+  profileId: string;
+  spaceId: string | null;
+  name: string | null;
+  birthDate: string | Date | null;
+  thumbnailPath: string | null;
+  isHidden: boolean;
+  isFavorite: boolean | null;
+  color: string | null;
+  updatedAt: string | Date | null;
+  type: string | null;
+  species: string | null;
+  numberOfAssets: string | number | null;
+};
+
+@Injectable()
+export class FaceIdentityRepository {
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
+
+  @GenerateSql({
+    params: [
+      {
+        userId: DummyValue.UUID,
+        tokens: [`person:${DummyValue.UUID}`, `space-person:${DummyValue.UUID}`],
+        scope: { withSharedSpaces: true, spaceId: DummyValue.UUID, timelineSpaceIds: [DummyValue.UUID] },
+      },
+    ],
+  })
+  async resolveScopedPersonTokens(input: {
+    userId: string;
+    tokens: string[];
+    scope: { withSharedSpaces?: boolean; spaceId?: string; timelineSpaceIds?: string[] };
+  }): Promise<ScopedPersonTokenResolution> {
+    const tokens = [...new Set(input.tokens.filter(Boolean))];
+    const identityIds = new Set<string>();
+    const legacyPersonIds = new Set<string>();
+    const legacySpacePersonIds = new Set<string>();
+    let hasInaccessibleToken = false;
+
+    const ownPersonTokenIds = new Set<string>();
+    const scopedSpacePersonIds = new Set<string>();
+    const passThroughLegacyPersonIds = new Set<string>();
+
+    for (const token of tokens) {
+      if (token.startsWith('person:')) {
+        ownPersonTokenIds.add(token.slice('person:'.length));
+      } else if (token.startsWith('space-person:')) {
+        scopedSpacePersonIds.add(token.slice('space-person:'.length));
+      } else if (input.scope.withSharedSpaces) {
+        ownPersonTokenIds.add(token);
+      } else {
+        passThroughLegacyPersonIds.add(token);
+      }
+    }
+
+    for (const id of passThroughLegacyPersonIds) {
+      legacyPersonIds.add(id);
+    }
+
+    if (ownPersonTokenIds.size > 0) {
+      const rows = await this.db
+        .selectFrom('person')
+        .select(['id', 'identityId'])
+        .where('ownerId', '=', input.userId)
+        .where('id', 'in', [...ownPersonTokenIds])
+        .execute();
+      const rowsById = new Map(rows.map((row) => [row.id, row]));
+
+      for (const personId of ownPersonTokenIds) {
+        const row = rowsById.get(personId);
+        if (!row) {
+          hasInaccessibleToken = true;
+          continue;
+        }
+        if (row.identityId) {
+          identityIds.add(row.identityId);
+        } else {
+          legacyPersonIds.add(personId);
+        }
+      }
+    }
+
+    if (scopedSpacePersonIds.size > 0) {
+      const rows = await this.db
+        .selectFrom('shared_space_person')
+        .innerJoin('shared_space_member', (join) =>
+          join
+            .onRef('shared_space_member.spaceId', '=', 'shared_space_person.spaceId')
+            .on('shared_space_member.userId', '=', input.userId),
+        )
+        .select([
+          'shared_space_person.id',
+          'shared_space_person.identityId',
+          'shared_space_person.spaceId',
+          'shared_space_member.showInTimeline',
+        ])
+        .where('shared_space_person.id', 'in', [...scopedSpacePersonIds])
+        .execute();
+      const rowsById = new Map(rows.map((row) => [row.id, row]));
+      const timelineSpaceIds = new Set(input.scope.timelineSpaceIds);
+
+      for (const spacePersonId of scopedSpacePersonIds) {
+        const row = rowsById.get(spacePersonId);
+        const spaceMatchesScope =
+          !!row &&
+          (!input.scope.spaceId || row.spaceId === input.scope.spaceId) &&
+          (!input.scope.withSharedSpaces ||
+            (row.showInTimeline === true && timelineSpaceIds.size > 0 && timelineSpaceIds.has(row.spaceId)));
+
+        if (!row || !spaceMatchesScope) {
+          hasInaccessibleToken = true;
+          continue;
+        }
+
+        if (row.identityId) {
+          identityIds.add(row.identityId);
+        } else {
+          legacySpacePersonIds.add(spacePersonId);
+        }
+      }
+    }
+
+    return {
+      identityIds: [...identityIds],
+      legacyPersonIds: [...legacyPersonIds],
+      legacySpacePersonIds: [...legacySpacePersonIds],
+      hasInaccessibleToken,
+    };
+  }
+
+  async hasBackfillWork(): Promise<boolean> {
+    const result = await sql<{ hasWork: boolean }>`
+      SELECT
+        EXISTS (
+          SELECT 1
+          FROM person
+          WHERE person."identityId" IS NULL
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM asset_face
+          INNER JOIN asset ON asset.id = asset_face."assetId"
+          LEFT JOIN face_identity_face ON face_identity_face."assetFaceId" = asset_face.id
+          WHERE asset_face."personId" IS NOT NULL
+            AND asset_face."deletedAt" IS NULL
+            AND asset_face."isVisible" = true
+            AND asset."deletedAt" IS NULL
+            AND face_identity_face."assetFaceId" IS NULL
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM asset_face
+          INNER JOIN asset ON asset.id = asset_face."assetId"
+          INNER JOIN face_identity_face ON face_identity_face."assetFaceId" = asset_face.id
+          WHERE asset_face."personId" IS NOT NULL
+            AND asset_face."deletedAt" IS NULL
+            AND asset_face."isVisible" = true
+            AND asset."deletedAt" IS NULL
+            AND asset."isOffline" = false
+            AND asset.visibility IN (${AssetVisibility.Timeline}, ${AssetVisibility.Archive})
+            AND (
+              EXISTS (
+                SELECT 1
+                FROM shared_space_asset
+                INNER JOIN shared_space ON shared_space.id = shared_space_asset."spaceId"
+                WHERE shared_space_asset."assetId" = asset.id
+                  AND shared_space."faceRecognitionEnabled" = true
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM shared_space_person_face
+                    INNER JOIN shared_space_person
+                      ON shared_space_person.id = shared_space_person_face."personId"
+                    WHERE shared_space_person_face."assetFaceId" = asset_face.id
+                      AND shared_space_person."spaceId" = shared_space.id
+                  )
+              )
+              OR EXISTS (
+                SELECT 1
+                FROM shared_space_library
+                INNER JOIN shared_space ON shared_space.id = shared_space_library."spaceId"
+                WHERE shared_space_library."libraryId" = asset."libraryId"
+                  AND shared_space."faceRecognitionEnabled" = true
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM shared_space_person_face
+                    INNER JOIN shared_space_person
+                      ON shared_space_person.id = shared_space_person_face."personId"
+                    WHERE shared_space_person_face."assetFaceId" = asset_face.id
+                      AND shared_space_person."spaceId" = shared_space.id
+                  )
+              )
+            )
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM shared_space_person
+          INNER JOIN shared_space ON shared_space.id = shared_space_person."spaceId"
+          INNER JOIN shared_space_person_face
+            ON shared_space_person_face."personId" = shared_space_person.id
+          INNER JOIN asset_face
+            ON asset_face.id = shared_space_person_face."assetFaceId"
+          INNER JOIN face_identity_face
+            ON face_identity_face."assetFaceId" = asset_face.id
+          WHERE shared_space."faceRecognitionEnabled" = true
+            AND asset_face."deletedAt" IS NULL
+            AND asset_face."isVisible" = true
+            AND shared_space_person."identityId" IS DISTINCT FROM face_identity_face."identityId"
+        ) AS "hasWork"
+    `.execute(this.db);
+
+    return result.rows[0]?.hasWork ?? false;
+  }
+
+  @GenerateSql({
+    params: [
+      DummyValue.UUID,
+      {
+        name: DummyValue.STRING,
+        withHidden: true,
+        limit: 50,
+      },
+    ],
+  })
+  async searchAccessiblePeople(userId: string, options: AccessiblePeopleSearchOptions): Promise<PersonResponseDto[]> {
+    const rows = await this.getAccessiblePeopleIdentityPage({
+      userId,
+      withHidden: options.withHidden ?? false,
+      limit: options.limit ?? 50,
+      offset: 0,
+      searchName: options.name,
+      minimumFaceCount: options.minimumFaceCount ?? 1,
+    });
+
+    return this.hydrateAccessiblePeople({
+      userId,
+      identityIds: rows.map((row) => row.identityId),
+      withHidden: options.withHidden ?? false,
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { limit: 100 }] })
+  async getAccessiblePersonFilterSuggestions(
+    userId: string,
+    options: { limit?: number; minimumFaceCount?: number } = {},
+  ): Promise<{ people: Array<{ id: string; name: string }>; hasUnnamedPeople: boolean }> {
+    const people = await this.searchAccessiblePeople(userId, {
+      name: '',
+      withHidden: false,
+      limit: options.limit ?? 100,
+      minimumFaceCount: options.minimumFaceCount,
+    });
+
+    return {
+      people: people
+        .filter((person) => person.name !== '')
+        .map((person) => ({ id: person.filterId ?? `person:${person.id}`, name: person.name })),
+      hasUnnamedPeople: people.some((person) => person.name === ''),
+    };
+  }
+
+  async getAccessiblePeople(userId: string, options: AccessiblePeopleOptions): Promise<PeopleResponseDto> {
+    const page = Math.max(1, options.page);
+    const size = Math.max(1, options.size);
+    const minimumFaceCount = options.minimumFaceCount ?? 1;
+    const rows = await this.getAccessiblePeopleIdentityPage({
+      userId,
+      withHidden: options.withHidden,
+      limit: size + 1,
+      offset: (page - 1) * size,
+      minimumFaceCount,
+    });
+    const pageRows = rows.slice(0, size);
+    const people = await this.hydrateAccessiblePeople({
+      userId,
+      identityIds: pageRows.map((row) => row.identityId),
+      withHidden: options.withHidden,
+    });
+    const counts = await this.getAccessiblePeopleCounts(userId, minimumFaceCount);
+
+    return {
+      total: Number(counts.total ?? 0),
+      hidden: Number(counts.hidden ?? 0),
+      hasNextPage: rows.length > size,
+      people,
+    };
+  }
+
+  async resolveRepairRefs(actorUserId: string, dto: MergeScopedPeopleDto): Promise<RepairRefsResolution> {
+    const refs = [dto.target, ...dto.sources];
+    const profiles: RepairProfile[] = [];
+
+    for (const ref of refs) {
+      const profile = await this.resolveRepairProfile(actorUserId, ref);
+      if (!profile) {
+        return { accessible: false, reason: 'not-found-or-no-access' };
+      }
+      profiles.push(profile);
+    }
+
+    const target = profiles[0];
+    if (profiles.some((profile) => profile.identityType !== target.identityType)) {
+      return { accessible: false, reason: 'incompatible-type' };
+    }
+
+    const sourceIdentityIds = [
+      ...new Set(
+        profiles
+          .slice(1)
+          .map((profile) => profile.identityId)
+          .filter((id) => id !== target.identityId),
+      ),
+    ];
+    const identityIds = [...new Set([target.identityId, ...sourceIdentityIds])];
+    const [allAttachedProfilesRepairable, hasScopedProfileConflict] = await Promise.all([
+      this.areAttachedProfilesRepairable(actorUserId, identityIds),
+      this.hasRepairProfileConflict(target.identityId, sourceIdentityIds),
+    ]);
+
+    return {
+      accessible: true,
+      targetIdentityId: target.identityId,
+      sourceIdentityIds,
+      type: target.identityType,
+      allAttachedProfilesRepairable,
+      hasScopedProfileConflict,
+    };
+  }
+
+  async resolveDetachRef(actorUserId: string, profileRef: ScopedPersonProfileRefDto): Promise<DetachRefResolution> {
+    const profile = await this.resolveRepairProfile(actorUserId, profileRef);
+    if (!profile) {
+      return { accessible: false, reason: 'not-found-or-no-access' };
+    }
+
+    return {
+      accessible: true,
+      identityId: profile.identityId,
+      type: profile.identityType,
+      allBackingFacesRepairable: await this.areProfileBackingFacesRepairable(actorUserId, profileRef),
+    };
+  }
+
+  async detachScopedProfile(profileRef: ScopedPersonProfileRefDto): Promise<string> {
+    return this.db.transaction().execute(async (trx) => {
+      const profile = await this.getProfileForDetach(profileRef, trx);
+      const identity = await trx
+        .insertInto('face_identity')
+        .values({
+          type: profile.identityType,
+          representativeFaceId: profile.representativeFaceId,
+        } satisfies Insertable<FaceIdentityTable>)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      await (
+        profileRef.type === 'person'
+          ? trx.updateTable('person').set({ identityId: identity.id }).where('id', '=', profileRef.id)
+          : trx
+              .updateTable('shared_space_person')
+              .set({ identityId: identity.id })
+              .where('id', '=', profileRef.id)
+              .where('spaceId', '=', profileRef.spaceId!)
+      ).execute();
+
+      const faceIds = await this.getScopedProfileFaceIds(profileRef, trx);
+      if (faceIds.length > 0) {
+        await trx
+          .updateTable('face_identity_face')
+          .set({ identityId: identity.id, source: 'manual' })
+          .where('assetFaceId', 'in', faceIds)
+          .execute();
+
+        if (profile.representativeFaceId && faceIds.includes(profile.representativeFaceId)) {
+          const replacement = await trx
+            .selectFrom('face_identity_face')
+            .select('assetFaceId')
+            .where('identityId', '=', profile.identityId)
+            .orderBy('updatedAt', 'desc')
+            .executeTakeFirst();
+
+          await trx
+            .updateTable('face_identity')
+            .set({ representativeFaceId: replacement?.assetFaceId ?? null })
+            .where('id', '=', profile.identityId)
+            .execute();
+        }
+      }
+
+      return identity.id;
+    });
+  }
+
+  private isRepairRole(role: string | null | undefined): boolean {
+    return role === SharedSpaceRole.Owner || role === SharedSpaceRole.Editor;
+  }
+
+  private async resolveRepairProfile(
+    actorUserId: string,
+    ref: ScopedPersonProfileRefDto,
+  ): Promise<RepairProfile | null> {
+    if (ref.type === 'person') {
+      const row = await this.db
+        .selectFrom('person')
+        .innerJoin('face_identity', 'face_identity.id', 'person.identityId')
+        .select([
+          'person.id',
+          'person.identityId',
+          'person.faceAssetId as representativeFaceId',
+          'face_identity.type as identityType',
+        ])
+        .where('person.id', '=', ref.id)
+        .where('person.ownerId', '=', actorUserId)
+        .executeTakeFirst();
+
+      return row?.identityId
+        ? {
+            type: 'person',
+            id: row.id,
+            spaceId: null,
+            identityId: row.identityId,
+            identityType: row.identityType,
+            representativeFaceId: row.representativeFaceId,
+          }
+        : null;
+    }
+
+    if (!ref.spaceId) {
+      return null;
+    }
+
+    const row = await this.db
+      .selectFrom('shared_space_person')
+      .innerJoin('face_identity', 'face_identity.id', 'shared_space_person.identityId')
+      .innerJoin('shared_space_member', (join) =>
+        join
+          .onRef('shared_space_member.spaceId', '=', 'shared_space_person.spaceId')
+          .on('shared_space_member.userId', '=', actorUserId),
+      )
+      .select([
+        'shared_space_person.id',
+        'shared_space_person.spaceId',
+        'shared_space_person.identityId',
+        'shared_space_person.representativeFaceId',
+        'shared_space_member.role',
+        'face_identity.type as identityType',
+      ])
+      .where('shared_space_person.id', '=', ref.id)
+      .where('shared_space_person.spaceId', '=', ref.spaceId)
+      .executeTakeFirst();
+
+    return row?.identityId && this.isRepairRole(row.role)
+      ? {
+          type: 'space-person',
+          id: row.id,
+          spaceId: row.spaceId,
+          identityId: row.identityId,
+          identityType: row.identityType,
+          representativeFaceId: row.representativeFaceId,
+        }
+      : null;
+  }
+
+  private async areAttachedProfilesRepairable(actorUserId: string, identityIds: string[]): Promise<boolean> {
+    if (identityIds.length === 0) {
+      return false;
+    }
+
+    const inaccessiblePersonal = await this.db
+      .selectFrom('person')
+      .select('id')
+      .where('identityId', 'in', identityIds)
+      .where('ownerId', '!=', actorUserId)
+      .limit(1)
+      .executeTakeFirst();
+    if (inaccessiblePersonal) {
+      return false;
+    }
+
+    const spaceRows = await this.db
+      .selectFrom('shared_space_person')
+      .leftJoin('shared_space_member', (join) =>
+        join
+          .onRef('shared_space_member.spaceId', '=', 'shared_space_person.spaceId')
+          .on('shared_space_member.userId', '=', actorUserId),
+      )
+      .select(['shared_space_person.id', 'shared_space_member.role'])
+      .where('shared_space_person.identityId', 'in', identityIds)
+      .execute();
+
+    return spaceRows.every((row) => this.isRepairRole(row.role));
+  }
+
+  private async hasRepairProfileConflict(targetIdentityId: string, sourceIdentityIds: string[]): Promise<boolean> {
+    if (sourceIdentityIds.length === 0) {
+      return false;
+    }
+
+    const personalConflict = await this.db
+      .selectFrom('person as source_person')
+      .innerJoin('person as target_person', (join) =>
+        join
+          .onRef('target_person.ownerId', '=', 'source_person.ownerId')
+          .on('target_person.identityId', '=', targetIdentityId),
+      )
+      .select('source_person.id')
+      .where('source_person.identityId', 'in', sourceIdentityIds)
+      .limit(1)
+      .executeTakeFirst();
+    if (personalConflict) {
+      return true;
+    }
+
+    const spaceConflict = await this.db
+      .selectFrom('shared_space_person as source_person')
+      .innerJoin('shared_space_person as target_person', (join) =>
+        join
+          .onRef('target_person.spaceId', '=', 'source_person.spaceId')
+          .on('target_person.identityId', '=', targetIdentityId),
+      )
+      .select('source_person.id')
+      .where('source_person.identityId', 'in', sourceIdentityIds)
+      .limit(1)
+      .executeTakeFirst();
+
+    return !!spaceConflict;
+  }
+
+  private async getProfileForDetach(
+    profileRef: ScopedPersonProfileRefDto,
+    db: Kysely<DB> = this.db,
+  ): Promise<RepairProfile> {
+    if (profileRef.type === 'person') {
+      const row = await db
+        .selectFrom('person')
+        .innerJoin('face_identity', 'face_identity.id', 'person.identityId')
+        .select([
+          'person.id',
+          'person.identityId',
+          'person.faceAssetId as representativeFaceId',
+          'face_identity.type as identityType',
+        ])
+        .where('person.id', '=', profileRef.id)
+        .executeTakeFirstOrThrow();
+
+      return {
+        type: 'person',
+        id: row.id,
+        spaceId: null,
+        identityId: row.identityId!,
+        identityType: row.identityType,
+        representativeFaceId: row.representativeFaceId,
+      };
+    }
+
+    const row = await db
+      .selectFrom('shared_space_person')
+      .innerJoin('face_identity', 'face_identity.id', 'shared_space_person.identityId')
+      .select([
+        'shared_space_person.id',
+        'shared_space_person.spaceId',
+        'shared_space_person.identityId',
+        'shared_space_person.representativeFaceId',
+        'face_identity.type as identityType',
+      ])
+      .where('shared_space_person.id', '=', profileRef.id)
+      .where('shared_space_person.spaceId', '=', profileRef.spaceId!)
+      .executeTakeFirstOrThrow();
+
+    return {
+      type: 'space-person',
+      id: row.id,
+      spaceId: row.spaceId,
+      identityId: row.identityId!,
+      identityType: row.identityType,
+      representativeFaceId: row.representativeFaceId,
+    };
+  }
+
+  private async getScopedProfileFaceIds(profileRef: ScopedPersonProfileRefDto, db: Kysely<DB> = this.db) {
+    if (profileRef.type === 'person') {
+      const rows = await db.selectFrom('asset_face').select('id').where('personId', '=', profileRef.id).execute();
+      return rows.map((row) => row.id);
+    }
+
+    const rows = await db
+      .selectFrom('shared_space_person_face')
+      .select('assetFaceId')
+      .where('personId', '=', profileRef.id)
+      .execute();
+    return rows.map((row) => row.assetFaceId);
+  }
+
+  private async areProfileBackingFacesRepairable(
+    actorUserId: string,
+    profileRef: ScopedPersonProfileRefDto,
+  ): Promise<boolean> {
+    const faceIds = await this.getScopedProfileFaceIds(profileRef);
+    if (faceIds.length === 0) {
+      return true;
+    }
+
+    const inaccessiblePersonal = await this.db
+      .selectFrom('asset_face')
+      .innerJoin('person', 'person.id', 'asset_face.personId')
+      .select('asset_face.id')
+      .where('asset_face.id', 'in', faceIds)
+      .$if(profileRef.type === 'person', (qb) => qb.where('person.id', '!=', profileRef.id))
+      .where('person.ownerId', '!=', actorUserId)
+      .limit(1)
+      .executeTakeFirst();
+    if (inaccessiblePersonal) {
+      return false;
+    }
+
+    const spaceRows = await this.db
+      .selectFrom('shared_space_person_face')
+      .innerJoin('shared_space_person', 'shared_space_person.id', 'shared_space_person_face.personId')
+      .leftJoin('shared_space_member', (join) =>
+        join
+          .onRef('shared_space_member.spaceId', '=', 'shared_space_person.spaceId')
+          .on('shared_space_member.userId', '=', actorUserId),
+      )
+      .select(['shared_space_person.id', 'shared_space_member.role'])
+      .where('shared_space_person_face.assetFaceId', 'in', faceIds)
+      .$if(profileRef.type === 'space-person', (qb) => qb.where('shared_space_person.id', '!=', profileRef.id))
+      .execute();
+
+    return spaceRows.every((row) => this.isRepairRole(row.role));
+  }
+
+  @GenerateSql({
+    params: [{ userId: DummyValue.UUID, withHidden: true, limit: 51, offset: 0, minimumFaceCount: 3 }],
+  })
+  async getAccessiblePeopleIdentityPage(input: {
+    userId: string;
+    withHidden: boolean;
+    limit: number;
+    offset: number;
+    minimumFaceCount: number;
+    searchName?: string;
+  }): Promise<AccessiblePeopleIdentityPageRow[]> {
+    const searchName = input.searchName ?? '';
+    const result = await sql<AccessiblePeopleIdentityPageRow>`
+      WITH timeline_spaces AS (
+        SELECT "spaceId"
+        FROM shared_space_member
+        WHERE "userId" = ${input.userId}
+          AND "showInTimeline" = true
+      ),
+      accessible_faces AS (
+        SELECT
+          face_identity_face."identityId",
+          asset_face."assetId"
+        FROM face_identity_face
+        INNER JOIN asset_face ON asset_face.id = face_identity_face."assetFaceId"
+        INNER JOIN asset ON asset.id = asset_face."assetId"
+        WHERE asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+          AND asset."deletedAt" IS NULL
+          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND (
+            asset."ownerId" = ${input.userId}
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_asset
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_asset."spaceId"
+              WHERE shared_space_asset."assetId" = asset.id
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_library
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_library."spaceId"
+              WHERE shared_space_library."libraryId" = asset."libraryId"
+            )
+          )
+      ),
+      accessible_profiles AS (
+        SELECT
+          person."identityId",
+          person.name,
+          person."isHidden",
+          person."updatedAt",
+          person.id AS "profileId",
+          0 AS "profileRank"
+        FROM person
+        WHERE person."ownerId" = ${input.userId}
+          AND person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = person."identityId"
+          )
+        UNION ALL
+        SELECT
+          shared_space_person."identityId",
+          COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name,
+          shared_space_person."isHidden",
+          shared_space_person."updatedAt",
+          shared_space_person.id AS "profileId",
+          CASE WHEN NULLIF(shared_space_person_alias.alias, '') IS NULL THEN 2 ELSE 1 END AS "profileRank"
+        FROM shared_space_person
+        INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
+        LEFT JOIN shared_space_person_alias
+          ON shared_space_person_alias."personId" = shared_space_person.id
+          AND shared_space_person_alias."userId" = ${input.userId}
+        WHERE shared_space_person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = shared_space_person."identityId"
+          )
+      ),
+      eligible_profiles AS (
+        SELECT *
+        FROM accessible_profiles
+        WHERE (${input.withHidden}::boolean OR "isHidden" = false)
+          AND (${searchName} = '' OR name ILIKE ${`%${searchName}%`})
+      ),
+      identity_counts AS (
+        SELECT
+          accessible_faces."identityId",
+          COUNT(DISTINCT accessible_faces."assetId") AS "visibleAssetCount"
+        FROM accessible_faces
+        WHERE EXISTS (
+          SELECT 1 FROM eligible_profiles WHERE eligible_profiles."identityId" = accessible_faces."identityId"
+        )
+        GROUP BY accessible_faces."identityId"
+      ),
+      best_profiles AS (
+        SELECT DISTINCT ON ("identityId")
+          "identityId",
+          name
+        FROM eligible_profiles
+        ORDER BY
+          "identityId",
+          NULLIF(name, '') IS NULL,
+          "profileRank",
+          lower(name),
+          "updatedAt" DESC,
+          "profileId"
+      )
+      SELECT
+        identity_counts."identityId",
+        identity_counts."visibleAssetCount"
+      FROM identity_counts
+      INNER JOIN best_profiles ON best_profiles."identityId" = identity_counts."identityId"
+      WHERE NULLIF(best_profiles.name, '') IS NOT NULL
+        OR identity_counts."visibleAssetCount" >= ${input.minimumFaceCount}
+      ORDER BY
+        NULLIF(best_profiles.name, '') IS NULL,
+        lower(best_profiles.name),
+        identity_counts."visibleAssetCount" DESC,
+        identity_counts."identityId"
+      LIMIT ${input.limit}
+      OFFSET ${input.offset}
+    `.execute(this.db);
+
+    return result.rows;
+  }
+
+  async getAccessiblePeopleCounts(
+    userId: string,
+    minimumFaceCount: number,
+  ): Promise<{ total: number; hidden: number }> {
+    const result = await sql<AccessiblePeopleCountRow>`
+      WITH timeline_spaces AS (
+        SELECT "spaceId"
+        FROM shared_space_member
+        WHERE "userId" = ${userId}
+          AND "showInTimeline" = true
+      ),
+      accessible_faces AS (
+        SELECT
+          face_identity_face."identityId",
+          asset_face."assetId"
+        FROM face_identity_face
+        INNER JOIN asset_face ON asset_face.id = face_identity_face."assetFaceId"
+        INNER JOIN asset ON asset.id = asset_face."assetId"
+        WHERE asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+          AND asset."deletedAt" IS NULL
+          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND (
+            asset."ownerId" = ${userId}
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_asset
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_asset."spaceId"
+              WHERE shared_space_asset."assetId" = asset.id
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_library
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_library."spaceId"
+              WHERE shared_space_library."libraryId" = asset."libraryId"
+            )
+          )
+      ),
+      identity_counts AS (
+        SELECT
+          accessible_faces."identityId",
+          COUNT(DISTINCT accessible_faces."assetId") AS "visibleAssetCount"
+        FROM accessible_faces
+        GROUP BY accessible_faces."identityId"
+      ),
+      accessible_profiles AS (
+        SELECT person."identityId", person."isHidden", person.name
+        FROM person
+        WHERE person."ownerId" = ${userId}
+          AND person."identityId" IS NOT NULL
+          AND EXISTS (SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = person."identityId")
+        UNION ALL
+        SELECT
+          shared_space_person."identityId",
+          shared_space_person."isHidden",
+          COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name
+        FROM shared_space_person
+        INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
+        LEFT JOIN shared_space_person_alias
+          ON shared_space_person_alias."personId" = shared_space_person.id
+          AND shared_space_person_alias."userId" = ${userId}
+        WHERE shared_space_person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = shared_space_person."identityId"
+          )
+      ),
+      identity_visibility AS (
+        SELECT
+          "identityId",
+          bool_or("isHidden" = false) AS "hasVisibleProfile",
+          bool_or(NULLIF(name, '') IS NOT NULL) AS "hasNamedProfile"
+        FROM accessible_profiles
+        GROUP BY "identityId"
+      )
+      SELECT
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE "hasVisibleProfile" = false) AS hidden
+      FROM identity_visibility
+      INNER JOIN identity_counts ON identity_counts."identityId" = identity_visibility."identityId"
+      WHERE identity_visibility."hasNamedProfile" = true
+        OR identity_counts."visibleAssetCount" >= ${minimumFaceCount}
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return { total: Number(row?.total ?? 0), hidden: Number(row?.hidden ?? 0) };
+  }
+
+  @GenerateSql({
+    params: [{ userId: DummyValue.UUID, identityIds: [DummyValue.UUID], withHidden: true }],
+  })
+  async hydrateAccessiblePeople(input: {
+    userId: string;
+    identityIds: string[];
+    withHidden: boolean;
+  }): Promise<PersonResponseDto[]> {
+    if (input.identityIds.length === 0) {
+      return [];
+    }
+
+    const identityIds = sql`array[${sql.join(input.identityIds)}]::uuid[]`;
+    const result = await sql<HydratedAccessiblePersonRow>`
+      WITH requested_identities AS (
+        SELECT *
+        FROM unnest(${identityIds}) WITH ORDINALITY AS requested("identityId", ord)
+      ),
+      timeline_spaces AS (
+        SELECT "spaceId"
+        FROM shared_space_member
+        WHERE "userId" = ${input.userId}
+          AND "showInTimeline" = true
+      ),
+      accessible_faces AS (
+        SELECT
+          face_identity_face."identityId",
+          asset_face."assetId"
+        FROM face_identity_face
+        INNER JOIN requested_identities ON requested_identities."identityId" = face_identity_face."identityId"
+        INNER JOIN asset_face ON asset_face.id = face_identity_face."assetFaceId"
+        INNER JOIN asset ON asset.id = asset_face."assetId"
+        WHERE asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+          AND asset."deletedAt" IS NULL
+          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND (
+            asset."ownerId" = ${input.userId}
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_asset
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_asset."spaceId"
+              WHERE shared_space_asset."assetId" = asset.id
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_library
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_library."spaceId"
+              WHERE shared_space_library."libraryId" = asset."libraryId"
+            )
+          )
+      ),
+      asset_counts AS (
+        SELECT
+          "identityId",
+          COUNT(DISTINCT "assetId") AS "numberOfAssets"
+        FROM accessible_faces
+        GROUP BY "identityId"
+      ),
+      profiles AS (
+        SELECT
+          'user-person'::text AS "profileType",
+          person.id AS "profileId",
+          NULL::uuid AS "spaceId",
+          person."identityId",
+          person.name,
+          person."birthDate",
+          person."thumbnailPath",
+          person."isHidden",
+          person."isFavorite",
+          person.color,
+          person."updatedAt",
+          person.type,
+          person.species,
+          0 AS "profileRank"
+        FROM person
+        INNER JOIN requested_identities ON requested_identities."identityId" = person."identityId"
+        WHERE person."ownerId" = ${input.userId}
+          AND (${input.withHidden}::boolean OR person."isHidden" = false)
+        UNION ALL
+        SELECT
+          'space-person'::text AS "profileType",
+          shared_space_person.id AS "profileId",
+          shared_space_person."spaceId",
+          shared_space_person."identityId",
+          COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name,
+          shared_space_person."birthDate",
+          ''::text AS "thumbnailPath",
+          shared_space_person."isHidden",
+          NULL::boolean AS "isFavorite",
+          NULL::text AS color,
+          shared_space_person."updatedAt",
+          shared_space_person.type,
+          NULL::text AS species,
+          CASE WHEN NULLIF(shared_space_person_alias.alias, '') IS NULL THEN 2 ELSE 1 END AS "profileRank"
+        FROM shared_space_person
+        INNER JOIN requested_identities ON requested_identities."identityId" = shared_space_person."identityId"
+        INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
+        LEFT JOIN shared_space_person_alias
+          ON shared_space_person_alias."personId" = shared_space_person.id
+          AND shared_space_person_alias."userId" = ${input.userId}
+        WHERE ${input.withHidden}::boolean OR shared_space_person."isHidden" = false
+      ),
+      ranked_profiles AS (
+        SELECT
+          profiles.*,
+          row_number() OVER (
+            PARTITION BY profiles."identityId"
+            ORDER BY
+              NULLIF(profiles.name, '') IS NULL,
+              profiles."profileRank",
+              lower(profiles.name),
+              profiles."updatedAt" DESC,
+              profiles."profileId"
+          ) AS rn
+        FROM profiles
+        WHERE EXISTS (SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = profiles."identityId")
+      )
+      SELECT
+        ranked_profiles."profileType",
+        ranked_profiles."profileId",
+        ranked_profiles."spaceId",
+        ranked_profiles.name,
+        ranked_profiles."birthDate",
+        ranked_profiles."thumbnailPath",
+        ranked_profiles."isHidden",
+        ranked_profiles."isFavorite",
+        ranked_profiles.color,
+        ranked_profiles."updatedAt",
+        ranked_profiles.type,
+        ranked_profiles.species,
+        asset_counts."numberOfAssets"
+      FROM requested_identities
+      INNER JOIN ranked_profiles
+        ON ranked_profiles."identityId" = requested_identities."identityId"
+        AND ranked_profiles.rn = 1
+      LEFT JOIN asset_counts ON asset_counts."identityId" = requested_identities."identityId"
+      ORDER BY requested_identities.ord
+    `.execute(this.db);
+
+    return result.rows.map((row) => this.mapAccessiblePerson(row));
+  }
+
+  private mapAccessiblePerson(row: HydratedAccessiblePersonRow): PersonResponseDto {
+    const primaryProfile =
+      row.profileType === 'space-person'
+        ? { type: row.profileType, id: row.profileId, spaceId: row.spaceId ?? undefined }
+        : { type: row.profileType, id: row.profileId };
+
+    return {
+      id: row.profileId,
+      name: row.name ?? '',
+      birthDate: asBirthDateString(row.birthDate),
+      thumbnailPath: row.profileType === 'user-person' ? (row.thumbnailPath ?? '') : '',
+      isHidden: row.isHidden,
+      isFavorite: row.isFavorite ?? undefined,
+      color: row.color ?? undefined,
+      updatedAt: asDateString(row.updatedAt) ?? undefined,
+      primaryProfile,
+      filterId: `${row.profileType === 'space-person' ? 'space-person' : 'person'}:${row.profileId}`,
+      numberOfAssets: Number(row.numberOfAssets ?? 0),
+      type: row.type ?? 'person',
+      species: row.species,
+    };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async ensurePersonIdentity(personId: string): Promise<FaceIdentity> {
+    return this.db.transaction().execute(async (trx) => {
+      const person = await trx
+        .selectFrom('person')
+        .select(['id', 'identityId', 'type', 'faceAssetId'])
+        .where('id', '=', personId)
+        .executeTakeFirstOrThrow();
+
+      if (person.identityId) {
+        return trx
+          .selectFrom('face_identity')
+          .selectAll()
+          .where('id', '=', person.identityId)
+          .executeTakeFirstOrThrow();
+      }
+
+      const identity = await trx
+        .insertInto('face_identity')
+        .values({
+          type: person.type,
+          representativeFaceId: person.faceAssetId,
+        } satisfies Insertable<FaceIdentityTable>)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      await trx.updateTable('person').set({ identityId: identity.id }).where('id', '=', person.id).execute();
+
+      return identity;
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async ensureSpacePersonIdentity(spacePersonId: string): Promise<FaceIdentity> {
+    return this.db.transaction().execute(async (trx) => {
+      const person = await trx
+        .selectFrom('shared_space_person')
+        .select(['id', 'identityId', 'type', 'representativeFaceId'])
+        .where('id', '=', spacePersonId)
+        .executeTakeFirstOrThrow();
+
+      if (person.identityId) {
+        return trx
+          .selectFrom('face_identity')
+          .selectAll()
+          .where('id', '=', person.identityId)
+          .executeTakeFirstOrThrow();
+      }
+
+      const identity = await trx
+        .insertInto('face_identity')
+        .values({
+          type: person.type,
+          representativeFaceId: person.representativeFaceId,
+        } satisfies Insertable<FaceIdentityTable>)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      await trx
+        .updateTable('shared_space_person')
+        .set({ identityId: identity.id })
+        .where('id', '=', person.id)
+        .execute();
+
+      return identity;
+    });
+  }
+
+  @GenerateSql({
+    params: [{ assetFaceId: DummyValue.UUID, identityId: DummyValue.UUID, source: 'owner-person' }],
+  })
+  async linkFace(input: LinkFaceInput): Promise<FaceIdentityFace> {
+    return this.replaceFaceIdentity(input);
+  }
+
+  @GenerateSql({
+    params: [{ assetFaceId: DummyValue.UUID, identityId: DummyValue.UUID, source: 'manual' }],
+  })
+  async replaceFaceIdentity(input: LinkFaceInput): Promise<FaceIdentityFace> {
+    return this.db
+      .insertInto('face_identity_face')
+      .values({
+        assetFaceId: input.assetFaceId,
+        identityId: input.identityId,
+        source: input.source,
+        confidence: input.confidence ?? null,
+      })
+      .onConflict((oc) =>
+        oc.column('assetFaceId').doUpdateSet({
+          identityId: input.identityId,
+          source: input.source,
+          confidence: input.confidence ?? null,
+        }),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [{ identityId: DummyValue.UUID, assetFaceId: DummyValue.UUID }] })
+  async updateRepresentativeFace(input: { identityId: string; assetFaceId: string }): Promise<void> {
+    await this.db
+      .updateTable('face_identity')
+      .set({ representativeFaceId: input.assetFaceId })
+      .where('id', '=', input.identityId)
+      .execute();
+
+    await this.replaceFaceIdentity({
+      identityId: input.identityId,
+      assetFaceId: input.assetFaceId,
+      source: 'manual',
+    });
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async unlinkFaces(assetFaceIds: string[]): Promise<void> {
+    if (assetFaceIds.length === 0) {
+      return;
+    }
+    await this.db.deleteFrom('face_identity_face').where('assetFaceId', 'in', assetFaceIds).execute();
+  }
+
+  @GenerateSql({ params: [SourceType.MachineLearning] })
+  async unlinkFacesBySourceType(sourceType: SourceType): Promise<void> {
+    await this.db
+      .deleteFrom('face_identity_face')
+      .where('assetFaceId', 'in', this.db.selectFrom('asset_face').select('id').where('sourceType', '=', sourceType))
+      .execute();
+  }
+
+  async backfillPersonalIdentities(input: { cursor?: string; limit: number }): Promise<BackfillResult> {
+    const people = await this.db
+      .selectFrom('person')
+      .select(['id'])
+      .$if(!!input.cursor, (qb) => qb.where('id', '>', input.cursor!))
+      .orderBy('id')
+      .limit(input.limit + 1)
+      .execute();
+
+    const page = people.slice(0, input.limit);
+    for (const person of page) {
+      const identity = await this.ensurePersonIdentity(person.id);
+      const faces = await this.db
+        .selectFrom('asset_face')
+        .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+        .select('asset_face.id')
+        .where('asset_face.personId', '=', person.id)
+        .where('asset_face.deletedAt', 'is', null)
+        .where('asset_face.isVisible', '=', true)
+        .where('asset.deletedAt', 'is', null)
+        .execute();
+
+      for (const face of faces) {
+        await this.linkFace({ assetFaceId: face.id, identityId: identity.id, source: 'backfill' });
+      }
+    }
+
+    return {
+      processed: page.length,
+      nextCursor: people.length > input.limit ? page.at(-1)?.id : undefined,
+    };
+  }
+
+  async backfillSpacePersonIdentities(input: { cursor?: string; limit: number }): Promise<SpacePersonBackfillResult> {
+    const people = await this.db
+      .selectFrom('shared_space_person')
+      .select(['id', 'spaceId', 'identityId', 'representativeFaceId', 'representativeFaceSource', 'type'])
+      .$if(!!input.cursor, (qb) => qb.where('id', '>', input.cursor!))
+      .orderBy('id')
+      .limit(input.limit + 1)
+      .execute();
+
+    const page = people.slice(0, input.limit);
+    for (const person of page) {
+      await this.repairSpacePersonIdentityAssignments(person);
+    }
+
+    return {
+      processed: page.length,
+      conflictCount: 0,
+      ...(people.length > input.limit ? { nextCursor: page.at(-1)?.id } : {}),
+    };
+  }
+
+  private async repairSpacePersonIdentityAssignments(person: SpacePersonBackfillRow): Promise<void> {
+    const groups = await this.getSpacePersonBackfillIdentityGroups(person.id);
+    if (groups.length === 0) {
+      return;
+    }
+
+    let currentIdentityId = person.identityId;
+    const affectedPersonIds = new Set<string>([person.id]);
+
+    for (const group of groups) {
+      let targetPersonId: string | undefined;
+
+      if (currentIdentityId === group.identityId) {
+        targetPersonId = person.id;
+      } else {
+        const existingPerson = await this.getSpacePersonByIdentity(person.spaceId, group.identityId, person.id);
+        if (existingPerson) {
+          targetPersonId = existingPerson.id;
+        } else if (currentIdentityId) {
+          const createdPerson = await this.db
+            .insertInto('shared_space_person')
+            .values({
+              spaceId: person.spaceId,
+              identityId: group.identityId,
+              representativeFaceId: group.representativeFaceId,
+              type: group.type,
+            })
+            .returning(['id'])
+            .executeTakeFirstOrThrow();
+          targetPersonId = createdPerson.id;
+        } else {
+          const update: { identityId: string; type: string; representativeFaceId?: string } = {
+            identityId: group.identityId,
+            type: group.type,
+          };
+          if (person.representativeFaceSource !== 'manual' || !person.representativeFaceId) {
+            update.representativeFaceId = group.representativeFaceId;
+          }
+          await this.db.updateTable('shared_space_person').set(update).where('id', '=', person.id).execute();
+          currentIdentityId = group.identityId;
+          targetPersonId = person.id;
+        }
+      }
+
+      affectedPersonIds.add(targetPersonId);
+      if (targetPersonId !== person.id) {
+        await this.moveSpacePersonFacesForIdentity({
+          fromPersonId: person.id,
+          toPersonId: targetPersonId,
+          identityId: group.identityId,
+        });
+      }
+    }
+
+    await this.recountSpacePersons([...affectedPersonIds]);
+    await this.deleteOrphanedSpacePersons([...affectedPersonIds]);
+  }
+
+  private getSpacePersonBackfillIdentityGroups(personId: string): Promise<SpacePersonBackfillIdentityGroup[]> {
+    return this.db
+      .selectFrom('shared_space_person_face')
+      .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+      .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+      .innerJoin('face_identity', 'face_identity.id', 'face_identity_face.identityId')
+      .select(['face_identity_face.identityId', 'face_identity.type'])
+      .select(() => [
+        sql<number>`count(*)::int`.as('faceCount'),
+        sql<string>`min(asset_face.id::text)::uuid`.as('representativeFaceId'),
+      ])
+      .where('shared_space_person_face.personId', '=', personId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .groupBy(['face_identity_face.identityId', 'face_identity.type'])
+      .orderBy(sql`count(*)`, 'desc')
+      .$castTo<SpacePersonBackfillIdentityGroup>()
+      .execute();
+  }
+
+  private getSpacePersonByIdentity(spaceId: string, identityId: string, excludePersonId?: string) {
+    return this.db
+      .selectFrom('shared_space_person')
+      .select(['id'])
+      .where('spaceId', '=', spaceId)
+      .where('identityId', '=', identityId)
+      .$if(!!excludePersonId, (qb) => qb.where('id', '!=', excludePersonId!))
+      .executeTakeFirst();
+  }
+
+  private async moveSpacePersonFacesForIdentity(input: {
+    fromPersonId: string;
+    toPersonId: string;
+    identityId: string;
+  }): Promise<void> {
+    const identityFaceIds = this.db
+      .selectFrom('shared_space_person_face')
+      .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+      .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+      .select('shared_space_person_face.assetFaceId')
+      .where('shared_space_person_face.personId', '=', input.fromPersonId)
+      .where('face_identity_face.identityId', '=', input.identityId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true);
+
+    await this.db
+      .deleteFrom('shared_space_person_face')
+      .where('personId', '=', input.fromPersonId)
+      .where('assetFaceId', 'in', identityFaceIds)
+      .where(
+        'assetFaceId',
+        'in',
+        this.db.selectFrom('shared_space_person_face').select('assetFaceId').where('personId', '=', input.toPersonId),
+      )
+      .execute();
+
+    await this.db
+      .updateTable('shared_space_person_face')
+      .set({ personId: input.toPersonId })
+      .where('personId', '=', input.fromPersonId)
+      .where('assetFaceId', 'in', identityFaceIds)
+      .execute();
+  }
+
+  private async recountSpacePersons(personIds: string[]): Promise<void> {
+    if (personIds.length === 0) {
+      return;
+    }
+
+    await this.db
+      .updateTable('shared_space_person')
+      .set((eb) => ({
+        faceCount: eb
+          .selectFrom('shared_space_person_face')
+          .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+          .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+          .where('asset_face.deletedAt', 'is', null)
+          .where('asset_face.isVisible', 'is', true)
+          .where('asset.deletedAt', 'is', null)
+          .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+          .select((eb2) => eb2.fn.countAll().$castTo<number>().as('count'))
+          .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id'),
+        assetCount: eb
+          .selectFrom('shared_space_person_face')
+          .innerJoin('asset_face', 'asset_face.id', 'shared_space_person_face.assetFaceId')
+          .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+          .where('asset_face.deletedAt', 'is', null)
+          .where('asset_face.isVisible', 'is', true)
+          .where('asset.deletedAt', 'is', null)
+          .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+          .select((eb2) =>
+            eb2.fn
+              .count(eb2.fn('distinct', ['asset_face.assetId']))
+              .$castTo<number>()
+              .as('count'),
+          )
+          .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id'),
+      }))
+      .where('id', 'in', personIds)
+      .execute();
+  }
+
+  private async deleteOrphanedSpacePersons(personIds: string[]): Promise<void> {
+    if (personIds.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('shared_space_person')
+      .where('id', 'in', personIds)
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('shared_space_person_face')
+              .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id'),
+          ),
+        ),
+      )
+      .execute();
+  }
+
+  async mergeIdentities(input: {
+    targetIdentityId: string;
+    sourceIdentityIds: string[];
+    source: FaceIdentityFaceSource;
+  }): Promise<MergeIdentitiesResult> {
+    const sourceIdentityIds = [...new Set(input.sourceIdentityIds)].filter((id) => id !== input.targetIdentityId);
+    if (sourceIdentityIds.length === 0) {
+      return { personalProfileConflictCount: 0, spaceProfileConflictCount: 0 };
+    }
+
+    return this.db.transaction().execute(async (trx) => {
+      const identities = await trx
+        .selectFrom('face_identity')
+        .select(['id', 'type'])
+        .where('id', 'in', [input.targetIdentityId, ...sourceIdentityIds])
+        .execute();
+      const targetIdentity = identities.find((identity) => identity.id === input.targetIdentityId);
+      if (!targetIdentity) {
+        throw new Error('Target face identity not found');
+      }
+      const incompatible = identities.some(
+        (identity) => identity.id !== input.targetIdentityId && identity.type !== targetIdentity.type,
+      );
+      if (incompatible) {
+        throw new Error('Cannot merge face identities with different types');
+      }
+
+      const personalConflicts = await trx
+        .selectFrom('person as source_person')
+        .innerJoin('person as target_person', (join) =>
+          join
+            .onRef('target_person.ownerId', '=', 'source_person.ownerId')
+            .on('target_person.identityId', '=', input.targetIdentityId),
+        )
+        .select('source_person.id')
+        .where('source_person.identityId', 'in', sourceIdentityIds)
+        .execute();
+
+      const spaceConflicts = await trx
+        .selectFrom('shared_space_person as source_person')
+        .innerJoin('shared_space_person as target_person', (join) =>
+          join
+            .onRef('target_person.spaceId', '=', 'source_person.spaceId')
+            .on('target_person.identityId', '=', input.targetIdentityId),
+        )
+        .select('source_person.id')
+        .where('source_person.identityId', 'in', sourceIdentityIds)
+        .execute();
+
+      await trx
+        .updateTable('face_identity_face')
+        .set({ identityId: input.targetIdentityId, source: input.source })
+        .where('identityId', 'in', sourceIdentityIds)
+        .execute();
+
+      await trx
+        .updateTable('person')
+        .set({ identityId: input.targetIdentityId })
+        .where('identityId', 'in', sourceIdentityIds)
+        .where(({ not, exists, selectFrom, ref }) =>
+          not(
+            exists(
+              selectFrom('person as target_person')
+                .select(sql`1`.as('one'))
+                .where('target_person.identityId', '=', input.targetIdentityId)
+                .whereRef('target_person.ownerId', '=', ref('person.ownerId')),
+            ),
+          ),
+        )
+        .execute();
+
+      await trx
+        .updateTable('shared_space_person')
+        .set({ identityId: input.targetIdentityId })
+        .where('identityId', 'in', sourceIdentityIds)
+        .where(({ not, exists, selectFrom, ref }) =>
+          not(
+            exists(
+              selectFrom('shared_space_person as target_person')
+                .select(sql`1`.as('one'))
+                .where('target_person.identityId', '=', input.targetIdentityId)
+                .whereRef('target_person.spaceId', '=', ref('shared_space_person.spaceId')),
+            ),
+          ),
+        )
+        .execute();
+
+      const deletable = await trx
+        .selectFrom('face_identity')
+        .leftJoin('person', 'person.identityId', 'face_identity.id')
+        .leftJoin('shared_space_person', 'shared_space_person.identityId', 'face_identity.id')
+        .leftJoin('face_identity_face', 'face_identity_face.identityId', 'face_identity.id')
+        .select('face_identity.id')
+        .where('face_identity.id', 'in', sourceIdentityIds)
+        .where('person.id', 'is', null)
+        .where('shared_space_person.id', 'is', null)
+        .where('face_identity_face.assetFaceId', 'is', null)
+        .execute();
+
+      const deletableIds = deletable.map((identity) => identity.id);
+      if (deletableIds.length > 0) {
+        await trx.deleteFrom('face_identity').where('id', 'in', deletableIds).execute();
+      }
+
+      return {
+        personalProfileConflictCount: personalConflicts.length,
+        spaceProfileConflictCount: spaceConflicts.length,
+      };
+    });
+  }
+}

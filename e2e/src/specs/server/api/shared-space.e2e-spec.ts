@@ -1744,29 +1744,24 @@ describe('/shared-spaces', () => {
       });
 
       describe('GET /shared-spaces/:id/people/:personId/thumbnail', () => {
-        // Test strategy: the thumbnail endpoint at shared-space.service.ts:643-657
-        // has THREE distinct return paths once the access check passes:
+        // Test strategy: the thumbnail endpoint has THREE distinct return paths
+        // once the access check passes:
         //   - person not found OR wrong space → throw NotFoundException → 404
-        //   - thumbnailPath is null/empty → throw NotFoundException → 404
-        //   - thumbnailPath set → serveFromBackend → 200 with bytes (or 500 if file
-        //     doesn't exist on disk)
+        //   - representative face missing/not in this space/no asset thumbnail → 404
+        //   - representative asset thumbnail exists → 200 with bytes
         //
-        // utils.createSpacePerson sets thumbnailPath to a fictional path ('/my/awesome/
-        // thumbnail.jpg') to satisfy the *listing*'s hard requirement (a non-empty
-        // thumbnailPath) — but that path doesn't exist on disk, so the 200 path would
-        // trip serveFromBackend's 500 case. To keep the test focused on the *access*
-        // path (which is what the controller is responsible for) and away from the
-        // file-resolution side effect, we transiently blank thumbnailPath via DB,
-        // which exercises the graceful 404 path. Restore in try/finally per the
-        // fixture lifetime contract.
+        // Global face identities decouple shared-space thumbnails from the source
+        // person's private thumbnailPath. The endpoint serves the representative
+        // asset thumbnail only after verifying the representative face belongs to
+        // the requested space, so blanking person.thumbnailPath must not affect
+        // member access.
         //
         // The matrix this test pins:
-        //   - member with empty thumbnailPath → 404 (graceful "no thumbnail" path)
+        //   - member with a representative face on a space asset → 200
         //   - non-member → 403 (access check fires before file lookup)
         //   - anon → 401 (auth middleware denies before service is invoked)
-        // Together this characterises the LAYERED ordering 401 < 403 < 404, which is
-        // exactly what a fully-correct member-success path looks like for a person
-        // that has no thumbnail.
+        // Together this characterises the LAYERED ordering 401 < 403 < member success
+        // without leaking face existence outside the space.
 
         it('access matrix and 401 < 403 < 404 ordering', async () => {
           const dbClient = await utils.connectDatabase();
@@ -1782,7 +1777,7 @@ describe('/shared-spaces', () => {
               [ownerActor, editorActor, viewerActor, nonMemberActor, anonActor],
               (actor) =>
                 request(app).get(`/shared-spaces/${spaceId}/people/${namedPersonId}/thumbnail`).set(authHeaders(actor)),
-              { spaceOwner: 404, spaceEditor: 404, spaceViewer: 404, spaceNonMember: 403, anon: 401 },
+              { spaceOwner: 200, spaceEditor: 200, spaceViewer: 200, spaceNonMember: 403, anon: 401 },
             );
           } finally {
             await dbClient.query(
@@ -1880,7 +1875,7 @@ describe('/shared-spaces', () => {
           expect((direct.body as { isHidden: boolean }).isHidden).toBe(true);
         });
 
-        it('updates, persists, lists, and clears birthDate', async () => {
+        it('updates, persists, lists, and clears birthDate without mutating the source person', async () => {
           const scratch = await utils.createSpacePerson(spaceId, 'BirthDatePerson', owner.userId, spaceAssetId);
           const expectedBirthDate = '1984-05-09';
 
@@ -1895,7 +1890,7 @@ describe('/shared-spaces', () => {
             .get(`/people/${scratch.globalPersonId}`)
             .set('Authorization', `Bearer ${owner.accessToken}`);
           expect(globalPerson.status).toBe(200);
-          expect((globalPerson.body as { birthDate: string | null }).birthDate).toBe(expectedBirthDate);
+          expect((globalPerson.body as { birthDate: string | null }).birthDate).toBeNull();
 
           const direct = await request(app)
             .get(`/shared-spaces/${spaceId}/people/${scratch.spacePersonId}`)

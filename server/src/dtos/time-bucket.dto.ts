@@ -4,6 +4,12 @@ import { AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/en
 import { stringToBool } from 'src/validation';
 import z from 'zod';
 
+const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+const ScopedPersonTokenSchema = z
+  .string()
+  .regex(new RegExp(`^(?:${UUID_PATTERN}|person:${UUID_PATTERN}|space-person:${UUID_PATTERN})$`))
+  .describe('Legacy person ID or scoped identity filter token');
+
 const TimeBucketQueryBaseSchema = z
   .object({
     userId: z.uuidv4().optional().describe('Filter assets by specific user ID'),
@@ -29,7 +35,7 @@ const TimeBucketQueryBaseSchema = z
       .optional()
       .describe('Filter assets containing a specific shared space person (space face recognition)'),
     personIds: z
-      .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(z.uuidv4()))
+      .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(ScopedPersonTokenSchema))
       .optional()
       .describe('Filter assets containing any of these persons (multi-select)'),
     spacePersonIds: z

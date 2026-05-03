@@ -1,5 +1,5 @@
 import { buildMapFilterConfig } from '$lib/utils/map-filter-config';
-import { getFilterSuggestions, getSearchSuggestions } from '@immich/sdk';
+import { getFilterSuggestions, getSearchSuggestions, Type } from '@immich/sdk';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@immich/sdk', async (importOriginal) => {
@@ -101,6 +101,54 @@ describe('buildMapFilterConfig', () => {
       expect(result.people).toHaveLength(1);
       expect(result.people[0].name).toBe('Alice');
       expect(result.people[0].thumbnailUrl).toContain('/people/1/thumbnail');
+    });
+
+    it('should map global shared-space primary people to shared-space thumbnails', async () => {
+      vi.mocked(getFilterSuggestions).mockResolvedValueOnce({
+        countries: [],
+        cameraMakes: [],
+        tags: [],
+        people: [
+          {
+            id: 'space-person:space-person-1',
+            name: 'Alice',
+            primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+          },
+        ],
+        ratings: [],
+        mediaTypes: [],
+        hasUnnamedPeople: false,
+      } as never);
+
+      const config = buildMapFilterConfig();
+      const result = await config.suggestionsProvider!(emptyFilters);
+
+      expect(result.people[0]).toEqual({
+        id: 'space-person:space-person-1',
+        name: 'Alice',
+        thumbnailUrl: '/api/shared-spaces/space-1/people/space-person-1/thumbnail',
+      });
+    });
+
+    it('should map space-scoped people to shared-space thumbnails', async () => {
+      vi.mocked(getFilterSuggestions).mockResolvedValueOnce({
+        countries: [],
+        cameraMakes: [],
+        tags: [],
+        people: [{ id: 'space-person-1', name: 'Alice' }],
+        ratings: [],
+        mediaTypes: [],
+        hasUnnamedPeople: false,
+      } as never);
+
+      const config = buildMapFilterConfig('space-1');
+      const result = await config.suggestionsProvider!(emptyFilters);
+
+      expect(result.people[0]).toEqual({
+        id: 'space-person-1',
+        name: 'Alice',
+        thumbnailUrl: '/api/shared-spaces/space-1/people/space-person-1/thumbnail',
+      });
     });
 
     it('should map tags correctly', async () => {

@@ -88,9 +88,11 @@
     }
   };
 
-  const handleSwapPeople = async () => {
+  const handleSwapPeople = async (notify = true) => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
-    await onSwapPerson(person);
+    if (notify) {
+      await onSwapPerson(person);
+    }
   };
 
   const onSelect = async (selected: T) => {
@@ -107,7 +109,7 @@
     selectedPeople = [selected, ...selectedPeople];
 
     if (selectedPeople.length === 1 && !getDisplayName(person) && getDisplayName(selected)) {
-      await handleSwapPeople();
+      await handleSwapPeople(false);
     }
   };
 
@@ -203,7 +205,7 @@
                       aria-label={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
                       size="large"
-                      onclick={handleSwapPeople}
+                      onclick={() => handleSwapPeople()}
                     />
                   </div>
                 {/if}

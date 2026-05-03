@@ -11,6 +11,13 @@ async function openGlobalSearchDropdown(page: Page) {
   return { trigger, panel, input: trigger.getByRole('combobox') };
 }
 
+async function createSearchablePerson(accessToken: string, name: string) {
+  const asset = await utils.createAsset(accessToken);
+  const person = await utils.createPerson(accessToken, { name });
+  await utils.createFace({ assetId: asset.id, personId: person.id });
+  return person;
+}
+
 test.describe('global search palette', () => {
   let admin: LoginResponseDto;
 
@@ -538,12 +545,10 @@ test.describe('global search palette', () => {
     // fixtures inline — the outer beforeAll already handled admin setup + the baseline
     // asset upload + metadata drain. We reuse the outer beforeEach so auth cookies and
     // the /photos landing + cmdk input trigger hydration wait are handled automatically.
-
     test('scope @ narrows to people section and activating navigates to /people/:id', async ({ page }) => {
-      // searchPerson (used for `@alice`) runs a trigram word_similarity filter on
-      // person.name and DOES NOT require any asset_face rows, so a bare createPerson
-      // is sufficient to surface the row under named-@ queries.
-      const person = await utils.createPerson(admin.accessToken, { name: 'Alice Scope' });
+      // The palette searches with withSharedSpaces=true, so people are surfaced through
+      // identity-backed faces rather than legacy owner-only name search.
+      const person = await createSearchablePerson(admin.accessToken, 'Alice Scope');
 
       await page.keyboard.press('Control+k');
       const dialog = page.getByRole('dialog');
@@ -685,7 +690,7 @@ test.describe('global search palette', () => {
       // Longer person name so trigram word_similarity ('al' vs 'Alvin Scope')
       // reliably matches — short 2-char payloads are flaky against pg_trgm's
       // 0.5 threshold. We type '@alvin' below instead of '@al'.
-      await utils.createPerson(admin.accessToken, { name: 'Alvin Scope' });
+      await createSearchablePerson(admin.accessToken, 'Alvin Scope');
       await utils.upsertTags(admin.accessToken, ['sunrise-scope']);
 
       await page.keyboard.press('Control+k');

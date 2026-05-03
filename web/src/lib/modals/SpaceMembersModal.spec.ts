@@ -34,6 +34,7 @@ describe('SpaceMembersModal', () => {
     role: SharedSpaceRole.Owner,
     joinedAt: '2024-01-01T00:00:00.000Z',
     showInTimeline: true,
+    sharePersonMetadata: true,
   };
 
   const editorMember: SharedSpaceMemberResponseDto = {
@@ -43,6 +44,7 @@ describe('SpaceMembersModal', () => {
     role: SharedSpaceRole.Editor,
     joinedAt: '2024-01-02T00:00:00.000Z',
     showInTimeline: true,
+    sharePersonMetadata: true,
   };
 
   const viewerMember: SharedSpaceMemberResponseDto = {
@@ -52,6 +54,7 @@ describe('SpaceMembersModal', () => {
     role: SharedSpaceRole.Viewer,
     joinedAt: '2024-01-03T00:00:00.000Z',
     showInTimeline: false,
+    sharePersonMetadata: true,
   };
 
   beforeEach(() => {

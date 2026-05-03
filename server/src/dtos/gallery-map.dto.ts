@@ -9,13 +9,23 @@ export enum MapMediaType {
 
 const MapMediaTypeSchema = z.enum(MapMediaType).meta({ id: 'MapMediaType' });
 
+const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+const ScopedPersonTokenSchema = z
+  .string()
+  .regex(new RegExp(`^(?:${UUID_PATTERN}|person:${UUID_PATTERN}|space-person:${UUID_PATTERN})$`))
+  .describe('Legacy person ID or scoped identity filter token');
+
 const uuidArrayQuery = z
   .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(z.uuidv4()))
   .optional();
 
+const scopedPersonTokenArrayQuery = z
+  .preprocess((v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]), z.array(ScopedPersonTokenSchema))
+  .optional();
+
 const FilteredMapMarkerSchema = z
   .object({
-    personIds: uuidArrayQuery.describe('Filter by person IDs'),
+    personIds: scopedPersonTokenArrayQuery.describe('Filter by person IDs'),
     tagIds: uuidArrayQuery.describe('Filter by tag IDs'),
     spaceId: z.uuidv4().optional().describe('Scope to a shared space'),
     make: z.string().optional().describe('Camera make'),

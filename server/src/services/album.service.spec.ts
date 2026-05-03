@@ -6,9 +6,10 @@ import { AlbumUserFactory } from 'test/factories/album-user.factory';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
+import { PartnerFactory } from 'test/factories/partner.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
-import { getForAlbum } from 'test/mappers';
+import { getForAlbum, getForPartner } from 'test/mappers';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -107,6 +108,41 @@ describe(AlbumService.name, () => {
       expect(mocks.album.getOwned).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.album.getShared).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.album.getNotShared).toHaveBeenCalledWith(authStub.admin.user.id);
+    });
+  });
+
+  describe('getMapMarkers', () => {
+    it('passes owner, partner, and timeline-enabled spaces to album map lookup', async () => {
+      const auth = AuthFactory.create();
+      const albumId = newUuid();
+      const partnerId = newUuid();
+      const spaceId = newUuid();
+      const partner = PartnerFactory.create({ sharedById: partnerId, sharedWithId: auth.user.id, inTimeline: true });
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
+      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
+      mocks.sharedSpace.getSpaceIdsForTimeline.mockResolvedValue([{ spaceId }]);
+      mocks.map.getAlbumMapMarkers.mockResolvedValue([]);
+
+      await sut.getMapMarkers(auth, albumId);
+
+      expect(mocks.sharedSpace.getSpaceIdsForTimeline).toHaveBeenCalledWith(auth.user.id);
+      expect(mocks.map.getAlbumMapMarkers).toHaveBeenCalledWith(albumId, {
+        ownerIds: [auth.user.id, partnerId],
+        timelineSpaceIds: [spaceId],
+      });
+    });
+
+    it('keeps shared-link album map lookup on the existing album-link path', async () => {
+      const auth = AuthFactory.from().sharedLink({ showExif: true }).build();
+      const albumId = newUuid();
+      mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set([albumId]));
+      mocks.map.getAlbumMapMarkers.mockResolvedValue([]);
+
+      await sut.getMapMarkers(auth, albumId);
+
+      expect(mocks.partner.getAll).not.toHaveBeenCalled();
+      expect(mocks.sharedSpace.getSpaceIdsForTimeline).not.toHaveBeenCalled();
+      expect(mocks.map.getAlbumMapMarkers).toHaveBeenCalledWith(albumId);
     });
   });
 

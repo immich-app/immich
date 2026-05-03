@@ -1,17 +1,20 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { setImmediate } from 'node:timers/promises';
-import { SharedSpacePerson } from 'src/database';
+import { AssetFace, SharedSpacePerson } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import type { FilteredMapMarkerDto } from 'src/dtos/gallery-map.dto';
 import type { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { mapNotification } from 'src/dtos/notification.dto';
+import { PersonFacePageQueryDto, PersonFacePageResponseDto } from 'src/dtos/person.dto';
 import {
+  SharedSpacePeopleStatisticsResponseDto,
   SharedSpacePersonAliasDto,
   SharedSpacePersonMergeDto,
   SharedSpacePersonResponseDto,
   SharedSpacePersonUpdateDto,
   SpacePeopleQueryDto,
+  SpaceRepresentativeFaceUpdateDto,
 } from 'src/dtos/shared-space-person.dto';
 import {
   SharedSpaceActivityResponseDto,
@@ -21,6 +24,8 @@ import {
   SharedSpaceLibraryLinkDto,
   SharedSpaceLinkedLibraryDto,
   SharedSpaceMemberCreateDto,
+  SharedSpaceMemberMetadataContributionDto,
+  SharedSpaceMemberPreferencesDto,
   SharedSpaceMemberResponseDto,
   SharedSpaceMemberTimelineDto,
   SharedSpaceMemberUpdateDto,
@@ -43,7 +48,7 @@ import {
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { asBirthDateString } from 'src/utils/date';
+import { asBirthDateString, asDateString } from 'src/utils/date';
 import { ImmichMediaResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -51,6 +56,14 @@ const ROLE_HIERARCHY: Record<SharedSpaceRole, number> = {
   [SharedSpaceRole.Viewer]: 0,
   [SharedSpaceRole.Editor]: 1,
   [SharedSpaceRole.Owner]: 2,
+};
+
+const getSharedSpaceRoleScore = (role: string) => ROLE_HIERARCHY[role as SharedSpaceRole] ?? 0;
+
+type SpacePersonMatchResult = {
+  id: string;
+  identityId?: string | null;
+  sourceIdentityId?: string | null;
 };
 
 @Injectable()
@@ -309,6 +322,7 @@ export class SharedSpaceService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireRole(auth, id, SharedSpaceRole.Owner);
     await this.sharedSpaceRepository.remove(id);
+    await this.queueSpacePersonMetadataBackfill();
   }
 
   async getMembers(auth: AuthDto, spaceId: string): Promise<SharedSpaceMemberResponseDto[]> {
@@ -368,6 +382,8 @@ export class SharedSpaceService extends BaseService {
       data: { role, invitedById: auth.user.id },
     });
 
+    await this.queueSpacePersonMetadataBackfill();
+
     return this.mapMember(member);
   }
 
@@ -403,6 +419,8 @@ export class SharedSpaceService extends BaseService {
       data: { targetUserId: userId, oldRole, newRole: dto.role },
     });
 
+    await this.queueSpacePersonMetadataBackfill();
+
     return this.mapMember(member);
   }
 
@@ -411,13 +429,60 @@ export class SharedSpaceService extends BaseService {
     spaceId: string,
     dto: SharedSpaceMemberTimelineDto,
   ): Promise<SharedSpaceMemberResponseDto> {
+    return this.updateMemberPreferences(auth, spaceId, { showInTimeline: dto.showInTimeline });
+  }
+
+  async updateMemberPreferences(
+    auth: AuthDto,
+    spaceId: string,
+    dto: SharedSpaceMemberPreferencesDto,
+  ): Promise<SharedSpaceMemberResponseDto> {
     await this.requireMembership(auth, spaceId);
 
-    await this.sharedSpaceRepository.updateMember(spaceId, auth.user.id, {
-      showInTimeline: dto.showInTimeline,
-    });
+    const updates: { showInTimeline?: boolean; sharePersonMetadata?: boolean } = {};
+    if (dto.showInTimeline !== undefined) {
+      updates.showInTimeline = dto.showInTimeline;
+    }
+    if (dto.sharePersonMetadata !== undefined) {
+      updates.sharePersonMetadata = dto.sharePersonMetadata;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await this.sharedSpaceRepository.updateMember(spaceId, auth.user.id, updates);
+      await this.queueSpacePersonMetadataBackfill();
+    }
 
     const member = await this.sharedSpaceRepository.getMember(spaceId, auth.user.id);
+    if (!member) {
+      throw new BadRequestException('Member not found');
+    }
+
+    return this.mapMember(member);
+  }
+
+  async updateMemberMetadataContribution(
+    auth: AuthDto,
+    spaceId: string,
+    userId: string,
+    dto: SharedSpaceMemberMetadataContributionDto,
+  ): Promise<SharedSpaceMemberResponseDto> {
+    if (dto.sharePersonMetadata !== false) {
+      throw new BadRequestException('Cannot enable person metadata contribution for another member');
+    }
+
+    if (!auth.user.isAdmin) {
+      await this.requireRole(auth, spaceId, SharedSpaceRole.Owner);
+    }
+
+    const target = await this.sharedSpaceRepository.getMember(spaceId, userId);
+    if (!target) {
+      throw new BadRequestException('Member not found');
+    }
+
+    await this.sharedSpaceRepository.updateMember(spaceId, userId, { sharePersonMetadata: false });
+    await this.queueSpacePersonMetadataBackfill();
+
+    const member = await this.sharedSpaceRepository.getMember(spaceId, userId);
     if (!member) {
       throw new BadRequestException('Member not found');
     }
@@ -440,6 +505,7 @@ export class SharedSpaceService extends BaseService {
         type: SharedSpaceActivityType.MemberLeave,
         data: {},
       });
+      await this.queueSpacePersonMetadataBackfill();
       return;
     }
 
@@ -451,6 +517,7 @@ export class SharedSpaceService extends BaseService {
       type: SharedSpaceActivityType.MemberRemove,
       data: { removedUserId: userId },
     });
+    await this.queueSpacePersonMetadataBackfill();
   }
 
   async addAssets(auth: AuthDto, spaceId: string, dto: SharedSpaceAssetAddDto): Promise<void> {
@@ -529,6 +596,7 @@ export class SharedSpaceService extends BaseService {
     await this.sharedSpaceRepository.removeLibrary(spaceId, libraryId);
     await this.sharedSpaceRepository.removePersonFacesByLibrary(spaceId, libraryId);
     await this.sharedSpaceRepository.deleteOrphanedPersons(spaceId);
+    await this.queueSpacePersonMetadataBackfill();
   }
 
   async markSpaceViewed(auth: AuthDto, spaceId: string): Promise<void> {
@@ -587,6 +655,7 @@ export class SharedSpaceService extends BaseService {
 
     await this.sharedSpaceRepository.removePersonFacesByAssetIds(spaceId, dto.assetIds);
     await this.sharedSpaceRepository.deleteOrphanedPersons(spaceId);
+    await this.queueSpacePersonMetadataBackfill();
   }
 
   async getMapMarkers(auth: AuthDto, id: string) {
@@ -616,12 +685,22 @@ export class SharedSpaceService extends BaseService {
       }
     }
 
+    const scopedPersonFilters = await this.resolveScopedMapPersonFilters(auth, {
+      personIds: dto.spaceId ? undefined : dto.personIds,
+      spacePersonIds: dto.spaceId ? dto.personIds : undefined,
+      withSharedSpaces: dto.withSharedSpaces,
+      timelineSpaceIds,
+      spaceId: dto.spaceId,
+    });
+
     const markers = await this.sharedSpaceRepository.getFilteredMapMarkers({
       userIds: dto.spaceId ? undefined : [auth.user.id],
       spaceId: dto.spaceId,
       timelineSpaceIds,
-      personIds: dto.spaceId ? undefined : dto.personIds,
-      spacePersonIds: dto.spaceId ? dto.personIds : undefined,
+      personIds: scopedPersonFilters.personIds,
+      spacePersonIds: scopedPersonFilters.spacePersonIds,
+      identityIds: scopedPersonFilters.identityIds,
+      forceEmptyResult: scopedPersonFilters.forceEmptyResult,
       tagIds: dto.tagIds,
       make: dto.make,
       model: dto.model,
@@ -645,6 +724,44 @@ export class SharedSpaceService extends BaseService {
       state: marker.state ?? null,
       country: marker.country ?? null,
     }));
+  }
+
+  private async resolveScopedMapPersonFilters(
+    auth: AuthDto,
+    filters: {
+      personIds?: string[];
+      spacePersonIds?: string[];
+      identityIds?: string[];
+      forceEmptyResult?: boolean;
+      withSharedSpaces?: boolean;
+      timelineSpaceIds?: string[];
+      spaceId?: string;
+    },
+  ) {
+    const tokens = filters.personIds?.filter(Boolean) ?? [];
+    const hasScopedTokens = tokens.some((token) => token.includes(':'));
+
+    if (tokens.length === 0 || !hasScopedTokens) {
+      return filters;
+    }
+
+    const resolution = await this.faceIdentityRepository.resolveScopedPersonTokens({
+      userId: auth.user.id,
+      tokens,
+      scope: {
+        withSharedSpaces: filters.withSharedSpaces,
+        timelineSpaceIds: filters.timelineSpaceIds,
+        spaceId: filters.spaceId,
+      },
+    });
+
+    return {
+      ...filters,
+      personIds: resolution.legacyPersonIds,
+      identityIds: resolution.identityIds,
+      spacePersonIds: [...new Set([...(filters.spacePersonIds ?? []), ...resolution.legacySpacePersonIds])],
+      forceEmptyResult: filters.forceEmptyResult || resolution.hasInaccessibleToken,
+    };
   }
 
   async getSpacePeople(
@@ -677,6 +794,111 @@ export class SharedSpaceService extends BaseService {
     return persons.map((person) => this.mapSpacePerson(person, aliasMap.get(person.id) ?? null));
   }
 
+  async getSpacePeopleStatistics(
+    auth: AuthDto,
+    spaceId: string,
+    query?: SpacePeopleQueryDto,
+  ): Promise<SharedSpacePeopleStatisticsResponseDto> {
+    await this.requireMembership(auth, spaceId);
+
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space?.faceRecognitionEnabled) {
+      return { total: 0, hidden: 0 };
+    }
+
+    return this.sharedSpaceRepository.countPersonsBySpaceId(spaceId, {
+      petsEnabled: space.petsEnabled,
+      named: query?.named,
+      name: query?.name,
+      takenAfter: query?.takenAfter,
+      takenBefore: query?.takenBefore,
+    });
+  }
+
+  async getSpacePersonFaces(
+    auth: AuthDto,
+    spaceId: string,
+    personId: string,
+    dto: PersonFacePageQueryDto,
+  ): Promise<PersonFacePageResponseDto> {
+    await this.requireMembership(auth, spaceId);
+    const person = await this.sharedSpaceRepository.getPersonById(personId);
+    if (!person || person.spaceId !== spaceId) {
+      throw new BadRequestException('Person not found');
+    }
+
+    const take = dto.size;
+    const skip = (dto.page - 1) * dto.size;
+    const rows = await this.sharedSpaceRepository.getSpaceRepresentativeFaces({ spaceId, personId, take, skip });
+    const page = rows.slice(0, take);
+
+    return {
+      faces: page.map((face) => ({
+        id: face.id,
+        assetId: face.assetId,
+        imageHeight: face.imageHeight,
+        imageWidth: face.imageWidth,
+        boundingBoxX1: face.boundingBoxX1,
+        boundingBoxX2: face.boundingBoxX2,
+        boundingBoxY1: face.boundingBoxY1,
+        boundingBoxY2: face.boundingBoxY2,
+        sourceType: face.sourceType,
+        fileCreatedAt: asDateString(face.fileCreatedAt) ?? undefined,
+        isRepresentative: face.id === person.representativeFaceId,
+      })),
+      hasNextPage: rows.length > take,
+    };
+  }
+
+  async updateSpacePersonRepresentativeFace(
+    auth: AuthDto,
+    spaceId: string,
+    personId: string,
+    dto: SpaceRepresentativeFaceUpdateDto,
+  ): Promise<SharedSpacePersonResponseDto> {
+    await this.requireRole(auth, spaceId, SharedSpaceRole.Editor);
+    const person = await this.sharedSpaceRepository.getPersonById(personId);
+    if (!person || person.spaceId !== spaceId) {
+      throw new BadRequestException('Person not found');
+    }
+
+    if (dto.assetFaceId === null) {
+      const representativeFaceId =
+        person.representativeFaceId &&
+        (await this.sharedSpaceRepository.isSpacePersonRepresentativeFaceValid(person.id, person.representativeFaceId))
+          ? person.representativeFaceId
+          : await this.sharedSpaceRepository.getFirstValidRepresentativeFaceForPerson(person.id);
+      const updated = await this.sharedSpaceRepository.updatePerson(person.id, {
+        representativeFaceSource: 'auto',
+        representativeFaceId,
+      });
+      const alias = await this.sharedSpaceRepository.getAlias(person.id, auth.user.id);
+      return this.mapSpacePerson(updated, alias?.alias ?? null);
+    }
+
+    const face = await this.sharedSpaceRepository.getSpaceRepresentativeFaceForUpdate({
+      spaceId,
+      personId,
+      assetFaceId: dto.assetFaceId,
+    });
+    if (!face) {
+      throw new BadRequestException('Representative face must belong to the space person');
+    }
+
+    const updated = await this.sharedSpaceRepository.updatePerson(person.id, {
+      representativeFaceId: face.id,
+      representativeFaceSource: 'manual',
+    });
+    if (person.identityId) {
+      await this.faceIdentityRepository.updateRepresentativeFace({
+        identityId: person.identityId,
+        assetFaceId: face.id,
+      });
+    }
+    const alias = await this.sharedSpaceRepository.getAlias(person.id, auth.user.id);
+    return this.mapSpacePerson(updated, alias?.alias ?? null);
+  }
+
   async getSpacePerson(auth: AuthDto, spaceId: string, personId: string): Promise<SharedSpacePersonResponseDto> {
     await this.requireMembership(auth, spaceId);
 
@@ -703,12 +925,93 @@ export class SharedSpaceService extends BaseService {
       throw new NotFoundException();
     }
 
-    const thumbnailPath = person.personalThumbnailPath;
-    if (!thumbnailPath) {
+    if (person.representativeFaceSource === 'manual') {
+      if (!person.representativeFaceId) {
+        throw new NotFoundException();
+      }
+
+      const face = await this.sharedSpaceRepository.getSpaceRepresentativeFaceForUpdate({
+        spaceId,
+        personId: person.id,
+        assetFaceId: person.representativeFaceId,
+      });
+      if (!face) {
+        throw new NotFoundException();
+      }
+
+      const sourcePath = await this.getFaceThumbnailSource(face.assetId);
+      if (!sourcePath) {
+        throw new NotFoundException();
+      }
+
+      return this.generateFaceThumbnailResponse(face, sourcePath);
+    }
+
+    if (person.identityId) {
+      const personalThumbnail = await this.sharedSpaceRepository.getPersonalThumbnailForSpacePerson({
+        userId: auth.user.id,
+        spaceId,
+        identityId: person.identityId,
+      });
+
+      if (personalThumbnail) {
+        return this.serveFromBackend(
+          personalThumbnail.thumbnailPath,
+          mimeTypes.lookup(personalThumbnail.thumbnailPath),
+          CacheControl.PrivateWithoutCache,
+        );
+      }
+    }
+
+    if (!person.representativeFaceId) {
       throw new NotFoundException();
     }
 
-    return this.serveFromBackend(thumbnailPath, mimeTypes.lookup(thumbnailPath), CacheControl.PrivateWithoutCache);
+    const isInSpace = await this.sharedSpaceRepository.isFaceInSpace(spaceId, person.representativeFaceId);
+    if (!isInSpace) {
+      throw new NotFoundException();
+    }
+
+    let face: AssetFace;
+    try {
+      face = await this.personRepository.getFaceById(person.representativeFaceId);
+    } catch {
+      throw new NotFoundException();
+    }
+    if (!face) {
+      throw new NotFoundException();
+    }
+
+    const sourcePath = await this.getFaceThumbnailSource(face.assetId);
+    if (!sourcePath) {
+      throw new NotFoundException();
+    }
+
+    return this.generateFaceThumbnailResponse(face, sourcePath);
+  }
+
+  async getSpacePersonFaceThumbnail(
+    auth: AuthDto,
+    spaceId: string,
+    personId: string,
+    faceId: string,
+  ): Promise<ImmichMediaResponse> {
+    await this.requireMembership(auth, spaceId);
+    const face = await this.sharedSpaceRepository.getSpaceRepresentativeFaceForUpdate({
+      spaceId,
+      personId,
+      assetFaceId: faceId,
+    });
+    if (!face) {
+      throw new NotFoundException();
+    }
+
+    const sourcePath = await this.getFaceThumbnailSource(face.assetId);
+    if (!sourcePath) {
+      throw new NotFoundException();
+    }
+
+    return this.generateFaceThumbnailResponse(face, sourcePath);
   }
 
   async updateSpacePerson(
@@ -731,30 +1034,35 @@ export class SharedSpaceService extends BaseService {
       }
     }
 
-    const sharedPersonUpdates = {
-      name: dto.name,
+    const sharedPersonUpdates: Parameters<typeof this.sharedSpaceRepository.updatePerson>[1] = {
       isHidden: dto.isHidden,
       representativeFaceId: dto.representativeFaceId,
     };
+    if (dto.name !== undefined) {
+      sharedPersonUpdates.name = dto.name;
+      sharedPersonUpdates.nameSource = 'manual';
+      sharedPersonUpdates.nameSourceProfileType = 'space-person';
+      sharedPersonUpdates.nameSourceProfileId = personId;
+      sharedPersonUpdates.nameSourceUpdatedAt = new Date();
+    }
 
     const hasSharedPersonUpdates = Object.values(sharedPersonUpdates).some((value) => value !== undefined);
     if (hasSharedPersonUpdates) {
       await this.sharedSpaceRepository.updatePerson(personId, sharedPersonUpdates);
     }
 
-    let birthDatePerson = person;
     if (dto.birthDate !== undefined) {
-      if (dto.representativeFaceId !== undefined && hasSharedPersonUpdates) {
-        const refreshed = await this.sharedSpaceRepository.getPersonById(personId);
-        if (!refreshed) {
-          throw new BadRequestException('Person not found');
-        }
-        birthDatePerson = refreshed;
-      }
+      await this.sharedSpaceRepository.updatePerson(personId, {
+        birthDate: dto.birthDate,
+        birthDateSource: 'manual',
+        birthDateSourceProfileType: 'space-person',
+        birthDateSourceProfileId: personId,
+        birthDateSourceUpdatedAt: new Date(),
+      });
+    }
 
-      await (birthDatePerson.personalPersonId
-        ? this.personRepository.update({ id: birthDatePerson.personalPersonId, birthDate: dto.birthDate })
-        : this.sharedSpaceRepository.updatePerson(personId, { birthDate: dto.birthDate }));
+    if (person.identityId && (dto.name !== undefined || dto.birthDate !== undefined || dto.isHidden !== undefined)) {
+      await this.queueSpacePersonMetadataBackfill(person.identityId);
     }
 
     const alias = await this.sharedSpaceRepository.getAlias(personId, auth.user.id);
@@ -783,12 +1091,15 @@ export class SharedSpaceService extends BaseService {
     }
 
     await this.sharedSpaceRepository.deletePerson(personId);
+    if (person.identityId) {
+      await this.queueSpacePersonMetadataBackfill(person.identityId);
+    }
 
     await this.sharedSpaceRepository.logActivity({
       spaceId,
       userId: auth.user.id,
       type: SharedSpaceActivityType.PersonDelete,
-      data: { personId, personName: person.name || person.personalName || '' },
+      data: { personId, personName: person.name || '' },
     });
   }
 
@@ -798,6 +1109,54 @@ export class SharedSpaceService extends BaseService {
     await this.jobRepository.queue({
       name: JobName.SharedSpacePersonDedup,
       data: { spaceId },
+    });
+  }
+
+  async backfillSpacePersonMetadata(input: {
+    cursor?: string;
+    identityId?: string;
+    limit: number;
+  }): Promise<{ processed: number; inherited: number; skipped: number; nextCursor?: string }> {
+    const limit = Math.max(1, input.limit);
+    const people = await this.sharedSpaceRepository.getSpacePersonMetadataBackfillPage({
+      cursor: input.cursor,
+      identityId: input.identityId,
+      limit,
+    });
+
+    let inherited = 0;
+    let skipped = 0;
+    for (const person of people) {
+      if (!person.identityId) {
+        skipped++;
+        continue;
+      }
+      const assetAdderIds = await this.sharedSpaceRepository.getSpacePersonAssetAdderIds(person.spaceId, person.id);
+      const didInherit = await this.inheritSpacePersonMetadata(
+        person.spaceId,
+        person.id,
+        person.identityId,
+        assetAdderIds,
+      );
+      if (didInherit) {
+        inherited++;
+      } else {
+        skipped++;
+      }
+    }
+
+    return {
+      processed: people.length,
+      inherited,
+      skipped,
+      ...(people.length === limit ? { nextCursor: people.at(-1)?.id } : {}),
+    };
+  }
+
+  private async queueSpacePersonMetadataBackfill(identityId?: string | null): Promise<void> {
+    await this.jobRepository.queue({
+      name: JobName.SharedSpacePersonMetadataBackfill,
+      data: identityId ? { identityId } : {},
     });
   }
 
@@ -833,6 +1192,19 @@ export class SharedSpaceService extends BaseService {
     for (const source of sources) {
       await this.sharedSpaceRepository.reassignPersonFaces(source.id, targetPersonId);
       await this.sharedSpaceRepository.deletePerson(source.id);
+    }
+
+    const candidateIdentityIds = [target.identityId, ...sources.map((source) => source.identityId)].filter(
+      (identityId): identityId is string => !!identityId,
+    );
+    if (candidateIdentityIds.length > 0) {
+      const mergedIdentityId = await this.mergeIdentitiesForSpacePersonEvidence({
+        spaceId,
+        targetSpacePersonId: targetPersonId,
+        candidateIdentityIds,
+      });
+      await this.inheritSpacePersonMetadata(spaceId, targetPersonId, mergedIdentityId);
+      await this.queueSpacePersonMetadataBackfill(mergedIdentityId);
     }
 
     await this.sharedSpaceRepository.recountPersons([targetPersonId]);
@@ -1018,12 +1390,14 @@ export class SharedSpaceService extends BaseService {
     // Repair persons that have faces but lost their representativeFaceId
     // (e.g., after force-detection reset). Without this, they are invisible
     // to getSpacePersonsWithEmbeddings due to the INNER JOIN on face_search.
+    await this.sharedSpaceRepository.repairInvalidRepresentativeFaces(job.spaceId);
     await this.sharedSpaceRepository.repairOrphanedRepresentativeFaces(job.spaceId);
 
     const MAX_PASSES = 100;
     let totalMerges = 0;
     let pass = 0;
     let mergedAny = true;
+    const affectedIdentityIds = new Set<string>();
 
     while (mergedAny) {
       mergedAny = false;
@@ -1052,6 +1426,10 @@ export class SharedSpaceService extends BaseService {
           continue;
         }
 
+        if (person.identityId) {
+          continue;
+        }
+
         const matches = await this.sharedSpaceRepository.findClosestSpacePerson(job.spaceId, person.embedding, {
           maxDistance,
           numResults: 1,
@@ -1072,6 +1450,10 @@ export class SharedSpaceService extends BaseService {
           continue;
         }
 
+        if (matchPerson.identityId) {
+          continue;
+        }
+
         // Determine target (more faces) and source
         const [target, source] =
           person.faceCount >= matchPerson.faceCount ? [person, matchPerson] : [matchPerson, person];
@@ -1084,13 +1466,28 @@ export class SharedSpaceService extends BaseService {
         await this.sharedSpaceRepository.reassignPersonFacesSafe(source.id, target.id);
         await this.sharedSpaceRepository.migrateAliases(source.id, target.id);
 
+        const candidateIdentityIds = [target.identityId, source.identityId].filter(
+          (identityId): identityId is string => !!identityId,
+        );
+        if (candidateIdentityIds.length > 0) {
+          const mergedIdentityId = await this.mergeIdentitiesForSpacePersonEvidence({
+            spaceId: job.spaceId,
+            targetSpacePersonId: target.id,
+            candidateIdentityIds,
+          });
+          await this.inheritSpacePersonMetadata(job.spaceId, target.id, mergedIdentityId);
+          affectedIdentityIds.add(mergedIdentityId);
+        }
+
         // Refresh representativeFaceId to a face with a valid embedding from the merged pool
-        const newRepFace = await this.sharedSpaceRepository.getFirstFaceIdForPerson(target.id);
-        if (newRepFace && newRepFace !== target.representativeFaceId) {
-          try {
-            await this.sharedSpaceRepository.updatePerson(target.id, { representativeFaceId: newRepFace });
-          } catch (error) {
-            this.logger.warn(`Dedup: failed to update representativeFaceId for target ${target.id}: ${error}`);
+        if (target.representativeFaceSource !== 'manual') {
+          const newRepFace = await this.sharedSpaceRepository.getFirstFaceIdForPerson(target.id);
+          if (newRepFace && newRepFace !== target.representativeFaceId) {
+            try {
+              await this.sharedSpaceRepository.updatePerson(target.id, { representativeFaceId: newRepFace });
+            } catch (error) {
+              this.logger.warn(`Dedup: failed to update representativeFaceId for target ${target.id}: ${error}`);
+            }
           }
         }
 
@@ -1137,9 +1534,29 @@ export class SharedSpaceService extends BaseService {
     // Clean up orphaned persons (no faces linked) as safety net
     await this.sharedSpaceRepository.deleteOrphanedPersons(job.spaceId);
 
+    for (const identityId of affectedIdentityIds) {
+      await this.queueSpacePersonMetadataBackfill(identityId);
+    }
+
     this.logger.log(
       `Dedup finished for space ${job.spaceId}: ${totalMerges} total merges across ${pass} pass${pass === 1 ? '' : 'es'}`,
     );
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.SharedSpacePersonMetadataBackfill, queue: QueueName.PeopleBackfill })
+  async handleSharedSpacePersonMetadataBackfill({
+    cursor,
+    identityId,
+    limit = 1000,
+  }: JobOf<JobName.SharedSpacePersonMetadataBackfill>): Promise<JobStatus> {
+    const result = await this.backfillSpacePersonMetadata({ cursor, identityId, limit });
+    if (result.nextCursor) {
+      await this.jobRepository.queue({
+        name: JobName.SharedSpacePersonMetadataBackfill,
+        data: { cursor: result.nextCursor, identityId, limit },
+      });
+    }
     return JobStatus.Success;
   }
 
@@ -1200,6 +1617,13 @@ export class SharedSpaceService extends BaseService {
   }
 
   private async processSpaceFaceMatch(spaceId: string, assetId: string): Promise<void> {
+    const isAssetInSpace = await this.sharedSpaceRepository.isAssetInSpace(spaceId, assetId);
+    if (!isAssetInSpace) {
+      return;
+    }
+
+    const spaceAsset = await this.sharedSpaceRepository.getSpaceAssetAdder(spaceId, assetId);
+    const assetAdderId = spaceAsset?.addedById ?? null;
     const { machineLearning } = await this.getConfig({ withCache: true });
     const maxDistance = machineLearning.facialRecognition.maxDistance;
     const affectedPersonIds = new Set<string>();
@@ -1219,42 +1643,46 @@ export class SharedSpaceService extends BaseService {
         continue;
       }
 
-      let personId: string;
-
-      // Layer 1: same global personId → same space-person. Stable fast path, single
-      // indexed lookup, no vector search.
-      const existingSpacePerson = await this.sharedSpaceRepository.findSpacePersonByLinkedPersonId(
-        spaceId,
-        face.personId,
-      );
-
-      if (existingSpacePerson) {
-        personId = existingSpacePerson.id;
-      } else {
-        // Layer 2: cross-owner bridging via embedding similarity. Alice's "Dad" and
-        // Bob's "Dad" are two separate native persons but should merge into one
-        // space-person.
-        const matches = await this.sharedSpaceRepository.findClosestSpacePerson(spaceId, face.embedding, {
-          maxDistance,
-          numResults: 1,
-        });
-
-        if (matches.length > 0) {
-          personId = matches[0].personId;
-        } else {
-          // Layer 3: nothing close → create new space-person.
-          const newPerson = await this.sharedSpaceRepository.createPerson({
-            spaceId,
-            name: '',
-            representativeFaceId: face.id,
-            type: 'person',
-          });
-          personId = newPerson.id;
-        }
+      if (face.identityId === null) {
+        continue;
       }
 
-      await this.sharedSpaceRepository.addPersonFaces([{ personId, assetFaceId: face.id }], { skipRecount: true });
-      affectedPersonIds.add(personId);
+      const spacePerson = face.identityId
+        ? await this.findOrCreateSpacePersonForFace({
+            spaceId,
+            faceId: face.id,
+            personId: face.personId,
+            identityId: face.identityId,
+            type: face.type ?? 'person',
+          })
+        : await this.findOrCreateSpacePersonForLegacyFace({
+            spaceId,
+            faceId: face.id,
+            personId: face.personId,
+            embedding: face.embedding,
+            maxDistance,
+          });
+
+      await this.sharedSpaceRepository.addPersonFaces([{ personId: spacePerson.id, assetFaceId: face.id }], {
+        skipRecount: true,
+      });
+      let inheritedIdentityId = spacePerson.identityId ?? null;
+      if (
+        spacePerson.identityId &&
+        spacePerson.sourceIdentityId &&
+        spacePerson.identityId !== spacePerson.sourceIdentityId
+      ) {
+        inheritedIdentityId = await this.mergeIdentitiesForSpacePersonEvidence({
+          spaceId,
+          targetSpacePersonId: spacePerson.id,
+          candidateIdentityIds: [spacePerson.identityId, spacePerson.sourceIdentityId],
+        });
+        await this.queueSpacePersonMetadataBackfill(inheritedIdentityId);
+      }
+      if (inheritedIdentityId) {
+        await this.inheritSpacePersonMetadata(spaceId, spacePerson.id, inheritedIdentityId, assetAdderId);
+      }
+      affectedPersonIds.add(spacePerson.id);
     }
 
     // Process pet faces (detected by pet detection, no embeddings)
@@ -1269,32 +1697,307 @@ export class SharedSpaceService extends BaseService {
         continue;
       }
 
-      // Check if a space person already exists for this personal pet person
-      const existingSpacePerson = await this.sharedSpaceRepository.findSpacePersonByLinkedPersonId(
-        spaceId,
-        petFace.personId,
-      );
-
-      let personId: string;
-      if (existingSpacePerson) {
-        personId = existingSpacePerson.id;
-      } else {
-        const newPerson = await this.sharedSpaceRepository.createPerson({
+      let spacePerson = petFace.identityId
+        ? await this.sharedSpaceRepository.getSpacePersonByIdentity(spaceId, petFace.identityId)
+        : undefined;
+      if (!spacePerson && petFace.identityId) {
+        const representativeFaceId = await this.getNewSpacePersonRepresentativeFaceId({
           spaceId,
+          fallbackFaceId: petFace.id,
+          personalPersonId: petFace.personId,
+        });
+        spacePerson = await this.sharedSpaceRepository.createPerson({
+          spaceId,
+          identityId: petFace.identityId,
           name: '',
-          representativeFaceId: petFace.id,
+          representativeFaceId,
           type: 'pet',
         });
-        personId = newPerson.id;
+      } else if (!spacePerson) {
+        const existingSpacePerson = await this.sharedSpaceRepository.findSpacePersonByLinkedPersonId(
+          spaceId,
+          petFace.personId,
+        );
+        const representativeFaceId = existingSpacePerson
+          ? petFace.id
+          : await this.getNewSpacePersonRepresentativeFaceId({
+              spaceId,
+              fallbackFaceId: petFace.id,
+              personalPersonId: petFace.personId,
+            });
+        spacePerson =
+          existingSpacePerson ??
+          (await this.sharedSpaceRepository.createPerson({
+            spaceId,
+            name: '',
+            representativeFaceId,
+            type: 'pet',
+          }));
       }
 
-      await this.sharedSpaceRepository.addPersonFaces([{ personId, assetFaceId: petFace.id }], { skipRecount: true });
-      affectedPersonIds.add(personId);
+      await this.sharedSpaceRepository.addPersonFaces([{ personId: spacePerson.id, assetFaceId: petFace.id }], {
+        skipRecount: true,
+      });
+      if (spacePerson.identityId) {
+        await this.inheritSpacePersonMetadata(spaceId, spacePerson.id, spacePerson.identityId, assetAdderId);
+      }
+      affectedPersonIds.add(spacePerson.id);
     }
 
     if (affectedPersonIds.size > 0) {
       await this.sharedSpaceRepository.recountPersons([...affectedPersonIds]);
     }
+  }
+
+  private async findOrCreateSpacePersonForFace(input: {
+    spaceId: string;
+    faceId: string;
+    personId: string;
+    identityId: string;
+    type: string;
+  }): Promise<SpacePersonMatchResult> {
+    const existingByIdentity = await this.sharedSpaceRepository.getSpacePersonByIdentity(
+      input.spaceId,
+      input.identityId,
+    );
+    if (existingByIdentity) {
+      return existingByIdentity;
+    }
+
+    const representativeFaceId = await this.getNewSpacePersonRepresentativeFaceId({
+      spaceId: input.spaceId,
+      fallbackFaceId: input.faceId,
+      personalPersonId: input.personId,
+    });
+
+    return this.sharedSpaceRepository.createPerson({
+      spaceId: input.spaceId,
+      identityId: input.identityId,
+      name: '',
+      representativeFaceId,
+      type: input.type,
+    });
+  }
+
+  private async findOrCreateSpacePersonForLegacyFace(input: {
+    spaceId: string;
+    faceId: string;
+    personId: string;
+    embedding: string;
+    maxDistance: number;
+  }): Promise<SpacePersonMatchResult> {
+    const existingSpacePerson = await this.sharedSpaceRepository.findSpacePersonByLinkedPersonId(
+      input.spaceId,
+      input.personId,
+    );
+
+    if (existingSpacePerson) {
+      return existingSpacePerson;
+    }
+
+    const matches = await this.sharedSpaceRepository.findClosestSpacePerson(input.spaceId, input.embedding, {
+      maxDistance: input.maxDistance,
+      numResults: 1,
+    });
+
+    if (matches.length > 0) {
+      return { id: matches[0].personId, identityId: matches[0].identityId ?? null };
+    }
+
+    const representativeFaceId = await this.getNewSpacePersonRepresentativeFaceId({
+      spaceId: input.spaceId,
+      fallbackFaceId: input.faceId,
+      personalPersonId: input.personId,
+    });
+
+    return this.sharedSpaceRepository.createPerson({
+      spaceId: input.spaceId,
+      name: '',
+      representativeFaceId,
+      type: 'person',
+    });
+  }
+
+  private async getNewSpacePersonRepresentativeFaceId(input: {
+    spaceId: string;
+    fallbackFaceId: string;
+    personalPersonId: string | null;
+  }): Promise<string> {
+    if (!input.personalPersonId) {
+      return input.fallbackFaceId;
+    }
+
+    const person = await this.personRepository.getById(input.personalPersonId);
+    if (!person?.thumbnailPath || !person.faceAssetId) {
+      return input.fallbackFaceId;
+    }
+
+    if (person.faceAssetId === input.fallbackFaceId) {
+      return input.fallbackFaceId;
+    }
+
+    const isFeatureFaceInSpace = await this.sharedSpaceRepository.isFaceInSpace(input.spaceId, person.faceAssetId);
+    return isFeatureFaceInSpace ? person.faceAssetId : input.fallbackFaceId;
+  }
+
+  private async mergeIdentitiesForSpacePersonEvidence(input: {
+    spaceId: string;
+    targetSpacePersonId: string;
+    candidateIdentityIds: string[];
+  }): Promise<string> {
+    const targetSpacePerson = await this.sharedSpaceRepository.getPersonById(input.targetSpacePersonId);
+    const candidates = [...new Set(input.candidateIdentityIds.filter(Boolean))];
+    const evidence = await this.sharedSpaceRepository.getIdentityEvidenceForSpacePerson(
+      input.spaceId,
+      input.targetSpacePersonId,
+      candidates,
+    );
+
+    if (!targetSpacePerson || targetSpacePerson.spaceId !== input.spaceId || evidence.length === 0) {
+      return candidates[0];
+    }
+
+    const types = new Set(evidence.map((item) => item.type));
+    if (types.size > 1) {
+      this.logger.warn(`Skipping identity merge for space person ${input.targetSpacePersonId}: incompatible types`);
+      return (
+        targetSpacePerson.identityId ??
+        evidence.toSorted((a, b) => a.identityId.localeCompare(b.identityId))[0].identityId
+      );
+    }
+
+    const targetIdentityId =
+      targetSpacePerson.identityId && evidence.some((item) => item.identityId === targetSpacePerson.identityId)
+        ? targetSpacePerson.identityId
+        : evidence.toSorted((a, b) => {
+            const supportDelta = Number(b.supportingFaceCount) - Number(a.supportingFaceCount);
+            return supportDelta === 0 ? a.identityId.localeCompare(b.identityId) : supportDelta;
+          })[0].identityId;
+
+    const sourceIdentityIds = evidence
+      .map((item) => item.identityId)
+      .filter((identityId) => identityId !== targetIdentityId)
+      .toSorted();
+
+    if (sourceIdentityIds.length > 0) {
+      await this.faceIdentityRepository.mergeIdentities({
+        targetIdentityId,
+        sourceIdentityIds,
+        source: 'shared-space-evidence',
+      });
+    }
+
+    if (targetSpacePerson.identityId !== targetIdentityId) {
+      await this.sharedSpaceRepository.updatePerson(input.targetSpacePersonId, { identityId: targetIdentityId });
+    }
+
+    return targetIdentityId;
+  }
+
+  private async inheritSpacePersonMetadata(
+    spaceId: string,
+    spacePersonId: string,
+    identityId: string,
+    assetAdderIdOrIds?: string | string[] | null,
+  ): Promise<boolean> {
+    const person = await this.sharedSpaceRepository.getPersonById(spacePersonId);
+    if (!person || person.spaceId !== spaceId) {
+      return false;
+    }
+    const assetAdderIds = Array.isArray(assetAdderIdOrIds)
+      ? assetAdderIdOrIds
+      : assetAdderIdOrIds
+        ? [assetAdderIdOrIds]
+        : [];
+
+    const metadataCandidates = await this.sharedSpaceRepository.getMetadataInheritanceCandidates({
+      spaceId,
+      identityId,
+      assetAdderIds,
+    });
+    const candidates = metadataCandidates.filter((item) => item.type === person.type);
+    const updates: Parameters<typeof this.sharedSpaceRepository.updatePerson>[1] = {};
+    const now = new Date();
+    const nameCandidate = this.selectMetadataCandidate(
+      candidates.filter((candidate) => candidate.name.trim().length > 0),
+      (candidate) => candidate.name.trim(),
+    );
+    const birthDateCandidate = this.selectMetadataCandidate(
+      candidates.filter((candidate) => candidate.birthDate !== null),
+      (candidate) => asBirthDateString(candidate.birthDate) ?? '',
+    );
+
+    if ((person.nameSource === 'none' || person.nameSource === 'inherited') && nameCandidate) {
+      updates.name = nameCandidate.value;
+      updates.nameSource = 'inherited';
+      updates.nameSourceProfileType = nameCandidate.candidate.sourceProfileType ?? 'user-person';
+      updates.nameSourceProfileId = nameCandidate.candidate.sourceProfileId ?? nameCandidate.candidate.personId;
+      updates.nameSourceUpdatedAt = now;
+    } else if (person.nameSource === 'inherited' && !nameCandidate) {
+      updates.name = '';
+      updates.nameSource = 'none';
+      updates.nameSourceProfileType = null;
+      updates.nameSourceProfileId = null;
+      updates.nameSourceUpdatedAt = null;
+    }
+
+    if ((person.birthDateSource === 'none' || person.birthDateSource === 'inherited') && birthDateCandidate) {
+      updates.birthDate = birthDateCandidate.value;
+      updates.birthDateSource = 'inherited';
+      updates.birthDateSourceProfileType = birthDateCandidate.candidate.sourceProfileType ?? 'user-person';
+      updates.birthDateSourceProfileId =
+        birthDateCandidate.candidate.sourceProfileId ?? birthDateCandidate.candidate.personId;
+      updates.birthDateSourceUpdatedAt = now;
+    } else if (person.birthDateSource === 'inherited' && !birthDateCandidate) {
+      updates.birthDate = null;
+      updates.birthDateSource = 'none';
+      updates.birthDateSourceProfileType = null;
+      updates.birthDateSourceProfileId = null;
+      updates.birthDateSourceUpdatedAt = null;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await this.sharedSpaceRepository.updatePerson(spacePersonId, updates);
+      return true;
+    }
+    return false;
+  }
+
+  private selectMetadataCandidate<T extends { role: string; isAssetAdder: boolean; supportingFaceCount: number }>(
+    candidates: T[],
+    getValue: (candidate: T) => string,
+  ): { candidate: T; value: string } | null {
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    const ranked = candidates
+      .map((candidate) => ({ candidate, value: getValue(candidate) }))
+      .toSorted((a, b) => {
+        const roleDelta = getSharedSpaceRoleScore(b.candidate.role) - getSharedSpaceRoleScore(a.candidate.role);
+        if (roleDelta !== 0) {
+          return roleDelta;
+        }
+        const assetAdderDelta = Number(b.candidate.isAssetAdder) - Number(a.candidate.isAssetAdder);
+        if (assetAdderDelta !== 0) {
+          return assetAdderDelta;
+        }
+        const faceDelta = Number(b.candidate.supportingFaceCount) - Number(a.candidate.supportingFaceCount);
+        if (faceDelta !== 0) {
+          return faceDelta;
+        }
+        return 0;
+      });
+
+    const best = ranked[0].candidate;
+    const topCandidates = ranked.filter(
+      (item) =>
+        getSharedSpaceRoleScore(item.candidate.role) === getSharedSpaceRoleScore(best.role) &&
+        item.candidate.isAssetAdder === best.isAssetAdder &&
+        Number(item.candidate.supportingFaceCount) === Number(best.supportingFaceCount),
+    );
+    const values = new Set(topCandidates.map((item) => item.value));
+    return values.size === 1 ? ranked[0] : null;
   }
 
   private async requireMembership(auth: AuthDto, spaceId: string) {
@@ -1323,6 +2026,7 @@ export class SharedSpaceService extends BaseService {
     profileChangedAt: unknown;
     avatarColor: string | null;
     showInTimeline: boolean;
+    sharePersonMetadata: boolean;
   }): SharedSpaceMemberResponseDto {
     return {
       userId: member.userId,
@@ -1334,6 +2038,7 @@ export class SharedSpaceService extends BaseService {
       profileChangedAt: (member.profileChangedAt as Date).toISOString(),
       avatarColor: member.avatarColor ?? undefined,
       showInTimeline: member.showInTimeline,
+      sharePersonMetadata: member.sharePersonMetadata,
     };
   }
 
@@ -1371,11 +2076,12 @@ export class SharedSpaceService extends BaseService {
     return {
       id: person.id,
       spaceId: person.spaceId,
-      name: person.name || person.personalName || '',
-      thumbnailPath: person.personalThumbnailPath || '',
+      name: person.name || '',
+      thumbnailPath: '',
       isHidden: person.isHidden,
-      birthDate: person.personalPersonId ? asBirthDateString(person.personalBirthDate) : person.birthDate,
+      birthDate: asBirthDateString(person.birthDate),
       representativeFaceId: person.representativeFaceId,
+      representativeFaceSource: person.representativeFaceSource ?? 'auto',
       faceCount: person.faceCount,
       assetCount: person.assetCount,
       alias,

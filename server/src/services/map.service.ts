@@ -30,7 +30,7 @@ export class MapService extends BaseService {
       fileCreatedAfter: options.fileCreatedAfter,
     };
 
-    if (options.withSharedSpaces && options.isFavorite !== true) {
+    if ((options.withSharedSpaces || options.withSharedAlbums) && options.isFavorite !== true) {
       const spaceRows = await this.sharedSpaceRepository.getSpaceIdsForTimeline(auth.user.id);
       if (spaceRows.length > 0) {
         searchOptions.timelineSpaceIds = spaceRows.map((row) => row.spaceId);

@@ -27,6 +27,7 @@ import { PersonTable } from 'src/schema/tables/person.table';
 })
 // schemaFromDatabase does not preserve column order
 @Index({ name: 'asset_face_assetId_personId_idx', columns: ['assetId', 'personId'] })
+@Index({ name: 'asset_face_personId_idx', columns: ['personId'], where: '"personId" IS NOT NULL' })
 @Index({
   name: 'asset_face_personId_assetId_notDeleted_isVisible_idx',
   columns: ['personId', 'assetId'],

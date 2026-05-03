@@ -65,7 +65,37 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds, timelineSpaceIds };
+    const scopedOptions = await this.resolveScopedPersonFilters(auth, { ...options, timelineSpaceIds });
+
+    return { ...scopedOptions, userIds };
+  }
+
+  private async resolveScopedPersonFilters(auth: AuthDto, options: TimeBucketOptions): Promise<TimeBucketOptions> {
+    const tokens = options.personIds?.filter(Boolean) ?? [];
+    const hasScopedTokens = tokens.some((token) => token.includes(':'));
+    const shouldResolve = tokens.length > 0 && (options.withSharedSpaces || hasScopedTokens);
+
+    if (!shouldResolve) {
+      return options;
+    }
+
+    const resolution = await this.faceIdentityRepository.resolveScopedPersonTokens({
+      userId: auth.user.id,
+      tokens,
+      scope: {
+        withSharedSpaces: options.withSharedSpaces,
+        timelineSpaceIds: options.timelineSpaceIds,
+        spaceId: options.spaceId,
+      },
+    });
+
+    return {
+      ...options,
+      personIds: resolution.legacyPersonIds,
+      identityIds: resolution.identityIds,
+      spacePersonIds: [...new Set([...(options.spacePersonIds ?? []), ...resolution.legacySpacePersonIds])],
+      forceEmptyResult: options.forceEmptyResult || resolution.hasInaccessibleToken,
+    };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

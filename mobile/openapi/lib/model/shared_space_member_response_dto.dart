@@ -23,6 +23,7 @@ class SharedSpaceMemberResponseDto {
     this.profileImagePath,
     this.recentAssetId,
     required this.role,
+    required this.sharePersonMetadata,
     required this.showInTimeline,
     required this.userId,
   });
@@ -80,6 +81,9 @@ class SharedSpaceMemberResponseDto {
 
   SharedSpaceRole role;
 
+  /// Share person names and birth dates with this space
+  bool sharePersonMetadata;
+
   /// Show space assets in timeline
   bool showInTimeline;
 
@@ -98,6 +102,7 @@ class SharedSpaceMemberResponseDto {
     other.profileImagePath == profileImagePath &&
     other.recentAssetId == recentAssetId &&
     other.role == role &&
+    other.sharePersonMetadata == sharePersonMetadata &&
     other.showInTimeline == showInTimeline &&
     other.userId == userId;
 
@@ -114,11 +119,12 @@ class SharedSpaceMemberResponseDto {
     (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (recentAssetId == null ? 0 : recentAssetId!.hashCode) +
     (role.hashCode) +
+    (sharePersonMetadata.hashCode) +
     (showInTimeline.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'SharedSpaceMemberResponseDto[avatarColor=$avatarColor, contributionCount=$contributionCount, email=$email, joinedAt=$joinedAt, lastActiveAt=$lastActiveAt, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, recentAssetId=$recentAssetId, role=$role, showInTimeline=$showInTimeline, userId=$userId]';
+  String toString() => 'SharedSpaceMemberResponseDto[avatarColor=$avatarColor, contributionCount=$contributionCount, email=$email, joinedAt=$joinedAt, lastActiveAt=$lastActiveAt, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, recentAssetId=$recentAssetId, role=$role, sharePersonMetadata=$sharePersonMetadata, showInTimeline=$showInTimeline, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -156,6 +162,7 @@ class SharedSpaceMemberResponseDto {
     //  json[r'recentAssetId'] = null;
     }
       json[r'role'] = this.role;
+      json[r'sharePersonMetadata'] = this.sharePersonMetadata;
       json[r'showInTimeline'] = this.showInTimeline;
       json[r'userId'] = this.userId;
     return json;
@@ -182,6 +189,7 @@ class SharedSpaceMemberResponseDto {
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         recentAssetId: mapValueOfType<String>(json, r'recentAssetId'),
         role: SharedSpaceRole.fromJson(json[r'role'])!,
+        sharePersonMetadata: mapValueOfType<bool>(json, r'sharePersonMetadata')!,
         showInTimeline: mapValueOfType<bool>(json, r'showInTimeline')!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
@@ -235,6 +243,7 @@ class SharedSpaceMemberResponseDto {
     'joinedAt',
     'name',
     'role',
+    'sharePersonMetadata',
     'showInTimeline',
     'userId',
   };

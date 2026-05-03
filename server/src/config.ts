@@ -251,6 +251,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
+    [QueueName.PeopleBackfill]: { concurrency: 1 },
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },

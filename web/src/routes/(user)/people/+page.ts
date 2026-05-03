@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
 
-  const people = await getAllPeople({ withHidden: true });
+  const people = await getAllPeople({ withHidden: true, withSharedSpaces: true });
   const $t = await getFormatter();
 
   return {

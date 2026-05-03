@@ -199,14 +199,19 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**createPerson**](doc//PeopleApi.md#createperson) | **POST** /people | Create a person
 *PeopleApi* | [**deletePeople**](doc//PeopleApi.md#deletepeople) | **DELETE** /people | Delete people
 *PeopleApi* | [**deletePerson**](doc//PeopleApi.md#deleteperson) | **DELETE** /people/{id} | Delete person
+*PeopleApi* | [**detachScopedPerson**](doc//PeopleApi.md#detachscopedperson) | **POST** /people/detach-profile | Detach a scoped person profile
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | Get all people
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | Get a person
+*PeopleApi* | [**getPersonFaceThumbnail**](doc//PeopleApi.md#getpersonfacethumbnail) | **GET** /people/{id}/faces/{faceId}/thumbnail | Get person face thumbnail
+*PeopleApi* | [**getPersonFaces**](doc//PeopleApi.md#getpersonfaces) | **GET** /people/{id}/faces | Get person faces
 *PeopleApi* | [**getPersonStatistics**](doc//PeopleApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | Get person statistics
 *PeopleApi* | [**getPersonThumbnail**](doc//PeopleApi.md#getpersonthumbnail) | **GET** /people/{id}/thumbnail | Get person thumbnail
 *PeopleApi* | [**mergePerson**](doc//PeopleApi.md#mergeperson) | **POST** /people/{id}/merge | Merge people
+*PeopleApi* | [**mergeScopedPeople**](doc//PeopleApi.md#mergescopedpeople) | **POST** /people/same-person | Merge scoped people by identity
 *PeopleApi* | [**reassignFaces**](doc//PeopleApi.md#reassignfaces) | **PUT** /people/{id}/reassign | Reassign faces
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
+*PeopleApi* | [**updateRepresentativeFace**](doc//PeopleApi.md#updaterepresentativeface) | **PUT** /people/{id}/representative-face | Update representative face
 *PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
 *PluginsApi* | [**getPluginTriggers**](doc//PluginsApi.md#getplugintriggers) | **GET** /plugins/triggers | List all plugin triggers
 *PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
@@ -271,8 +276,11 @@ Class | Method | HTTP request | Description
 *SharedSpacesApi* | [**getSpaceActivities**](doc//SharedSpacesApi.md#getspaceactivities) | **GET** /shared-spaces/{id}/activities | Get space activity feed
 *SharedSpacesApi* | [**getSpaceMapMarkers**](doc//SharedSpacesApi.md#getspacemapmarkers) | **GET** /shared-spaces/{id}/map-markers | Get map markers for a shared space
 *SharedSpacesApi* | [**getSpacePeople**](doc//SharedSpacesApi.md#getspacepeople) | **GET** /shared-spaces/{id}/people | Get people in a shared space
+*SharedSpacesApi* | [**getSpacePeopleStatistics**](doc//SharedSpacesApi.md#getspacepeoplestatistics) | **GET** /shared-spaces/{id}/people/statistics | Get people statistics in a shared space
 *SharedSpacesApi* | [**getSpacePerson**](doc//SharedSpacesApi.md#getspaceperson) | **GET** /shared-spaces/{id}/people/{personId} | Get a person in a shared space
 *SharedSpacesApi* | [**getSpacePersonAssets**](doc//SharedSpacesApi.md#getspacepersonassets) | **GET** /shared-spaces/{id}/people/{personId}/assets | Get assets for a person in a shared space
+*SharedSpacesApi* | [**getSpacePersonFaceThumbnail**](doc//SharedSpacesApi.md#getspacepersonfacethumbnail) | **GET** /shared-spaces/{id}/people/{personId}/faces/{faceId}/thumbnail | Get space person face thumbnail
+*SharedSpacesApi* | [**getSpacePersonFaces**](doc//SharedSpacesApi.md#getspacepersonfaces) | **GET** /shared-spaces/{id}/people/{personId}/faces | Get space person faces
 *SharedSpacesApi* | [**getSpacePersonThumbnail**](doc//SharedSpacesApi.md#getspacepersonthumbnail) | **GET** /shared-spaces/{id}/people/{personId}/thumbnail | Get a space person thumbnail
 *SharedSpacesApi* | [**linkLibrary**](doc//SharedSpacesApi.md#linklibrary) | **PUT** /shared-spaces/{id}/libraries | Link a library to a shared space
 *SharedSpacesApi* | [**markSpaceViewed**](doc//SharedSpacesApi.md#markspaceviewed) | **PATCH** /shared-spaces/{id}/view | Mark space as viewed
@@ -283,9 +291,12 @@ Class | Method | HTTP request | Description
 *SharedSpacesApi* | [**setSpacePersonAlias**](doc//SharedSpacesApi.md#setspacepersonalias) | **PUT** /shared-spaces/{id}/people/{personId}/alias | Set a person alias in a shared space
 *SharedSpacesApi* | [**unlinkLibrary**](doc//SharedSpacesApi.md#unlinklibrary) | **DELETE** /shared-spaces/{id}/libraries/{libraryId} | Unlink a library from a shared space
 *SharedSpacesApi* | [**updateMember**](doc//SharedSpacesApi.md#updatemember) | **PATCH** /shared-spaces/{id}/members/{userId} | Update a member in a shared space
+*SharedSpacesApi* | [**updateMemberMetadataContribution**](doc//SharedSpacesApi.md#updatemembermetadatacontribution) | **PATCH** /shared-spaces/{id}/members/{userId}/metadata-contribution | Disable member person metadata contribution
+*SharedSpacesApi* | [**updateMemberPreferences**](doc//SharedSpacesApi.md#updatememberpreferences) | **PATCH** /shared-spaces/{id}/members/me/preferences | Update current member preferences
 *SharedSpacesApi* | [**updateMemberTimeline**](doc//SharedSpacesApi.md#updatemembertimeline) | **PATCH** /shared-spaces/{id}/members/me/timeline | Update timeline visibility for current member
 *SharedSpacesApi* | [**updateSpace**](doc//SharedSpacesApi.md#updatespace) | **PATCH** /shared-spaces/{id} | Update a shared space
 *SharedSpacesApi* | [**updateSpacePerson**](doc//SharedSpacesApi.md#updatespaceperson) | **PUT** /shared-spaces/{id}/people/{personId} | Update a person in a shared space
+*SharedSpacesApi* | [**updateSpacePersonRepresentativeFace**](doc//SharedSpacesApi.md#updatespacepersonrepresentativeface) | **PUT** /shared-spaces/{id}/people/{personId}/representative-face | Update space person representative face
 *StacksApi* | [**createStack**](doc//StacksApi.md#createstack) | **POST** /stacks | Create a stack
 *StacksApi* | [**deleteStack**](doc//StacksApi.md#deletestack) | **DELETE** /stacks/{id} | Delete a stack
 *StacksApi* | [**deleteStacks**](doc//StacksApi.md#deletestacks) | **DELETE** /stacks | Delete stacks
@@ -451,6 +462,7 @@ Class | Method | HTTP request | Description
  - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
  - [DatabaseBackupDto](doc//DatabaseBackupDto.md)
  - [DatabaseBackupListResponseDto](doc//DatabaseBackupListResponseDto.md)
+ - [DetachScopedPersonDto](doc//DetachScopedPersonDto.md)
  - [DownloadArchiveDto](doc//DownloadArchiveDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
@@ -502,6 +514,7 @@ Class | Method | HTTP request | Description
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
+ - [MergeScopedPeopleDto](doc//MergeScopedPeopleDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
  - [MirrorAxis](doc//MirrorAxis.md)
  - [MirrorParameters](doc//MirrorParameters.md)
@@ -530,6 +543,8 @@ Class | Method | HTTP request | Description
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
  - [Permission](doc//Permission.md)
  - [PersonCreateDto](doc//PersonCreateDto.md)
+ - [PersonFacePageResponseDto](doc//PersonFacePageResponseDto.md)
+ - [PersonFaceResponseDto](doc//PersonFaceResponseDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
@@ -568,8 +583,11 @@ Class | Method | HTTP request | Description
  - [RatingsUpdate](doc//RatingsUpdate.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
+ - [RepresentativeFaceUpdateDto](doc//RepresentativeFaceUpdateDto.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
  - [RotateParameters](doc//RotateParameters.md)
+ - [ScopedPersonProfileRefDto](doc//ScopedPersonProfileRefDto.md)
+ - [ScopedPrimaryProfile](doc//ScopedPrimaryProfile.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
@@ -610,9 +628,12 @@ Class | Method | HTTP request | Description
  - [SharedSpaceLibraryLinkDto](doc//SharedSpaceLibraryLinkDto.md)
  - [SharedSpaceLinkedLibraryDto](doc//SharedSpaceLinkedLibraryDto.md)
  - [SharedSpaceMemberCreateDto](doc//SharedSpaceMemberCreateDto.md)
+ - [SharedSpaceMemberMetadataContributionDto](doc//SharedSpaceMemberMetadataContributionDto.md)
+ - [SharedSpaceMemberPreferencesDto](doc//SharedSpaceMemberPreferencesDto.md)
  - [SharedSpaceMemberResponseDto](doc//SharedSpaceMemberResponseDto.md)
  - [SharedSpaceMemberTimelineDto](doc//SharedSpaceMemberTimelineDto.md)
  - [SharedSpaceMemberUpdateDto](doc//SharedSpaceMemberUpdateDto.md)
+ - [SharedSpacePeopleStatisticsResponseDto](doc//SharedSpacePeopleStatisticsResponseDto.md)
  - [SharedSpacePersonAliasDto](doc//SharedSpacePersonAliasDto.md)
  - [SharedSpacePersonMergeDto](doc//SharedSpacePersonMergeDto.md)
  - [SharedSpacePersonResponseDto](doc//SharedSpacePersonResponseDto.md)
@@ -626,6 +647,7 @@ Class | Method | HTTP request | Description
  - [SmartSearchFacetsDto](doc//SmartSearchFacetsDto.md)
  - [SmartSearchFacetsResponseDto](doc//SmartSearchFacetsResponseDto.md)
  - [SourceType](doc//SourceType.md)
+ - [SpaceRepresentativeFaceUpdateDto](doc//SpaceRepresentativeFaceUpdateDto.md)
  - [StackCreateDto](doc//StackCreateDto.md)
  - [StackResponseDto](doc//StackResponseDto.md)
  - [StackUpdateDto](doc//StackUpdateDto.md)

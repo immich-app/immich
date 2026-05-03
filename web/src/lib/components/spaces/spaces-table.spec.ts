@@ -78,6 +78,7 @@ describe('SpacesTable', () => {
             email: 'alice@example.com',
             role: SharedSpaceRole.Owner,
             showInTimeline: true,
+            sharePersonMetadata: true,
             joinedAt: '2026-01-01T00:00:00.000Z',
           },
         ],

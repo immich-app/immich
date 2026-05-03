@@ -1,6 +1,10 @@
 import { createFilterState } from '$lib/components/filter-panel/filter-panel';
-import { buildPhotosTimelineOptions, handlePhotosRemoveFilter } from '$lib/utils/photos-filter-options';
-import { AssetOrder, AssetTypeEnum, AssetVisibility } from '@immich/sdk';
+import {
+  buildPhotosTimelineOptions,
+  getPhotosPersonFilterThumbnailUrl,
+  handlePhotosRemoveFilter,
+} from '$lib/utils/photos-filter-options';
+import { AssetOrder, AssetTypeEnum, AssetVisibility, Type } from '@immich/sdk';
 import { describe, expect, it } from 'vitest';
 
 describe('buildPhotosTimelineOptions', () => {
@@ -262,5 +266,25 @@ describe('handlePhotosRemoveFilter', () => {
     const result = handlePhotosRemoveFilter(filters, 'timeline');
     expect(result.selectedYear).toBeUndefined();
     expect(result.selectedMonth).toBeUndefined();
+  });
+});
+
+describe('getPhotosPersonFilterThumbnailUrl', () => {
+  it('uses the shared-space thumbnail for space-primary scoped people', () => {
+    expect(
+      getPhotosPersonFilterThumbnailUrl({
+        id: 'space-person:space-person-1',
+        primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+      }),
+    ).toBe('/api/shared-spaces/space-1/people/space-person-1/thumbnail');
+  });
+
+  it('uses the user person thumbnail for user-primary scoped people', () => {
+    expect(
+      getPhotosPersonFilterThumbnailUrl({
+        id: 'person:person-1',
+        primaryProfile: { type: Type.UserPerson, id: 'person-1' },
+      }),
+    ).toBe('/api/people/person-1/thumbnail');
   });
 });

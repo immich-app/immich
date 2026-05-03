@@ -4,16 +4,17 @@
 
   interface Props {
     title?: string;
+    description?: string;
     leading?: Snippet;
     buttons?: Snippet;
     children?: Snippet;
   }
 
-  let { title, leading, buttons, children }: Props = $props();
+  let { title, description, leading, buttons, children }: Props = $props();
 </script>
 
 <TooltipProvider>
-  <div data-testid="user-page-layout" data-title={title}>
+  <div data-testid="user-page-layout" data-title={title} data-description={description}>
     {#if leading}
       <div data-testid="layout-leading">
         {@render leading()}

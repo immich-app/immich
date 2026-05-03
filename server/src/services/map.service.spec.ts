@@ -86,6 +86,7 @@ describe(MapService.name, () => {
         country: asset.exifInfo.country,
       };
       mocks.partner.getAll.mockResolvedValue([]);
+      mocks.sharedSpace.getSpaceIdsForTimeline.mockResolvedValue([]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
       mocks.album.getOwned.mockResolvedValue([getForAlbum(AlbumFactory.create())]);
       mocks.album.getShared.mockResolvedValue([
@@ -96,6 +97,25 @@ describe(MapService.name, () => {
 
       expect(markers).toHaveLength(1);
       expect(markers[0]).toEqual(marker);
+    });
+
+    it('should pass timeline space IDs when shared albums are included', async () => {
+      const auth = AuthFactory.create();
+      const spaceId = '00000000-0000-4000-8000-000000000003';
+      mocks.partner.getAll.mockResolvedValue([]);
+      mocks.album.getOwned.mockResolvedValue([]);
+      mocks.album.getShared.mockResolvedValue([]);
+      mocks.sharedSpace.getSpaceIdsForTimeline.mockResolvedValue([{ spaceId }]);
+      mocks.map.getMapMarkers.mockResolvedValue([]);
+
+      await sut.getMapMarkers(auth, { withSharedAlbums: true });
+
+      expect(mocks.sharedSpace.getSpaceIdsForTimeline).toHaveBeenCalledWith(auth.user.id);
+      expect(mocks.map.getMapMarkers).toHaveBeenCalledWith(
+        [auth.user.id],
+        [],
+        expect.objectContaining({ timelineSpaceIds: [spaceId] }),
+      );
     });
 
     it('should pass space IDs when withSharedSpaces is true and user has enabled spaces', async () => {
