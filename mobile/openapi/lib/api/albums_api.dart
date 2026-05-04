@@ -499,7 +499,7 @@ class AlbumsApi {
 
   /// List all albums
   ///
-  /// Retrieve a list of albums available to the authenticated user. Results are filtered by the `owned` and `shared` query parameters:  | `owned` | `shared` | Result | |---------|----------|--------| | — | — | All accessible albums (owned + shared-with-me) | | `true` | — | Only albums owned by the user | | `false` | — | Only albums shared with the user (not owned) | | `true` | `true` | Owned albums that have been shared out | | `true` | `false` | Owned private albums (not shared) | | — | `true` | Owned albums shared out, plus all albums shared with the user | | — | `false` | Owned private albums only (albums shared with the user are always excluded because the user is a non-owner member) | | `false` | `true` | Albums shared with the user (same as `owned=false`) | | `false` | `false` | Empty (logically impossible combination) |
+  /// Retrieve a list of albums available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -550,7 +550,7 @@ class AlbumsApi {
 
   /// List all albums
   ///
-  /// Retrieve a list of albums available to the authenticated user. Results are filtered by the `owned` and `shared` query parameters:  | `owned` | `shared` | Result | |---------|----------|--------| | — | — | All accessible albums (owned + shared-with-me) | | `true` | — | Only albums owned by the user | | `false` | — | Only albums shared with the user (not owned) | | `true` | `true` | Owned albums that have been shared out | | `true` | `false` | Owned private albums (not shared) | | — | `true` | Owned albums shared out, plus all albums shared with the user | | — | `false` | Owned private albums only (albums shared with the user are always excluded because the user is a non-owner member) | | `false` | `true` | Albums shared with the user (same as `owned=false`) | | `false` | `false` | Empty (logically impossible combination) |
+  /// Retrieve a list of albums available to the authenticated user.
   ///
   /// Parameters:
   ///

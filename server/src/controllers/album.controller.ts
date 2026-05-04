@@ -29,22 +29,7 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumRead })
   @Endpoint({
     summary: 'List all albums',
-    description: [
-      'Retrieve a list of albums available to the authenticated user.',
-      'Results are filtered by the `owned` and `shared` query parameters:',
-      '',
-      '| `owned` | `shared` | Result |',
-      '|---------|----------|--------|',
-      '| — | — | All accessible albums (owned + shared-with-me) |',
-      '| `true` | — | Only albums owned by the user |',
-      '| `false` | — | Only albums shared with the user (not owned) |',
-      '| `true` | `true` | Owned albums that have been shared out |',
-      '| `true` | `false` | Owned private albums (not shared) |',
-      '| — | `true` | Owned albums shared out, plus all albums shared with the user |',
-      '| — | `false` | Owned private albums only (albums shared with the user are always excluded because the user is a non-owner member) |',
-      '| `false` | `true` | Albums shared with the user (same as `owned=false`) |',
-      '| `false` | `false` | Empty (logically impossible combination) |',
-    ].join('\n'),
+    description: 'Retrieve a list of albums available to the authenticated user.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {

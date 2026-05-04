@@ -1634,7 +1634,7 @@
     },
     "/albums": {
       "get": {
-        "description": "Retrieve a list of albums available to the authenticated user.\nResults are filtered by the `owned` and `shared` query parameters:\n\n| `owned` | `shared` | Result |\n|---------|----------|--------|\n| — | — | All accessible albums (owned + shared-with-me) |\n| `true` | — | Only albums owned by the user |\n| `false` | — | Only albums shared with the user (not owned) |\n| `true` | `true` | Owned albums that have been shared out |\n| `true` | `false` | Owned private albums (not shared) |\n| — | `true` | Owned albums shared out, plus all albums shared with the user |\n| — | `false` | Owned private albums only (albums shared with the user are always excluded because the user is a non-owner member) |\n| `false` | `true` | Albums shared with the user (same as `owned=false`) |\n| `false` | `false` | Empty (logically impossible combination) |",
+        "description": "Retrieve a list of albums available to the authenticated user.",
         "operationId": "getAllAlbums",
         "parameters": [
           {
