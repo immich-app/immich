@@ -29,7 +29,7 @@ SyncAssetV1 _createAsset({
     id: id,
     checksum: checksum,
     originalFileName: fileName,
-    type: AssetTypeEnum.IMAGE,
+    type: AssetType.IMAGE,
     ownerId: ownerId,
     isFavorite: false,
     fileCreatedAt: DateTime(2024, 1, 1),

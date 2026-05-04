@@ -1,4 +1,4 @@
-import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
+import { AssetType, type AssetFaceResponseDto } from '@immich/sdk';
 import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { mapNormalizedRectToContent, type Rect, type Size } from '$lib/utils/container-utils';
@@ -24,13 +24,13 @@ export const getBoundingBox = (faces: Faces[], imageSize: Size): BoundingBox[] =
 export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   assetId: string,
-  assetType: AssetTypeEnum,
+  assetType: AssetType,
   photoViewer: HTMLImageElement | undefined,
 ): Promise<string | null> => {
   let image: HTMLImageElement | undefined;
-  if (assetType === AssetTypeEnum.Image) {
+  if (assetType === AssetType.Image) {
     image = photoViewer;
-  } else if (assetType === AssetTypeEnum.Video) {
+  } else if (assetType === AssetType.Video) {
     const data = getAssetMediaUrl({ id: assetId });
     const img: HTMLImageElement = new Image();
     img.src = data;

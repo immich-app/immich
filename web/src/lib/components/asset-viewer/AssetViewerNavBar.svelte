@@ -30,7 +30,7 @@
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetTypeEnum,
+    AssetType,
     AssetVisibility,
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -182,7 +182,7 @@
         {#if person}
           <SetFeaturedPhotoAction {asset} {person} {onAction} />
         {/if}
-        {#if asset.type === AssetTypeEnum.Image && !isLocked}
+        {#if asset.type === AssetType.Image && !isLocked}
           <SetProfilePictureAction {asset} />
         {/if}
 
@@ -210,7 +210,7 @@
           <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
         {/if}
 
-        {#if asset.type === AssetTypeEnum.Video}
+        {#if asset.type === AssetType.Video}
           <MenuOption
             icon={mdiVideoOutline}
             onClick={() => setPlayOriginalVideo(!playOriginalVideo)}

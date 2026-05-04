@@ -5,7 +5,7 @@
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
-  import { AssetTypeEnum } from '@immich/sdk';
+  import { AssetType } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -15,7 +15,7 @@
 
   interface Props {
     isFullScreen: boolean;
-    assetType: AssetTypeEnum;
+    assetType: AssetType;
     onNext?: () => void;
     onPrevious?: () => void;
     onClose?: () => void;
@@ -39,7 +39,7 @@
   let showControls = $state(true);
   let timer: NodeJS.Timeout;
   let isOverControls = $state(false);
-  const isVideoSlide = $derived(assetType === AssetTypeEnum.Video);
+  const isVideoSlide = $derived(assetType === AssetType.Video);
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;

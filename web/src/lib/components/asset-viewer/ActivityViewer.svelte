@@ -12,7 +12,7 @@
   import { getAssetType } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
-  import { ReactionType, type ActivityResponseDto, type AlbumUserResponseDto, type AssetTypeEnum } from '@immich/sdk';
+  import { ReactionType, type ActivityResponseDto, type AlbumUserResponseDto, type AssetType } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
@@ -42,7 +42,7 @@
   interface Props {
     assetId?: string | undefined;
     albumId: string;
-    assetType?: AssetTypeEnum | undefined;
+    assetType?: AssetType | undefined;
     albumUsers: AlbumUserResponseDto[];
     disabled: boolean;
   }

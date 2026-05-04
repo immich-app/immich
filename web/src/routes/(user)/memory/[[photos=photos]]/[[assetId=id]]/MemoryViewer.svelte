@@ -29,7 +29,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
+  import { AssetMediaSize, AssetType, getAssetInfo } from '@immich/sdk';
   import { ActionButton, IconButton, Text, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -406,7 +406,7 @@
           })}
         </Text>
 
-        {#if currentTimelineAssets.some((asset) => asset.type === AssetTypeEnum.Video)}
+        {#if currentTimelineAssets.some((asset) => asset.type === AssetType.Video)}
           <media-mute-button
             mediacontroller={videoPlayer ? 'memory-video' : ''}
             disabled={!videoPlayer}

@@ -4,7 +4,7 @@
 
 import {
   AlbumUserRole,
-  AssetTypeEnum,
+  AssetType,
   AssetVisibility,
   UserAvatarColor,
   type AlbumResponseDto,
@@ -319,7 +319,7 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     ownerId: asset.ownerId,
     owner: owner || defaultOwner,
     libraryId: `library-${asset.ownerId}`,
-    type: asset.isVideo ? AssetTypeEnum.Video : AssetTypeEnum.Image,
+    type: asset.isVideo ? AssetType.Video : AssetType.Image,
     originalPath: `/original/${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`,
     originalFileName: `${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`,
     originalMimeType: asset.isVideo ? 'video/mp4' : 'image/jpeg',

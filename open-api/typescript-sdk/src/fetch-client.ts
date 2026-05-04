@@ -899,7 +899,7 @@ export type AssetResponseDto = {
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
     thumbhash: string | null;
-    "type": AssetTypeEnum;
+    "type": AssetType;
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
@@ -1698,7 +1698,7 @@ export type MetadataSearchDto = {
     trashedAfter?: string;
     /** Filter by trash date (before) */
     trashedBefore?: string;
-    "type"?: AssetTypeEnum;
+    "type"?: AssetType;
     /** Filter by update date (after) */
     updatedAfter?: string;
     /** Filter by update date (before) */
@@ -1807,7 +1807,7 @@ export type RandomSearchDto = {
     trashedAfter?: string;
     /** Filter by trash date (before) */
     trashedBefore?: string;
-    "type"?: AssetTypeEnum;
+    "type"?: AssetType;
     /** Filter by update date (after) */
     updatedAfter?: string;
     /** Filter by update date (before) */
@@ -1879,7 +1879,7 @@ export type SmartSearchDto = {
     trashedAfter?: string;
     /** Filter by trash date (before) */
     trashedBefore?: string;
-    "type"?: AssetTypeEnum;
+    "type"?: AssetType;
     /** Filter by update date (after) */
     updatedAfter?: string;
     /** Filter by update date (before) */
@@ -1939,7 +1939,7 @@ export type StatisticsSearchDto = {
     trashedAfter?: string;
     /** Filter by trash date (before) */
     trashedBefore?: string;
-    "type"?: AssetTypeEnum;
+    "type"?: AssetType;
     /** Filter by update date (after) */
     updatedAfter?: string;
     /** Filter by update date (before) */
@@ -3070,7 +3070,7 @@ export type SyncAssetV1 = {
     stackId: string | null;
     /** Thumbhash */
     thumbhash: string | null;
-    "type": AssetTypeEnum;
+    "type": AssetType;
     visibility: AssetVisibility;
     /** Asset width */
     width: number | null;
@@ -3108,7 +3108,7 @@ export type SyncAssetV2 = {
     stackId: string | null;
     /** Thumbhash */
     thumbhash: string | null;
-    "type": AssetTypeEnum;
+    "type": AssetType;
     visibility: AssetVisibility;
     /** Asset width */
     width: number | null;
@@ -5421,7 +5421,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     takenBefore?: string;
     trashedAfter?: string;
     trashedBefore?: string;
-    $type?: AssetTypeEnum;
+    $type?: AssetType;
     updatedAfter?: string;
     updatedBefore?: string;
     visibility?: AssetVisibility;
@@ -6974,7 +6974,7 @@ export enum SourceType {
     Exif = "exif",
     Manual = "manual"
 }
-export enum AssetTypeEnum {
+export enum AssetType {
     Image = "IMAGE",
     Video = "VIDEO",
     Audio = "AUDIO",

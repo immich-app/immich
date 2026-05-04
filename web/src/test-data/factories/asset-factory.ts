@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetType, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
@@ -9,7 +9,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   createdAt: Sync.each(() => faker.date.past().toISOString()),
   ownerId: Sync.each(() => faker.string.uuid()),
   libraryId: Sync.each(() => faker.string.uuid()),
-  type: Sync.each(() => faker.helpers.enumValue(AssetTypeEnum)),
+  type: Sync.each(() => faker.helpers.enumValue(AssetType)),
   originalPath: Sync.each(() => faker.system.filePath()),
   originalFileName: Sync.each(() => faker.system.fileName()),
   originalMimeType: Sync.each(() => faker.system.mimeType()),

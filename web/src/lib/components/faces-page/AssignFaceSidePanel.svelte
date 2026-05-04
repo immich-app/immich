@@ -6,7 +6,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
-  import { AssetTypeEnum, getAllPeople, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { AssetType, getAllPeople, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -18,7 +18,7 @@
   interface Props {
     editedFace: AssetFaceResponseDto;
     assetId: string;
-    assetType: AssetTypeEnum;
+    assetType: AssetType;
     onClose: () => void;
     onCreatePerson: (featurePhoto: string | null) => void;
     onReassign: (person: PersonResponseDto) => void;

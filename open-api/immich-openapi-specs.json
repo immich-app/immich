@@ -9468,7 +9468,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/AssetTypeEnum"
+              "$ref": "#/components/schemas/AssetType"
             }
           },
           {
@@ -16785,7 +16785,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "unassignedFaces": {
             "items": {
@@ -16887,7 +16887,7 @@
         ],
         "type": "object"
       },
-      "AssetTypeEnum": {
+      "AssetType": {
         "description": "Asset type",
         "enum": [
           "IMAGE",
@@ -18847,7 +18847,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "updatedAfter": {
             "description": "Filter by update date (after)",
@@ -20696,7 +20696,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "updatedAfter": {
             "description": "Filter by update date (after)",
@@ -22080,7 +22080,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "updatedAfter": {
             "description": "Filter by update date (after)",
@@ -22334,7 +22334,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "updatedAfter": {
             "description": "Filter by update date (after)",
@@ -23143,7 +23143,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
@@ -23272,7 +23272,7 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetType"
           },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"

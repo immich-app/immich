@@ -9,11 +9,11 @@ class SearchApiRepository extends ApiRepository {
   const SearchApiRepository(this._api);
 
   Future<SearchResponseDto?> search(SearchFilter filter, int page) {
-    AssetTypeEnum? type;
+    AssetType? type;
     if (filter.mediaType.index == AssetType.image.index) {
-      type = AssetTypeEnum.IMAGE;
+      type = AssetType.IMAGE;
     } else if (filter.mediaType.index == AssetType.video.index) {
-      type = AssetTypeEnum.VIDEO;
+      type = AssetType.VIDEO;
     }
 
     if ((filter.context != null && filter.context!.isNotEmpty) ||

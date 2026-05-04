@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type StackResponseDto } from '@immich/sdk';
+import { AssetType, AssetVisibility, type AssetResponseDto, type StackResponseDto } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { randomPreview, randomThumbnail } from 'src/ui/generators/timeline';
 
@@ -26,7 +26,7 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
       avatarColor: 'blue' as never,
     },
     libraryId: `library-${ownerId}`,
-    type: AssetTypeEnum.Image,
+    type: AssetType.Image,
     originalPath: `/original/${assetId}.jpg`,
     originalFileName: `${assetId}.jpg`,
     originalMimeType: 'image/jpeg',

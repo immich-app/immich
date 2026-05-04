@@ -9,7 +9,7 @@
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
-    AssetTypeEnum,
+    AssetType,
     createPerson,
     deleteFace,
     getFaces,
@@ -28,7 +28,7 @@
 
   interface Props {
     assetId: string;
-    assetType: AssetTypeEnum;
+    assetType: AssetType;
     onClose: () => void;
     onRefresh: () => void;
   }

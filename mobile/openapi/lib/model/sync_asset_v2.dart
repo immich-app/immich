@@ -88,7 +88,7 @@ class SyncAssetV2 {
   /// Thumbhash
   String? thumbhash;
 
-  AssetTypeEnum type;
+  AssetType type;
 
   AssetVisibility visibility;
 
@@ -247,7 +247,7 @@ class SyncAssetV2 {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         stackId: mapValueOfType<String>(json, r'stackId'),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
-        type: AssetTypeEnum.fromJson(json[r'type'])!,
+        type: AssetType.fromJson(json[r'type'])!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
         width: mapValueOfType<int>(json, r'width'),
       );

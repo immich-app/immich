@@ -1,7 +1,7 @@
 import {
   AssetJobName,
   AssetMediaSize,
-  AssetTypeEnum,
+  AssetType,
   AssetVisibility,
   getAssetInfo,
   runAssetJobs,
@@ -212,7 +212,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const TagPeople: ActionItem = {
     title: $t('tag_people'),
     icon: mdiFaceRecognition,
-    $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
+    $if: () => isOwner && asset.type === AssetType.Image && !asset.isTrashed,
     onAction: () => assetViewerManager.toggleFaceEditMode(),
     shortcuts: { key: 'p' },
   };
@@ -223,7 +223,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     $if: () =>
       !sharedLink &&
       isOwner &&
-      asset.type === AssetTypeEnum.Image &&
+      asset.type === AssetType.Image &&
       !asset.livePhotoVideoId &&
       asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
       !asset.originalPath.toLowerCase().endsWith('.insp') &&
@@ -255,7 +255,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('refresh_encoded_videos'),
     icon: mdiCogRefreshOutline,
     onAction: () => handleRunAssetJob({ name: AssetJobName.TranscodeVideo, assetIds: [asset.id] }),
-    $if: () => asset.type === AssetTypeEnum.Video,
+    $if: () => asset.type === AssetType.Video,
   };
 
   return {

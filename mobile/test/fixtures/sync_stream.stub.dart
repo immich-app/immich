@@ -124,7 +124,7 @@ abstract final class SyncStreamStub {
         ownerId: 'owner',
         stackId: null,
         thumbhash: null,
-        type: AssetTypeEnum.IMAGE,
+        type: AssetType.IMAGE,
         visibility: AssetVisibility.timeline,
         width: null,
         height: null,

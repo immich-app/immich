@@ -25,7 +25,7 @@
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetTypeEnum,
+    AssetType,
     getAssetInfo,
     getStack,
     type AlbumResponseDto,
@@ -389,9 +389,9 @@
 
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
-      return previewStackedAsset.type === AssetTypeEnum.Image ? 'PhotoViewer' : 'StackVideoViewer';
+      return previewStackedAsset.type === AssetType.Image ? 'PhotoViewer' : 'StackVideoViewer';
     }
-    if (asset.type === AssetTypeEnum.Video) {
+    if (asset.type === AssetType.Video) {
       return 'VideoViewer';
     }
     if (assetViewerManager.isPlayingMotionPhoto && asset.livePhotoVideoId) {
@@ -418,7 +418,7 @@
 
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
-      asset.type === AssetTypeEnum.Image &&
+      asset.type === AssetType.Image &&
       !assetViewerManager.isShowEditor &&
       ocrManager.hasOcrData,
   );

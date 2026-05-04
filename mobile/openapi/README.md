@@ -380,7 +380,7 @@ Class | Method | HTTP request | Description
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
- - [AssetTypeEnum](doc//AssetTypeEnum.md)
+ - [AssetType](doc//AssetType.md)
  - [AssetUploadAction](doc//AssetUploadAction.md)
  - [AssetVisibility](doc//AssetVisibility.md)
  - [AudioCodec](doc//AudioCodec.md)

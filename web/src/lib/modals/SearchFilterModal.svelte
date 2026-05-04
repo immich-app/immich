@@ -13,7 +13,7 @@
   import type { SearchFilter } from '$lib/types';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
-  import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+  import { AssetType, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import type { DateTime } from 'luxon';
@@ -86,9 +86,9 @@
         isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
       },
       mediaType:
-        searchQuery.type === AssetTypeEnum.Image
+        searchQuery.type === AssetType.Image
           ? MediaType.Image
-          : searchQuery.type === AssetTypeEnum.Video
+          : searchQuery.type === AssetType.Video
             ? MediaType.Video
             : MediaType.All,
       rating: searchQuery.rating,
@@ -118,11 +118,11 @@
   };
 
   const search = () => {
-    let type: AssetTypeEnum | undefined = undefined;
+    let type: AssetType | undefined = undefined;
     if (filter.mediaType === MediaType.Image) {
-      type = AssetTypeEnum.Image;
+      type = AssetType.Image;
     } else if (filter.mediaType === MediaType.Video) {
-      type = AssetTypeEnum.Video;
+      type = AssetType.Video;
     }
 
     const query = filter.query || undefined;

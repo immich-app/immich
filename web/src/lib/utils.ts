@@ -1,6 +1,6 @@
 import {
   AssetMediaSize,
-  AssetTypeEnum,
+  AssetType,
   MemoryType,
   finishOAuth,
   getAssetOriginalPath,
@@ -219,12 +219,12 @@ export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkRes
 }
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration;
+  return asset.type === AssetType.Image && asset.duration;
 };
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+    return asset.type === AssetType.Video || isWebCompatibleImage(asset)
       ? AssetMediaSize.Original
       : AssetMediaSize.Fullsize;
   }

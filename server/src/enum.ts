@@ -39,7 +39,7 @@ export enum AssetType {
   Other = 'OTHER',
 }
 
-export const AssetTypeSchema = z.enum(AssetType).describe('Asset type').meta({ id: 'AssetTypeEnum' });
+export const AssetTypeSchema = z.enum(AssetType).describe('Asset type').meta({ id: 'AssetType' });
 
 export enum ChecksumAlgorithm {
   /** sha1 checksum of the whole file contents */
