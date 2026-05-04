@@ -116,13 +116,6 @@ export class AssetMediaService extends BaseService {
     return folder;
   }
 
-  async verifyUploadIntegrity(path: string, checksum: Buffer): Promise<void> {
-    const { storage } = await this.getConfig({ withCache: true });
-    if (storage.writeVerification) {
-      await this.verifyFileChecksum(path, checksum);
-    }
-  }
-
   async verifyFileChecksum(path: string, checksum: Buffer): Promise<void> {
     let onDiskHash: Buffer;
     try {
@@ -161,6 +154,11 @@ export class AssetMediaService extends BaseService {
         // do not need an id here, but the interface requires it
         ids: [auth.user.id],
       });
+
+      const { storage } = await this.getConfig({ withCache: true });
+      if (storage.writeVerification) {
+        await this.verifyFileChecksum(file.originalPath, file.checksum);
+      }
 
       this.requireQuota(auth, file.size);
 

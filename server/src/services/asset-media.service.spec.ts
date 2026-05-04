@@ -860,28 +860,6 @@ describe(AssetMediaService.name, () => {
     });
   });
 
-  describe('verifyUploadIntegrity', () => {
-    const path = '/data/upload/user-id/ra/nd/random-uuid.jpg';
-    const checksum = Buffer.from('checksum', 'utf8');
-
-    it('should skip verification when writeVerification is disabled', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: false } });
-
-      await expect(sut.verifyUploadIntegrity(path, checksum)).resolves.toBeUndefined();
-
-      expect(mocks.crypto.hashFile).not.toHaveBeenCalled();
-    });
-
-    it('should verify when writeVerification is enabled', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: true } });
-      mocks.crypto.hashFile.mockResolvedValue(checksum);
-
-      await expect(sut.verifyUploadIntegrity(path, checksum)).resolves.toBeUndefined();
-
-      expect(mocks.crypto.hashFile).toHaveBeenCalledWith(path);
-    });
-  });
-
   describe('verifyFileChecksum', () => {
     const path = '/data/upload/user-id/ra/nd/random-uuid.jpg';
     const checksum = Buffer.from('checksum', 'utf8');

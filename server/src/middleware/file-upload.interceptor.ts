@@ -125,22 +125,11 @@ export class FileUploadInterceptor implements NestInterceptor {
           hash?.destroy();
           return callback(error);
         }
-
-        const digest = hash?.digest();
-
-        if (!digest) {
-          return callback(null, { path, size, checksum: digest });
-        }
-
-        this.assetService
-          .verifyUploadIntegrity(path, digest)
-          .then(() => callback(null, { path, size, checksum: digest }))
-          .catch((verifyError) => {
-            this.storageRepository.unlink(path).catch(() => {
-              this.logger.error(`Failed to clean up file after write verification failure: ${path}`);
-            });
-            callback(verifyError);
-          });
+        callback(null, {
+          path,
+          size,
+          checksum: hash?.digest(),
+        });
       });
     } catch (error: Error | any) {
       callback(error);
