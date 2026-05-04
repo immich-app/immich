@@ -71,10 +71,9 @@ class Timeline extends StatelessWidget {
         builder: (_, constraints) => ProviderScope(
           overrides: [
             timelineArgsProvider.overrideWith(
-              (ref) => TimelineArgs(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
+              () => TimelineArgsNotifier(
+                initialMaxWidth: constraints.maxWidth,
+                initialMaxHeight: constraints.maxHeight,
                 showStorageIndicator: showStorageIndicator,
                 withStack: withStack,
                 groupBy: groupBy,
@@ -92,6 +91,7 @@ class Timeline extends StatelessWidget {
             persistentBottomBar: persistentBottomBar,
             snapToMonth: snapToMonth,
             maxWidth: constraints.maxWidth,
+            maxHeight: constraints.maxHeight,
             loadingWidget: loadingWidget,
           ),
         ),
@@ -122,6 +122,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.persistentBottomBar = false,
     this.snapToMonth = true,
     this.maxWidth,
+    this.maxHeight,
     this.loadingWidget,
   });
 
@@ -134,6 +135,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final bool persistentBottomBar;
   final bool snapToMonth;
   final double? maxWidth;
+  final double? maxHeight;
   final Widget? loadingWidget;
 
   @override
@@ -172,13 +174,21 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void didUpdateWidget(covariant _SliverTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.maxWidth != oldWidget.maxWidth) {
-      final asyncSegments = ref.read(timelineSegmentProvider);
-      asyncSegments.whenData((segments) {
-        final index = _getCurrentAssetIndex(segments);
-        // Refresh to wait for new segments to be generated with the updated width before restoring the scroll position
-        final _ = ref.refresh(timelineArgsProvider);
-        _restoreAssetIndex = index;
+    if (widget.maxWidth != oldWidget.maxWidth || widget.maxHeight != oldWidget.maxHeight) {
+      final segments = ref.read(timelineSegmentProvider).value;
+      int? restoreAssetIndex;
+      if (segments != null) {
+        restoreAssetIndex = _getCurrentAssetIndex(segments);
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref
+              .read(timelineArgsProvider.notifier)
+              .updateConstraints(maxWidth: widget.maxWidth!, maxHeight: widget.maxHeight!);
+          final _ = ref.refresh(timelineSegmentProvider);
+          _restoreAssetIndex = restoreAssetIndex;
+          _restoreAssetPosition(null);
+        }
       });
     }
   }
@@ -200,26 +210,40 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     }
   }
 
+  void _restorePosition(List<Segment> segments) {
+    final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _restoreAssetIndex!);
+    if (targetSegment == null) {
+      _restoreAssetIndex = null;
+      return;
+    }
+    final assetIndexInSegment = _restoreAssetIndex! - targetSegment.firstAssetIndex;
+    final newColumnCount = ref.read(timelineArgsProvider).columnCount;
+    final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
+    final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
+    final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
+      }
+    });
+    _restoreAssetIndex = null;
+  }
+
   void _restoreAssetPosition(_) {
     if (_restoreAssetIndex == null) return;
 
     final asyncSegments = ref.read(timelineSegmentProvider);
-    asyncSegments.whenData((segments) {
-      final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _restoreAssetIndex!);
-      if (targetSegment != null) {
-        final assetIndexInSegment = _restoreAssetIndex! - targetSegment.firstAssetIndex;
-        final newColumnCount = ref.read(timelineArgsProvider).columnCount;
-        final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
-        final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
-        final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
-          }
-        });
+    if (asyncSegments is AsyncData<List<Segment>>) {
+      _restorePosition(asyncSegments.value);
+      return;
+    }
+    late ProviderSubscription<AsyncValue<List<Segment>>> sub;
+    sub = ref.listenManual<AsyncValue<List<Segment>>>(timelineSegmentProvider, (_, next) {
+      if (next is AsyncData<List<Segment>>) {
+        sub.close();
+        _restorePosition(next.value);
       }
     });
-    _restoreAssetIndex = null;
   }
 
   void _onMultiSelectionToggled(_, bool isEnabled) {

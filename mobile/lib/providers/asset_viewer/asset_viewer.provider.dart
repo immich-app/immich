@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
@@ -67,24 +69,41 @@ class AssetViewerState {
 }
 
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
+  StreamSubscription<BaseAsset?>? _assetSub;
+  String? _watchedHeroTag;
+
   @override
   AssetViewerState build() {
-    ref.listen(_watchedCurrentAssetProvider, (_, next) {
-      final updated = next.valueOrNull;
-      if (updated != null) {
-        state = state.copyWith(currentAsset: updated);
-      }
+    ref.onDispose(() {
+      _assetSub?.cancel();
+      _assetSub = null;
+      _watchedHeroTag = null;
     });
     return const AssetViewerState();
   }
 
+  void _syncAssetSubscription(BaseAsset? asset) {
+    final heroTag = asset?.heroTag;
+    if (heroTag == _watchedHeroTag) return;
+    _watchedHeroTag = heroTag;
+    _assetSub?.cancel();
+    _assetSub = null;
+    if (asset == null) return;
+    _assetSub = ref.read(assetServiceProvider).watchAsset(asset).listen((updated) {
+      if (updated == null || updated.heroTag != _watchedHeroTag) return;
+      state = state.copyWith(currentAsset: updated);
+    });
+  }
+
   void reset() {
     state = const AssetViewerState();
+    _syncAssetSubscription(null);
   }
 
   void setAsset(BaseAsset asset) {
     if (asset == state.currentAsset) return;
     state = state.copyWith(currentAsset: asset, stackIndex: 0);
+    _syncAssetSubscription(asset);
   }
 
   void setOpacity(double opacity) {
@@ -134,10 +153,3 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
-
-final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
-  ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
-  final asset = ref.read(assetViewerProvider).currentAsset;
-  if (asset == null) return const Stream.empty();
-  return ref.read(assetServiceProvider).watchAsset(asset);
-});

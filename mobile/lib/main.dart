@@ -57,7 +57,11 @@ void main() async {
 
     runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
   } catch (error, stack) {
-    runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
+    runApp(
+      ProviderScope(
+        child: BootstrapErrorWidget(error: error.toString(), stack: stack.toString()),
+      ),
+    );
   }
 }
 

@@ -3,20 +3,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 
-// ignore: unintended_html_in_doc_comment
-/// Maintains the current list of all activities for <share-album-id, asset>
+/// Maintains the current list of all activities for [share-album-id, asset]
 
 final albumActivityProvider = AsyncNotifierProvider.autoDispose
-    .family<AlbumActivity, List<Activity>, (String albumId, String? assetId)>(AlbumActivity.new);
+    .family<AlbumActivity, List<Activity>, (String, String?)>(AlbumActivity.new);
 
-class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (String albumId, String? assetId)> {
-  late String albumId;
-  late String? assetId;
+class AlbumActivity extends AsyncNotifier<List<Activity>> {
+  final String albumId;
+  final String? assetId;
+
+  AlbumActivity((String albumId, String? assetId) args) : albumId = args.$1, assetId = args.$2;
 
   @override
-  Future<List<Activity>> build((String albumId, String? assetId) args) async {
-    albumId = args.$1;
-    assetId = args.$2;
+  Future<List<Activity>> build() async {
     return ref.watch(activityServiceProvider).getAllActivities(albumId, assetId: assetId);
   }
 
@@ -57,7 +56,7 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
   }
 
   void _addToState(Activity activity) {
-    final activities = state.valueOrNull ?? [];
+    final activities = state.value ?? [];
     if (activities.any((a) => a.id == activity.id)) {
       return;
     }
@@ -65,7 +64,7 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
   }
 
   Activity? _removeFromState(String id) {
-    final activities = state.valueOrNull;
+    final activities = state.value;
     if (activities == null) {
       return null;
     }

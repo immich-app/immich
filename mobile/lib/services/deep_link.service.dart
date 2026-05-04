@@ -25,6 +25,7 @@ final deepLinkServiceProvider = Provider(
     ref.watch(driftPeopleServiceProvider),
     ref.watch(currentUserProvider),
   ),
+  dependencies: [remoteAlbumServiceProvider],
 );
 
 class DeepLinkService {

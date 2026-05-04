@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logging/logging.dart';
-
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/utils/upload_speed_calculator.dart';
+import 'package:logging/logging.dart';
 
 class EnqueueStatus {
   final int enqueueCount;

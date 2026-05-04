@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 
 /// Tracks per-asset upload progress.
 /// Key: local asset ID, Value: upload progress 0.0 to 1.0, or -1.0 for error
