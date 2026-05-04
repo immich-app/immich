@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -128,6 +129,34 @@ void main() {
 
       expect(assets, hasLength(1));
       expect(assets[0].remoteId, liveAsset.id);
+    });
+
+    test('does not return hidden Live Photo motion videos as separate assets', () async {
+      final motionVideo = await ctx.newRemoteAsset(
+        ownerId: userId,
+        type: AssetType.video,
+        visibility: AssetVisibility.hidden,
+        createdAt: DateTime(2026, 4, 4, 12),
+      );
+      final stillImage = await ctx.newRemoteAsset(
+        ownerId: userId,
+        type: AssetType.image,
+        livePhotoVideoId: motionVideo.id,
+        createdAt: DateTime(2026, 4, 4, 12),
+      );
+
+      await ctx.insertSharedSpaceAsset(spaceId: spaceId, assetId: stillImage.id);
+      await ctx.insertSharedSpaceAsset(spaceId: spaceId, assetId: motionVideo.id);
+
+      final query = sut.sharedSpace(spaceId, GroupAssetsBy.day);
+      final assets = await query.assetSource(0, 10);
+      final buckets = await query.bucketSource().first;
+
+      expect(assets, hasLength(1));
+      expect(assets.single.remoteId, stillImage.id);
+      expect(assets.single.livePhotoVideoId, motionVideo.id);
+      expect(buckets, hasLength(1));
+      expect(buckets.single.assetCount, 1);
     });
 
     test('bucket stream is reactive — emits new buckets when an asset is added after subscription', () async {

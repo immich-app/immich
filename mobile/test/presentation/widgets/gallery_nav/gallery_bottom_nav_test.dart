@@ -206,6 +206,44 @@ void main() {
     expect(container.read(bottomNavHeightProvider), greaterThan(0));
   });
 
+  testWidgets('iPhone safe area uses one bottom inset instead of stacking float and safe area', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(430, 932);
+    addTearDown(() {
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetPhysicalSize();
+    });
+
+    final router = FakeTabsRouter();
+    final container = ProviderContainer(
+      overrides: [
+        readonlyModeProvider.overrideWith(() => _FakeReadonly(false)),
+        hapticFeedbackProvider.overrideWith((ref) => _NoOpHaptic(ref)),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(430, 932),
+              padding: EdgeInsets.only(bottom: 34),
+              textScaler: TextScaler.linear(0.45),
+            ),
+            child: Scaffold(bottomNavigationBar: GalleryBottomNav(tabsRouter: router)),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(container.read(bottomNavHeightProvider), 92);
+    expect(tester.getRect(find.byType(GalleryNavPill)).bottom, 932 - 34);
+  });
+
   testWidgets('re-tap Photos (already active): emits ScrollToTopEvent', (tester) async {
     final router = FakeTabsRouter(initialIndex: GalleryTabEnum.photos.index);
     int scrollEvents = 0;

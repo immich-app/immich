@@ -328,6 +328,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         ])
         ..where(
           _db.remoteAssetEntity.deletedAt.isNull() &
+              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
               (_db.sharedSpaceAssetEntity.assetId.isNotNull() | _db.sharedSpaceLibraryEntity.libraryId.isNotNull()),
         );
       return countQuery
@@ -358,6 +359,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ])
       ..where(
         _db.remoteAssetEntity.deletedAt.isNull() &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
             (_db.sharedSpaceAssetEntity.assetId.isNotNull() | _db.sharedSpaceLibraryEntity.libraryId.isNotNull()),
       )
       ..groupBy([dateExp])
@@ -394,7 +396,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
               useColumns: false,
             ),
           ])
-          ..where(_db.remoteAssetEntity.deletedAt.isNull() & membership)
+          ..where(
+            _db.remoteAssetEntity.deletedAt.isNull() &
+                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+                membership,
+          )
           ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
           ..limit(count, offset: offset);
 

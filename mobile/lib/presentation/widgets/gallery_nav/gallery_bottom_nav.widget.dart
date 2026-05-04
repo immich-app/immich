@@ -75,7 +75,8 @@ class _GalleryBottomNavState extends ConsumerState<GalleryBottomNav> {
     // overlap the sheet's bottom content (e.g. the Done button at Deep snap).
     final sheetVisible = ref.watch(photosFilterSheetProvider) != FilterSheetSnap.hidden;
     final hiding = _hiddenForMultiSelect || keyboardUp || sheetVisible;
-    final pillVisibleHeight = _bottomFloat + _pillHeight + mq.padding.bottom;
+    final bottomInset = mq.padding.bottom > _bottomFloat ? mq.padding.bottom : _bottomFloat;
+    final pillVisibleHeight = bottomInset + _pillHeight;
 
     if (!hiding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _writeHeight(pillVisibleHeight));
@@ -97,7 +98,7 @@ class _GalleryBottomNavState extends ConsumerState<GalleryBottomNav> {
         child: IgnorePointer(
           ignoring: hiding,
           child: Padding(
-            padding: EdgeInsets.only(left: 14, right: 14, bottom: _bottomFloat + mq.padding.bottom),
+            padding: EdgeInsets.only(left: 14, right: 14, bottom: bottomInset),
             child: Row(
               children: [
                 Expanded(
