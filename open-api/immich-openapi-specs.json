@@ -1649,7 +1649,7 @@
             }
           },
           {
-            "name": "owned",
+            "name": "isOwned",
             "required": false,
             "in": "query",
             "description": "Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter",
@@ -1658,7 +1658,7 @@
             }
           },
           {
-            "name": "shared",
+            "name": "isShared",
             "required": false,
             "in": "query",
             "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",

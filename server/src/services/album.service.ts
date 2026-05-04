@@ -25,9 +25,9 @@ import { getPreferences } from 'src/utils/preferences';
 export class AlbumService extends BaseService {
   async getStatistics(auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
     const [owned, shared, notShared] = await Promise.all([
-      this.albumRepository.getAll(auth.user.id, { owned: true }),
-      this.albumRepository.getAll(auth.user.id, { shared: true }),
-      this.albumRepository.getAll(auth.user.id, { owned: true, shared: false }),
+      this.albumRepository.getAll(auth.user.id, { isOwned: true }),
+      this.albumRepository.getAll(auth.user.id, { isShared: true }),
+      this.albumRepository.getAll(auth.user.id, { isOwned: true, isShared: false }),
     ]);
 
     return {
@@ -39,13 +39,13 @@ export class AlbumService extends BaseService {
 
   async getAll(
     { user: { id: ownerId } }: AuthDto,
-    { assetId, owned, shared }: GetAlbumsDto,
+    { assetId, isOwned, isShared }: GetAlbumsDto,
   ): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
     const albums = assetId
       ? await this.albumRepository.getByAssetId(ownerId, assetId)
-      : await this.albumRepository.getAll(ownerId, { owned, shared });
+      : await this.albumRepository.getAll(ownerId, { isOwned, isShared });
 
     if (albums.length === 0) {
       return [];

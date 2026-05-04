@@ -33,9 +33,9 @@ describe(AlbumService.name, () => {
         notShared: 0,
       });
 
-      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { owned: true });
-      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { shared: true });
-      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { owned: true, shared: false });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { isOwned: true });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { isShared: true });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { isOwned: true, isShared: false });
     });
   });
 
@@ -66,7 +66,7 @@ describe(AlbumService.name, () => {
       expect(result).toHaveLength(2);
       expect(result[0].id).toEqual(album.id);
       expect(result[1].id).toEqual(sharedWithUserAlbum.id);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: undefined, shared: undefined });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { isOwned: undefined, isShared: undefined });
     });
 
     it('gets list of albums that have a specific asset', async () => {
@@ -108,10 +108,10 @@ describe(AlbumService.name, () => {
         },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { shared: true });
+      const result = await sut.getAll(AuthFactory.create(owner), { isShared: true });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(album.id);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ shared: true }));
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isShared: true }));
     });
 
     it('gets list of albums that are NOT shared', async () => {
@@ -128,13 +128,13 @@ describe(AlbumService.name, () => {
         },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { shared: false });
+      const result = await sut.getAll(AuthFactory.create(owner), { isShared: false });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(album.id);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ shared: false }));
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isShared: false }));
     });
 
-    it('gets only owned albums when owned=true', async () => {
+    it('gets only owned albums when isOwned=true', async () => {
       const album = AlbumFactory.create();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
@@ -142,12 +142,12 @@ describe(AlbumService.name, () => {
         { albumId: album.id, assetCount: 0, startDate: null, endDate: null, lastModifiedAssetTimestamp: null },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { owned: true });
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: true });
       expect(result).toHaveLength(1);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ owned: true }));
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isOwned: true }));
     });
 
-    it('gets only shared-with-me albums when owned=false', async () => {
+    it('gets only shared-with-me albums when isOwned=false', async () => {
       const album = AlbumFactory.create();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
@@ -155,12 +155,12 @@ describe(AlbumService.name, () => {
         { albumId: album.id, assetCount: 0, startDate: null, endDate: null, lastModifiedAssetTimestamp: null },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { owned: false });
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: false });
       expect(result).toHaveLength(1);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ owned: false }));
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isOwned: false }));
     });
 
-    it('gets owned shared-out albums when owned=true and shared=true', async () => {
+    it('gets owned shared-out albums when isOwned=true and isShared=true', async () => {
       const album = AlbumFactory.create();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
@@ -168,19 +168,19 @@ describe(AlbumService.name, () => {
         { albumId: album.id, assetCount: 0, startDate: null, endDate: null, lastModifiedAssetTimestamp: null },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { owned: true, shared: true });
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: true, isShared: true });
       expect(result).toHaveLength(1);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: true, shared: true });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { isOwned: true, isShared: true });
     });
 
-    it('returns empty list when owned=false and shared=false', async () => {
+    it('returns empty list when isOwned=false and isShared=false', async () => {
       const album = AlbumFactory.create();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.album.getAll.mockResolvedValue([]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { owned: false, shared: false });
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: false, isShared: false });
       expect(result).toHaveLength(0);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { owned: false, shared: false });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { isOwned: false, isShared: false });
     });
   });
 

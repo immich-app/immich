@@ -146,7 +146,7 @@ describe('/albums', () => {
 
     it('should not return shared albums with a deleted owner', async () => {
       const { status, body } = await request(app)
-        .get('/albums?shared=true')
+        .get('/albums?isShared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -230,9 +230,9 @@ describe('/albums', () => {
       );
     });
 
-    it('should return the album collection filtered by shared', async () => {
+    it('should return the album collection filtered by isShared', async () => {
       const { status, body } = await request(app)
-        .get('/albums?shared=true')
+        .get('/albums?isShared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(4);
@@ -270,9 +270,9 @@ describe('/albums', () => {
       );
     });
 
-    it('should return the album collection filtered by NOT shared', async () => {
+    it('should return the album collection filtered by NOT isShared', async () => {
       const { status, body } = await request(app)
-        .get('/albums?shared=false')
+        .get('/albums?isShared=false')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
@@ -289,9 +289,9 @@ describe('/albums', () => {
       );
     });
 
-    it('should return only owned albums when filtered by owned=true', async () => {
+    it('should return only owned albums when filtered by isOwned=true', async () => {
       const { status, body } = await request(app)
-        .get('/albums?owned=true')
+        .get('/albums?isOwned=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(4);
@@ -305,9 +305,9 @@ describe('/albums', () => {
       );
     });
 
-    it('should return only shared-with-me albums when filtered by owned=false', async () => {
+    it('should return only shared-with-me albums when filtered by isOwned=false', async () => {
       const { status, body } = await request(app)
-        .get('/albums?owned=false')
+        .get('/albums?isOwned=false')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
@@ -323,9 +323,9 @@ describe('/albums', () => {
       );
     });
 
-    it('should return owned shared-out albums when filtered by owned=true&shared=true', async () => {
+    it('should return owned shared-out albums when filtered by isOwned=true&ishared=true', async () => {
       const { status, body } = await request(app)
-        .get('/albums?owned=true&shared=true')
+        .get('/albums?isOwned=true&isShared=true')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(3);
@@ -338,9 +338,9 @@ describe('/albums', () => {
       );
     });
 
-    it('should return empty list when filtered by owned=false&shared=false', async () => {
+    it('should return empty list when filtered by isOwned=false&isShared=false', async () => {
       const { status, body } = await request(app)
-        .get('/albums?owned=false&shared=false')
+        .get('/albums?isOwned=false&isShared=false')
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(0);
@@ -354,17 +354,17 @@ describe('/albums', () => {
       expect(body).toHaveLength(2);
     });
 
-    it('should return the album collection filtered by assetId and ignores shared=true', async () => {
+    it('should return the album collection filtered by assetId and ignores isShared=true', async () => {
       const { status, body } = await request(app)
-        .get(`/albums?shared=true&assetId=${user1Asset1.id}`)
+        .get(`/albums?isShared=true&assetId=${user1Asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(5);
     });
 
-    it('should return the album collection filtered by assetId and ignores shared=false', async () => {
+    it('should return the album collection filtered by assetId and ignores isShared=false', async () => {
       const { status, body } = await request(app)
-        .get(`/albums?shared=false&assetId=${user1Asset1.id}`)
+        .get(`/albums?isShared=false&assetId=${user1Asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
       expect(body).toHaveLength(5);

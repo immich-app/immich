@@ -240,7 +240,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
     });
   });
   await context.route('**/api/albums*', async (route, request) => {
-    if (request.url().endsWith('albums?shared=true') || request.url().endsWith('albums')) {
+    if (request.url().endsWith('albums?isShared=true') || request.url().endsWith('albums')) {
       return route.fulfill({
         status: 200,
         contentType: 'application/json',

@@ -183,18 +183,18 @@ export class AlbumRepository {
     );
   }
 
-  private buildAlbumBaseQuery(ownerId: string, { owned, shared }: { owned?: boolean; shared?: boolean }) {
+  private buildAlbumBaseQuery(ownerId: string, { isOwned, isShared }: { isOwned?: boolean; isShared?: boolean }) {
     return this.db
       .selectFrom('album')
       .innerJoin('album_user', (join) =>
         join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', ownerId),
       )
       .where('album.deletedAt', 'is', null)
-      .$if(owned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
-      .$if(owned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
-      .$if(shared !== undefined, (qb) =>
+      .$if(isOwned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
+      .$if(isOwned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
+      .$if(isShared !== undefined, (qb) =>
         qb.where((eb) => {
-          const isShared = eb.or([
+          const isSharedAlbum = eb.or([
             eb.exists(
               eb
                 .selectFrom('album_user as au')
@@ -203,13 +203,13 @@ export class AlbumRepository {
             ),
             eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
           ]);
-          return shared ? isShared : eb.not(isShared);
+          return isShared ? isSharedAlbum : eb.not(isSharedAlbum);
         }),
       );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, {}] })
-  getAll(ownerId: string, options: { owned?: boolean; shared?: boolean } = {}): Promise<MapAlbumDto[]> {
+  getAll(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<MapAlbumDto[]> {
     return this.buildAlbumBaseQuery(ownerId, options)
       .selectAll('album')
       .select(withAlbumUsers(ownerId))
@@ -219,7 +219,7 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, {}] })
-  async getAllIds(ownerId: string, options: { owned?: boolean; shared?: boolean } = {}): Promise<string[]> {
+  async getAllIds(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<string[]> {
     const rows = await this.buildAlbumBaseQuery(ownerId, options)
       .select('album.id')
       .orderBy('album.createdAt', 'desc')
