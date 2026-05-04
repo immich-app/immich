@@ -24,6 +24,10 @@ enum MetadataKey<T extends Object> {
   themeDynamic<bool>(.appConfig, 'theme.dynamic', false),
   themeColorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
 
+  // Image
+  imagePreferRemote<bool>(.appConfig, 'image.preferRemote', false),
+  imageLoadOriginal<bool>(.appConfig, 'image.loadOriginal', false),
+
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
   timelineGroupAssetsBy<GroupAssetsBy>(

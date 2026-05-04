@@ -20,12 +20,8 @@ enum StoreKey<T> {
   sslClientCertData<String>._(15),
   sslClientPasswd<String>._(16),
   uploadErrorNotificationGracePeriod<int>._(106),
-  thumbnailCacheSize<int>._(110),
-  imageCacheSize<int>._(111),
-  albumThumbnailCacheSize<int>._(112),
   selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
-  preferRemoteImage<bool>._(116),
   selfSignedCert<bool>._(120),
   selectedAlbumSortReverse<bool>._(123),
   enableHapticFeedback<bool>._(126),
@@ -42,7 +38,6 @@ enum StoreKey<T> {
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
   albumGridView<bool>._(140),
-  loadOriginal<bool>._(101),
 
   // Image viewer navigation settings
   loopVideo<bool>._(117),
@@ -57,6 +52,8 @@ enum StoreKey<T> {
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyPreferRemoteImage<bool>._(116),
+  legacyLoadOriginal<bool>._(101),
   legacyPrimaryColor<String>._(128),
   legacyDynamicTheme<bool>._(129),
   legacyColorfulInterface<bool>._(130),
