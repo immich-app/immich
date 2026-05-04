@@ -3,6 +3,7 @@
   import { Route } from '$lib/route';
   import { pinnedSpaceIds } from '$lib/stores/space-view.store';
   import { userInteraction } from '$lib/stores/user.svelte';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { splitPinnedSpaces } from '$lib/utils/space-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { UserAvatarColor, getAllSpaces } from '@immich/sdk';
@@ -64,14 +65,20 @@
       ? 'bg-primary/10 text-immich-primary dark:text-immich-dark-primary'
       : ''}"
   >
-    <div>
+    <div class="flex h-6 w-6 items-center justify-center">
       {#if space.newAssetCount && space.newAssetCount > 0}
         <div
           class="h-3 w-3 rounded-full {bgClasses[space.color ?? 'primary'] ?? bgClasses[UserAvatarColor.Primary]}"
           data-testid="sidebar-space-dot-{space.id}"
         ></div>
       {:else}
-        <div class="h-3 w-3"></div>
+        <div
+          class="h-6 w-6 bg-cover rounded bg-gray-200 dark:bg-gray-600"
+          style={space.thumbnailAssetId
+            ? `background-image:url('${getAssetMediaUrl({ id: space.thumbnailAssetId })}')`
+            : ''}
+          data-testid="sidebar-space-thumbnail-{space.id}"
+        ></div>
       {/if}
     </div>
     <div class="grow text-sm font-medium truncate">

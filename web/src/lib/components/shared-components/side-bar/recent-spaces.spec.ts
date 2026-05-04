@@ -11,6 +11,11 @@ vi.mock('$lib/utils/handle-error', () => ({
   handleError: vi.fn(),
 }));
 
+vi.mock('$lib/utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('$lib/utils')>()),
+  getAssetMediaUrl: vi.fn(({ id }: { id: string }) => `/api/assets/${id}/thumbnail?edited=true`),
+}));
+
 import { handleError } from '$lib/utils/handle-error';
 
 describe('RecentSpaces component', () => {
@@ -117,6 +122,22 @@ describe('RecentSpaces component', () => {
       await renderAndFlush();
 
       expect(screen.queryByTestId('sidebar-space-dot-undef-dot')).not.toBeInTheDocument();
+    });
+
+    it('shows the space thumbnail when there are no new assets', async () => {
+      const space = sharedSpaceFactory.build({
+        id: 'thumb-1',
+        newAssetCount: 0,
+        thumbnailAssetId: 'asset-thumb-1',
+      });
+      sdkMock.getAllSpaces.mockResolvedValueOnce([space]);
+      await renderAndFlush();
+
+      const thumbnail = screen.getByTestId('sidebar-space-thumbnail-thumb-1');
+      expect(thumbnail).toHaveClass('h-6', 'w-6', 'bg-cover');
+      expect(thumbnail.getAttribute('style')).toContain(
+        'background-image: url("/api/assets/asset-thumb-1/thumbnail?edited=true")',
+      );
     });
 
     it('applies correct bg class for blue color', async () => {
