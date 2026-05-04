@@ -2,7 +2,7 @@
   import { goto, invalidate } from '$app/navigation';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import { Route } from '$lib/route';
   import { getLibrariesActions, getLibraryActions } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
@@ -133,7 +133,7 @@
           fullWidth
           text={$t('no_libraries_message')}
           onClick={() => goto(Route.newLibrary())}
-          class="mt-10 mx-auto"
+          class="mx-auto mt-10"
         />
       {/if}
 

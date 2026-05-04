@@ -241,7 +241,8 @@ class ActionService {
   }
 
   Future<bool> setAlbumCover(String albumId, String assetId) async {
-    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
+    final owner = await _remoteAlbumRepository.getOwner(albumId);
+    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, owner, thumbnailAssetId: assetId);
     await _remoteAlbumRepository.update(updatedAlbum);
     return true;
   }

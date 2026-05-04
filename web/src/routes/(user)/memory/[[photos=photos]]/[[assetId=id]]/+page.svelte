@@ -1,5 +1,5 @@
 <script>
-  import MemoryViewer from './memory-viewer.svelte';
+  import MemoryViewer from './MemoryViewer.svelte';
 </script>
 
 <MemoryViewer />

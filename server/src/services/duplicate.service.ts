@@ -82,10 +82,12 @@ export class DuplicateService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.DuplicateDelete, ids: [id] });
     await this.duplicateRepository.delete(auth.user.id, id);
   }
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto) {
+    await this.requireAccess({ auth, permission: Permission.DuplicateDelete, ids: dto.ids });
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 

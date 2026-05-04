@@ -341,7 +341,9 @@ describe('/shared-links', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
+      );
     });
 
     it('should require an asset/album id', async () => {

@@ -1,9 +1,3 @@
-import { browser } from '$app/environment';
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { Route } from '$lib/route';
-import { isSharedLinkRoute } from '$lib/utils/navigation';
 import {
   getAboutInfo,
   getMyPreferences,
@@ -12,6 +6,12 @@ import {
   type UserAdminResponseDto,
   type UserPreferencesResponseDto,
 } from '@immich/sdk';
+import { browser } from '$app/environment';
+import { goto } from '$app/navigation';
+import { page } from '$app/state';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
+import { isSharedLinkRoute } from '$lib/utils/navigation';
 
 class AuthManager {
   isPurchased = $state(false);

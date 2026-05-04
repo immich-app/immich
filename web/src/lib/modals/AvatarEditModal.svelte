@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateMyUser, UserAvatarColor } from '@immich/sdk';
@@ -33,7 +33,7 @@
 
 <Modal title={$t('select_avatar_color')} size="small" {onClose}>
   <ModalBody>
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 place-items-center">
+    <div class="grid grid-cols-2 place-items-center gap-4 sm:grid-cols-5">
       {#each colors as color (color)}
         <button type="button" onclick={() => onSave(color)}>
           <UserAvatar

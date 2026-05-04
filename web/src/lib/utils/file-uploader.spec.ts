@@ -1,12 +1,12 @@
+import { AssetMediaStatus, type AssetMediaResponseDto, type UserAdminResponseDto } from '@immich/sdk';
+import { get } from 'svelte/store';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { UploadState } from '$lib/types';
 import * as utils from '$lib/utils';
-import { AssetMediaStatus, type AssetMediaResponseDto, type UserAdminResponseDto } from '@immich/sdk';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
-import { get } from 'svelte/store';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fileUploadHandler } from './file-uploader';
 
 describe('fileUploader error handling', () => {

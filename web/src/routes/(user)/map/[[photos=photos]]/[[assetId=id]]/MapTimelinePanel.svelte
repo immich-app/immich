@@ -1,6 +1,6 @@
 <script lang="ts">
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import type { SelectionBBox } from '$lib/components/shared-components/map/types';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -94,8 +94,8 @@
   });
 </script>
 
-<aside class="h-full w-full overflow-hidden bg-immich-bg dark:bg-immich-dark-bg flex flex-col contain-content">
-  <div class="flex items-center justify-between border-b border-gray-200 dark:border-immich-dark-gray pb-1 pe-1">
+<aside class="flex size-full flex-col overflow-hidden bg-immich-bg contain-content dark:bg-immich-dark-bg">
+  <div class="flex items-center justify-between border-b border-gray-200 pe-1 pb-1 dark:border-immich-dark-gray">
     <div class="flex items-center gap-2">
       <Icon icon={mdiImageMultiple} size="20" />
       <p class="text-sm font-medium text-immich-fg dark:text-immich-dark-fg">

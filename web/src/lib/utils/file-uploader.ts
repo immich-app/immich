@@ -1,11 +1,3 @@
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { addAssetsToAlbums } from '$lib/services/album.service';
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { UploadState } from '$lib/types';
-import { uploadRequest } from '$lib/utils';
-import { ExecutorQueue } from '$lib/utils/executor-queue';
-import { asQueryString } from '$lib/utils/shared-links';
 import {
   AssetMediaStatus,
   AssetUploadAction,
@@ -18,6 +10,14 @@ import { toastManager } from '@immich/ui';
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { uploadManager } from '$lib/managers/upload-manager.svelte';
+import { addAssetsToAlbums } from '$lib/services/album.service';
+import { uploadAssetsStore } from '$lib/stores/upload';
+import { UploadState } from '$lib/types';
+import { uploadRequest } from '$lib/utils';
+import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { asQueryString } from '$lib/utils/shared-links';
 import { handleError } from './handle-error';
 
 export const addDummyItems = () => {
