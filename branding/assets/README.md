@@ -6,6 +6,7 @@ correct locations at build time.
 ## Required Assets
 
 - [ ] `app-icon.png` — 1024x1024, no transparency
+- [ ] `app-icon-ios.png` — 1024x1024, no transparency, larger iOS launcher mark
 - [ ] `app-icon-adaptive-fg.png` — 108dp Android adaptive foreground
 - [ ] `app-icon-adaptive-bg.png` — 108dp Android adaptive background
 - [ ] `notification-icon.png` — 24x24 white silhouette

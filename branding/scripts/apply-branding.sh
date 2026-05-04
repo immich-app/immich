@@ -267,19 +267,26 @@ patch_assets() {
   # immich-logo.png is the IN-APP rotating logo (login form, splash screen,
   # profile avatar fallback, album fallback thumbnail) and must be transparent
   # so it composites onto the surrounding card/scaffold background. The
-  # immich-logo-w-bg variants are the launcher icon sources — those need an
-  # opaque background because Apple forbids transparent iOS app icons
-  # (pubspec.yaml passes them through flutter_launcher_icons with
-  # remove_alpha_ios: true).
+  # immich-logo-w-bg variants are the launcher icon sources. Android and iOS
+  # use different safe-area rules, so keep the Android-padded launcher source
+  # separate from the larger opaque iOS source.
   #
   # Two source files in branding/assets/ keep these requirements separate:
   #   app-icon-transparent.png → in-app logo (transparent camera mark)
-  #   app-icon.png             → launcher icons (opaque white background)
+  #   app-icon.png             → Android/PWA launcher icon (opaque, padded)
+  #   app-icon-ios.png         → iOS launcher icon (opaque, larger mark)
   copy_if_exists "$assets/app-icon-transparent.png" \
     "$REPO_ROOT/mobile/assets/immich-logo.png"
 
+  local ios_icon_src="$assets/app-icon-ios.png"
+  if [[ ! -f "$ios_icon_src" ]]; then
+    ios_icon_src="$assets/app-icon.png"
+  fi
+
+  copy_if_exists "$ios_icon_src" \
+    "$REPO_ROOT/mobile/assets/immich-logo-w-bg.png"
+
   copy_if_exists "$assets/app-icon.png" \
-    "$REPO_ROOT/mobile/assets/immich-logo-w-bg.png" \
     "$REPO_ROOT/mobile/assets/immich-logo-w-bg-android.png" \
     "$REPO_ROOT/docs/static/img/color-logo.png"
 
