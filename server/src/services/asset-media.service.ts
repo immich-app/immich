@@ -116,7 +116,7 @@ export class AssetMediaService extends BaseService {
     return folder;
   }
 
-  async verifyFileChecksum(path: string, checksum: Buffer): Promise<void> {
+  async verifyFileChecksum(path: string, checksum: Buffer): Promise<boolean> {
     let onDiskHash: Buffer;
     try {
       onDiskHash = await this.cryptoRepository.hashFile(path);
@@ -128,9 +128,11 @@ export class AssetMediaService extends BaseService {
     if (!onDiskHash.equals(checksum)) {
       const expected = checksum.toString('hex');
       const actual = onDiskHash.toString('hex');
-      this.logger.error('File checksum verification failed: hash mismatch', { path, expected, actual });
-      throw new InternalServerErrorException(`File checksum verification failed: expected ${expected}, got ${actual}`);
+      this.logger.warn('File checksum mismatch', { path, expected, actual });
+      return false;
     }
+
+    return true;
   }
 
   async onUploadError(request: AuthRequest, file: Express.Multer.File) {
@@ -157,7 +159,10 @@ export class AssetMediaService extends BaseService {
 
       const { storage } = await this.getConfig({ withCache: true });
       if (storage.writeVerification) {
-        await this.verifyFileChecksum(file.originalPath, file.checksum);
+        const checksumMatches = await this.verifyFileChecksum(file.originalPath, file.checksum);
+        if (!checksumMatches) {
+          throw new InternalServerErrorException('File checksum verification failed: hash mismatch');
+        }
       }
 
       this.requireQuota(auth, file.size);

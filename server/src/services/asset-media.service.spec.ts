@@ -455,6 +455,53 @@ describe(AssetMediaService.name, () => {
       );
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
+
+    it('should proceed when writeVerification is enabled and the checksum matches', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: true } });
+      mocks.crypto.hashFile.mockResolvedValue(file.checksum);
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.crypto.hashFile).toHaveBeenCalledWith(file.originalPath);
+      expect(mocks.asset.create).toHaveBeenCalled();
+    });
+
+    it('should throw and queue file deletion when writeVerification is enabled and the checksum does not match', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      mocks.systemMetadata.get.mockResolvedValue({ storage: { writeVerification: true } });
+      mocks.crypto.hashFile.mockResolvedValue(Buffer.from('wrong hash', 'utf8'));
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(
+        'File checksum verification failed: hash mismatch',
+      );
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, undefined] },
+      });
+    });
   });
 
   describe('downloadOriginal', () => {
@@ -864,18 +911,18 @@ describe(AssetMediaService.name, () => {
     const path = '/data/upload/user-id/ra/nd/random-uuid.jpg';
     const checksum = Buffer.from('checksum', 'utf8');
 
-    it('should resolve when hashes match', async () => {
+    it('should return true when hashes match', async () => {
       mocks.crypto.hashFile.mockResolvedValue(checksum);
 
-      await expect(sut.verifyFileChecksum(path, checksum)).resolves.toBeUndefined();
+      await expect(sut.verifyFileChecksum(path, checksum)).resolves.toBe(true);
 
       expect(mocks.crypto.hashFile).toHaveBeenCalledWith(path);
     });
 
-    it('should throw when hashes differ', async () => {
+    it('should return false when hashes differ', async () => {
       mocks.crypto.hashFile.mockResolvedValue(Buffer.from('wrong-checksum', 'utf8'));
 
-      await expect(sut.verifyFileChecksum(path, checksum)).rejects.toThrow(InternalServerErrorException);
+      await expect(sut.verifyFileChecksum(path, checksum)).resolves.toBe(false);
     });
 
     it('should throw a distinct error when the file cannot be re-read', async () => {
