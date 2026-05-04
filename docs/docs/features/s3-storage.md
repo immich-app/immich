@@ -21,20 +21,26 @@ Gallery supports two modes for serving files from S3:
 | `redirect` | Returns a temporary presigned URL. The client downloads directly from S3. Recommended when the browser can reach the S3 endpoint. |
 | `proxy`    | The Gallery server streams the file from S3 to the client. Use only when S3 is not directly reachable by browsers.                |
 
+:::info
+The recent direct-media delivery change makes `redirect` the normal S3 mode for browser-reachable buckets. Before switching an existing deployment from `proxy` to `redirect`, apply bucket CORS for your Gallery origins or canvas-based features can fail.
+:::
+
+For most deployments, use `redirect`. Only use `proxy` when browsers cannot reach your S3 endpoint directly.
+
 ## Environment Variables
 
 All S3 variables are set on the `immich-server` container.
 
-| Variable                         | Description                                                                           |   Default   | Required          |
-| :------------------------------- | :------------------------------------------------------------------------------------ | :---------: | :---------------- |
-| `IMMICH_STORAGE_BACKEND`         | Storage backend for new uploads (`disk` or `s3`)                                      |   `disk`    | Yes (set to `s3`) |
-| `IMMICH_S3_BUCKET`               | S3 bucket name                                                                        |             | Yes               |
-| `IMMICH_S3_REGION`               | AWS region (or region of your S3-compatible provider)                                 | `us-east-1` | No                |
-| `IMMICH_S3_ENDPOINT`             | Custom endpoint URL for S3-compatible services (e.g. MinIO, R2)                       |             | No<sup>\*1</sup>  |
-| `IMMICH_S3_ACCESS_KEY_ID`        | Access key ID                                                                         |             | No<sup>\*2</sup>  |
-| `IMMICH_S3_SECRET_ACCESS_KEY`    | Secret access key                                                                     |             | No<sup>\*2</sup>  |
-| `IMMICH_S3_PRESIGNED_URL_EXPIRY` | Presigned URL expiration time in seconds (only relevant for `redirect` mode)          |   `3600`    | No                |
-| `IMMICH_S3_SERVE_MODE`           | How to serve S3 assets: `redirect` (presigned URL) or `proxy` (stream through server) | `redirect`  | No                |
+| Variable                         | Description                                                                                                                   |   Default   | Required          |
+| :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :---------: | :---------------- |
+| `IMMICH_STORAGE_BACKEND`         | Storage backend for new uploads (`disk` or `s3`)                                                                              |   `disk`    | Yes (set to `s3`) |
+| `IMMICH_S3_BUCKET`               | S3 bucket name                                                                                                                |             | Yes               |
+| `IMMICH_S3_REGION`               | AWS region (or region of your S3-compatible provider)                                                                         | `us-east-1` | No                |
+| `IMMICH_S3_ENDPOINT`             | Custom endpoint URL for S3-compatible services (e.g. MinIO, R2)                                                               |             | No<sup>\*1</sup>  |
+| `IMMICH_S3_ACCESS_KEY_ID`        | Access key ID                                                                                                                 |             | No<sup>\*2</sup>  |
+| `IMMICH_S3_SECRET_ACCESS_KEY`    | Secret access key                                                                                                             |             | No<sup>\*2</sup>  |
+| `IMMICH_S3_PRESIGNED_URL_EXPIRY` | Presigned URL expiration time in seconds (only relevant for `redirect` mode)                                                  |   `3600`    | No                |
+| `IMMICH_S3_SERVE_MODE`           | How to serve S3 assets: use `redirect` for normal deployments; `proxy` is the fallback when browsers cannot reach S3 directly | `redirect`  | No                |
 
 \*1: Required for non-AWS S3-compatible services (MinIO, R2, B2, etc.). Omit for AWS S3.
 
@@ -106,22 +112,27 @@ For S3-compatible services, also set the endpoint:
 
 ```bash title=".env"
 IMMICH_S3_ENDPOINT=https://your-s3-endpoint.example.com
+IMMICH_S3_SERVE_MODE=redirect
 ```
 
 ### 3. Choose a Serve Mode
 
 Pick the mode that fits your setup:
 
-- **`redirect`** (default) — Recommended for browser-readable S3 endpoints. Gallery authorizes the API request and returns a short-lived presigned URL, so media bytes flow directly from S3 to the browser.
-- **`proxy`** — Compatibility mode for private-network S3 endpoints. Gallery streams every media byte through the API process, so it costs more server resources and is not the recommended mode for large scrolling grids.
+- **`redirect`** (default, recommended) — Use this unless you have a hard network constraint. Gallery authorizes the API request and returns a short-lived presigned URL, so media bytes flow directly from S3 to the browser.
+- **`proxy`** — Fallback mode for private-network S3 endpoints. Gallery streams every media byte through the API process, so it costs more server resources and is not the recommended mode for large scrolling grids.
 
 ```bash title=".env"
 IMMICH_S3_SERVE_MODE=proxy
 ```
 
+If you change an existing deployment from `proxy` to `redirect`, treat bucket CORS as part of the same rollout.
+
 ### 4. Configure CORS For Redirect Mode
 
 Redirect mode keeps the bucket private, but browsers need CORS headers when Gallery draws S3 images to canvas for editing, face crops, and copy-to-clipboard.
+
+Apply this before you enable `IMMICH_S3_SERVE_MODE=redirect` on an existing instance.
 
 Use your real Gallery origins in `AllowedOrigins`:
 
@@ -149,6 +160,8 @@ aws s3api put-bucket-cors \
 
 Do not use `"*"` for production origins if you introduce credentialed browser requests to S3. Gallery media images use anonymous CORS.
 
+If your provider has a bucket CORS UI instead of an AWS-compatible CLI, enter the same origins, methods, headers, and exposed headers there.
+
 ### 5. Restart Gallery
 
 Recreate the containers to apply the new environment variables:
@@ -158,6 +171,13 @@ docker compose up -d
 ```
 
 New uploads will now be stored in your S3 bucket. Existing files on disk will continue to be served normally.
+
+For an existing deployment switching from `proxy` to `redirect`, the safe order is:
+
+1. Apply bucket CORS.
+2. Set `IMMICH_S3_SERVE_MODE=redirect`.
+3. Recreate the Gallery containers.
+4. Verify thumbnails, editing, face crops, copy-to-clipboard, and video playback from a browser.
 
 ## Example Configurations
 

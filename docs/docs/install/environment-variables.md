@@ -207,19 +207,19 @@ Additional machine learning parameters can be tuned from the admin UI.
 
 ## S3 Storage
 
-| Variable                         | Description                                                                                                      |   Default   | Containers | Workers            |
-| :------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :---------: | :--------- | :----------------- |
-| `IMMICH_STORAGE_BACKEND`         | Storage backend for new uploads (`disk` or `s3`)                                                                 |   `disk`    | server     | api, microservices |
-| `IMMICH_S3_BUCKET`               | S3 bucket name                                                                                                   |             | server     | api, microservices |
-| `IMMICH_S3_REGION`               | AWS region or S3-compatible provider region                                                                      | `us-east-1` | server     | api, microservices |
-| `IMMICH_S3_ENDPOINT`             | Custom endpoint URL for S3-compatible services                                                                   |             | server     | api, microservices |
-| `IMMICH_S3_ACCESS_KEY_ID`        | Access key ID (falls back to IAM role if omitted)                                                                |             | server     | api, microservices |
-| `IMMICH_S3_SECRET_ACCESS_KEY`    | Secret access key (falls back to IAM role if omitted)                                                            |             | server     | api, microservices |
-| `IMMICH_S3_PRESIGNED_URL_EXPIRY` | Presigned URL expiration time in seconds                                                                         |   `3600`    | server     | api, microservices |
-| `IMMICH_S3_SERVE_MODE`           | How to serve S3 assets: `redirect` is recommended when browsers can reach S3; `proxy` streams through the server | `redirect`  | server     | api, microservices |
+| Variable                         | Description                                                                                                                   |   Default   | Containers | Workers            |
+| :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :---------: | :--------- | :----------------- |
+| `IMMICH_STORAGE_BACKEND`         | Storage backend for new uploads (`disk` or `s3`)                                                                              |   `disk`    | server     | api, microservices |
+| `IMMICH_S3_BUCKET`               | S3 bucket name                                                                                                                |             | server     | api, microservices |
+| `IMMICH_S3_REGION`               | AWS region or S3-compatible provider region                                                                                   | `us-east-1` | server     | api, microservices |
+| `IMMICH_S3_ENDPOINT`             | Custom endpoint URL for S3-compatible services                                                                                |             | server     | api, microservices |
+| `IMMICH_S3_ACCESS_KEY_ID`        | Access key ID (falls back to IAM role if omitted)                                                                             |             | server     | api, microservices |
+| `IMMICH_S3_SECRET_ACCESS_KEY`    | Secret access key (falls back to IAM role if omitted)                                                                         |             | server     | api, microservices |
+| `IMMICH_S3_PRESIGNED_URL_EXPIRY` | Presigned URL expiration time in seconds                                                                                      |   `3600`    | server     | api, microservices |
+| `IMMICH_S3_SERVE_MODE`           | How to serve S3 assets: use `redirect` for normal deployments; `proxy` is the fallback when browsers cannot reach S3 directly | `redirect`  | server     | api, microservices |
 
 :::info
-For detailed setup instructions, see the [S3-Compatible Storage](/features/s3-storage) guide.
+If you use `IMMICH_S3_SERVE_MODE=redirect`, configure bucket CORS for your Gallery origins before switching an existing deployment over. Without that, redirected media can display but canvas-based workflows such as editing, face crops, and copy-to-clipboard can fail. For the required CORS policy and rollout steps, see the [S3-Compatible Storage](/features/s3-storage) guide.
 :::
 
 ## Prometheus
