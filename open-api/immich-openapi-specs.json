@@ -5172,7 +5172,7 @@
     },
     "/duplicates/{id}": {
       "delete": {
-        "description": "Delete a single duplicate asset specified by its ID.",
+        "description": "Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.",
         "operationId": "deleteDuplicate",
         "parameters": [
           {
@@ -5202,7 +5202,7 @@
             "api_key": []
           }
         ],
-        "summary": "Delete a duplicate",
+        "summary": "Dismiss a duplicate group",
         "tags": [
           "Duplicates"
         ],
