@@ -184,17 +184,6 @@ export class AlbumRepository {
   }
 
   private buildAlbumBaseQuery(ownerId: string, { owned, shared }: { owned?: boolean; shared?: boolean }) {
-    const isShared = (eb: ExpressionBuilder<DB, 'album' | 'album_user'>) =>
-      eb.or([
-        eb.exists(
-          eb
-            .selectFrom('album_user as au')
-            .whereRef('au.albumId', '=', 'album.id')
-            .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
-        ),
-        eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
-      ]);
-
     return this.db
       .selectFrom('album')
       .innerJoin('album_user', (join) =>
@@ -203,8 +192,20 @@ export class AlbumRepository {
       .where('album.deletedAt', 'is', null)
       .$if(owned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
       .$if(owned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
-      .$if(shared === true, (qb) => qb.where(isShared))
-      .$if(shared === false, (qb) => qb.where((eb) => eb.not(isShared(eb))));
+      .$if(shared !== undefined, (qb) =>
+        qb.where((eb) => {
+          const isShared = eb.or([
+            eb.exists(
+              eb
+                .selectFrom('album_user as au')
+                .whereRef('au.albumId', '=', 'album.id')
+                .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
+            ),
+            eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
+          ]);
+          return shared ? isShared : eb.not(isShared);
+        }),
+      );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, {}] })
