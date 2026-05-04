@@ -131,6 +131,7 @@ class TechnicalDetails extends ConsumerWidget {
     if (exifInfo == null) return null;
     final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
+    if (fNumber == null && focalLength == null) return null;
     return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 }
