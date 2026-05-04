@@ -2,6 +2,7 @@ import type { PersonFacePageResponseDto, PersonFaceResponseDto } from '@immich/s
 import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { afterEach } from 'vitest';
 import RepresentativeFacePickerModal from './RepresentativeFacePickerModal.svelte';
 
 vi.mock('@immich/ui', async (importOriginal: () => Promise<typeof import('@immich/ui')>) => {
@@ -46,6 +47,13 @@ const makePage = (overrides: Partial<PersonFacePageResponseDto> = {}): PersonFac
 });
 
 const getThumbnailUrl = (face: PersonFaceResponseDto) => `/thumbnail/${face.id}`;
+
+// Drain bits-ui Modal's deferred body-scroll-lock cleanup before happy-dom tears
+// down `document`. Otherwise CI can report an unhandled `document is not defined`
+// after all assertions in this file have passed.
+afterEach(async () => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+});
 
 describe('RepresentativeFacePickerModal', () => {
   it('shows a stable skeleton grid while loading', () => {

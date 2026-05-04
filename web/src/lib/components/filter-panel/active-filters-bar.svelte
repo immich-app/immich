@@ -65,6 +65,8 @@
     // Location chip
     if (filters.city && filters.country) {
       result.push({ type: 'location', label: `${filters.city}, ${filters.country}` });
+    } else if (filters.city) {
+      result.push({ type: 'location', label: filters.city });
     } else if (filters.country) {
       result.push({ type: 'location', label: filters.country });
     }

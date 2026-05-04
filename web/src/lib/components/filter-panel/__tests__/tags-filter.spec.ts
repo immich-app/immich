@@ -168,6 +168,36 @@ describe('TagsFilter', () => {
     expect(orphanItem.textContent).toContain('t-never-seen');
   });
 
+  it('should display orphaned selected tag name from typed search cache', () => {
+    const tags = [{ id: 't1', name: 'Vacation' }];
+    const { getByTestId } = render(TagsFilter, {
+      props: {
+        tags,
+        selectedIds: ['t-nature'],
+        selectedNames: new Map([['t-nature', 'nature']]),
+        onSelectionChange: () => {},
+      },
+    });
+
+    const orphanItem = getByTestId('tags-item-t-nature');
+    expect(orphanItem.textContent).toContain('nature');
+    expect(orphanItem.textContent).not.toContain('t-nature');
+  });
+
+  it('should show typed selected tag even when suggestions are empty', () => {
+    const { getByTestId, queryByTestId } = render(TagsFilter, {
+      props: {
+        tags: [],
+        selectedIds: ['t-nature'],
+        selectedNames: new Map([['t-nature', 'nature']]),
+        onSelectionChange: () => {},
+      },
+    });
+
+    expect(queryByTestId('tags-empty')).toBeNull();
+    expect(getByTestId('tags-item-t-nature').textContent).toContain('nature');
+  });
+
   it('should set aria-pressed on tag buttons', () => {
     const tags = makeTags(3);
     const { getByTestId } = render(TagsFilter, {

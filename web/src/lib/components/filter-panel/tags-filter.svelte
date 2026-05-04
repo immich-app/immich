@@ -7,10 +7,11 @@
   interface Props {
     tags: TagOption[];
     selectedIds: string[];
+    selectedNames?: Map<string, string>;
     onSelectionChange: (ids: string[]) => void;
   }
 
-  let { tags, selectedIds, onSelectionChange }: Props = $props();
+  let { tags, selectedIds, selectedNames, onSelectionChange }: Props = $props();
 
   let searchQuery = $state('');
   let showAll = $state(false);
@@ -38,7 +39,9 @@
 
   // Orphaned tags: selected but not in current results
   let orphanedTags = $derived(
-    selectedIds.filter((id) => !tags.some((t) => t.id === id)).map((id) => ({ id, name: tagNameCache.get(id) ?? id })),
+    selectedIds
+      .filter((id) => !tags.some((t) => t.id === id))
+      .map((id) => ({ id, name: selectedNames?.get(id) ?? tagNameCache.get(id) ?? id })),
   );
 
   let filteredTags = $derived(
@@ -61,7 +64,7 @@
 </script>
 
 <div data-testid="tags-filter">
-  {#if tags.length === 0}
+  {#if tags.length === 0 && orphanedTags.length === 0}
     <p class="text-sm text-gray-400 dark:text-gray-500" data-testid="tags-empty">No tags available</p>
   {:else}
     <!-- Search input -->

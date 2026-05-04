@@ -39,6 +39,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { registerSelectionContext, registerSpaceContext } from '$lib/managers/command-context-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { globalSearchManager } from '$lib/managers/global-search-manager.svelte';
   import { Route } from '$lib/route';
   import { MAX_SPACE_ASSETS_PER_REQUEST } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
@@ -46,7 +47,14 @@
   import { lang } from '$lib/stores/preferences.store';
   import { createUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { buildSearchablePageUrl, getSearchablePageState } from '$lib/utils/searchable-page-search';
+  import {
+    buildSearchablePageUrl,
+    getSearchablePageFilterState,
+    getSearchablePageState,
+    preserveTransientTemporalFilters,
+    type SearchablePageTransientTemporalState,
+  } from '$lib/utils/searchable-page-search';
+  import { consumeTypedSearchNamesInto } from '$lib/utils/typed-search/typed-search-name-cache';
   import {
     buildSmartSearchFacetKey,
     buildSmartSearchFacetsParams,
@@ -118,10 +126,12 @@
   $effect(() => {
     if (data.space.id !== space.id) {
       const nextSearchState = getSearchablePageState(page.url);
+      const nextFilterState = getSearchablePageFilterState(page.url);
       space = data.space;
       members = data.members;
       filters = {
         ...createFilterState(),
+        ...nextFilterState,
         sortOrder: nextSearchState.sortOrder,
       };
       activities = [];
@@ -130,13 +140,14 @@
       spacePeople = [];
       personNames.clear();
       tagNames.clear();
+      consumeTypedSearchNamesInto(page.url.pathname + page.url.search, personNames, tagNames);
       isLoading = false;
       smartFacetInFlight?.controller.abort();
       smartFacets = undefined;
       smartFacetKey = '';
       smartFacetInFlight = undefined;
       committedSearchQuery = nextSearchState.query;
-      lastHandledSearchState = `${nextSearchState.query}:${nextSearchState.sortOrder}`;
+      lastHandledSearchState = `${nextSearchState.query}:${nextSearchState.sortOrder}:${page.url.search}`;
       heroCollapsed = loadHeroCollapsed(data.space.id);
       panelOpen = false;
       viewMode = 'view';
@@ -160,12 +171,16 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   // Filter state
+  const initialFilterState = getSearchablePageFilterState(page.url);
   let filters = $state<FilterState>({
     ...createFilterState(),
+    ...initialFilterState,
     sortOrder: initialSearchState.sortOrder,
   });
   let personNames = new SvelteMap<string, string>();
   let tagNames = new SvelteMap<string, string>();
+  consumeTypedSearchNamesInto(page.url.pathname + page.url.search, personNames, tagNames);
+  $effect(() => globalSearchManager.registerSearchablePageFilters(() => filters));
   let smartFacets = $state<SmartSearchFacetsResponseDto>();
   let smartFacetKey = $state('');
   let smartFacetInFlight:
@@ -378,7 +393,9 @@
   };
 
   function handleRemoveFilter(type: string, id?: string) {
-    filters = handleSpaceRemoveFilter(filters, type, id);
+    const nextFilters = handleSpaceRemoveFilter(filters, type, id);
+    filters = nextFilters;
+    syncFilterUrl(nextFilters);
   }
 
   const currentMember = $derived(members.find((m) => m.userId === authManager.user.id));
@@ -716,7 +733,10 @@
   };
 
   let committedSearchQuery = $state(initialSearchState.query);
-  let lastHandledSearchState = $state(`${initialSearchState.query}:${initialSearchState.sortOrder}`);
+  let lastHandledSearchState = $state(`${initialSearchState.query}:${initialSearchState.sortOrder}:${page.url.search}`);
+  let pendingFilterUrlSync = $state<
+    { url: string; transientTemporal?: SearchablePageTransientTemporalState } | undefined
+  >();
   let isLoading = $state(false);
   const showSearchResults = $derived(committedSearchQuery.trim().length > 0);
   const isTimelineEmpty = $derived(
@@ -736,7 +756,7 @@
 
   const clearSearch = () => {
     isLoading = false;
-    const nextUrl = buildSearchablePageUrl(page.url, '');
+    const nextUrl = buildSearchablePageUrl(page.url, '', filters.sortOrder, filters);
     if (!nextUrl) {
       return;
     }
@@ -747,21 +767,54 @@
     });
   };
 
+  function syncFilterUrl(nextFilters: FilterState) {
+    const currentSearchState = getSearchablePageState(page.url);
+    const sortOrder =
+      !committedSearchQuery.trim() && nextFilters.sortOrder === 'desc' && !currentSearchState.hasExplicitSort
+        ? 'relevance'
+        : nextFilters.sortOrder;
+    const nextUrl = buildSearchablePageUrl(page.url, committedSearchQuery, sortOrder, nextFilters);
+    if (!nextUrl || nextUrl === page.url.pathname + page.url.search) {
+      return;
+    }
+    pendingFilterUrlSync = {
+      url: nextUrl,
+      transientTemporal: {
+        selectedYear: nextFilters.selectedYear,
+        selectedMonth: nextFilters.selectedMonth,
+      },
+    };
+    void goto(nextUrl, {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+  }
+
   $effect(() => {
     const nextSearchState = getSearchablePageState(page.url);
-    const nextToken = `${nextSearchState.query}:${nextSearchState.sortOrder}`;
+    const nextToken = `${nextSearchState.query}:${nextSearchState.sortOrder}:${page.url.search}`;
+    const currentUrl = page.url.pathname + page.url.search;
     if (nextToken === lastHandledSearchState) {
       return;
     }
 
     const queryChanged = nextSearchState.query !== committedSearchQuery;
     untrack(() => {
+      const filterState = getSearchablePageFilterState(page.url);
+      const transientTemporal =
+        pendingFilterUrlSync?.url === currentUrl ? pendingFilterUrlSync.transientTemporal : undefined;
       committedSearchQuery = nextSearchState.query;
       isLoading = false;
       filters = {
-        ...filters,
+        ...createFilterState(),
+        ...preserveTransientTemporalFilters(filterState, transientTemporal),
         sortOrder: nextSearchState.sortOrder,
       };
+      if (pendingFilterUrlSync?.url === currentUrl) {
+        pendingFilterUrlSync = undefined;
+      }
+      consumeTypedSearchNamesInto(page.url.pathname + page.url.search, personNames, tagNames);
       if (queryChanged) {
         smartFacetInFlight?.controller.abort();
         smartFacets = undefined;
@@ -903,7 +956,15 @@
     <!-- Filter Panel (left sidebar) -->
     {#if viewMode === 'view'}
       {#key `${space.id}:${showSearchResults ? `spaces-search-${committedSearchQuery.trim()}:${$lang}` : 'spaces-browse'}`}
-        <FilterPanel config={filterConfig} bind:filters timeBuckets={smartFacetBuckets} hidden={isTimelineEmpty} />
+        <FilterPanel
+          config={filterConfig}
+          bind:filters
+          timeBuckets={smartFacetBuckets}
+          hidden={isTimelineEmpty}
+          {personNames}
+          {tagNames}
+          onFiltersChange={syncFilterUrl}
+        />
       {/key}
     {/if}
 
@@ -918,7 +979,11 @@
           {tagNames}
           onRemoveFilter={handleRemoveFilter}
           onClearAll={() => {
-            filters = clearFilters(filters);
+            const nextFilters = clearFilters(filters);
+            filters = nextFilters;
+            if (!committedSearchQuery.trim()) {
+              syncFilterUrl(nextFilters);
+            }
           }}
           searchQuery={committedSearchQuery}
           onClearSearch={clearSearch}

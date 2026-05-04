@@ -9,16 +9,32 @@
     filters?: FilterState;
     config?: FilterPanelConfig;
     timeBuckets?: Array<{ timeBucket: string; count: number }>;
+    personNames?: Map<string, string>;
+    tagNames?: Map<string, string>;
+    onFiltersChange?: (filters: FilterState) => void;
     [key: string]: unknown;
   }
 
-  let { filters = $bindable(), config, timeBuckets = [], ...rest }: Props = $props();
+  let {
+    filters = $bindable(),
+    config,
+    timeBuckets = [],
+    personNames,
+    tagNames,
+    onFiltersChange,
+    ...rest
+  }: Props = $props();
   let suggestions = $state('');
   let requestToken = 0;
 
+  function updateFilters(nextFilters: FilterState) {
+    filters = nextFilters;
+    onFiltersChange?.(nextFilters);
+  }
+
   function selectFavorites() {
     if (filters) {
-      filters = { ...filters, isFavorite: true };
+      updateFilters({ ...filters, isFavorite: true });
     }
   }
 
@@ -65,6 +81,8 @@
   data-is-favorite={String(filters?.isFavorite)}
   data-time-buckets={JSON.stringify(timeBuckets)}
   data-suggestions={suggestions}
+  data-person-names={JSON.stringify([...(personNames?.entries() ?? [])])}
+  data-tag-names={JSON.stringify([...(tagNames?.entries() ?? [])])}
 >
   <button type="button" data-testid="select-favorites-filter" onclick={selectFavorites}>Favorites</button>
   <button type="button" data-testid="load-city-suggestions" onclick={loadCitySuggestions}>Load cities</button>
@@ -76,7 +94,7 @@
     data-testid="filter-panel-set-country"
     onclick={() => {
       if (filters) {
-        filters = { ...filters, country: 'Germany' };
+        updateFilters({ ...filters, country: 'Germany' });
       }
     }}
   >
@@ -84,10 +102,21 @@
   </button>
   <button
     type="button"
+    data-testid="filter-panel-clear-location"
+    onclick={() => {
+      if (filters) {
+        updateFilters({ ...filters, country: undefined, city: undefined });
+      }
+    }}
+  >
+    Clear location
+  </button>
+  <button
+    type="button"
     data-testid="filter-panel-set-sort-asc"
     onclick={() => {
       if (filters) {
-        filters = { ...filters, sortOrder: 'asc' };
+        updateFilters({ ...filters, sortOrder: 'asc' });
       }
     }}
   >

@@ -221,6 +221,41 @@ When you open the palette from a page that supports inline search, Gallery prelo
 
 The URL carries the query in `q` and, when needed, the sort in `sort=asc` or `sort=desc`. Clearing the search chip removes `q` and returns the page to its normal date ordering.
 
+### Typed filter syntax
+
+You can add advanced filters directly to a palette search by typing `key:value` tokens alongside normal search text:
+
+```text
+beach person:anna from:2025 to:2026 camera:nikon
+```
+
+Pressing <kbd>Enter</kbd> applies the plain words as the search query and applies the typed filters to the current searchable page's filter state. On **Photos**, the query stays on `/photos`; inside a shared space, it stays scoped to that space. Pages without a searchable context fall back to the Photos timeline.
+
+Typed filters are a keyboard shortcut for the existing filter panel. After submission, the active filter chips and filter panel reflect the same filters, and the URL can be refreshed or shared.
+
+Supported filters:
+
+| Filter                             | Example           | Notes                                                                   |
+| ---------------------------------- | ----------------- | ----------------------------------------------------------------------- |
+| `person:<name>` or `people:<name>` | `person:anna`     | Resolves to a matching named face. Repeat to filter by multiple people. |
+| `tag:<name>` or `tags:<name>`      | `tag:nature`      | Resolves to a matching tag. Repeat to filter by multiple tags.          |
+| `from:<date>`                      | `from:2025`       | Start date. Accepts `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`.                 |
+| `to:<date>`                        | `to:2026-03`      | End date. Accepts `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`.                   |
+| `city:<value>`                     | `city:"New York"` | Filters by reverse-geocoded city.                                       |
+| `country:<value>`                  | `country:Germany` | Filters by reverse-geocoded country.                                    |
+| `camera:<value>`                   | `camera:nikon`    | Resolves to a known camera make or model.                               |
+| `type:<photo\|image\|video>`       | `type:video`      | `photo` is treated as `image`.                                          |
+| `favorite:<true\|false>`           | `favorite:true`   | Also accepts `yes`, `no`, `1`, and `0`.                                 |
+| `rating:<1-5>`                     | `rating:4`        | Filters by minimum star rating.                                         |
+
+Use quotes when a filter value contains spaces:
+
+```text
+person:"Anna Maria" city:"New York"
+```
+
+Filters are resolved only when you press <kbd>Enter</kbd>, not while you type. If a person, tag, or camera value has no match, or if multiple matches are possible, the palette stays open and asks you to fix or choose a result. Invalid filters such as `persn:anna`, `rating:9`, `from:soon`, or a repeated scalar filter block submission instead of being ignored.
+
 ## Recents
 
 Every destination or free-text search you activate is added to a **Recent** list (per user, per browser). When you reopen the palette with an empty query, your last few activations are shown immediately so you can repeat a workflow with two keystrokes.

@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
+import type { FilterState } from '$lib/components/filter-panel/filter-panel';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import { Route } from '$lib/route';
@@ -10,6 +11,13 @@ import {
   getSearchablePageState,
   type SearchablePageSortOrder,
 } from '$lib/utils/searchable-page-search';
+import { getTypedSearchDisplayText, storeTypedSearchNames } from '$lib/utils/typed-search/typed-search-name-cache';
+import {
+  parseTypedSearch,
+  type TypedSearchDisplayToken,
+  type TypedSearchIssue,
+} from '$lib/utils/typed-search/typed-search-parser';
+import { resolveTypedSearchFilters, type TypedSearchChoice } from '$lib/utils/typed-search/typed-search-resolver';
 import {
   getAlbumInfo,
   getAlbumNames,
@@ -91,7 +99,7 @@ export type ActiveItem =
   | { kind: 'nav'; data: NavigationItem }
   | { kind: 'command'; data: CommandItem };
 
-type TopSearchMatch = { id: 'top-search'; query: string };
+type TopSearchMatch = { id: 'top-search'; query: string; rawQuery: string };
 
 const VALID_MODES: ReadonlySet<SearchMode> = new Set(['smart', 'metadata', 'description', 'ocr']);
 // Slice size for the albums section. Kept as a named constant so the buildProviders
@@ -219,6 +227,23 @@ function loadSearchQueryType(): SearchMode {
   return 'smart';
 }
 
+function hasSerializableFilters(filters: FilterState | undefined): boolean {
+  return (
+    filters !== undefined &&
+    (filters.personIds.length > 0 ||
+      filters.tagIds.length > 0 ||
+      !!filters.city ||
+      !!filters.country ||
+      !!filters.make ||
+      !!filters.model ||
+      filters.mediaType !== 'all' ||
+      filters.isFavorite !== undefined ||
+      filters.rating !== undefined ||
+      !!filters.dateAfter ||
+      !!filters.dateBefore)
+  );
+}
+
 export class GlobalSearchManager {
   isOpen = $state(false);
   presentation = $state<SearchPresentation>('modal');
@@ -228,6 +253,12 @@ export class GlobalSearchManager {
   parsedQuery = $derived<ParsedQuery>(parseScope(this.query));
   scope = $derived<Scope>(this.parsedQuery.scope);
   payload = $derived<string>(this.parsedQuery.payload);
+  typedSearchDisplayTokens = $state<TypedSearchDisplayToken[]>([]);
+  typedSearchIssues = $state<TypedSearchIssue[]>([]);
+  typedSearchChoices = $state<TypedSearchChoice[]>([]);
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  selectedTypedSearchChoices = new Map<string, TypedSearchChoice>();
+  typedSearchPlainQuery = $state('');
   sections = $state<Sections>({
     photos: idle,
     people: idle,
@@ -326,6 +357,7 @@ export class GlobalSearchManager {
   private storageListener?: (e: StorageEvent) => void;
   private mlProbed = false;
   private keepOpenOnNextNavigate = false;
+  private searchablePageFiltersProvider?: () => FilterState | undefined;
 
   /**
    * Catalogs fetched lazily on first provider run and shared for the remainder of the
@@ -594,16 +626,24 @@ export class GlobalSearchManager {
     this.isOpen = true;
     this.presentation = presentation;
     const currentPageSearchState = getSearchablePageState(page.url);
+    const typedDisplayText = currentPageSearchState.isSearchable
+      ? getTypedSearchDisplayText(page.url.pathname + page.url.search)
+      : undefined;
     if (presentation === 'modal' && this.clearQueryOnNextModalOpen) {
       this.query = '';
       this.searchSortOrder = 'relevance';
       this.clearQueryOnNextModalOpen = false;
     } else if (currentPageSearchState.isSearchable) {
-      this.query = currentPageSearchState.query;
+      this.query = typedDisplayText ?? currentPageSearchState.query;
       this.searchSortOrder = currentPageSearchState.query ? currentPageSearchState.sortOrder : 'relevance';
+      if (typedDisplayText !== undefined) {
+        this.clearQueryOnNextModalOpen = false;
+      }
+      this.parseTypedSearchDraft(this.query);
     } else {
       this.query = '';
       this.searchSortOrder = 'relevance';
+      this.clearTypedSearchDraft();
     }
     if (this.closeController.signal.aborted) {
       this.closeController = new AbortController();
@@ -976,6 +1016,7 @@ export class GlobalSearchManager {
     // Reset query so reopening and re-typing the same string is not a no-op
     // (setQuery short-circuits when `this.query === text`).
     this.query = '';
+    this.clearTypedSearchDraft();
     this.searchSortOrder = 'relevance';
   }
 
@@ -1215,13 +1256,53 @@ export class GlobalSearchManager {
     void goto(route);
   }
 
-  private buildSearchDestination(text: string): string {
-    const searchablePageUrl = buildSearchablePageUrl(page.url, text, this.searchSortOrder);
+  parseTypedSearchDraft(text = this.query) {
+    const parsed = parseTypedSearch(text);
+    this.typedSearchDisplayTokens = parsed.displayTokens;
+    this.typedSearchPlainQuery = parsed.queryText;
+    this.typedSearchIssues = [];
+    this.typedSearchChoices = [];
+    for (const key of this.selectedTypedSearchChoices.keys()) {
+      if (!parsed.resolutionTokens.some((token) => token.raw === key)) {
+        this.selectedTypedSearchChoices.delete(key);
+      }
+    }
+    return parsed;
+  }
+
+  clearTypedSearchDraft() {
+    this.typedSearchDisplayTokens = [];
+    this.typedSearchPlainQuery = '';
+    this.typedSearchIssues = [];
+    this.typedSearchChoices = [];
+    this.selectedTypedSearchChoices.clear();
+  }
+
+  selectTypedSearchChoice(choice: TypedSearchChoice) {
+    this.selectedTypedSearchChoices.set(choice.tokenRaw, choice);
+    this.typedSearchIssues = this.typedSearchIssues.filter((issue) => issue.raw !== choice.tokenRaw);
+    this.typedSearchChoices = this.typedSearchChoices.filter((item) => item.tokenRaw !== choice.tokenRaw);
+    this.typedSearchDisplayTokens = this.typedSearchDisplayTokens.map((token) =>
+      token.raw === choice.tokenRaw
+        ? { raw: token.raw, key: token.key, value: choice.label, status: 'resolved-entity' as const }
+        : token,
+    );
+  }
+
+  private getSearchProviderPayload(): string {
+    if (this.scope !== 'all') {
+      return this.payload;
+    }
+    return this.typedSearchPlainQuery;
+  }
+
+  private buildSearchDestination(text: string, filters?: FilterState): string {
+    const searchablePageUrl = buildSearchablePageUrl(page.url, text, this.searchSortOrder, filters);
     if (searchablePageUrl) {
       return searchablePageUrl;
     }
 
-    if (page.url.pathname.startsWith('/map')) {
+    if (page.url.pathname.startsWith('/map') && !hasSerializableFilters(filters)) {
       // Ephemeral serialization for navigation only; no reactive state is retained.
       // eslint-disable-next-line svelte/prefer-svelte-reactivity
       const params = new URLSearchParams(page.url.searchParams);
@@ -1229,20 +1310,15 @@ export class GlobalSearchManager {
       return `/map?${params.toString()}`;
     }
 
-    // Ephemeral serialization for navigation only; no reactive state is retained.
+    // Ephemeral URL object for destination construction only; no reactive state is retained.
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const fresh = new URLSearchParams();
-    fresh.set('q', text);
-    if (this.searchSortOrder !== 'relevance') {
-      fresh.set('sort', this.searchSortOrder);
-    }
-    return `/photos?${fresh.toString()}`;
+    return buildSearchablePageUrl(new URL('/photos', page.url), text, this.searchSortOrder, filters) ?? '/photos';
   }
 
   async applySearchSort(sortOrder: SearchablePageSortOrder, text = this.query) {
     this.searchSortOrder = sortOrder;
 
-    const nextUrl = buildSearchablePageUrl(page.url, text, sortOrder);
+    const nextUrl = buildSearchablePageUrl(page.url, text, sortOrder, this.searchablePageFiltersProvider?.());
     if (!nextUrl || nextUrl === page.url.pathname + page.url.search) {
       return;
     }
@@ -1260,7 +1336,17 @@ export class GlobalSearchManager {
     }
   }
 
-  activateSearch(text: string): void {
+  registerSearchablePageFilters(provider: () => FilterState | undefined) {
+    this.searchablePageFiltersProvider = provider;
+
+    return () => {
+      if (this.searchablePageFiltersProvider === provider) {
+        this.searchablePageFiltersProvider = undefined;
+      }
+    };
+  }
+
+  async activateSearch(text: string): Promise<void> {
     const trimmed = text.trim();
     if (!trimmed) {
       const searchablePageUrl = buildSearchablePageUrl(page.url, '');
@@ -1273,6 +1359,35 @@ export class GlobalSearchManager {
       return;
     }
 
+    const parsed = this.parseTypedSearchDraft(trimmed);
+    if (parsed.issues.length > 0) {
+      this.typedSearchIssues = parsed.issues;
+      this.typedSearchChoices = [];
+      this.typedSearchDisplayTokens = parsed.displayTokens;
+      return;
+    }
+
+    const spaceId = page.url.pathname.startsWith('/spaces/')
+      ? page.url.pathname.split('/').filter(Boolean)[1]
+      : undefined;
+    const resolved = await resolveTypedSearchFilters(parsed, {
+      spaceId,
+      signal: this.closeSignal,
+      selectedChoices: this.selectedTypedSearchChoices,
+    });
+
+    if (!resolved.ok) {
+      this.typedSearchIssues = resolved.issues;
+      this.typedSearchChoices = resolved.choices;
+      this.typedSearchDisplayTokens = parsed.displayTokens.map((token) => {
+        const issue = resolved.issues.find((item) => item.raw === token.raw);
+        return issue ? { ...token, status: 'error' as const, issue } : token;
+      });
+      return;
+    }
+
+    this.typedSearchIssues = [];
+    this.typedSearchChoices = [];
     addEntry({
       kind: 'query',
       id: `query:${trimmed.toLowerCase()}`,
@@ -1280,7 +1395,9 @@ export class GlobalSearchManager {
       lastUsed: Date.now(),
     });
     this.clearQueryOnNextModalOpen = true;
-    void goto(this.buildSearchDestination(trimmed));
+    const destination = this.buildSearchDestination(resolved.queryText, resolved.filters);
+    storeTypedSearchNames(destination, { personNames: resolved.personNames, tagNames: resolved.tagNames }, trimmed);
+    void goto(destination);
   }
 
   activate(kind: 'photo' | 'person' | 'place' | 'tag' | 'nav' | 'command', item: unknown) {
@@ -1448,7 +1565,7 @@ export class GlobalSearchManager {
       return;
     }
     if (entry.kind === 'query') {
-      this.activateSearch(entry.text);
+      void this.activateSearch(entry.text);
       return;
     }
     const now = Date.now();
@@ -1578,7 +1695,7 @@ export class GlobalSearchManager {
     // throws (not just returns a rejected promise) still lands in the .catch handler.
     // Symmetric with runBatch's defensive wrapper.
     Promise.resolve()
-      .then(() => this.providers.photos.run(this.query, this.mode, signal))
+      .then(() => this.providers.photos.run(this.getSearchProviderPayload(), this.mode, signal))
       .then((result) => {
         if (setModeBatch !== this.batchController) {
           return;
@@ -1654,6 +1771,9 @@ export class GlobalSearchManager {
     if (this.scope !== 'all') {
       return null;
     }
+    if (this.typedSearchDisplayTokens.length > 0) {
+      return null;
+    }
     const q = this.query.trim();
     if (q.length === 0) {
       return null;
@@ -1694,7 +1814,7 @@ export class GlobalSearchManager {
     if (this.topCommandMatch !== null || this.topNavigationMatch !== null) {
       return null;
     }
-    return { id: 'top-search', query };
+    return { id: 'top-search', query: this.typedSearchPlainQuery || query, rawQuery: query };
   });
 
   /**
@@ -1708,6 +1828,9 @@ export class GlobalSearchManager {
     // section itself lists matching commands — promoting + deduping here would
     // make the section render empty, so only promote under unscoped 'all'.
     if (this.scope !== 'all') {
+      return null;
+    }
+    if (this.typedSearchDisplayTokens.length > 0) {
       return null;
     }
     const q = this.query.trim();
@@ -1821,8 +1944,14 @@ export class GlobalSearchManager {
     this.batchController = null;
     this.photosController?.abort();
     this.photosController = null;
+    if (this.scope === 'all') {
+      this.parseTypedSearchDraft(text);
+    } else {
+      this.clearTypedSearchDraft();
+    }
 
     if (text.trim() === '') {
+      this.clearTypedSearchDraft();
       this.sections = {
         photos: idle,
         people: idle,
@@ -1862,12 +1991,17 @@ export class GlobalSearchManager {
     // provider can branch: non-nav entity scopes hide the section entirely, bare
     // `>` returns the full filtered catalog sorted alphabetically, and fuzzy search
     // runs when there's a payload under scope 'all' or 'nav'.
-    this.sections.navigation = this.runNavigationProvider(this.payload, this.scope);
+    const searchProviderPayload = this.getSearchProviderPayload();
+    this.sections.navigation = this.runNavigationProvider(searchProviderPayload, this.scope);
     // Commands mirror navigation: synchronous on every keystroke, bypasses the debounce.
     // Pass the current `topCommandMatch.id` so a command that is promoted to the top-
     // result slot doesn't also render inside its own section (same dedup shape the
     // component applies for nav).
-    this.sections.commands = this.runCommandsProvider(this.payload, this.scope, this.topCommandMatch?.id ?? null);
+    this.sections.commands = this.runCommandsProvider(
+      searchProviderPayload,
+      this.scope,
+      this.topCommandMatch?.id ?? null,
+    );
     // The prior cursor may point at a nav/entity item that no longer exists in the new
     // results. Reconcile synchronously so the highlight doesn't lag the displayed list.
     this.reconcileCursor();
@@ -1903,6 +2037,7 @@ export class GlobalSearchManager {
     // in setQuery and is NOT an entity section.
     const scope = this.scope;
     const payload = this.payload;
+    const providerPayload = this.getSearchProviderPayload();
     const inScope = ENTITY_KEYS_BY_SCOPE[scope];
     for (const key of ['photos', 'people', 'places', 'tags', 'albums', 'spaces'] as const) {
       if (!inScope.includes(key)) {
@@ -1923,7 +2058,7 @@ export class GlobalSearchManager {
       //     the provider's bare-prefix branch renders suggestions.
       const isBare = scope !== 'all' && payload === '';
       const minRequired = scope === 'all' ? provider.minQueryLength : 1;
-      if (!isBare && payload.length < minRequired) {
+      if (!isBare && providerPayload.length < minRequired) {
         this.sections[key] = idle;
         continue;
       }
@@ -1947,7 +2082,7 @@ export class GlobalSearchManager {
       // Promise.resolve().then(...) guarantees that a provider which synchronously
       // throws (not just returns a rejected promise) still lands in the .catch handler.
       Promise.resolve()
-        .then(() => provider.run(payload, mode, signal))
+        .then(() => provider.run(providerPayload, mode, signal))
         .then((result) => {
           if (batch !== this.batchController) {
             return;

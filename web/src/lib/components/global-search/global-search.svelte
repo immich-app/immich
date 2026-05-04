@@ -27,6 +27,8 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { page } from '$app/state';
   import { getSearchablePageState } from '$lib/utils/searchable-page-search';
+  import { getTypedSearchDisplayText } from '$lib/utils/typed-search/typed-search-name-cache';
+  import TypedSearchTokenRail from './typed-search-token-rail.svelte';
 
   interface Props {
     manager: GlobalSearchManager;
@@ -51,7 +53,8 @@
   );
   $effect(() => {
     if (variant === 'dropdown' && !showDropdownPanel) {
-      inputValue = closedDropdownSearchState?.query ?? '';
+      inputValue =
+        getTypedSearchDisplayText(page.url.pathname + page.url.search) ?? closedDropdownSearchState?.query ?? '';
       return;
     }
     inputValue = manager.query;
@@ -367,12 +370,12 @@
       return;
     }
     if (e.key === 'Enter' && inputValue.trim() === '' && getSearchablePageState(page.url).query !== '') {
-      manager.activateSearch('');
+      void manager.activateSearch('');
       e.preventDefault();
       return;
     }
     if (e.key === 'Enter' && manager.topSearchMatch && manager.activeItemId === manager.topSearchMatch.id) {
-      manager.activateSearch(manager.topSearchMatch.query);
+      void manager.activateSearch(manager.topSearchMatch.rawQuery);
       e.preventDefault();
       return;
     }
@@ -450,8 +453,9 @@
         />
         <kbd
           class="hidden shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-1 font-mono text-[11px] font-semibold tracking-wide text-gray-500 sm:inline-block dark:border-immich-dark-gray dark:bg-immich-dark-bg dark:text-gray-300"
-          >{hotkeyLabel}</kbd
         >
+          {hotkeyLabel}
+        </kbd>
       </div>
 
       {#if showDropdownPanel}
@@ -478,7 +482,50 @@
               </button>
             </div>
           {/if}
-          <Command.List class="max-h-[min(520px,calc(100vh-8rem))] overflow-y-auto py-2">
+          <TypedSearchTokenRail tokens={manager.typedSearchDisplayTokens} />
+          <Command.List
+            class="max-h-[min(520px,calc(100vh-8rem))] overflow-y-auto pb-2 {manager.typedSearchDisplayTokens.length > 0
+              ? 'pt-1'
+              : 'pt-2'}"
+          >
+            {#if manager.typedSearchIssues.length > 0}
+              <Command.Group class="mb-4" data-typed-search-issues>
+                <Command.GroupHeading
+                  class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
+                  Search filters
+                </Command.GroupHeading>
+                <div class="space-y-1 px-3">
+                  {#each manager.typedSearchIssues as issue (`${issue.raw}:${issue.code}`)}
+                    <div
+                      class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-200"
+                    >
+                      {issue.message}
+                    </div>
+                  {/each}
+                </div>
+              </Command.Group>
+            {/if}
+            {#if manager.typedSearchChoices.length > 0}
+              <Command.Group class="mb-4" data-typed-search-choices>
+                <Command.GroupHeading
+                  class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
+                  Choose filter value
+                </Command.GroupHeading>
+                <div class="space-y-1 px-3">
+                  {#each manager.typedSearchChoices as choice (`${choice.tokenRaw}:${choice.key}:${choice.id ?? choice.field ?? choice.label}`)}
+                    <button
+                      type="button"
+                      class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-primary/10"
+                      onclick={() => manager.selectTypedSearchChoice(choice)}
+                    >
+                      <span>{choice.label}</span>
+                    </button>
+                  {/each}
+                </div>
+              </Command.Group>
+            {/if}
             {#if inputValue.trim() === ''}
               {#if recentEntries.length > 0}
                 <Command.Group>
@@ -526,7 +573,8 @@
                   <div class="px-1">
                     <button
                       type="button"
-                      onclick={() => manager.topSearchMatch && manager.activateSearch(manager.topSearchMatch.query)}
+                      onclick={() =>
+                        manager.topSearchMatch && void manager.activateSearch(manager.topSearchMatch.rawQuery)}
                       class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-start {manager.activeItemId ===
                       manager.topSearchMatch.id
                         ? 'bg-primary/10'
@@ -763,6 +811,7 @@
             aria-label={inputValue === '' ? $t('close') : $t('clear')}
           />
         </div>
+        <TypedSearchTokenRail tokens={manager.typedSearchDisplayTokens} />
         {#if showProgressStripe}
           <div
             aria-hidden="true"
@@ -803,7 +852,47 @@
                 </button>
               </div>
             {/if}
-            <Command.List class="flex-1 overflow-y-auto py-2">
+            <Command.List
+              class="flex-1 overflow-y-auto pb-2 {manager.typedSearchDisplayTokens.length > 0 ? 'pt-1' : 'pt-2'}"
+            >
+              {#if manager.typedSearchIssues.length > 0}
+                <Command.Group class="mb-4" data-typed-search-issues>
+                  <Command.GroupHeading
+                    class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                  >
+                    Search filters
+                  </Command.GroupHeading>
+                  <div class="space-y-1 px-3">
+                    {#each manager.typedSearchIssues as issue (`${issue.raw}:${issue.code}`)}
+                      <div
+                        class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-200"
+                      >
+                        {issue.message}
+                      </div>
+                    {/each}
+                  </div>
+                </Command.Group>
+              {/if}
+              {#if manager.typedSearchChoices.length > 0}
+                <Command.Group class="mb-4" data-typed-search-choices>
+                  <Command.GroupHeading
+                    class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                  >
+                    Choose filter value
+                  </Command.GroupHeading>
+                  <div class="space-y-1 px-3">
+                    {#each manager.typedSearchChoices as choice (`${choice.tokenRaw}:${choice.key}:${choice.id ?? choice.field ?? choice.label}`)}
+                      <button
+                        type="button"
+                        class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-primary/10"
+                        onclick={() => manager.selectTypedSearchChoice(choice)}
+                      >
+                        <span>{choice.label}</span>
+                      </button>
+                    {/each}
+                  </div>
+                </Command.Group>
+              {/if}
               {#if inputValue.trim() === ''}
                 {#if recentEntries.length > 0}
                   <Command.Group>
@@ -873,7 +962,8 @@
                     <div class="px-1">
                       <button
                         type="button"
-                        onclick={() => manager.topSearchMatch && manager.activateSearch(manager.topSearchMatch.query)}
+                        onclick={() =>
+                          manager.topSearchMatch && void manager.activateSearch(manager.topSearchMatch.rawQuery)}
                         class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-start {manager.activeItemId ===
                         manager.topSearchMatch.id
                           ? 'bg-primary/10'

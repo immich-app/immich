@@ -1,4 +1,5 @@
 import { globalSearchManager } from '$lib/managers/global-search-manager.svelte';
+import { storeTypedSearchNames } from '$lib/utils/typed-search/typed-search-name-cache';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,6 +22,7 @@ describe('global-search-input-trigger', () => {
     mockPage.url = new URL('https://gallery.test/photos');
     mockPage.route.id = null;
     mockPage.params = {};
+    sessionStorage.clear();
   });
 
   it('opens a dropdown from an editable search field', async () => {
@@ -36,6 +38,24 @@ describe('global-search-input-trigger', () => {
     expect(openSpy).toHaveBeenCalledWith('dropdown');
     expect(input).toHaveValue('mountain');
     expect(document.querySelector('[data-cmdk-dropdown-panel]')).not.toBeNull();
+  });
+
+  it('renders typed filter pills while using the inline dropdown search field', async () => {
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    const input = screen.getByRole('combobox', { name: 'cmdk_placeholder' });
+    await user.click(input);
+    await user.type(input, 'person:anna');
+
+    const dropdownPanel = document.querySelector('[data-cmdk-dropdown-panel]');
+
+    expect(dropdownPanel).not.toBeNull();
+    expect(dropdownPanel as HTMLElement).toContainElement(screen.getByTestId('typed-search-token-rail'));
+    expect(screen.getByTestId('typed-search-token-person')).toHaveAttribute('data-status', 'pending-entity');
+    expect(screen.getByTestId('typed-search-token-person-key')).toHaveTextContent('person');
+    expect(screen.getByTestId('typed-search-token-person-value')).toHaveTextContent('anna');
   });
 
   it('keeps the dropdown panel closed until the search field receives focus', async () => {
@@ -60,9 +80,49 @@ describe('global-search-input-trigger', () => {
     expect(document.querySelector('[data-cmdk-dropdown-panel]')).toBeNull();
   });
 
+  it('shows committed raw typed search text while the search field is closed', () => {
+    mockPage.url = new URL('https://gallery.test/photos?people=person-cat');
+    storeTypedSearchNames(
+      '/photos?people=person-cat',
+      {
+        personNames: new Map([['person-cat', 'cat']]),
+        tagNames: new Map(),
+      },
+      'person:cat',
+    );
+
+    render(GlobalSearchInputTrigger);
+
+    expect(screen.getByRole('combobox', { name: 'cmdk_placeholder' })).toHaveValue('person:cat');
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).toBeNull();
+  });
+
+  it('keeps committed raw typed search text after opening the inline dropdown', async () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=mountains&tags=tag-nature');
+    storeTypedSearchNames(
+      '/photos?q=mountains&tags=tag-nature',
+      {
+        personNames: new Map(),
+        tagNames: new Map([['tag-nature', 'nature']]),
+      },
+      'tag:nature mountains',
+    );
+    const user = userEvent.setup();
+
+    render(GlobalSearchInputTrigger);
+
+    const input = screen.getByRole('combobox', { name: 'cmdk_placeholder' });
+    expect(input).toHaveValue('tag:nature mountains');
+
+    await user.click(input);
+
+    expect(input).toHaveValue('tag:nature mountains');
+    expect(document.querySelector('[data-cmdk-dropdown-panel]')).not.toBeNull();
+  });
+
   it('pressing Enter after clearing the top search field clears the committed search', async () => {
     mockPage.url = new URL('https://gallery.test/photos?q=mountains');
-    const activateSearchSpy = vi.spyOn(globalSearchManager, 'activateSearch').mockImplementation(() => {});
+    const activateSearchSpy = vi.spyOn(globalSearchManager, 'activateSearch').mockImplementation(async () => {});
     const user = userEvent.setup();
 
     render(GlobalSearchInputTrigger);

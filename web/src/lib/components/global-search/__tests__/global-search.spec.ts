@@ -49,7 +49,7 @@ import { commandContextManager } from '$lib/managers/command-context-manager.sve
 import { GlobalSearchManager, type Provider, type Sections } from '$lib/managers/global-search-manager.svelte';
 import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
 import { addEntry, getEntries, __resetForTests as resetRecentStore } from '$lib/stores/cmdk-recent';
-import { AssetVisibility, getMlHealth, searchAssets, searchSmart } from '@immich/sdk';
+import { AssetVisibility, getFilterSuggestions, getMlHealth, searchAssets, searchSmart } from '@immich/sdk';
 import { modalManager } from '@immich/ui';
 import GlobalSearch from '../global-search.svelte';
 
@@ -87,6 +87,16 @@ vi.mock('@immich/sdk', async () => {
     searchPerson: vi.fn().mockResolvedValue([]),
     searchPlaces: vi.fn().mockResolvedValue([]),
     getAllTags: vi.fn().mockResolvedValue([]),
+    getFilterSuggestions: vi.fn().mockResolvedValue({
+      people: [],
+      countries: [],
+      cameraMakes: [],
+      cameraModels: [],
+      tags: [],
+      ratings: [],
+      mediaTypes: [],
+      hasUnnamedPeople: false,
+    }),
     getMlHealth: vi.fn().mockResolvedValue({ smartSearchHealthy: true }),
   };
 });
@@ -358,6 +368,74 @@ describe('global-search root', () => {
     expect(screen.queryByText(/cmdk_helper|Start typing/)).toBeNull();
   });
 
+  it('renders typed search tokens while typing without resolving suggestion-backed filters', async () => {
+    const m = new GlobalSearchManager();
+    const parseSpy = vi.spyOn(m, 'parseTypedSearchDraft');
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'beach camera:nikon from:2025');
+
+    expect(parseSpy).toHaveBeenCalled();
+    expect(screen.getByTestId('typed-search-token-rail')).toBeInTheDocument();
+    expect(screen.getByTestId('typed-search-token-camera')).toHaveAttribute('data-status', 'pending-entity');
+    expect(getFilterSuggestions).not.toHaveBeenCalled();
+  });
+
+  it('keeps the palette open and shows typed search issues after failed Enter commit', async () => {
+    const m = new GlobalSearchManager();
+    m.open();
+    vi.spyOn(m, 'activateSearch').mockImplementation(() => {
+      m.typedSearchIssues = [
+        {
+          code: 'no-match',
+          key: 'person',
+          raw: 'person:anna',
+          value: 'anna',
+          message: 'No person found for "anna"',
+        },
+      ];
+      return Promise.resolve();
+    });
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'person:anna');
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByText('No person found for "anna"')).toBeVisible();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('renders ambiguity choices and sends selection to the manager', async () => {
+    const m = new GlobalSearchManager();
+    const selectSpy = vi.spyOn(m, 'selectTypedSearchChoice');
+    m.open();
+    m.typedSearchIssues = [
+      {
+        code: 'ambiguous',
+        key: 'person',
+        raw: 'person:anna',
+        value: 'anna',
+        message: 'Choose a person for "anna"',
+      },
+    ];
+    m.typedSearchChoices = [
+      { tokenRaw: 'person:anna', key: 'person', id: 'person-1', label: 'Anna', value: 'anna' },
+      { tokenRaw: 'person:anna', key: 'person', id: 'person-2', label: 'Anna Maria', value: 'anna' },
+    ];
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.click(screen.getByRole('button', { name: 'Anna Maria' }));
+
+    expect(selectSpy).toHaveBeenCalledWith({
+      tokenRaw: 'person:anna',
+      key: 'person',
+      id: 'person-2',
+      label: 'Anna Maria',
+      value: 'anna',
+    });
+  });
+
   it('combobox has maxlength="256"', () => {
     const m = new GlobalSearchManager();
     m.open();
@@ -510,7 +588,7 @@ describe('global-search root', () => {
 
   it('pressing Enter on typed text activates the promoted search row', async () => {
     const m = new GlobalSearchManager();
-    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
     m.open();
     render(GlobalSearch, { props: { manager: m } });
 
@@ -522,7 +600,7 @@ describe('global-search root', () => {
   it('pressing Enter after clearing the modal input clears the committed search', async () => {
     mockPage.url = new URL('https://gallery.test/photos?q=mountain');
     const m = new GlobalSearchManager();
-    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
     m.open('modal');
     render(GlobalSearch, { props: { manager: m } });
 
@@ -535,10 +613,52 @@ describe('global-search root', () => {
     expect(activateSearchSpy).toHaveBeenCalledWith('');
   });
 
+  it('does not restore stale modal input text after the manager clears on reopen', async () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+    const m = new GlobalSearchManager();
+    m.open('modal');
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'beach');
+    await m.activateSearch('beach');
+    m.close();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(m.query).toBe('');
+    mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
+
+    m.open('modal');
+
+    await vi.waitFor(() => expect(screen.getByRole('combobox')).toHaveValue(''));
+  });
+
+  it('pressing Enter on typed filters commits the raw search text, not the plain preview label', async () => {
+    const m = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'beach camera:nikon{enter}');
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('beach camera:nikon');
+  });
+
+  it('pressing Enter on a filter-only tags query commits search instead of navigating to Tags', async () => {
+    const m = new GlobalSearchManager();
+    const activateSpy = vi.spyOn(m, 'activate').mockImplementation(() => {});
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
+    m.open();
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.type(screen.getByRole('combobox'), 'tags:nature{enter}');
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('tags:nature');
+    expect(activateSpy).not.toHaveBeenCalledWith('nav', expect.objectContaining({ id: 'nav:userPages:tags' }));
+  });
+
   it('pressing Enter on an almost-exact command query activates the promoted command instead of search', async () => {
     const m = new GlobalSearchManager();
     const activateSpy = vi.spyOn(m, 'activate').mockImplementation(() => {});
-    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
     m.open();
     render(GlobalSearch, { props: { manager: m } });
 
@@ -740,7 +860,7 @@ describe('global-search root', () => {
   it('activateRecent("query", ...) replays through activateSearch on the current page', () => {
     addEntry({ kind: 'query', id: 'query:sunset', text: 'sunset', lastUsed: 1 });
     const m = new GlobalSearchManager();
-    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
     m.open();
     render(GlobalSearch, { props: { manager: m } });
 

@@ -57,6 +57,24 @@ describe('ActiveFiltersBar', () => {
     expect(chips[0].textContent).not.toContain(',');
   });
 
+  it('should render chip for city only when no country', () => {
+    const filters = createFilterState();
+    filters.city = 'New York City';
+
+    const { getAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    const chips = getAllByTestId('active-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0].textContent).toContain('New York City');
+    expect(chips[0].textContent).not.toContain(',');
+  });
+
   it('should render chip for rating as "\u2605 3+"', () => {
     const filters = createFilterState();
     filters.rating = 3;

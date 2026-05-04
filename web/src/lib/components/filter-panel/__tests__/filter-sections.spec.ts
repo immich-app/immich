@@ -245,6 +245,35 @@ describe('PeopleFilter', () => {
 
     expect(getByTestId('people-empty').textContent).toBe('No people found');
   });
+
+  it('should display orphaned selected person name from typed search cache', () => {
+    const { getByTestId } = render(PeopleFilter, {
+      props: {
+        people: [{ id: 'p-other', name: 'Other Person' }],
+        selectedIds: ['p-cat'],
+        selectedNames: new Map([['p-cat', 'cat']]),
+        onSelectionChange: () => {},
+      },
+    });
+
+    const orphanItem = getByTestId('people-item-p-cat');
+    expect(orphanItem.textContent).toContain('cat');
+    expect(orphanItem.textContent).not.toContain('p-cat');
+  });
+
+  it('should show typed selected person even when suggestions are empty', () => {
+    const { getByTestId, queryByTestId } = render(PeopleFilter, {
+      props: {
+        people: [],
+        selectedIds: ['p-cat'],
+        selectedNames: new Map([['p-cat', 'cat']]),
+        onSelectionChange: () => {},
+      },
+    });
+
+    expect(queryByTestId('people-empty')).toBeNull();
+    expect(getByTestId('people-item-p-cat').textContent).toContain('cat');
+  });
 });
 
 describe('LocationFilter', () => {
@@ -367,6 +396,67 @@ describe('LocationFilter', () => {
       expect(queryByTestId('location-city-show-more-Germany')).toBeTruthy();
     });
     expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it('should mark a city-only selection as selected under its matching country', async () => {
+    const onSelectionChange = vi.fn();
+
+    const { getByTestId, queryByTestId } = render(LocationFilter, {
+      props: {
+        countries: ['United States of America'],
+        selectedCity: 'New York City',
+        onCityFetch: () => Promise.resolve(['New York City', 'Seattle']),
+        onSelectionChange,
+      },
+    });
+
+    await fireEvent.click(getByTestId('location-country-United States of America'));
+    onSelectionChange.mockClear();
+
+    await waitFor(() => expect(queryByTestId('location-city-New York City')).toBeTruthy());
+    const selectedCity = getByTestId('location-city-New York City');
+    expect(selectedCity.className).toContain('font-medium');
+    expect(selectedCity.textContent).toContain('New York City');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it('should show a selected city-only filter before a country is expanded', () => {
+    const onSelectionChange = vi.fn();
+
+    const { getByTestId } = render(LocationFilter, {
+      props: {
+        countries: ['United States of America'],
+        selectedCity: 'New York City',
+        onCityFetch: () => Promise.resolve(['New York City', 'Seattle']),
+        onSelectionChange,
+      },
+    });
+
+    const selectedCity = getByTestId('location-city-New York City');
+    expect(selectedCity.className).toContain('font-medium');
+    expect(selectedCity.textContent).toContain('New York City');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it('should clear a city-only selection when clicking the selected city', async () => {
+    const onSelectionChange = vi.fn();
+
+    const { getByTestId, queryByTestId } = render(LocationFilter, {
+      props: {
+        countries: ['United States of America'],
+        selectedCity: 'New York City',
+        onCityFetch: () => Promise.resolve(['New York City', 'Seattle']),
+        onSelectionChange,
+      },
+    });
+
+    await fireEvent.click(getByTestId('location-country-United States of America'));
+    await waitFor(() => expect(queryByTestId('location-city-New York City')).toBeTruthy());
+    onSelectionChange.mockClear();
+
+    await fireEvent.click(getByTestId('location-city-New York City'));
+
+    expect(onSelectionChange).toHaveBeenCalledWith(undefined, undefined);
   });
 
   it('should keep a selected city visible when it does not match the active search', async () => {

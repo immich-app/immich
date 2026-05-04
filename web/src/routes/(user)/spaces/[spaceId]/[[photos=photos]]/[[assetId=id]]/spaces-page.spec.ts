@@ -1,7 +1,9 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
+import type { FilterState } from '$lib/components/filter-panel/filter-panel';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { lang } from '$lib/stores/preferences.store';
+import { storeTypedSearchNames } from '$lib/utils/typed-search/typed-search-name-cache';
 import type { SharedSpaceMemberResponseDto, SharedSpaceResponseDto } from '@immich/sdk';
 import { AssetTypeEnum, AssetVisibility, SharedSpaceRole } from '@immich/sdk';
 import '@testing-library/jest-dom';
@@ -19,6 +21,7 @@ const {
   mockEventManager,
   mockRegisterSelectionContext,
   mockRegisterSpaceContext,
+  mockRegisterSearchablePageFilters,
 } = vi.hoisted(() => ({
   gotoMock: vi.fn().mockResolvedValue(undefined),
   mockPage: {
@@ -42,6 +45,7 @@ const {
   },
   mockRegisterSelectionContext: vi.fn(),
   mockRegisterSpaceContext: vi.fn(),
+  mockRegisterSearchablePageFilters: vi.fn(() => vi.fn()),
 }));
 
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
@@ -80,7 +84,7 @@ vi.mock('$lib/components/filter-panel/filter-panel.svelte', async () => {
 });
 
 vi.mock('$lib/components/filter-panel/active-filters-bar.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
+  const { default: MockComponent } = await import('@test-data/mocks/active-filters-bar-actions.stub.svelte');
   return { default: MockComponent };
 });
 
@@ -134,6 +138,11 @@ vi.mock('$lib/managers/command-context-manager.svelte', () => ({
   registerSpaceContext: mockRegisterSpaceContext,
 }));
 vi.mock('$lib/managers/event-manager.svelte', () => ({ eventManager: mockEventManager }));
+vi.mock('$lib/managers/global-search-manager.svelte', () => ({
+  globalSearchManager: {
+    registerSearchablePageFilters: mockRegisterSearchablePageFilters,
+  },
+}));
 vi.mock('$lib/utils/space-hero-storage', () => ({
   loadHeroCollapsed: vi.fn().mockReturnValue(false),
   persistHeroCollapsed: vi.fn(),
@@ -223,6 +232,8 @@ describe('Spaces page search URL state', () => {
     mockAssetMultiSelectManager.assets = [];
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos');
     lang.set('de');
+    mockRegisterSearchablePageFilters.mockReturnValue(vi.fn());
+    sessionStorage.clear();
     vi.mocked(sdkMock.markSpaceViewed).mockResolvedValue(void 0 as never);
     sdkMock.addAssets.mockResolvedValue(void 0 as never);
     sdkMock.updateMemberPreferences.mockResolvedValue(makeMember({ sharePersonMetadata: false }));
@@ -277,12 +288,83 @@ describe('Spaces page search URL state', () => {
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-sort-order', 'asc');
   });
 
+  it('hydrates typed filter URL params into the space FilterState', async () => {
+    mockPage.url = new URL(
+      'https://gallery.test/spaces/space-1/photos?q=beach&people=space-person-1&city=Berlin&type=video',
+    );
+
+    renderPage({ space: makeSpace(), members: [makeMember()] });
+
+    expect(await screen.findByTestId('smart-search-results')).toHaveAttribute('data-search-query', 'beach');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-person-ids', 'space-person-1');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-city', 'Berlin');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-media-type', 'video');
+  });
+
+  it('removes only the selected typed filter from the space URL', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach&people=person-1&city=Berlin');
+
+    renderPage({ space: makeSpace(), members: [makeMember()] });
+    await fireEvent.click(await screen.findByTestId('active-filters-remove-person'));
+
+    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/photos?q=beach&city=Berlin', {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+  });
+
+  it('syncs the URL when a location typed filter is cleared from the space filter panel', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?city=New+York+City');
+
+    renderPage({ space: makeSpace(), members: [makeMember()] });
+    await fireEvent.click(screen.getByTestId('filter-panel-clear-location'));
+
+    expect(gotoMock).toHaveBeenCalledWith('/spaces/space-1/photos', {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+  });
+
   it('exposes favorites in the spaces filter panel', () => {
     renderPage();
 
     expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
       'data-sections',
       'timeline,people,location,camera,tags,rating,media,favorites',
+    );
+  });
+
+  it('registers current space filters for global sort changes', async () => {
+    renderPage();
+    await waitFor(() => expect(mockRegisterSearchablePageFilters).toHaveBeenCalledOnce());
+    const calls = mockRegisterSearchablePageFilters.mock.calls as unknown as Array<[() => FilterState]>;
+    const getFilters = calls[0][0];
+
+    expect(getFilters().isFavorite).toBeUndefined();
+    expect(getFilters().sortOrder).toBe('desc');
+    await fireEvent.click(screen.getByTestId('select-favorites-filter'));
+
+    await waitFor(() => expect(getFilters()).toMatchObject({ isFavorite: true, sortOrder: 'desc' }));
+  });
+
+  it('passes typed search names into the space filter panel', () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?people=person-cat&tags=tag-nature');
+    storeTypedSearchNames('/spaces/space-1/photos?people=person-cat&tags=tag-nature', {
+      personNames: new Map([['person-cat', 'cat']]),
+      tagNames: new Map([['tag-nature', 'nature']]),
+    });
+
+    renderPage();
+
+    expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+      'data-person-names',
+      JSON.stringify([['person-cat', 'cat']]),
+    );
+    expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+      'data-tag-names',
+      JSON.stringify([['tag-nature', 'nature']]),
     );
   });
 

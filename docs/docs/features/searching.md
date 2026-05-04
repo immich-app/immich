@@ -11,6 +11,8 @@ Contextual CLIP search is powered by the [VectorChord](https://github.com/tensor
 
 In addition, Gallery offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.opennoodle.de).
 
+The Search Palette also supports typed filter syntax, so you can apply filters from the keyboard with searches like `beach person:anna from:2025 type:video`. See [Search Palette typed filter syntax](/features/search-palette#typed-filter-syntax) for the supported keys and resolution behavior.
+
 You can search the following types of content:
 
 | Type                                | Description                                           |

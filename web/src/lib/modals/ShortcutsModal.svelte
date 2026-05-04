@@ -1,6 +1,7 @@
 <script lang="ts">
+  import Logo from '$lib/components/shared-components/Logo.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Icon, Modal, ModalBody } from '@immich/ui';
+  import { CardTitle, CloseButton, Icon, Modal, ModalBody, ModalHeader } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -55,6 +56,15 @@
 </script>
 
 <Modal title={$t('keyboard_shortcuts')} size="medium" {onClose}>
+  <ModalHeader>
+    <div class="flex items-center justify-between gap-2">
+      <Logo variant="icon" size="tiny" />
+      <CardTitle tag="p" class="grow text-lg font-semibold text-dark/90 dark:text-white/90">
+        {$t('keyboard_shortcuts')}
+      </CardTitle>
+      <CloseButton class="-me-2" onclick={onClose} />
+    </div>
+  </ModalHeader>
   <ModalBody>
     <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
       {#if shortcuts.general.length > 0}

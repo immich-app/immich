@@ -112,7 +112,29 @@ describe('FilterPanel', () => {
     expect(queryByTestId('filter-section-media')).toBeTruthy();
   });
 
-  it('should work without onFilterChange callback', () => {
+  it('should call onFiltersChange when filters are changed inside the panel', async () => {
+    const onFiltersChange = vi.fn();
+
+    render(FilterPanel, {
+      props: {
+        config: {
+          sections: ['location'],
+          providers: {
+            locations: () => Promise.resolve([{ value: 'Germany', type: 'country' as const }]),
+            cities: () => Promise.resolve([]),
+          },
+        },
+        timeBuckets: [],
+        onFiltersChange,
+      },
+    });
+
+    await fireEvent.click(await screen.findByTestId('location-country-Germany'));
+
+    expect(onFiltersChange).toHaveBeenCalledWith(expect.objectContaining({ country: 'Germany', city: undefined }));
+  });
+
+  it('should work without onFiltersChange callback', () => {
     const { queryByTestId } = render(FilterPanel, {
       props: {
         config: { sections: ['rating'], providers: {} },

@@ -29,9 +29,26 @@ vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
   featureFlagsManager: mockFlags,
 }));
 
+const { typedSearchMock } = vi.hoisted(() => ({
+  typedSearchMock: {
+    resolveTypedSearchFilters: vi.fn(),
+  },
+}));
+
+vi.mock('$lib/utils/typed-search/typed-search-resolver', () => ({
+  resolveTypedSearchFilters: typedSearchMock.resolveTypedSearchFilters,
+}));
+
+vi.mock('$lib/utils/typed-search/typed-search-name-cache', () => ({
+  getTypedSearchDisplayText: vi.fn(() => undefined),
+  storeTypedSearchNames: vi.fn(),
+}));
+
 import { goto } from '$app/navigation';
+import { createFilterState, type FilterState } from '$lib/components/filter-panel/filter-panel';
 import * as recentModule from '$lib/stores/cmdk-recent';
 import { addEntry, getEntries, __resetForTests as resetRecentStore } from '$lib/stores/cmdk-recent';
+import { getTypedSearchDisplayText, storeTypedSearchNames } from '$lib/utils/typed-search/typed-search-name-cache';
 import {
   AssetVisibility,
   getAlbumInfo,
@@ -75,6 +92,8 @@ afterEach(() => {
   mockPage.route.id = null;
   mockPage.params = {};
   mockPage.url = new URL('https://gallery.test/photos');
+  vi.mocked(getTypedSearchDisplayText).mockReset();
+  vi.mocked(getTypedSearchDisplayText).mockReturnValue(undefined);
   commandContextManager.setAlbum(null);
   commandContextManager.setSpace(null);
   commandContextManager.setSelection(null);
@@ -154,6 +173,16 @@ vi.mock('svelte-i18n', async (orig) => {
 });
 
 const flushMicrotasks = () => new Promise((resolve) => queueMicrotask(() => resolve(undefined)));
+
+function mockResolvedTypedSearch(queryText = 'beach', filters: FilterState = createFilterState()) {
+  typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+    ok: true,
+    queryText,
+    filters,
+    personNames: new Map(),
+    tagNames: new Map(),
+  });
+}
 
 const makeTimelineAsset = (overrides: Partial<TimelineAsset> = {}): TimelineAsset =>
   ({
@@ -244,12 +273,24 @@ describe('GlobalSearchManager (skeleton)', () => {
     expect(manager.searchSortOrder).toBe('asc');
   });
 
-  it('open() clears the modal query once after activating a text search', () => {
+  it('open() hydrates cached raw typed search text for searchable page filters', () => {
+    mockPage.url = new URL('https://gallery.test/photos?q=mountains&tags=tag-nature');
+    vi.mocked(getTypedSearchDisplayText).mockReturnValue('tag:nature mountains');
+
+    manager.open('dropdown');
+
+    expect(getTypedSearchDisplayText).toHaveBeenCalledWith('/photos?q=mountains&tags=tag-nature');
+    expect(manager.query).toBe('tag:nature mountains');
+    expect(manager.searchSortOrder).toBe('relevance');
+  });
+
+  it('open() clears the modal query once after activating a text search', async () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/photos');
+    mockResolvedTypedSearch('beach');
 
     m.open('modal');
-    m.activateSearch('beach');
+    await m.activateSearch('beach');
     m.close();
     mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
 
@@ -259,12 +300,30 @@ describe('GlobalSearchManager (skeleton)', () => {
     expect(m.searchSortOrder).toBe('relevance');
   });
 
-  it('open() still hydrates the dropdown query after activating a text search', () => {
+  it('open() clears the modal query once even when the activated text search has cached display text', async () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/photos');
+    mockResolvedTypedSearch('beach');
 
     m.open('modal');
-    m.activateSearch('beach');
+    await m.activateSearch('beach');
+    m.close();
+    mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
+    vi.mocked(getTypedSearchDisplayText).mockReturnValue('beach');
+
+    m.open('modal');
+
+    expect(m.query).toBe('');
+    expect(m.searchSortOrder).toBe('relevance');
+  });
+
+  it('open() still hydrates the dropdown query after activating a text search', async () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/photos');
+    mockResolvedTypedSearch('beach');
+
+    m.open('modal');
+    await m.activateSearch('beach');
     m.close();
     mockPage.url = new URL('https://gallery.test/photos?q=beach&sort=asc');
 
@@ -1344,42 +1403,201 @@ describe('activate("command")', () => {
     expect(getEntries()).toEqual([]);
   });
 
-  it('activateSearch preserves same-route params, drops stale space asset ids, and carries an explicit sort', () => {
+  it('activateSearch preserves same-route params, drops stale space asset ids, and carries an explicit sort', async () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/spaces/space-1/photos/asset-123?view=grid');
     m.searchSortOrder = 'asc';
+    mockResolvedTypedSearch('beach');
 
-    m.activateSearch('beach');
+    await m.activateSearch('beach');
 
     expect(goto).toHaveBeenCalledWith('/spaces/space-1/photos?view=grid&q=beach&sort=asc');
   });
 
-  it('activateSearch with empty text clears the committed searchable-page query', () => {
+  it('activateSearch with empty text clears the committed searchable-page query', async () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/photos?q=mountain&sort=asc&view=grid');
 
-    m.activateSearch('');
+    await m.activateSearch('');
 
     expect(goto).toHaveBeenCalledWith('/photos?view=grid');
     expect(getEntries()).toEqual([]);
   });
 
-  it('activateSearch falls back to /photos and drops unrelated params', () => {
+  it('activateSearch falls back to /photos and drops unrelated params', async () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/albums?view=list');
+    mockResolvedTypedSearch('beach');
 
-    m.activateSearch('beach');
+    await m.activateSearch('beach');
 
     expect(goto).toHaveBeenCalledWith('/photos?q=beach');
   });
 
-  it('activateSearch falls back from /spaces/:id/people to /photos', () => {
+  it('activateSearch falls back from /spaces/:id/people to /photos', async () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/spaces/space-1/people');
+    mockResolvedTypedSearch('beach');
 
-    m.activateSearch('beach');
+    await m.activateSearch('beach');
 
     expect(goto).toHaveBeenCalledWith('/photos?q=beach');
+  });
+
+  describe('GlobalSearchManager typed search commit', () => {
+    beforeEach(() => {
+      typedSearchMock.resolveTypedSearchFilters.mockReset();
+      vi.mocked(storeTypedSearchNames).mockClear();
+      vi.mocked(goto).mockClear();
+      mockPage.url = new URL('https://gallery.test/photos');
+    });
+
+    it('navigates with typed filters when resolution succeeds', async () => {
+      const manager = new GlobalSearchManager();
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: true,
+        queryText: 'beach',
+        filters: {
+          ...createFilterState(),
+          personIds: ['person-1'],
+          dateAfter: '2025-01-01',
+        },
+        personNames: new Map([['person-1', 'Anna']]),
+        tagNames: new Map(),
+      });
+
+      await manager.activateSearch('beach person:anna from:2025');
+
+      expect(goto).toHaveBeenCalledWith('/photos?q=beach&people=person-1&from=2025-01-01');
+      expect(manager.typedSearchIssues).toEqual([]);
+    });
+
+    it('dispatches live providers with the plain query while preserving raw top-search commit text', async () => {
+      const manager = new GlobalSearchManager();
+      const providers = (manager as unknown as { providers: Record<keyof Sections, Provider> }).providers;
+      const photosRun = vi.fn().mockResolvedValue({ status: 'empty' as const });
+      providers.photos.run = photosRun;
+
+      manager.setQuery('beach camera:nikon');
+
+      await vi.waitFor(() => expect(photosRun).toHaveBeenCalledWith('beach', expect.anything(), expect.anything()));
+      expect(manager.topSearchMatch).toEqual({ id: 'top-search', query: 'beach', rawQuery: 'beach camera:nikon' });
+    });
+
+    it('blocks parser issues before calling the resolver', async () => {
+      const manager = new GlobalSearchManager();
+
+      await manager.activateSearch('beach persn:anna');
+
+      expect(typedSearchMock.resolveTypedSearchFilters).not.toHaveBeenCalled();
+      expect(goto).not.toHaveBeenCalled();
+      expect(manager.typedSearchIssues[0]).toMatchObject({ code: 'unknown-key', raw: 'persn:anna' });
+    });
+
+    it('stores resolver names for the destination URL before navigating', async () => {
+      const manager = new GlobalSearchManager();
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: true,
+        queryText: 'beach',
+        filters: { ...createFilterState(), personIds: ['person-1'], tagIds: ['tag-1'] },
+        personNames: new Map([['person-1', 'Anna']]),
+        tagNames: new Map([['tag-1', 'Travel']]),
+      });
+
+      await manager.activateSearch('beach person:anna tag:travel');
+
+      expect(storeTypedSearchNames).toHaveBeenCalledWith(
+        '/photos?q=beach&people=person-1&tags=tag-1',
+        {
+          personNames: new Map([['person-1', 'Anna']]),
+          tagNames: new Map([['tag-1', 'Travel']]),
+        },
+        'beach person:anna tag:travel',
+      );
+    });
+
+    it('supports filter-only searches without q', async () => {
+      const manager = new GlobalSearchManager();
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: true,
+        queryText: '',
+        filters: { ...createFilterState(), personIds: ['person-1'] },
+        personNames: new Map([['person-1', 'Anna']]),
+        tagNames: new Map(),
+      });
+
+      await manager.activateSearch('person:anna');
+
+      expect(goto).toHaveBeenCalledWith('/photos?people=person-1');
+    });
+
+    it('blocks navigation and exposes issues when resolution fails', async () => {
+      const manager = new GlobalSearchManager();
+      const issue = {
+        code: 'no-match',
+        key: 'person',
+        raw: 'person:anna',
+        value: 'anna',
+        message: 'No person found for "anna"',
+      };
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: false,
+        queryText: 'beach',
+        issues: [issue],
+        choices: [],
+      });
+
+      await manager.activateSearch('beach person:anna');
+
+      expect(goto).not.toHaveBeenCalled();
+      expect(manager.typedSearchIssues).toEqual([issue]);
+    });
+
+    it('stores an ambiguity choice and clears matching issue state', () => {
+      const manager = new GlobalSearchManager();
+      const issue = {
+        code: 'ambiguous' as const,
+        key: 'person',
+        raw: 'person:anna',
+        value: 'anna',
+        message: 'Choose a person for "anna"',
+      };
+      const choice = {
+        tokenRaw: 'person:anna',
+        key: 'person' as const,
+        id: 'person-2',
+        label: 'Anna Maria',
+        value: 'anna',
+      };
+      manager.typedSearchIssues = [issue];
+      manager.typedSearchChoices = [choice];
+      manager.typedSearchDisplayTokens = [{ raw: 'person:anna', key: 'person', value: 'anna', status: 'error', issue }];
+
+      manager.selectTypedSearchChoice(choice);
+
+      expect(manager.selectedTypedSearchChoices.get('person:anna')).toEqual(choice);
+      expect(manager.typedSearchIssues).toEqual([]);
+      expect(manager.typedSearchChoices).toEqual([]);
+      expect(manager.typedSearchDisplayTokens).toEqual([
+        { raw: 'person:anna', key: 'person', value: 'Anna Maria', status: 'resolved-entity' },
+      ]);
+    });
+
+    it('falls back to photos when current page is not searchable', async () => {
+      mockPage.url = new URL('https://gallery.test/albums');
+      const manager = new GlobalSearchManager();
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: true,
+        queryText: 'beach',
+        filters: createFilterState(),
+        personNames: new Map(),
+        tagNames: new Map(),
+      });
+
+      await manager.activateSearch('beach');
+
+      expect(goto).toHaveBeenCalledWith('/photos?q=beach');
+    });
   });
 
   it('applySearchSort immediately updates the current searchable page and marks the next navigate to keep the palette open', async () => {
@@ -1426,6 +1644,20 @@ describe('activate("command")', () => {
     expect(m.consumeKeepOpenOnNextNavigate()).toBe(false);
   });
 
+  it('applySearchSort serializes registered searchable page filters', async () => {
+    const m = new GlobalSearchManager();
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?view=timeline&rating=2');
+    m.registerSearchablePageFilters(() => ({ ...createFilterState(), rating: 3 }));
+
+    await m.applySearchSort('asc', '');
+
+    expect(goto).toHaveBeenCalledWith('/spaces/space-1/photos?view=timeline&sort=asc&rating=3', {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+    });
+  });
+
   it('open resets pre-search page sorting back to relevance for a new search session', () => {
     const m = new GlobalSearchManager();
     mockPage.url = new URL('https://gallery.test/photos?sort=asc');
@@ -1461,7 +1693,7 @@ describe('activateRecent()', () => {
 
   it('query entries replay through activateSearch without changing mode', () => {
     const m = new GlobalSearchManager();
-    const spy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    const spy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
 
     m.mode = 'ocr';
     m.activateRecent({ kind: 'query', id: 'query:beach', text: 'beach', lastUsed: 1 });
@@ -1677,6 +1909,16 @@ describe('topNavigationMatch', () => {
     expect(m.topNavigationMatch?.id).toBe('nav:userPages:people');
   });
 
+  it('does not promote navigation when the matching word is typed-filter syntax', () => {
+    const m = new GlobalSearchManager();
+    m.open();
+    m.setQuery('tags:nature beach');
+
+    expect(m.topNavigationMatch).toBeNull();
+    expect(m.topSearchMatch).toEqual({ id: 'top-search', query: 'beach', rawQuery: 'tags:nature beach' });
+    expect(m.sections.navigation.status).toBe('empty');
+  });
+
   it('promotes Favorites when the user types "favorites" (prefix match)', () => {
     // Query chosen so it does NOT also match any command label — `album` now
     // trips `cmd:new_album` which (correctly) suppresses the nav promotion.
@@ -1715,7 +1957,7 @@ describe('topSearchMatch', () => {
   it('is present only for non-empty all-scope queries', () => {
     const m = new GlobalSearchManager();
     m.query = ' beach ';
-    expect(m.topSearchMatch).toEqual({ id: 'top-search', query: 'beach' });
+    expect(m.topSearchMatch).toEqual({ id: 'top-search', query: 'beach', rawQuery: 'beach' });
 
     m.query = '';
     expect(m.topSearchMatch).toBeNull();
@@ -2506,6 +2748,13 @@ describe('commands provider', () => {
 
     expect(manager.topCommandMatch?.id).toBe('cmd:space_add_member');
     expect(manager.topCommandMatch?.id).not.toBe('cmd:selection_add_to_album');
+  });
+
+  it('topCommandMatch does not promote commands when typed filters are present', () => {
+    manager.setQuery('from:2025 theme');
+
+    expect(manager.topCommandMatch).toBeNull();
+    expect(manager.topSearchMatch).toEqual({ id: 'top-search', query: 'theme', rawQuery: 'from:2025 theme' });
   });
 
   it('under `@alice`, commands section is empty', async () => {
@@ -5247,7 +5496,7 @@ describe('prefix scoping — defensive recent replay of scoped query', () => {
 
   it('activateRecent({kind:query, text:"@alice"}) replays the raw scoped text through activateSearch', () => {
     const m = new GlobalSearchManager();
-    const spy = vi.spyOn(m, 'activateSearch').mockImplementation(() => {});
+    const spy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
 
     m.activateRecent({ kind: 'query', id: 'query:@alice', text: '@alice', lastUsed: Date.now() });
 
