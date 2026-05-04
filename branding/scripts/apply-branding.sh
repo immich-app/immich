@@ -284,21 +284,52 @@ patch_assets() {
     "$REPO_ROOT/docs/static/img/color-logo.png"
 
   copy_if_exists "$assets/splash.png" \
-    "$REPO_ROOT/mobile/assets/immich-splash.png" \
+    "$REPO_ROOT/mobile/assets/immich-splash.png"
+
+  local android12_splash_src="$assets/splash-android12.png"
+  if [[ ! -f "$android12_splash_src" ]]; then
+    android12_splash_src="$assets/splash.png"
+  fi
+
+  copy_if_exists "$android12_splash_src" \
     "$REPO_ROOT/mobile/assets/immich-splash-android12.png"
+
+  resize_android12_splash() {
+    local dest="$1"
+    local size="$2"
+    if [[ -f "$android12_splash_src" ]]; then
+      if command -v convert &>/dev/null; then
+        convert "$android12_splash_src" -resize "${size}x${size}" "$dest"
+      elif command -v magick &>/dev/null; then
+        magick "$android12_splash_src" -resize "${size}x${size}" "$dest"
+      else
+        echo "  ERROR: ImageMagick convert or magick is required to resize Android 12 splash assets"
+        return 1
+      fi
+      echo "  $android12_splash_src -> $dest (${size}x${size})"
+    fi
+  }
 
   # Android drawable resources (all density buckets)
   for density in hdpi mdpi xhdpi xxhdpi xxxhdpi; do
     local res_dir="$REPO_ROOT/mobile/android/app/src/main/res/drawable-${density}"
     copy_if_exists "$assets/splash.png" "$res_dir/splash.png"
-    copy_if_exists "$assets/splash.png" "$res_dir/android12splash.png"
+    local android12_size
+    case "$density" in
+      mdpi) android12_size=288 ;;
+      hdpi) android12_size=432 ;;
+      xhdpi) android12_size=576 ;;
+      xxhdpi) android12_size=864 ;;
+      xxxhdpi) android12_size=1152 ;;
+    esac
+    resize_android12_splash "$res_dir/android12splash.png" "$android12_size"
     copy_if_exists "$assets/notification-icon.png" "$res_dir/notification_icon.png"
 
     # Night variants
     local night_dir="$REPO_ROOT/mobile/android/app/src/main/res/drawable-night-${density}"
     if [[ -d "$night_dir" ]]; then
       copy_if_exists "$assets/splash.png" "$night_dir/splash.png"
-      copy_if_exists "$assets/splash.png" "$night_dir/android12splash.png"
+      resize_android12_splash "$night_dir/android12splash.png" "$android12_size"
     fi
   done
 

@@ -183,6 +183,11 @@ if [[ $EXIT_CODE -eq 0 ]]; then
   echo "Open-in-app scheme registration verified"
 fi
 
+echo "--- Checking mobile image assets ---"
+if ! bash "$SCRIPT_DIR/verify-mobile-assets.sh"; then
+  EXIT_CODE=1
+fi
+
 if [[ $EXIT_CODE -eq 0 ]]; then
   echo "=== Branding verification passed ==="
 else
