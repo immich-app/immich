@@ -564,13 +564,24 @@ export class MetadataService extends BaseService {
   private getImageDimensions(exifTags: ImmichTags): { width?: number; height?: number } {
     /*
      * The "true" values for width and height are a bit hidden, depending on the camera model and file format.
-     * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
-     * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
+     *
+     * Priority:
+     *   1. ExifIFD's ExifImageWidth/Height — describes the *rendered* image (post-crop, post-process).
+     *      This is what Sharp uses to generate thumbnails/previews from the embedded JPEG. Matching
+     *      these here keeps the layout aspect ratio in sync with what the user actually sees.
+     *      Required for Sony ARW shot in 4:3 crop mode (where ImageSize = full sensor 3:2 but
+     *      ExifImageWidth = the cropped 4:3 capture).
+     *   2. Composite ImageSize — fallback for CR2/RAF where ungrouped ImageWidth gives the embedded
+     *      thumbnail's small dims (see immich-app/immich#13377).
+     *   3. ungrouped ImageWidth/ImageHeight — last resort for files without the above.
      */
-    let [width, height] =
-      exifTags.ImageSize?.toString()
-        ?.split('x')
-        ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
+    let [width, height] = [exifTags.ExifImageWidth, exifTags.ExifImageHeight];
+    if (!width || !height) {
+      [width, height] =
+        exifTags.ImageSize?.toString()
+          ?.split('x')
+          ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
+    }
     if (!width || !height) {
       [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
     }
