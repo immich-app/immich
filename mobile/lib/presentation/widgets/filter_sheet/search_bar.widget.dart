@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/photos_filter/filter_sheet.provider.dart';
 import 'package:immich_mobile/providers/photos_filter/photos_filter.provider.dart';
 import 'package:immich_mobile/providers/photos_filter/search_focus.provider.dart';
 
@@ -45,6 +46,15 @@ class _FilterSheetSearchBarState extends ConsumerState<FilterSheetSearchBar> {
     _controller.addListener(_onChanged);
     ref.read(photosFilterProvider.notifier).setText('');
     setState(() {});
+  }
+
+  void _submit(String value) {
+    _debounce?.cancel();
+    ref.read(photosFilterProvider.notifier).setText(value);
+    FocusScope.of(context).unfocus();
+    if (value.trim().isNotEmpty) {
+      ref.read(photosFilterSheetProvider.notifier).state = FilterSheetSnap.hidden;
+    }
   }
 
   @override
@@ -104,7 +114,7 @@ class _FilterSheetSearchBarState extends ConsumerState<FilterSheetSearchBar> {
         fillColor: Theme.of(context).colorScheme.surfaceContainer,
       ),
       textInputAction: TextInputAction.search,
-      onSubmitted: (_) => FocusScope.of(context).unfocus(),
+      onSubmitted: _submit,
     );
   }
 }

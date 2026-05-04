@@ -2,11 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/filter_sheet/search_bar.widget.dart';
+import 'package:immich_mobile/providers/photos_filter/filter_sheet.provider.dart';
+import 'package:immich_mobile/providers/photos_filter/photos_filter.provider.dart';
 import 'package:immich_mobile/providers/photos_filter/search_focus.provider.dart';
 
 import '../../../widget_tester_extensions.dart';
 
 void main() {
+  testWidgets('keyboard search submits text immediately and hides the filter sheet', (tester) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container.read(photosFilterSheetProvider.notifier).state = FilterSheetSnap.browse;
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: Material(child: FilterSheetSearchBar())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'beach');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pump();
+
+    expect(container.read(photosFilterProvider).context, 'beach');
+    expect(container.read(photosFilterSheetProvider), FilterSheetSnap.hidden);
+  });
+
   testWidgets('mounted-before-increment: focus requested on counter rise', (tester) async {
     await tester.pumpConsumerWidget(const FilterSheetSearchBar());
     await tester.pumpAndSettle();
