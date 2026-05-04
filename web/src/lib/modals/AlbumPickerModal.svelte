@@ -29,7 +29,7 @@
 
   onMount(async () => {
     albums = await getAllAlbums({});
-    recentAlbums = [...albums].sort((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
+    recentAlbums = albums.toSorted((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });
 

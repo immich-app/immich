@@ -13,11 +13,7 @@ export class MapService extends BaseService {
       userIds.push(...partnerIds);
     }
 
-    const albumIds: string[] = [];
-    if (options.withSharedAlbums) {
-      const albums = await this.albumRepository.getAll(auth.user.id, { select: ['id'] });
-      albumIds.push(...albums.map((album) => album.id));
-    }
+    const albumIds = options.withSharedAlbums ? await this.albumRepository.getAllIds(auth.user.id) : [];
 
     return this.mapRepository.getMapMarkers(userIds, albumIds, options);
   }

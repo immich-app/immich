@@ -4,7 +4,7 @@ import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { PartnerFactory } from 'test/factories/partner.factory';
 import { userStub } from 'test/fixtures/user.stub';
-import { getForAlbum, getForPartner } from 'test/mappers';
+import { getForPartner } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MapService.name, () => {
@@ -84,13 +84,13 @@ describe(MapService.name, () => {
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
       const album1 = AlbumFactory.create();
       const album2 = AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build();
-      mocks.album.getAll.mockResolvedValue([getForAlbum(album1), getForAlbum(album2)]);
+      mocks.album.getAllIds.mockResolvedValue([album1.id, album2.id]);
 
       const markers = await sut.getMapMarkers(auth, { withSharedAlbums: true });
 
       expect(markers).toHaveLength(1);
       expect(markers[0]).toEqual(marker);
-      expect(mocks.album.getAll).toHaveBeenCalledWith(auth.user.id, { select: ['id'] });
+      expect(mocks.album.getAllIds).toHaveBeenCalledWith(auth.user.id);
     });
   });
 

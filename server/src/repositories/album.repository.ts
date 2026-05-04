@@ -82,17 +82,6 @@ const isAlbumOwned = (ownerId: string) => (eb: ExpressionBuilder<DB, 'album'>) =
       .where('album_user.userId', '=', ownerId),
   );
 
-const hasAlbumSharedStatus = (eb: ExpressionBuilder<DB, 'album'>) =>
-  eb.or([
-    eb.exists(
-      eb
-        .selectFrom('album_user as au')
-        .whereRef('au.albumId', '=', 'album.id')
-        .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
-    ),
-    eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
-  ]);
-
 @Injectable()
 export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -195,44 +184,46 @@ export class AlbumRepository {
   }
 
   private buildAlbumBaseQuery(ownerId: string, { owned, shared }: { owned?: boolean; shared?: boolean }) {
+    const isShared = (eb: ExpressionBuilder<DB, 'album' | 'album_user'>) =>
+      eb.or([
+        eb.exists(
+          eb
+            .selectFrom('album_user as au')
+            .whereRef('au.albumId', '=', 'album.id')
+            .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
+        ),
+        eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
+      ]);
+
     return this.db
       .selectFrom('album')
       .innerJoin('album_user', (join) =>
         join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', ownerId),
       )
       .where('album.deletedAt', 'is', null)
-      .where(({ exists, selectFrom }) =>
-        exists(
-          selectFrom('album_user as au')
-            .whereRef('au.albumId', '=', 'album.id')
-            .where('au.role', '=', sql.lit(AlbumUserRole.Owner)),
-        ),
-      )
       .$if(owned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
       .$if(owned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
-      .$if(shared === true, (qb) => qb.where(hasAlbumSharedStatus))
-      .$if(shared === false, (qb) => qb.where((eb) => eb.not(hasAlbumSharedStatus(eb))));
+      .$if(shared === true, (qb) => qb.where(isShared))
+      .$if(shared === false, (qb) => qb.where((eb) => eb.not(isShared(eb))));
   }
 
-  getAll(
-    ownerId: string,
-    options: { owned?: boolean; shared?: boolean; select: ['id'] },
-  ): Promise<Pick<Selectable<AlbumTable>, 'id'>[]>;
-  getAll(ownerId: string, options: { owned?: boolean; shared?: boolean }): Promise<MapAlbumDto[]>;
-  @GenerateSql({ params: [DummyValue.UUID, {}] }, { params: [DummyValue.UUID, { select: ['id'] }] })
-  getAll(ownerId: string, { owned, shared, select }: { owned?: boolean; shared?: boolean; select?: string[] }) {
-    if (select) {
-      return this.buildAlbumBaseQuery(ownerId, { owned, shared })
-        .select('album.id')
-        .orderBy('album.createdAt', 'desc')
-        .execute();
-    }
-    return this.buildAlbumBaseQuery(ownerId, { owned, shared })
+  @GenerateSql({ params: [DummyValue.UUID, {}] })
+  getAll(ownerId: string, options: { owned?: boolean; shared?: boolean } = {}): Promise<MapAlbumDto[]> {
+    return this.buildAlbumBaseQuery(ownerId, options)
       .selectAll('album')
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, {}] })
+  async getAllIds(ownerId: string, options: { owned?: boolean; shared?: boolean } = {}): Promise<string[]> {
+    const rows = await this.buildAlbumBaseQuery(ownerId, options)
+      .select('album.id')
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+    return rows.map((r) => r.id);
   }
 
   async restoreAll(userId: string): Promise<void> {
