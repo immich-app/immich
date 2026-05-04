@@ -596,6 +596,9 @@ jobs:
       - name: Run formatter
         run: pnpm format
         if: ${{ !cancelled() }}
+      - name: Run tests
+        run: pnpm test
+        if: ${{ !cancelled() }}
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest

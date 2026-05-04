@@ -16,10 +16,18 @@ runs:
       shell: bash
       run: |
         if [[ "$RUNNER_OS" == "macOS" ]]; then
-          brew install jq coreutils gnu-sed 2>/dev/null || true
+          brew install jq coreutils gnu-sed imagemagick 2>/dev/null || true
         else
+          packages=()
           if ! command -v jq &>/dev/null; then
-            sudo apt-get update && sudo apt-get install -y jq
+            packages+=(jq)
+          fi
+          if ! command -v identify &>/dev/null || { ! command -v convert &>/dev/null && ! command -v magick &>/dev/null; }; then
+            packages+=(imagemagick)
+          fi
+          if (( ${#packages[@]} > 0 )); then
+            sudo apt-get update
+            sudo apt-get install -y "${packages[@]}"
           fi
         fi
 
