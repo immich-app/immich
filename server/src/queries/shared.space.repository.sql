@@ -1128,7 +1128,7 @@ select
   "face_search"."embedding"
 from
   "asset_face"
-  inner join "face_search" on "face_search"."faceId" = "asset_face"."id"
+  left join "face_search" on "face_search"."faceId" = "asset_face"."id"
   left join "person" on "person"."id" = "asset_face"."personId"
 where
   "asset_face"."assetId" = $1

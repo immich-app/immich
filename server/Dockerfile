@@ -65,7 +65,12 @@ WORKDIR /usr/src/app
 COPY ./plugins/mise.toml ./plugins/
 ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/plugins/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
+# CI passes GITHUB_TOKEN as a BuildKit secret so mise can resolve GitHub-hosted
+# plugin tool releases without unauthenticated rate-limit failures. The secret
+# is available only during this RUN step and is not persisted into the image.
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
+  --mount=type=secret,id=github_token \
+  if [ -f /run/secrets/github_token ]; then export GITHUB_TOKEN="$(cat /run/secrets/github_token)"; fi; \
   mise install --cd plugins
 
 COPY ./plugins ./plugins/

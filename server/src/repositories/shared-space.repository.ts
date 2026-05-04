@@ -78,7 +78,7 @@ type AssetFaceForMatching = {
   personId: string | null;
   identityId?: string | null;
   type?: string | null;
-  embedding: string;
+  embedding: string | null;
 };
 
 type PetFaceForMatching = {
@@ -1583,7 +1583,7 @@ export class SharedSpaceRepository {
   getAssetFacesForMatching(assetId: string): Promise<AssetFaceForMatching[]> {
     return this.db
       .selectFrom('asset_face')
-      .innerJoin('face_search', 'face_search.faceId', 'asset_face.id')
+      .leftJoin('face_search', 'face_search.faceId', 'asset_face.id')
       .leftJoin('person', 'person.id', 'asset_face.personId')
       .select([
         'asset_face.id',

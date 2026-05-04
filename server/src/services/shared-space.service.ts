@@ -1624,9 +1624,8 @@ export class SharedSpaceService extends BaseService {
 
     const spaceAsset = await this.sharedSpaceRepository.getSpaceAssetAdder(spaceId, assetId);
     const assetAdderId = spaceAsset?.addedById ?? null;
-    const { machineLearning } = await this.getConfig({ withCache: true });
-    const maxDistance = machineLearning.facialRecognition.maxDistance;
     const affectedPersonIds = new Set<string>();
+    let maxDistance: number | undefined;
 
     const faces = await this.sharedSpaceRepository.getAssetFacesForMatching(assetId);
     for (const face of faces) {
@@ -1647,21 +1646,31 @@ export class SharedSpaceService extends BaseService {
         continue;
       }
 
-      const spacePerson = face.identityId
-        ? await this.findOrCreateSpacePersonForFace({
-            spaceId,
-            faceId: face.id,
-            personId: face.personId,
-            identityId: face.identityId,
-            type: face.type ?? 'person',
-          })
-        : await this.findOrCreateSpacePersonForLegacyFace({
-            spaceId,
-            faceId: face.id,
-            personId: face.personId,
-            embedding: face.embedding,
-            maxDistance,
-          });
+      let spacePerson: SpacePersonMatchResult;
+      if (face.identityId) {
+        spacePerson = await this.findOrCreateSpacePersonForFace({
+          spaceId,
+          faceId: face.id,
+          personId: face.personId,
+          identityId: face.identityId,
+          type: face.type ?? 'person',
+        });
+      } else {
+        if (!face.embedding) {
+          continue;
+        }
+        if (maxDistance === undefined) {
+          const { machineLearning } = await this.getConfig({ withCache: true });
+          maxDistance = machineLearning.facialRecognition.maxDistance;
+        }
+        spacePerson = await this.findOrCreateSpacePersonForLegacyFace({
+          spaceId,
+          faceId: face.id,
+          personId: face.personId,
+          embedding: face.embedding,
+          maxDistance,
+        });
+      }
 
       await this.sharedSpaceRepository.addPersonFaces([{ personId: spacePerson.id, assetFaceId: face.id }], {
         skipRecount: true,

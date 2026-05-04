@@ -387,6 +387,8 @@ jobs:
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
       - name: Start Docker Compose
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
       - name: Run e2e tests (api & cli)
@@ -451,6 +453,8 @@ jobs:
         run: pnpm exec playwright install chromium --only-shell
         if: ${{ !cancelled() }}
       - name: Docker build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)

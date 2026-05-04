@@ -921,7 +921,7 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
+    const facesToAdd: (Insertable<AssetFaceTable> & { id: string; assetId: string; personId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
     const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
@@ -983,6 +983,27 @@ export class MetadataService extends BaseService {
 
     if (missingWithFaceAsset.length > 0) {
       await this.personRepository.updateAll(missingWithFaceAsset);
+    }
+
+    if (facesToAdd.length > 0) {
+      for (const face of facesToAdd) {
+        const identity = await this.faceIdentityRepository.ensurePersonIdentity(face.personId);
+        await this.faceIdentityRepository.replaceFaceIdentity({
+          assetFaceId: face.id,
+          identityId: identity.id,
+          source: 'import',
+        });
+      }
+
+      const spaceIds = (await this.sharedSpaceRepository.getSpaceIdsForAsset(asset.id)) ?? [];
+      if (spaceIds.length > 0) {
+        await this.jobRepository.queueAll(
+          spaceIds.map(({ spaceId }) => ({
+            name: JobName.SharedSpaceFaceMatch as const,
+            data: { spaceId, assetId: asset.id },
+          })),
+        );
+      }
     }
   }
 
