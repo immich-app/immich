@@ -304,7 +304,7 @@ test.describe('Timeline', () => {
       await page.keyboard.down('Shift');
       await thumbnailUtils.withAssetId(page, assets[2].id).hover();
       await expect(
-        thumbnailUtils.locator(page).locator('.absolute.top-0.h-full.w-full.bg-immich-primary.opacity-40'),
+        thumbnailUtils.locator(page).locator('.absolute.top-0.size-full.bg-immich-primary.opacity-40'),
       ).toHaveCount(3);
       await thumbnailUtils.selectButton(page, assets[2].id).click();
       await page.keyboard.up('Shift');

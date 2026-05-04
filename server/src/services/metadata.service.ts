@@ -243,10 +243,11 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const [exifTags, stats] = await Promise.all([
+    const [exifResult, stats] = await Promise.all([
       this.getExifTags(asset),
       this.storageRepository.stat(asset.originalPath),
     ]);
+    const { tags: exifTags, audio, video, packets, format } = exifResult;
     this.logger.verbose('Exif Tags', exifTags);
 
     const dates = this.getDates(asset, exifTags, stats);
@@ -294,7 +295,7 @@ export class MetadataService extends BaseService {
         exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
       model:
         exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
-      fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
+      fps: video?.frameRate ?? validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
@@ -312,6 +313,53 @@ export class MetadataService extends BaseService {
 
       tags: tags.length > 0 ? tags : null,
     };
+
+    const audioData =
+      format && audio?.codecName
+        ? {
+            assetId: asset.id,
+            bitrate: audio.bitrate,
+            index: audio.index,
+            profile: audio.profile,
+            codecName: audio.codecName,
+          }
+        : undefined;
+
+    const videoData =
+      format?.formatName && format?.formatLongName && video?.codecName && video?.timeBase
+        ? {
+            assetId: asset.id,
+            bitrate: video.bitrate,
+            frameCount: video.frameCount,
+            timeBase: video.timeBase,
+            index: video.index,
+            profile: video.profile,
+            level: video.level,
+            colorPrimaries: video.colorPrimaries,
+            colorTransfer: video.colorTransfer,
+            colorMatrix: video.colorMatrix,
+            dvProfile: video.dvProfile,
+            dvLevel: video.dvLevel,
+            dvBlSignalCompatibilityId: video.dvBlSignalCompatibilityId,
+            codecName: video.codecName,
+            formatName: format.formatName,
+            formatLongName: format.formatLongName,
+            pixelFormat: video.pixelFormat,
+          }
+        : undefined;
+
+    const keyframeData =
+      packets && packets.keyframePts.length > 0
+        ? {
+            assetId: asset.id,
+            totalDuration: packets.totalDuration,
+            packetCount: packets.packetCount,
+            outputFrames: packets.outputFrames,
+            pts: packets.keyframePts,
+            accDuration: packets.keyframeAccDuration,
+            ownDuration: packets.keyframeOwnDuration,
+          }
+        : undefined;
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
     const assetWidth = isSidewards ? validate(height) : validate(width);
@@ -333,7 +381,13 @@ export class MetadataService extends BaseService {
           height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
         }),
       async () => {
-        await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
+        await this.assetRepository.upsertExif({
+          exif: exifData,
+          audio: audioData,
+          video: videoData,
+          keyframes: keyframeData,
+          lockedPropertiesBehavior: 'skip',
+        });
         await this.applyTagList(asset);
       },
     );
@@ -523,13 +577,14 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }) {
     const { sidecarFile } = getAssetFiles(asset.files);
+    const shouldProbe = asset.type === AssetType.Video || asset.originalPath.toLowerCase().endsWith('.gif');
 
-    const [mediaTags, sidecarTags, videoTags] = await Promise.all([
+    const [mediaTags, sidecarTags, videoResult] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
       sidecarFile ? this.metadataRepository.readTags(sidecarFile.path) : null,
-      asset.type === AssetType.Video ? this.getVideoTags(asset.originalPath) : null,
+      shouldProbe ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
     // prefer dates from sidecar tags
@@ -554,14 +609,20 @@ export class MetadataService extends BaseService {
 
     // prefer duration from video tags
     // don't save duration if asset is definitely not an animated image (see e.g. CR3 with Duration: 1s)
-    if (videoTags || !mimeTypes.isPossiblyAnimatedImage(asset.originalPath)) {
+    if (videoResult || !mimeTypes.isPossiblyAnimatedImage(asset.originalPath)) {
       delete mediaTags.Duration;
     }
 
     // never use duration from sidecar
     delete sidecarTags?.Duration;
 
-    return { ...mediaTags, ...videoTags, ...sidecarTags };
+    return {
+      tags: { ...mediaTags, ...videoResult?.tags, ...sidecarTags },
+      audio: videoResult?.audio,
+      video: videoResult?.video,
+      packets: videoResult?.packets,
+      format: videoResult?.format ?? null,
+    };
   }
 
   private getTagList(exifTags: ImmichTags): string[] {
@@ -1008,20 +1069,22 @@ export class MetadataService extends BaseService {
   }
 
   private async getVideoTags(originalPath: string) {
-    const { videoStreams, format } = await this.mediaRepository.probe(originalPath);
+    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(originalPath);
+    const video = videoStreams[0];
+    const audio = audioStreams[0];
+    const packets = video?.timeBase ? await this.mediaRepository.probePackets(originalPath, video.index) : null;
 
     const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
-    if (videoStreams[0]) {
-      // Set video dimensions
-      if (videoStreams[0].width) {
-        tags.ImageWidth = videoStreams[0].width;
+    if (video) {
+      if (video.width) {
+        tags.ImageWidth = video.width;
       }
-      if (videoStreams[0].height) {
-        tags.ImageHeight = videoStreams[0].height;
+      if (video.height) {
+        tags.ImageHeight = video.height;
       }
 
-      switch (videoStreams[0].rotation) {
+      switch (video.rotation) {
         case -90: {
           tags.Orientation = ExifOrientation.Rotate90CW;
           break;
@@ -1045,6 +1108,6 @@ export class MetadataService extends BaseService {
       tags.Duration = format.duration;
     }
 
-    return tags;
+    return { tags, audio, video, packets, format };
   }
 }

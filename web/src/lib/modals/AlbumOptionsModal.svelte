@@ -77,7 +77,7 @@
     <Stack gap={6}>
       <div>
         <Text size="medium" fontWeight="semi-bold">{$t('settings')}</Text>
-        <div class="grid gap-y-3 ps-2 mt-2">
+        <div class="mt-2 grid gap-y-3 ps-2">
           {#if album.order}
             <Field label={$t('display_order')}>
               <Select
@@ -100,7 +100,7 @@
       </div>
 
       <div>
-        <HStack fullWidth class="justify-between mb-2">
+        <HStack fullWidth class="mb-2 justify-between">
           <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
           <HeaderActionButton action={AddUsers} />
         </HStack>
@@ -130,7 +130,7 @@
         </div>
       </div>
       <div class="mb-4">
-        <HStack class="justify-between mb-2">
+        <HStack class="mb-2 justify-between">
           <Text size="medium" fontWeight="semi-bold">{$t('shared_links')}</Text>
           <HeaderActionButton action={CreateSharedLink} />
         </HStack>

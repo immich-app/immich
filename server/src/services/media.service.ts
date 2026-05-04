@@ -15,7 +15,6 @@ import {
   ImageFormat,
   JobName,
   JobStatus,
-  LogLevel,
   QueueName,
   RawExtractedFormat,
   StorageFolder,
@@ -506,10 +505,7 @@ export class MediaService extends BaseService {
     };
   }
 
-  private async generateVideoThumbnails(
-    asset: ThumbnailPathEntity & { originalPath: string },
-    { ffmpeg, image }: SystemConfig,
-  ) {
+  private async generateVideoThumbnails(asset: ThumbnailAsset, { ffmpeg, image }: SystemConfig) {
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
       format: image.preview.format,
@@ -526,22 +522,15 @@ export class MediaService extends BaseService {
     });
     this.storageCore.ensureFolders(previewFile.path);
 
-    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-    const mainVideoStream = this.getMainStream(videoStreams);
-    if (!mainVideoStream) {
-      throw new Error(`No video streams found for asset ${asset.id}`);
+    const { videoStream, format } = asset;
+    if (!videoStream || !format) {
+      throw new Error(`Missing video metadata for asset ${asset.id}`);
     }
-    const mainAudioStream = this.getMainStream(audioStreams);
 
     const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
-    const thumbnailConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
-    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, mainVideoStream, mainAudioStream, format);
-    const thumbnailOptions = thumbnailConfig.getCommand(
-      TranscodeTarget.Video,
-      mainVideoStream,
-      mainAudioStream,
-      format,
-    );
+    const thumbConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
+    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
+    const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
 
     await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
@@ -554,7 +543,7 @@ export class MediaService extends BaseService {
     return {
       files: [previewFile, thumbnailFile],
       thumbhash,
-      fullsizeDimensions: { width: mainVideoStream.width, height: mainVideoStream.height },
+      fullsizeDimensions: { width: videoStream.width, height: videoStream.height },
     };
   }
 
@@ -588,17 +577,14 @@ export class MediaService extends BaseService {
     const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
 
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
-      countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
-    });
-    const videoStream = this.getMainStream(videoStreams);
-    const audioStream = this.getMainStream(audioStreams);
-    if (!videoStream || !format.formatName) {
+    const { videoStream, format } = asset;
+    const audioStream = asset.audioStream ?? undefined;
+    if (!videoStream || !format) {
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: missing metadata; re-run extraction first`);
       return JobStatus.Failed;
     }
-
     if (!videoStream.height || !videoStream.width) {
-      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video dimensions`);
       return JobStatus.Failed;
     }
 
@@ -665,12 +651,6 @@ export class MediaService extends BaseService {
     });
 
     return JobStatus.Success;
-  }
-
-  private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
-    return streams
-      .filter((stream) => stream.codecName !== 'unknown')
-      .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
   }
 
   private getTranscodeTarget(

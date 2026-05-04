@@ -26,7 +26,7 @@
 <a
   href={getLink(node.path)}
   title={node.value}
-  class={`flex grow place-items-center ps-2 py-1 text-sm rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-primary' : 'dark:text-gray-200'}`}
+  class={`flex grow place-items-center rounded-lg py-1 ps-2 text-sm hover:bg-slate-200 hover:font-semibold dark:hover:bg-slate-800 ${isTarget ? 'bg-slate-100 font-semibold text-primary dark:bg-slate-700' : 'dark:text-gray-200'}`}
   data-sveltekit-keepfocus
 >
   {#if node.size > 0}
@@ -34,7 +34,7 @@
       <Icon icon={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size="20" />
     </button>
   {/if}
-  <div class={node.size === 0 ? 'ml-[1.5em] ' : ''}>
+  <div class={node.size === 0 ? 'ml-[1.5em]' : ''}>
     <Icon
       icon={isActive ? icons.active : icons.default}
       class={isActive ? 'text-primary' : 'text-gray-400'}
@@ -42,7 +42,7 @@
       size="20"
     />
   </div>
-  <span class="text-nowrap overflow-hidden text-ellipsis font-mono ps-1 pt-1 whitespace-pre-wrap">{node.value}</span>
+  <span class="overflow-hidden ps-1 pt-1 font-mono text-nowrap text-ellipsis whitespace-pre-wrap">{node.value}</span>
 </a>
 
 {#if isOpen}

@@ -15,7 +15,7 @@
 <section>
   <fieldset>
     <Text class="mb-2" fontWeight="medium">{$t('search_type')}</Text>
-    <div class="flex flex-wrap gap-x-5 gap-y-2 my-2">
+    <div class="my-2 flex flex-wrap gap-x-5 gap-y-2">
       {#if featureFlagsManager.value.smartSearch}
         <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
       {/if}

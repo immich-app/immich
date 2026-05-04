@@ -35,9 +35,9 @@
   {/if}
 
   <div
-    class="bg-gray-50 dark:bg-immich-dark-gray/50 w-full p-2 rounded-2xl border border-gray-100 dark:border-gray-900 overflow-y-auto immich-scrollbar"
+    class="w-full overflow-y-auto rounded-2xl border border-gray-100 bg-gray-50 p-2 immich-scrollbar dark:border-gray-900 dark:bg-immich-dark-gray/50"
   >
-    <ol class="flex gap-2 items-center">
+    <ol class="flex items-center gap-2">
       <li>
         <IconButton
           shape="round"
@@ -51,15 +51,15 @@
         />
       </li>
       {#each parents as parent (parent)}
-        <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-primary">
+        <li class="flex items-center gap-2 font-mono text-sm text-nowrap text-primary">
           <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
-          <a class="underline hover:font-semibold whitespace-pre-wrap" href={getLink(parent.path)}>
+          <a class="whitespace-pre-wrap underline hover:font-semibold" href={getLink(parent.path)}>
             {parent.value}
           </a>
         </li>
       {/each}
 
-      <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-primary">
+      <li class="flex items-center gap-2 font-mono text-sm text-nowrap text-primary">
         <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
         <p class="cursor-default whitespace-pre-wrap">{node.value}</p>
       </li>

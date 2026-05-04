@@ -34,13 +34,13 @@
 </script>
 
 <div
-  class="group relative rounded-2xl border border-transparent p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
+  class="group relative rounded-2xl border border-transparent p-5 hover:border-gray-200 hover:bg-gray-100 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
   {#if onShowContextMenu}
     <div
       id="icon-{album.id}"
-      class="absolute end-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+      class="absolute inset-e-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
       <IconButton
@@ -60,7 +60,7 @@
 
   <div class="mt-4">
     <p
-      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-primary"
+      class="line-clamp-2 w-full text-lg/6 font-semibold text-black group-hover:text-primary dark:text-white"
       data-testid="album-name"
       title={album.albumName}
     >
@@ -68,7 +68,7 @@
     </p>
 
     {#if showDateRange && album.startDate && album.endDate}
-      <p class="flex text-sm dark:text-immich-dark-fg capitalize">
+      <p class="flex text-sm capitalize dark:text-immich-dark-fg">
         {getShortDateRange(album.startDate, album.endDate)}
       </p>
     {/if}

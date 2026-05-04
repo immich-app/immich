@@ -107,7 +107,7 @@
 
 <div class="h-full overflow-y-auto">
   <div
-    class="sticky top-0 z-1 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
+    class="sticky top-0 z-1 flex h-16 w-full items-center justify-between border-b bg-white p-1 md:p-8 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg"
   >
     <div class="flex items-center">
       <IconButton
@@ -118,7 +118,7 @@
         icon={mdiClose}
         onclick={onClose}
       />
-      <div class="flex gap-2 items-center">
+      <div class="flex items-center gap-2">
         <p id={titleId} class="ms-2">{$t('show_and_hide_people')}</p>
         <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
       </div>
@@ -152,7 +152,7 @@
         {@const hidden = overrides.get(person.id) ?? person.isHidden}
         <button
           type="button"
-          class="group relative w-full h-full"
+          class="group relative size-full"
           onclick={() => setHiddenOverride(person, !hidden)}
           aria-pressed={hidden}
           aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
@@ -167,7 +167,7 @@
             preload={false}
           />
           {#if person.name}
-            <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">
+            <span class="absolute inset-s-0 bottom-2 w-full px-1 text-center font-medium text-white select-text">
               {person.name}
             </span>
           {/if}
