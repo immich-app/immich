@@ -274,23 +274,23 @@ export class MediaRepository {
             index: stream.index,
             height,
             width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
-            codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
-            profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined),
+            codecName: stream.codec_name === 'h265' ? 'hevc' : (stream.codec_name ?? null),
+            profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined) ?? null,
             level: this.parseOptionalInt(stream.level),
             frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
             frameRate: this.parseFrameRate(stream.avg_frame_rate ?? stream.r_frame_rate),
-            timeBase: this.parseRational(stream.time_base)?.den,
+            timeBase: this.parseRational(stream.time_base)?.den ?? null,
             rotation: this.parseInt(stream.rotation),
             bitrate: this.parseInt(stream.bit_rate),
             pixelFormat: stream.pix_fmt || 'yuv420p',
             colorPrimaries: this.parseEnum(ColorPrimaries, stream.color_primaries) ?? ColorPrimaries.Unknown,
             colorMatrix: this.parseEnum(ColorMatrix, stream.color_space) ?? ColorMatrix.Unknown,
             colorTransfer: this.parseEnum(ColorTransfer, stream.color_transfer) ?? ColorTransfer.Unknown,
-            dvProfile: this.parseOptionalInt(stream.dv_profile) as DvProfile | undefined,
+            dvProfile: this.parseOptionalInt(stream.dv_profile) as DvProfile | null,
             dvLevel: this.parseOptionalInt(stream.dv_level),
-            dvBlSignalCompatibilityId: this.parseOptionalInt(stream.dv_bl_signal_compatibility_id) as
-              | DvSignalCompatibility
-              | undefined,
+            dvBlSignalCompatibilityId: this.parseOptionalInt(
+              stream.dv_bl_signal_compatibility_id,
+            ) as DvSignalCompatibility | null,
           };
         }),
       audioStreams: results.streams
@@ -298,9 +298,9 @@ export class MediaRepository {
         .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
-          codecName: stream.codec_name,
+          codecName: stream.codec_name ?? null,
           profile:
-            stream.codec_name === 'aac' ? this.parseEnum(AacProfile, stream.profile as string | undefined) : undefined,
+            stream.codec_name === 'aac' ? this.parseEnum(AacProfile, stream.profile as string | undefined) : null,
           bitrate: this.parseInt(stream.bit_rate),
         })),
     };
@@ -449,29 +449,29 @@ export class MediaRepository {
     return Number.parseFloat(value as string) || 0;
   }
 
-  private parseOptionalInt(value: string | number | undefined): number | undefined {
+  private parseOptionalInt(value: string | number | undefined): number | null {
     const parsed = Number.parseInt(value as string);
-    return Number.isNaN(parsed) ? undefined : parsed;
+    return Number.isNaN(parsed) ? null : parsed;
   }
 
   private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
-    return value ? (enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) : undefined;
+    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
   }
 
   /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */
-  private parseRational(value: string | undefined): { num: number; den: number } | undefined {
-    if (!value) {
-      return;
+  private parseRational(value: string | undefined): { num: number; den: number } | null {
+    if (value) {
+      const [num, den = 1] = value.split('/').map(Number);
+      if (num && den) {
+        return { num, den };
+      }
     }
-    const [num, den = 1] = value.split('/').map(Number);
-    if (num && den) {
-      return { num, den };
-    }
+    return null;
   }
 
-  private parseFrameRate(value: string | undefined): number | undefined {
+  private parseFrameRate(value: string | undefined): number | null {
     const r = this.parseRational(value);
-    return r ? r.num / r.den : undefined;
+    return r ? r.num / r.den : null;
   }
 
   private getDar(dar: string | undefined): number {
@@ -498,6 +498,7 @@ export class MediaRepository {
         return this.parseEnum(Av1Profile, profile);
       }
     }
+    return null;
   }
 
   private compareStreams(a: FfprobeStream, b: FfprobeStream): number {

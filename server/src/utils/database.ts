@@ -21,7 +21,7 @@ import { AssetFileType, AssetVisibility, DatabaseExtension, ExifOrientation } fr
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AudioStreamInfo, VectorExtension, VideoFormat, VideoStreamInfo } from 'src/types';
+import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -146,7 +146,7 @@ export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
         'asset_video.dvBlSignalCompatibilityId',
       ])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
-  ).$castTo<(VideoStreamInfo & { timeBase: NotNull }) | null>();
+  ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();
 }
 
 export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video'>) {
@@ -156,6 +156,22 @@ export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video
       .select(['asset_video.formatName', 'asset_video.formatLongName', 'asset.duration', 'asset_video.bitrate'])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
   ).$castTo<VideoFormat | null>();
+}
+
+export function withVideoPackets(eb: ExpressionBuilder<DB, 'asset' | 'asset_keyframe'>) {
+  return jsonObjectFrom(
+    eb
+      .selectFrom(dummy)
+      .where('asset_keyframe.assetId', 'is not', sql.lit(null))
+      .select([
+        'asset_keyframe.pts as keyframePts',
+        'asset_keyframe.accDuration as keyframeAccDuration',
+        'asset_keyframe.ownDuration as keyframeOwnDuration',
+        'asset_keyframe.totalDuration',
+        'asset_keyframe.packetCount',
+        'asset_keyframe.outputFrames',
+      ]),
+  ).$castTo<VideoPacketInfo | null>();
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {

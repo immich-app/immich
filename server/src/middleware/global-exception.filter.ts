@@ -40,16 +40,16 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
       if (error instanceof ZodValidationException || error instanceof ZodSerializationException) {
         const zodError = error.getZodError();
         if (zodError instanceof ZodError && zodError.issues.length > 0) {
-          body['message'] = zodError.issues.map((issue) =>
-            issue.path.length > 0 ? `[${issue.path.join('.')}] ${issue.message}` : issue.message,
-          );
+          return {
+            status,
+            body: { message: 'Validation failed', errors: zodError.issues },
+          };
         }
       }
 
-      // remove fields that duplicate the HTTP response line or will be reformatted in a later step
+      // remove fields injected by NestJS that duplicate the HTTP response line
       delete body['error'];
       delete body['statusCode'];
-      delete body['errors'];
       return { status, body };
     }
 
