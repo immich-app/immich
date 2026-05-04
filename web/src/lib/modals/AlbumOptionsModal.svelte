@@ -91,7 +91,7 @@
               />
             </Field>
           {/if}
-          <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} {readOnly}>
+          <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} disabled={readOnly}>
             <Switch
               checked={album.isActivityEnabled}
               onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
