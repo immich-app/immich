@@ -244,18 +244,10 @@ from
   and "album_user"."userId" = $2
 where
   "album"."deletedAt" is null
-  and exists (
-    select
-    from
-      "album_user" as "au"
-    where
-      "au"."albumId" = "album"."id"
-      and "au"."role" = 'owner'
-  )
 order by
   "album"."createdAt" desc
 
--- AlbumRepository.getAll
+-- AlbumRepository.getAllIds
 select
   "album"."id"
 from
@@ -264,14 +256,6 @@ from
   and "album_user"."userId" = $1
 where
   "album"."deletedAt" is null
-  and exists (
-    select
-    from
-      "album_user" as "au"
-    where
-      "au"."albumId" = "album"."id"
-      and "au"."role" = 'owner'
-  )
 order by
   "album"."createdAt" desc
 
