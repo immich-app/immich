@@ -596,7 +596,7 @@ class PartnerAssetsSync extends BaseSync {
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
       .select(columns.syncPartnerAsset)
-      .select(sql<boolean>`false`.as('isFavorite'))
+      .select(sql.val(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
       .stream();
@@ -616,7 +616,7 @@ class PartnerAssetsSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
       .select(columns.syncPartnerAsset)
-      .select(sql<boolean>`false`.as('isFavorite'))
+      .select(sql.val(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
