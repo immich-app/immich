@@ -89,7 +89,20 @@ export class MetadataRepository {
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
     // Enable exiftool LFS to parse metadata for files larger than 2GB.
-    readArgs: ['-api', 'largefilesupport=1'],
+    // Exclude IFD1 (embedded thumbnail) Orientation/ImageWidth/ImageHeight tags so they
+    // never leak into the main image's metadata. Without these excludes, ExifTool can
+    // attribute IFD1:Orientation (e.g. 6) to the main image and the server then swaps
+    // the asset's stored width/height. See immich-app/immich#27966.
+    readArgs: [
+      '-api',
+      'largefilesupport=1',
+      '-x',
+      'IFD1:Orientation',
+      '-x',
+      'IFD1:ImageWidth',
+      '-x',
+      'IFD1:ImageHeight',
+    ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,
   });
