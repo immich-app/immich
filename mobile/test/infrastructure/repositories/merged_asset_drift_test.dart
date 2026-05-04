@@ -25,6 +25,11 @@ Future<void> _waitFor(bool Function() predicate, {Duration timeout = const Durat
   }
 }
 
+Future<List<String>> _queryPlanDetails(Drift db, String sql) async {
+  final rows = await db.customSelect('EXPLAIN QUERY PLAN $sql').get();
+  return rows.map((row) => row.data['detail'] as String).toList(growable: false);
+}
+
 void main() {
   late Drift db;
 
@@ -398,6 +403,36 @@ void main() {
 
     expect(buckets, hasLength(1));
     expect(buckets.single.assetCount, 1);
+  });
+
+  test('merged timeline shared-space predicates use reverse lookup indexes', () async {
+    const viewerId = 'viewer-1';
+
+    final details = await _queryPlanDetails(db, '''
+      SELECT 1
+      FROM remote_asset_entity AS rae
+      WHERE EXISTS (
+        SELECT 1
+        FROM shared_space_asset_entity AS ssa
+        INNER JOIN shared_space_member_entity AS ssm ON ssm.space_id = ssa.space_id
+        WHERE ssa.asset_id = rae.id
+          AND ssm.user_id = '$viewerId'
+          AND ssm.show_in_timeline = 1
+      )
+      OR EXISTS (
+        SELECT 1
+        FROM shared_space_library_entity AS ssl
+        INNER JOIN shared_space_member_entity AS ssm ON ssm.space_id = ssl.space_id
+        WHERE ssl.library_id = rae.library_id
+          AND ssm.user_id = '$viewerId'
+          AND ssm.show_in_timeline = 1
+      )
+    ''');
+
+    expect(details, contains(contains('idx_shared_space_asset_asset_space')));
+    expect(details, contains(contains('idx_shared_space_library_library_space')));
+    expect(details, isNot(contains(startsWith('SCAN ssa'))));
+    expect(details, isNot(contains(startsWith('SCAN ssl'))));
   });
 
   test('mergedBucket watch stream re-emits when showInTimeline toggles on an existing member row', () async {

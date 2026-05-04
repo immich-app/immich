@@ -9,6 +9,14 @@ import 'package:worker_manager/worker_manager.dart';
 typedef SyncCallback = void Function();
 typedef SyncCallbackWithResult<T> = void Function(T result);
 typedef SyncErrorCallback = void Function(String error);
+typedef SyncDelay = Future<void> Function(Duration duration);
+
+class RemoteThenLocalSync {
+  final Future<bool> remoteSync;
+  final Future<void> deferredLocalSync;
+
+  const RemoteThenLocalSync({required this.remoteSync, required this.deferredLocalSync});
+}
 
 class BackgroundSyncManager {
   final SyncCallback? onRemoteSyncStart;
@@ -134,6 +142,24 @@ class BackgroundSyncManager {
           onLocalSyncError?.call(error.toString());
           _deviceAlbumSyncTask = null;
         });
+  }
+
+  RemoteThenLocalSync syncRemoteThenLocal({
+    required bool fullLocalSync,
+    Duration localSyncDelay = const Duration(milliseconds: 1500),
+    SyncDelay delay = Future.delayed,
+    bool Function()? shouldRunLocal,
+  }) {
+    final remoteSync = syncRemote();
+    final deferredLocalSync = remoteSync.whenComplete(() async {
+      await delay(localSyncDelay);
+      if (shouldRunLocal?.call() == false) {
+        return;
+      }
+      await syncLocal(full: fullLocalSync);
+    });
+
+    return RemoteThenLocalSync(remoteSync: remoteSync, deferredLocalSync: deferredLocalSync);
   }
 
   Future<void> hashAssets() {

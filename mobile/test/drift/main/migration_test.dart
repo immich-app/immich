@@ -73,7 +73,10 @@ void main() {
 
       // Run the real migration via the production Drift class.
       final migratedDb = Drift(schema.newConnection());
-      await verifier.migrateAndValidate(migratedDb, 24);
+      await verifier.migrateAndValidate(
+        migratedDb,
+        GeneratedHelper.versions.last,
+      );
 
       // 1. Existing user row survives.
       final userCount = await migratedDb
@@ -167,7 +170,10 @@ void main() {
         await oldDb.close();
 
         final migratedDb = Drift(schema.newConnection());
-        await verifier.migrateAndValidate(migratedDb, 24);
+        await verifier.migrateAndValidate(
+          migratedDb,
+          GeneratedHelper.versions.last,
+        );
 
         final row = await migratedDb
             .customSelect(
@@ -196,4 +202,32 @@ void main() {
       },
     );
   });
+
+  test(
+    'gallery-fork: from24To25 creates reverse shared-space timeline indexes',
+    () async {
+      final schema = await verifier.schemaAt(24);
+      final db = Drift(schema.newConnection());
+
+      await verifier.migrateAndValidate(db, GeneratedHelper.versions.last);
+
+      final indexes = await db.customSelect('''
+          SELECT name
+          FROM sqlite_master
+          WHERE type = 'index'
+            AND name IN (
+              'idx_shared_space_asset_asset_space',
+              'idx_shared_space_library_library_space'
+            )
+          ORDER BY name
+          ''').get();
+
+      expect(indexes.map((row) => row.data['name']), [
+        'idx_shared_space_asset_asset_space',
+        'idx_shared_space_library_library_space',
+      ]);
+
+      await db.close();
+    },
+  );
 }

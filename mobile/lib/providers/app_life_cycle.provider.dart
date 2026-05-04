@@ -109,27 +109,40 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     try {
-      bool syncSuccess = false;
-      await Future.wait([
-        _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
-      ]);
-      if (syncSuccess) {
-        await Future.wait([
-          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-            _resumeBackup();
-          }),
-          _resumeBackup(),
-          // TODO: Bring back when the soft freeze issue is addressed
-          // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
-        ]);
-      } else {
-        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
-      }
+      final sync = backgroundManager.syncRemoteThenLocal(
+        fullLocalSync: CurrentPlatform.isAndroid,
+        shouldRunLocal: _shouldContinueOperation,
+      );
+      final syncSuccess = await sync.remoteSync;
 
-      if (isAlbumLinkedSyncEnable) {
-        await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
-      }
+      unawaited(
+        sync.deferredLocalSync
+            .then((_) async {
+              if (!_shouldContinueOperation()) {
+                return;
+              }
+
+              if (syncSuccess) {
+                await Future.wait([
+                  _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+                    _resumeBackup();
+                  }),
+                  _resumeBackup(),
+                  // TODO: Bring back when the soft freeze issue is addressed
+                  // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
+                ]);
+              } else {
+                await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+              }
+
+              if (isAlbumLinkedSyncEnable) {
+                await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
+              }
+            })
+            .catchError((error, stackTrace) {
+              _log.warning("Error during deferred local sync operation", error, stackTrace);
+            }),
+      );
     } catch (e, stackTrace) {
       _log.severe("Error during background sync", e, stackTrace);
     }

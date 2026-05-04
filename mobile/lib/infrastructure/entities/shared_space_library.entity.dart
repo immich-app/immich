@@ -9,6 +9,9 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 @TableIndex.sql(
   'CREATE INDEX IF NOT EXISTS idx_shared_space_library_space_id ON shared_space_library_entity (space_id)',
 )
+@TableIndex.sql(
+  'CREATE INDEX IF NOT EXISTS idx_shared_space_library_library_space ON shared_space_library_entity (library_id, space_id)',
+)
 class SharedSpaceLibraryEntity extends Table with DriftDefaultsMixin {
   const SharedSpaceLibraryEntity();
 

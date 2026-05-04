@@ -685,3 +685,8 @@ class SharedSpaceLibraryEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxSharedSpaceLibraryLibrarySpace => i0.Index(
+  'idx_shared_space_library_library_space',
+  'CREATE INDEX IF NOT EXISTS idx_shared_space_library_library_space ON shared_space_library_entity (library_id, space_id)',
+);

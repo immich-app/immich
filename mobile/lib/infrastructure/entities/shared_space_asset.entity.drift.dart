@@ -546,3 +546,8 @@ class SharedSpaceAssetEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxSharedSpaceAssetAssetSpace => i0.Index(
+  'idx_shared_space_asset_asset_space',
+  'CREATE INDEX IF NOT EXISTS idx_shared_space_asset_asset_space ON shared_space_asset_entity (asset_id, space_id)',
+);
