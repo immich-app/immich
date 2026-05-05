@@ -15,7 +15,11 @@
 </picture>
 </p>
 <h3 align="center">High performance self-hosted photo and video management solution</h3>
-<h4 align="center"><a href="https://demo.opennoodle.de">Try the live demo</a></h4>
+<h4 align="center">
+  <a href="https://opennoodle.de/install">Install in 5 minutes</a>
+  ·
+  <a href="https://demo.opennoodle.de">Try the live demo</a>
+</h4>
 <br/>
 
 > [!NOTE]
@@ -165,7 +169,7 @@ That's it. To switch back to upstream Immich later, flip the two image names bac
 
 - [Website](https://opennoodle.de)
 - [Documentation](https://docs.opennoodle.de/)
-- [Installation](https://docs.opennoodle.de/install/requirements)
+- [Installation](https://opennoodle.de/install)
 - [API Documentation](https://demo.opennoodle.de/doc) — interactive Swagger UI with all endpoints including fork-specific ones. Also available on your own instance at `/doc`
 - [Roadmap](https://opennoodle.de/roadmap)
 - [Features](#features)
