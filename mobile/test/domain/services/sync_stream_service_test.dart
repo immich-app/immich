@@ -4,7 +4,6 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
@@ -28,7 +27,6 @@ import '../../api.mocks.dart';
 import '../../fixtures/asset.stub.dart';
 import '../../fixtures/sync_stream.stub.dart';
 import '../../infrastructure/repository.mock.dart';
-import '../../mocks/asset_entity.mock.dart';
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
 
@@ -175,14 +173,12 @@ void main() {
       () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
     ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
     when(() => mockTrashedLocalAssetRepo.trashLocalAssets(any())).thenAnswer((_) async {});
-    when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
-    when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
     hasManageMediaPermission = false;
     when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
     when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => true);
-    when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
-    when(() => mockStorageRepo.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
+    when(() => mockStorageRepo.getMediaUrlForAsset(any())).thenAnswer((_) async => null);
     when(() => mockTrashSyncRepo.upsertReviewCandidates(any())).thenAnswer((_) async {});
+    when(() => mockTrashSyncRepo.deleteOutdated(any())).thenAnswer((_) async => 0);
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
     await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
   });
@@ -437,21 +433,16 @@ void main() {
         expect(
           trashedAssetsMap,
           equals({
-            localAsset.checksum!: DateTime(2025, 5, 1),
-            mergedAsset.checksum!: DateTime(2025, 5, 2),
-            'checksum-remote-only': DateTime(2025, 5, 3),
+            'remote-1': DateTime(2025, 5, 1),
+            'remote-2': DateTime(2025, 5, 2),
+            'remote-3': DateTime(2025, 5, 3),
           }),
         );
         return assetsByAlbum;
       });
 
-      final localEntity = MockAssetEntity();
-      when(() => localEntity.getMediaUrl()).thenAnswer((_) async => 'content://local-only');
-      when(() => mockStorageRepo.getAssetEntityForAsset(localAsset)).thenAnswer((_) async => localEntity);
-
-      final mergedEntity = MockAssetEntity();
-      when(() => mergedEntity.getMediaUrl()).thenAnswer((_) async => 'content://merged-local');
-      when(() => mockStorageRepo.getAssetEntityForAsset(mergedAsset)).thenAnswer((_) async => mergedEntity);
+      when(() => mockStorageRepo.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => 'content://local-only');
+      when(() => mockStorageRepo.getMediaUrlForAsset(mergedAsset)).thenAnswer((_) async => 'content://merged-local');
 
       when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((invocation) async {
         final urls = invocation.positionalArguments.first as List<String>;
@@ -560,28 +551,6 @@ void main() {
       verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
-    });
-
-    test("restores trashed local assets once the matching remote assets leave the trash", () async {
-      final trashedAssets = [
-        LocalAssetStub.image1.copyWith(id: 'trashed-1', checksum: 'checksum-trash', remoteId: 'remote-1'),
-      ];
-      when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => trashedAssets);
-
-      final restoredIds = ['trashed-1'];
-      when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((invocation) async {
-        final Iterable<LocalAsset> requestedAssets = invocation.positionalArguments.first as Iterable<LocalAsset>;
-        expect(requestedAssets, orderedEquals(trashedAssets));
-        return restoredIds;
-      });
-
-      final events = [
-        SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-trash', ack: 'asset-remote-1-11'),
-      ];
-
-      await simulateEvents(events);
-
-      verify(() => mockTrashedLocalAssetRepo.applyRestoredAssets(restoredIds)).called(1);
     });
   });
 

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
@@ -17,6 +18,33 @@ void main() {
 
   tearDown(() async {
     await ctx.dispose();
+  });
+
+  group('getAssetsFromBackupAlbums', () {
+    test('returns local assets from selected backup albums matched by remote id', () async {
+      final user = await ctx.newUser();
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      final remoteAsset = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: remoteDeletedAt);
+      final localAsset = await ctx.newLocalAsset(checksum: remoteAsset.checksum);
+      final selectedAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final unselectedAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.none);
+
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: localAsset.id);
+      await ctx.newLocalAlbumAsset(albumId: unselectedAlbum.id, assetId: localAsset.id);
+
+      final remoteOnlyAsset = await ctx.newRemoteAsset(ownerId: user.id);
+
+      final result = await sut.getAssetsFromBackupAlbums({
+        remoteAsset.id: remoteDeletedAt,
+        remoteOnlyAsset.id: DateTime(2025, 6, 2),
+      });
+
+      expect(result.keys, equals({selectedAlbum.id}));
+      expect(result[selectedAlbum.id], hasLength(1));
+      expect(result[selectedAlbum.id]!.single.asset.id, localAsset.id);
+      expect(result[selectedAlbum.id]!.single.asset.remoteId, remoteAsset.id);
+      expect(result[selectedAlbum.id]!.single.remoteDeletedAt, remoteDeletedAt);
+    });
   });
 
   group('getRemovalCandidates', () {

@@ -22,7 +22,6 @@ import 'package:mocktail/mocktail.dart';
 import '../../domain/service.mock.dart';
 import '../../fixtures/asset.stub.dart';
 import '../../infrastructure/repository.mock.dart';
-import '../../mocks/asset_entity.mock.dart';
 import '../../repository.mocks.dart';
 
 void main() {
@@ -75,11 +74,11 @@ void main() {
     when(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepository.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => mockLocalFilesManager.moveToTrash(any<List<String>>())).thenAnswer((_) async => true);
-    when(() => mockStorageRepository.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
+    when(() => mockStorageRepository.getMediaUrlForAsset(any())).thenAnswer((_) async => null);
     when(
       () => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<RemoteDeletedLocalAsset>>()),
     ).thenAnswer((_) async {});
-    when(() => mockTrashSyncRepo.deleteOutdatedThrottled()).thenAnswer((_) async => 0);
+    when(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).thenAnswer((_) async => 0);
 
     sut = LocalSyncService(
       localAlbumRepository: mockLocalAlbumRepository,
@@ -172,7 +171,7 @@ void main() {
 
       verify(() => mockLocalAssetRepository.getToTrash()).called(1);
       verify(() => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<RemoteDeletedLocalAsset>>())).called(1);
-      verify(() => mockTrashSyncRepo.deleteOutdatedThrottled()).called(1);
+      verify(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).called(1);
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
@@ -205,9 +204,9 @@ void main() {
         },
       );
 
-      final assetEntity = MockAssetEntity();
-      when(() => assetEntity.getMediaUrl()).thenAnswer((_) async => 'content://local-trash');
-      when(() => mockStorageRepository.getAssetEntityForAsset(localAssetToTrash)).thenAnswer((_) async => assetEntity);
+      when(
+        () => mockStorageRepository.getMediaUrlForAsset(localAssetToTrash),
+      ).thenAnswer((_) async => 'content://local-trash');
 
       await sut.processTrashedAssets({
         'album-a': [platformAsset],
@@ -226,7 +225,7 @@ void main() {
       verify(() => mockLocalFilesManager.restoreAssetsFromTrash(any())).called(1);
       verify(() => mockTrashedLocalAssetRepository.applyRestoredAssets(restoredIds)).called(1);
 
-      verify(() => mockStorageRepository.getAssetEntityForAsset(localAssetToTrash)).called(1);
+      verify(() => mockStorageRepository.getMediaUrlForAsset(localAssetToTrash)).called(1);
       final moveArgs = verify(() => mockLocalFilesManager.moveToTrash(captureAny())).captured.single as List<String>;
       expect(moveArgs, ['content://local-trash']);
       final trashArgs =

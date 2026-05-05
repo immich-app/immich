@@ -58,7 +58,32 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<int> deleteOutdated() async {
+  Future<int> deleteOutdated(Iterable<String> remoteIds) async {
+    final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
+      ..addColumns([_db.remoteAssetEntity.checksum])
+      ..where(_db.remoteAssetEntity.id.isIn(remoteIds) & _db.remoteAssetEntity.deletedAt.isNull());
+
+    final query = _db.delete(_db.trashSyncEntity)
+      ..where((row) => row.isSyncApproved.isNull() | row.isSyncApproved.equals(false))
+      ..where((row) => row.checksum.isInQuery(remoteAliveSelect));
+
+    final deletedMatched = await query.go();
+    return deletedMatched;
+  }
+
+  Future<int?> cleanupOutdatedEntriesThrottled({Duration minInterval = const Duration(hours: 8)}) async {
+    final lastRunMillis = await _getLastCleanupTimeMillis();
+    final nowMillis = DateTime.now().millisecondsSinceEpoch;
+    if (lastRunMillis != null && nowMillis - lastRunMillis < minInterval.inMilliseconds) {
+      return null;
+    }
+
+    final result = await cleanupOutdatedEntries();
+    await _setLastCleanupTimeMillis(nowMillis);
+    return result;
+  }
+
+  Future<int> cleanupOutdatedEntries() async {
     final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([_db.remoteAssetEntity.checksum])
       ..where(_db.remoteAssetEntity.deletedAt.isNull());
@@ -90,18 +115,6 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     final deletedOrphans = await orphanQuery.go();
 
     return deletedMatched + deletedOrphans;
-  }
-
-  Future<int> deleteOutdatedThrottled({Duration minInterval = const Duration(hours: 8)}) async {
-    final lastRunMillis = await _getLastCleanupTimeMillis();
-    final nowMillis = DateTime.now().millisecondsSinceEpoch;
-    if (lastRunMillis != null && nowMillis - lastRunMillis < minInterval.inMilliseconds) {
-      return 0;
-    }
-
-    final result = await deleteOutdated();
-    await _setLastCleanupTimeMillis(nowMillis);
-    return result;
   }
 
   Stream<int> watchPendingApprovalAssetCount() {

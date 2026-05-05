@@ -397,9 +397,7 @@ class LocalSyncService {
         await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
       } else {
         final mediaUrls = await Future.wait(
-          flattenedAssetsToTrash.map(
-            (record) => _storageRepository.getAssetEntityForAsset(record.asset).then((e) => e?.getMediaUrl()),
-          ),
+          flattenedAssetsToTrash.map((item) => _storageRepository.getMediaUrlForAsset(item.asset)),
         );
         _log.info("Moving to trash ${mediaUrls.join(", ")} assets");
         final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
@@ -411,8 +409,10 @@ class LocalSyncService {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
     }
     if (reviewMode) {
-      final result = await _trashSyncRepository.deleteOutdatedThrottled();
-      _log.info("syncTrashedAssets, outdated deleted: $result");
+      final result = await _trashSyncRepository.cleanupOutdatedEntriesThrottled();
+      if (result != null) {
+        _log.info("syncTrashedAssets, outdated deleted: $result");
+      }
     }
   }
 }

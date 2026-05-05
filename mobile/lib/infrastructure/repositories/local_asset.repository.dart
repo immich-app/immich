@@ -111,39 +111,41 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<Map<String, List<RemoteDeletedLocalAsset>>> getAssetsFromBackupAlbums(
-    Map<String, DateTime> trashedAssetsMap,
+    Map<String, DateTime> remoteDeletedAtByRemoteId,
   ) async {
-    if (trashedAssetsMap.isEmpty) {
+    if (remoteDeletedAtByRemoteId.isEmpty) {
       return {};
     }
 
     final result = <String, List<RemoteDeletedLocalAsset>>{};
 
-    for (final slice in trashedAssetsMap.keys.toSet().slices(kDriftMaxChunk)) {
+    for (final slice in remoteDeletedAtByRemoteId.keys.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
-                innerJoin(
-                  _db.localAlbumEntity,
-                  _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-                  useColumns: false,
-                ),
-                innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-                innerJoin(
-                  _db.remoteAssetEntity,
-                  _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-                  useColumns: false,
-                ),
-              ])..where(
-                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                    _db.remoteAssetEntity.id.isIn(slice),
-              ))
+                  innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                  innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                  innerJoin(
+                    _db.remoteAssetEntity,
+                    _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+                    useColumns: false,
+                  ),
+                ])
+                ..addColumns([_db.remoteAssetEntity.id])
+                ..where(
+                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                      _db.remoteAssetEntity.id.isIn(slice),
+                ))
               .get();
 
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
+        final remoteId = row.read(_db.remoteAssetEntity.id)!;
         (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
-          RemoteDeletedLocalAsset(asset: assetData.toDto(), remoteDeletedAt: trashedAssetsMap[assetData.checksum]!),
+          RemoteDeletedLocalAsset(
+            asset: assetData.toDto(remoteId: remoteId),
+            remoteDeletedAt: remoteDeletedAtByRemoteId[remoteId]!,
+          ),
         );
       }
     }
@@ -287,13 +289,16 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
                 _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
           );
 
-    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.deletedAt]).join([
-      innerJoin(
-        _db.remoteAssetEntity,
-        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-        useColumns: false,
-      ),
-    ]);
+    final query = _db.localAssetEntity
+        .select()
+        .addColumns([_db.remoteAssetEntity.id, _db.remoteAssetEntity.deletedAt])
+        .join([
+          innerJoin(
+            _db.remoteAssetEntity,
+            _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+            useColumns: false,
+          ),
+        ]);
 
     final whereClause =
         _db.localAssetEntity.checksum.isIn(checksums) &
@@ -303,7 +308,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     query.where(whereClause);
 
     return query.map((row) {
-      final asset = row.readTable(_db.localAssetEntity).toDto();
+      final remoteId = row.read(_db.remoteAssetEntity.id)!;
+      final asset = row.readTable(_db.localAssetEntity).toDto(remoteId: remoteId);
       final remoteDeletedAt = row.read(_db.remoteAssetEntity.deletedAt)!;
       return RemoteDeletedLocalAsset(asset: asset, remoteDeletedAt: remoteDeletedAt);
     }).get();

@@ -298,7 +298,7 @@ class ActionService {
       return 0;
     }
     final mediaUrls = await Future.wait(
-      assetsToTrash.map((e) => _storageRepository.getAssetEntityForAsset(e.asset).then((e) => e?.getMediaUrl())),
+      assetsToTrash.map((item) => _storageRepository.getMediaUrlForAsset(item.asset)),
     );
     final trashUrls = mediaUrls.nonNulls;
     _logger.info("Moving assets to trash: ${trashUrls.join(", ")}");
@@ -312,11 +312,11 @@ class ActionService {
 
     await _trashSyncRepository.updateApproves(trashedChecksums, true);
 
-    final trashedAssetsMap = Map<String, DateTime>.fromEntries(
-      assetsToTrash.map((e) => MapEntry(e.asset.checksum!, e.remoteDeletedAt)),
+    final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
+      assetsToTrash.where((e) => e.asset.remoteId != null).map((e) => MapEntry(e.asset.remoteId!, e.remoteDeletedAt)),
     );
 
-    final assetsByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(trashedAssetsMap);
+    final assetsByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(remoteDeletedAtByRemoteId);
     await _trashedLocalAssetRepository.trashLocalAssets(assetsByAlbum);
 
     return trashUrls.length;

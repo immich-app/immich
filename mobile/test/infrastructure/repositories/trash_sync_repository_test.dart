@@ -21,9 +21,9 @@ void main() {
   setUp(() async {
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     repository = DriftTrashSyncRepository(db);
-    await db.into(db.userEntity).insert(
-      UserEntityCompanion.insert(id: 'user-1', name: 'user-1', email: 'user-1@example.com'),
-    );
+    await db
+        .into(db.userEntity)
+        .insert(UserEntityCompanion.insert(id: 'user-1', name: 'user-1', email: 'user-1@example.com'));
   });
 
   tearDown(() async {
@@ -35,60 +35,68 @@ void main() {
     bool? isSyncApproved,
     required DateTime remoteDeletedAt,
   }) async {
-    await db.into(db.trashSyncEntity).insert(
-      TrashSyncEntityCompanion.insert(
-        checksum: checksum,
-        isSyncApproved: Value(isSyncApproved),
-        remoteDeletedAt: remoteDeletedAt,
-      ),
-    );
+    await db
+        .into(db.trashSyncEntity)
+        .insert(
+          TrashSyncEntityCompanion.insert(
+            checksum: checksum,
+            isSyncApproved: Value(isSyncApproved),
+            remoteDeletedAt: remoteDeletedAt,
+          ),
+        );
   }
 
   Future<void> insertRemoteAsset({required String checksum, DateTime? deletedAt}) async {
     final now = DateTime(2025, 1, 1);
-    await db.into(db.remoteAssetEntity).insert(
-      RemoteAssetEntityCompanion.insert(
-        id: 'remote-$checksum',
-        checksum: checksum,
-        name: 'remote-$checksum.jpg',
-        ownerId: 'user-1',
-        type: AssetType.image,
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        visibility: AssetVisibility.timeline,
-        deletedAt: Value(deletedAt),
-      ),
-    );
+    await db
+        .into(db.remoteAssetEntity)
+        .insert(
+          RemoteAssetEntityCompanion.insert(
+            id: 'remote-$checksum',
+            checksum: checksum,
+            name: 'remote-$checksum.jpg',
+            ownerId: 'user-1',
+            type: AssetType.image,
+            createdAt: Value(now),
+            updatedAt: Value(now),
+            visibility: AssetVisibility.timeline,
+            deletedAt: Value(deletedAt),
+          ),
+        );
   }
 
   Future<void> insertLocalAsset({required String checksum}) async {
     final now = DateTime(2025, 1, 1);
-    await db.into(db.localAssetEntity).insert(
-      LocalAssetEntityCompanion.insert(
-        id: 'local-$checksum',
-        checksum: Value(checksum),
-        name: 'local-$checksum.jpg',
-        type: AssetType.image,
-        createdAt: Value(now),
-        updatedAt: Value(now),
-      ),
-    );
+    await db
+        .into(db.localAssetEntity)
+        .insert(
+          LocalAssetEntityCompanion.insert(
+            id: 'local-$checksum',
+            checksum: Value(checksum),
+            name: 'local-$checksum.jpg',
+            type: AssetType.image,
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
   }
 
   Future<void> insertTrashedLocalAsset({required String checksum}) async {
     final now = DateTime(2025, 1, 1);
-    await db.into(db.trashedLocalAssetEntity).insert(
-      TrashedLocalAssetEntityCompanion.insert(
-        id: 'trashed-$checksum',
-        albumId: 'album-$checksum',
-        name: 'trashed-$checksum.jpg',
-        type: AssetType.image,
-        checksum: Value(checksum),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        source: TrashOrigin.localSync,
-      ),
-    );
+    await db
+        .into(db.trashedLocalAssetEntity)
+        .insert(
+          TrashedLocalAssetEntityCompanion.insert(
+            id: 'trashed-$checksum',
+            albumId: 'album-$checksum',
+            name: 'trashed-$checksum.jpg',
+            type: AssetType.image,
+            checksum: Value(checksum),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+            source: TrashOrigin.localSync,
+          ),
+        );
   }
 
   group('upsertReviewCandidates', () {
@@ -101,11 +109,22 @@ void main() {
       await insertTrashSync(checksum: 'rejected-newer', isSyncApproved: false, remoteDeletedAt: newTime);
 
       final items = [
-        RemoteDeletedLocalAsset(asset: LocalAssetStub.image1.copyWith(checksum: 'new'), remoteDeletedAt: newTime),
-        RemoteDeletedLocalAsset(asset: LocalAssetStub.image1.copyWith(checksum: 'rejected'), remoteDeletedAt: newTime),
-        RemoteDeletedLocalAsset(asset: LocalAssetStub.image1.copyWith(checksum: 'approved'), remoteDeletedAt: newTime),
         RemoteDeletedLocalAsset(
-            asset: LocalAssetStub.image1.copyWith(checksum: 'rejected-newer'), remoteDeletedAt: oldTime),
+          asset: LocalAssetStub.image1.copyWith(checksum: 'new'),
+          remoteDeletedAt: newTime,
+        ),
+        RemoteDeletedLocalAsset(
+          asset: LocalAssetStub.image1.copyWith(checksum: 'rejected'),
+          remoteDeletedAt: newTime,
+        ),
+        RemoteDeletedLocalAsset(
+          asset: LocalAssetStub.image1.copyWith(checksum: 'approved'),
+          remoteDeletedAt: newTime,
+        ),
+        RemoteDeletedLocalAsset(
+          asset: LocalAssetStub.image1.copyWith(checksum: 'rejected-newer'),
+          remoteDeletedAt: oldTime,
+        ),
       ];
 
       await repository.upsertReviewCandidates(items);
@@ -130,6 +149,44 @@ void main() {
   });
 
   group('deleteOutdated', () {
+    test('removes pending and rejected entries for matched alive remote ids', () async {
+      final now = DateTime(2025, 1, 1);
+
+      await insertRemoteAsset(checksum: 'alive-matched', deletedAt: null);
+      await insertRemoteAsset(checksum: 'alive-rejected', deletedAt: null);
+      await insertRemoteAsset(checksum: 'alive-approved', deletedAt: null);
+      await insertRemoteAsset(checksum: 'alive-not-requested', deletedAt: null);
+      await insertRemoteAsset(checksum: 'deleted-matched', deletedAt: now);
+
+      await insertTrashSync(checksum: 'alive-matched', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'alive-rejected', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'alive-approved', isSyncApproved: true, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'alive-not-requested', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'deleted-matched', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'missing-remote', isSyncApproved: null, remoteDeletedAt: now);
+
+      final deleted = await repository.deleteOutdated([
+        'remote-alive-matched',
+        'remote-alive-rejected',
+        'remote-alive-approved',
+        'remote-deleted-matched',
+        'remote-missing-remote',
+      ]);
+
+      expect(deleted, 2);
+
+      final remaining = await db.select(db.trashSyncEntity).get();
+      final remainingChecksums = remaining.map((row) => row.checksum).toSet();
+      expect(
+        remainingChecksums,
+        containsAll(['alive-approved', 'alive-not-requested', 'deleted-matched', 'missing-remote']),
+      );
+      expect(remainingChecksums, isNot(contains('alive-matched')));
+      expect(remainingChecksums, isNot(contains('alive-rejected')));
+    });
+  });
+
+  group('cleanupOutdatedEntries', () {
     test('removes matched and orphaned entries', () async {
       final now = DateTime(2025, 1, 1);
 
@@ -146,7 +203,7 @@ void main() {
       await insertTrashSync(checksum: 'approve-orphan', isSyncApproved: true, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'approve-keep', isSyncApproved: true, remoteDeletedAt: now);
 
-      final deleted = await repository.deleteOutdated();
+      final deleted = await repository.cleanupOutdatedEntries();
 
       expect(deleted, 4);
 
@@ -157,6 +214,14 @@ void main() {
       expect(remainingChecksums, isNot(contains('local-trashed')));
       expect(remainingChecksums, isNot(contains('reject-orphan')));
       expect(remainingChecksums, isNot(contains('approve-orphan')));
+    });
+
+    test('throttled cleanup returns null when min interval has not elapsed', () async {
+      final firstRun = await repository.cleanupOutdatedEntriesThrottled();
+      final secondRun = await repository.cleanupOutdatedEntriesThrottled();
+
+      expect(firstRun, 0);
+      expect(secondRun, isNull);
     });
   });
 }
