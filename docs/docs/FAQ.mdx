@@ -147,7 +147,7 @@ Yes, it creates new faces and persons from the imported asset metadata. For deta
 
 ### Does Immich support the filtering of NSFW images?
 
-No, it currently does not. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
+No, it currently does not hide or filter NSFW images from the library. This fork can optionally detect NSFW images and add searchable metadata, but timeline, search, and album filtering are separate future privacy features. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
 
 ### Why are there so many thumbnail generation jobs?
 
@@ -262,7 +262,7 @@ However, when the trash is emptied, the files will re-appear in the main timelin
 
 ### How does smart search work?
 
-Immich uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. As such, there are no "tags", "labels", or "descriptions" generated that you can look at. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
+Immich uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. Smart Search itself does not generate visible tags, labels, or descriptions. If image enrichment is enabled, Immich can run separate ML jobs to generate searchable descriptions and tags. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 

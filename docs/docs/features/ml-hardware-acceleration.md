@@ -23,6 +23,19 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - Some models may not be compatible with certain backends. CUDA is the most reliable.
 - Search latency isn't improved by ARM NN due to model compatibility issues preventing its use. However, smart search jobs do make use of ARM NN.
 
+### Image Enrichment Model Support
+
+Image enrichment has two independent model paths:
+
+| Task                        | CUDA support                                                                   | OpenVINO support                        |
+| --------------------------- | ------------------------------------------------------------------------------ | --------------------------------------- |
+| NSFW detection              | Supported through ONNX Runtime with `onnx-community/nsfw_image_detection-ONNX` | Supported through ONNX Runtime OpenVINO |
+| Image descriptions and tags | Requires a separate CUDA-capable VLM backend before use                        | Supported through OpenVINO GenAI        |
+
+Existing ONNX tasks keep NVIDIA acceleration when the CUDA machine-learning image is used. OpenVINO support does not disable CUDA; the machine-learning service still prefers `CUDAExecutionProvider` when the CUDA runtime is installed.
+
+The default description model setting is `Qwen/Qwen2.5-VL-3B-Instruct`, which is mapped internally to the OpenVINO-converted `llmware/qwen2.5-vl-3b-ov` model in this branch. The fallback setting is `microsoft/Florence-2-base-ft`. CUDA deployments need a CUDA VLM runner, such as a Transformers or vLLM based backend, before those description models can run on NVIDIA GPUs.
+
 ## Prerequisites
 
 #### ARM NN

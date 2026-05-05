@@ -116,6 +116,18 @@ After downloading, there is no need for Immich to connect to the network
 Unless version checking has been enabled in the settings.
 :::
 
+### Image Descriptions and Tags
+
+The [image enrichment](/features/image-enrichment) settings allow you to generate searchable descriptions and tags for image assets. Existing user descriptions are preserved, and generated descriptions are appended once. Generated tags are plain searchable tags and are deduplicated against existing tags.
+
+This feature is independent from Smart Search. Smart Search uses CLIP embeddings for contextual search, while image enrichment writes visible descriptions and tags to asset metadata.
+
+### NSFW Detection
+
+The NSFW detection settings allow you to classify image assets with a dedicated safety model. The detection result is stored privately, and Immich can add a visible `nsfw` tag plus specific reason tags when supported by the image content and classifier result.
+
+The private NSFW flag is the source of truth for future privacy features. Tags are searchable metadata and should not be treated as a security boundary.
+
 ### Duplicate Detection
 
 Use CLIP embeddings to find likely duplicates. The maximum detection distance can be configured in order to improve / reduce the level of accuracy.

@@ -44,7 +44,7 @@ services:
 
 ## Jobs
 
-When a new asset is uploaded it kicks off a series of jobs, which include metadata extraction, thumbnail generation, machine learning tasks, and storage template migration, if enabled. To view the status of a job navigate to the Administration -> Jobs page.
+When a new asset is uploaded it kicks off a series of jobs, which include metadata extraction, thumbnail generation, machine learning tasks, image enrichment, and storage template migration, if enabled. To view the status of a job navigate to the Administration -> Jobs page.
 
 <img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />
 
@@ -69,6 +69,7 @@ graph TD
     D --> F[Face Detection]
     D --> G[OCR]
     D --> H[Video Transcoding]
+    D --> K["Image Enrichment (descriptions, tags, NSFW detection)"]
     E --> I[Duplicate Detection]
     F --> J[Facial Recognition]
 ```
