@@ -347,6 +347,10 @@ export type JobItem =
   | { name: JobName.AssetExtractMetadataQueueAll; data: IBaseJob }
   | { name: JobName.AssetExtractMetadata; data: IEntityJob }
 
+  // Fix Date From Filename
+  | { name: JobName.AssetFixDateFromFilenameQueueAll; data: IBaseJob }
+  | { name: JobName.AssetFixDateFromFilename; data: IEntityJob }
+
   // Notifications
   | { name: JobName.NotificationsCleanup; data?: IBaseJob }
 

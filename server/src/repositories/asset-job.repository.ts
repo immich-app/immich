@@ -368,6 +368,34 @@ export class AssetJobRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [false], stream: true })
+  streamForFileDateFix(force?: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id', 'asset.originalFileName'])
+      .where('asset.deletedAt', 'is', null)
+      .$if(!force, (qb) =>
+        qb
+          .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+          .where((eb) =>
+            eb.or([eb('asset_exif.dateTimeOriginal', 'is', null), eb('asset_exif.assetId', 'is', null)]),
+          ),
+      )
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForFileDateFixJob(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id', 'asset.originalFileName', 'asset.fileCreatedAt'])
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select(['asset_exif.dateTimeOriginal'])
+      .where('asset.id', '=', id)
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   private storageTemplateAssetQuery() {
     return this.db
       .selectFrom('asset')

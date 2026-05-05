@@ -397,6 +397,7 @@ export enum ManualJobName {
   MemoryCleanup = 'memory-cleanup',
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
+  FixDateFromFilename = 'fix-date-from-filename',
 }
 
 export const ManualJobNameSchema = z.enum(ManualJobName).describe('Manual job name').meta({ id: 'ManualJobName' });
@@ -795,6 +796,8 @@ export enum JobName {
   AssetEmptyTrash = 'AssetEmptyTrash',
   AssetExtractMetadataQueueAll = 'AssetExtractMetadataQueueAll',
   AssetExtractMetadata = 'AssetExtractMetadata',
+  AssetFixDateFromFilenameQueueAll = 'AssetFixDateFromFilenameQueueAll',
+  AssetFixDateFromFilename = 'AssetFixDateFromFilename',
   AssetFileMigration = 'AssetFileMigration',
   AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',

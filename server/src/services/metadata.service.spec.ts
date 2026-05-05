@@ -15,7 +15,7 @@ import {
   SourceType,
 } from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
-import { firstDateTime, MetadataService } from 'src/services/metadata.service';
+import { firstDateTime, MetadataService, parseDateFromFilename } from 'src/services/metadata.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { PersonFactory } from 'test/factories/person.factory';
 import { videoInfoStub } from 'test/fixtures/media.stub';
@@ -2110,6 +2110,145 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       expect(result?.tag).toBe('CreationDate');
       expect(result?.dateTime?.toDate()?.toISOString()).toBe('2025-05-24T16:26:20.000Z');
+    });
+  });
+
+  describe('parseDateFromFilename', () => {
+    it.each([
+      // WhatsApp
+      ['IMG-20230415-WA0001.jpg', '2023-04-15T00:00:00.000Z'],
+      ['VID-20230415-WA0001.mp4', '2023-04-15T00:00:00.000Z'],
+      // Android generic with time
+      ['IMG_20230415_143022.jpg', '2023-04-15T14:30:22.000Z'],
+      ['VID_20230415_143022.mp4', '2023-04-15T14:30:22.000Z'],
+      ['PANO_20230415_143022.jpg', '2023-04-15T14:30:22.000Z'],
+      // Samsung compact date+time
+      ['20230415_143022.jpg', '2023-04-15T14:30:22.000Z'],
+      ['20230415_143022_001.jpg', '2023-04-15T14:30:22.000Z'],
+      // Screenshots
+      ['Screenshot_20230415-143022.png', '2023-04-15T14:30:22.000Z'],
+      ['Screenshot_2023-04-15-14-30-22.png', '2023-04-15T14:30:22.000Z'],
+      ['Screenshot_20230415_143022.png', '2023-04-15T14:30:22.000Z'],
+      // Telegram
+      ['photo_2023-04-15_14-30-22.jpg', '2023-04-15T14:30:22.000Z'],
+      ['video_2023-04-15_14-30-22.mp4', '2023-04-15T14:30:22.000Z'],
+      // Signal
+      ['signal-2023-04-15-143022.jpg', '2023-04-15T14:30:22.000Z'],
+      // Facebook ms timestamp
+      ['FB_IMG_1681562400000.jpg', new Date(1681562400000).toISOString()],
+      // Snapchat seconds timestamp
+      ['Snapchat-1681562400.jpg', new Date(1681562400 * 1000).toISOString()],
+      // iOS RPReplay seconds timestamp
+      ['RPReplay_Final1681562400.MP4', new Date(1681562400 * 1000).toISOString()],
+      // ISO compact with T
+      ['20230415T143022.jpg', '2023-04-15T14:30:22.000Z'],
+      // General ISO hyphenated date+time
+      ['2023-04-15_14-30-22.jpg', '2023-04-15T14:30:22.000Z'],
+      // Hyphenated date only
+      ['2023-04-15 some-description.jpg', '2023-04-15T00:00:00.000Z'],
+    ] as [string, string][])(
+      'parses date from "%s" -> %s',
+      (filename, expected) => {
+        const result = parseDateFromFilename(filename);
+        expect(result).not.toBeNull();
+        expect(result!.toISOString()).toBe(expected);
+      },
+    );
+
+    it.each([
+      ['IMG_1234.jpg'],
+      ['document.pdf'],
+      ['photo.jpg'],
+      ['unnamed.jpg'],
+      // Invalid calendar dates
+      ['IMG_20231345_143022.jpg'], // month 13
+      ['IMG_20230432_143022.jpg'], // day 32
+    ])('returns null for "%s"', (filename) => {
+      expect(parseDateFromFilename(filename)).toBeNull();
+    });
+  });
+
+  describe('handleQueueFixDateFromFilename', () => {
+    it('should queue fix-date jobs for assets without exif dates', async () => {
+      const asset = AssetFactory.create({ originalFileName: 'IMG_20230415_143022.jpg' });
+      mocks.assetJob.streamForFileDateFix.mockReturnValue(makeStream([asset]));
+
+      await expect(sut.handleQueueFixDateFromFilename({ force: false })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.assetJob.streamForFileDateFix).toHaveBeenCalledWith(false);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetFixDateFromFilename, data: { id: asset.id } },
+      ]);
+    });
+
+    it('should queue all assets when force=true', async () => {
+      const asset = AssetFactory.create({ originalFileName: 'IMG_20230415_143022.jpg' });
+      mocks.assetJob.streamForFileDateFix.mockReturnValue(makeStream([asset]));
+
+      await expect(sut.handleQueueFixDateFromFilename({ force: true })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.assetJob.streamForFileDateFix).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('handleFixDateFromFilename', () => {
+    it('should return failed when asset is not found', async () => {
+      mocks.assetJob.getForFileDateFixJob.mockResolvedValue(undefined);
+
+      await expect(sut.handleFixDateFromFilename({ id: 'non-existent' })).resolves.toBe(JobStatus.Failed);
+    });
+
+    it('should skip when dateTimeOriginal is already set', async () => {
+      mocks.assetJob.getForFileDateFixJob.mockResolvedValue({
+        id: 'asset-id',
+        originalFileName: 'IMG_20230415_143022.jpg',
+        fileCreatedAt: new Date(),
+        dateTimeOriginal: new Date('2020-01-01'),
+      });
+
+      await expect(sut.handleFixDateFromFilename({ id: 'asset-id' })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+    });
+
+    it('should skip when no date can be parsed from filename', async () => {
+      mocks.assetJob.getForFileDateFixJob.mockResolvedValue({
+        id: 'asset-id',
+        originalFileName: 'IMG_1234.jpg',
+        fileCreatedAt: new Date(),
+        dateTimeOriginal: null,
+      });
+
+      await expect(sut.handleFixDateFromFilename({ id: 'asset-id' })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
+    it('should update asset and exif when date is parsed from filename', async () => {
+      const expectedDate = new Date('2023-04-15T14:30:22.000Z');
+      mocks.assetJob.getForFileDateFixJob.mockResolvedValue({
+        id: 'asset-id',
+        originalFileName: 'IMG_20230415_143022.jpg',
+        fileCreatedAt: new Date(),
+        dateTimeOriginal: null,
+      });
+
+      await expect(sut.handleFixDateFromFilename({ id: 'asset-id' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: 'asset-id',
+        fileCreatedAt: expectedDate,
+        localDateTime: expectedDate,
+      });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
+        exif: {
+          assetId: 'asset-id',
+          dateTimeOriginal: expectedDate,
+          timeZone: null,
+        },
+        lockedPropertiesBehavior: 'skip',
+      });
     });
   });
 });

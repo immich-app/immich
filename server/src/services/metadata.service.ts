@@ -83,6 +83,88 @@ export function firstDateTime(tags: ImmichTags) {
   }
 }
 
+function isValidDate(d: Date): boolean {
+  return !Number.isNaN(d.getTime());
+}
+
+function makeUtcDate(year: string, month: string, day: string, hour = '0', minute = '0', second = '0'): Date | null {
+  const y = Number.parseInt(year, 10);
+  const mo = Number.parseInt(month, 10);
+  const d = Number.parseInt(day, 10);
+  const h = Number.parseInt(hour, 10);
+  const mi = Number.parseInt(minute, 10);
+  const s = Number.parseInt(second, 10);
+  if (y < 1970 || y > 2100 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  if (h > 23 || mi > 59 || s > 59) return null;
+  const date = new Date(Date.UTC(y, mo - 1, d, h, mi, s));
+  return isValidDate(date) && date.getUTCFullYear() === y ? date : null;
+}
+
+type FilenamePattern = { regex: RegExp; toDate: (m: RegExpMatchArray) => Date | null };
+
+const FILENAME_DATE_PATTERNS: FilenamePattern[] = [
+  // Facebook: FB_IMG_1681562400000.jpg (13-digit ms timestamp)
+  {
+    regex: /(?:^|[_-])(\d{13})(?:[_-]|$)/,
+    toDate: (m) => {
+      const d = new Date(Number.parseInt(m[1], 10));
+      return isValidDate(d) ? d : null;
+    },
+  },
+  // Snapchat / RPReplay: 10-digit Unix seconds
+  {
+    regex: /(?:^|[_-])(\d{10})(?:[_-]|$)/,
+    toDate: (m) => {
+      const sec = Number.parseInt(m[1], 10);
+      if (sec < 1_000_000_000 || sec > 2_147_483_647) return null;
+      const d = new Date(sec * 1000);
+      return isValidDate(d) ? d : null;
+    },
+  },
+  // ISO compact with T: 20230415T143022
+  {
+    regex: /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/,
+    toDate: (m) => makeUtcDate(m[1], m[2], m[3], m[4], m[5], m[6]),
+  },
+  // Telegram / Screenshots: photo_2023-04-15_14-30-22 / Screenshot_2023-04-15-14-30-22
+  {
+    regex: /(\d{4})-(\d{2})-(\d{2})[_-](\d{2})-(\d{2})-(\d{2})(?:[_-]|$)/,
+    toDate: (m) => makeUtcDate(m[1], m[2], m[3], m[4], m[5], m[6]),
+  },
+  // Signal: signal-2023-04-15-143022
+  {
+    regex: /(\d{4})-(\d{2})-(\d{2})[_-](\d{2})(\d{2})(\d{2})(?:[_-]|$)/,
+    toDate: (m) => makeUtcDate(m[1], m[2], m[3], m[4], m[5], m[6]),
+  },
+  // Android / Samsung / Screenshots: 20230415_143022 / Screenshot_20230415-143022
+  {
+    regex: /(\d{4})(\d{2})(\d{2})[_-](\d{2})(\d{2})(\d{2})(?:[_-]|$)/,
+    toDate: (m) => makeUtcDate(m[1], m[2], m[3], m[4], m[5], m[6]),
+  },
+  // Hyphenated date only: 2023-04-15
+  {
+    regex: /(\d{4})-(\d{2})-(\d{2})(?:[_\s-]|$)/,
+    toDate: (m) => makeUtcDate(m[1], m[2], m[3]),
+  },
+  // WhatsApp / compact date only: IMG-20230415-WA, 20230415_
+  {
+    regex: /(\d{4})(\d{2})(\d{2})(?:[_-]|$)/,
+    toDate: (m) => makeUtcDate(m[1], m[2], m[3]),
+  },
+];
+
+export function parseDateFromFilename(filename: string): Date | null {
+  const stem = parse(filename).name;
+  for (const { regex, toDate } of FILENAME_DATE_PATTERNS) {
+    const match = stem.match(regex);
+    if (match) {
+      const date = toDate(match);
+      if (date) return date;
+    }
+  }
+  return null;
+}
+
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
   if (Array.isArray(value)) {
@@ -413,6 +495,48 @@ export class MetadataService extends BaseService {
       userId: asset.ownerId,
       source: data.source,
     });
+  }
+
+  @OnJob({ name: JobName.AssetFixDateFromFilenameQueueAll, queue: QueueName.BackgroundTask })
+  async handleQueueFixDateFromFilename({ force }: JobOf<JobName.AssetFixDateFromFilenameQueueAll>): Promise<JobStatus> {
+    let jobs: { name: JobName.AssetFixDateFromFilename; data: { id: string } }[] = [];
+    for await (const asset of this.assetJobRepository.streamForFileDateFix(force)) {
+      jobs.push({ name: JobName.AssetFixDateFromFilename, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
+    }
+    await this.jobRepository.queueAll(jobs);
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.AssetFixDateFromFilename, queue: QueueName.MetadataExtraction })
+  async handleFixDateFromFilename({ id }: JobOf<JobName.AssetFixDateFromFilename>): Promise<JobStatus> {
+    const asset = await this.assetJobRepository.getForFileDateFixJob(id);
+    if (!asset) {
+      return JobStatus.Failed;
+    }
+
+    if (asset.dateTimeOriginal) {
+      return JobStatus.Skipped;
+    }
+
+    const parsedDate = parseDateFromFilename(asset.originalFileName);
+    if (!parsedDate) {
+      this.logger.debug(`No date parsed from filename "${asset.originalFileName}" for asset ${id}`);
+      return JobStatus.Skipped;
+    }
+
+    this.logger.log(`Fixing date for asset ${id} from filename "${asset.originalFileName}": ${parsedDate.toISOString()}`);
+
+    await this.assetRepository.update({ id, fileCreatedAt: parsedDate, localDateTime: parsedDate });
+    await this.assetRepository.upsertExif({
+      exif: { assetId: id, dateTimeOriginal: parsedDate, timeZone: null },
+      lockedPropertiesBehavior: 'skip',
+    });
+
+    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })

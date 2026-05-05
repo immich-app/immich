@@ -34,6 +34,10 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.DatabaseBackup };
     }
 
+    case ManualJobName.FixDateFromFilename: {
+      return { name: JobName.AssetFixDateFromFilenameQueueAll, data: { force: false } };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }
