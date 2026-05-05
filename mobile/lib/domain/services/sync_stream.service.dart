@@ -516,6 +516,7 @@ class SyncStreamService {
         );
         await _handleRemoteDeletedOrTrashed(remoteDeletedAtByRemoteId);
         await _deleteOutdatedTrashSyncEntries(remoteSyncAssets.where((e) => e.deletedAt == null).map((e) => e.id));
+        await _applyRemoteRestoreToLocal();
       },
     );
   }
@@ -535,6 +536,16 @@ class SyncStreamService {
     final result = await _trashSyncRepository.deleteOutdated(remoteIds);
     if (result > 0) {
       _logger.info("syncTrashedAssets, outdated deleted: $result");
+    }
+  }
+
+  Future<void> _applyRemoteRestoreToLocal() async {
+    final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+    if (assetsToRestore.isNotEmpty) {
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
+    } else {
+      _logger.info("No remote assets found for restoration");
     }
   }
 
