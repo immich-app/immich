@@ -43,10 +43,10 @@
     let last = undefined;
     for (const asset of assets) {
       const date = DateTime.fromObject(asset.localDateTime, { zone: asset.localOffsetHours ? 'local' : 'UTC' });
-      if (!first || first.toMillis() > date.toMillis()) {
+      if (!first || first > date) {
         first = date;
       }
-      if (!last || last.toMillis() < date.toMillis()) {
+      if (!last || last < date) {
         last = date;
       }
     }
