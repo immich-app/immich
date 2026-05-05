@@ -1,0 +1,439 @@
+version: 1
+
+metadata:
+  upstream_remote: upstream
+  upstream_branch: main
+  fork_remote: origin
+  fork_branch: main
+  last_verified_fork_head: 919deb87a6477d5058e0fa7b3960d30de577b495
+
+coverage_ignore:
+  - docs/superpowers/**
+
+fork_surface:
+  preferred_namespaces:
+    server:
+      - server/src/gallery/**
+    web:
+      - web/src/lib/gallery/**
+    mobile:
+      - mobile/lib/gallery/**
+    database:
+      - server/src/schema/migrations-gallery/**
+    ci:
+      - .github/actions/gallery-*/**
+      - .github/workflows/gallery-*.yml
+
+features:
+  shared-spaces:
+    title: Shared Spaces And Space Identity
+    aliases:
+      - mobile-spaces
+      - mobile-shared-space-drift-sync
+      - space-library-linking
+      - bulk-add-to-spaces
+      - space-activity-logging
+      - collapsible-space-hero
+      - space-person-dedup
+      - duplicate-space-membership-sync
+      - library-user-denormalization
+      - global-face-identities
+      - representative-face-source
+    risk: high
+    domains: [server, web, mobile, database, e2e]
+    owned_paths:
+      - server/src/services/shared-space.service.ts
+      - server/src/controllers/shared-space.controller.ts
+      - server/src/repositories/shared-space.repository.ts
+      - server/src/dtos/shared-space*.dto.ts
+      - server/src/schema/tables/shared-space*.ts
+      - server/src/schema/tables/library-user.table.ts
+      - server/src/queries/shared.space.repository.sql
+      - web/src/routes/(user)/spaces/**
+      - web/src/lib/components/spaces/**
+      - mobile/lib/pages/library/spaces/**
+      - mobile/lib/infrastructure/entities/shared_space*
+      - mobile/lib/infrastructure/entities/library*
+    upstream_extension_paths:
+      - server/src/services/search.service.ts
+      - server/src/repositories/search.repository.ts
+      - server/src/repositories/sync.repository.ts
+      - server/src/schema/functions.ts
+      - web/src/routes/(user)/photos/**
+      - web/src/routes/(user)/map/**
+      - mobile/lib/domain/services/sync_stream.service.dart
+      - mobile/lib/infrastructure/entities/merged_asset.drift
+    database:
+      tables:
+        - shared_spaces
+        - shared_space_members
+        - shared_space_assets
+        - shared_space_persons
+        - shared_space_libraries
+        - library_user
+      migration_globs:
+        - server/src/schema/migrations-gallery/*SharedSpace*.ts
+        - server/src/schema/migrations-gallery/*Space*.ts
+        - server/src/schema/migrations-gallery/*Library*.ts
+    mobile:
+      drift_versions:
+        owned: [23, 24]
+        shipped: true
+        owner: gallery
+        expected_callbacks:
+          23: [sharedSpaceEntity, sharedSpaceAssetEntity]
+          24: [libraryEntity, sharedSpaceLibraryEntity]
+      paths:
+        - mobile/lib/infrastructure/repositories/db.repository.dart
+        - mobile/drift_schemas/main/drift_schema_v23.json
+        - mobile/drift_schemas/main/drift_schema_v24.json
+    required_checks: [e2e-rebase-smoke, mobile-drift-rebase-check]
+
+  storage-and-media:
+    title: Storage Migration, Direct S3 Delivery, Import, And Media Edits
+    aliases:
+      - storage-migration
+      - direct-s3-media-delivery
+      - google-photos-import
+      - google-takeout-zip-on-demand
+      - image-editing
+      - checksum-tombstone
+      - switch-back-to-immich
+    risk: high
+    domains: [server, web, database, ci, e2e]
+    owned_paths:
+      - server/src/services/storage-migration.service.ts
+      - server/src/controllers/storage-migration.controller.ts
+      - server/src/backends/s3-storage.backend.ts
+      - web/src/routes/admin/storage-migration/**
+      - web/src/lib/components/import/**
+      - web/src/lib/managers/import-manager.svelte.ts
+      - web/src/lib/utils/google-takeout-*.ts
+      - scripts/revert-to-immich.sql
+      - .github/workflows/storage-migration*.yml
+      - .github/workflows/gallery-revert-to-immich-validation.yml
+    upstream_extension_paths:
+      - server/src/services/media.service.ts
+      - server/src/services/metadata.service.ts
+      - server/src/services/auth.service.ts
+      - server/src/services/user.service.ts
+      - server/Dockerfile
+      - e2e/docker-compose.yml
+    optional_paths:
+      - e2e/**
+      - server/src/backends/**
+      - server/test/medium/storage-migration*.spec.ts
+    database:
+      tables: [storage_migration_log, asset_duplicate_checksums]
+      migration_globs:
+        - server/src/schema/migrations-gallery/*Storage*.ts
+        - server/src/schema/migrations-gallery/*DuplicateChecksum*.ts
+    required_checks: [storage-migration-tests, storage-migration-e2e]
+
+  search-map-and-ui:
+    title: Search, Filters, Maps, Command Palette, Memories, And Support UI
+    aliases:
+      - support-ui
+      - global-search-command-palette
+      - gallery-map-shared-photos
+      - filter-panel
+      - smart-search-main-timeline
+      - space-search-sorting
+      - dynamic-filter-suggestions
+      - typed-search-filters
+      - rule-based-memories
+      - historic-memories
+    risk: high
+    domains: [server, web, mobile, e2e]
+    owned_paths:
+      - web/src/lib/components/filter-panel/**
+      - web/src/lib/components/global-search/**
+      - web/src/lib/managers/global-search*.ts
+      - web/src/lib/managers/command*.ts
+      - web/src/lib/utils/typed-search/**
+      - web/src/lib/components/shared-components/side-bar/purchase-info.svelte
+      - web/src/lib/components/shared-components/purchasing/purchase-content.svelte
+      - server/src/controllers/gallery-map.controller.ts
+      - server/src/dtos/gallery-map.dto.ts
+      - mobile/lib/providers/map/map_marker.provider.dart
+      - mobile/lib/services/map.service.dart
+    upstream_extension_paths:
+      - server/src/controllers/search.controller.ts
+      - server/src/services/search.service.ts
+      - server/src/repositories/search.repository.ts
+      - server/src/dtos/search.dto.ts
+      - server/src/queries/search.repository.sql
+      - web/src/routes/(user)/photos/**
+      - web/src/routes/(user)/map/**
+      - web/src/routes/(user)/albums/**
+      - web/src/routes/(user)/memories/**
+      - patches/@immich__ui@*.patch
+    optional_paths:
+      - web/src/lib/**
+      - web/src/routes/**
+      - web/src/test-data/**
+      - web/src/service-worker/**
+      - web/src/app.css
+      - web/src/app.html
+    required_checks: [e2e-rebase-smoke, fork-patches-check]
+
+  ml-classification-and-observability:
+    title: ML, Classification, Duplicates, Config Caching, And Metrics
+    aliases:
+      - pet-detection
+      - auto-classification
+      - video-duplicate-detection
+      - clip-relevance-threshold
+      - system-config-caching
+      - prometheus-metrics
+    risk: high
+    domains: [server, ml, database]
+    owned_paths:
+      - machine-learning/immich_ml/models/pet_detection/**
+      - server/src/services/pet-detection.service.ts
+      - server/src/services/classification.service.ts
+      - server/src/services/duplicate.service.ts
+      - server/src/repositories/duplicate.repository.ts
+    upstream_extension_paths:
+      - server/src/config.ts
+      - server/src/dtos/system-config.dto.ts
+      - server/src/dtos/model-config.dto.ts
+      - server/src/repositories/search.repository.ts
+      - machine-learning/pyproject.toml
+      - machine-learning/immich_ml/main.py
+    optional_paths:
+      - machine-learning/**
+      - server/src/services/**
+      - server/src/repositories/**
+      - server/src/dtos/**
+      - server/src/utils/**
+      - server/test/**
+    database:
+      tables: [person, shared_spaces, system_config, asset_duplicate_checksums]
+      migration_globs:
+        - server/src/schema/migrations-gallery/*Pet*.ts
+        - server/src/schema/migrations-gallery/*Classification*.ts
+        - server/src/schema/migrations-gallery/*Duplicate*.ts
+    required_checks: [ci-invariants-check]
+
+  mobile-app-and-branding:
+    title: Mobile App, Branding, Deep Links, And Release Signing
+    aliases:
+      - mobile-photos-filter-sheet
+      - mobile-map-markers
+      - mobile-bottom-nav-design
+      - mobile-deeplink-oauth-branding
+      - mobile-ios-purpose-strings
+      - mobile-release-signing
+      - open-in-app-deeplink
+      - branding
+    risk: high
+    domains: [mobile, web, ci, config]
+    owned_paths:
+      - mobile/lib/providers/photos_filter/**
+      - mobile/lib/presentation/pages/photos_filter/**
+      - mobile/lib/presentation/widgets/filter_sheet/**
+      - mobile/lib/providers/gallery_nav/**
+      - mobile/lib/presentation/widgets/gallery_nav/**
+      - mobile/ios/Runner/Info.plist
+      - branding/**
+      - design/gallery-*
+      - web/static/gallery-*
+      - .github/actions/apply-branding/**
+    upstream_extension_paths:
+      - mobile/lib/routing/router.dart
+      - mobile/lib/routing/router.gr.dart
+      - mobile/lib/services/action.service.dart
+      - mobile/lib/providers/websocket.provider.dart
+      - web/src/routes/+layout.svelte
+    optional_paths:
+      - mobile/**
+      - web/static/**
+      - design/**
+    required_checks: [mobile-drift-rebase-check, ci-invariants-check]
+
+  release-ci-and-infrastructure:
+    title: Release, CI, Infrastructure Detachment, Schema Functions, And Logging
+    aliases:
+      - user-groups
+      - infrastructure-detachment
+      - release-version-publishing
+      - rc-build-workflow
+      - split-mobile-server-release
+      - environment-tagged-user-agent
+      - fork-migration-compatibility
+      - schema-functions
+      - structured-json-logging
+      - upstream-rebase-tooling
+    risk: high
+    domains: [ci, server, web, mobile, docs, config, database]
+    owned_paths:
+      - server/src/services/user-group.service.ts
+      - server/src/controllers/user-group.controller.ts
+      - server/src/schema/tables/user-group*.ts
+      - web/src/lib/components/users/**
+      - .github/workflows/gallery-*.yml
+      - .github/workflows/storage-migration*.yml
+      - .github/workflows/docs-build.yml
+      - .github/workflows/docs-deploy.yml
+      - server/src/schema/migrations-gallery/**
+      - tools/upstream-preflight/**
+    upstream_extension_paths:
+      - .github/workflows/**
+      - server/Dockerfile
+      - web/Dockerfile
+      - machine-learning/Dockerfile
+      - docker/**
+      - server/src/config.ts
+      - server/src/utils/fetch.ts
+      - server/src/schema/functions.ts
+      - server/helmet.json
+      - README.md
+    optional_paths:
+      - .claude/**
+      - .dockerignore
+      - .github/**
+      - .gitignore
+      - CLAUDE.md
+      - CODEOWNERS
+      - CONTRIBUTING.md
+      - FUTURE_IMPROVEMENTS.md
+      - IMPROVEMENTS.md
+      - Makefile
+      - README.md
+      - SECURITY.md
+      - cli/**
+      - docker/**
+      - docs/**
+      - i18n/**
+      - misc/**
+      - open-api/**
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - readme_i18n/**
+      - server/Dockerfile
+      - server/helmet.json
+      - server/package.json
+      - server/src/**
+      - web/Dockerfile
+      - web/package.json
+      - web/svelte.config.js
+    database:
+      tables: [user_groups, user_group_members]
+      migration_globs:
+        - server/src/schema/migrations-gallery/*.ts
+      expected_migrations:
+        - server/src/schema/migrations-gallery/1772230000000-CreateStorageMigrationLogTable.ts
+        - server/src/schema/migrations-gallery/1772240000000-CreateSharedSpaceTables.ts
+        - server/src/schema/migrations-gallery/1772250000000-AddShowInTimelineToSharedSpaceMember.ts
+        - server/src/schema/migrations-gallery/1772260000000-AddThumbnailAssetIdToSharedSpace.ts
+        - server/src/schema/migrations-gallery/1772270000000-AddColorToSharedSpace.ts
+        - server/src/schema/migrations-gallery/1772782339000-AddPetDetectionColumns.ts
+        - server/src/schema/migrations-gallery/1772790000000-AddLastActivityAtToSharedSpace.ts
+        - server/src/schema/migrations-gallery/1772800000000-AddLastViewedAtToSharedSpaceMember.ts
+        - server/src/schema/migrations-gallery/1772810000000-AddSharedSpaceActivityTable.ts
+        - server/src/schema/migrations-gallery/1772815000000-AddThumbnailCropYToSharedSpace.ts
+        - server/src/schema/migrations-gallery/1772820000000-AddSharedSpaceFaceRecognition.ts
+        - server/src/schema/migrations-gallery/1773846750001-AddPersonNameTrigramIndex.ts
+        - server/src/schema/migrations-gallery/1774215658876-AddSharedSpaceLibraryTable.ts
+        - server/src/schema/migrations-gallery/1774300000000-CreateUserGroupTables.ts
+        - server/src/schema/migrations-gallery/1775000000000-AddPetsEnabledToSharedSpace.ts
+        - server/src/schema/migrations-gallery/1775100000000-AddAssetDuplicateChecksum.ts
+        - server/src/schema/migrations-gallery/1775100000000-DropSpacePersonThumbnailPath.ts
+        - server/src/schema/migrations-gallery/1776000000000-AddClassificationTables.ts
+        - server/src/schema/migrations-gallery/1777000000000-AddSpacePersonCounts.ts
+        - server/src/schema/migrations-gallery/1777000000000-AdminScopedClassification.ts
+        - server/src/schema/migrations-gallery/1778000000000-MoveClassificationToConfig.ts
+        - server/src/schema/migrations-gallery/1778100000000-SharedSpaceAuditTables.ts
+        - server/src/schema/migrations-gallery/1778110000000-AddSharedSpaceMemberSyncColumns.ts
+        - server/src/schema/migrations-gallery/1778120000000-AddSharedSpaceAssetSyncColumns.ts
+        - server/src/schema/migrations-gallery/1778200000000-LibraryAuditTables.ts
+        - server/src/schema/migrations-gallery/1778210000000-AddLibrarySyncColumns.ts
+        - server/src/schema/migrations-gallery/1778300000000-AddLibraryUserTable.ts
+        - server/src/schema/migrations-gallery/1778400000000-AddFaceIdentities.ts
+        - server/src/schema/migrations-gallery/1778500000000-AddSpacePersonRepresentativeFaceSource.ts
+    required_checks: [ci-invariants-check, fork-patches-check]
+
+checks:
+  e2e-rebase-smoke:
+    command: make e2e-rebase-smoke
+    phase: post-batch
+    cost: expensive
+    required_for_risk: [high]
+  mobile-drift-rebase-check:
+    command: make mobile-drift-rebase-check
+    phase: preflight-and-post-batch
+    cost: cheap
+    required_for_domains: [mobile, database]
+  ci-invariants-check:
+    command: make ci-invariants-check
+    phase: preflight-and-post-batch
+    cost: cheap
+    required_for_domains: [ci]
+  fork-patches-check:
+    command: make fork-patches-check
+    phase: preflight-and-post-batch
+    cost: cheap
+    required_for_domains: [web, ci]
+  storage-migration-tests:
+    command: make storage-migration-tests
+    phase: post-batch
+    cost: expensive
+    required_for_domains: [server, database]
+  storage-migration-e2e:
+    command: make storage-migration-e2e
+    phase: post-batch
+    cost: expensive
+    required_for_domains: [e2e]
+
+ci_invariants:
+  - id: no-push-o-matic
+    title: No upstream PUSH_O_MATIC token dependency
+    forbidden_patterns: [PUSH_O_MATIC, create-workflow-token]
+    paths: [.github/workflows/**/*.yml, .github/workflows/**/*.yaml]
+    exceptions:
+      - .github/workflows/merge-translations.yml
+  - id: gallery-release-image-names
+    title: Gallery release workflows publish Gallery images
+    forbidden_patterns:
+      - ghcr.io/immich-app/immich-server
+      - ghcr.io/immich-app/immich-web
+      - ghcr.io/immich-app/immich-machine-learning
+    paths: [.github/workflows/gallery-*.yml]
+    exceptions: [.github/workflows/gallery-revert-to-immich-validation.yml]
+  - id: gallery-docs-deploy-disabled-upstream
+    title: Upstream docs deploy stays workflow_dispatch only
+    forbidden_patterns: ['workflow_run:']
+    paths: [.github/workflows/docs-deploy.yml]
+    exceptions: []
+
+patches:
+  - id: immich-ui-command-patch
+    package: '@immich/ui'
+    version_source: pnpm-workspace.yaml
+    expected_patch: patches/@immich__ui@0.76.2.patch
+    required_check: fork-patches-check
+
+risk_patterns:
+  - id: breaking-refactor
+    risk: high
+    subject_regex: '(!:|refactor!)'
+    notes: Breaking upstream refactor
+  - id: mobile-drift
+    risk: high
+    path_globs:
+      - mobile/lib/infrastructure/repositories/db.repository.dart
+      - mobile/drift_schemas/main/**
+    notes: Mobile Drift schema change
+  - id: server-migration
+    risk: high
+    path_globs:
+      - server/src/schema/migrations/**
+      - server/src/schema/tables/**
+    notes: Server schema change
+  - id: openapi-generated
+    risk: medium
+    path_globs:
+      - open-api/**
+      - mobile/openapi/**
+    notes: OpenAPI shape or generated client change

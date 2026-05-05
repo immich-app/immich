@@ -39,11 +39,54 @@ jobs:
               - 'mobile/**'
             machine-learning:
               - 'machine-learning/**'
+            upstream-preflight:
+              - '.github/workflows/test.yml'
+              - 'tools/upstream-preflight/**'
+              - 'docs/fork/ownership.yml'
+              - 'docs/docs/developer/upstream-rebase-process.md'
+              - 'docs/docs/developer/fork-surface-guidelines.md'
+              - 'Makefile'
             .github:
               - '.github/**'
           force-filters: |
             - '.github/workflows/test.yml'
           force-events: 'workflow_dispatch'
+
+  upstream-preflight:
+    name: Upstream Rebase Tooling
+    needs: pre-job
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).upstream-preflight == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          token: ${{ github.token }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
+
+      - name: Install dependencies
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
+
+      - name: Run upstream-preflight tests
+        run: pnpm --filter @gallery/upstream-preflight run test
+
+      - name: Run upstream-preflight type check
+        run: pnpm --filter @gallery/upstream-preflight run check
+
+      - name: Run upstream-preflight format check
+        run: pnpm --filter @gallery/upstream-preflight run format
 
   server-unit-tests:
     name: Test & Lint Server

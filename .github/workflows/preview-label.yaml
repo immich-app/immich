@@ -1,63 +1,12 @@
-name: Preview label
+name: Preview label (disabled)
 
 on:
-  pull_request:
-    types: [labeled, closed]
+  workflow_dispatch:
 
 permissions: {}
 
 jobs:
-  comment-status:
+  disabled:
     runs-on: ubuntu-latest
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'preview' }}
-    permissions:
-      pull-requests: write
     steps:
-      - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
-        with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
-          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
-
-      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
-        with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'preview-status'
-          message: 'Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.build/'
-
-  remove-label:
-    runs-on: ubuntu-latest
-    if: ${{ (github.event.action == 'closed' || github.event.pull_request.head.repo.fork) && contains(github.event.pull_request.labels.*.name, 'preview') }}
-    permissions:
-      pull-requests: write
-    steps:
-      - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
-        with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
-          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
-
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          github-token: ${{ steps.token.outputs.token }}
-          script: |
-            github.rest.issues.removeLabel({
-              issue_number: context.payload.pull_request.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'preview'
-            })
-
-      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
-        if: ${{ github.event.pull_request.head.repo.fork }}
-        with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'preview-status'
-          message: 'PRs from forks cannot have preview environments.'
-
-      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'preview-status'
-          message: 'Preview environment has been removed.'
+      - run: echo "Preview label automation is disabled for Gallery."
