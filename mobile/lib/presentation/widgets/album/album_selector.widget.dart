@@ -586,6 +586,8 @@ class _AlbumList extends ConsumerWidget {
       );
     }
 
+    final enableSwipeToDelete = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableSwipeToDeleteAlbum);
+
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 64),
       sliver: SliverList.builder(
@@ -593,7 +595,7 @@ class _AlbumList extends ConsumerWidget {
           final album = albums[index];
           final isOwner = album.ownerId == userId;
 
-          if (isOwner) {
+          if (isOwner && enableSwipeToDelete) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Dismissible(
