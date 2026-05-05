@@ -4480,7 +4480,7 @@ export function resolveDuplicates({ duplicateResolveDto }: {
     })));
 }
 /**
- * Delete a duplicate
+ * Dismiss a duplicate group
  */
 export function deleteDuplicate({ id }: {
     id: string;

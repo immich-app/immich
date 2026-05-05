@@ -63,9 +63,9 @@ class MetadataRepository extends DriftDatabaseRepository {
     _updateCache(key, key.defaultValue);
   }
 
-  Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).distinct();
+  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).distinct();
 
-  Stream<SystemConfig> watchSystemConfig() => _watchDomain(MetadataDomain.systemConfig).distinct();
+  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).distinct();
 
   Stream<T> _watchDomain<T extends Object>(MetadataDomain<T> domain) {
     final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));

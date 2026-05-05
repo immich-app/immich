@@ -165,14 +165,14 @@ void main() {
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion),
               StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
-              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
               const StoreDto<Object>(StoreKey.backupRequireWifi, _kTestBackupRequireWifi),
+              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
             ],
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
               StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
-              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
               const StoreDto<Object>(StoreKey.backupRequireWifi, _kTestBackupRequireWifi),
+              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
             ],
           ]),
         ),
