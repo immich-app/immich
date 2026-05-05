@@ -217,6 +217,7 @@ part 'model/ocr_config.dart';
 part 'model/on_this_day_dto.dart';
 part 'model/onboarding_dto.dart';
 part 'model/onboarding_response_dto.dart';
+part 'model/ordering_date.dart';
 part 'model/partner_create_dto.dart';
 part 'model/partner_direction.dart';
 part 'model/partner_response_dto.dart';

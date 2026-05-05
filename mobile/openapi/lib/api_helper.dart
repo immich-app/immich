@@ -133,6 +133,9 @@ String parameterToString(dynamic value) {
   if (value is OAuthTokenEndpointAuthMethod) {
     return OAuthTokenEndpointAuthMethodTypeTransformer().encode(value).toString();
   }
+  if (value is OrderingDate) {
+    return OrderingDateTypeTransformer().encode(value).toString();
+  }
   if (value is PartnerDirection) {
     return PartnerDirectionTypeTransformer().encode(value).toString();
   }

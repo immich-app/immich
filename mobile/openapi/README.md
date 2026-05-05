@@ -469,6 +469,7 @@ Class | Method | HTTP request | Description
  - [OnThisDayDto](doc//OnThisDayDto.md)
  - [OnboardingDto](doc//OnboardingDto.md)
  - [OnboardingResponseDto](doc//OnboardingResponseDto.md)
+ - [OrderingDate](doc//OrderingDate.md)
  - [PartnerCreateDto](doc//PartnerCreateDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)

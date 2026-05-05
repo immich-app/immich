@@ -2673,6 +2673,8 @@ export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country: (string | null)[];
+    /** Array of UTC timestamps when each asset was originally uploaded to Immich */
+    createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
     duration: (number | null)[];
     /** Array of file creation timestamps in UTC */
@@ -6324,13 +6326,14 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderingDate, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    orderingDate?: OrderingDate;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -6351,6 +6354,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         isTrashed,
         key,
         order,
+        orderingDate,
         personId,
         slug,
         tagId,
@@ -6367,13 +6371,14 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderingDate, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    orderingDate?: OrderingDate;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -6393,6 +6398,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         isTrashed,
         key,
         order,
+        orderingDate,
         personId,
         slug,
         tagId,
@@ -7292,6 +7298,10 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum OrderingDate {
+    Local = "local",
+    Created = "created"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

@@ -13314,6 +13314,15 @@
             }
           },
           {
+            "name": "orderingDate",
+            "required": false,
+            "in": "query",
+            "description": "Date to group and order assets with (LOCAL for date taken, CREATED for date added)",
+            "schema": {
+              "$ref": "#/components/schemas/OrderingDate"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -13501,6 +13510,15 @@
             "description": "Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
+            "name": "orderingDate",
+            "required": false,
+            "in": "query",
+            "description": "Date to group and order assets with (LOCAL for date taken, CREATED for date added)",
+            "schema": {
+              "$ref": "#/components/schemas/OrderingDate"
             }
           },
           {
@@ -19225,6 +19243,14 @@
           "isOnboarded"
         ],
         "type": "object"
+      },
+      "OrderingDate": {
+        "description": "Date for asset order",
+        "enum": [
+          "local",
+          "created"
+        ],
+        "type": "string"
       },
       "PartnerCreateDto": {
         "properties": {
@@ -25135,6 +25161,14 @@
             },
             "type": "array"
           },
+          "createdAt": {
+            "description": "Array of UTC timestamps when each asset was originally uploaded to Immich",
+            "items": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "duration": {
             "description": "Array of video/gif durations in milliseconds (null for static images)",
             "items": {
@@ -25265,6 +25299,7 @@
         "required": [
           "city",
           "country",
+          "createdAt",
           "duration",
           "fileCreatedAt",
           "id",

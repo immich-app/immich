@@ -480,6 +480,8 @@ class ApiClient {
           return OnboardingDto.fromJson(value);
         case 'OnboardingResponseDto':
           return OnboardingResponseDto.fromJson(value);
+        case 'OrderingDate':
+          return OrderingDateTypeTransformer().decode(value);
         case 'PartnerCreateDto':
           return PartnerCreateDto.fromJson(value);
         case 'PartnerDirection':
