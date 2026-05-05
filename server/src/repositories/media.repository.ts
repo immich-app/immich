@@ -167,27 +167,25 @@ export class MediaRepository {
     return pipeline.raw().toBuffer({ resolveWithObject: true });
   }
 
-  private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
-    const matrix = createAffineMatrix(affineEditOperations);
-
+  private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
     const crop = edits.find((edit) => edit.action === 'crop');
-    const dimensions = await pipeline.metadata();
-
     if (crop) {
       pipeline = pipeline.extract({
-        left: crop ? Math.round(crop.parameters.x) : 0,
-        top: crop ? Math.round(crop.parameters.y) : 0,
-        width: crop ? Math.round(crop.parameters.width) : dimensions.width || 0,
-        height: crop ? Math.round(crop.parameters.height) : dimensions.height || 0,
+        left: Math.round(crop.parameters.x),
+        top: Math.round(crop.parameters.y),
+        width: Math.round(crop.parameters.width),
+        height: Math.round(crop.parameters.height),
       });
     }
 
-    const { a, b, c, d } = matrix;
-    pipeline = pipeline.affine([
-      [a, b],
-      [c, d],
-    ]);
+    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    if (affineEditOperations.length > 0) {
+      const { a, b, c, d } = createAffineMatrix(affineEditOperations);
+      pipeline = pipeline.affine([
+        [a, b],
+        [c, d],
+      ]);
+    }
 
     return pipeline;
   }
@@ -228,7 +226,7 @@ export class MediaRepository {
     }
 
     if (options.edits && options.edits.length > 0) {
-      pipeline = await this.applyEdits(pipeline, options.edits);
+      pipeline = this.applyEdits(pipeline, options.edits);
     }
 
     if (options.size !== undefined) {
