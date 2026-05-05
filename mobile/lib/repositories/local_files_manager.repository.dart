@@ -36,7 +36,7 @@ class LocalFilesManagerRepository {
   Future<List<String>> restoreAssetsFromTrash(Iterable<LocalAsset> assets) async {
     final restoredIds = <String>[];
     for (final asset in assets) {
-      _logger.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
+      _logger.info("Restoring from trash, localId: ${asset.id}, checksum: ${asset.checksum}");
       try {
         final result = await _service.restoreFromTrashById(asset.id, asset.type.index);
         if (result) {

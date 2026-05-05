@@ -100,17 +100,22 @@ void main() {
   }
 
   group('upsertReviewCandidates', () {
-    test('inserts new entries and updates rejected ones when newer', () async {
+    test('inserts new entries and updates pending or rejected entries when newer', () async {
       final oldTime = DateTime(2025, 1, 1);
       final newTime = DateTime(2025, 1, 2);
 
       await insertTrashSync(checksum: 'approved', isSyncApproved: true, remoteDeletedAt: oldTime);
+      await insertTrashSync(checksum: 'pending', isSyncApproved: null, remoteDeletedAt: oldTime);
       await insertTrashSync(checksum: 'rejected', isSyncApproved: false, remoteDeletedAt: oldTime);
       await insertTrashSync(checksum: 'rejected-newer', isSyncApproved: false, remoteDeletedAt: newTime);
 
       final items = [
         RemoteDeletedLocalAsset(
           asset: LocalAssetStub.image1.copyWith(checksum: 'new'),
+          remoteDeletedAt: newTime,
+        ),
+        RemoteDeletedLocalAsset(
+          asset: LocalAssetStub.image1.copyWith(checksum: 'pending'),
           remoteDeletedAt: newTime,
         ),
         RemoteDeletedLocalAsset(
@@ -136,6 +141,10 @@ void main() {
       expect(byChecksum['new']!.isSyncApproved, isNull);
       expect(byChecksum['new']?.remoteDeletedAt, newTime);
 
+      expect(byChecksum['pending'], isNotNull);
+      expect(byChecksum['pending']!.isSyncApproved, isNull);
+      expect(byChecksum['pending']?.remoteDeletedAt, newTime);
+
       expect(byChecksum['rejected'], isNotNull);
       expect(byChecksum['rejected']!.isSyncApproved, isNull);
       expect(byChecksum['rejected']?.remoteDeletedAt, newTime);
@@ -149,7 +158,7 @@ void main() {
   });
 
   group('deleteOutdated', () {
-    test('removes pending and rejected entries for matched alive remote ids', () async {
+    test('removes entries for matched alive remote ids', () async {
       final now = DateTime(2025, 1, 1);
 
       await insertRemoteAsset(checksum: 'alive-matched', deletedAt: null);
@@ -173,16 +182,17 @@ void main() {
         'remote-missing-remote',
       ]);
 
-      expect(deleted, 2);
+      expect(deleted, 3);
 
       final remaining = await db.select(db.trashSyncEntity).get();
       final remainingChecksums = remaining.map((row) => row.checksum).toSet();
       expect(
         remainingChecksums,
-        containsAll(['alive-approved', 'alive-not-requested', 'deleted-matched', 'missing-remote']),
+        containsAll(['alive-not-requested', 'deleted-matched', 'missing-remote']),
       );
       expect(remainingChecksums, isNot(contains('alive-matched')));
       expect(remainingChecksums, isNot(contains('alive-rejected')));
+      expect(remainingChecksums, isNot(contains('alive-approved')));
     });
   });
 
@@ -191,13 +201,17 @@ void main() {
       final now = DateTime(2025, 1, 1);
 
       await insertRemoteAsset(checksum: 'alive-remote', deletedAt: null);
+      await insertRemoteAsset(checksum: 'alive-approved', deletedAt: null);
+      await insertLocalAsset(checksum: 'pending-keep');
       await insertLocalAsset(checksum: 'reject-keep');
       await insertTrashedLocalAsset(checksum: 'approve-keep');
       await insertTrashedLocalAsset(checksum: 'local-trashed');
 
       await insertTrashSync(checksum: 'alive-remote', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'alive-approved', isSyncApproved: true, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'local-trashed', isSyncApproved: false, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'pending-keep', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'pending-orphan', isSyncApproved: null, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'reject-orphan', isSyncApproved: false, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'reject-keep', isSyncApproved: false, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'approve-orphan', isSyncApproved: true, remoteDeletedAt: now);
@@ -205,13 +219,15 @@ void main() {
 
       final deleted = await repository.cleanupOutdatedEntries();
 
-      expect(deleted, 4);
+      expect(deleted, 6);
 
       final remaining = await db.select(db.trashSyncEntity).get();
       final remainingChecksums = remaining.map((row) => row.checksum).toSet();
       expect(remainingChecksums, containsAll(['pending-keep', 'reject-keep', 'approve-keep']));
       expect(remainingChecksums, isNot(contains('alive-remote')));
+      expect(remainingChecksums, isNot(contains('alive-approved')));
       expect(remainingChecksums, isNot(contains('local-trashed')));
+      expect(remainingChecksums, isNot(contains('pending-orphan')));
       expect(remainingChecksums, isNot(contains('reject-orphan')));
       expect(remainingChecksums, isNot(contains('approve-orphan')));
     });

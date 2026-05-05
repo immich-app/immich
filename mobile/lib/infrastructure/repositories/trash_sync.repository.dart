@@ -27,12 +27,13 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     final existingMap = {for (var e in existingEntities) e.checksum: e};
     return _db.batch((batch) {
       for (var item in itemsToReview) {
-        final existing = existingMap[item.asset.checksum];
+        final checksum = item.asset.checksum!;
+        final existing = existingMap[checksum];
         if (existing == null ||
-            (existing.isSyncApproved == false && item.remoteDeletedAt.isAfter(existing.remoteDeletedAt))) {
+            (existing.isSyncApproved != true && item.remoteDeletedAt.isAfter(existing.remoteDeletedAt))) {
           batch.insert(
             _db.trashSyncEntity,
-            TrashSyncEntityCompanion.insert(checksum: item.asset.checksum!, remoteDeletedAt: item.remoteDeletedAt),
+            TrashSyncEntityCompanion.insert(checksum: checksum, remoteDeletedAt: item.remoteDeletedAt),
             onConflict: DoUpdate(
               (_) => TrashSyncEntityCompanion.custom(
                 remoteDeletedAt: Variable(item.remoteDeletedAt),
@@ -63,9 +64,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       ..addColumns([_db.remoteAssetEntity.checksum])
       ..where(_db.remoteAssetEntity.id.isIn(remoteIds) & _db.remoteAssetEntity.deletedAt.isNull());
 
-    final query = _db.delete(_db.trashSyncEntity)
-      ..where((row) => row.isSyncApproved.isNull() | row.isSyncApproved.equals(false))
-      ..where((row) => row.checksum.isInQuery(remoteAliveSelect));
+    final query = _db.delete(_db.trashSyncEntity)..where((row) => row.checksum.isInQuery(remoteAliveSelect));
 
     final deletedMatched = await query.go();
     return deletedMatched;
@@ -92,8 +91,11 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       ..addColumns([_db.trashedLocalAssetEntity.checksum]);
 
     final query = _db.delete(_db.trashSyncEntity)
-      ..where((row) => row.isSyncApproved.isNull() | row.isSyncApproved.equals(false))
-      ..where((row) => row.checksum.isInQuery(remoteAliveSelect) | row.checksum.isInQuery(localTrashedSelect));
+      ..where(
+        (row) =>
+            row.checksum.isInQuery(remoteAliveSelect) |
+            (row.isSyncApproved.isNotValue(true) & row.checksum.isInQuery(localTrashedSelect)),
+      );
 
     final deletedMatched = await query.go();
 
@@ -108,7 +110,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     final orphanQuery = _db.delete(_db.trashSyncEntity)
       ..where(
         (row) =>
-            (row.isSyncApproved.equals(false) & row.checksum.isNotInQuery(localAssetChecksums)) |
+            (row.isSyncApproved.isNotValue(true) & row.checksum.isNotInQuery(localAssetChecksums)) |
             (row.isSyncApproved.equals(true) & row.checksum.isNotInQuery(localTrashedChecksums)),
       );
 
