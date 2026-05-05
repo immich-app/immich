@@ -23,7 +23,7 @@ describe(QueueService.name, () => {
     it('should update concurrency', () => {
       sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(18);
+      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(19);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FacialRecognition, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
@@ -75,6 +75,7 @@ describe(QueueService.name, () => {
         [QueueName.Notification]: expected,
         [QueueName.BackupDatabase]: expected,
         [QueueName.Ocr]: expected,
+        [QueueName.ImageEnrichment]: expected,
         [QueueName.Workflow]: expected,
         [QueueName.Editor]: expected,
       });

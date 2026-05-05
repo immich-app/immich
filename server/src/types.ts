@@ -412,6 +412,12 @@ export type JobItem =
   | { name: JobName.OcrQueueAll; data: IBaseJob }
   | { name: JobName.Ocr; data: IEntityJob }
 
+  // Image enrichment
+  | { name: JobName.ImageDescriptionQueueAll; data: IBaseJob }
+  | { name: JobName.ImageDescription; data: IEntityJob }
+  | { name: JobName.NsfwDetectionQueueAll; data: IBaseJob }
+  | { name: JobName.NsfwDetection; data: IEntityJob }
+
   // Workflow
   | { name: JobName.WorkflowRun; data: IWorkflowJob }
 

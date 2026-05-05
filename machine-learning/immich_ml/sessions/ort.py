@@ -13,6 +13,44 @@ from immich_ml.schemas import ModelPrecision, SessionNode
 from ..config import log, settings
 
 
+def _get_openvino_device_type(device_ids: list[str], configured_device_id: str) -> str:
+    gpu_devices = [device_id for device_id in device_ids if device_id.upper().startswith("GPU")]
+    requested_id = configured_device_id.strip() or "AUTO"
+
+    if requested_id.upper() == "CPU":
+        log.debug("OpenVINO: Using CPU device")
+        return "CPU"
+
+    if not gpu_devices:
+        log.debug("OpenVINO: No GPU found, using CPU")
+        return "CPU"
+
+    if requested_id.upper() == "AUTO":
+        device_type = gpu_devices[0]
+        log.debug(f"OpenVINO: AUTO selected {device_type}")
+        return device_type
+
+    if requested_id.upper().startswith("GPU"):
+        requested_gpu = requested_id
+    else:
+        requested_gpu = f"GPU.{requested_id}"
+
+    if requested_gpu in gpu_devices:
+        log.debug(f"OpenVINO: Using GPU device {requested_gpu}")
+        return requested_gpu
+
+    if requested_gpu == "GPU.0" and "GPU" in gpu_devices:
+        log.debug("OpenVINO: Using GPU device GPU")
+        return "GPU"
+
+    device_type = gpu_devices[0]
+    log.warning(
+        f"OpenVINO: Requested GPU device {requested_gpu} was not found. "
+        f"Available OpenVINO devices: {device_ids}. Using {device_type}"
+    )
+    return device_type
+
+
 class OrtSession:
     session: ort.InferenceSession
 
@@ -22,8 +60,10 @@ class OrtSession:
         providers: list[str] | None = None,
         provider_options: list[dict[str, Any]] | None = None,
         sess_options: ort.SessionOptions | None = None,
+        device_id: str | None = None,
     ):
         self.model_path = Path(model_path)
+        self.device_id = device_id
         self.providers = providers if providers is not None else self._providers_default
         self.provider_options = provider_options if provider_options is not None else self._provider_options_default
         self.sess_options = sess_options if sess_options is not None else self._sess_options_default
@@ -95,14 +135,7 @@ class OrtSession:
                     }
                 case "OpenVINOExecutionProvider":
                     device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-                    # Check for available devices, preferring GPU over CPU
-                    gpu_devices = [d for d in device_ids if d.startswith("GPU")]
-                    if gpu_devices:
-                        device_type = f"GPU.{settings.device_id}"
-                        log.debug(f"OpenVINO: Using GPU device {device_type}")
-                    else:
-                        device_type = "CPU"
-                        log.debug("OpenVINO: No GPU found, using CPU")
+                    device_type = _get_openvino_device_type(device_ids, self.device_id or settings.device_id)
                     options = {
                         "device_type": device_type,
                         "precision": settings.openvino_precision.value,

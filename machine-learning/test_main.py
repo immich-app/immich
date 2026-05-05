@@ -249,6 +249,23 @@ class TestOrtSession:
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
+    @pytest.mark.ov_device_ids(["GPU", "CPU"])
+    def test_sets_provider_options_for_openvino_unindexed_gpu(
+        self, ov_device_ids: list[str], monkeypatch: MonkeyPatch
+    ) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        monkeypatch.delenv("MACHINE_LEARNING_DEVICE_ID", raising=False)
+
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "GPU",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
+
     @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
     def test_sets_provider_options_for_openvino(self, ov_device_ids: list[str]) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
@@ -259,6 +276,20 @@ class TestOrtSession:
         assert session.provider_options == [
             {
                 "device_type": "GPU.1",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    def test_sets_provider_options_for_openvino_auto_device(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"], device_id="AUTO")
+
+        assert session.provider_options == [
+            {
+                "device_type": "GPU.0",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
             }
@@ -292,6 +323,24 @@ class TestOrtSession:
                 "cache_dir": "/cache/ViT-B-32__openai/openvino",
             }
         ]
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    def test_sets_provider_options_for_openvino_missing_requested_gpu(
+        self, ov_device_ids: list[str], monkeypatch: MonkeyPatch, warning: mock.Mock
+    ) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        monkeypatch.setenv("MACHINE_LEARNING_DEVICE_ID", "1")
+
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "GPU.0",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/openvino",
+            }
+        ]
+        warning.assert_called_once()
 
     def test_sets_provider_options_for_cuda(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"

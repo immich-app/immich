@@ -3,6 +3,8 @@ from typing import Any
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
+from immich_ml.models.image_description import ImageDescriptionModel
+from immich_ml.models.nsfw_detection import NsfwDetectionModel
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelSource, ModelTask, ModelType
@@ -35,6 +37,12 @@ def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTas
 
         case ModelSource.PADDLE, ModelType.RECOGNITION, ModelTask.OCR:
             return TextRecognizer
+
+        case _, ModelType.VISUAL, ModelTask.IMAGE_DESCRIPTION:
+            return ImageDescriptionModel
+
+        case _, ModelType.CLASSIFICATION, ModelTask.NSFW_DETECTION:
+            return NsfwDetectionModel
 
         case _:
             raise ValueError(f"Unknown model combination: {source}, {model_type}, {model_task}")

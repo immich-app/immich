@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -248,6 +248,23 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForImageEnrichment(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select((eb) => [
+        'asset.id',
+        'asset.ownerId',
+        'asset.type',
+        'asset.visibility',
+        'asset_exif.description',
+        withFilePath(eb, AssetFileType.Preview).as('previewFile'),
+      ])
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   getForSyncAssets(ids: string[]) {
     return this.db
@@ -458,6 +475,39 @@ export class AssetJobRepository {
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
+  }
+
+  private streamForImageEnrichmentTask(force: boolean | undefined, task: 'description' | 'nsfwDetection') {
+    return this.assetsWithPreviews()
+      .select(['asset.id'])
+      .where('asset.type', '=', sql.lit(AssetType.Image))
+      .$call(withDefaultVisibility)
+      .$if(!force, (qb) =>
+        qb.where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom('asset_metadata')
+                .select('asset_metadata.assetId')
+                .whereRef('asset_metadata.assetId', '=', 'asset.id')
+                .where('asset_metadata.key', '=', AssetMetadataKey.MlEnrichment)
+                .where(sql<string>`asset_metadata.value -> ${task} ->> 'status'`, '=', 'success'),
+            ),
+          ),
+        ),
+      )
+      .orderBy('asset.fileCreatedAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForImageDescriptionJob(force?: boolean) {
+    return this.streamForImageEnrichmentTask(force, 'description');
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForNsfwDetectionJob(force?: boolean) {
+    return this.streamForImageEnrichmentTask(force, 'nsfwDetection');
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })

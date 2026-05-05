@@ -543,6 +543,49 @@ describe(MediaService.name, () => {
       ]);
     });
 
+    it('should score multiple video thumbnail candidates and render the best timestamp', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+        format: { ...probeStub.videoStream2160p.format, duration: 120_000 },
+      });
+      mocks.media.scoreThumbnailCandidate
+        .mockResolvedValueOnce(10)
+        .mockResolvedValueOnce(80)
+        .mockResolvedValueOnce(30)
+        .mockResolvedValueOnce(20);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.scoreThumbnailCandidate).toHaveBeenCalledTimes(4);
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(6);
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        2,
+        '/original/path.ext',
+        expect.stringContaining('_candidate_1'),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=42')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        5,
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=42')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        6,
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=42')]),
+        }),
+      );
+    });
+
     it('should tonemap thumbnail for hdr video', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({

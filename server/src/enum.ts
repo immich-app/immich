@@ -348,6 +348,7 @@ export const UserMetadataKeySchema = z
 
 export enum AssetMetadataKey {
   MobileApp = 'mobile-app',
+  MlEnrichment = 'ml-enrichment',
 }
 
 export enum UserAvatarColor {
@@ -765,6 +766,7 @@ export enum QueueName {
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
+  ImageEnrichment = 'imageEnrichment',
   Workflow = 'workflow',
   Editor = 'editor',
 }
@@ -856,6 +858,12 @@ export enum JobName {
   // OCR
   OcrQueueAll = 'OcrQueueAll',
   Ocr = 'Ocr',
+
+  // Image enrichment
+  ImageDescriptionQueueAll = 'ImageDescriptionQueueAll',
+  ImageDescription = 'ImageDescription',
+  NsfwDetectionQueueAll = 'NsfwDetectionQueueAll',
+  NsfwDetection = 'NsfwDetection',
 
   // Workflow
   WorkflowRun = 'WorkflowRun',

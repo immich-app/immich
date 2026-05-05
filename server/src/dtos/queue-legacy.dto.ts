@@ -35,6 +35,7 @@ const QueuesResponseLegacySchema = z
     [QueueName.Notification]: QueueResponseLegacySchema,
     [QueueName.BackupDatabase]: QueueResponseLegacySchema,
     [QueueName.Ocr]: QueueResponseLegacySchema,
+    [QueueName.ImageEnrichment]: QueueResponseLegacySchema,
     [QueueName.Workflow]: QueueResponseLegacySchema,
     [QueueName.Editor]: QueueResponseLegacySchema,
   })

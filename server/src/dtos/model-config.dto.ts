@@ -54,4 +54,19 @@ export const OcrConfigSchema = ModelConfigSchema.extend({
     .describe('Minimum confidence score for text recognition'),
 }).meta({ id: 'OcrConfig' });
 
+export const ImageDescriptionConfigSchema = ModelConfigSchema.extend({
+  fallbackModelName: z.string().describe('Name of the fallback model to use'),
+  device: z.string().describe('OpenVINO device to use'),
+}).meta({ id: 'ImageDescriptionConfig' });
+
+export const NsfwDetectionConfigSchema = ModelConfigSchema.extend({
+  threshold: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.01)
+    .max(1)
+    .describe('Minimum score required to mark an image as NSFW'),
+  device: z.string().describe('OpenVINO device to use'),
+}).meta({ id: 'NsfwDetectionConfig' });
+
 export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

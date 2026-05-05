@@ -7,6 +7,7 @@ import { ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { isImageDescriptionEnabled, isNsfwDetectionEnabled } from 'src/utils/misc';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
@@ -149,6 +150,15 @@ export class JobService extends BaseService {
 
         if (asset.type === AssetType.Video) {
           jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
+        }
+
+        if (asset.type === AssetType.Image) {
+          const { machineLearning } = await this.getConfig({ withCache: true });
+          if (isImageDescriptionEnabled(machineLearning)) {
+            jobs.push({ name: JobName.ImageDescription, data: item.data });
+          } else if (isNsfwDetectionEnabled(machineLearning)) {
+            jobs.push({ name: JobName.NsfwDetection, data: item.data });
+          }
         }
 
         await this.jobRepository.queueAll(jobs);

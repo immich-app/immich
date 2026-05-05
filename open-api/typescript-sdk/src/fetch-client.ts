@@ -1229,6 +1229,7 @@ export type QueuesResponseLegacyDto = {
     editor: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
     facialRecognition: QueueResponseLegacyDto;
+    imageEnrichment: QueueResponseLegacyDto;
     library: QueueResponseLegacyDto;
     metadataExtraction: QueueResponseLegacyDto;
     migration: QueueResponseLegacyDto;
@@ -2379,6 +2380,7 @@ export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
     editor: JobSettingsDto;
     faceDetection: JobSettingsDto;
+    imageEnrichment: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
@@ -2440,6 +2442,26 @@ export type FacialRecognitionConfig = {
     /** Name of the model to use */
     modelName: string;
 };
+export type ImageDescriptionConfig = {
+    /** OpenVINO device to use */
+    device: string;
+    /** Whether the task is enabled */
+    enabled: boolean;
+    /** Name of the fallback model to use */
+    fallbackModelName: string;
+    /** Name of the model to use */
+    modelName: string;
+};
+export type NsfwDetectionConfig = {
+    /** OpenVINO device to use */
+    device: string;
+    /** Whether the task is enabled */
+    enabled: boolean;
+    /** Name of the model to use */
+    modelName: string;
+    /** Minimum score required to mark an image as NSFW */
+    threshold: number;
+};
 export type OcrConfig = {
     /** Whether the task is enabled */
     enabled: boolean;
@@ -2459,6 +2481,8 @@ export type SystemConfigMachineLearningDto = {
     /** Enabled */
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
+    imageDescription: ImageDescriptionConfig;
+    nsfwDetection: NsfwDetectionConfig;
     ocr: OcrConfig;
     /** ML service URLs */
     urls: string[];
@@ -7020,6 +7044,7 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
+    ImageEnrichment = "imageEnrichment",
     Workflow = "workflow",
     Editor = "editor"
 }
@@ -7123,6 +7148,10 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
+    ImageDescriptionQueueAll = "ImageDescriptionQueueAll",
+    ImageDescription = "ImageDescription",
+    NsfwDetectionQueueAll = "NsfwDetectionQueueAll",
+    NsfwDetection = "NsfwDetection",
     WorkflowRun = "WorkflowRun"
 }
 export enum SearchSuggestionType {

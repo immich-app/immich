@@ -410,6 +410,31 @@ export class MediaRepository {
     return { width, height, isTransparent: hasAlpha };
   }
 
+  async scoreThumbnailCandidate(input: string): Promise<number> {
+    const stats = await sharp(input).stats();
+    const channels = stats.channels.slice(0, 3);
+    const mean = _.meanBy(channels, (channel) => channel.mean);
+    const contrast = _.meanBy(channels, (channel) => channel.stdev);
+    const { entropy = 0, sharpness = 0 } = stats as typeof stats & { entropy?: number; sharpness?: number };
+
+    const exposureScore = 40 - Math.abs(mean - 128) / 4;
+    const blackFramePenalty = mean < 18 ? (18 - mean) * 12 : 0;
+    const blownFramePenalty = mean > 245 ? (mean - 245) * 6 : 0;
+    const flatFramePenalty = contrast < 4 ? (4 - contrast) * 12 : 0;
+    const logoLikePenalty = entropy < 1.2 && contrast < 12 ? 35 : 0;
+
+    return (
+      exposureScore +
+      contrast * 1.5 +
+      entropy * 14 +
+      sharpness * 0.1 -
+      blackFramePenalty -
+      blownFramePenalty -
+      flatFramePenalty -
+      logoLikePenalty
+    );
+  }
+
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
     const ffmpegCall = ffmpeg(input, { niceness: 10 })
       .inputOptions(options.inputOptions)

@@ -16,9 +16,12 @@ export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
   OCR = 'ocr',
+  IMAGE_DESCRIPTION = 'image-description-tagging',
+  NSFW_DETECTION = 'nsfw-detection',
 }
 
 export enum ModelType {
+  CLASSIFICATION = 'classification',
   DETECTION = 'detection',
   PIPELINE = 'pipeline',
   RECOGNITION = 'recognition',
@@ -36,6 +39,14 @@ export type OcrOptions = ModelOptions & {
   minDetectionScore: number;
   minRecognitionScore: number;
   maxResolution: number;
+};
+export type ImageDescriptionOptions = ModelOptions & {
+  fallbackModelName: string;
+  device: string;
+};
+export type NsfwDetectionOptions = ModelOptions & {
+  threshold: number;
+  device: string;
 };
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
@@ -59,6 +70,46 @@ export type OcrRequest = {
 };
 export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
+export type NsfwDetectionResult = {
+  isNsfw: boolean;
+  score: number;
+  labels: Record<string, number>;
+};
+
+export type ImageDescriptionResult = {
+  description: string;
+  people: Array<{
+    count: number;
+    apparent_age_group: string;
+    activity: string;
+    confidence: string;
+  }>;
+  environment: string;
+  objects: string[];
+  visible_text: string[];
+  context: string;
+  tags: string[];
+};
+
+export type ImageDescriptionRequest = {
+  [ModelTask.IMAGE_DESCRIPTION]: {
+    [ModelType.VISUAL]: ModelOptions & {
+      options: {
+        device: string;
+        nsfw?: NsfwDetectionResult;
+      };
+    };
+  };
+};
+export type ImageDescriptionResponse = { [ModelTask.IMAGE_DESCRIPTION]: ImageDescriptionResult } & VisualResponse;
+
+export type NsfwDetectionRequest = {
+  [ModelTask.NSFW_DETECTION]: {
+    [ModelType.CLASSIFICATION]: ModelOptions & { options: { threshold: number; device: string } };
+  };
+};
+export type NsfwDetectionResponse = { [ModelTask.NSFW_DETECTION]: NsfwDetectionResult } & VisualResponse;
+
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
     [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
@@ -74,7 +125,13 @@ export interface Face {
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
-export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
+export type MachineLearningRequest =
+  | ClipVisualRequest
+  | ClipTextualRequest
+  | FacialRecognitionRequest
+  | OcrRequest
+  | ImageDescriptionRequest
+  | NsfwDetectionRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
@@ -227,6 +284,48 @@ export class MachineLearningRepository {
     };
     const response = await this.predict<OcrResponse>({ imagePath }, request);
     return response[ModelTask.OCR];
+  }
+
+  async describeImage(
+    imagePath: string,
+    { modelName, fallbackModelName, device }: ImageDescriptionOptions,
+    nsfw?: NsfwDetectionResult,
+  ) {
+    const request = {
+      [ModelTask.IMAGE_DESCRIPTION]: {
+        [ModelType.VISUAL]: { modelName, options: { device, nsfw } },
+      },
+    };
+
+    try {
+      const response = await this.predict<ImageDescriptionResponse>({ imagePath }, request);
+      return response[ModelTask.IMAGE_DESCRIPTION];
+    } catch (error) {
+      if (!fallbackModelName || fallbackModelName === modelName) {
+        throw error;
+      }
+
+      this.logger.warn(
+        `Image description model '${modelName}' failed; retrying with fallback model '${fallbackModelName}'`,
+      );
+      const fallbackRequest = {
+        [ModelTask.IMAGE_DESCRIPTION]: {
+          [ModelType.VISUAL]: { modelName: fallbackModelName, options: { device, nsfw } },
+        },
+      };
+      const response = await this.predict<ImageDescriptionResponse>({ imagePath }, fallbackRequest);
+      return response[ModelTask.IMAGE_DESCRIPTION];
+    }
+  }
+
+  async detectNsfw(imagePath: string, { modelName, threshold, device }: NsfwDetectionOptions) {
+    const request = {
+      [ModelTask.NSFW_DETECTION]: {
+        [ModelType.CLASSIFICATION]: { modelName, options: { threshold, device } },
+      },
+    };
+    const response = await this.predict<NsfwDetectionResponse>({ imagePath }, request);
+    return response[ModelTask.NSFW_DETECTION];
   }
 
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {

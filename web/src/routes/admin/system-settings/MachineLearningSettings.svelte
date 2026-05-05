@@ -325,6 +325,114 @@
           />
         </div>
       </SettingAccordion>
+
+      <SettingAccordion
+        key="image-description"
+        title={$t('admin.machine_learning_image_description')}
+        subtitle={$t('admin.machine_learning_image_description_description')}
+      >
+        <div class="mt-4 ml-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_image_description_enabled')}
+            subtitle={$t('admin.machine_learning_image_description_enabled_description')}
+            bind:checked={configToEdit.machineLearning.imageDescription.enabled}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_image_description_model')}
+            bind:value={configToEdit.machineLearning.imageDescription.modelName}
+            required={true}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.imageDescription.enabled}
+            isEdited={configToEdit.machineLearning.imageDescription.modelName !==
+              config.machineLearning.imageDescription.modelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_image_description_fallback_model')}
+            bind:value={configToEdit.machineLearning.imageDescription.fallbackModelName}
+            required={true}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.imageDescription.enabled}
+            isEdited={configToEdit.machineLearning.imageDescription.fallbackModelName !==
+              config.machineLearning.imageDescription.fallbackModelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_openvino_device')}
+            bind:value={configToEdit.machineLearning.imageDescription.device}
+            required={true}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.imageDescription.enabled}
+            isEdited={configToEdit.machineLearning.imageDescription.device !==
+              config.machineLearning.imageDescription.device}
+          />
+        </div>
+      </SettingAccordion>
+
+      <SettingAccordion
+        key="nsfw-detection"
+        title={$t('admin.machine_learning_nsfw_detection')}
+        subtitle={$t('admin.machine_learning_nsfw_detection_description')}
+      >
+        <div class="mt-4 ml-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_nsfw_detection_enabled')}
+            subtitle={$t('admin.machine_learning_nsfw_detection_enabled_description')}
+            bind:checked={configToEdit.machineLearning.nsfwDetection.enabled}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_nsfw_detection_model')}
+            bind:value={configToEdit.machineLearning.nsfwDetection.modelName}
+            required={true}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.nsfwDetection.enabled}
+            isEdited={configToEdit.machineLearning.nsfwDetection.modelName !==
+              config.machineLearning.nsfwDetection.modelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_nsfw_detection_threshold')}
+            description={$t('admin.machine_learning_nsfw_detection_threshold_description')}
+            bind:value={configToEdit.machineLearning.nsfwDetection.threshold}
+            step="0.01"
+            min={0.01}
+            max={1}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.nsfwDetection.enabled}
+            isEdited={configToEdit.machineLearning.nsfwDetection.threshold !==
+              config.machineLearning.nsfwDetection.threshold}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('admin.machine_learning_openvino_device')}
+            bind:value={configToEdit.machineLearning.nsfwDetection.device}
+            required={true}
+            disabled={disabled ||
+              !configToEdit.machineLearning.enabled ||
+              !configToEdit.machineLearning.nsfwDetection.enabled}
+            isEdited={configToEdit.machineLearning.nsfwDetection.device !== config.machineLearning.nsfwDetection.device}
+          />
+        </div>
+      </SettingAccordion>
       <SettingButtonsRow bind:configToEdit keys={['machineLearning']} {disabled} />
     </form>
   </div>

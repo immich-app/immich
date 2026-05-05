@@ -4,6 +4,8 @@ import {
   CLIPConfigSchema,
   DuplicateDetectionConfigSchema,
   FacialRecognitionConfigSchema,
+  ImageDescriptionConfigSchema,
+  NsfwDetectionConfigSchema,
   OcrConfigSchema,
 } from 'src/dtos/model-config.dto';
 import {
@@ -100,6 +102,7 @@ const SystemConfigJobSchema = z
     library: JobSettingsSchema,
     notifications: JobSettingsSchema,
     ocr: JobSettingsSchema,
+    imageEnrichment: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
   })
@@ -144,6 +147,8 @@ const SystemConfigMachineLearningSchema = z
     duplicateDetection: DuplicateDetectionConfigSchema,
     facialRecognition: FacialRecognitionConfigSchema,
     ocr: OcrConfigSchema,
+    imageDescription: ImageDescriptionConfigSchema,
+    nsfwDetection: NsfwDetectionConfigSchema,
   })
   .meta({ id: 'SystemConfigMachineLearningDto' });
 

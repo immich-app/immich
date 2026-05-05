@@ -29,7 +29,7 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { ConcurrentQueueName, JobItem } from 'src/types';
-import { handlePromiseError } from 'src/utils/misc';
+import { handlePromiseError, isImageDescriptionEnabled, isNsfwDetectionEnabled } from 'src/utils/misc';
 
 const asNightlyTasksCron = (config: SystemConfig) => {
   const [hours, minutes] = config.nightlyTasks.startTime.split(':').map(Number);
@@ -241,6 +241,25 @@ export class QueueService extends BaseService {
 
       case QueueName.Ocr: {
         return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
+      }
+
+      case QueueName.ImageEnrichment: {
+        const { machineLearning } = await this.getConfig({ withCache: false });
+        const jobs: JobItem[] = [];
+
+        if (isNsfwDetectionEnabled(machineLearning)) {
+          jobs.push({ name: JobName.NsfwDetectionQueueAll, data: { force } });
+        }
+
+        if (isImageDescriptionEnabled(machineLearning)) {
+          jobs.push({ name: JobName.ImageDescriptionQueueAll, data: { force } });
+        }
+
+        if (jobs.length === 0) {
+          throw new BadRequestException(`Image enrichment is not enabled`);
+        }
+
+        return this.jobRepository.queueAll(jobs);
       }
 
       default: {

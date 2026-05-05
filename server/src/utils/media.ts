@@ -409,8 +409,19 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
-    return new ThumbnailConfig(config);
+  constructor(
+    config: SystemConfigFFmpegDto,
+    private startTime = 0,
+  ) {
+    super(config);
+  }
+
+  static create(
+    config: SystemConfigFFmpegDto,
+    interfacesOrStartTime: VideoInterfaces | number = 0,
+  ): VideoCodecSWConfig {
+    const startTime = typeof interfacesOrStartTime === 'number' ? interfacesOrStartTime : 0;
+    return new ThumbnailConfig(config, startTime);
   }
 
   getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
@@ -446,8 +457,10 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
+    const startTime = this.startTime.toFixed(3).replace(/\.?0+$/, '');
+
     return [
-      'fps=12:start_time=0:eof_action=pass:round=down',
+      `fps=12:start_time=${startTime}:eof_action=pass:round=down`,
       'thumbnail=12',
       String.raw`select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20)`,
       'trim=end_frame=2',

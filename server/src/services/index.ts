@@ -11,6 +11,7 @@ import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
+import { ImageEnrichmentService } from 'src/services/image-enrichment.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
@@ -60,6 +61,7 @@ export const services = [
   DatabaseService,
   DownloadService,
   DuplicateService,
+  ImageEnrichmentService,
   JobService,
   LibraryService,
   MaintenanceService,

@@ -207,6 +207,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       title: $t('admin.machine_learning_ocr'),
       subtitle: $t('admin.ocr_job_description'),
     },
+    [QueueName.ImageEnrichment]: {
+      icon: mdiImageSearch,
+      title: $t('admin.machine_learning_image_enrichment'),
+      subtitle: $t('admin.image_enrichment_job_description'),
+    },
     [QueueName.VideoConversion]: {
       icon: mdiVideo,
       title: $t('admin.video_conversion_job'),

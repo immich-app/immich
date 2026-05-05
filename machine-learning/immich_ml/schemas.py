@@ -24,9 +24,12 @@ class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
     SEARCH = "clip"
     OCR = "ocr"
+    IMAGE_DESCRIPTION = "image-description-tagging"
+    NSFW_DETECTION = "nsfw-detection"
 
 
 class ModelType(StrEnum):
+    CLASSIFICATION = "classification"
     DETECTION = "detection"
     RECOGNITION = "recognition"
     TEXTUAL = "textual"

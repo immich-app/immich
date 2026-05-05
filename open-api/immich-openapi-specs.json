@@ -17846,6 +17846,33 @@
         },
         "type": "object"
       },
+      "ImageDescriptionConfig": {
+        "properties": {
+          "device": {
+            "description": "OpenVINO device to use",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "fallbackModelName": {
+            "description": "Name of the fallback model to use",
+            "type": "string"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          }
+        },
+        "required": [
+          "device",
+          "enabled",
+          "fallbackModelName",
+          "modelName"
+        ],
+        "type": "object"
+      },
       "ImageFormat": {
         "description": "Image format",
         "enum": [
@@ -17922,6 +17949,10 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
+          "ImageDescriptionQueueAll",
+          "ImageDescription",
+          "NsfwDetectionQueueAll",
+          "NsfwDetection",
           "WorkflowRun"
         ],
         "type": "string"
@@ -19073,6 +19104,36 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "NsfwDetectionConfig": {
+        "properties": {
+          "device": {
+            "description": "OpenVINO device to use",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          },
+          "threshold": {
+            "description": "Minimum score required to mark an image as NSFW",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "device",
+          "enabled",
+          "modelName",
+          "threshold"
+        ],
         "type": "object"
       },
       "OAuthAuthorizeResponseDto": {
@@ -20339,6 +20400,7 @@
           "notifications",
           "backupDatabase",
           "ocr",
+          "imageEnrichment",
           "workflow",
           "editor"
         ],
@@ -20474,6 +20536,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "imageEnrichment": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "library": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -20518,6 +20583,7 @@
           "editor",
           "faceDetection",
           "facialRecognition",
+          "imageEnrichment",
           "library",
           "metadataExtraction",
           "migration",
@@ -24264,6 +24330,9 @@
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "imageEnrichment": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -24302,6 +24371,7 @@
           "backgroundTask",
           "editor",
           "faceDetection",
+          "imageEnrichment",
           "library",
           "metadataExtraction",
           "migration",
@@ -24395,6 +24465,12 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
+          "imageDescription": {
+            "$ref": "#/components/schemas/ImageDescriptionConfig"
+          },
+          "nsfwDetection": {
+            "$ref": "#/components/schemas/NsfwDetectionConfig"
+          },
           "ocr": {
             "$ref": "#/components/schemas/OcrConfig"
           },
@@ -24413,6 +24489,8 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
+          "imageDescription",
+          "nsfwDetection",
           "ocr",
           "urls"
         ],

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
@@ -34,6 +36,7 @@ import {
   ImageDimensions,
   JobItem,
   JobOf,
+  TranscodeCommand,
   VideoFormat,
   VideoInterfaces,
   VideoStreamInfo,
@@ -505,6 +508,70 @@ export class MediaService extends BaseService {
     };
   }
 
+  private getVideoThumbnailCandidateTimestamps(format: VideoFormat) {
+    const duration = format.duration / 1000;
+    if (!Number.isFinite(duration) || duration <= 1) {
+      return [];
+    }
+
+    const latest = Math.max(duration - 0.5, 0);
+    const candidates =
+      duration >= 30
+        ? [30, duration * 0.35, duration * 0.55, duration * 0.75].map((timestamp) => Math.max(30, timestamp))
+        : [duration * 0.2, duration * 0.5, duration * 0.8];
+
+    return [
+      ...new Set(
+        candidates
+          .map((timestamp) => Number(Math.min(timestamp, latest).toFixed(3)))
+          .filter((timestamp) => Number.isFinite(timestamp) && timestamp > 0),
+      ),
+    ];
+  }
+
+  private getVideoThumbnailCandidatePath(output: string, index: number) {
+    const { dir, ext, name } = path.parse(output);
+    return path.join(dir, `${name}_candidate_${index}${ext}`);
+  }
+
+  private async pickVideoThumbnailStartTime(
+    input: string,
+    output: string,
+    format: VideoFormat,
+    getOptions: (timestamp: number) => TranscodeCommand,
+  ) {
+    const timestamps = this.getVideoThumbnailCandidateTimestamps(format);
+    if (timestamps.length === 0) {
+      return 0;
+    }
+
+    let selected = 0;
+    let bestScore = Number.NEGATIVE_INFINITY;
+    const candidates: string[] = [];
+
+    try {
+      for (const [index, timestamp] of timestamps.entries()) {
+        const candidate = this.getVideoThumbnailCandidatePath(output, index);
+        candidates.push(candidate);
+
+        try {
+          await this.mediaRepository.transcode(input, candidate, getOptions(timestamp));
+          const score = await this.mediaRepository.scoreThumbnailCandidate(candidate);
+          if (score > bestScore) {
+            bestScore = score;
+            selected = timestamp;
+          }
+        } catch (error: any) {
+          this.logger.warn(`Could not score thumbnail candidate at ${timestamp}s: ${error?.message ?? error}`);
+        }
+      }
+    } finally {
+      await Promise.all(candidates.map((candidate) => fs.rm(candidate, { force: true })));
+    }
+
+    return Number.isFinite(bestScore) ? selected : 0;
+  }
+
   private async generateVideoThumbnails(asset: ThumbnailAsset, { ffmpeg, image }: SystemConfig) {
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
@@ -527,10 +594,32 @@ export class MediaService extends BaseService {
       throw new Error(`Missing video metadata for asset ${asset.id}`);
     }
 
-    const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
-    const thumbConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
-    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
-    const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
+    const previewConfig = { ...ffmpeg, targetResolution: image.preview.size.toString() };
+    const thumbConfig = { ...ffmpeg, targetResolution: image.thumbnail.size.toString() };
+    const startTime = await this.pickVideoThumbnailStartTime(
+      asset.originalPath,
+      previewFile.path,
+      format,
+      (timestamp) =>
+        ThumbnailConfig.create(previewConfig, timestamp).getCommand(
+          TranscodeTarget.Video,
+          videoStream,
+          undefined,
+          format,
+        ),
+    );
+    const previewOptions = ThumbnailConfig.create(previewConfig, startTime).getCommand(
+      TranscodeTarget.Video,
+      videoStream,
+      undefined,
+      format,
+    );
+    const thumbnailOptions = ThumbnailConfig.create(thumbConfig, startTime).getCommand(
+      TranscodeTarget.Video,
+      videoStream,
+      undefined,
+      format,
+    );
 
     await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
