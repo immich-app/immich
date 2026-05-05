@@ -246,7 +246,7 @@ importers:
         version: 64.0.0(eslint@10.2.1(jiti@2.6.1))
       exiftool-vendored:
         specifier: ^35.0.0
-        version: 35.18.0
+        version: 35.19.0
       globals:
         specifier: ^17.0.0
         version: 17.5.0
@@ -445,7 +445,7 @@ importers:
         version: 4.4.0
       exiftool-vendored:
         specifier: ^35.0.0
-        version: 35.18.0
+        version: 35.19.0
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -7552,8 +7552,8 @@ packages:
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@35.18.0:
-    resolution: {integrity: sha512-QBtYNz71VAwZWqxFP1iWWS9qwOx3b9MSpk0GAMyIfS8gupUWsOyhn4i2WrB4OlRSQPuQ2YeKSw2fygi6E0LGiw==}
+  exiftool-vendored@35.19.0:
+    resolution: {integrity: sha512-c7/W5VA0f2XKllRgFSBOoTSRMlRVn13QT/TudOS3RN64VRfcj51vQQcRwtmdwYuRrzRf7lsh6gCQpmm3vr8Lww==}
     engines: {node: '>=20.0.0'}
 
   expect-type@1.3.0:
@@ -12133,6 +12133,7 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@11.1.0:
@@ -12145,6 +12146,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   valibot@1.3.1:
@@ -17985,7 +17987,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -20310,7 +20312,7 @@ snapshots:
 
   exiftool-vendored.pl@13.57.0: {}
 
-  exiftool-vendored@35.18.0:
+  exiftool-vendored@35.19.0:
     dependencies:
       '@photostructure/tz-lookup': 11.5.0
       '@types/luxon': 3.7.1
