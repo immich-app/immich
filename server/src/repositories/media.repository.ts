@@ -77,34 +77,20 @@ export class MediaRepository {
    * @returns ExtractResult if succeeded, or null if failed
    */
   async extract(input: string): Promise<ExtractResult | null> {
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next: ${error}`);
+    for (const { tag, format } of [
+      { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
+      { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
+      { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
+      { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
+    ]) {
+      try {
+        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        return { buffer, format };
+      } catch (error: any) {
+        this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
+      }
     }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JPEG buffer from image, trying PreviewJXL next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
-      return { buffer, format: RawExtractedFormat.Jxl };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract PreviewJXL buffer from image, trying PreviewImage next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract preview buffer from image: ${error}`);
-      return null;
-    }
+    return null;
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
