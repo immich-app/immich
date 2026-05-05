@@ -120,6 +120,10 @@ DROP TABLE IF EXISTS "shared_space_asset" CASCADE;
 DROP TABLE IF EXISTS "shared_space_member" CASCADE;
 DROP TABLE IF EXISTS "shared_space" CASCADE;
 
+-- Face identities
+DROP TABLE IF EXISTS "face_identity_face" CASCADE;
+DROP TABLE IF EXISTS "face_identity" CASCADE;
+
 -- User groups
 DROP TABLE IF EXISTS "user_group_member" CASCADE;
 DROP TABLE IF EXISTS "user_group" CASCADE;
@@ -164,6 +168,10 @@ ALTER TABLE "person"            DROP COLUMN IF EXISTS "species";
 ALTER TABLE "asset_job_status"  DROP COLUMN IF EXISTS "petsDetectedAt";
 ALTER TABLE "asset_job_status"  DROP COLUMN IF EXISTS "classifiedAt";
 ALTER TABLE "library"           DROP COLUMN IF EXISTS "createId";
+DROP INDEX IF EXISTS "asset_face_personId_idx";
+DROP INDEX IF EXISTS "person_ownerId_identityId_key";
+DROP INDEX IF EXISTS "person_identityId_idx";
+ALTER TABLE "person"            DROP COLUMN IF EXISTS "identityId";
 
 -- -----------------------------------------------------------------------------
 -- 5. Strip Gallery's merged 'classification' key out of system_metadata's
@@ -197,8 +205,16 @@ DELETE FROM "migration_overrides"
    'function_shared_space_member_delete_audit',
    'function_shared_space_member_delete_library_audit',
    'function_user_has_library_path',
+   'index_asset_face_personId_idx',
+   'index_face_identity_representativeFaceId_idx',
+   'index_person_identityId_idx',
+   'index_person_ownerId_identityId_key',
+   'index_shared_space_person_identityId_spaceId_idx',
+   'index_shared_space_person_spaceId_identityId_key',
    'trigger_asset_library_delete_audit',
    'trigger_classification_category_updatedAt',
+   'trigger_face_identity_face_updatedAt',
+   'trigger_face_identity_updatedAt',
    'trigger_library_after_insert',
    'trigger_library_user_delete_after_audit',
    'trigger_shared_space_asset_delete_audit',
@@ -324,6 +340,8 @@ DELETE FROM "kysely_migrations"
    '1778200000000-LibraryAuditTables',
    '1778210000000-AddLibrarySyncColumns',
    '1778300000000-AddLibraryUserTable',
+   '1778400000000-AddFaceIdentities',
+   '1778500000000-AddSpacePersonRepresentativeFaceSource',
 
    -- Post-v2.7.5 upstream migrations pulled in by rebase. Paired with the
    -- schema rollbacks in step 7 above.
@@ -358,7 +376,9 @@ BEGIN
       OR "name" LIKE '%LibraryAudit%'
       OR "name" LIKE '%LibrarySync%'
       OR "name" LIKE '%LibraryUser%'
-      OR "name" LIKE '%AddAssetDuplicateChecksum%';
+      OR "name" LIKE '%AddAssetDuplicateChecksum%'
+      OR "name" LIKE '%AddFaceIdentities%'
+      OR "name" LIKE '%AddSpacePersonRepresentativeFaceSource%';
   IF fork_rows_left > 0 THEN
     RAISE EXCEPTION 'revert-to-immich: % Gallery row(s) still present in kysely_migrations after cleanup — aborting.', fork_rows_left;
   END IF;
@@ -373,6 +393,7 @@ BEGIN
        'shared_space_person_face', 'shared_space_person',
        'shared_space_asset_audit', 'shared_space_member_audit',
        'shared_space_audit', 'shared_space_asset', 'shared_space_member',
+       'face_identity_face', 'face_identity',
        'shared_space', 'user_group_member', 'user_group',
        'classification_prompt_embedding', 'classification_category',
        'storage_migration_log', 'asset_duplicate_checksum'

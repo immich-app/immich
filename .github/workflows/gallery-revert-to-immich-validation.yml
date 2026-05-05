@@ -24,6 +24,8 @@ on:
     paths:
       - 'scripts/revert-to-immich.sql'
       - 'server/src/schema/migrations-gallery/**'
+      - 'server/src/schema/migrations/**'
+      - 'server/package.json'
       - '.github/workflows/gallery-revert-to-immich-validation.yml'
 
 concurrency:
@@ -55,6 +57,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Verify migration coverage
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          while IFS= read -r file; do
+            name=${file##*/}
+            name=${name%.ts}
+            if ! grep -qF "'${name}'" scripts/revert-to-immich.sql; then
+              echo "::error file=scripts/revert-to-immich.sql::Missing Gallery migration cleanup entry: ${name}"
+              missing=1
+            fi
+          done < <(find server/src/schema/migrations-gallery -maxdepth 1 -type f -name '*.ts' | sort)
+
+          UPSTREAM_TAG=v$(jq -r .version server/package.json)
+          upstream_migrations=$(mktemp)
+          trap 'rm -f "$upstream_migrations"' EXIT
+          gh api "repos/immich-app/immich/git/trees/${UPSTREAM_TAG}:server/src/schema/migrations" \
+            --jq '.tree[].path' | sort > "$upstream_migrations"
+
+          while IFS= read -r file; do
+            filename=${file##*/}
+            name=${filename%.ts}
+            if ! grep -qxF "$filename" "$upstream_migrations" && ! grep -qF "'${name}'" scripts/revert-to-immich.sql; then
+              echo "::error file=scripts/revert-to-immich.sql::Missing post-${UPSTREAM_TAG} upstream migration cleanup entry: ${name}"
+              missing=1
+            fi
+          done < <(find server/src/schema/migrations -maxdepth 1 -type f -name '*.ts' | sort)
+
+          exit "$missing"
 
       - name: Log in to GitHub Container Registry
         # Cheap belt-and-braces in case open-noodle/* packages ever go
@@ -279,7 +314,7 @@ jobs:
           stop_server
 
           ############################################################
-          # Step 9: boot Gallery (applies the 27 fork migrations)
+          # Step 9: boot Gallery (applies the fork migrations)
           #
           # We must wait for Gallery's geodata init to finish before stopping
           # the container. When Gallery's bundled geodata date differs from
