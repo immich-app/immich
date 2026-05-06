@@ -252,6 +252,7 @@ export class TimelineManager extends VirtualScrollManager {
         timeBucket.count,
         false,
         this.#options.order,
+        this.#options.orderingDate,
       );
     });
     this.albumAssets.clear();
@@ -465,7 +466,7 @@ export class TimelineManager extends VirtualScrollManager {
     let month = getTimelineMonthByDate(this, asset.localDateTime);
 
     if (!month) {
-      month = new TimelineMonth(this, asset.localDateTime, 1, true, this.#options.order);
+      month = new TimelineMonth(this, asset.localDateTime, 1, true, this.#options.order, this.#options.orderingDate);
       this.months.push(month);
     }
     return month;
