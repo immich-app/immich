@@ -932,6 +932,22 @@ export class AssetRepository {
     return { fieldName: 'exifInfo.city', items };
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, 12] })
+  async getRecentlyCreatedAssetIds(ownerId: string, maxAssets: number) {
+    const items = await this.db
+      .selectFrom('asset')
+      .select(['id as data', 'createdAt as value'])
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('type', '=', AssetType.Image)
+      .where('deletedAt', 'is', null)
+      .orderBy('asset.createdAt', 'desc')
+      .limit(maxAssets)
+      .execute();
+
+    return { fieldName: 'createdAt', items };
+  }
+
   async upsertFile(
     file: Pick<
       Insertable<AssetFileTable>,
