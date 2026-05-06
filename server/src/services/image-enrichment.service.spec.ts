@@ -3,7 +3,7 @@ import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, Job
 import { ImageEnrichmentService } from 'src/services/image-enrichment.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newUuid } from 'test/small.factory';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 describe(ImageEnrichmentService.name, () => {
   let sut: ImageEnrichmentService;
@@ -64,6 +64,36 @@ describe(ImageEnrichmentService.name, () => {
     );
   });
 
+  it('should queue description backfill jobs in batches when description generation is enabled', async () => {
+    const firstAssetId = newUuid();
+    const secondAssetId = newUuid();
+    mocks.systemMetadata.get.mockResolvedValue({
+      machineLearning: { enabled: true, nsfwDetection: { enabled: false }, imageDescription: { enabled: true } },
+    });
+    mocks.assetJob.streamForImageDescriptionJob.mockReturnValue(
+      makeStream([{ id: firstAssetId }, { id: secondAssetId }]),
+    );
+
+    await expect(sut.handleQueueImageDescription({ force: false })).resolves.toBe(JobStatus.Success);
+
+    expect(mocks.assetJob.streamForImageDescriptionJob).toHaveBeenCalledWith(false);
+    expect(mocks.job.queueAll).toHaveBeenCalledWith([
+      { name: JobName.ImageDescription, data: { id: firstAssetId } },
+      { name: JobName.ImageDescription, data: { id: secondAssetId } },
+    ]);
+  });
+
+  it('should skip NSFW backfill when NSFW detection is disabled', async () => {
+    mocks.systemMetadata.get.mockResolvedValue({
+      machineLearning: { enabled: true, nsfwDetection: { enabled: false }, imageDescription: { enabled: true } },
+    });
+
+    await expect(sut.handleQueueNsfwDetection({ force: false })).resolves.toBe(JobStatus.Skipped);
+
+    expect(mocks.assetJob.streamForNsfwDetectionJob).not.toHaveBeenCalled();
+    expect(mocks.job.queueAll).not.toHaveBeenCalled();
+  });
+
   it('should run NSFW detection before image description when both scans are enabled', async () => {
     mocks.systemMetadata.get.mockResolvedValue({
       machineLearning: { nsfwDetection: { enabled: true }, imageDescription: { enabled: true } },
@@ -114,6 +144,86 @@ describe(ImageEnrichmentService.name, () => {
     expect(mocks.tag.upsertValue).toHaveBeenCalledWith(expect.objectContaining({ userId: ownerId, value: 'beach' }));
     expect(mocks.tag.upsertValue).toHaveBeenCalledWith(expect.objectContaining({ userId: ownerId, value: 'nsfw' }));
     expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SidecarWrite, data: { id: assetId } });
+  });
+
+  it('should store description failures without applying visible metadata', async () => {
+    mocks.systemMetadata.get.mockResolvedValue({
+      machineLearning: {
+        enabled: true,
+        nsfwDetection: { enabled: false },
+        imageDescription: { enabled: true, modelName: 'Qwen/Qwen2.5-VL-3B-Instruct' },
+      },
+    });
+    mocks.machineLearning.describeImage.mockRejectedValue(new Error('model unavailable'));
+
+    await expect(sut.handleImageDescription({ id: assetId })).resolves.toBe(JobStatus.Failed);
+
+    expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+    expect(mocks.tag.upsertValue).not.toHaveBeenCalled();
+    expect(mocks.job.queue).not.toHaveBeenCalledWith({ name: JobName.SidecarWrite, data: { id: assetId } });
+    expect(mocks.asset.upsertMetadata).toHaveBeenCalledWith(
+      assetId,
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: AssetMetadataKey.MlEnrichment,
+          value: expect.objectContaining({
+            description: expect.objectContaining({
+              status: 'failed',
+              modelName: 'Qwen/Qwen2.5-VL-3B-Instruct',
+              error: 'model unavailable',
+            }),
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it('should not append an existing generated description block again', async () => {
+    const description = 'A bright kitchen with a wooden table.';
+    mocks.systemMetadata.get.mockResolvedValue({
+      machineLearning: {
+        enabled: true,
+        nsfwDetection: { enabled: false },
+        imageDescription: { enabled: true, modelName: 'Qwen/Qwen2.5-VL-3B-Instruct' },
+      },
+    });
+    mocks.assetJob.getForImageEnrichment.mockResolvedValue({
+      id: assetId,
+      ownerId,
+      type: AssetType.Image,
+      status: AssetStatus.Active,
+      deletedAt: null,
+      visibility: AssetVisibility.Timeline,
+      description: `User note\n\nAI description: ${description}`,
+      previewFile,
+    });
+    mocks.machineLearning.describeImage.mockResolvedValue({
+      description,
+      people: [],
+      environment: 'kitchen',
+      objects: ['table'],
+      visible_text: [],
+      context: 'indoor home photo',
+      tags: [],
+    });
+
+    await expect(sut.handleImageDescription({ id: assetId })).resolves.toBe(JobStatus.Success);
+
+    expect(mocks.asset.upsertExif).not.toHaveBeenCalled();
+    expect(mocks.job.queue).not.toHaveBeenCalledWith({ name: JobName.SidecarWrite, data: { id: assetId } });
+    expect(mocks.asset.upsertMetadata).toHaveBeenCalledWith(
+      assetId,
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: AssetMetadataKey.MlEnrichment,
+          value: expect.objectContaining({
+            description: expect.objectContaining({
+              appliedDescriptionHash: expect.any(String),
+            }),
+          }),
+        }),
+      ]),
+    );
   });
 
   it.each([

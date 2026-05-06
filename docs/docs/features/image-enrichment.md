@@ -32,6 +32,20 @@ Review overrides are stored in private enrichment metadata and become the effect
 
 Admins can also use the search filter modal to find enrichment review sets, including NSFW assets, assets needing NSFW review, reviewed or overridden NSFW assets, failed enrichment jobs, and image assets missing description or NSFW results. If `Hide detected NSFW assets` is enabled, unlock the locked folder PIN session before searching hidden NSFW review sets.
 
+## QA Checklist
+
+Use this checklist when validating image enrichment against a real library or local ML service:
+
+1. Enable `Generate AI descriptions and tags` only, upload a new image, and confirm an `ImageDescription` job is queued after thumbnail generation.
+2. Enable `Detect NSFW images` only, upload a new image, and confirm an `NsfwDetection` job is queued after thumbnail generation.
+3. Enable both settings, upload a new image, and confirm only `ImageDescription` is queued directly after thumbnail generation. The description job runs NSFW detection first and passes that result to the description model.
+4. Run `NSFW Detection > All` and `Image descriptions and tags > All` from `Administration > Jobs`, then confirm video, hidden, locked, deleted, and already-successful images are skipped unless the run is forced.
+5. Open an enriched image's detail panel and verify the private status, model name, labels, score, review state, and errors are visible to admins.
+6. Use the search filter modal to review `NSFW`, `NSFW review`, `NSFW reviewed`, `NSFW overridden`, failed, and missing-result states.
+7. Confirm generated descriptions append only one `AI description:` block and never remove user-written text.
+8. Confirm generated tags are lowercase, deduplicated, searchable, and removable through the repair action without deleting tag definitions.
+9. For NSFW assets, confirm the private effective NSFW flag drives hiding behavior while tags remain visible metadata only.
+
 ## Descriptions and Tags
 
 When description and tag generation is enabled, Immich sends the asset preview image to the machine learning service and stores the model result as private enrichment metadata. Immich then applies visible metadata according to the admin settings:

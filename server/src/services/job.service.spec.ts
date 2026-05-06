@@ -118,4 +118,81 @@ describe(JobService.name, () => {
       });
     }
   });
+
+  describe('image enrichment job chaining', () => {
+    it('should queue image descriptions after upload thumbnail generation when descriptions are enabled', async () => {
+      const asset = AssetFactory.create({ id: 'asset-1', type: AssetType.Image });
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          imageDescription: { enabled: true },
+          nsfwDetection: { enabled: true },
+        },
+      });
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+
+      await sut.onJobRun(QueueName.BackgroundTask, {
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id, source: 'upload' },
+      });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SmartSearch, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.AssetDetectFaces, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.Ocr, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.ImageDescription, data: { id: asset.id, source: 'upload' } },
+      ]);
+    });
+
+    it('should queue NSFW detection after upload thumbnail generation when descriptions are disabled', async () => {
+      const asset = AssetFactory.create({ id: 'asset-1', type: AssetType.Image });
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          imageDescription: { enabled: false },
+          nsfwDetection: { enabled: true },
+        },
+      });
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+
+      await sut.onJobRun(QueueName.BackgroundTask, {
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id, source: 'upload' },
+      });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SmartSearch, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.AssetDetectFaces, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.Ocr, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.NsfwDetection, data: { id: asset.id, source: 'upload' } },
+      ]);
+    });
+
+    it('should not queue image enrichment for videos after thumbnail generation', async () => {
+      const asset = AssetFactory.create({ id: 'asset-1', type: AssetType.Video });
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          imageDescription: { enabled: true },
+          nsfwDetection: { enabled: true },
+        },
+      });
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+
+      await sut.onJobRun(QueueName.BackgroundTask, {
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id, source: 'upload' },
+      });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SmartSearch, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.AssetDetectFaces, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.Ocr, data: { id: asset.id, source: 'upload' } },
+        { name: JobName.AssetEncodeVideo, data: { id: asset.id, source: 'upload' } },
+      ]);
+    });
+  });
 });
