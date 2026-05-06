@@ -14,9 +14,11 @@ import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.re
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { AssetService } from 'src/services/asset.service';
+import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
@@ -40,6 +42,14 @@ const setup = (db?: Kysely<DB>) => {
   });
 };
 
+const nsfwMetadata = (isNsfw: boolean, review?: { action: string; isNsfw: boolean }) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: { explicit: isNsfw ? 0.95 : 0.05 } },
+    ...(review ? { review } : {}),
+  },
+});
+
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
@@ -53,6 +63,61 @@ describe(AssetService.name, () => {
       await ctx.newExif({ assetId: asset.id, fileSizeInByte: 12_345 });
       const auth = factory.auth({ user: { id: user.id } });
       await expect(sut.getStatistics(auth, {})).resolves.toEqual({ images: 1, total: 1, videos: 0 });
+    });
+  });
+
+  describe('get', () => {
+    it('should use private review state for NSFW direct access and preserve album membership', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const albumRepository = ctx.get(AlbumRepository);
+      const { user } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+
+      const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newMetadata({
+        assetId: unreviewedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+      await ctx.newMetadata({
+        assetId: markedSafe.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+      });
+      await ctx.newMetadata({
+        assetId: markedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+      });
+
+      const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+      await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+      const assetIds = [unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id];
+      for (const assetId of assetIds) {
+        await ctx.newAlbumAsset({ albumId: album.id, assetId });
+      }
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      await expect(sut.get(hiddenAuth, unreviewedNsfw.id)).rejects.toThrow('Not found or no asset.read access');
+      await expect(sut.get(hiddenAuth, markedNsfw.id)).rejects.toThrow('Not found or no asset.read access');
+      await expect(sut.get(hiddenAuth, markedSafe.id)).resolves.toEqual(expect.objectContaining({ id: markedSafe.id }));
+      await expect(sut.get(hiddenAuth, tagOnly.id)).resolves.toEqual(expect.objectContaining({ id: tagOnly.id }));
+
+      const elevatedAuth = factory.auth({ user: { id: user.id }, session: { id: factory.uuid() } });
+      elevatedAuth.session!.hasElevatedPermission = true;
+      await expect(sut.get(elevatedAuth, unreviewedNsfw.id)).resolves.toEqual(
+        expect.objectContaining({ id: unreviewedNsfw.id }),
+      );
+      await expect(sut.get(elevatedAuth, markedNsfw.id)).resolves.toEqual(
+        expect.objectContaining({ id: markedNsfw.id }),
+      );
+
+      await expect(albumRepository.getAssetIds(album.id, assetIds)).resolves.toEqual(new Set(assetIds));
     });
   });
 

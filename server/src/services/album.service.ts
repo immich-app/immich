@@ -44,7 +44,7 @@ export class AlbumService extends BaseService {
     const ownerId = auth.user.id;
     let albums: MapAlbumDto[];
     if (assetId) {
-      albums = await this.albumRepository.getByAssetId(ownerId, assetId);
+      albums = await this.albumRepository.getByAssetId(ownerId, assetId, this.nsfwOptions(auth));
     } else if (shared === true) {
       albums = await this.albumRepository.getShared(ownerId);
     } else if (shared === false) {

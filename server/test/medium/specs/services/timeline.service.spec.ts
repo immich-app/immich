@@ -1,12 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility } from 'src/enum';
+import { AssetMetadataKey, AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { TimelineService } from 'src/services/timeline.service';
+import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
@@ -16,10 +18,18 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(TimelineService, {
     database: db || defaultDatabase,
-    real: [AssetRepository, AccessRepository, PartnerRepository],
+    real: [AssetRepository, AccessRepository, PartnerRepository, TagRepository],
     mock: [LoggingRepository],
   });
 };
+
+const nsfwMetadata = (isNsfw: boolean, review?: { action: string; isNsfw: boolean }) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: { explicit: isNsfw ? 0.95 : 0.05 } },
+    ...(review ? { review } : {}),
+  },
+});
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
@@ -41,6 +51,52 @@ describe(TimelineService.name, () => {
       await expect(response).resolves.toEqual([
         { count: 3, timeBucket: '1970-02-01' },
         { count: 1, timeBucket: '1970-01-01' },
+      ]);
+    });
+
+    it('should hide NSFW assets using private review state', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const localDateTime = new Date('2020-01-15T12:00:00.000Z');
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+
+      for (const assetId of [visible.id, unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id]) {
+        await ctx.newExif({ assetId, make: 'Canon' });
+      }
+
+      await ctx.newMetadata({
+        assetId: unreviewedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+      await ctx.newMetadata({
+        assetId: markedSafe.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+      });
+      await ctx.newMetadata({
+        assetId: markedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+      });
+
+      const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+      await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      await expect(sut.getTimeBuckets(hiddenAuth, {})).resolves.toEqual([{ count: 3, timeBucket: '2020-01-01' }]);
+
+      const hiddenBucket = JSON.parse(await sut.getTimeBucket(hiddenAuth, { timeBucket: '2020-01-01' }));
+      expect(hiddenBucket.id).toEqual(expect.arrayContaining([visible.id, markedSafe.id, tagOnly.id]));
+      expect(hiddenBucket.id).not.toEqual(expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]));
+
+      await expect(sut.getTimeBuckets(factory.auth({ user: { id: user.id } }), {})).resolves.toEqual([
+        { count: 5, timeBucket: '2020-01-01' },
       ]);
     });
 

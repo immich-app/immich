@@ -103,12 +103,15 @@ export class AlbumRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  getByAssetId(ownerId: string, assetId: string) {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { excludeNsfw: true }] })
+  getByAssetId(ownerId: string, assetId: string, options: { excludeNsfw?: boolean } = {}) {
     return this.db
       .selectFrom('album')
       .selectAll('album')
       .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+      .$if(!!options.excludeNsfw, (qb) =>
+        qb.innerJoin('asset', 'asset.id', 'album_asset.assetId').$call(withoutNsfwAssets),
+      )
       .where((eb) =>
         eb.exists(
           eb

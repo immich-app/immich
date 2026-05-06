@@ -39,6 +39,14 @@ const idsForFilter = async (sut: SearchService, userId: string, imageEnrichment:
   return response.assets.items.map(({ id }) => id);
 };
 
+const nsfwMetadata = (isNsfw: boolean, review?: { action: string; isNsfw: boolean }) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: { explicit: isNsfw ? 0.95 : 0.05 } },
+    ...(review ? { review } : {}),
+  },
+});
+
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
@@ -116,6 +124,50 @@ describe(SearchService.name, () => {
 
       expect(response.assets.items.length).toBe(1);
       expect(response.assets.items[0].id).toBe(unstackedAsset.id);
+    });
+  });
+
+  describe('NSFW privacy hiding', () => {
+    it('should use private review state, not visible tags, when hiding search results', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newMetadata({
+        assetId: unreviewedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+      await ctx.newMetadata({
+        assetId: markedSafe.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+      });
+      await ctx.newMetadata({
+        assetId: markedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+      });
+
+      const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+      await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      const hiddenResponse = await sut.searchMetadata(hiddenAuth, {});
+      const hiddenIds = hiddenResponse.assets.items.map(({ id }) => id);
+
+      expect(hiddenIds).toEqual(expect.arrayContaining([visible.id, markedSafe.id, tagOnly.id]));
+      expect(hiddenIds).not.toEqual(expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]));
+
+      const unlockedResponse = await sut.searchMetadata(factory.auth({ user: { id: user.id } }), {});
+      expect(unlockedResponse.assets.items.map(({ id }) => id)).toEqual(
+        expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]),
+      );
     });
   });
 
