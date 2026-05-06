@@ -36,14 +36,34 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Require main branch
+      - name: Require main or release branch
         env:
           REF: ${{ github.ref_name }}
+          VERSION: ${{ inputs.version }}
         run: |
-          if [[ "$REF" != "main" ]]; then
-            echo "::error::Releases must be triggered from main (got: $REF)"
-            exit 1
+          set -euo pipefail
+
+          if [[ "$REF" == "main" ]]; then
+            exit 0
           fi
+
+          if [[ "$REF" == release/* ]]; then
+            if [[ -z "$VERSION" ]]; then
+              echo "::error::Server-only releases from release/* branches require an explicit version input."
+              exit 1
+            fi
+
+            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Version must be a full semver tag like v4.55.2 (got: $VERSION)"
+              exit 1
+            fi
+
+            echo "Release branch $REF with explicit version $VERSION. Proceeding."
+            exit 0
+          fi
+
+          echo "::error::Releases must be triggered from main or release/* (got: $REF)"
+          exit 1
 
       - name: Fail if a mobile release draft is pending
         env:
