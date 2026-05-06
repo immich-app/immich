@@ -439,6 +439,11 @@ export class NotificationService extends BaseService {
       return;
     }
 
+    const nsfwThumbnailIds = await this.assetRepository.getNsfwAssetIds([album.albumThumbnailAssetId]);
+    if (nsfwThumbnailIds.has(album.albumThumbnailAssetId)) {
+      return;
+    }
+
     const albumThumbnailFiles = await this.assetJobRepository.getAlbumThumbnailFiles(
       album.albumThumbnailAssetId,
       AssetFileType.Thumbnail,

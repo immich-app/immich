@@ -372,6 +372,43 @@ describe(NotificationService.name, () => {
       });
     });
 
+    it('should send invite email without album thumbnail when thumbnail asset is NSFW', async () => {
+      const assetFile = AssetFileFactory.create({ type: AssetFileType.Thumbnail });
+      const album = AlbumFactory.create({ albumThumbnailAssetId: assetFile.assetId });
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.user.get.mockResolvedValue({
+        ...userStub.user1,
+        metadata: [
+          {
+            key: UserMetadataKey.Preferences,
+            value: { emailNotifications: { enabled: true, albumInvite: true } },
+          },
+        ],
+      });
+      mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.asset.getNsfwAssetIds.mockResolvedValue(new Set([assetFile.assetId]));
+
+      await expect(sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' })).resolves.toBe(
+        JobStatus.Success,
+      );
+      expect(mocks.asset.getNsfwAssetIds).toHaveBeenCalledWith([album.albumThumbnailAssetId]);
+      expect(mocks.assetJob.getAlbumThumbnailFiles).not.toHaveBeenCalled();
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ cid: undefined }),
+        }),
+      );
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SendMail,
+        data: expect.objectContaining({
+          subject: expect.stringContaining('You have been added to a shared album'),
+          imageAttachments: undefined,
+        }),
+      });
+    });
+
     it('should send invite email with album thumbnail as jpeg', async () => {
       const assetFile = AssetFileFactory.create({ type: AssetFileType.Thumbnail });
       const album = AlbumFactory.create({ albumThumbnailAssetId: assetFile.assetId });
@@ -519,6 +556,36 @@ describe(NotificationService.name, () => {
       expect(mocks.user.get).toHaveBeenCalledWith(user.id, { withDeleted: false });
       expect(mocks.email.renderEmail).toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalled();
+    });
+
+    it('should send update email without album thumbnail when thumbnail asset is NSFW', async () => {
+      const user = UserFactory.create();
+      const assetFile = AssetFileFactory.create({ type: AssetFileType.Thumbnail });
+      const album = AlbumFactory.from({ albumThumbnailAssetId: assetFile.assetId })
+        .albumUser({ userId: user.id })
+        .build();
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.user.get.mockResolvedValue(user);
+      mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
+      mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.asset.getNsfwAssetIds.mockResolvedValue(new Set([assetFile.assetId]));
+
+      await expect(sut.handleAlbumUpdate({ id: '', recipientId: user.id })).resolves.toBe(JobStatus.Success);
+      expect(mocks.asset.getNsfwAssetIds).toHaveBeenCalledWith([album.albumThumbnailAssetId]);
+      expect(mocks.assetJob.getAlbumThumbnailFiles).not.toHaveBeenCalled();
+      expect(mocks.email.renderEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ cid: undefined }),
+        }),
+      );
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SendMail,
+        data: expect.objectContaining({
+          subject: expect.stringContaining('New media has been added to an album'),
+          imageAttachments: undefined,
+        }),
+      });
     });
 
     it('should add new recipients for new images if job is already queued', async () => {
