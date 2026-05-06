@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, ImageEnrichmentFilter, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -85,6 +85,10 @@ export interface SearchOcrOptions {
   ocr?: string;
 }
 
+export interface SearchImageEnrichmentOptions {
+  imageEnrichment?: ImageEnrichmentFilter;
+}
+
 export interface SearchPeopleOptions {
   personIds?: string[];
 }
@@ -116,7 +120,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPeopleOptions &
   SearchTagOptions &
   SearchAlbumOptions &
-  SearchOcrOptions;
+  SearchOcrOptions &
+  SearchImageEnrichmentOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -130,7 +135,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions;
+  SearchOcrOptions &
+  SearchImageEnrichmentOptions;
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 

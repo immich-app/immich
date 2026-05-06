@@ -75,6 +75,86 @@ const AssetJobsSchema = AssetIdsSchema.extend({
   name: AssetJobNameSchema,
 }).meta({ id: 'AssetJobsDto' });
 
+export enum AssetImageEnrichmentAction {
+  RerunImageDescription = 'rerun-image-description',
+  RerunNsfwDetection = 'rerun-nsfw-detection',
+  AcceptNsfwResult = 'accept-nsfw-result',
+  MarkNsfw = 'mark-nsfw',
+  MarkSafe = 'mark-safe',
+  ClearGeneratedDescription = 'clear-generated-description',
+  ClearGeneratedTags = 'clear-generated-tags',
+}
+
+const AssetImageEnrichmentActionSchema = z
+  .enum(AssetImageEnrichmentAction)
+  .describe('Image enrichment repair action')
+  .meta({ id: 'AssetImageEnrichmentAction' });
+
+const AssetImageEnrichmentActionRequestSchema = z
+  .object({
+    action: AssetImageEnrichmentActionSchema,
+  })
+  .meta({ id: 'AssetImageEnrichmentActionRequestDto' });
+
+const ImageEnrichmentReviewSchema = z
+  .object({
+    action: z.enum(['accepted', 'marked-safe', 'marked-nsfw']),
+    isNsfw: z.boolean(),
+    reviewedAt: z.string().describe('Review timestamp'),
+    reviewedBy: z.string().describe('Reviewer user ID'),
+  })
+  .meta({ id: 'ImageEnrichmentReview' });
+
+const ImageDescriptionEnrichmentResponseSchema = z
+  .object({
+    status: z.enum(['missing', 'success', 'failed']),
+    modelName: z.string().optional(),
+    updatedAt: z.string().optional(),
+    error: z.string().optional(),
+    description: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    objects: z.array(z.string()).optional(),
+    people: z
+      .array(
+        z.object({
+          count: z.number(),
+          apparent_age_group: z.string(),
+          activity: z.string(),
+          confidence: z.string(),
+        }),
+      )
+      .optional(),
+    environment: z.string().optional(),
+    visibleText: z.array(z.string()).optional(),
+    context: z.string().optional(),
+    appliedDescription: z.boolean(),
+    appliedTags: z.boolean(),
+  })
+  .meta({ id: 'ImageDescriptionEnrichmentResponseDto' });
+
+const NsfwDetectionEnrichmentResponseSchema = z
+  .object({
+    status: z.enum(['missing', 'success', 'failed']),
+    modelName: z.string().optional(),
+    updatedAt: z.string().optional(),
+    error: z.string().optional(),
+    isNsfw: z.boolean().optional(),
+    effectiveIsNsfw: z.boolean(),
+    score: z.number().optional(),
+    labels: z.record(z.string(), z.number()).optional(),
+    review: ImageEnrichmentReviewSchema.optional(),
+    appliedTags: z.boolean(),
+  })
+  .meta({ id: 'NsfwDetectionEnrichmentResponseDto' });
+
+const AssetImageEnrichmentResponseSchema = z
+  .object({
+    assetId: z.string().describe('Asset ID'),
+    description: ImageDescriptionEnrichmentResponseSchema,
+    nsfwDetection: NsfwDetectionEnrichmentResponseSchema,
+  })
+  .meta({ id: 'AssetImageEnrichmentResponseDto' });
+
 const AssetStatsSchema = z
   .object({
     visibility: AssetVisibilitySchema.optional(),
@@ -181,6 +261,8 @@ export class UpdateAssetDto extends createZodDto(UpdateAssetSchema) {}
 export class AssetBulkDeleteDto extends createZodDto(AssetBulkDeleteSchema) {}
 export class AssetIdsDto extends createZodDto(AssetIdsSchema) {}
 export class AssetJobsDto extends createZodDto(AssetJobsSchema) {}
+export class AssetImageEnrichmentActionRequestDto extends createZodDto(AssetImageEnrichmentActionRequestSchema) {}
+export class AssetImageEnrichmentResponseDto extends createZodDto(AssetImageEnrichmentResponseSchema) {}
 export class AssetStatsDto extends createZodDto(AssetStatsSchema) {}
 export class AssetStatsResponseDto extends createZodDto(AssetStatsResponseSchema) {}
 export class AssetMetadataRouteParams extends createZodDto(AssetMetadataRouteParamsSchema) {}

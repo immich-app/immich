@@ -74,6 +74,22 @@ export enum AssetOrder {
 
 export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ id: 'AssetOrder' });
 
+export enum ImageEnrichmentFilter {
+  Nsfw = 'nsfw',
+  NsfwReview = 'nsfw-review',
+  NsfwReviewed = 'nsfw-reviewed',
+  NsfwOverridden = 'nsfw-overridden',
+  ImageDescriptionFailed = 'image-description-failed',
+  NsfwDetectionFailed = 'nsfw-detection-failed',
+  MissingImageDescription = 'missing-image-description',
+  MissingNsfwDetection = 'missing-nsfw-detection',
+}
+
+export const ImageEnrichmentFilterSchema = z
+  .enum(ImageEnrichmentFilter)
+  .describe('Filter by private image enrichment state')
+  .meta({ id: 'ImageEnrichmentFilter' });
+
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',

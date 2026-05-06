@@ -1,4 +1,4 @@
-import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { ImageEnrichmentFilter, QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -90,4 +90,5 @@ export type SearchFilter = {
   display: SearchDisplayFilters;
   mediaType: MediaType;
   rating?: number | null;
+  imageEnrichment?: ImageEnrichmentFilter | '';
 };

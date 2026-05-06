@@ -17,7 +17,15 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetMetadataKey, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
+import {
+  AssetFileType,
+  AssetMetadataKey,
+  AssetType,
+  AssetVisibility,
+  DatabaseExtension,
+  ExifOrientation,
+  ImageEnrichmentFilter,
+} from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -85,7 +93,12 @@ const nsfwAssetExists = (assetAlias = 'asset') => sql<boolean>`exists (
       from asset_metadata
       where asset_metadata."assetId" = ${sql.ref(`${assetAlias}.id`)}
         and asset_metadata.key = ${AssetMetadataKey.MlEnrichment}
-        and asset_metadata.value #>> '{nsfwDetection,result,nsfw}' = 'true'
+        and coalesce(
+          (asset_metadata.value #>> '{nsfwDetection,review,isNsfw}')::boolean,
+          (asset_metadata.value #>> '{nsfwDetection,result,isNsfw}')::boolean,
+          (asset_metadata.value #>> '{nsfwDetection,result,nsfw}')::boolean,
+          false
+        ) = true
     )`;
 
 export function withNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAlias = 'asset') {
@@ -94,6 +107,93 @@ export function withNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAlias
 
 export function withoutNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAlias = 'asset') {
   return qb.where(sql<boolean>`not ${nsfwAssetExists(assetAlias)}`);
+}
+
+const enrichmentExists = (assetAlias: string, predicate: ReturnType<typeof sql>) => sql<boolean>`exists (
+      select 1
+      from asset_metadata
+      where asset_metadata."assetId" = ${sql.ref(`${assetAlias}.id`)}
+        and asset_metadata.key = ${AssetMetadataKey.MlEnrichment}
+        and ${predicate}
+    )`;
+
+const tagExists = (assetAlias: string, tag: string) => sql<boolean>`exists (
+      select 1
+      from tag_asset
+      inner join tag on tag.id = tag_asset."tagId"
+      where tag_asset."assetId" = ${sql.ref(`${assetAlias}.id`)}
+        and tag.value = ${tag}
+    )`;
+
+export function withImageEnrichmentFilter<O>(
+  qb: SelectQueryBuilder<DB, any, O>,
+  filter: ImageEnrichmentFilter,
+  assetAlias = 'asset',
+) {
+  const imageOnly = qb.where(sql.ref(`${assetAlias}.type`), '=', AssetType.Image);
+
+  switch (filter) {
+    case ImageEnrichmentFilter.Nsfw: {
+      return imageOnly.where(nsfwAssetExists(assetAlias));
+    }
+
+    case ImageEnrichmentFilter.NsfwReview: {
+      return imageOnly.where((eb) =>
+        eb.or([
+          sql<boolean>`${nsfwAssetExists(assetAlias)} and ${enrichmentExists(
+            assetAlias,
+            sql`asset_metadata.value #> '{nsfwDetection,review}' is null`,
+          )}`,
+          tagExists(assetAlias, 'nsfw_review'),
+        ]),
+      );
+    }
+
+    case ImageEnrichmentFilter.NsfwReviewed: {
+      return imageOnly.where(
+        enrichmentExists(assetAlias, sql`asset_metadata.value #> '{nsfwDetection,review}' is not null`),
+      );
+    }
+
+    case ImageEnrichmentFilter.NsfwOverridden: {
+      return imageOnly.where(
+        enrichmentExists(
+          assetAlias,
+          sql`asset_metadata.value #>> '{nsfwDetection,review,action}' in ('marked-safe', 'marked-nsfw')`,
+        ),
+      );
+    }
+
+    case ImageEnrichmentFilter.ImageDescriptionFailed: {
+      return imageOnly.where(
+        enrichmentExists(assetAlias, sql`asset_metadata.value #>> '{description,status}' = 'failed'`),
+      );
+    }
+
+    case ImageEnrichmentFilter.NsfwDetectionFailed: {
+      return imageOnly.where(
+        enrichmentExists(assetAlias, sql`asset_metadata.value #>> '{nsfwDetection,status}' = 'failed'`),
+      );
+    }
+
+    case ImageEnrichmentFilter.MissingImageDescription: {
+      return imageOnly.where(
+        sql<boolean>`not ${enrichmentExists(
+          assetAlias,
+          sql`asset_metadata.value #>> '{description,status}' = 'success'`,
+        )}`,
+      );
+    }
+
+    case ImageEnrichmentFilter.MissingNsfwDetection: {
+      return imageOnly.where(
+        sql<boolean>`not ${enrichmentExists(
+          assetAlias,
+          sql`asset_metadata.value #>> '{nsfwDetection,status}' = 'success'`,
+        )}`,
+      );
+    }
+  }
 }
 
 // TODO come up with a better query that only selects the fields we need
@@ -471,6 +571,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
         .where(sql`f_unaccent(asset_exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
     )
+    .$if(!!options.imageEnrichment, (qb) => withImageEnrichmentFilter(qb, options.imageEnrichment!))
     .$if(!!options.ocr, (qb) =>
       qb
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')

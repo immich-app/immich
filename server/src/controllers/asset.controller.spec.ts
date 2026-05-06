@@ -1,6 +1,7 @@
 import { AssetController } from 'src/controllers/asset.controller';
 import { AssetMetadataKey } from 'src/enum';
 import { AssetService } from 'src/services/asset.service';
+import { ImageEnrichmentService } from 'src/services/image-enrichment.service';
 import request from 'supertest';
 import { factory } from 'test/small.factory';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
@@ -8,15 +9,20 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils'
 describe(AssetController.name, () => {
   let ctx: ControllerContext;
   const service = mockBaseService(AssetService);
+  const imageEnrichmentService = mockBaseService(ImageEnrichmentService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(AssetController, [{ provide: AssetService, useValue: service }]);
+    ctx = await controllerSetup(AssetController, [
+      { provide: AssetService, useValue: service },
+      { provide: ImageEnrichmentService, useValue: imageEnrichmentService },
+    ]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
     ctx.reset();
     service.resetAllMocks();
+    imageEnrichmentService.resetAllMocks();
   });
 
   describe('PUT /assets', () => {
@@ -86,6 +92,45 @@ describe(AssetController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123`);
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
+    });
+  });
+
+  describe('GET /assets/:id/image-enrichment', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/image-enrichment`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123/image-enrichment`);
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
+    });
+  });
+
+  describe('PUT /assets/:id/image-enrichment', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/image-enrichment`)
+        .send({ action: 'rerun-image-description' });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid action', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/image-enrichment`)
+        .send({ action: 'invalid' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          {
+            path: ['action'],
+            message:
+              'Invalid option: expected one of "rerun-image-description"|"rerun-nsfw-detection"|"accept-nsfw-result"|"mark-nsfw"|"mark-safe"|"clear-generated-description"|"clear-generated-tags"',
+          },
+        ]),
+      );
     });
   });
 

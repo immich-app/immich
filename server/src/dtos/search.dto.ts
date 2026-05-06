@@ -3,7 +3,13 @@ import { Place } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema } from 'src/dtos/album.dto';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/enum';
+import {
+  AssetOrder,
+  AssetOrderSchema,
+  AssetTypeSchema,
+  AssetVisibilitySchema,
+  ImageEnrichmentFilterSchema,
+} from 'src/enum';
 import { emptyStringToNull, isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
 
@@ -47,6 +53,7 @@ const BaseSearchSchema = z.object({
         .getExtensions(),
     }),
   ocr: z.string().optional().describe('Filter by OCR text content'),
+  imageEnrichment: ImageEnrichmentFilterSchema.optional(),
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({

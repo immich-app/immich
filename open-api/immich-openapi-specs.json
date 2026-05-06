@@ -3698,6 +3698,128 @@
         "x-immich-state": "Beta"
       }
     },
+    "/assets/{id}/image-enrichment": {
+      "get": {
+        "description": "Retrieve private image description, tag, and NSFW detection metadata for a specific asset.",
+        "operationId": "getAssetImageEnrichment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetImageEnrichmentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get image enrichment metadata",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Run repair actions for generated image descriptions, tags, and NSFW detection metadata.",
+        "operationId": "updateAssetImageEnrichment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetImageEnrichmentActionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetImageEnrichmentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update image enrichment metadata",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/{id}/metadata": {
       "get": {
         "description": "Retrieve all metadata key-value pairs associated with the specified asset.",
@@ -9228,6 +9350,14 @@
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
               "example": "2024-01-01T00:00:00.000Z",
               "type": "string"
+            }
+          },
+          {
+            "name": "imageEnrichment",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ImageEnrichmentFilter"
             }
           },
           {
@@ -16222,6 +16352,50 @@
         ],
         "type": "object"
       },
+      "AssetImageEnrichmentAction": {
+        "description": "Image enrichment repair action",
+        "enum": [
+          "rerun-image-description",
+          "rerun-nsfw-detection",
+          "accept-nsfw-result",
+          "mark-nsfw",
+          "mark-safe",
+          "clear-generated-description",
+          "clear-generated-tags"
+        ],
+        "type": "string"
+      },
+      "AssetImageEnrichmentActionRequestDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AssetImageEnrichmentAction"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "type": "object"
+      },
+      "AssetImageEnrichmentResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ImageDescriptionEnrichmentResponseDto"
+          },
+          "nsfwDetection": {
+            "$ref": "#/components/schemas/NsfwDetectionEnrichmentResponseDto"
+          }
+        },
+        "required": [
+          "assetId",
+          "description",
+          "nsfwDetection"
+        ],
+        "type": "object"
+      },
       "AssetJobName": {
         "description": "Job name",
         "enum": [
@@ -17873,6 +18047,136 @@
         ],
         "type": "object"
       },
+      "ImageDescriptionEnrichmentResponseDto": {
+        "properties": {
+          "appliedDescription": {
+            "type": "boolean"
+          },
+          "appliedTags": {
+            "type": "boolean"
+          },
+          "context": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "objects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "people": {
+            "items": {
+              "properties": {
+                "activity": {
+                  "type": "string"
+                },
+                "apparent_age_group": {
+                  "type": "string"
+                },
+                "confidence": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "count",
+                "apparent_age_group",
+                "activity",
+                "confidence"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "missing",
+              "success",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "visibleText": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "appliedDescription",
+          "appliedTags",
+          "status"
+        ],
+        "type": "object"
+      },
+      "ImageEnrichmentFilter": {
+        "description": "Filter by private image enrichment state",
+        "enum": [
+          "nsfw",
+          "nsfw-review",
+          "nsfw-reviewed",
+          "nsfw-overridden",
+          "image-description-failed",
+          "nsfw-detection-failed",
+          "missing-image-description",
+          "missing-nsfw-detection"
+        ],
+        "type": "string"
+      },
+      "ImageEnrichmentReview": {
+        "properties": {
+          "action": {
+            "enum": [
+              "accepted",
+              "marked-safe",
+              "marked-nsfw"
+            ],
+            "type": "string"
+          },
+          "isNsfw": {
+            "type": "boolean"
+          },
+          "reviewedAt": {
+            "description": "Review timestamp",
+            "type": "string"
+          },
+          "reviewedBy": {
+            "description": "Reviewer user ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "isNsfw",
+          "reviewedAt",
+          "reviewedBy"
+        ],
+        "type": "object"
+      },
       "ImageFormat": {
         "description": "Image format",
         "enum": [
@@ -18723,6 +19027,9 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "imageEnrichment": {
+            "$ref": "#/components/schemas/ImageEnrichmentFilter"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -19138,6 +19445,54 @@
           "hideFromLibrary",
           "modelName",
           "threshold"
+        ],
+        "type": "object"
+      },
+      "NsfwDetectionEnrichmentResponseDto": {
+        "properties": {
+          "appliedTags": {
+            "type": "boolean"
+          },
+          "effectiveIsNsfw": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "isNsfw": {
+            "type": "boolean"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "review": {
+            "$ref": "#/components/schemas/ImageEnrichmentReview"
+          },
+          "score": {
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "missing",
+              "success",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appliedTags",
+          "effectiveIsNsfw",
+          "status"
         ],
         "type": "object"
       },
@@ -20649,6 +21004,9 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
+          "imageEnrichment": {
+            "$ref": "#/components/schemas/ImageEnrichmentFilter"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -22023,6 +22381,9 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
+          "imageEnrichment": {
+            "$ref": "#/components/schemas/ImageEnrichmentFilter"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -22302,6 +22663,9 @@
           "description": {
             "description": "Filter by description text",
             "type": "string"
+          },
+          "imageEnrichment": {
+            "$ref": "#/components/schemas/ImageEnrichmentFilter"
           },
           "isEncoded": {
             "description": "Filter by encoded status",

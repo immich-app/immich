@@ -6,6 +6,8 @@ import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetCopyDto,
+  AssetImageEnrichmentActionRequestDto,
+  AssetImageEnrichmentResponseDto,
   AssetJobsDto,
   AssetMetadataBulkDeleteDto,
   AssetMetadataBulkResponseDto,
@@ -23,12 +25,16 @@ import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
+import { ImageEnrichmentService } from 'src/services/image-enrichment.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(
+    private service: AssetService,
+    private imageEnrichmentService: ImageEnrichmentService,
+  ) {}
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
@@ -86,6 +92,35 @@ export class AssetController {
   })
   getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
+  }
+
+  @Get(':id/image-enrichment')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Get image enrichment metadata',
+    description: 'Retrieve private image description, tag, and NSFW detection metadata for a specific asset.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  getAssetImageEnrichment(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<AssetImageEnrichmentResponseDto> {
+    return this.imageEnrichmentService.getAssetEnrichment(auth, id);
+  }
+
+  @Put(':id/image-enrichment')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Update image enrichment metadata',
+    description: 'Run repair actions for generated image descriptions, tags, and NSFW detection metadata.',
+    history: new HistoryBuilder().added('v1').beta('v1'),
+  })
+  updateAssetImageEnrichment(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetImageEnrichmentActionRequestDto,
+  ): Promise<AssetImageEnrichmentResponseDto> {
+    return this.imageEnrichmentService.updateAssetEnrichment(auth, id, dto);
   }
 
   @Put('copy')

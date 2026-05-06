@@ -963,6 +963,57 @@ export type AssetEditsCreateDto = {
     /** List of edit actions to apply (crop, rotate, or mirror) */
     edits: AssetEditActionItemDto[];
 };
+export type ImageDescriptionEnrichmentResponseDto = {
+    appliedDescription: boolean;
+    appliedTags: boolean;
+    context?: string;
+    description?: string;
+    environment?: string;
+    error?: string;
+    modelName?: string;
+    objects?: string[];
+    people?: {
+        activity: string;
+        apparent_age_group: string;
+        confidence: string;
+        count: number;
+    }[];
+    status: Status;
+    tags?: string[];
+    updatedAt?: string;
+    visibleText?: string[];
+};
+export type ImageEnrichmentReview = {
+    action: Action;
+    isNsfw: boolean;
+    /** Review timestamp */
+    reviewedAt: string;
+    /** Reviewer user ID */
+    reviewedBy: string;
+};
+export type NsfwDetectionEnrichmentResponseDto = {
+    appliedTags: boolean;
+    effectiveIsNsfw: boolean;
+    error?: string;
+    isNsfw?: boolean;
+    labels?: {
+        [key: string]: number;
+    };
+    modelName?: string;
+    review?: ImageEnrichmentReview;
+    score?: number;
+    status: Status;
+    updatedAt?: string;
+};
+export type AssetImageEnrichmentResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    description: ImageDescriptionEnrichmentResponseDto;
+    nsfwDetection: NsfwDetectionEnrichmentResponseDto;
+};
+export type AssetImageEnrichmentActionRequestDto = {
+    action: AssetImageEnrichmentAction;
+};
 export type AssetMetadataResponseDto = {
     /** Metadata key */
     key: string;
@@ -1651,6 +1702,7 @@ export type MetadataSearchDto = {
     encodedVideoPath?: string;
     /** Filter by asset ID */
     id?: string;
+    imageEnrichment?: ImageEnrichmentFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1772,6 +1824,7 @@ export type RandomSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
+    imageEnrichment?: ImageEnrichmentFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1836,6 +1889,7 @@ export type SmartSearchDto = {
     createdAfter?: string;
     /** Filter by creation date (before) */
     createdBefore?: string;
+    imageEnrichment?: ImageEnrichmentFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -1906,6 +1960,7 @@ export type StatisticsSearchDto = {
     createdBefore?: string;
     /** Filter by description text */
     description?: string;
+    imageEnrichment?: ImageEnrichmentFilter;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
@@ -4171,6 +4226,35 @@ export function editAsset({ id, assetEditsCreateDto }: {
     })));
 }
 /**
+ * Get image enrichment metadata
+ */
+export function getAssetImageEnrichment({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetImageEnrichmentResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/image-enrichment`, {
+        ...opts
+    }));
+}
+/**
+ * Update image enrichment metadata
+ */
+export function updateAssetImageEnrichment({ id, assetImageEnrichmentActionRequestDto }: {
+    id: string;
+    assetImageEnrichmentActionRequestDto: AssetImageEnrichmentActionRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetImageEnrichmentResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/image-enrichment`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetImageEnrichmentActionRequestDto
+    })));
+}
+/**
  * Get asset metadata
  */
 export function getAssetMetadata({ id }: {
@@ -5429,12 +5513,13 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, imageEnrichment, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    imageEnrichment?: ImageEnrichmentFilter;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -5471,6 +5556,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         country,
         createdAfter,
         createdBefore,
+        imageEnrichment,
         isEncoded,
         isFavorite,
         isMotion,
@@ -7023,6 +7109,25 @@ export enum MirrorAxis {
     Horizontal = "horizontal",
     Vertical = "vertical"
 }
+export enum Status {
+    Missing = "missing",
+    Success = "success",
+    Failed = "failed"
+}
+export enum Action {
+    Accepted = "accepted",
+    MarkedSafe = "marked-safe",
+    MarkedNsfw = "marked-nsfw"
+}
+export enum AssetImageEnrichmentAction {
+    RerunImageDescription = "rerun-image-description",
+    RerunNsfwDetection = "rerun-nsfw-detection",
+    AcceptNsfwResult = "accept-nsfw-result",
+    MarkNsfw = "mark-nsfw",
+    MarkSafe = "mark-safe",
+    ClearGeneratedDescription = "clear-generated-description",
+    ClearGeneratedTags = "clear-generated-tags"
+}
 export enum AssetMediaSize {
     Original = "original",
     Fullsize = "fullsize",
@@ -7165,6 +7270,16 @@ export enum JobName {
     NsfwDetectionQueueAll = "NsfwDetectionQueueAll",
     NsfwDetection = "NsfwDetection",
     WorkflowRun = "WorkflowRun"
+}
+export enum ImageEnrichmentFilter {
+    Nsfw = "nsfw",
+    NsfwReview = "nsfw-review",
+    NsfwReviewed = "nsfw-reviewed",
+    NsfwOverridden = "nsfw-overridden",
+    ImageDescriptionFailed = "image-description-failed",
+    NsfwDetectionFailed = "nsfw-detection-failed",
+    MissingImageDescription = "missing-image-description",
+    MissingNsfwDetection = "missing-nsfw-detection"
 }
 export enum SearchSuggestionType {
     Country = "country",

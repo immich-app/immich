@@ -2,6 +2,7 @@
   import SearchCameraSection from '$lib/components/shared-components/search-bar/SearchCameraSection.svelte';
   import SearchDateSection from '$lib/components/shared-components/search-bar/SearchDateSection.svelte';
   import SearchDisplaySection from '$lib/components/shared-components/search-bar/SearchDisplaySection.svelte';
+  import SearchImageEnrichmentSection from '$lib/components/shared-components/search-bar/SearchImageEnrichmentSection.svelte';
   import SearchLocationSection from '$lib/components/shared-components/search-bar/SearchLocationSection.svelte';
   import SearchMediaSection from '$lib/components/shared-components/search-bar/SearchMediaSection.svelte';
   import SearchPeopleSection from '$lib/components/shared-components/search-bar/SearchPeopleSection.svelte';
@@ -92,6 +93,7 @@
             ? MediaType.Video
             : MediaType.All,
       rating: searchQuery.rating,
+      imageEnrichment: searchQuery.imageEnrichment,
     };
   };
 
@@ -114,6 +116,7 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      imageEnrichment: '',
     };
   };
 
@@ -148,6 +151,7 @@
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
+      imageEnrichment: filter.imageEnrichment || undefined,
     };
 
     onClose(payload);
@@ -195,6 +199,10 @@
         <!-- RATING -->
         {#if authManager.authenticated && authManager.preferences.ratings.enabled}
           <SearchRatingsSection bind:rating={filter.rating} />
+        {/if}
+
+        {#if authManager.authenticated && authManager.user.isAdmin}
+          <SearchImageEnrichmentSection bind:imageEnrichment={filter.imageEnrichment} />
         {/if}
 
         <div class="grid gap-x-5 gap-y-10 md:grid-cols-2">

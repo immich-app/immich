@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import DetailPanelDate from '$lib/components/asset-viewer/DetailPanelDate.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/DetailPanelDescription.svelte';
+  import DetailPanelImageEnrichment from '$lib/components/asset-viewer/DetailPanelImageEnrichment.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/DetailPanelLocation.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/DetailPanelStarRating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/DetailPanelTags.svelte';
@@ -148,6 +149,12 @@
     {/if}
 
     <DetailPanelDescription {asset} {isOwner} />
+    <DetailPanelImageEnrichment
+      {asset}
+      {isOwner}
+      isAdmin={authManager.user.isAdmin}
+      onAssetRefresh={(updatedAsset) => (asset = updatedAsset)}
+    />
     <DetailPanelRating {asset} {isOwner} />
     <DetailPanelPeople {asset} {isOwner} {previousRoute} />
 

@@ -36,6 +36,7 @@
     type AssetResponseDto,
     getPerson,
     getTagById,
+    ImageEnrichmentFilter,
     type MetadataSearchDto,
     searchAssets,
     searchSmart,
@@ -187,8 +188,41 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      imageEnrichment: $t('image_enrichment'),
     };
     return keyMap[key] || key;
+  }
+
+  function getHumanReadableImageEnrichmentFilter(filter: string) {
+    switch (filter) {
+      case ImageEnrichmentFilter.Nsfw: {
+        return $t('image_enrichment_filter_nsfw');
+      }
+      case ImageEnrichmentFilter.NsfwReview: {
+        return $t('image_enrichment_filter_nsfw_review');
+      }
+      case ImageEnrichmentFilter.NsfwReviewed: {
+        return $t('image_enrichment_filter_nsfw_reviewed');
+      }
+      case ImageEnrichmentFilter.NsfwOverridden: {
+        return $t('image_enrichment_filter_nsfw_overridden');
+      }
+      case ImageEnrichmentFilter.ImageDescriptionFailed: {
+        return $t('image_enrichment_filter_description_failed');
+      }
+      case ImageEnrichmentFilter.NsfwDetectionFailed: {
+        return $t('image_enrichment_filter_nsfw_failed');
+      }
+      case ImageEnrichmentFilter.MissingImageDescription: {
+        return $t('image_enrichment_filter_missing_description');
+      }
+      case ImageEnrichmentFilter.MissingNsfwDetection: {
+        return $t('image_enrichment_filter_missing_nsfw');
+      }
+      default: {
+        return filter;
+      }
+    }
   }
 
   async function getPersonName(personIds: string[]) {
@@ -269,6 +303,8 @@
               {/await}
             {:else if searchKey === 'rating'}
               {$t('rating_count', { values: { count: value ?? 0 } })}
+            {:else if searchKey === 'imageEnrichment' && typeof value === 'string'}
+              {getHumanReadableImageEnrichmentFilter(value)}
             {:else if value === null || value === ''}
               {$t('unknown')}
             {:else}

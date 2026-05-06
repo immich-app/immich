@@ -15,6 +15,23 @@ For an existing library, enable and backfill one task at a time:
 
 New uploads are queued automatically after thumbnail generation when the relevant setting is enabled.
 
+## Review and Repair
+
+Admins can review enrichment results from the asset detail panel. The `Image enrichment` section shows the stored model status, model name, NSFW score, labels, review state, and last error when a task fails.
+
+Available single-asset repair actions are:
+
+- Rerun image descriptions and tags.
+- Rerun NSFW detection.
+- Accept the current NSFW classifier result.
+- Mark an asset as safe or NSFW using a private review override.
+- Clear the generated `AI description:` block without removing user-written description text.
+- Clear generated tags from the asset without deleting the tag definitions.
+
+Review overrides are stored in private enrichment metadata and become the effective NSFW source of truth for hiding. Generated tags remain visible search metadata only.
+
+Admins can also use the search filter modal to find enrichment review sets, including NSFW assets, assets needing NSFW review, reviewed or overridden NSFW assets, failed enrichment jobs, and image assets missing description or NSFW results. If `Hide detected NSFW assets` is enabled, unlock the locked folder PIN session before searching hidden NSFW review sets.
+
 ## Descriptions and Tags
 
 When description and tag generation is enabled, Immich sends the asset preview image to the machine learning service and stores the model result as private enrichment metadata. Immich then applies visible metadata according to the admin settings:
