@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetMetadataKey, AssetVisibility } from 'src/enum';
+import { AssetMetadataKey, AssetType, AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -98,6 +98,44 @@ describe(TimelineService.name, () => {
       await expect(sut.getTimeBuckets(factory.auth({ user: { id: user.id } }), {})).resolves.toEqual([
         { count: 5, timeBucket: '2020-01-01' },
       ]);
+    });
+
+    it('should hide NSFW Live Photo motion IDs from hidden timeline buckets', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const localDateTime = new Date('2020-01-15T12:00:00.000Z');
+
+      const { asset: safeMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      const { asset: nsfwMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      const { asset: safePhoto } = await ctx.newAsset({
+        ownerId: user.id,
+        localDateTime,
+        livePhotoVideoId: safeMotion.id,
+      });
+      const { asset: nsfwMotionPhoto } = await ctx.newAsset({
+        ownerId: user.id,
+        localDateTime,
+        livePhotoVideoId: nsfwMotion.id,
+      });
+
+      for (const assetId of [safePhoto.id, nsfwMotionPhoto.id]) {
+        await ctx.newExif({ assetId, make: 'Canon' });
+      }
+      await ctx.newMetadata({
+        assetId: nsfwMotion.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      const hiddenBucket = JSON.parse(await sut.getTimeBucket(hiddenAuth, { timeBucket: '2020-01-01' }));
+      expect(hiddenBucket.id).toEqual([safePhoto.id, nsfwMotionPhoto.id]);
+      expect(hiddenBucket.livePhotoVideoId).toEqual([safeMotion.id, null]);
+
+      const visibleBucket = JSON.parse(
+        await sut.getTimeBucket(factory.auth({ user: { id: user.id } }), { timeBucket: '2020-01-01' }),
+      );
+      expect(visibleBucket.livePhotoVideoId).toEqual([safeMotion.id, nsfwMotion.id]);
     });
 
     it('should return error if time bucket is requested with partners asset and archived', async () => {

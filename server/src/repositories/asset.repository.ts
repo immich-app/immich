@@ -29,6 +29,7 @@ import {
   anyUuid,
   asUuid,
   hasPeople,
+  nsfwAssetIdExists,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -784,6 +785,11 @@ export class AssetRepository {
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const order = options.order ?? 'desc';
+    const livePhotoVideoId = options.excludeNsfw
+      ? sql`case when ${nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId'))} then null else asset."livePhotoVideoId" end`.as(
+          'livePhotoVideoId',
+        )
+      : 'asset.livePhotoVideoId';
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -796,7 +802,7 @@ export class AssetRepository {
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
-            'asset.livePhotoVideoId',
+            livePhotoVideoId,
             sql`extract(epoch from (asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
               'localOffsetHours',
             ),

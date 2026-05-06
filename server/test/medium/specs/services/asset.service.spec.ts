@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetMetadataKey, AssetStatus, JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
@@ -118,6 +118,33 @@ describe(AssetService.name, () => {
       );
 
       await expect(albumRepository.getAssetIds(album.id, assetIds)).resolves.toEqual(new Set(assetIds));
+    });
+
+    it('should hide NSFW Live Photo motion IDs from asset responses', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+
+      const { asset: safeMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      const { asset: nsfwMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      const { asset: safePhoto } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: safeMotion.id });
+      const { asset: nsfwMotionPhoto } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: nsfwMotion.id });
+
+      await ctx.newMetadata({
+        assetId: nsfwMotion.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      await expect(sut.get(hiddenAuth, safePhoto.id)).resolves.toEqual(
+        expect.objectContaining({ livePhotoVideoId: safeMotion.id }),
+      );
+      await expect(sut.get(hiddenAuth, nsfwMotionPhoto.id)).resolves.toEqual(
+        expect.objectContaining({ livePhotoVideoId: null }),
+      );
+      await expect(sut.get(factory.auth({ user: { id: user.id } }), nsfwMotionPhoto.id)).resolves.toEqual(
+        expect.objectContaining({ livePhotoVideoId: nsfwMotion.id }),
+      );
     });
   });
 

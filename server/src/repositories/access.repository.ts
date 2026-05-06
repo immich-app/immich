@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { asUuid, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
+import { asUuid, nsfwAssetIdExists, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -160,6 +160,9 @@ class AssetAccess {
       .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .crossJoin('target')
       .select(['asset.id', 'asset.livePhotoVideoId'])
+      .$if(!!hideNsfwAssets, (qb) =>
+        qb.select(nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId')).as('isLivePhotoVideoNsfw')),
+      )
       .where((eb) =>
         eb.or([
           eb('asset.id', '=', sql<string>`any(target.ids)`),
@@ -176,7 +179,11 @@ class AssetAccess {
           if (asset.id && assetIds.has(asset.id)) {
             allowedIds.add(asset.id);
           }
-          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+          if (
+            asset.livePhotoVideoId &&
+            assetIds.has(asset.livePhotoVideoId) &&
+            !(hideNsfwAssets && asset.isLivePhotoVideoNsfw)
+          ) {
             allowedIds.add(asset.livePhotoVideoId);
           }
         }
@@ -259,6 +266,12 @@ class AssetAccess {
         'albumAssets.id as albumAssetId',
         'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
       ])
+      .$if(!!hideNsfwAssets, (qb) =>
+        qb.select([
+          nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId')).as('isAssetLivePhotoVideoNsfw'),
+          nsfwAssetIdExists(sql.ref('albumAssets.livePhotoVideoId')).as('isAlbumAssetLivePhotoVideoNsfw'),
+        ]),
+      )
       .where('shared_link.id', '=', sharedLinkId)
       .where(
         sql`array["asset"."id", "asset"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
@@ -274,13 +287,21 @@ class AssetAccess {
           if (row.assetId && assetIds.has(row.assetId)) {
             allowedIds.add(row.assetId);
           }
-          if (row.assetLivePhotoVideoId && assetIds.has(row.assetLivePhotoVideoId)) {
+          if (
+            row.assetLivePhotoVideoId &&
+            assetIds.has(row.assetLivePhotoVideoId) &&
+            !(hideNsfwAssets && row.isAssetLivePhotoVideoNsfw)
+          ) {
             allowedIds.add(row.assetLivePhotoVideoId);
           }
           if (row.albumAssetId && assetIds.has(row.albumAssetId)) {
             allowedIds.add(row.albumAssetId);
           }
-          if (row.albumAssetLivePhotoVideoId && assetIds.has(row.albumAssetLivePhotoVideoId)) {
+          if (
+            row.albumAssetLivePhotoVideoId &&
+            assetIds.has(row.albumAssetLivePhotoVideoId) &&
+            !(hideNsfwAssets && row.isAlbumAssetLivePhotoVideoNsfw)
+          ) {
             allowedIds.add(row.albumAssetLivePhotoVideoId);
           }
         }

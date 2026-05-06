@@ -78,6 +78,13 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
+    if (auth.hideNsfwAssets && asset.livePhotoVideoId) {
+      const nsfwMotionAssetIds = await this.assetRepository.getNsfwAssetIds([asset.livePhotoVideoId]);
+      if (nsfwMotionAssetIds.has(asset.livePhotoVideoId)) {
+        asset.livePhotoVideoId = null;
+      }
+    }
+
     if (auth.sharedLink && !auth.sharedLink.showExif) {
       return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
     }

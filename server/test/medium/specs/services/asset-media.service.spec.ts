@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetFileType, AssetMetadataKey, SharedLinkType } from 'src/enum';
+import { AlbumUserRole, AssetFileType, AssetMetadataKey, AssetType, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -439,6 +439,70 @@ describe(AssetService.name, () => {
       await expect(sut.downloadOriginal(auth, tagOnly.id, {})).resolves.toEqual(
         expect.objectContaining({ path: tagOnly.originalPath }),
       );
+    });
+
+    it('should hide NSFW Live Photo motion assets granted through safe photo membership', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { user: albumViewer } = await ctx.newUser();
+
+      const { asset: safeMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      const { asset: nsfwMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      const { asset: safePhoto } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: safeMotion.id });
+      const { asset: nsfwMotionPhoto } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: nsfwMotion.id });
+
+      await ctx.newMetadata({
+        assetId: nsfwMotion.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [safePhoto.id, nsfwMotionPhoto.id]);
+      await ctx.newAlbumUser({ albumId: album.id, userId: albumViewer.id, role: AlbumUserRole.Viewer });
+      const sharedLink = await ctx.get(SharedLinkRepository).create({
+        key: randomBytes(16),
+        id: factory.uuid(),
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: false,
+        type: SharedLinkType.Individual,
+        assetIds: [safePhoto.id, nsfwMotionPhoto.id],
+      });
+      const albumSharedLink = await ctx.get(SharedLinkRepository).create({
+        key: randomBytes(16),
+        id: factory.uuid(),
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: false,
+        type: SharedLinkType.Album,
+        albumId: album.id,
+      });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      await expect(sut.downloadOriginal(hiddenAuth, safeMotion.id, {})).resolves.toEqual(
+        expect.objectContaining({ path: safeMotion.originalPath }),
+      );
+      await expect(sut.downloadOriginal(hiddenAuth, nsfwMotion.id, {})).rejects.toThrow(
+        'Not found or no asset.download access',
+      );
+
+      const hiddenAlbumViewerAuth = {
+        ...factory.auth({ user: { id: albumViewer.id } }),
+        hideNsfwAssets: true,
+      };
+      await expect(sut.downloadOriginal(hiddenAlbumViewerAuth, safeMotion.id, {})).resolves.toEqual(
+        expect.objectContaining({ path: safeMotion.originalPath }),
+      );
+      await expect(sut.downloadOriginal(hiddenAlbumViewerAuth, nsfwMotion.id, {})).rejects.toThrow(
+        'Not found or no asset.download access',
+      );
+
+      await expect(sut.downloadOriginal({ user, sharedLink, hideNsfwAssets: true }, nsfwMotion.id, {})).rejects.toThrow(
+        'Not found or no asset.download access',
+      );
+      await expect(
+        sut.downloadOriginal({ user, sharedLink: albumSharedLink, hideNsfwAssets: true }, nsfwMotion.id, {}),
+      ).rejects.toThrow('Not found or no asset.download access');
     });
 
     it('should return original thumbnail by default when both exist', async () => {
