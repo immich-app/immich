@@ -14,12 +14,12 @@ jobs:
       pull-requests: write
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@433085f27f7e8ac3b09283a260e69eb7dff1e856 # create-workflow-token-action-v1.0.3
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
+      - uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'preview-status'
@@ -32,7 +32,7 @@ jobs:
       pull-requests: write
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@433085f27f7e8ac3b09283a260e69eb7dff1e856 # create-workflow-token-action-v1.0.3
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
@@ -48,14 +48,14 @@ jobs:
               name: 'preview'
             })
 
-      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
+      - uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         if: ${{ github.event.pull_request.head.repo.fork }}
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'preview-status'
           message: 'PRs from forks cannot have preview environments.'
 
-      - uses: mshick/add-pr-comment@64b8e914979889d746c99dea15a76e77ef64580a # v3.10.0
+      - uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           github-token: ${{ steps.token.outputs.token }}
