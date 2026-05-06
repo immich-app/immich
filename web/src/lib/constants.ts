@@ -91,7 +91,13 @@ export enum QueryType {
   OCR = 'ocr',
 }
 
-export const validQueryTypes = new Set([QueryType.SMART, QueryType.METADATA, QueryType.DESCRIPTION, QueryType.FULL_PATH, QueryType.OCR]);
+export const validQueryTypes = new Set([
+  QueryType.SMART,
+  QueryType.METADATA,
+  QueryType.DESCRIPTION,
+  QueryType.FULL_PATH,
+  QueryType.OCR,
+]);
 
 export const locales = [
   { code: 'af-ZA', name: 'Afrikaans (South Africa)' },
