@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
+import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AssetMetadataKey, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -753,5 +754,53 @@ describe(SharedLinkService.name, () => {
     });
 
     await expect(sut.getMine({ user, sharedLink }, [])).resolves.toHaveProperty('assets', []);
+  });
+
+  it('should not remove hidden NSFW assets from individual shared links in hidden mode', async () => {
+    const { sut, ctx } = setup(await getKyselyDB());
+
+    const { user } = await ctx.newUser();
+    const auth = factory.auth({ user });
+    const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+    await Promise.all([
+      ctx.newExif({ assetId: visible.id, make: 'Canon' }),
+      ctx.newExif({ assetId: unreviewedNsfw.id, make: 'Canon' }),
+      ctx.newExif({ assetId: tagOnly.id, make: 'Canon' }),
+      ctx.newMetadata({
+        assetId: unreviewedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      }),
+    ]);
+
+    const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+    await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+    const sharedLink = await ctx.get(SharedLinkRepository).create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: [visible.id, unreviewedNsfw.id, tagOnly.id],
+    });
+
+    await expect(
+      sut.removeAssets({ ...auth, hideNsfwAssets: true }, sharedLink.id, {
+        assetIds: [visible.id, unreviewedNsfw.id, tagOnly.id],
+      }),
+    ).resolves.toEqual([
+      { assetId: visible.id, success: true },
+      { assetId: unreviewedNsfw.id, success: false, error: AssetIdErrorReason.NO_PERMISSION },
+      { assetId: tagOnly.id, success: true },
+    ]);
+
+    await expect(sut.get(auth, sharedLink.id)).resolves.toEqual(
+      expect.objectContaining({
+        assets: [expect.objectContaining({ id: unreviewedNsfw.id })],
+      }),
+    );
   });
 });

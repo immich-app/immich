@@ -80,9 +80,14 @@ export const removeAssets = async (
   // check if the user can always remove from the parent album, memory, etc.
   const canAlwaysRemove = await checkAccess(access, { auth, permission: dto.canAlwaysRemove, ids: [dto.parentId] });
   const existingAssetIds = await bulk.getAssetIds(dto.parentId, dto.assetIds);
-  const allowedAssetIds = canAlwaysRemove.has(dto.parentId)
-    ? existingAssetIds
-    : await checkAccess(access, { auth, permission: Permission.AssetShare, ids: existingAssetIds });
+  const allowedAssetIds =
+    canAlwaysRemove.has(dto.parentId) && !auth.hideNsfwAssets
+      ? existingAssetIds
+      : await checkAccess(access, {
+          auth,
+          permission: auth.hideNsfwAssets ? Permission.AssetRead : Permission.AssetShare,
+          ids: existingAssetIds,
+        });
 
   const results: BulkIdResponseDto[] = [];
   for (const assetId of dto.assetIds) {

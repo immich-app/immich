@@ -202,18 +202,30 @@ export class SharedLinkService extends BaseService {
       throw new BadRequestException('Invalid shared link type');
     }
 
-    const removedAssetIds = await this.sharedLinkAssetRepository.remove(id, dto.assetIds);
+    const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
+    const allowedAssetIds = auth.hideNsfwAssets
+      ? await this.checkAccess({ auth, permission: Permission.AssetRead, ids: existingAssetIds })
+      : existingAssetIds;
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const wasRemoved = removedAssetIds.find((id) => id === assetId);
-      if (!wasRemoved) {
+      if (!existingAssetIds.has(assetId)) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
         continue;
       }
 
+      if (!allowedAssetIds.has(assetId)) {
+        results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
+        continue;
+      }
+
       results.push({ assetId, success: true });
-      sharedLink.assets = sharedLink.assets.filter((asset) => asset.id !== assetId);
+    }
+
+    const removedAssetIds = results.filter(({ success }) => success).map(({ assetId }) => assetId);
+    if (removedAssetIds.length > 0) {
+      await this.sharedLinkAssetRepository.remove(id, removedAssetIds);
+      sharedLink.assets = sharedLink.assets.filter((asset) => !removedAssetIds.includes(asset.id));
     }
 
     await this.sharedLinkRepository.update(sharedLink);

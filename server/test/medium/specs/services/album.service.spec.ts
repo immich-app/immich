@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AssetMetadataKey } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
@@ -151,6 +152,40 @@ describe(AlbumService.name, () => {
       const elevatedMarkers = await sut.getMapMarkers(factory.auth({ user: { id: user.id } }), album.id);
       expect(elevatedMarkers.map(({ id }) => id)).toEqual(
         expect.arrayContaining([visible.id, unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id]),
+      );
+    });
+  });
+
+  describe('removeAssets', () => {
+    it('does not remove hidden NSFW assets from album membership in hidden mode', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const albumRepository = ctx.get(AlbumRepository);
+      const { user } = await ctx.newUser();
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [visible.id, unreviewedNsfw.id, tagOnly.id]);
+
+      await ctx.newMetadata({
+        assetId: unreviewedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+      const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+      await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      await expect(
+        sut.removeAssets(hiddenAuth, album.id, { ids: [visible.id, unreviewedNsfw.id, tagOnly.id] }),
+      ).resolves.toEqual([
+        { id: visible.id, success: true },
+        { id: unreviewedNsfw.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+        { id: tagOnly.id, success: true },
+      ]);
+
+      await expect(albumRepository.getAssetIds(album.id, [visible.id, unreviewedNsfw.id, tagOnly.id])).resolves.toEqual(
+        new Set([unreviewedNsfw.id]),
       );
     });
   });

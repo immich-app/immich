@@ -349,7 +349,7 @@ describe(SharedLinkService.name, () => {
         { assetId: 'asset-2', success: false, error: AssetIdErrorReason.NOT_FOUND },
       ]);
 
-      expect(mocks.sharedLinkAsset.remove).toHaveBeenCalledWith(sharedLink.id, [asset.id, 'asset-2']);
+      expect(mocks.sharedLinkAsset.remove).toHaveBeenCalledWith(sharedLink.id, [asset.id]);
       expect(mocks.sharedLink.update).toHaveBeenCalledWith(expect.objectContaining({ assets: [] }));
     });
   });
