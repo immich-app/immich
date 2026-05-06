@@ -3,8 +3,13 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch to release from (must be main or release/*)'
+        required: true
+        default: 'main'
+        type: string
       serverBump:
-        description: 'Bump server version'
+        description: 'Bump server version (only patch allowed on release/* branches)'
         required: true
         default: 'false'
         type: choice
@@ -29,10 +34,31 @@ concurrency:
 permissions: {}
 
 jobs:
+  validate_inputs:
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Validate branch and bump combination
+        env:
+          BRANCH: ${{ inputs.branch }}
+          SERVER_BUMP: ${{ inputs.serverBump }}
+        run: |
+          set -euo pipefail
+          if [[ "$BRANCH" != "main" && "$BRANCH" != release/* ]]; then
+            echo "::error::branch must be 'main' or start with 'release/' (got '$BRANCH')"
+            exit 1
+          fi
+          if [[ "$BRANCH" != "main" && "$SERVER_BUMP" != "false" && "$SERVER_BUMP" != "patch" ]]; then
+            echo "::error::only 'patch' (or 'false') serverBump is allowed on '$BRANCH'"
+            exit 1
+          fi
+
   merge_translations:
+    needs: [validate_inputs]
     uses: ./.github/workflows/merge-translations.yml
     with:
-      skip: ${{ inputs.skipTranslations }}
+      # Weblate tracks main only, so skip translations when releasing from a release/* branch.
+      skip: ${{ inputs.skipTranslations || inputs.branch != 'main' }}
     permissions:
       pull-requests: write
     secrets:
@@ -60,7 +86,7 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: true
-          ref: main
+          ref: ${{ inputs.branch }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
@@ -94,6 +120,10 @@ jobs:
           push: true
 
   build_mobile:
+    # Mobile build numbers are monotonic per store; releasing from a release/* branch
+    # would collide with build numbers already shipped from main. Skip mobile on patch
+    # releases — handle mobile patches on main instead.
+    if: ${{ inputs.branch == 'main' }}
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
     permissions:
@@ -118,6 +148,8 @@ jobs:
   prepare_release:
     runs-on: ubuntu-latest
     needs: [build_mobile, bump_version]
+    # Run even when build_mobile is skipped (patch release from release/* branch).
+    if: ${{ always() && needs.bump_version.result == 'success' && (needs.build_mobile.result == 'success' || needs.build_mobile.result == 'skipped') }}
     permissions:
       actions: read # To download the app artifact
       # No content permissions are needed because it uses the app-token
@@ -134,26 +166,83 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
+          ref: ${{ needs.bump_version.outputs.ref }}
 
       - name: Download APK
+        if: ${{ needs.build_mobile.result == 'success' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-apk-signed
           github-token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Assemble release assets
+        id: assets
+        env:
+          HAS_APK: ${{ needs.build_mobile.result == 'success' }}
+        run: |
+          {
+            echo 'files<<EOF'
+            echo 'docker/docker-compose.yml'
+            echo 'docker/docker-compose.rootless.yml'
+            echo 'docker/example.env'
+            echo 'docker/hwaccel.ml.yml'
+            echo 'docker/hwaccel.transcoding.yml'
+            echo 'docker/prometheus.yml'
+            if [[ "$HAS_APK" == "true" ]]; then
+              echo '*.apk'
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create draft release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           draft: true
           tag_name: ${{ needs.bump_version.outputs.version }}
+          target_commitish: ${{ inputs.branch }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
           body_path: misc/release/notes.tmpl
-          files: |
-            docker/docker-compose.yml
-            docker/docker-compose.rootless.yml
-            docker/example.env
-            docker/hwaccel.ml.yml
-            docker/hwaccel.transcoding.yml
-            docker/prometheus.yml
-            *.apk
+          files: ${{ steps.assets.outputs.files }}
+
+  backport_archived_versions:
+    # When releasing from a release/* branch, the archived-versions.json update
+    # lives on that branch only. Open a PR to mirror the new entry onto main so
+    # main's docs keep a complete archive list.
+    if: ${{ inputs.branch != 'main' && needs.bump_version.result == 'success' }}
+    runs-on: ubuntu-latest
+    needs: [bump_version, prepare_release]
+    permissions: {} # uses the app token
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
+          ref: main
+
+      - name: Update archived versions on main
+        env:
+          VERSION: ${{ needs.bump_version.outputs.version }}
+        run: ./misc/release/archive-version.js "${VERSION#v}"
+
+      - name: Open backport PR
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          branch: backport/archived-versions-${{ needs.bump_version.outputs.version }}
+          base: main
+          commit-message: 'chore(docs): archive ${{ needs.bump_version.outputs.version }}'
+          title: 'chore(docs): archive ${{ needs.bump_version.outputs.version }}'
+          body: |
+            Backports the `archived-versions.json` entry for ${{ needs.bump_version.outputs.version }},
+            released from `${{ inputs.branch }}`, so main's docs archive list stays complete.
+          add-paths: docs/static/archived-versions.json
+          delete-branch: true
