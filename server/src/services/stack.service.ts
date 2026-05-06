@@ -9,10 +9,13 @@ import { UUIDAssetIDParamDto } from 'src/validation';
 @Injectable()
 export class StackService extends BaseService {
   async search(auth: AuthDto, dto: StackSearchDto): Promise<StackResponseDto[]> {
-    const stacks = await this.stackRepository.search({
+    const options = this.nsfwOptions(auth);
+    const query = {
       ownerId: auth.user.id,
       primaryAssetId: dto.primaryAssetId,
-    });
+      ...options,
+    };
+    const stacks = await this.stackRepository.search(query);
 
     return stacks.map((stack) => mapStack(stack, { auth }));
   }
@@ -29,18 +32,22 @@ export class StackService extends BaseService {
 
   async get(auth: AuthDto, id: string): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.StackRead, ids: [id] });
-    const stack = await this.findOrFail(id);
+    const stack = await this.findOrFail(id, this.nsfwOptions(auth));
     return mapStack(stack, { auth });
   }
 
   async update(auth: AuthDto, id: string, dto: StackUpdateDto): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.StackUpdate, ids: [id] });
-    const stack = await this.findOrFail(id);
+    const stack = await this.findOrFail(id, this.nsfwOptions(auth));
     if (dto.primaryAssetId && !stack.assets.some(({ id }) => id === dto.primaryAssetId)) {
       throw new BadRequestException('Primary asset must be in the stack');
     }
 
-    const updatedStack = await this.stackRepository.update(id, { id, primaryAssetId: dto.primaryAssetId });
+    const options = this.nsfwOptions(auth);
+    const update = { id, primaryAssetId: dto.primaryAssetId };
+    const updatedStack = options
+      ? await this.stackRepository.update(id, update, options)
+      : await this.stackRepository.update(id, update);
 
     await this.eventRepository.emit('StackUpdate', { stackId: id, userId: auth.user.id });
 
@@ -77,12 +84,16 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
   }
 
-  private async findOrFail(id: string) {
-    const stack = await this.stackRepository.getById(id);
+  private async findOrFail(id: string, options?: { excludeNsfw: true }) {
+    const stack = options ? await this.stackRepository.getById(id, options) : await this.stackRepository.getById(id);
     if (!stack) {
       throw new Error('Asset stack not found');
     }
 
     return stack;
+  }
+
+  private nsfwOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? ({ excludeNsfw: true } as const) : undefined;
   }
 }

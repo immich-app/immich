@@ -60,6 +60,15 @@ describe(DuplicateService.name, () => {
       ]);
     });
 
+    it('should hide private NSFW duplicate assets when requested', async () => {
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
+      mocks.duplicateRepository.getAll.mockResolvedValue([]);
+
+      await sut.getDuplicates({ ...authStub.admin, hideNsfwAssets: true });
+
+      expect(mocks.duplicateRepository.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { excludeNsfw: true });
+    });
+
     it('should return suggestedKeepAssetIds based on file size', async () => {
       const smallAsset = AssetFactory.from().exif({ fileSizeInByte: 1000 }).build();
       const largeAsset = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
@@ -231,6 +240,31 @@ describe(DuplicateService.name, () => {
           error: BulkIdErrorReason.NOT_FOUND,
         },
       ]);
+    });
+
+    it('should resolve only visible duplicate assets when NSFW assets are hidden', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset as unknown as MapAsset],
+      });
+
+      await expect(
+        sut.resolve(
+          { ...authStub.admin, hideNsfwAssets: true },
+          {
+            groups: [{ duplicateId: 'group-1', keepAssetIds: [asset.id], trashAssetIds: [] }],
+          },
+        ),
+      ).resolves.toEqual([{ id: 'group-1', success: true }]);
+
+      expect(mocks.access.duplicate.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['group-1']),
+        true,
+      );
+      expect(mocks.duplicateRepository.get).toHaveBeenCalledWith('group-1', { excludeNsfw: true });
     });
 
     it('should skip when keepAssetIds contains non-member', async () => {

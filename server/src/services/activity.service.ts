@@ -24,6 +24,7 @@ export class ActivityService extends BaseService {
       albumId: dto.albumId,
       assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
       isLiked: dto.type && dto.type === ReactionType.LIKE,
+      ...this.nsfwOptions(auth),
     });
 
     return activities.map((activity) => mapActivity(activity));
@@ -31,17 +32,25 @@ export class ActivityService extends BaseService {
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
-    return await this.activityRepository.getStatistics({ albumId: dto.albumId, assetId: dto.assetId });
+    return await this.activityRepository.getStatistics({
+      albumId: dto.albumId,
+      assetId: dto.assetId,
+      ...this.nsfwOptions(auth),
+    });
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
     await this.requireAccess({ auth, permission: Permission.ActivityCreate, ids: [dto.albumId] });
+    if (auth.hideNsfwAssets && dto.assetId) {
+      await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.assetId] });
+    }
 
     const common = {
       userId: auth.user.id,
       assetId: dto.assetId,
       albumId: dto.albumId,
     };
+    const searchCommon = { ...common, ...this.nsfwOptions(auth) };
 
     let activity: Activity | undefined;
     let duplicate = false;
@@ -49,7 +58,7 @@ export class ActivityService extends BaseService {
     if (dto.type === ReactionType.LIKE) {
       delete dto.comment;
       [activity] = await this.activityRepository.search({
-        ...common,
+        ...searchCommon,
         // `null` will search for an album like
         assetId: dto.assetId ?? null,
         isLiked: true,
@@ -71,5 +80,9 @@ export class ActivityService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ActivityDelete, ids: [id] });
     await this.activityRepository.delete(id);
+  }
+
+  private nsfwOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? { excludeNsfw: true } : {};
   }
 }

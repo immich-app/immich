@@ -9,6 +9,11 @@ import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
+import { withoutNsfwAssets } from 'src/utils/database';
+
+type MemoryPrivacyOptions = {
+  excludeNsfw?: boolean;
+};
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
@@ -29,7 +34,7 @@ export class MemoryRepository implements IBulkAsset {
       .execute();
   }
 
-  searchBuilder(ownerId: string, dto: MemorySearchDto) {
+  searchBuilder(ownerId: string, dto: MemorySearchDto, options: MemoryPrivacyOptions = {}) {
     return this.db
       .selectFrom('memory')
       .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
@@ -40,25 +45,49 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
-      .where('ownerId', '=', ownerId);
+      .where('ownerId', '=', ownerId)
+      .$if(!!options.excludeNsfw, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb.not((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('memory_asset')
+                  .select('memory_asset.memoriesId')
+                  .whereRef('memory_asset.memoriesId', '=', 'memory.id'),
+              ),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('memory_asset')
+                .innerJoin('asset', 'asset.id', 'memory_asset.assetId')
+                .select('memory_asset.memoriesId')
+                .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+                .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                .where('asset.deletedAt', 'is', null)
+                .$call(withoutNsfwAssets),
+            ),
+          ]),
+        ),
+      );
   }
 
   @GenerateSql(
-    { params: [DummyValue.UUID, {}] },
-    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+    { params: [DummyValue.UUID, {}, { excludeNsfw: true }] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }, { excludeNsfw: true }] },
   )
-  statistics(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilder(ownerId, dto)
+  statistics(ownerId: string, dto: MemorySearchDto, options: MemoryPrivacyOptions = {}) {
+    return this.searchBuilder(ownerId, dto, options)
       .select((qb) => qb.fn.countAll<number>().as('total'))
       .executeTakeFirstOrThrow();
   }
 
   @GenerateSql(
-    { params: [DummyValue.UUID, {}] },
-    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+    { params: [DummyValue.UUID, {}, { excludeNsfw: true }] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }, { excludeNsfw: true }] },
   )
-  search(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilder(ownerId, dto)
+  search(ownerId: string, dto: MemorySearchDto, options: MemoryPrivacyOptions = {}) {
+    return this.searchBuilder(ownerId, dto, options)
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -68,7 +97,8 @@ export class MemoryRepository implements IBulkAsset {
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
+            .where('asset.deletedAt', 'is', null)
+            .$if(!!options.excludeNsfw, withoutNsfwAssets),
         ).as('assets'),
       )
       .selectAll('memory')
@@ -81,9 +111,9 @@ export class MemoryRepository implements IBulkAsset {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  get(id: string) {
-    return this.getByIdBuilder(id).executeTakeFirst();
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  get(id: string, options: MemoryPrivacyOptions = {}) {
+    return this.getByIdBuilder(id, options).executeTakeFirst();
   }
 
   async create(memory: Insertable<MemoryTable>, assetIds: Set<string>) {
@@ -101,10 +131,10 @@ export class MemoryRepository implements IBulkAsset {
     return this.getByIdBuilder(id).executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { ownerId: DummyValue.UUID, isSaved: true }] })
-  async update(id: string, memory: Updateable<MemoryTable>) {
+  @GenerateSql({ params: [DummyValue.UUID, { ownerId: DummyValue.UUID, isSaved: true }, { excludeNsfw: true }] })
+  async update(id: string, memory: Updateable<MemoryTable>, options: MemoryPrivacyOptions = {}) {
     await this.db.updateTable('memory').set(memory).where('id', '=', id).execute();
-    return this.getByIdBuilder(id).executeTakeFirstOrThrow();
+    return this.getByIdBuilder(id, options).executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -151,7 +181,7 @@ export class MemoryRepository implements IBulkAsset {
     await this.db.deleteFrom('memory_asset').where('memoriesId', '=', id).where('assetId', 'in', assetIds).execute();
   }
 
-  private getByIdBuilder(id: string) {
+  private getByIdBuilder(id: string, options: MemoryPrivacyOptions = {}) {
     return this.db
       .selectFrom('memory')
       .selectAll('memory')
@@ -164,10 +194,35 @@ export class MemoryRepository implements IBulkAsset {
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
+            .where('asset.deletedAt', 'is', null)
+            .$if(!!options.excludeNsfw, withoutNsfwAssets),
         ).as('assets'),
       )
       .where('id', '=', id)
-      .where('deletedAt', 'is', null);
+      .where('deletedAt', 'is', null)
+      .$if(!!options.excludeNsfw, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb.not((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('memory_asset')
+                  .select('memory_asset.memoriesId')
+                  .whereRef('memory_asset.memoriesId', '=', 'memory.id'),
+              ),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('memory_asset')
+                .innerJoin('asset', 'asset.id', 'memory_asset.assetId')
+                .select('memory_asset.memoriesId')
+                .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+                .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                .where('asset.deletedAt', 'is', null)
+                .$call(withoutNsfwAssets),
+            ),
+          ]),
+        ),
+      );
   }
 }

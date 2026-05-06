@@ -54,12 +54,56 @@ select
           "asset"."deletedAt" is null
           and "asset"."stackId" = "stack"."id"
           and "asset"."visibility" in ('archive', 'timeline')
+          and not exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $1
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
       ) as agg
   ) as "assets"
 from
   "stack"
+  inner join "asset" as "primaryAsset" on "primaryAsset"."id" = "stack"."primaryAssetId"
 where
-  "stack"."ownerId" = $1
+  "stack"."ownerId" = $2
+  and "primaryAsset"."deletedAt" is null
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "primaryAsset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- StackRepository.delete
 delete from "stack"
@@ -139,12 +183,56 @@ select
           "asset"."deletedAt" is null
           and "asset"."stackId" = "stack"."id"
           and "asset"."visibility" in ('archive', 'timeline')
+          and not exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $1
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
       ) as agg
   ) as "assets"
 from
   "stack"
+  inner join "asset" as "primaryAsset" on "primaryAsset"."id" = "stack"."primaryAssetId"
 where
-  "id" = $1::uuid
+  "id" = $2::uuid
+  and "primaryAsset"."deletedAt" is null
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "primaryAsset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- StackRepository.getForAssetRemoval
 select

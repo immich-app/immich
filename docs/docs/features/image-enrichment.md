@@ -48,6 +48,7 @@ Use this checklist when validating image enrichment against a real library or lo
 10. With `Hide detected NSFW assets` enabled, confirm non-elevated sync streams exclude private NSFW assets, album asset relations, person face thumbnails, partner assets, stacks, and generic asset metadata.
 11. Unlock the locked-folder PIN session and confirm the same assets and album memberships are returned again without changing album membership.
 12. Confirm people views hide people who only appear in private NSFW assets, person statistics count only visible non-NSFW assets, and person thumbnails are not served when the feature face comes from a private NSFW asset.
+13. Confirm derived views such as duplicate groups, memories, stacks, and album activity do not expose hidden NSFW asset IDs, counts, thumbnails, or grouped assets.
 
 ## Descriptions and Tags
 
@@ -73,6 +74,8 @@ When `Hide detected NSFW assets` is enabled, privately flagged NSFW assets are h
 Sync streams apply the same private NSFW filter to asset payloads, album asset payloads, album-to-asset relations, exif, edit, face, memory, partner, and stack payloads, album thumbnails, person face thumbnails, and generic asset metadata. Private `ml-enrichment` metadata is never exposed through generic asset metadata sync.
 
 People views apply the private NSFW filter to visible faces. A person who only appears in private NSFW assets is hidden from non-elevated sessions. If a person also appears in non-NSFW assets, the person can still be returned, but person statistics count only non-NSFW assets and the person thumbnail endpoint will not serve a thumbnail generated from a private NSFW feature face.
+
+Derived data surfaces apply the same private NSFW filter. Duplicate groups are hidden unless at least two non-NSFW assets remain visible, memory cards are hidden when all linked assets are private NSFW, stack APIs omit private NSFW child assets and deny stacks whose primary asset is private NSFW, and album activity/comment statistics exclude private NSFW asset activity.
 
 Album membership is preserved; hiding only changes what is returned to a non-elevated session. Sync clients should treat hidden assets as privacy-filtered results, not album membership removals.
 

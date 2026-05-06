@@ -79,6 +79,23 @@ describe(MemoryService.name, () => {
       expect(mocks.memory.get).toHaveBeenCalledWith(memory.id);
       expect(mocks.access.memory.checkOwnerAccess).toHaveBeenCalledWith(memory.ownerId, new Set([memory.id]));
     });
+
+    it('should hide private NSFW memory assets when requested', async () => {
+      const userId = newUuid();
+      const memory = MemoryFactory.create({ ownerId: userId });
+
+      mocks.memory.get.mockResolvedValue(getForMemory(memory));
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+
+      await expect(
+        sut.get({ ...factory.auth({ user: { id: userId } }), hideNsfwAssets: true }, memory.id),
+      ).resolves.toMatchObject({
+        id: memory.id,
+      });
+
+      expect(mocks.memory.get).toHaveBeenCalledWith(memory.id, { excludeNsfw: true });
+      expect(mocks.access.memory.checkOwnerAccess).toHaveBeenCalledWith(memory.ownerId, new Set([memory.id]), true);
+    });
   });
 
   describe('create', () => {
@@ -166,6 +183,21 @@ describe(MemoryService.name, () => {
       await expect(sut.update(factory.auth(), memory.id, { isSaved: true })).resolves.toBeDefined();
 
       expect(mocks.memory.update).toHaveBeenCalledWith(memory.id, expect.objectContaining({ isSaved: true }));
+    });
+
+    it('should hide private NSFW assets from updated memory responses when requested', async () => {
+      const memory = MemoryFactory.create();
+
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+      mocks.memory.update.mockResolvedValue(getForMemory(memory));
+
+      await expect(
+        sut.update({ ...factory.auth(), hideNsfwAssets: true }, memory.id, { isSaved: true }),
+      ).resolves.toBeDefined();
+
+      expect(mocks.memory.update).toHaveBeenCalledWith(memory.id, expect.objectContaining({ isSaved: true }), {
+        excludeNsfw: true,
+      });
     });
   });
 

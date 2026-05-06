@@ -8,6 +8,48 @@ from
 where
   "deletedAt" is null
   and "ownerId" = $1
+  and (
+    not exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+    )
+    or exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+        inner join "asset" on "asset"."id" = "memory_asset"."assetId"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $2
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 
 -- MemoryRepository.statistics (date filter)
 select
@@ -25,6 +67,48 @@ where
   )
   and "deletedAt" is null
   and "ownerId" = $3
+  and (
+    not exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+    )
+    or exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+        inner join "asset" on "asset"."id" = "memory_asset"."assetId"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $4
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 
 -- MemoryRepository.search
 select
@@ -42,6 +126,27 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
+          and not exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $1
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -51,7 +156,49 @@ from
   "memory"
 where
   "deletedAt" is null
-  and "ownerId" = $1
+  and "ownerId" = $2
+  and (
+    not exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+    )
+    or exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+        inner join "asset" on "asset"."id" = "memory_asset"."assetId"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $3
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 order by
   "memoryAt" desc
 
@@ -71,6 +218,27 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
+          and not exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $1
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -81,14 +249,56 @@ from
 where
   (
     "showAt" is null
-    or "showAt" <= $1
+    or "showAt" <= $2
   )
   and (
     "hideAt" is null
-    or "hideAt" >= $2
+    or "hideAt" >= $3
   )
   and "deletedAt" is null
-  and "ownerId" = $3
+  and "ownerId" = $4
+  and (
+    not exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+    )
+    or exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+        inner join "asset" on "asset"."id" = "memory_asset"."assetId"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $5
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 order by
   "memoryAt" desc
 
@@ -109,6 +319,27 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
+          and not exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $1
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -116,8 +347,50 @@ select
 from
   "memory"
 where
-  "id" = $1
+  "id" = $2
   and "deletedAt" is null
+  and (
+    not exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+    )
+    or exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+        inner join "asset" on "asset"."id" = "memory_asset"."assetId"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $3
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 
 -- MemoryRepository.update
 update "memory"
@@ -126,31 +399,6 @@ set
   "isSaved" = $2
 where
   "id" = $3
-select
-  "memory".*,
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "asset".*
-        from
-          "asset"
-          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
-        where
-          "memory_asset"."memoriesId" = "memory"."id"
-          and "asset"."visibility" = 'timeline'
-          and "asset"."deletedAt" is null
-        order by
-          "asset"."fileCreatedAt" asc
-      ) as agg
-  ) as "assets"
-from
-  "memory"
-where
-  "id" = $1
-  and "deletedAt" is null
 
 -- MemoryRepository.delete
 delete from "memory"

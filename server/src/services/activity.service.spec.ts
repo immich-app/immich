@@ -56,6 +56,19 @@ describe(ActivityService.name, () => {
 
       expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: false });
     });
+
+    it('should hide private NSFW asset activities when requested', async () => {
+      const [albumId, assetId, userId] = newUuids();
+
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
+      mocks.activity.search.mockResolvedValue([]);
+
+      await expect(
+        sut.getAll({ ...AuthFactory.create({ id: userId }), hideNsfwAssets: true }, { assetId, albumId }),
+      ).resolves.toEqual([]);
+
+      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: undefined, excludeNsfw: true });
+    });
   });
 
   describe('getStatistics', () => {
@@ -69,6 +82,22 @@ describe(ActivityService.name, () => {
         comments: 1,
         likes: 3,
       });
+    });
+
+    it('should hide private NSFW asset statistics when requested', async () => {
+      const [albumId, assetId] = newUuids();
+
+      mocks.activity.getStatistics.mockResolvedValue({ comments: 0, likes: 0 });
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
+
+      await expect(
+        sut.getStatistics({ ...AuthFactory.create(), hideNsfwAssets: true }, { assetId, albumId }),
+      ).resolves.toEqual({
+        comments: 0,
+        likes: 0,
+      });
+
+      expect(mocks.activity.getStatistics).toHaveBeenCalledWith({ albumId, assetId, excludeNsfw: true });
     });
   });
 
@@ -99,6 +128,34 @@ describe(ActivityService.name, () => {
         userId: activity.userId,
         albumId: activity.albumId,
         assetId: activity.assetId,
+        comment: 'comment',
+        isLiked: false,
+      });
+    });
+
+    it('should require asset read access before creating hidden-mode asset activity', async () => {
+      const [albumId, assetId, userId] = newUuids();
+      const activity = ActivityFactory.create({ albumId, assetId, userId });
+
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.activity.create.mockResolvedValue(getForActivity(activity));
+
+      await sut.create(
+        { ...AuthFactory.create({ id: userId }), hideNsfwAssets: true },
+        {
+          albumId,
+          assetId,
+          type: ReactionType.COMMENT,
+          comment: 'comment',
+        },
+      );
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userId, new Set([assetId]), undefined, true);
+      expect(mocks.activity.create).toHaveBeenCalledWith({
+        userId,
+        albumId,
+        assetId,
         comment: 'comment',
         isLiked: false,
       });

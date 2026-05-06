@@ -9,7 +9,7 @@ import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
+import { anyUuid, asUuid, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
 
 // Maximum number of candidate duplicates to return from vector search
 const DUPLICATE_SEARCH_LIMIT = 64;
@@ -28,12 +28,16 @@ interface DuplicateMergeOptions {
   sourceIds: string[];
 }
 
+type DuplicatePrivacyOptions = {
+  excludeNsfw?: boolean;
+};
+
 @Injectable()
 export class DuplicateRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(userId: string) {
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  getAll(userId: string, options: DuplicatePrivacyOptions = {}) {
     return (
       this.db
         .with('duplicates', (qb) =>
@@ -78,6 +82,7 @@ export class DuplicateRepository {
             .$narrowType<{ duplicateId: NotNull }>()
             .where('asset.deletedAt', 'is', null)
             .where('asset.stackId', 'is', null)
+            .$if(!!options.excludeNsfw, withoutNsfwAssets)
             .groupBy('asset.duplicateId'),
         )
         .selectFrom('duplicates')
@@ -111,8 +116,11 @@ export class DuplicateRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  async get(duplicateId: string): Promise<{ duplicateId: string; assets: MapAsset[] } | undefined> {
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  async get(
+    duplicateId: string,
+    options: DuplicatePrivacyOptions = {},
+  ): Promise<{ duplicateId: string; assets: MapAsset[] } | undefined> {
     const result = await this.db
       .selectFrom('asset')
       .$call(withDefaultVisibility)
@@ -144,6 +152,7 @@ export class DuplicateRepository {
       .where('asset.duplicateId', '=', asUuid(duplicateId))
       .where('asset.deletedAt', 'is', null)
       .where('asset.stackId', 'is', null)
+      .$if(!!options.excludeNsfw, withoutNsfwAssets)
       .groupBy('asset.duplicateId')
       .executeTakeFirst();
 

@@ -70,17 +70,23 @@ export class MemoryService extends BaseService {
   }
 
   async search(auth: AuthDto, dto: MemorySearchDto) {
-    const memories = await this.memoryRepository.search(auth.user.id, dto);
+    const options = this.nsfwOptions(auth);
+    const memories = options
+      ? await this.memoryRepository.search(auth.user.id, dto, options)
+      : await this.memoryRepository.search(auth.user.id, dto);
     return memories.map((memory) => mapMemory(memory, auth));
   }
 
   statistics(auth: AuthDto, dto: MemorySearchDto) {
-    return this.memoryRepository.statistics(auth.user.id, dto);
+    const options = this.nsfwOptions(auth);
+    return options
+      ? this.memoryRepository.statistics(auth.user.id, dto, options)
+      : this.memoryRepository.statistics(auth.user.id, dto);
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
     await this.requireAccess({ auth, permission: Permission.MemoryRead, ids: [id] });
-    const memory = await this.findOrFail(id);
+    const memory = await this.findOrFail(id, this.nsfwOptions(auth));
     return mapMemory(memory, auth);
   }
 
@@ -113,11 +119,15 @@ export class MemoryService extends BaseService {
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
     await this.requireAccess({ auth, permission: Permission.MemoryUpdate, ids: [id] });
 
-    const memory = await this.memoryRepository.update(id, {
+    const update = {
       isSaved: dto.isSaved,
       memoryAt: dto.memoryAt,
       seenAt: dto.seenAt,
-    });
+    };
+    const options = this.nsfwOptions(auth);
+    const memory = options
+      ? await this.memoryRepository.update(id, update, options)
+      : await this.memoryRepository.update(id, update);
 
     return mapMemory(memory, auth);
   }
@@ -159,11 +169,15 @@ export class MemoryService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string) {
-    const memory = await this.memoryRepository.get(id);
+  private async findOrFail(id: string, options?: { excludeNsfw: true }) {
+    const memory = options ? await this.memoryRepository.get(id, options) : await this.memoryRepository.get(id);
     if (!memory) {
       throw new BadRequestException('Memory not found');
     }
     return memory;
+  }
+
+  private nsfwOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? ({ excludeNsfw: true } as const) : undefined;
   }
 }

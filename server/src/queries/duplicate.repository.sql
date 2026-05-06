@@ -46,6 +46,27 @@ with
       and "asset"."duplicateId" is not null
       and "asset"."deletedAt" is null
       and "asset"."stackId" is null
+      and not exists (
+        select
+          1
+        from
+          asset_metadata
+        where
+          asset_metadata."assetId" = "asset"."id"
+          and asset_metadata.key = $2
+          and coalesce(
+            (
+              asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+            )::boolean,
+            (
+              asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+            )::boolean,
+            (
+              asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+            )::boolean,
+            false
+          ) = true
+      )
     group by
       "asset"."duplicateId"
   )
@@ -54,7 +75,7 @@ select
 from
   "duplicates"
 where
-  json_array_length("assets") > $2
+  json_array_length("assets") > $3
 
 -- DuplicateRepository.cleanupSingletonGroups
 with
@@ -124,6 +145,27 @@ where
   and "asset"."duplicateId" = $1::uuid
   and "asset"."deletedAt" is null
   and "asset"."stackId" is null
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $2
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 group by
   "asset"."duplicateId"
 
@@ -174,7 +216,7 @@ from
   "cte"
 where
   "cte"."distance" <= $6
-commit
+rollback
 
 -- DuplicateRepository.merge
 update "asset"

@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { AssetFileType, MemoryType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, MemoryType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -34,9 +34,68 @@ const setup = (db?: Kysely<DB>) => {
   });
 };
 
+const nsfwMetadata = (isNsfw: boolean) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: [] },
+  },
+});
+
 describe(MemoryService.name, () => {
   beforeEach(async () => {
     defaultDatabase = await getKyselyDB();
+  });
+
+  describe('nsfw privacy', () => {
+    it('hides NSFW-only memories and filters mixed memory assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: mixedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: hiddenOnlyNsfw } = await ctx.newAsset({ ownerId: user.id });
+
+      await Promise.all([
+        ctx.newMetadata({
+          assetId: mixedNsfw.id,
+          key: AssetMetadataKey.MlEnrichment,
+          value: nsfwMetadata(true),
+        }),
+        ctx.newMetadata({
+          assetId: hiddenOnlyNsfw.id,
+          key: AssetMetadataKey.MlEnrichment,
+          value: nsfwMetadata(true),
+        }),
+      ]);
+
+      const { memory: mixedMemory } = await ctx.newMemory({ ownerId: user.id });
+      const { memory: hiddenOnlyMemory } = await ctx.newMemory({ ownerId: user.id });
+      await Promise.all([
+        ctx.newMemoryAsset({ memoryId: mixedMemory.id, assetId: visible.id }),
+        ctx.newMemoryAsset({ memoryId: mixedMemory.id, assetId: mixedNsfw.id }),
+        ctx.newMemoryAsset({ memoryId: hiddenOnlyMemory.id, assetId: hiddenOnlyNsfw.id }),
+      ]);
+
+      const hiddenAuth = { ...auth, hideNsfwAssets: true };
+      const hiddenResults = await sut.search(hiddenAuth, {});
+      expect(hiddenResults).toEqual([
+        expect.objectContaining({
+          id: mixedMemory.id,
+          assets: [expect.objectContaining({ id: visible.id })],
+        }),
+      ]);
+      expect(await sut.statistics(hiddenAuth, {})).toEqual({ total: 1 });
+      await expect(sut.get(hiddenAuth, hiddenOnlyMemory.id)).rejects.toThrow('Not found or no memory.read access');
+
+      const elevatedResults = await sut.search(auth, {});
+      expect(elevatedResults.map(({ id }) => id)).toEqual(
+        expect.arrayContaining([mixedMemory.id, hiddenOnlyMemory.id]),
+      );
+      expect(elevatedResults.find(({ id }) => id === mixedMemory.id)?.assets.map(({ id }) => id)).toEqual(
+        expect.arrayContaining([visible.id, mixedNsfw.id]),
+      );
+    });
   });
 
   describe('create', () => {

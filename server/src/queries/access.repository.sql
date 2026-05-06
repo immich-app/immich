@@ -5,15 +5,40 @@ select
   "activity"."id"
 from
   "activity"
+  left join "asset" on "asset"."id" = "activity"."assetId"
+  and "asset"."deletedAt" is null
 where
   "activity"."id" in ($1)
   and "activity"."userId" = $2
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- AccessRepository.activity.checkAlbumOwnerAccess
 select
   "activity"."id"
 from
   "activity"
+  left join "asset" on "asset"."id" = "activity"."assetId"
+  and "asset"."deletedAt" is null
   inner join "album" on "activity"."albumId" = "album"."id"
   and "album"."deletedAt" is null
   inner join "album_user" on "album"."id" = "album_user"."albumId"
@@ -21,6 +46,27 @@ from
   and "album_user"."userId" = $1::uuid
 where
   "activity"."id" in ($2)
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- AccessRepository.activity.checkCreateAccess
 select
@@ -167,6 +213,33 @@ where
   "asset"."duplicateId" in ($1)
   and "asset"."ownerId" = $2
   and "asset"."deletedAt" is null
+  and "asset"."visibility" in ('archive', 'timeline')
+  and "asset"."stackId" is null
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
+group by
+  "asset"."duplicateId"
+having
+  count("asset"."id") > $4
 
 -- AccessRepository.memory.checkOwnerAccess
 select
@@ -177,6 +250,48 @@ where
   "memory"."id" in ($1)
   and "memory"."ownerId" = $2
   and "memory"."deletedAt" is null
+  and (
+    not exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+    )
+    or exists (
+      select
+        "memory_asset"."memoriesId"
+      from
+        "memory_asset"
+        inner join "asset" on "asset"."id" = "memory_asset"."assetId"
+      where
+        "memory_asset"."memoriesId" = "memory"."id"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $3
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 
 -- AccessRepository.notification.checkOwnerAccess
 select
@@ -298,9 +413,32 @@ select
   "stack"."id"
 from
   "stack"
+  inner join "asset" as "primaryAsset" on "primaryAsset"."id" = "stack"."primaryAssetId"
 where
   "stack"."id" in ($1)
   and "stack"."ownerId" = $2
+  and "primaryAsset"."deletedAt" is null
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "primaryAsset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- AccessRepository.tag.checkOwnerAccess
 select

@@ -7,22 +7,23 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { ActivityTable } from 'src/schema/tables/activity.table';
-import { asUuid, dummy } from 'src/utils/database';
+import { asUuid, dummy, withoutNsfwAssets } from 'src/utils/database';
 
 export interface ActivitySearch {
   albumId?: string;
   assetId?: string | null;
   userId?: string;
   isLiked?: boolean;
+  excludeNsfw?: boolean;
 }
 
 @Injectable()
 export class ActivityRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID, excludeNsfw: true }] })
   search(options: ActivitySearch) {
-    const { userId, assetId, albumId, isLiked } = options;
+    const { userId, assetId, albumId, isLiked, excludeNsfw } = options;
 
     return this.db
       .selectFrom('activity')
@@ -42,6 +43,7 @@ export class ActivityRepository {
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
       .where('asset.deletedAt', 'is', null)
+      .$if(!!excludeNsfw, withoutNsfwAssets)
       .orderBy('activity.createdAt', 'asc')
       .execute();
   }
@@ -66,13 +68,15 @@ export class ActivityRepository {
     await this.db.deleteFrom('activity').where('id', '=', asUuid(id)).execute();
   }
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID, excludeNsfw: true }] })
   async getStatistics({
     albumId,
     assetId,
+    excludeNsfw,
   }: {
     albumId: string;
     assetId?: string;
+    excludeNsfw?: boolean;
   }): Promise<{ comments: number; likes: number }> {
     const result = await this.db
       .selectFrom('activity')
@@ -83,6 +87,7 @@ export class ActivityRepository {
       .innerJoin('user', (join) => join.onRef('user.id', '=', 'activity.userId').on('user.deletedAt', 'is', null))
       .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
+      .$if(!!excludeNsfw, withoutNsfwAssets)
       .where('activity.albumId', '=', albumId)
       .where(({ or, and, eb }) =>
         or([

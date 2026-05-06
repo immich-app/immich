@@ -4,36 +4,39 @@ import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { asUuid, withoutNsfwAssets } from 'src/utils/database';
+import { asUuid, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, activityIds: Set<string>) {
+  async checkOwnerAccess(userId: string, activityIds: Set<string>, hideNsfwAssets?: boolean) {
     if (activityIds.size === 0) {
       return new Set<string>();
     }
 
     return this.db
       .selectFrom('activity')
+      .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'activity.assetId').on('asset.deletedAt', 'is', null))
       .select('activity.id')
       .where('activity.id', 'in', [...activityIds])
       .where('activity.userId', '=', userId)
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>) {
+  async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>, hideNsfwAssets?: boolean) {
     if (activityIds.size === 0) {
       return new Set<string>();
     }
 
     return this.db
       .selectFrom('activity')
+      .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'activity.assetId').on('asset.deletedAt', 'is', null))
       .select('activity.id')
       .innerJoin('album', (join) => join.onRef('activity.albumId', '=', 'album.id').on('album.deletedAt', 'is', null))
       .innerJoin('album_user', (join) =>
@@ -43,6 +46,7 @@ class ActivityAccess {
           .on('album_user.userId', '=', asUuid(userId)),
       )
       .where('activity.id', 'in', [...activityIds])
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
@@ -308,9 +312,9 @@ class AuthDeviceAccess {
 class DuplicateAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, duplicateIds: Set<string>) {
+  async checkOwnerAccess(userId: string, duplicateIds: Set<string>, hideNsfwAssets?: boolean) {
     if (duplicateIds.size === 0) {
       return new Set<string>();
     }
@@ -321,7 +325,10 @@ class DuplicateAccess {
       .where('asset.duplicateId', 'in', [...duplicateIds])
       .where('asset.ownerId', '=', userId)
       .where('asset.deletedAt', 'is', null)
+      .$if(!!hideNsfwAssets, (qb) => qb.$call(withDefaultVisibility).where('asset.stackId', 'is', null))
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .$narrowType<{ duplicateId: NotNull }>()
+      .$if(!!hideNsfwAssets, (qb) => qb.groupBy('asset.duplicateId').having((eb) => eb.fn.count('asset.id'), '>', 1))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.duplicateId)));
   }
@@ -369,9 +376,9 @@ class SessionAccess {
 class StackAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, stackIds: Set<string>) {
+  async checkOwnerAccess(userId: string, stackIds: Set<string>, hideNsfwAssets?: boolean) {
     if (stackIds.size === 0) {
       return new Set<string>();
     }
@@ -381,6 +388,12 @@ class StackAccess {
       .select('stack.id')
       .where('stack.id', 'in', [...stackIds])
       .where('stack.ownerId', '=', userId)
+      .$if(!!hideNsfwAssets, (qb) =>
+        qb
+          .innerJoin('asset as primaryAsset', 'primaryAsset.id', 'stack.primaryAssetId')
+          .where('primaryAsset.deletedAt', 'is', null)
+          .$call((qb) => withoutNsfwAssets(qb, 'primaryAsset')),
+      )
       .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
@@ -409,9 +422,9 @@ class TimelineAccess {
 class MemoryAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, memoryIds: Set<string>) {
+  async checkOwnerAccess(userId: string, memoryIds: Set<string>, hideNsfwAssets?: boolean) {
     if (memoryIds.size === 0) {
       return new Set<string>();
     }
@@ -422,6 +435,30 @@ class MemoryAccess {
       .where('memory.id', 'in', [...memoryIds])
       .where('memory.ownerId', '=', userId)
       .where('memory.deletedAt', 'is', null)
+      .$if(!!hideNsfwAssets, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb.not((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('memory_asset')
+                  .select('memory_asset.memoriesId')
+                  .whereRef('memory_asset.memoriesId', '=', 'memory.id'),
+              ),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('memory_asset')
+                .innerJoin('asset', 'asset.id', 'memory_asset.assetId')
+                .select('memory_asset.memoriesId')
+                .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+                .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                .where('asset.deletedAt', 'is', null)
+                .$call(withoutNsfwAssets),
+            ),
+          ]),
+        ),
+      )
       .execute()
       .then((memories) => new Set(memories.map((memory) => memory.id)));
   }

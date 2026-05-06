@@ -35,6 +35,22 @@ describe(StackService.name, () => {
         primaryAssetId: asset.id,
       });
     });
+
+    it('should hide private NSFW stack assets when requested', async () => {
+      const auth = { ...AuthFactory.create(), hideNsfwAssets: true };
+      const asset = AssetFactory.from().exif().build();
+      const stack = StackFactory.from()
+        .primaryAsset(asset, (builder) => builder.exif())
+        .build();
+      mocks.stack.search.mockResolvedValue([getForStack(stack)]);
+
+      await sut.search(auth, { primaryAssetId: asset.id });
+      expect(mocks.stack.search).toHaveBeenCalledWith({
+        ownerId: auth.user.id,
+        primaryAssetId: asset.id,
+        excludeNsfw: true,
+      });
+    });
   });
 
   describe('create', () => {
@@ -111,6 +127,26 @@ describe(StackService.name, () => {
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith(stack.id);
     });
+
+    it('should hide private NSFW assets from stack detail when requested', async () => {
+      const auth = { ...AuthFactory.create(), hideNsfwAssets: true };
+      const [primaryAsset, asset] = [AssetFactory.from().exif().build(), AssetFactory.from().exif().build()];
+      const stack = StackFactory.from()
+        .primaryAsset(primaryAsset, (builder) => builder.exif())
+        .asset(asset, (builder) => builder.exif())
+        .build();
+
+      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stack.id]));
+      mocks.stack.getById.mockResolvedValue(getForStack(stack));
+
+      await expect(sut.get(auth, stack.id)).resolves.toEqual({
+        id: stack.id,
+        primaryAssetId: primaryAsset.id,
+        assets: [expect.objectContaining({ id: primaryAsset.id }), expect.objectContaining({ id: asset.id })],
+      });
+      expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([stack.id]), true);
+      expect(mocks.stack.getById).toHaveBeenCalledWith(stack.id, { excludeNsfw: true });
+    });
   });
 
   describe('update', () => {
@@ -174,6 +210,30 @@ describe(StackService.name, () => {
         stackId: stack.id,
         userId: auth.user.id,
       });
+    });
+
+    it('should hide private NSFW assets from updated stack responses when requested', async () => {
+      const auth = { ...AuthFactory.create(), hideNsfwAssets: true };
+      const [primaryAsset, asset] = [AssetFactory.from().exif().build(), AssetFactory.from().exif().build()];
+      const stack = StackFactory.from()
+        .primaryAsset(primaryAsset, (builder) => builder.exif())
+        .asset(asset, (builder) => builder.exif())
+        .build();
+
+      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set([stack.id]));
+      mocks.stack.getById.mockResolvedValue(getForStack(stack));
+      mocks.stack.update.mockResolvedValue(getForStack(stack));
+
+      await sut.update(auth, stack.id, { primaryAssetId: asset.id });
+
+      expect(mocks.stack.update).toHaveBeenCalledWith(
+        stack.id,
+        {
+          id: stack.id,
+          primaryAssetId: asset.id,
+        },
+        { excludeNsfw: true },
+      );
     });
   });
 

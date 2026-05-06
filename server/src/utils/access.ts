@@ -62,6 +62,31 @@ const checkPersonFaceOwnerAccess = (access: AccessRepository, auth: AuthDto, ids
     ? access.person.checkFaceOwnerAccess(auth.user.id, ids, true)
     : access.person.checkFaceOwnerAccess(auth.user.id, ids);
 
+const checkActivityOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.activity.checkOwnerAccess(auth.user.id, ids, true)
+    : access.activity.checkOwnerAccess(auth.user.id, ids);
+
+const checkActivityAlbumOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.activity.checkAlbumOwnerAccess(auth.user.id, ids, true)
+    : access.activity.checkAlbumOwnerAccess(auth.user.id, ids);
+
+const checkDuplicateOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.duplicate.checkOwnerAccess(auth.user.id, ids, true)
+    : access.duplicate.checkOwnerAccess(auth.user.id, ids);
+
+const checkMemoryOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.memory.checkOwnerAccess(auth.user.id, ids, true)
+    : access.memory.checkOwnerAccess(auth.user.id, ids);
+
+const checkStackOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.stack.checkOwnerAccess(auth.user.id, ids, true)
+    : access.stack.checkOwnerAccess(auth.user.id, ids);
+
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   if (!auth || (auth.sharedLink && !auth.sharedLink.allowUpload)) {
     throw new UnauthorizedException();
@@ -157,8 +182,8 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     // uses activity id
     case Permission.ActivityDelete: {
-      const isOwner = await access.activity.checkOwnerAccess(auth.user.id, ids);
-      const isAlbumOwner = await access.activity.checkAlbumOwnerAccess(auth.user.id, setDifference(ids, isOwner));
+      const isOwner = await checkActivityOwnerAccess(access, auth, ids);
+      const isAlbumOwner = await checkActivityAlbumOwnerAccess(access, auth, setDifference(ids, isOwner));
       return setUnion(isOwner, isAlbumOwner);
     }
 
@@ -287,7 +312,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.DuplicateRead:
     case Permission.DuplicateDelete: {
-      return access.duplicate.checkOwnerAccess(auth.user.id, ids);
+      return checkDuplicateOwnerAccess(access, auth, ids);
     }
 
     case Permission.AuthDeviceDelete: {
@@ -322,15 +347,15 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.MemoryRead: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
+      return checkMemoryOwnerAccess(access, auth, ids);
     }
 
     case Permission.MemoryUpdate: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
+      return checkMemoryOwnerAccess(access, auth, ids);
     }
 
     case Permission.MemoryDelete: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
+      return checkMemoryOwnerAccess(access, auth, ids);
     }
 
     case Permission.PersonCreate: {
@@ -360,15 +385,15 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.StackRead: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
+      return checkStackOwnerAccess(access, auth, ids);
     }
 
     case Permission.StackUpdate: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
+      return checkStackOwnerAccess(access, auth, ids);
     }
 
     case Permission.StackDelete: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
+      return checkStackOwnerAccess(access, auth, ids);
     }
 
     case Permission.WorkflowRead:

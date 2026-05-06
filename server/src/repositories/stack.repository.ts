@@ -6,14 +6,19 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { StackTable } from 'src/schema/tables/stack.table';
-import { asUuid, withDefaultVisibility } from 'src/utils/database';
+import { asUuid, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
 
 export interface StackSearch {
   ownerId: string;
   primaryAssetId?: string;
+  excludeNsfw?: boolean;
 }
 
-const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
+type StackPrivacyOptions = {
+  excludeNsfw?: boolean;
+};
+
+const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false, options: StackPrivacyOptions = {}) => {
   return jsonArrayFrom(
     eb
       .selectFrom('asset')
@@ -41,7 +46,8 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
       .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
       .where('asset.deletedAt', 'is', null)
       .whereRef('asset.stackId', '=', 'stack.id')
-      .$call(withDefaultVisibility),
+      .$call(withDefaultVisibility)
+      .$if(!!options.excludeNsfw, withoutNsfwAssets),
   ).as('assets');
 };
 
@@ -49,14 +55,20 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
 export class StackRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, excludeNsfw: true }] })
   search(query: StackSearch) {
     return this.db
       .selectFrom('stack')
       .selectAll('stack')
-      .select(withAssets)
+      .select((eb) => withAssets(eb, false, query))
       .where('stack.ownerId', '=', query.ownerId)
       .$if(!!query.primaryAssetId, (eb) => eb.where('stack.primaryAssetId', '=', query.primaryAssetId!))
+      .$if(!!query.excludeNsfw, (qb) =>
+        qb
+          .innerJoin('asset as primaryAsset', 'primaryAsset.id', 'stack.primaryAssetId')
+          .where('primaryAsset.deletedAt', 'is', null)
+          .$call((qb) => withoutNsfwAssets(qb, 'primaryAsset')),
+      )
       .execute();
   }
 
@@ -133,23 +145,29 @@ export class StackRepository {
     await this.db.deleteFrom('stack').where('id', 'in', ids).execute();
   }
 
-  update(id: string, entity: Updateable<StackTable>) {
+  update(id: string, entity: Updateable<StackTable>, options: StackPrivacyOptions = {}) {
     return this.db
       .updateTable('stack')
       .set(entity)
       .where('id', '=', asUuid(id))
       .returningAll('stack')
-      .returning((eb) => withAssets(eb, true))
+      .returning((eb) => withAssets(eb, true, options))
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string) {
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  getById(id: string, options: StackPrivacyOptions = {}) {
     return this.db
       .selectFrom('stack')
       .selectAll()
-      .select((eb) => withAssets(eb, true))
+      .select((eb) => withAssets(eb, true, options))
       .where('id', '=', asUuid(id))
+      .$if(!!options.excludeNsfw, (qb) =>
+        qb
+          .innerJoin('asset as primaryAsset', 'primaryAsset.id', 'stack.primaryAssetId')
+          .where('primaryAsset.deletedAt', 'is', null)
+          .$call((qb) => withoutNsfwAssets(qb, 'primaryAsset')),
+      )
       .executeTakeFirst();
   }
 

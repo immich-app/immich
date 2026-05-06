@@ -70,7 +70,7 @@ export class DuplicateService extends BaseService {
     // Clean up singleton groups (assets that are the only member of their duplicate group)
     await this.duplicateRepository.cleanupSingletonGroups(auth.user.id);
 
-    const duplicates = await this.duplicateRepository.getAll(auth.user.id);
+    const duplicates = await this.duplicateRepository.getAll(auth.user.id, this.nsfwOptions(auth));
     return duplicates.map(({ duplicateId, assets }) => {
       const mappedAssets = assets.map((asset) => mapAsset(asset, { auth }));
       return {
@@ -113,7 +113,7 @@ export class DuplicateService extends BaseService {
   private async resolveGroup(auth: AuthDto, group: DuplicateResolveGroupDto): Promise<BulkIdResponseDto> {
     const { duplicateId, keepAssetIds, trashAssetIds } = group;
 
-    const duplicateGroup = await this.duplicateRepository.get(duplicateId);
+    const duplicateGroup = await this.duplicateRepository.get(duplicateId, this.nsfwOptions(auth));
     if (!duplicateGroup) {
       return { id: duplicateId, success: false, error: BulkIdErrorReason.NOT_FOUND };
     }
@@ -296,6 +296,10 @@ export class DuplicateService extends BaseService {
     }
 
     return response;
+  }
+
+  private nsfwOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? { excludeNsfw: true } : {};
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
