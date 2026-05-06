@@ -3793,44 +3793,43 @@ describe(SharedSpaceService.name, () => {
       expect(result[0].type).toBe('person');
     });
 
-    it('should sort people by asset count descending', async () => {
+    it('should preserve the repository person order', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
       const person1 = factory.sharedSpacePerson({
         id: newUuid(),
         spaceId,
-        name: 'Many Photos',
+        name: 'Alice',
       });
       const person2 = factory.sharedSpacePerson({
         id: newUuid(),
         spaceId,
-        name: 'Some Photos',
+        name: 'Bob',
       });
       const person3 = factory.sharedSpacePerson({
         id: newUuid(),
         spaceId,
-        name: 'Few Photos',
+        name: 'Charlie',
       });
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
 
       mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ role: SharedSpaceRole.Viewer }));
       mocks.sharedSpace.getById.mockResolvedValue(space);
-      // Repository returns pre-sorted by asset count descending
       mocks.sharedSpace.getPersonsBySpaceId.mockResolvedValue([
         {
           ...person1,
           faceCount: 1,
-          assetCount: 10,
+          assetCount: 2,
         },
         {
           ...person2,
           faceCount: 1,
-          assetCount: 5,
+          assetCount: 10,
         },
         {
           ...person3,
           faceCount: 1,
-          assetCount: 2,
+          assetCount: 5,
         },
       ]);
       mocks.sharedSpace.getAliasesBySpaceAndUser.mockResolvedValue([]);
@@ -3838,12 +3837,8 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.getSpacePeople(auth, spaceId);
 
       expect(result).toHaveLength(3);
-      expect(result[0].name).toBe('Many Photos');
-      expect(result[0].assetCount).toBe(10);
-      expect(result[1].name).toBe('Some Photos');
-      expect(result[1].assetCount).toBe(5);
-      expect(result[2].name).toBe('Few Photos');
-      expect(result[2].assetCount).toBe(2);
+      expect(result.map((person) => person.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      expect(result.map((person) => person.assetCount)).toEqual([2, 10, 5]);
     });
 
     it('should exclude people without thumbnails', async () => {

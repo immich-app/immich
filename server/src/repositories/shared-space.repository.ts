@@ -679,12 +679,10 @@ export class SharedSpaceRepository {
           ),
         ),
       )
-      .orderBy(
-        sql`CASE WHEN shared_space_person.name != '' THEN 0
-             ELSE 1 END`,
-      )
-      .orderBy('shared_space_person.assetCount', 'desc')
       .orderBy(sql`NULLIF(shared_space_person.name, '')`, (om) => om.asc().nullsLast())
+      .orderBy(sql`CASE WHEN shared_space_person.name = '' THEN "shared_space_person"."assetCount" END`, (om) =>
+        om.desc().nullsLast(),
+      )
       .orderBy('shared_space_person.id')
       .$if(!!options.limit, (qb) => qb.limit(options.limit!))
       .$if(!!options.offset, (qb) => qb.offset(options.offset!))

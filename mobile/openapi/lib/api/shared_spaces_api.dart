@@ -706,7 +706,7 @@ class SharedSpacesApi {
   /// * [String] id (required):
   ///
   /// * [int] limit:
-  ///   Maximum number of people to return (sorted by asset count)
+  ///   Maximum number of people to return (named sorted alphabetically, unnamed by asset count)
   ///
   /// * [String] name:
   ///   Search by person name
@@ -778,7 +778,7 @@ class SharedSpacesApi {
   /// * [String] id (required):
   ///
   /// * [int] limit:
-  ///   Maximum number of people to return (sorted by asset count)
+  ///   Maximum number of people to return (named sorted alphabetically, unnamed by asset count)
   ///
   /// * [String] name:
   ///   Search by person name
@@ -822,7 +822,7 @@ class SharedSpacesApi {
   /// * [String] id (required):
   ///
   /// * [int] limit:
-  ///   Maximum number of people to return (sorted by asset count)
+  ///   Maximum number of people to return (named sorted alphabetically, unnamed by asset count)
   ///
   /// * [String] name:
   ///   Search by person name
@@ -894,7 +894,7 @@ class SharedSpacesApi {
   /// * [String] id (required):
   ///
   /// * [int] limit:
-  ///   Maximum number of people to return (sorted by asset count)
+  ///   Maximum number of people to return (named sorted alphabetically, unnamed by asset count)
   ///
   /// * [String] name:
   ///   Search by person name

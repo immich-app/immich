@@ -440,12 +440,10 @@ where
   "shared_space_person"."spaceId" = $1
   and "shared_space_person"."isHidden" = $2
 order by
-  CASE
-    WHEN shared_space_person.name != '' THEN 0
-    ELSE 1
-  END,
-  "shared_space_person"."assetCount" desc,
   NULLIF(shared_space_person.name, '') asc nulls last,
+  CASE
+    WHEN shared_space_person.name = '' THEN "shared_space_person"."assetCount"
+  END desc nulls last,
   "shared_space_person"."id"
 limit
   $3

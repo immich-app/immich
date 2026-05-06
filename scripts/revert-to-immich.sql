@@ -210,6 +210,7 @@ DELETE FROM "migration_overrides"
    'index_person_identityId_idx',
    'index_person_ownerId_identityId_key',
    'index_shared_space_person_identityId_spaceId_idx',
+   'index_shared_space_person_space_name_idx',
    'index_shared_space_person_spaceId_identityId_key',
    'trigger_asset_library_delete_audit',
    'trigger_classification_category_updatedAt',
@@ -342,6 +343,7 @@ DELETE FROM "kysely_migrations"
    '1778300000000-AddLibraryUserTable',
    '1778400000000-AddFaceIdentities',
    '1778500000000-AddSpacePersonRepresentativeFaceSource',
+   '1778600000000-SortSpacePeopleByNameIndex',
 
    -- Post-v2.7.5 upstream migrations pulled in by rebase. Paired with the
    -- schema rollbacks in step 7 above.
@@ -378,7 +380,8 @@ BEGIN
       OR "name" LIKE '%LibraryUser%'
       OR "name" LIKE '%AddAssetDuplicateChecksum%'
       OR "name" LIKE '%AddFaceIdentities%'
-      OR "name" LIKE '%AddSpacePersonRepresentativeFaceSource%';
+      OR "name" LIKE '%AddSpacePersonRepresentativeFaceSource%'
+      OR "name" LIKE '%SortSpacePeopleByNameIndex%';
   IF fork_rows_left > 0 THEN
     RAISE EXCEPTION 'revert-to-immich: % Gallery row(s) still present in kysely_migrations after cleanup — aborting.', fork_rows_left;
   END IF;

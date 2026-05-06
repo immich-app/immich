@@ -1465,7 +1465,7 @@ describe(SharedSpaceRepository.name, () => {
       expect(result[0].name).toBe('');
     });
 
-    it('should sort space persons tied on assetCount alphabetically by name', async () => {
+    it('should sort space persons alphabetically by name', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { space } = await ctx.newSharedSpace({ createdById: user.id });
@@ -1475,14 +1475,14 @@ describe(SharedSpaceRepository.name, () => {
         name: 'Charlie',
         representativeFaceId: null,
         type: 'person',
-        assetCount: 5,
+        assetCount: 10,
       });
       const alice = await sut.createPerson({
         spaceId: space.id,
         name: 'Alice',
         representativeFaceId: null,
         type: 'person',
-        assetCount: 5,
+        assetCount: 1,
       });
       const bob = await sut.createPerson({
         spaceId: space.id,
@@ -1497,7 +1497,7 @@ describe(SharedSpaceRepository.name, () => {
       expect(result.map((p) => p.id)).toEqual([alice.id, bob.id, charlie.id]);
     });
 
-    it('should sort unnamed space persons after named rows without private global fallback', async () => {
+    it('should sort unnamed space persons after named rows by asset count without private global fallback', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { space } = await ctx.newSharedSpace({ createdById: user.id });
@@ -1514,11 +1514,20 @@ describe(SharedSpaceRepository.name, () => {
         assetCount: 5,
       });
       const bob = await sut.createPerson({
+        id: '00000000-0000-4000-8000-000000000001',
         spaceId: space.id,
         name: '',
         representativeFaceId: bobFace.id,
         type: 'person',
-        assetCount: 5,
+        assetCount: 1,
+      });
+      const unnamedMany = await sut.createPerson({
+        id: 'ffffffff-ffff-4fff-bfff-ffffffffffff',
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 10,
       });
       const alice = await sut.createPerson({
         spaceId: space.id,
@@ -1530,7 +1539,7 @@ describe(SharedSpaceRepository.name, () => {
 
       const result = await sut.getPersonsBySpaceId(space.id, {});
 
-      expect(result.map((p) => p.id)).toEqual([alice.id, charlie.id, bob.id]);
+      expect(result.map((p) => p.id)).toEqual([alice.id, charlie.id, unnamedMany.id, bob.id]);
     });
   });
 

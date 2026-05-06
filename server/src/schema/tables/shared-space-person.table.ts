@@ -18,7 +18,10 @@ import { SharedSpaceTable } from 'src/schema/tables/shared-space.table';
 @Table('shared_space_person')
 @UpdatedAtTrigger('shared_space_person_updatedAt')
 @Index({ name: 'shared_space_person_spaceId_idx', columns: ['spaceId'] })
-@Index({ name: 'shared_space_person_space_count_idx', columns: ['spaceId', 'isHidden', 'assetCount'] })
+@Index({
+  name: 'shared_space_person_space_name_idx',
+  expression: `"spaceId", "isHidden", NULLIF("name", ''), (CASE WHEN "name" = '' THEN "assetCount" END) DESC, "id"`,
+})
 @Index({
   name: 'shared_space_person_spaceId_identityId_key',
   columns: ['spaceId', 'identityId'],
