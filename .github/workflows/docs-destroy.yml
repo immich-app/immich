@@ -29,7 +29,9 @@ jobs:
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@f16df2948c720c72059633eed723bbf5b3719ae2 # use-mise-action-v1.2.0
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
+        with:
+          github_token: ${{ steps.token.outputs.token }}
 
       - name: Destroy Docs Subdomain
         env:
