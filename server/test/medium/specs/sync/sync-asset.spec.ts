@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetMetadataKey, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetMetadataKey, AssetType, SyncEntityType, SyncRequestType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
@@ -164,5 +164,40 @@ describe(SyncEntityType.AssetV2, () => {
       .map(({ data }) => data.id);
 
     expect(elevatedAssetIds).toEqual(expect.arrayContaining([visible.id, nsfw.id, markedSafe.id, markedNsfw.id]));
+  });
+
+  it('should hide NSFW Live Photo motion IDs from non-elevated sync', async () => {
+    const { auth, user, ctx } = await setup();
+    const { asset: safeMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+    const { asset: nsfwMotion } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+    const { asset: safePhoto } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: safeMotion.id });
+    const { asset: nsfwMotionPhoto } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: nsfwMotion.id });
+
+    await ctx.newMetadata({
+      assetId: nsfwMotion.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true),
+    });
+
+    const hiddenResponse = await ctx.syncStream({ ...auth, hideNsfwAssets: true }, [SyncRequestType.AssetsV2]);
+    const hiddenAssets = hiddenResponse.filter(({ type }) => type === SyncEntityType.AssetV2).map(({ data }) => data);
+
+    expect(hiddenAssets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: safePhoto.id, livePhotoVideoId: safeMotion.id }),
+        expect.objectContaining({ id: nsfwMotionPhoto.id, livePhotoVideoId: null }),
+      ]),
+    );
+    expect(hiddenAssets.map(({ id }) => id)).not.toContain(nsfwMotion.id);
+
+    const elevatedResponse = await ctx.syncStream(auth, [SyncRequestType.AssetsV2]);
+    expect(elevatedResponse).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({ id: nsfwMotionPhoto.id, livePhotoVideoId: nsfwMotion.id }),
+          type: SyncEntityType.AssetV2,
+        }),
+      ]),
+    );
   });
 });

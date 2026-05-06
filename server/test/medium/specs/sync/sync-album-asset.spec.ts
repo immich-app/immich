@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AlbumUserRole, AssetMetadataKey, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AlbumUserRole, AssetMetadataKey, AssetType, SyncEntityType, SyncRequestType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
@@ -144,6 +144,46 @@ describe(SyncRequestType.AlbumAssetsV2, () => {
       .map(({ data }) => data.id);
 
     expect(elevatedAssetIds).toEqual(expect.arrayContaining([visible.id, nsfw.id]));
+  });
+
+  it('should hide NSFW Live Photo motion IDs from non-elevated album asset sync', async () => {
+    const { auth, ctx } = await setup();
+    const { user: owner } = await ctx.newUser();
+    const { asset: safeMotion } = await ctx.newAsset({ ownerId: owner.id, type: AssetType.Video });
+    const { asset: nsfwMotion } = await ctx.newAsset({ ownerId: owner.id, type: AssetType.Video });
+    const { asset: safePhoto } = await ctx.newAsset({ ownerId: owner.id, livePhotoVideoId: safeMotion.id });
+    const { asset: nsfwMotionPhoto } = await ctx.newAsset({ ownerId: owner.id, livePhotoVideoId: nsfwMotion.id });
+    const { album } = await ctx.newAlbum({ ownerId: owner.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: safePhoto.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: nsfwMotionPhoto.id });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+    await ctx.newMetadata({
+      assetId: nsfwMotion.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true),
+    });
+
+    const hiddenResponse = await ctx.syncStream({ ...auth, hideNsfwAssets: true }, [SyncRequestType.AlbumAssetsV2]);
+    const hiddenAssets = hiddenResponse
+      .filter(({ type }) => type === SyncEntityType.AlbumAssetCreateV2)
+      .map(({ data }) => data);
+
+    expect(hiddenAssets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: safePhoto.id, livePhotoVideoId: safeMotion.id }),
+        expect.objectContaining({ id: nsfwMotionPhoto.id, livePhotoVideoId: null }),
+      ]),
+    );
+
+    const elevatedResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    expect(elevatedResponse).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({ id: nsfwMotionPhoto.id, livePhotoVideoId: nsfwMotion.id }),
+          type: SyncEntityType.AlbumAssetCreateV2,
+        }),
+      ]),
+    );
   });
 
   it('should not sync album asset for unrelated user', async () => {

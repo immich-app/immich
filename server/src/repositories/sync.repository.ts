@@ -66,6 +66,18 @@ const personFaceAssetId = (excludeNsfw?: boolean) =>
       end`.as('faceAssetId')
     : sql<string | null>`person."faceAssetId"`.as('faceAssetId');
 
+const syncAssetColumns = columns.syncAsset.filter((column) => column !== 'asset.livePhotoVideoId');
+
+const syncLivePhotoVideoId = (excludeNsfw?: boolean) =>
+  excludeNsfw
+    ? sql<string | null>`case
+        when ${nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId'))} then null
+        else asset."livePhotoVideoId"
+      end`.as('livePhotoVideoId')
+    : sql<string | null>`asset."livePhotoVideoId"`.as('livePhotoVideoId');
+
+const syncAsset = (excludeNsfw?: boolean) => [...syncAssetColumns, syncLivePhotoVideoId(excludeNsfw)] as const;
+
 @Injectable()
 export class SyncRepository {
   album: AlbumSync;
@@ -219,7 +231,7 @@ class AlbumAssetSync extends BaseSync {
   getBackfill(options: SyncBackfillOptions, albumId: string) {
     return this.backfillQuery('album_asset', options)
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
-      .select(columns.syncAsset)
+      .select(syncAsset(options.excludeNsfw))
       .select('album_asset.updateId')
       .where('album_asset.albumId', '=', albumId)
       .$if(!!options.excludeNsfw, withoutNsfwAssets)
@@ -231,7 +243,7 @@ class AlbumAssetSync extends BaseSync {
     const userId = options.userId;
     return this.upsertQuery('asset', options)
       .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
-      .select(columns.syncAsset)
+      .select(syncAsset(options.excludeNsfw))
       .select('asset.updateId')
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
@@ -246,7 +258,7 @@ class AlbumAssetSync extends BaseSync {
     return this.upsertQuery('album_asset', options)
       .select('album_asset.updateId')
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
-      .select(columns.syncAsset)
+      .select(syncAsset(options.excludeNsfw))
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
       .$if(!!options.excludeNsfw, withoutNsfwAssets)
@@ -408,7 +420,7 @@ class AssetSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(syncAsset(options.excludeNsfw))
       .select('asset.updateId')
       .where('ownerId', '=', options.userId)
       .$if(!!options.excludeNsfw, withoutNsfwAssets)
@@ -648,7 +660,7 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(syncAsset(options.excludeNsfw))
       .select('asset.updateId')
       .where('asset.ownerId', '=', partnerId)
       .$if(!!options.excludeNsfw, withoutNsfwAssets)
@@ -668,7 +680,7 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(syncAsset(options.excludeNsfw))
       .select('asset.updateId')
       .where('asset.ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),

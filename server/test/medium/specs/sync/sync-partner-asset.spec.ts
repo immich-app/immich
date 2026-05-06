@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetMetadataKey, AssetType, SyncEntityType, SyncRequestType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -18,6 +18,13 @@ const setup = async (db?: Kysely<DB>) => {
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
+});
+
+const nsfwMetadata = (isNsfw: boolean) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: 0.99, labels: { explicit: 0.99 } },
+  },
 });
 
 describe(SyncRequestType.PartnerAssetsV2, () => {
@@ -175,6 +182,44 @@ describe(SyncRequestType.PartnerAssetsV2, () => {
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
+  });
+
+  it('should hide NSFW Live Photo motion IDs from non-elevated partner asset sync', async () => {
+    const { auth, ctx } = await setup();
+    const { user: partner } = await ctx.newUser();
+    const { asset: safeMotion } = await ctx.newAsset({ ownerId: partner.id, type: AssetType.Video });
+    const { asset: nsfwMotion } = await ctx.newAsset({ ownerId: partner.id, type: AssetType.Video });
+    const { asset: safePhoto } = await ctx.newAsset({ ownerId: partner.id, livePhotoVideoId: safeMotion.id });
+    const { asset: nsfwMotionPhoto } = await ctx.newAsset({ ownerId: partner.id, livePhotoVideoId: nsfwMotion.id });
+    await ctx.newPartner({ sharedById: partner.id, sharedWithId: auth.user.id });
+    await ctx.newMetadata({
+      assetId: nsfwMotion.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true),
+    });
+
+    const hiddenResponse = await ctx.syncStream({ ...auth, hideNsfwAssets: true }, [SyncRequestType.PartnerAssetsV2]);
+    const hiddenAssets = hiddenResponse
+      .filter(({ type }) => type === SyncEntityType.PartnerAssetV2)
+      .map(({ data }) => data);
+
+    expect(hiddenAssets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: safePhoto.id, livePhotoVideoId: safeMotion.id }),
+        expect.objectContaining({ id: nsfwMotionPhoto.id, livePhotoVideoId: null }),
+      ]),
+    );
+    expect(hiddenAssets.map(({ id }) => id)).not.toContain(nsfwMotion.id);
+
+    const elevatedResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
+    expect(elevatedResponse).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({ id: nsfwMotionPhoto.id, livePhotoVideoId: nsfwMotion.id }),
+          type: SyncEntityType.PartnerAssetV2,
+        }),
+      ]),
+    );
   });
 
   it('should backfill partner assets when a partner shared their library with you', async () => {
