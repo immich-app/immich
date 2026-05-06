@@ -9,6 +9,7 @@ run = "uv sync --locked"
 run = "uv run ruff check immich_ml"
 
 [tasks.test]
+depends = ["install --extra cpu"]
 run = "uv run pytest --cov=immich_ml --cov-report term-missing"
 
 [tasks.format]
@@ -16,3 +17,13 @@ run = "uv run ruff format immich_ml"
 
 [tasks.check]
 run = "uv run mypy --strict immich_ml/"
+
+[tasks.checklist]
+run = [
+  { task = ":install" },
+  { task = ":format" },
+  { task = ":lint" },
+  { task = ":check" },
+  { task = ":test" },
+]
+
