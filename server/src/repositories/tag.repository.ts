@@ -7,6 +7,11 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagTable } from 'src/schema/tables/tag.table';
+import { tagHasVisibleAssetOrNoAssets } from 'src/utils/database';
+
+export interface TagSearchOptions {
+  excludeNsfw?: boolean;
+}
 
 @Injectable()
 export class TagRepository {
@@ -68,9 +73,15 @@ export class TagRepository {
     });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(userId: string) {
-    return this.db.selectFrom('tag').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  getAll(userId: string, options: TagSearchOptions = {}) {
+    return this.db
+      .selectFrom('tag')
+      .select(columns.tag)
+      .where('userId', '=', userId)
+      .$if(!!options.excludeNsfw, (qb) => qb.where(tagHasVisibleAssetOrNoAssets(sql.ref('tag.id'))))
+      .orderBy('value')
+      .execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })

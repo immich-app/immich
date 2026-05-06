@@ -111,6 +111,24 @@ export function withoutNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAl
   return qb.where(sql<boolean>`not ${nsfwAssetExists(assetAlias)}`);
 }
 
+const taggedAssetExists = (tagId: Expression<unknown>) => sql<boolean>`exists (
+      select 1
+      from tag_closure
+      inner join tag_asset on tag_asset."tagId" = tag_closure.id_descendant
+      where tag_closure.id_ancestor = ${tagId}
+    )`;
+
+const nonNsfwTaggedAssetExists = (tagId: Expression<unknown>) => sql<boolean>`exists (
+      select 1
+      from tag_closure
+      inner join tag_asset on tag_asset."tagId" = tag_closure.id_descendant
+      where tag_closure.id_ancestor = ${tagId}
+        and not ${nsfwAssetIdExists(sql.ref('tag_asset.assetId'))}
+    )`;
+
+export const tagHasVisibleAssetOrNoAssets = (tagId: Expression<unknown>) =>
+  sql<boolean>`(not ${taggedAssetExists(tagId)} or ${nonNsfwTaggedAssetExists(tagId)})`;
+
 const enrichmentExists = (assetAlias: string, predicate: ReturnType<typeof sql>) => sql<boolean>`exists (
       select 1
       from asset_metadata

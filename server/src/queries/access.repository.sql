@@ -448,6 +448,47 @@ from
 where
   "tag"."id" in ($1)
   and "tag"."userId" = $2
+  and (
+    not exists (
+      select
+        1
+      from
+        tag_closure
+        inner join tag_asset on tag_asset."tagId" = tag_closure.id_descendant
+      where
+        tag_closure.id_ancestor = "tag"."id"
+    )
+    or exists (
+      select
+        1
+      from
+        tag_closure
+        inner join tag_asset on tag_asset."tagId" = tag_closure.id_descendant
+      where
+        tag_closure.id_ancestor = "tag"."id"
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "tag_asset"."assetId"
+            and asset_metadata.key = $3
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 
 -- AccessRepository.timeline.checkPartnerAccess
 select

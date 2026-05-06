@@ -22,7 +22,7 @@ import { upsertTags } from 'src/utils/tag';
 @Injectable()
 export class TagService extends BaseService {
   async getAll(auth: AuthDto) {
-    const tags = await this.tagRepository.getAll(auth.user.id);
+    const tags = await this.tagRepository.getAll(auth.user.id, { excludeNsfw: auth.hideNsfwAssets === true });
     return tags.map((tag) => mapTag(tag));
   }
 

@@ -4,7 +4,13 @@ import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { asUuid, nsfwAssetIdExists, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
+import {
+  asUuid,
+  nsfwAssetIdExists,
+  tagHasVisibleAssetOrNoAssets,
+  withDefaultVisibility,
+  withoutNsfwAssets,
+} from 'src/utils/database';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -581,9 +587,9 @@ class PartnerAccess {
 class TagAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, tagIds: Set<string>) {
+  async checkOwnerAccess(userId: string, tagIds: Set<string>, hideNsfwAssets?: boolean) {
     if (tagIds.size === 0) {
       return new Set<string>();
     }
@@ -593,6 +599,7 @@ class TagAccess {
       .select('tag.id')
       .where('tag.id', 'in', [...tagIds])
       .where('tag.userId', '=', userId)
+      .$if(!!hideNsfwAssets, (qb) => qb.where(tagHasVisibleAssetOrNoAssets(sql.ref('tag.id'))))
       .execute()
       .then((tags) => new Set(tags.map((tag) => tag.id)));
   }

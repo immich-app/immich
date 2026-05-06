@@ -333,7 +333,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     case Permission.TagRead:
     case Permission.TagUpdate:
     case Permission.TagDelete: {
-      return await access.tag.checkOwnerAccess(auth.user.id, ids);
+      return await access.tag.checkOwnerAccess(auth.user.id, ids, auth.hideNsfwAssets);
     }
 
     case Permission.TimelineRead: {
