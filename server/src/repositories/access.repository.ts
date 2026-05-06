@@ -430,9 +430,9 @@ class MemoryAccess {
 class PersonAccess {
   constructor(private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, personIds: Set<string>) {
+  async checkOwnerAccess(userId: string, personIds: Set<string>, hideNsfwAssets?: boolean) {
     if (personIds.size === 0) {
       return new Set<string>();
     }
@@ -442,13 +442,48 @@ class PersonAccess {
       .select('person.id')
       .where('person.id', 'in', [...personIds])
       .where('person.ownerId', '=', userId)
+      .$if(!!hideNsfwAssets, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb.not((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('asset_face')
+                  .innerJoin('asset', (join) =>
+                    join
+                      .onRef('asset.id', '=', 'asset_face.assetId')
+                      .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                      .on('asset.deletedAt', 'is', null),
+                  )
+                  .whereRef('asset_face.personId', '=', 'person.id')
+                  .where('asset_face.deletedAt', 'is', null)
+                  .where('asset_face.isVisible', 'is', true),
+              ),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('asset_face')
+                .innerJoin('asset', (join) =>
+                  join
+                    .onRef('asset.id', '=', 'asset_face.assetId')
+                    .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                    .on('asset.deletedAt', 'is', null),
+                )
+                .whereRef('asset_face.personId', '=', 'person.id')
+                .where('asset_face.deletedAt', 'is', null)
+                .where('asset_face.isVisible', 'is', true)
+                .$call(withoutNsfwAssets),
+            ),
+          ]),
+        ),
+      )
       .execute()
       .then((persons) => new Set(persons.map((person) => person.id)));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>) {
+  async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>, hideNsfwAssets?: boolean) {
     if (assetFaceIds.size === 0) {
       return new Set<string>();
     }
@@ -459,6 +494,7 @@ class PersonAccess {
       .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.deletedAt', 'is', null))
       .where('asset_face.id', 'in', [...assetFaceIds])
       .where('asset.ownerId', '=', userId)
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
   }

@@ -9,13 +9,14 @@ import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
+import { dummy, removeUndefinedKeys, withFilePath, withoutNsfwAssets } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
   withHidden: boolean;
   closestFaceAssetId?: string;
+  excludeNsfw?: boolean;
 }
 
 export interface PersonNameSearchOptions {
@@ -148,7 +149,9 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
+  @GenerateSql({
+    params: [{ take: 1, skip: 0 }, DummyValue.UUID, { minimumFaceCount: 1, withHidden: false, excludeNsfw: true }],
+  })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
     const items = await this.db
       .selectFrom('person')
@@ -163,6 +166,7 @@ export class PersonRepository {
       .where('person.ownerId', '=', userId)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
+      .$if(!!options?.excludeNsfw, withoutNsfwAssets)
       .orderBy('person.isHidden', 'asc')
       .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
@@ -334,8 +338,8 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getStatistics(personId: string): Promise<PersonStatistics> {
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  async getStatistics(personId: string, options: { excludeNsfw?: boolean } = {}): Promise<PersonStatistics> {
     const result = await this.db
       .selectFrom('asset_face')
       .leftJoin('asset', (join) =>
@@ -348,6 +352,7 @@ export class PersonRepository {
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .where('asset_face.personId', '=', personId)
+      .$if(!!options.excludeNsfw, withoutNsfwAssets)
       .executeTakeFirst();
 
     return {
@@ -355,8 +360,8 @@ export class PersonRepository {
     };
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getNumberOfPeople(userId: string) {
+  @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
+  getNumberOfPeople(userId: string, options: { excludeNsfw?: boolean } = {}) {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
@@ -373,7 +378,8 @@ export class PersonRepository {
                   .selectFrom('asset')
                   .whereRef('asset.id', '=', 'asset_face.assetId')
                   .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-                  .where('asset.deletedAt', 'is', null),
+                  .where('asset.deletedAt', 'is', null)
+                  .$if(!!options.excludeNsfw, withoutNsfwAssets),
               ),
             ),
         ),

@@ -52,6 +52,16 @@ const checkAssetPartnerAccess = (access: AccessRepository, auth: AuthDto, ids: S
     ? access.asset.checkPartnerAccess(auth.user.id, ids, true)
     : access.asset.checkPartnerAccess(auth.user.id, ids);
 
+const checkPersonOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.person.checkOwnerAccess(auth.user.id, ids, true)
+    : access.person.checkOwnerAccess(auth.user.id, ids);
+
+const checkPersonFaceOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.person.checkFaceOwnerAccess(auth.user.id, ids, true)
+    : access.person.checkFaceOwnerAccess(auth.user.id, ids);
+
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   if (!auth || (auth.sharedLink && !auth.sharedLink.allowUpload)) {
     throw new UnauthorizedException();
@@ -285,7 +295,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.FaceDelete: {
-      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+      return checkPersonFaceOwnerAccess(access, auth, ids);
     }
 
     case Permission.NotificationRead:
@@ -324,18 +334,18 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.PersonCreate: {
-      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+      return checkPersonFaceOwnerAccess(access, auth, ids);
     }
 
     case Permission.PersonRead:
     case Permission.PersonUpdate:
     case Permission.PersonDelete:
     case Permission.PersonMerge: {
-      return await access.person.checkOwnerAccess(auth.user.id, ids);
+      return await checkPersonOwnerAccess(access, auth, ids);
     }
 
     case Permission.PersonReassign: {
-      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+      return checkPersonFaceOwnerAccess(access, auth, ids);
     }
 
     case Permission.PartnerUpdate: {

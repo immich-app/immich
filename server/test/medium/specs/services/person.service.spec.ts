@@ -1,14 +1,17 @@
 import { Kysely } from 'kysely';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetFaceCreateDto } from 'src/dtos/person.dto';
+import { AssetMetadataKey } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { DB } from 'src/schema';
 import { PersonService } from 'src/services/person.service';
 import { newMediumService } from 'test/medium.factory';
@@ -20,16 +23,149 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
+    real: [
+      AccessRepository,
+      DatabaseRepository,
+      PersonRepository,
+      AssetRepository,
+      AssetEditRepository,
+      ConfigRepository,
+      SystemMetadataRepository,
+    ],
     mock: [JobRepository, LoggingRepository, StorageRepository],
   });
 };
+
+const nsfwMetadata = (isNsfw: boolean, review?: { action: string; isNsfw: boolean }) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: { explicit: isNsfw ? 0.95 : 0.05 } },
+    ...(review ? { review } : {}),
+  },
+});
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
 describe(PersonService.name, () => {
+  describe('nsfw privacy', () => {
+    it('should hide people that only have private NSFW faces', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { person: safePerson } = await ctx.newPerson({ ownerId: user.id, name: 'Safe' });
+      const { person: nsfwOnlyPerson } = await ctx.newPerson({ ownerId: user.id, name: 'NSFW only' });
+      const { person: mixedPerson } = await ctx.newPerson({ ownerId: user.id, name: 'Mixed' });
+
+      const { asset: safeAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: nsfwAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: mixedSafeAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: mixedNsfwAsset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newMetadata({
+        assetId: nsfwAsset.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+      await ctx.newMetadata({
+        assetId: mixedNsfwAsset.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      await ctx.newAssetFace({ personId: safePerson.id, assetId: safeAsset.id });
+      await ctx.newAssetFace({ personId: nsfwOnlyPerson.id, assetId: nsfwAsset.id });
+      await ctx.newAssetFace({ personId: mixedPerson.id, assetId: mixedSafeAsset.id });
+      await ctx.newAssetFace({ personId: mixedPerson.id, assetId: mixedNsfwAsset.id });
+
+      const auth = factory.auth({ user });
+      const hiddenAuth = { ...auth, hideNsfwAssets: true };
+
+      await expect(sut.getAll(auth, { page: 1, size: 100 })).resolves.toEqual(
+        expect.objectContaining({
+          total: 3,
+          people: expect.arrayContaining([
+            expect.objectContaining({ id: safePerson.id }),
+            expect.objectContaining({ id: nsfwOnlyPerson.id }),
+            expect.objectContaining({ id: mixedPerson.id }),
+          ]),
+        }),
+      );
+
+      const hiddenResponse = await sut.getAll(hiddenAuth, { page: 1, size: 100 });
+      expect(hiddenResponse.total).toBe(2);
+      expect(hiddenResponse.people).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: safePerson.id }),
+          expect.objectContaining({ id: mixedPerson.id }),
+        ]),
+      );
+      expect(hiddenResponse.people).not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: nsfwOnlyPerson.id })]),
+      );
+    });
+
+    it('should hide person details and count only non-NSFW assets while hide mode is active', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { person: nsfwOnlyPerson } = await ctx.newPerson({ ownerId: user.id, name: 'NSFW only' });
+      const { person: mixedPerson } = await ctx.newPerson({ ownerId: user.id, name: 'Mixed' });
+
+      const { asset: nsfwAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: mixedSafeAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: mixedNsfwAsset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newMetadata({ assetId: nsfwAsset.id, key: AssetMetadataKey.MlEnrichment, value: nsfwMetadata(true) });
+      await ctx.newMetadata({
+        assetId: mixedNsfwAsset.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      await ctx.newAssetFace({ personId: nsfwOnlyPerson.id, assetId: nsfwAsset.id });
+      await ctx.newAssetFace({ personId: mixedPerson.id, assetId: mixedSafeAsset.id });
+      await ctx.newAssetFace({ personId: mixedPerson.id, assetId: mixedNsfwAsset.id });
+
+      const auth = factory.auth({ user });
+      const hiddenAuth = { ...auth, hideNsfwAssets: true };
+
+      await expect(sut.getById(hiddenAuth, nsfwOnlyPerson.id)).rejects.toThrow('Not found or no person.read access');
+      await expect(sut.getById(hiddenAuth, mixedPerson.id)).resolves.toEqual(
+        expect.objectContaining({ id: mixedPerson.id }),
+      );
+      await expect(sut.getStatistics(auth, mixedPerson.id)).resolves.toEqual({ assets: 2 });
+      await expect(sut.getStatistics(hiddenAuth, mixedPerson.id)).resolves.toEqual({ assets: 1 });
+    });
+
+    it('should not serve person thumbnails generated from private NSFW feature faces', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, thumbnailPath: '/person/thumbnail.jpg' });
+      const { asset: safeAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: nsfwAsset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newMetadata({ assetId: nsfwAsset.id, key: AssetMetadataKey.MlEnrichment, value: nsfwMetadata(true) });
+
+      const { assetFace: safeFace } = await ctx.newAssetFace({ personId: person.id, assetId: safeAsset.id });
+      const { assetFace: nsfwFace } = await ctx.newAssetFace({ personId: person.id, assetId: nsfwAsset.id });
+      await ctx.get(PersonRepository).update({ id: person.id, faceAssetId: nsfwFace.id });
+
+      const auth = factory.auth({ user });
+      const hiddenAuth = { ...auth, hideNsfwAssets: true };
+
+      await expect(sut.getThumbnail(auth, person.id)).resolves.toEqual(
+        expect.objectContaining({ path: '/person/thumbnail.jpg' }),
+      );
+      await expect(sut.getThumbnail(hiddenAuth, person.id)).rejects.toThrow();
+
+      await ctx.get(PersonRepository).update({ id: person.id, faceAssetId: safeFace.id });
+
+      await expect(sut.getThumbnail(hiddenAuth, person.id)).resolves.toEqual(
+        expect.objectContaining({ path: '/person/thumbnail.jpg' }),
+      );
+    });
+  });
+
   describe('delete', () => {
     it('should throw an error when there is no access', async () => {
       const { sut } = setup();

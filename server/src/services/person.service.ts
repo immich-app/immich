@@ -68,8 +68,11 @@ export class PersonService extends BaseService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
       closestFaceAssetId,
+      excludeNsfw: auth.hideNsfwAssets,
     });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, {
+      excludeNsfw: auth.hideNsfwAssets,
+    });
 
     return {
       people: items.map((person) => mapPerson(person)),
@@ -159,7 +162,7 @@ export class PersonService extends BaseService {
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.personRepository.getStatistics(id);
+    return this.personRepository.getStatistics(id, { excludeNsfw: auth.hideNsfwAssets });
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
@@ -167,6 +170,17 @@ export class PersonService extends BaseService {
     const person = await this.personRepository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
+    }
+
+    if (auth.hideNsfwAssets && person.faceAssetId) {
+      const allowedFaces = await this.accessRepository.person.checkFaceOwnerAccess(
+        auth.user.id,
+        new Set([person.faceAssetId]),
+        true,
+      );
+      if (!allowedFaces.has(person.faceAssetId)) {
+        throw new NotFoundException();
+      }
     }
 
     return new ImmichFileResponse({

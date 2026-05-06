@@ -36,13 +36,34 @@ where
   "person"."ownerId" = $1
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  and "person"."isHidden" = $2
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $2
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
+  and "person"."isHidden" = $3
 group by
   "person"."id"
 having
   (
-    "person"."name" != $3
-    or count("asset_face"."assetId") >= $4
+    "person"."name" != $4
+    or count("asset_face"."assetId") >= $5
   )
 order by
   "person"."isHidden" asc,
@@ -52,9 +73,9 @@ order by
   NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
-  $5
-offset
   $6
+offset
+  $7
 
 -- PersonRepository.getAllWithoutFaces
 select
@@ -237,6 +258,27 @@ where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
   and "asset_face"."personId" = $1
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $2
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- PersonRepository.getNumberOfPeople
 select
@@ -267,9 +309,30 @@ where
           "asset"."id" = "asset_face"."assetId"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
+          and not exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $3
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
       )
   )
-  and "person"."ownerId" = $3
+  and "person"."ownerId" = $4
 
 -- PersonRepository.refreshFaces
 with

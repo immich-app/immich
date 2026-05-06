@@ -195,6 +195,53 @@ from
 where
   "person"."id" in ($1)
   and "person"."ownerId" = $2
+  and (
+    not exists (
+      select
+      from
+        "asset_face"
+        inner join "asset" on "asset"."id" = "asset_face"."assetId"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+      where
+        "asset_face"."personId" = "person"."id"
+        and "asset_face"."deletedAt" is null
+        and "asset_face"."isVisible" is true
+    )
+    or exists (
+      select
+      from
+        "asset_face"
+        inner join "asset" on "asset"."id" = "asset_face"."assetId"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+      where
+        "asset_face"."personId" = "person"."id"
+        and "asset_face"."deletedAt" is null
+        and "asset_face"."isVisible" is true
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $3
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 
 -- AccessRepository.person.checkFaceOwnerAccess
 select
@@ -206,6 +253,27 @@ from
 where
   "asset_face"."id" in ($1)
   and "asset"."ownerId" = $2
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- AccessRepository.partner.checkUpdateAccess
 select
