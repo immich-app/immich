@@ -41,7 +41,7 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    return { ...options, ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}), userIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

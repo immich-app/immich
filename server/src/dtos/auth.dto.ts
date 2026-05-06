@@ -17,6 +17,7 @@ export type AuthDto = {
   apiKey?: AuthApiKey;
   sharedLink?: AuthSharedLink;
   session?: AuthSession;
+  hideNsfwAssets?: boolean;
 };
 
 const LoginCredentialSchema = z

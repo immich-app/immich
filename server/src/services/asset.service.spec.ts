@@ -67,6 +67,18 @@ describe(AssetService.name, () => {
       await expect(sut.getStatistics(auth, {})).resolves.toEqual(statResponse);
       expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, {});
     });
+
+    it('should exclude NSFW assets when privacy hiding is active', async () => {
+      const auth = { ...AuthFactory.create(), hideNsfwAssets: true };
+      mocks.asset.getStatistics.mockResolvedValue(stats);
+
+      await expect(sut.getStatistics(auth, { visibility: AssetVisibility.Timeline })).resolves.toEqual(statResponse);
+
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, {
+        visibility: AssetVisibility.Timeline,
+        excludeNsfw: true,
+      });
+    });
   });
 
   describe('get', () => {
@@ -81,6 +93,22 @@ describe(AssetService.name, () => {
         authStub.admin.user.id,
         new Set([asset.id]),
         undefined,
+      );
+    });
+
+    it('should filter direct asset reads when NSFW privacy hiding is active', async () => {
+      const asset = AssetFactory.create();
+      const auth = { ...authStub.admin, hideNsfwAssets: true };
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      await sut.get(auth, asset.id);
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        auth.user.id,
+        new Set([asset.id]),
+        undefined,
+        true,
       );
     });
 

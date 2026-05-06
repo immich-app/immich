@@ -2457,6 +2457,8 @@ export type NsfwDetectionConfig = {
     device: string;
     /** Whether the task is enabled */
     enabled: boolean;
+    /** Hide NSFW assets from library views unless the session has PIN-elevated access */
+    hideFromLibrary: boolean;
     /** Name of the model to use */
     modelName: string;
     /** Minimum score required to mark an image as NSFW */

@@ -92,6 +92,7 @@ export type SystemConfig = {
       modelName: string;
       threshold: number;
       device: string;
+      hideFromLibrary: boolean;
     };
   };
   map: {
@@ -299,6 +300,7 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'onnx-community/nsfw_image_detection-ONNX',
       threshold: 0.85,
       device: 'AUTO',
+      hideFromLibrary: false,
     },
   },
   map: {

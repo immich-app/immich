@@ -39,7 +39,7 @@ export class SearchService extends BaseService {
   }
 
   async getExploreData(auth: AuthDto) {
-    const options = { maxFields: 12, minAssetsPerField: 5 };
+    const options = { ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}), maxFields: 12, minAssetsPerField: 5 };
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
     const assets = await this.assetRepository.getByIdsWithAllRelationsButStacks(cities.items.map(({ data }) => data));
     const items = assets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
@@ -65,6 +65,7 @@ export class SearchService extends BaseService {
       {
         ...dto,
         checksum,
+        ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
         userIds,
         orderDirection: dto.order ?? AssetOrder.Desc,
       },
@@ -78,6 +79,7 @@ export class SearchService extends BaseService {
 
     return await this.searchRepository.searchStatistics({
       ...dto,
+      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
       userIds,
     });
   }
@@ -88,7 +90,11 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
-    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    const items = await this.searchRepository.searchRandom(dto.size || 250, {
+      ...dto,
+      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      userIds,
+    });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
@@ -98,7 +104,11 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
-    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, { ...dto, userIds });
+    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, {
+      ...dto,
+      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      userIds,
+    });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
@@ -139,7 +149,7 @@ export class SearchService extends BaseService {
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds: await userIds, embedding },
+      { ...dto, ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}), userIds: await userIds, embedding },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
@@ -147,38 +157,57 @@ export class SearchService extends BaseService {
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
     const userIds = await this.getUserIdsToSearch(auth);
-    const assets = await this.searchRepository.getAssetsByCity(userIds);
+    const assets = await this.searchRepository.getAssetsByCity(
+      userIds,
+      auth.hideNsfwAssets ? { excludeNsfw: true } : {},
+    );
     return assets.map((asset) => mapAsset(asset));
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
     const userIds = await this.getUserIdsToSearch(auth);
-    const suggestions = await this.getSuggestions(userIds, dto);
+    const suggestions = await this.getSuggestions(userIds, dto, auth);
     if (dto.includeNull) {
       suggestions.push(null);
     }
     return suggestions;
   }
 
-  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
+  private getSuggestions(
+    userIds: string[],
+    dto: SearchSuggestionRequestDto,
+    auth: AuthDto,
+  ): Promise<Array<string | null>> {
+    const nsfwOptions = auth.hideNsfwAssets ? { excludeNsfw: true } : undefined;
+
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds);
+        return auth.hideNsfwAssets
+          ? this.searchRepository.getCountries(userIds, nsfwOptions)
+          : this.searchRepository.getCountries(userIds);
       }
       case SearchSuggestionType.STATE: {
-        return this.searchRepository.getStates(userIds, dto);
+        return this.searchRepository.getStates(userIds, { country: dto.country, ...nsfwOptions });
       }
       case SearchSuggestionType.CITY: {
-        return this.searchRepository.getCities(userIds, dto);
+        return this.searchRepository.getCities(userIds, { country: dto.country, state: dto.state, ...nsfwOptions });
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.searchRepository.getCameraMakes(userIds, dto);
+        return this.searchRepository.getCameraMakes(userIds, {
+          model: dto.model,
+          lensModel: dto.lensModel,
+          ...nsfwOptions,
+        });
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.searchRepository.getCameraModels(userIds, dto);
+        return this.searchRepository.getCameraModels(userIds, {
+          make: dto.make,
+          lensModel: dto.lensModel,
+          ...nsfwOptions,
+        });
       }
       case SearchSuggestionType.CAMERA_LENS_MODEL: {
-        return this.searchRepository.getCameraLensModels(userIds, dto);
+        return this.searchRepository.getCameraLensModels(userIds, { make: dto.make, model: dto.model, ...nsfwOptions });
       }
       default: {
         return Promise.resolve([]);

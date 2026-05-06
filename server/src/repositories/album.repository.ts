@@ -18,7 +18,7 @@ import { AlbumUserRole } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { asUuid, dummy, withDefaultVisibility } from 'src/utils/database';
+import { asUuid, dummy, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
 
 export interface AlbumAssetCount {
   albumId: string;
@@ -29,6 +29,7 @@ export interface AlbumAssetCount {
 }
 
 export interface AlbumInfoOptions {
+  excludeNsfw?: boolean;
   withAssets: boolean;
 }
 
@@ -52,7 +53,7 @@ const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) =>
     eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
   ).as('sharedLinks');
 
-const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
+const withAssets = (options: AlbumInfoOptions) => (eb: ExpressionBuilder<DB, 'album'>) => {
   return eb
     .selectFrom((eb) =>
       eb
@@ -66,6 +67,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
         .whereRef('album_asset.albumId', '=', 'album.id')
         .where('asset.deletedAt', 'is', null)
         .$call(withDefaultVisibility)
+        .$if(!!options.excludeNsfw, withoutNsfwAssets)
         .orderBy('asset.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -96,7 +98,7 @@ export class AlbumRepository {
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(authUserId))
       .select(withSharedLink)
-      .$if(options.withAssets, (eb) => eb.select(withAssets))
+      .$if(options.withAssets, (eb) => eb.select(withAssets(options)))
       .$narrowType<{ assets: NotNull }>()
       .executeTakeFirst();
   }
@@ -159,7 +161,7 @@ export class AlbumRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
-  async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[], options: { excludeNsfw?: boolean } = {}): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (ids.length === 0) {
       return [];
@@ -169,6 +171,7 @@ export class AlbumRepository {
       this.db
         .selectFrom('asset')
         .$call(withDefaultVisibility)
+        .$if(!!options.excludeNsfw, withoutNsfwAssets)
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
         .select('album_asset.albumId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
@@ -396,7 +399,7 @@ export class AlbumRepository {
       .selectFrom('album')
       .selectAll('album')
       .select(withAlbumUsers(authUserId))
-      .select(withAssets)
+      .select(withAssets({ withAssets: true }))
       .$narrowType<{ assets: NotNull }>()
       .executeTakeFirstOrThrow();
 

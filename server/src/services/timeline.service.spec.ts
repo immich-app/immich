@@ -24,6 +24,18 @@ describe(TimelineService.name, () => {
       });
     });
 
+    it('should exclude NSFW assets when privacy hiding is active', async () => {
+      const auth = { ...authStub.admin, hideNsfwAssets: true };
+      mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+      await sut.getTimeBuckets(auth, {});
+
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
+        excludeNsfw: true,
+        userIds: [auth.user.id],
+      });
+    });
+
     it('should pass bbox options to repository when all bbox fields are provided', async () => {
       mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
 

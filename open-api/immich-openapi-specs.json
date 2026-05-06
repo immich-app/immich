@@ -19116,6 +19116,10 @@
             "description": "Whether the task is enabled",
             "type": "boolean"
           },
+          "hideFromLibrary": {
+            "description": "Hide NSFW assets from library views unless the session has PIN-elevated access",
+            "type": "boolean"
+          },
           "modelName": {
             "description": "Name of the model to use",
             "type": "string"
@@ -19131,6 +19135,7 @@
         "required": [
           "device",
           "enabled",
+          "hideFromLibrary",
           "modelName",
           "threshold"
         ],

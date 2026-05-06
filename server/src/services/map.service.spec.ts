@@ -38,6 +38,16 @@ describe(MapService.name, () => {
       expect(markers[0]).toEqual(marker);
     });
 
+    it('should exclude NSFW assets when privacy hiding is active', async () => {
+      const auth = { ...AuthFactory.create(), hideNsfwAssets: true };
+      mocks.partner.getAll.mockResolvedValue([]);
+      mocks.map.getMapMarkers.mockResolvedValue([]);
+
+      await sut.getMapMarkers(auth, {});
+
+      expect(mocks.map.getMapMarkers).toHaveBeenCalledWith([auth.user.id], [], { excludeNsfw: true });
+    });
+
     it('should include partner assets', async () => {
       const auth = AuthFactory.create();
       const partner = PartnerFactory.create({ sharedWithId: auth.user.id });

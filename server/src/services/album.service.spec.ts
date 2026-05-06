@@ -70,6 +70,31 @@ describe(AlbumService.name, () => {
       expect(result[1].id).toEqual(sharedWithUserAlbum.id);
     });
 
+    it('should mask NSFW album thumbnails and metadata when privacy hiding is active', async () => {
+      const thumbnailAssetId = newUuid();
+      const album = AlbumFactory.from({ albumThumbnailAssetId: thumbnailAssetId }).albumUser().build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const auth = { ...AuthFactory.create(owner), hideNsfwAssets: true };
+
+      mocks.album.getOwned.mockResolvedValue([getForAlbum(album)]);
+      mocks.asset.getNsfwAssetIds.mockResolvedValue(new Set([thumbnailAssetId]));
+      mocks.album.getMetadataForIds.mockResolvedValue([
+        {
+          albumId: album.id,
+          assetCount: 0,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
+      ]);
+
+      const result = await sut.getAll(auth, {});
+
+      expect(result[0].albumThumbnailAssetId).toBeNull();
+      expect(mocks.asset.getNsfwAssetIds).toHaveBeenCalledWith([thumbnailAssetId]);
+      expect(mocks.album.getMetadataForIds).toHaveBeenCalledWith([album.id], { excludeNsfw: true });
+    });
+
     it('gets list of albums that have a specific asset', async () => {
       const album = AlbumFactory.from()
         .owner({ isAdmin: true })

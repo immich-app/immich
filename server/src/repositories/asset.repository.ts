@@ -40,6 +40,8 @@ import {
   withFilePath,
   withFiles,
   withLibrary,
+  withNsfwAssets,
+  withoutNsfwAssets,
   withOwner,
   withSmartSearch,
   withTagId,
@@ -57,6 +59,7 @@ export interface BoundingBox {
 }
 
 interface AssetStatsOptions {
+  excludeNsfw?: boolean;
   isFavorite?: boolean;
   isTrashed?: boolean;
   visibility?: AssetVisibility;
@@ -71,6 +74,7 @@ interface LivePhotoSearchOptions {
 }
 
 interface AssetBuilderOptions {
+  excludeNsfw?: boolean;
   isFavorite?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
@@ -103,6 +107,7 @@ export interface YearMonthDay {
 }
 
 interface AssetExploreFieldOptions {
+  excludeNsfw?: boolean;
   maxFields: number;
   minAssetsPerField: number;
 }
@@ -689,7 +694,10 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  getStatistics(ownerId: string, { visibility, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
+  getStatistics(
+    ownerId: string,
+    { excludeNsfw, visibility, isFavorite, isTrashed }: AssetStatsOptions,
+  ): Promise<AssetStats> {
     return this.db
       .selectFrom('asset')
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Audio).as(AssetType.Audio))
@@ -701,6 +709,7 @@ export class AssetRepository {
       .$if(!!visibility, (qb) => qb.where('asset.visibility', '=', visibility!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
+      .$if(!!excludeNsfw, withoutNsfwAssets)
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
       .executeTakeFirstOrThrow();
   }
@@ -730,6 +739,7 @@ export class AssetRepository {
           })
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.excludeNsfw, withoutNsfwAssets)
           .$if(!!options.albumId, (qb) =>
             qb
               .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
@@ -803,6 +813,7 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.excludeNsfw, withoutNsfwAssets)
           .$if(!!options.bbox, (qb) => {
             const bbox = options.bbox!;
             const circle = getBoundingCircle(bbox);
@@ -849,6 +860,7 @@ export class AssetRepository {
                     .whereRef('stacked.stackId', '=', 'asset.stackId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.visibility', '=', AssetVisibility.Timeline)
+                    .$if(!!options.excludeNsfw, (qb) => withoutNsfwAssets(qb, 'stacked'))
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -903,7 +915,7 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
-  async getAssetIdByCity(ownerId: string, { minAssetsPerField, maxFields }: AssetExploreFieldOptions) {
+  async getAssetIdByCity(ownerId: string, { excludeNsfw, minAssetsPerField, maxFields }: AssetExploreFieldOptions) {
     const items = await this.db
       .with('cities', (qb) =>
         qb
@@ -923,10 +935,27 @@ export class AssetRepository {
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
+      .$if(!!excludeNsfw, withoutNsfwAssets)
       .limit(maxFields)
       .execute();
 
     return { fieldName: 'exifInfo.city', items };
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  async getNsfwAssetIds(ids: string[]): Promise<Set<string>> {
+    if (ids.length === 0) {
+      return new Set();
+    }
+
+    const rows = await this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .where('asset.id', '=', anyUuid(ids))
+      .$call(withNsfwAssets)
+      .execute();
+    return new Set(rows.map(({ id }) => id));
   }
 
   async upsertFile(

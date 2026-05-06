@@ -26,6 +26,7 @@ import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
+import { isNsfwHidingEnabled } from 'src/utils/misc';
 import { generateProfileImage } from 'src/utils/profile-image';
 import { getUserAgentDetails } from 'src/utils/request';
 export interface LoginDetails {
@@ -236,6 +237,11 @@ export class AuthService extends BaseService {
       !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })
     ) {
       throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
+    }
+
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    if (isNsfwHidingEnabled(machineLearning) && !authDto.session?.hasElevatedPermission) {
+      authDto.hideNsfwAssets = true;
     }
 
     return authDto;

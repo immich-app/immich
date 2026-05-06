@@ -392,6 +392,15 @@
             disabled={disabled || !configToEdit.machineLearning.enabled}
           />
 
+          <SettingSwitch
+            title={$t('admin.machine_learning_nsfw_detection_hide_from_library')}
+            subtitle={$t('admin.machine_learning_nsfw_detection_hide_from_library_description')}
+            bind:checked={configToEdit.machineLearning.nsfwDetection.hideFromLibrary}
+            disabled={disabled || !configToEdit.machineLearning.enabled}
+            isEdited={configToEdit.machineLearning.nsfwDetection.hideFromLibrary !==
+              config.machineLearning.nsfwDetection.hideFromLibrary}
+          />
+
           <hr />
 
           <SettingInputField

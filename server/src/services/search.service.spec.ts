@@ -83,6 +83,23 @@ describe(SearchService.name, () => {
 
       expect(result).toEqual(expectedResponse);
     });
+
+    it('should exclude NSFW assets when privacy hiding is active', async () => {
+      const auth = { ...AuthFactory.create(), hideNsfwAssets: true };
+      mocks.asset.getAssetIdByCity.mockResolvedValue({
+        fieldName: 'exifInfo.city',
+        items: [],
+      });
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([]);
+
+      await sut.getExploreData(auth);
+
+      expect(mocks.asset.getAssetIdByCity).toHaveBeenCalledWith(auth.user.id, {
+        maxFields: 12,
+        minAssetsPerField: 5,
+        excludeNsfw: true,
+      });
+    });
   });
 
   describe('getSearchSuggestions', () => {
@@ -94,6 +111,18 @@ describe(SearchService.name, () => {
         sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA']);
       expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+    });
+
+    it('should exclude NSFW assets from suggestions when privacy hiding is active', async () => {
+      const auth = { ...authStub.user1, hideNsfwAssets: true };
+      mocks.search.getCountries.mockResolvedValue(['USA']);
+      mocks.partner.getAll.mockResolvedValue([]);
+
+      await expect(
+        sut.getSearchSuggestions(auth, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
+      ).resolves.toEqual(['USA']);
+
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([auth.user.id], { excludeNsfw: true });
     });
 
     it('should return search suggestions for country (including null)', async () => {
@@ -243,6 +272,17 @@ describe(SearchService.name, () => {
       expect(mocks.search.searchSmart).toHaveBeenCalledWith(
         { page: 1, size: 100 },
         { query: 'test', embedding: '[1, 2, 3]', userIds: [authStub.user1.user.id] },
+      );
+    });
+
+    it('should exclude NSFW assets when privacy hiding is active', async () => {
+      const auth = { ...authStub.user1, hideNsfwAssets: true };
+
+      await sut.searchSmart(auth, { query: 'test' });
+
+      expect(mocks.search.searchSmart).toHaveBeenCalledWith(
+        { page: 1, size: 100 },
+        { query: 'test', embedding: '[1, 2, 3]', userIds: [auth.user.id], excludeNsfw: true },
       );
     });
 

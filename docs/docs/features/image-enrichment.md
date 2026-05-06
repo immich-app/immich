@@ -21,7 +21,9 @@ When NSFW detection is enabled, Immich sends the asset preview image to a dedica
 
 The default NSFW model is `onnx-community/nsfw_image_detection-ONNX`, with a default threshold of `0.85`. When an image is detected as NSFW, Immich can add an `nsfw` tag and specific visible reason tags when they are supported by the classifier result and the visible image content.
 
-The private NSFW flag is the source of truth for future privacy features. Tags are searchable metadata, not a security boundary.
+The private NSFW flag is the source of truth for privacy features. Tags are searchable metadata, not a security boundary.
+
+When `Hide detected NSFW assets` is enabled, privately flagged NSFW assets are hidden from library views such as the timeline, search results, albums, album thumbnails and counts, maps, and direct asset access unless the current session has been unlocked with the locked-folder PIN. Album membership is preserved; hiding only changes what is returned to a non-elevated session.
 
 ## Running Both Jobs
 

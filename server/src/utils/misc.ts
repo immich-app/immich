@@ -102,6 +102,8 @@ export const isImageDescriptionEnabled = (machineLearning: SystemConfig['machine
   isMachineLearningEnabled(machineLearning) && machineLearning.imageDescription.enabled;
 export const isNsfwDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.nsfwDetection.enabled;
+export const isNsfwHidingEnabled = (machineLearning: SystemConfig['machineLearning']) =>
+  machineLearning.nsfwDetection.hideFromLibrary;
 export const isFacialRecognitionEnabled = (machineLearning: SystemConfig['machineLearning']) =>
   isMachineLearningEnabled(machineLearning) && machineLearning.facialRecognition.enabled;
 export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machineLearning']) =>

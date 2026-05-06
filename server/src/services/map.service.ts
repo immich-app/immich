@@ -23,7 +23,10 @@ export class MapService extends BaseService {
       albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
     }
 
-    return this.mapRepository.getMapMarkers(userIds, albumIds, options);
+    return this.mapRepository.getMapMarkers(userIds, albumIds, {
+      ...options,
+      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+    });
   }
 
   async reverseGeocode(dto: MapReverseGeocodeDto) {

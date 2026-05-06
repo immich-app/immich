@@ -124,6 +124,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       modelName: 'onnx-community/nsfw_image_detection-ONNX',
       threshold: 0.85,
       device: 'AUTO',
+      hideFromLibrary: false,
     },
   },
   map: {

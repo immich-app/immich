@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { asUuid } from 'src/utils/database';
+import { asUuid, withoutNsfwAssets } from 'src/utils/database';
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
@@ -140,7 +140,7 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumAccess(userId: string, assetIds: Set<string>) {
+  async checkAlbumAccess(userId: string, assetIds: Set<string>, hideNsfwAssets?: boolean) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -164,6 +164,7 @@ class AssetAccess {
       )
       .where('user.id', '=', userId)
       .where('album.deletedAt', 'is', null)
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();
@@ -181,7 +182,12 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, assetIds: Set<string>, hasElevatedPermission: boolean | undefined) {
+  async checkOwnerAccess(
+    userId: string,
+    assetIds: Set<string>,
+    hasElevatedPermission: boolean | undefined,
+    hideNsfwAssets?: boolean,
+  ) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -192,13 +198,14 @@ class AssetAccess {
       .where('asset.id', 'in', [...assetIds])
       .where('asset.ownerId', '=', userId)
       .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkPartnerAccess(userId: string, assetIds: Set<string>) {
+  async checkPartnerAccess(userId: string, assetIds: Set<string>, hideNsfwAssets?: boolean) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -219,13 +226,14 @@ class AssetAccess {
       )
 
       .where('asset.id', 'in', [...assetIds])
+      .$if(!!hideNsfwAssets, withoutNsfwAssets)
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>) {
+  async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>, hideNsfwAssets?: boolean) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -253,6 +261,8 @@ class AssetAccess {
         '&&',
         sql`array[${sql.join([...assetIds])}]::uuid[] `,
       )
+      .$if(!!hideNsfwAssets, (qb) => withoutNsfwAssets(qb, 'asset'))
+      .$if(!!hideNsfwAssets, (qb) => withoutNsfwAssets(qb, 'albumAssets'))
       .execute()
       .then((rows) => {
         const allowedIds = new Set<string>();

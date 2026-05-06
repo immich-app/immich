@@ -182,6 +182,8 @@
     "machine_learning_nsfw_detection_description": "Use a dedicated classifier to mark images that may contain explicit content",
     "machine_learning_nsfw_detection_enabled": "Detect NSFW images",
     "machine_learning_nsfw_detection_enabled_description": "If disabled, images will not be checked for NSFW content.",
+    "machine_learning_nsfw_detection_hide_from_library": "Hide detected NSFW assets",
+    "machine_learning_nsfw_detection_hide_from_library_description": "Hide privately flagged NSFW assets from library views unless the current session has been unlocked with the PIN.",
     "machine_learning_nsfw_detection_model": "NSFW detection model",
     "machine_learning_nsfw_detection_threshold": "NSFW threshold",
     "machine_learning_nsfw_detection_threshold_description": "Minimum score from 0-1 required to mark an image as NSFW.",

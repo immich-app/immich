@@ -55,7 +55,10 @@ export class AssetService extends BaseService {
       requireElevatedPermission(auth);
     }
 
-    const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
+    const stats = await this.assetRepository.getStatistics(auth.user.id, {
+      ...dto,
+      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+    });
     return mapStats(stats);
   }
 

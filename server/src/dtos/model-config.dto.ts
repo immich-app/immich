@@ -67,6 +67,9 @@ export const NsfwDetectionConfigSchema = ModelConfigSchema.extend({
     .max(1)
     .describe('Minimum score required to mark an image as NSFW'),
   device: z.string().describe('OpenVINO device to use'),
+  hideFromLibrary: z
+    .boolean()
+    .describe('Hide NSFW assets from library views unless the session has PIN-elevated access'),
 }).meta({ id: 'NsfwDetectionConfig' });
 
 export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

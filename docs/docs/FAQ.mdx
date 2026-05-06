@@ -147,7 +147,7 @@ Yes, it creates new faces and persons from the imported asset metadata. For deta
 
 ### Does Immich support the filtering of NSFW images?
 
-No, it currently does not hide or filter NSFW images from the library. This fork can optionally detect NSFW images and add searchable metadata, but timeline, search, and album filtering are separate future privacy features. There is an [open feature request on Github](https://github.com/immich-app/immich/discussions/2451).
+This fork can optionally detect NSFW images and hide privately flagged NSFW assets from library views until the current session is unlocked with the locked-folder PIN. Hiding uses the private NSFW flag, not the visible `nsfw` tag, and album membership is preserved. There is an [open upstream feature request on Github](https://github.com/immich-app/immich/discussions/2451).
 
 ### Why are there so many thumbnail generation jobs?
 

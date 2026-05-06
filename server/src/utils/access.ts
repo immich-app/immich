@@ -24,8 +24,33 @@ export type AccessRequest = {
   ids: Set<string> | string[];
 };
 
-type SharedLinkAccessRequest = { sharedLink: AuthSharedLink; permission: Permission; ids: Set<string> };
+type SharedLinkAccessRequest = {
+  sharedLink: AuthSharedLink;
+  hideNsfwAssets?: boolean;
+  permission: Permission;
+  ids: Set<string>;
+};
 type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
+
+const checkAssetOwnerAccess = (
+  access: AccessRepository,
+  auth: AuthDto,
+  ids: Set<string>,
+  hasElevatedPermission: boolean | undefined,
+) =>
+  auth.hideNsfwAssets
+    ? access.asset.checkOwnerAccess(auth.user.id, ids, hasElevatedPermission, true)
+    : access.asset.checkOwnerAccess(auth.user.id, ids, hasElevatedPermission);
+
+const checkAssetAlbumAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.asset.checkAlbumAccess(auth.user.id, ids, true)
+    : access.asset.checkAlbumAccess(auth.user.id, ids);
+
+const checkAssetPartnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
+  auth.hideNsfwAssets
+    ? access.asset.checkPartnerAccess(auth.user.id, ids, true)
+    : access.asset.checkPartnerAccess(auth.user.id, ids);
 
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   if (!auth || (auth.sharedLink && !auth.sharedLink.allowUpload)) {
@@ -51,7 +76,12 @@ export const checkAccess = async (
   }
 
   return auth.sharedLink
-    ? checkSharedLinkAccess(access, { sharedLink: auth.sharedLink, permission, ids: idSet })
+    ? checkSharedLinkAccess(access, {
+        sharedLink: auth.sharedLink,
+        hideNsfwAssets: auth.hideNsfwAssets,
+        permission,
+        ids: idSet,
+      })
     : checkOtherAccess(access, { auth, permission, ids: idSet });
 };
 
@@ -59,20 +89,29 @@ const checkSharedLinkAccess = async (
   access: AccessRepository,
   request: SharedLinkAccessRequest,
 ): Promise<Set<string>> => {
-  const { sharedLink, permission, ids } = request;
+  const { sharedLink, hideNsfwAssets, permission, ids } = request;
   const sharedLinkId = sharedLink.id;
 
   switch (permission) {
     case Permission.AssetRead: {
-      return await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
+      return hideNsfwAssets
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, true)
+        : await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AssetView: {
-      return await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
+      return hideNsfwAssets
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, true)
+        : await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AssetDownload: {
-      return sharedLink.allowDownload ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
+      if (!sharedLink.allowDownload) {
+        return new Set();
+      }
+      return hideNsfwAssets
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, true)
+        : await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AssetUpload: {
@@ -114,54 +153,54 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.AssetRead: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
+      const isOwner = await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
+      const isAlbum = await checkAssetAlbumAccess(access, auth, setDifference(ids, isOwner));
+      const isPartner = await checkAssetPartnerAccess(access, auth, setDifference(ids, isOwner, isAlbum));
       return setUnion(isOwner, isAlbum, isPartner);
     }
 
     case Permission.AssetShare: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, false);
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
+      const isOwner = await checkAssetOwnerAccess(access, auth, ids, false);
+      const isPartner = await checkAssetPartnerAccess(access, auth, setDifference(ids, isOwner));
       return setUnion(isOwner, isPartner);
     }
 
     case Permission.AssetView: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
+      const isOwner = await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
+      const isAlbum = await checkAssetAlbumAccess(access, auth, setDifference(ids, isOwner));
+      const isPartner = await checkAssetPartnerAccess(access, auth, setDifference(ids, isOwner, isAlbum));
       return setUnion(isOwner, isAlbum, isPartner);
     }
 
     case Permission.AssetDownload: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
+      const isOwner = await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
+      const isAlbum = await checkAssetAlbumAccess(access, auth, setDifference(ids, isOwner));
+      const isPartner = await checkAssetPartnerAccess(access, auth, setDifference(ids, isOwner, isAlbum));
       return setUnion(isOwner, isAlbum, isPartner);
     }
 
     case Permission.AssetUpdate: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.AssetDelete: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.AssetCopy: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.AssetEditGet: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.AssetEditCreate: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.AssetEditDelete: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return await checkAssetOwnerAccess(access, auth, ids, auth.session?.hasElevatedPermission);
     }
 
     case Permission.AlbumRead: {

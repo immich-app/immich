@@ -521,6 +521,70 @@ describe(AuthService.name, () => {
       });
     });
 
+    it('should hide NSFW assets when configured and the session is not elevated', async () => {
+      const session = SessionFactory.create();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: UserFactory.create(),
+        pinExpiresAt: null,
+        appVersion: null,
+        oauthSid: null,
+      };
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { nsfwDetection: { hideFromLibrary: true } },
+      });
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+
+      await expect(
+        sut.authenticate({
+          headers: { cookie: 'immich_access_token=auth_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({
+        user: sessionWithToken.user,
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+        },
+        hideNsfwAssets: true,
+      });
+    });
+
+    it('should not hide NSFW assets when the PIN session is elevated', async () => {
+      const session = SessionFactory.create();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: UserFactory.create(),
+        pinExpiresAt: DateTime.now().plus({ minutes: 15 }).toJSDate(),
+        appVersion: null,
+        oauthSid: null,
+      };
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { nsfwDetection: { hideFromLibrary: true } },
+      });
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+
+      const result = await sut.authenticate({
+        headers: { cookie: 'immich_access_token=auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+      });
+
+      expect(result).toEqual({
+        user: sessionWithToken.user,
+        session: {
+          id: session.id,
+          hasElevatedPermission: true,
+        },
+      });
+      expect(result.hideNsfwAssets).toBeUndefined();
+    });
+
     it('should throw if admin route and not an admin', async () => {
       const session = SessionFactory.create();
       const sessionWithToken = {

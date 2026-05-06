@@ -17,7 +17,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -78,6 +78,22 @@ export const isAssetChecksumConstraint = (error: unknown) => {
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
+}
+
+const nsfwAssetExists = (assetAlias = 'asset') => sql<boolean>`exists (
+      select 1
+      from asset_metadata
+      where asset_metadata."assetId" = ${sql.ref(`${assetAlias}.id`)}
+        and asset_metadata.key = ${AssetMetadataKey.MlEnrichment}
+        and asset_metadata.value #>> '{nsfwDetection,result,nsfw}' = 'true'
+    )`;
+
+export function withNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAlias = 'asset') {
+  return qb.where(nsfwAssetExists(assetAlias));
+}
+
+export function withoutNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAlias = 'asset') {
+  return qb.where(sql<boolean>`not ${nsfwAssetExists(assetAlias)}`);
 }
 
 // TODO come up with a better query that only selects the fields we need
@@ -429,6 +445,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+    .$if(!!options.excludeNsfw, withoutNsfwAssets)
     .$if(!!options.encodedVideoPath, (qb) =>
       qb
         .innerJoin('asset_file', (join) =>
